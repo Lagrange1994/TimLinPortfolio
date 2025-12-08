@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>恆春航空站 | 國境之南的蔚藍門戶 - Case Study</title>
+
+    <!-- Favicon Fix: 增加版本號 (?v=2) 強制瀏覽器重新抓取，並同時支援舊版寫法 -->
+    <link rel="shortcut icon" href="./img/favicon/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#00D4FF',
+                        secondary: '#0072CE',
+                        dark: '#121212',
+                        'dark-light': '#1E1E1E',
+                        'dark-lighter': '#2D2D2D',
+                        accent: '#FF6584'
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
+                        heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* 1. BASIC LAYOUT SETUP */
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #121212;
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            color: #fff;
+        }
+
+        /* 2. MAIN SCROLL CONTAINER */
+        #main-container {
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* 3. SECTIONS */
+        .page-section {
+            width: 100vw;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .split-viewport {
+            height: 100vh;
+            max-height: 100vh;
+        }
+
+        /* Custom Hero Background - Fixed Visibility */
+        .hero-bg-custom {
+            /* Ensure the image path is correct relative to the HTML file */
+            background-image: url('./img/project_10/hero_img.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .hero-bg-custom::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            /* Adjusted Opacity: Lighter (0.3 to 0.7) to ensure image is visible */
+            background: linear-gradient(to bottom, rgba(18, 18, 18, 0.3) 0%, rgba(18, 18, 18, 0.8) 100%);
+            z-index: 1;
+        }
+
+        /* Animations */
+        .fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #121212;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-animation {
+            width: 65px;
+            aspect-ratio: 1;
+            position: relative;
+        }
+
+        .loader-animation:before,
+        .loader-animation:after {
+            content: "";
+            position: absolute;
+            border-radius: 50px;
+            box-shadow: 0 0 0 3px inset #fff;
+            animation: l4 2.5s infinite;
+        }
+
+        .loader-animation:after {
+            animation-delay: -1.25s;
+        }
+
+        @keyframes l4 {
+            0% {
+                inset: 0 35px 35px 0;
+            }
+
+            12.5% {
+                inset: 0 35px 0 0;
+            }
+
+            25% {
+                inset: 35px 35px 0 0;
+            }
+
+            37.5% {
+                inset: 35px 0 0 0;
+            }
+
+            50% {
+                inset: 35px 0 0 35px;
+            }
+
+            62.5% {
+                inset: 0 0 0 35px;
+            }
+
+            75% {
+                inset: 0 0 35px 35px;
+            }
+
+            87.5% {
+                inset: 0 0 35px 0;
+            }
+
+            100% {
+                inset: 0 35px 35px 0;
+            }
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.85), rgba(18, 18, 18, 0.95));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 212, 255, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(0, 212, 255, 0.2);
+        }
+
+        /* Updated Gradient Text */
+        .gradient-text {
+            background: linear-gradient(90deg, #00D4FF, #ffffff, #0072CE);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: gradientMove 5s linear infinite;
+        }
+
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 200% 50%;
+            }
+        }
+
+        /* Scrollbars */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #3D3D3D;
+            border-radius: 10px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #00D4FF;
+        }
+
+        /* Unified Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0F172A;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00D4FF;
+        }
+
+
+        .back-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn:hover i {
+            transform: translateX(-4px);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- Icons ---
+        const Icons = {
+            XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
+            AI: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l-9 18h18L12 3z" /><circle cx="12" cy="13" r="2" /></svg>,
+            Color: () => <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" /></svg>,
+            Map: () => <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" /><line x1="9" x2="9" y1="3" y2="18" /><line x1="15" x2="15" y1="6" y2="21" /></svg>,
+            Layout: () => <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="3" x2="21" y1="9" y2="9" /><line x1="9" x2="9" y1="21" y2="9" /></svg>
+        };
+
+        const App = () => {
+            const [loading, setLoading] = useState(true);
+            const [activeTab, setActiveTab] = useState('context');
+            const [previewImage, setPreviewImage] = useState('v15');
+            const [showBackToHero, setShowBackToHero] = useState(false);
+            const mainContainerRef = useRef(null);
+            const splitSectionRef = useRef(null);
+            const heroSectionRef = useRef(null);
+
+            useEffect(() => {
+                const timer = setTimeout(() => setLoading(false), 2000);
+                return () => clearTimeout(timer);
+            }, []);
+
+            // --- SCROLL HANDLER ---
+            const handleScroll = (e) => {
+                const scrollTop = e.target.scrollTop;
+                const windowHeight = window.innerHeight;
+
+                // Toggle "Back to Hero" button visibility
+                if (scrollTop > windowHeight * 0.5) {
+                    setShowBackToHero(true);
+                } else {
+                    setShowBackToHero(false);
+                }
+            };
+
+            // --- NAVIGATION FUNCTIONS ---
+            const scrollToSection = (ref) => {
+                if (ref.current) {
+                    ref.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            const goBack = () => {
+                window.location.href = "index.html#portfolio";
+            };
+
+            return (
+                <React.Fragment>
+                    {/* Loader */}
+                    <div className={`loader ${loading ? '' : 'hidden'}`}>
+                        <div className="loader-animation"></div>
+                    </div>
+
+                    {/* Global Back Button */}
+                    <button
+                        onClick={goBack}
+                        className="back-btn fixed top-6 left-6 z-[100] flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40"
+                    >
+                        <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
+                        <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">
+                            Back to Portfolio
+                        </span>
+                    </button>
+
+                    {/* Back to Hero Button */}
+                    <button
+                        onClick={() => scrollToSection(heroSectionRef)}
+                        className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+                        title="Back to Hero Section"
+                    >
+                        <i className="fas fa-arrow-up"></i>
+                    </button>
+
+                    {/* MAIN SCROLL CONTAINER */}
+                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+
+                        {/* 1. HERO SECTION */}
+                        <section
+                            id="hero-section"
+                            ref={heroSectionRef}
+                            className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom"
+                        >
+                            <div className="container max-w-6xl mx-auto px-8 z-20">
+                                <div className="max-w-3xl text-left">
+                                    <div className="inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 fade-in-up " style={{ animationDelay: '0.1s' }}>
+                                        UI/UX CASE STUDY
+                                    </div>
+                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left" style={{ animationDelay: '0.2s' }}>
+                                        恆春航空站<br />
+                                        <span className="text-transparent bg-clip-text bg-primary">網站設計提案</span>
+                                    </h1>
+                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
+
+                                        從功能性到體驗感 —— 在嚴格的預算與法規限制下，<br />重新定義公部門網站的視覺想像。
+
+                                    </h2>
+                                    <button
+                                        onClick={() => scrollToSection(splitSectionRef)}
+                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-black font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(0,212,255,0.4)] transform hover:-translate-y-1"
+                                        style={{ animationDelay: '0.4s' }}
+                                    >
+                                        探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 2. SPLIT SCREEN CONTENT */}
+                        <section
+                            id="split-section"
+                            ref={splitSectionRef}
+                            className="split-viewport hidden md:flex flex-col lg:flex-row bg-dark"
+                        >
+                            {/* LEFT: Visual Preview */}
+                            <div className="lg:w-3/5 w-full h-full relative bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-r border-white/5">
+                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-dark to-dark opacity-50"></div>
+
+                                {/* Browser Frame */}
+                                <div className="relative w-full max-w-4xl h-full max-h-[90%] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-500">
+                                    <div className="h-10 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
+                                        <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
+                                        <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+                                        <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                        <div className="flex-1 flex justify-center">
+                                        </div>
+                                    </div>
+
+                                    {/* Image Content */}
+                                    <div className="flex-1 min-h-0 overflow-y-auto custom-scroll relative bg-white/5">
+                                        <img
+                                            src={previewImage === 'v15' ? "./img/project_10/tw_index_lg_v15.jpg.jpg" : "./img/project_10/tw_index_lg_v16.jpg.jpg"}
+                                            className="w-full h-auto block transition-opacity duration-500"
+                                            alt="Website Preview"
+                                        />
+                                    </div>
+
+
+                                    {/* Image Toggle - Swapped Positions */}
+                                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 p-1.5 bg-black/80 backdrop-blur rounded-full border border-white/10 shadow-xl z-20">
+                                        <button
+                                            onClick={() => setPreviewImage('v16')}
+                                            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${previewImage === 'v16' ? 'bg-primary text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                                        >
+                                            最新消息
+                                        </button>
+                                        <button
+                                            onClick={() => setPreviewImage('v15')}
+                                            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${previewImage === 'v15' ? 'bg-primary text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                                        >
+                                            機場資訊
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* RIGHT: Narrative Scroll */}
+                            <div className="lg:w-2/5 w-full h-full glass-panel flex flex-col z-20">
+
+                                {/* Header */}
+                                <div className="p-8 pb-0 shrink-0">
+                                    <h2 className="text-3xl font-bold text-white font-heading mb-1">恆春航空站網站設計提案</h2>
+                                    <p className="text-gray-400 text-sm">Hengchun Airport Web Redesign</p>
+
+                                    <div className="flex space-x-6 border-b border-white/10 mt-6 overflow-x-auto custom-scroll pb-1">
+                                        {[
+                                            { id: 'context', label: '背景與挑戰' },
+                                            { id: 'process', label: '執行過程' },
+                                            { id: 'solution', label: '解決方案' },
+                                            { id: 'climax', label: '最終成果' }
+                                        ].map(tab => (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => setActiveTab(tab.id)}
+                                                className={`pb-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
+                                                    ? 'border-primary text-primary'
+                                                    : 'border-transparent text-gray-500 hover:text-gray-300'
+                                                    }`}
+                                            >
+                                                {tab.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Scrollable Content */}
+                                <div className="flex-1 min-h-0 overflow-y-auto custom-scroll p-8 ">
+
+                                    {/* CONTEXT */}
+                                    <div className={`space-y-8 animate-fadeIn duration-500 ${activeTab === 'context' ? 'block' : 'hidden'}`}>
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                                                專案背景 Context
+                                            </h3>
+                                            <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                                                這是一個典型的政府公開招標案件：一是為了消化預算必須要更新網站，才能撥款到其他專案；二是希望能在有限資源下，擺脫傳統公家機關網站「生硬、冰冷」的刻板印象。
+                                            </p>
+
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="feature-card p-4">
+                                                <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">My Role</div>
+                                                <div className="font-bold text-white">UI 設計</div>
+
+                                            </div>
+                                            <div className="feature-card p-4">
+                                                <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Tools</div>
+                                                <div className="font-bold text-white flex items-center gap-2">
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
+                                                        <Icons.XD /> <span className="ml-1">Adobe XD</span>
+                                                    </span>
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30">
+                                                        <Icons.AI /> <span className="ml-1">Illustrator</span>
+                                                    </span>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        <div className="w-full h-px bg-white/10"></div>
+                                        <div>
+                                            <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                                                <span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>
+                                                挑戰：在框架中找尋自由
+                                            </h3>
+                                            <div className="feature-card p-5 border-l-4 border-l-secondary">
+                                                <h4 className="text-secondary font-bold text-sm mb-3">核心痛點 Pain Points</h4>
+                                                <ul className="space-y-2">
+                                                    <li className="flex items-start text-xs text-gray-400">
+                                                        <span className="text-red-400 mr-2">✕</span>
+                                                        資訊層級混亂，旅客難以直覺找到航班資訊。
+                                                    </li>
+                                                    <li className="flex items-start text-xs text-gray-400">
+                                                        <span className="text-red-400 mr-2">✕</span>
+                                                        缺乏特色，無法傳遞恆春特有的度假氛圍。
+                                                    </li>
+                                                    <li className="flex items-start text-xs text-gray-400">
+                                                        <span className="text-red-400 mr-2">✕</span>
+                                                        後台維護困難，業主希望「越簡單越好」。
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* PROCESS */}
+                                    <div className={`space-y-8 animate-fadeIn duration-500 ${activeTab === 'process' ? 'block' : 'hidden'}`}>
+                                        <h3 className="text-2xl font-bold text-white mb-2">執行過程 The Process</h3>
+                                        <p className="text-xs text-gray-400 mb-6">從法規解構到視覺重塑的四個階段</p>
+                                        <div className="relative pl-4 border-l border-white/10 space-y-8">
+                                            <div className="relative">
+                                                <div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div>
+                                                <h4 className="text-sm font-bold text-primary mb-1">01. 需求解構</h4>
+                                                <p className="text-xs text-gray-400">分析標案規格，將生硬法規轉化為可執行的 UI 元件。</p>
+                                            </div>
+                                            <div className="relative">
+                                                <div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div>
+                                                <h4 className="text-sm font-bold text-primary mb-1">02. 情境定義</h4>
+                                                <p className="text-xs text-gray-400">確立「海洋、藍天」核心，決定採用大面積去背影像與漸層。</p>
+                                            </div>
+                                            <div className="relative">
+                                                <div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div>
+                                                <h4 className="text-sm font-bold text-primary mb-1">03. 模組化設計</h4>
+                                                <p className="text-xs text-gray-400">建立標準化卡片系統 (Card System)，達成易維護目標。</p>
+                                            </div>
+                                            <div className="relative">
+                                                <div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(0,212,255,0.5)]"></div>
+                                                <h4 className="text-sm font-bold text-white mb-1">04. 視覺優化</h4>
+                                                <p className="text-xs text-gray-400">細修 v15/v16 雙版本，平衡美感與資訊密度。</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* SOLUTION */}
+                                    <div className={`space-y-8 animate-fadeIn duration-500 ${activeTab === 'solution' ? 'block' : 'hidden'}`}>
+                                        <h3 className="text-2xl font-bold text-white mb-6">解決方案 Key Features</h3>
+                                        <div className="space-y-4">
+                                            <div className="feature-card p-5 flex items-start space-x-4">
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0">
+                                                    <Icons.Color />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-white text-sm mb-1">色彩心理學應用</h4>
+                                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                                        全站採用漸層藍 (#0072ce to #0099ff) 與留白，透過色彩喚起「體感記憶」，讓使用者在瀏覽時預先感受到南國的放鬆感。
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="feature-card p-5 flex items-start space-x-4">
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center text-secondary shrink-0">
+                                                    <Icons.Map />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-white text-sm mb-1">情境式地圖導航</h4>
+                                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                                        將 Google Maps 轉化為向量繪製的半島地圖，結合真實景點攝影，創造「圖文整合」體驗，強化觀光樞紐定位。
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="feature-card p-5 flex items-start space-x-4">
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-accent shrink-0">
+                                                    <Icons.Layout />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-white text-sm mb-1">彈性化資訊佈局</h4>
+                                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                                        規劃 v15 (圖像導航) 服務遊客，v16 (清單列表) 服務商務客，解決了「美觀 vs 效率」的矛盾。
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* CLIMAX */}
+                                    <div className={`space-y-8 animate-fadeIn duration-500 ${activeTab === 'climax' ? 'block' : 'hidden'}`}>
+                                        <h3 className="text-2xl font-bold text-white mb-4">最終成果 Gallery Showcase</h3>
+                                        <p className="text-sm text-gray-300 mb-6">
+                                            請參考左側預覽畫面查看高保真 Mockups。
+                                        </p>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <button onClick={() => setPreviewImage('v15')} className="text-left feature-card p-4 hover:bg-white/5 transition-colors group">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h4 className="font-bold text-primary group-hover:text-white transition-colors">The Hero Header</h4>
+                                                    <i className="fas fa-arrow-left text-gray-500 group-hover:text-primary transform group-hover:-translate-x-1 transition-all"></i>
+                                                </div>
+                                                <p className="text-xs text-gray-400">
+                                                    展示「衝出畫框」的飛機動態視覺，營造強烈的起飛意象。
+                                                </p>
+                                            </button>
+                                            <button onClick={() => setPreviewImage('v15')} className="text-left feature-card p-4 hover:bg-white/5 transition-colors group">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h4 className="font-bold text-secondary group-hover:text-white transition-colors">Contextual Map</h4>
+                                                    <i className="fas fa-arrow-left text-gray-500 group-hover:text-secondary transform group-hover:-translate-x-1 transition-all"></i>
+                                                </div>
+                                                <p className="text-xs text-gray-400">
+                                                    中段的情境地圖，將帆船石與燈塔融入介面。
+                                                </p>
+                                            </button>
+                                            <button onClick={() => setPreviewImage('v16')} className="text-left feature-card p-4 hover:bg-white/5 transition-colors group">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h4 className="font-bold text-accent group-hover:text-white transition-colors">List View Layout</h4>
+                                                    <i className="fas fa-arrow-left text-gray-500 group-hover:text-accent transform group-hover:-translate-x-1 transition-all"></i>
+                                                </div>
+                                                <p className="text-xs text-gray-400">
+                                                    針對高密度資訊設計的整潔列表模式，適合公告與招標資訊。
+                                                </p>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Footer Removed */}
+                                    <div className="h-8"></div>
+
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 3. MOBILE ONLY SECTION */}
+                        <section className="md:hidden page-section flex items-center justify-center bg-dark p-8">
+                            <div className="text-center">
+                                <i className="fas fa-desktop text-4xl text-primary mb-4"></i>
+                                <h2 className="text-xl font-bold text-white mb-2">Please View on Desktop</h2>
+                                <p className="text-gray-400 text-sm">
+                                    The interactive split-screen experience is optimized for larger screens.
+                                </p>
+                            </div>
+                        </section>
+
+                    </div>
+                </React.Fragment>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

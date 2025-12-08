@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新竹縣警察局 | 雲端智慧影像分析系統 - UI/UX Case Study</title>
+
+    <!-- Favicon -->
+    <link href="./img/favicon/favicon.ico" rel="shortcut icon" type="image/ico">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#00D4FF',   /* Cyan for Cyberpunk/Police feel */
+                        secondary: '#FF6584',
+                        dark: '#0F172A',      /* Darker Blue-ish tone */
+                        'dark-light': '#1E293B',
+                        'dark-lighter': '#334155',
+                        accent: '#6C63FF'
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
+                        heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* BASIC SETUP */
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0F172A;
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            color: #fff;
+        }
+
+        /* MAIN SCROLL CONTAINER */
+        #main-container {
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* SECTIONS */
+        .page-section {
+            width: 100vw;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 212, 255, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(0, 212, 255, 0.2);
+        }
+
+        /* Typography */
+        .gradient-text {
+            background: linear-gradient(90deg, #00D4FF, #6C63FF, #FF6584);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: gradientMove 5s linear infinite;
+        }
+
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 200% 50%;
+            }
+        }
+
+        /* Scrollbars */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #3D3D3D;
+            border-radius: 10px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #00D4FF;
+        }
+
+        /* Unified Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0F172A;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00D4FF;
+        }
+
+        /* Animations */
+        .fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom Hero Background - Tech City Theme */
+        .hero-bg-custom {
+            background-image: url('./img/project_01/hero_img.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .hero-bg-custom::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.6) 100%);
+            z-index: 1;
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-animation {
+            width: 65px;
+            aspect-ratio: 1;
+            position: relative;
+        }
+
+        .loader-animation:before,
+        .loader-animation:after {
+            content: "";
+            position: absolute;
+            border-radius: 50px;
+            box-shadow: 0 0 0 3px inset #fff;
+            animation: l4 2.5s infinite;
+        }
+
+        .loader-animation:after {
+            animation-delay: -1.25s;
+        }
+
+        @keyframes l4 {
+            0% {
+                inset: 0 35px 35px 0;
+            }
+
+            12.5% {
+                inset: 0 35px 0 0;
+            }
+
+            25% {
+                inset: 35px 35px 0 0;
+            }
+
+            37.5% {
+                inset: 35px 0 0 0;
+            }
+
+            50% {
+                inset: 35px 0 0 35px;
+            }
+
+            62.5% {
+                inset: 0 0 0 35px;
+            }
+
+            75% {
+                inset: 0 0 35px 35px;
+            }
+
+            87.5% {
+                inset: 0 0 35px 0;
+            }
+
+            100% {
+                inset: 0 35px 35px 0;
+            }
+        }
+
+        .back-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn:hover i {
+            transform: translateX(-4px);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Icons Component
+        const Icons = {
+            Figma: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2H8.5C6.57 2 5 3.57 5 5.5C5 7.43 6.57 9 8.5 9H12V2Z" /><path d="M12 9H8.5C6.57 9 5 10.57 5 12.5C5 14.43 6.57 16 8.5 16H12V9Z" /><path d="M12 16H8.5C6.57 16 5 17.57 5 19.5C5 21.43 6.57 23 8.5 23C10.43 23 12 21.43 12 19.5V16Z" /><path d="M12 2H15.5C17.43 2 19 3.57 19 5.5C19 7.43 17.43 9 15.5 9H12V2Z" /><circle cx="15.5" cy="12.5" r="3.5" /></svg>,
+            Illustrator: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 4H4V20H20V4Z" /><path d="M8 16L11 8L14 16" /><path d="M8.5 14H13.5" /><circle cx="17" cy="15" r="1" /></svg>,
+            Map: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></svg>,
+            Dashboard: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
+            Search: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>,
+            Bell: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>,
+            Eye: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
+            Water: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>,
+            Server: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" /></svg>
+        };
+
+        // NEW: Solution Features Data Structure
+        const SOLUTION_FEATURES = [
+            {
+                id: 'sol-01',
+                title: '全知視角營運儀表板',
+                desc: '整合 Server 資源、CAM 連線狀態與即時氣象，提供系統健康度的一站式概覽，從被動報修轉為主動預警。',
+                icon: 'Dashboard',
+                image: './img/project_01/home_02.png',
+                benefit: 'Benefit: 讓維運人員一眼掌握系統健康度，主動預警。'
+            },
+            {
+                id: 'sol-02',
+                title: 'GIS 空間邏輯查詢',
+                desc: '獨創「交集/聯集」查詢邏輯，能迅速找出同時出現在多個案發現場的嫌疑車輛，大幅縮短刑偵過濾時間。',
+                icon: 'Map',
+                image: './img/project_01/track_04.png',
+                benefit: 'Benefit: 迅速限縮同時出現在多個犯罪現場的嫌疑車輛。'
+            },
+            {
+                id: 'sol-03',
+                title: '主動式車輛聯防',
+                desc: '建立動態黑名單（失竊/涉案），結合 LPR 技術實現「車過即知」的自動化警示與簡訊推播。',
+                icon: 'Bell',
+                image: './img/project_01/search_03.png',
+                benefit: 'Benefit: 實現「車過即知」的即時打擊能力。'
+            },
+            {
+                id: 'sol-04',
+                title: '戰情中心級 AI 監控',
+                desc: '地圖與影像雙向連動，結合 AI 物件框選（人/車流），實現直覺化的路口即時調閱與戰情指揮。',
+                icon: 'Eye',
+                image: './img/project_01/cam_01.png',
+                benefit: 'Benefit: 直覺化的路口即時調閱與戰情指揮。'
+            },
+            {
+                id: 'sol-05',
+                title: '智慧防災水情監控',
+                desc: '結合 IoT 感測器與監視影像，透過紅/橘/藍分級警示與實景尺標，將抽象水位數據轉化為直觀的決策輔助資訊。',
+                icon: 'Water',
+                image: './img/project_01/flood_02.png',
+                benefit: 'Benefit: 視覺化的實景對照，協助指揮官快速判斷災情等級。'
+            },
+            {
+                id: 'sol-06',
+                title: '軟硬體全域維運',
+                desc: '整合前端 GIS 設備地圖與後端 Server 效能監測，從記憶體負載到磁碟 I/O，提供 IT 人員深度的系統健康診斷工具。',
+                icon: 'Server',
+                image: './img/project_01/performance_02.png',
+                benefit: 'Benefit: 實現從業務操作層到系統維護層的無縫管理。'
+            }
+        ];
+
+        // NEW: Hierarchical Gallery Data Structure
+        // Updated to match the exact counts requested: 2, 4, 4, 6
+        const GALLERY_CATEGORIES = [
+            {
+                id: 'cat_home',
+                title: '登入與首頁',
+                images: [
+                    { id: '01-01', name: '系統登入介面', src: './img/project_01/home_01.png' },
+                    { id: '01-02', name: '營運儀表板首頁', src: './img/project_01/home_02.png' }
+                ]
+            },
+            {
+                id: 'cat_trajectory',
+                title: '行車軌跡查詢',
+                images: [
+                    { id: '02-01', name: '單車軌跡搜尋', src: './img/project_01/track_01.png' },
+                    { id: '02-02', name: '多車軌跡比對', src: './img/project_01/track_02.png' },
+                    { id: '02-03', name: '交集邏輯分析', src: './img/project_01/track_03.png' },
+                    { id: '02-04', name: '聯集範圍搜尋', src: './img/project_01/track_04.png' }
+                ]
+            },
+            {
+                id: 'cat_alerts',
+                title: '尋車通報',
+                images: [
+                    { id: '03-01', name: '尋車通報列表', src: './img/project_01/search_01.png' },
+                    { id: '03-02', name: '系統自動比對警示', src: './img/project_01/search_02.png' },
+                    { id: '03-03', name: '已登記車牌查詢', src: './img/project_01/search_03.png' },
+                    { id: '03-04', name: '多管道通知設定', src: './img/project_01/search_04.png' }
+                ]
+            },
+            {
+                id: 'cat_surveillance',
+                title: '監視影像',
+                images: [
+                    { id: '04-01', name: 'GIS 地圖影像模式', src: './img/project_01/cam_01.png' },
+                    { id: '04-02', name: '設備狀態(正常)', src: './img/project_01/cam_02.png' },
+                    { id: '04-03', name: '設備狀態(異常)', src: './img/project_01/cam_03.png' },
+                    { id: '04-04', name: '多分割即時調閱', src: './img/project_01/cam_04.png' },
+                    { id: '04-05', name: '單一畫面 AI 辨識', src: './img/project_01/cam_05.png' },
+                    { id: '04-06', name: '影像物件框選', src: './img/project_01/cam_06.png' }
+                ]
+            },
+            {
+                id: 'cat_flood',
+                title: '積淹水管理',
+                images: [
+                    { id: '08-01', name: '水情資訊儀表板', src: './img/project_01/flood_01.png' },
+                    { id: '08-02', name: '實景尺標告警設定', src: './img/project_01/flood_02.png' }
+                ]
+            },
+            {
+                id: 'cat_performance',
+                title: '設備與效能',
+                images: [
+                    { id: '06-01', name: 'GIS 設備地圖管理', src: './img/project_01/performance_01.png' },
+                    { id: '07-01', name: '伺服器效能監測報表', src: './img/project_01/performance_02.png' }
+                ]
+            }
+        ];
+
+        const App = () => {
+            const [loading, setLoading] = useState(true);
+            const [activeTab, setActiveTab] = useState('context');
+            // Initialize with the first image of the first category
+            const [currentImage, setCurrentImage] = useState(GALLERY_CATEGORIES[0].images[0].src);
+            const [activeGalleryId, setActiveGalleryId] = useState(GALLERY_CATEGORIES[0].images[0].id);
+            const [activeSolutionId, setActiveSolutionId] = useState(SOLUTION_FEATURES[0].id);
+
+            const [showBackToHero, setShowBackToHero] = useState(false);
+            const mainContainerRef = useRef(null);
+            const splitRef = useRef(null);
+            const heroRef = useRef(null);
+
+            useEffect(() => {
+                const timer = setTimeout(() => setLoading(false), 1500);
+                return () => clearTimeout(timer);
+            }, []);
+
+            useEffect(() => {
+                switch (activeTab) {
+                    case 'context':
+                        setCurrentImage('./img/project_01/display.png');
+                        setActiveGalleryId(null);
+                        setActiveSolutionId(null);
+                        break;
+                    case 'process':
+                        setCurrentImage('./img/project_01/display.png');
+                        setActiveGalleryId(null);
+                        setActiveSolutionId(null);
+                        break;
+                    case 'solution':
+                        // Set initial solution image
+                        setCurrentImage(SOLUTION_FEATURES[0].image);
+                        setActiveSolutionId(SOLUTION_FEATURES[0].id);
+                        setActiveGalleryId(null);
+                        break;
+                    case 'climax':
+                        // Reset to the first image when entering climax tab
+                        const firstImg = GALLERY_CATEGORIES[0].images[0];
+                        setCurrentImage(firstImg.src);
+                        setActiveGalleryId(firstImg.id);
+                        setActiveSolutionId(null);
+                        break;
+                    default:
+                        setCurrentImage('./img/project_01/display.png');
+                        setActiveGalleryId(null);
+                }
+            }, [activeTab]);
+
+            const handleGallerySwitch = (imgObj) => {
+                setCurrentImage(imgObj.src);
+                setActiveGalleryId(imgObj.id);
+            };
+
+            const handleSolutionSwitch = (solObj) => {
+                setCurrentImage(solObj.image);
+                setActiveSolutionId(solObj.id);
+            };
+
+            const handleScroll = (e) => {
+                const scrollTop = e.target.scrollTop;
+                const windowHeight = window.innerHeight;
+                if (scrollTop > windowHeight * 0.5) {
+                    setShowBackToHero(true);
+                } else {
+                    setShowBackToHero(false);
+                }
+            };
+
+            const scrollToSection = (ref) => {
+                if (ref.current) {
+                    ref.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            const goBack = () => {
+                window.location.href = "index.html#portfolio";
+            };
+
+            return (
+                <React.Fragment>
+                    {/* Loader */}
+                    <div className={`loader ${loading ? '' : 'hidden'}`}>
+                        <div className="loader-animation"></div>
+                    </div>
+
+                    {/* Back Button Only */}
+                    <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
+                        <button
+                            onClick={goBack}
+                            className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40"
+                        >
+                            <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">
+                                Back to Portfolio
+                            </span>
+                        </button>
+                    </nav>
+
+                    {/* Back to Hero Button */}
+                    <button
+                        onClick={() => scrollToSection(heroRef)}
+                        className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+                        title="Back to Hero Section"
+                    >
+                        <i className="fas fa-arrow-up"></i>
+                    </button>
+
+                    {/* MAIN SCROLL CONTAINER */}
+                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+
+                        {/* 1. HERO SECTION */}
+                        <section ref={heroRef} className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                            <div className="container max-w-6xl mx-auto px-8 z-20">
+                                <div className="max-w-3xl text-left">
+                                    <div className="inline-block px-4 py-1 rounded-full border border-white bg-black/20 text-white text-xs font-bold tracking-widest mb-6 fade-in-up]" style={{ animationDelay: '0.1s' }}>
+                                        GOV. INTELLIGENCE SYSTEM
+                                    </div>
+                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left" style={{ animationDelay: '0.2s' }}>
+                                        新竹縣警察局<br />
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">雲端智慧影像分析系統</span>
+                                    </h1>
+                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
+                                        將城市之眼轉化為破案大腦，結合 GIS 空間邏輯與 AI 影像辨識，打造直覺化的警用情資指揮中樞。
+                                    </h2>
+                                    <button
+                                        onClick={() => scrollToSection(splitRef)}
+                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(0,212,255,0.4)] transform hover:-translate-y-1"
+                                        style={{ animationDelay: '0.4s' }}
+                                    >
+                                        探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 2. SPLIT SCREEN (Robust Layout) */}
+                        {/* MODIFIED: Added h-auto and min-h-screen for mobile scrolling */}
+                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark lg:h-screen lg:overflow-hidden h-auto relative">
+
+                            {/* LEFT: Image Preview */}
+                            <div className="
+                                w-full h-[40vh] shrink-0 z-20
+                                lg:w-3/5 lg:h-full
+                                bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 
+                                border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
+                            ">
+                                {/* Modified Container: height auto, aspect auto, fits image */}
+                                <div className="relative w-full h-auto max-w-4xl max-h-[90%] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+                                    {/* Browser Bar - Only show for Solution (03) and Climax (04) */}
+                                    {(activeTab === 'solution' || activeTab === 'climax') && (
+                                        <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
+                                            <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                        </div>
+                                    )}
+                                    <div className="flex-1 relative overflow-hidden bg-white/5 group">
+                                        <img
+                                            src={currentImage}
+                                            alt="Preview"
+                                            className="w-full h-auto object-contain transition-opacity duration-500"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* RIGHT: Narrative Scroll */}
+                            {/* MODIFIED: Added h-auto for mobile scrolling */}
+                            <div className="
+                                flex-1 w-full relative z-10
+                                lg:w-2/5 lg:h-full
+                                flex flex-col
+                                h-auto
+                            ">
+                                <div className="w-full h-full flex flex-col glass-panel relative">
+
+                                    {/* Sticky Header */}
+                                    <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                        <div className="p-8 pb-0">
+                                            <h2 className="text-2xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">新竹縣警察局<br />雲端智慧影像分析系統</h2>
+                                            <p className="text-gray-400 text-sm mb-4">Cloud Intelligent Image Analysis System</p>
+
+                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-6 pb-1">
+                                                {[
+                                                    { id: 'context', label: '01. 背景與痛點' },
+                                                    { id: 'process', label: '02. 流程' },
+                                                    { id: 'solution', label: '03. 方案' },
+                                                    { id: 'climax', label: '04. 成果' }
+                                                ].map(tab => (
+                                                    <button
+                                                        key={tab.id}
+                                                        onClick={() => setActiveTab(tab.id)}
+                                                        className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id
+                                                            ? 'text-primary border-b-2 border-primary pb-1'
+                                                            : 'text-gray-500 hover:text-white pb-1'
+                                                            }`}
+                                                    >
+                                                        {tab.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Scrollable Content */}
+                                    {/* MODIFIED: Changed overflow to visible on mobile to allow full page scroll */}
+                                    <div className="flex-1 p-6 lg:p-8 pb-24 lg:overflow-y-auto overflow-visible custom-scroll">
+
+                                        {/* 1. CONTEXT */}
+                                        {activeTab === 'context' && (
+                                            <div className="space-y-12 animate-fadeIn">
+                                                <div className="space-y-6">
+                                                    <h3 className="text-2xl font-bold text-white mb-4">專案背景 Context</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                                                        面對日益增長的城市監控數據，傳統的警用系統面臨「數據孤島」的困境。本專案旨在建立一個整合 GIS 空間邏輯與 AI 影像辨識的指揮中樞，將分散的數千支攝影機轉化為可搜尋、可追蹤、可預警的智慧資產。
+                                                    </p>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="feature-card p-4">
+                                                            <div className="text-xs text-gray-500 uppercase mb-1">My Role</div>
+                                                            <div className="font-bold text-white">UI 設計師</div>
+
+                                                        </div>
+                                                        <div className="feature-card p-4">
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
+                                                                    <Icons.Figma /> <span className="ml-1">Figma</span>
+                                                                </span>
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30">
+                                                                    <Icons.Illustrator /> <span className="ml-1">Illustrator</span>
+                                                                </span>
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-accent/20 text-accent border border-accent/30">
+                                                                    <Icons.Map /> <span className="ml-1">QGIS</span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full h-px bg-white/10"></div>
+                                                <div className="space-y-6">
+                                                    <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                                                        <span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>
+                                                        痛點與挑戰 The Conflict
+                                                    </h3>
+                                                    <div className="feature-card p-5 border-l-4 border-l-secondary">
+                                                        <h4 className="text-secondary font-bold text-sm mb-3">當海量影像成為辦案負擔</h4>
+                                                        <ul className="space-y-4 text-gray-300">
+                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">數據超載</strong>員警需在海量錄影中大海撈針，缺乏有效的過濾機制。</div></li>
+                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">被動監控</strong>系統僅能錄影，無法主動識別嫌疑車輛或異常行為。</div></li>
+                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">關聯性薄弱</strong>設備狀態與監控畫面分離，故障排除與調閱效率低落。</div></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 2. PROCESS */}
+                                        {activeTab === 'process' && (
+                                            <div className="space-y-8 animate-fadeIn">
+                                                <h3 className="text-2xl font-bold text-white mb-2">開發流程 Development Process</h3>
+                                                <p className="text-xs text-gray-400 mb-6">以使用者為中心的軟體開發生命週期</p>
+                                                <div className="relative pl-4 border-l border-white/10 space-y-8">
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div>
+                                                        <h4 className="text-sm font-bold text-primary mb-1">01. 需求分析與場勘 (Requirement & Field Study)</h4>
+                                                        <p className="text-xs text-gray-400">
+                                                            深入刑偵單位進行<span className="text-white">用戶訪談</span>，了解辦案邏輯（如共犯追蹤、電子圍籬）。並實地走訪勤務指揮中心進行<span className="text-white">現場場勘研究</span>，觀察員警在低光源環境下的操作習慣與多螢幕配置需求。
+                                                        </p>
+                                                    </div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div>
+                                                        <h4 className="text-sm font-bold text-primary mb-1">02. 系統架構與邏輯 (System Architecture & Logic)</h4>
+                                                        <p className="text-xs text-gray-400">
+                                                            定義複雜的 GIS 空間查詢邏輯（如交集/聯集演算法），規劃 LPR 車牌辨識資料流，確保前端介面能直觀呈現後端龐大的運算結果。
+                                                        </p>
+                                                    </div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div>
+                                                        <h4 className="text-sm font-bold text-primary mb-1">03. 介面設計與原型 (UI Design & Prototyping)</h4>
+                                                        <p className="text-xs text-gray-400">
+                                                            使用 Figma 建立高保真深色模式 (Dark Mode) 原型，設計高對比度的視覺層級，降低員警長時間監控的視覺疲勞。
+                                                        </p>
+                                                    </div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(0,212,255,0.5)]"></div>
+                                                        <h4 className="text-sm font-bold text-white mb-1">04. 開發協作與交付 (Development Handoff)</h4>
+                                                        <p className="text-xs text-gray-400">
+                                                            與前端工程師密切合作，定義 Mapbox API 串接規範與即時資料 WebSocket 通訊協定，確保設計稿完美落地。
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 3. SOLUTION */}
+                                        {activeTab === 'solution' && (
+                                            <div className="space-y-8 animate-fadeIn">
+                                                <h3 className="text-2xl font-bold text-white mb-6">解決方案與亮點 The Solution</h3>
+                                                <div className="space-y-4">
+                                                    {SOLUTION_FEATURES.map((sol) => {
+                                                        const IconComp = Icons[sol.icon];
+                                                        return (
+                                                            <button
+                                                                key={sol.id}
+                                                                onClick={() => handleSolutionSwitch(sol)}
+                                                                className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeSolutionId === sol.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(0,212,255,0.1)]' : 'border-white/5 hover:bg-white/5'}`}
+                                                            >
+                                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeSolutionId === sol.id ? 'bg-primary text-dark' : 'bg-gradient-to-br from-primary/20 to-primary/5 text-primary'}`}>
+                                                                    <IconComp />
+                                                                </div>
+                                                                <div>
+                                                                    <h4 className={`font-bold text-sm mb-1 transition-colors ${activeSolutionId === sol.id ? 'text-primary' : 'text-white'}`}>{sol.title}</h4>
+                                                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                                                        {sol.desc}
+                                                                        <br /><br />
+                                                                        <span className={`font-semibold ${activeSolutionId === sol.id ? 'text-white' : 'text-gray-300'}`}>{sol.benefit}</span>
+                                                                    </p>
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 4. CLIMAX - Updated Structure */}
+                                        {activeTab === 'climax' && (
+                                            <div className="space-y-8 animate-fadeIn pb-12">
+                                                <h3 className="text-2xl font-bold text-white mb-4">介面展示 Gallery</h3>
+                                                <p className="text-gray-400 mb-8 text-sm">以下分為六大模組展示完整的高保真設計介面。</p>
+                                                <div className="space-y-6">
+                                                    {GALLERY_CATEGORIES.map((category) => (
+                                                        <div key={category.id} className="space-y-3">
+                                                            {/* Category Header */}
+                                                            <h4 className="text-primary font-bold text-md flex items-center">
+                                                                <span className="w-2 h-2 rounded-full bg-primary mr-2"></span>
+                                                                {category.title}
+                                                            </h4>
+                                                            {/* Image Grid for this Category */}
+                                                            <div className="grid gap-3 pl-4 border-l border-white/10">
+                                                                {category.images.map((img) => (
+                                                                    <button
+                                                                        key={img.id}
+                                                                        onClick={() => handleGallerySwitch(img)}
+                                                                        className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(0,212,255,0.1)]' : 'border-white/5'}`}
+                                                                    >
+                                                                        <div className="flex justify-between items-center">
+                                                                            <h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}>
+                                                                                <span className="text-primary/70 mr-2 text-xs font-mono">{img.id}</span>{img.name}
+                                                                            </h4>
+                                                                            {/* Icon indicating active state */}
+                                                                            <i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? 'text-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
+                                                                        </div>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                    </div>
+                </React.Fragment>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</body>
+
+</html>

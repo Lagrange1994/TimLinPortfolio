@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台北醫學大學 | 臨床教育學習護照 - Legacy Modernization</title>
+
+    <!-- Favicon Fix: 增加版本號 (?v=2) 強制瀏覽器重新抓取，並同時支援舊版寫法 -->
+    <link rel="shortcut icon" href="./img/favicon/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        // Updated Colors based on the uploaded image
+                        primary: '#2B6CB0', // System Header Blue (系統藍)
+                        secondary: '#C53030', // TMU Logo Red (北醫紅)
+                        dark: '#121212',
+                        'dark-light': '#1E1E1E',
+                        'dark-lighter': '#2D2D2D',
+                        accent: '#ED8936' // Print Button Orange (按鈕橘)
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
+                        heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* BASIC SETUP */
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #121212;
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            color: #fff;
+        }
+
+        /* MAIN SCROLL CONTAINER */
+        #main-container {
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* SECTIONS */
+        .page-section {
+            width: 100vw;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(18, 18, 18, 0.98));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(43, 108, 176, 0.4);
+            /* Updated to new primary */
+            box-shadow: 0 10px 30px -10px rgba(43, 108, 176, 0.2);
+        }
+
+        /* Typography */
+        .gradient-text {
+            background: linear-gradient(90deg, #2B6CB0, #C53030, #ED8936);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-size: 200% auto;
+            animation: gradientMove 5s linear infinite;
+        }
+
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 200% 50%;
+            }
+        }
+
+        /* Scrollbars */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #3D3D3D;
+            border-radius: 10px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #2B6CB0;
+        }
+
+        /* Unified Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #121212;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3D3D3D;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2B6CB0;
+        }
+
+        /* Animations */
+        .fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom Hero Background - Medical/Clean Theme */
+        .hero-bg-custom {
+            background-image: url('./img/project_11/hero_img.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .hero-bg-custom::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(18, 18, 18, 0.2) 0%, rgba(18, 18, 18, 0.5) 100%);
+            z-index: 1;
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #121212;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-animation {
+            width: 65px;
+            aspect-ratio: 1;
+            position: relative;
+        }
+
+        .loader-animation:before,
+        .loader-animation:after {
+            content: "";
+            position: absolute;
+            border-radius: 50px;
+            box-shadow: 0 0 0 3px inset #fff;
+            animation: l4 2.5s infinite;
+        }
+
+        .loader-animation:after {
+            animation-delay: -1.25s;
+        }
+
+        @keyframes l4 {
+            0% {
+                inset: 0 35px 35px 0;
+            }
+
+            12.5% {
+                inset: 0 35px 0 0;
+            }
+
+            25% {
+                inset: 35px 35px 0 0;
+            }
+
+            37.5% {
+                inset: 35px 0 0 0;
+            }
+
+            50% {
+                inset: 35px 0 0 35px;
+            }
+
+            62.5% {
+                inset: 0 0 0 35px;
+            }
+
+            75% {
+                inset: 0 0 35px 35px;
+            }
+
+            87.5% {
+                inset: 0 0 35px 0;
+            }
+
+            100% {
+                inset: 0 35px 35px 0;
+            }
+        }
+
+        .back-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn:hover i {
+            transform: translateX(-4px);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Icons Component - Updated for Dev/Medical context
+        const Icons = {
+            Code: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>,
+            Browser: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>,
+            Chart: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+            Radar: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z" /><circle cx="12" cy="12" r="3" /></svg>,
+            Gap: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>,
+            Efficiency: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
+        };
+
+        // 完整長圖 (用於預設背景與全覽)
+        const MAIN_IMAGE = './img/project_11/display.png';
+
+        // Image Options for Climax Gallery
+        // 這裡填入您上傳的具體檔案名稱
+        const GALLERY_IMAGES = [
+            {
+                id: '01',
+                name: '學習儀表板',
+                src: './img/project_11/學習護照1_01.png' // 對應儀表板 (Dashboard)
+            },
+            {
+                id: '02',
+                name: '多元評核表',
+                src: './img/project_11/學習護照2_02.png' // 對應 Mini-CEX 表格
+            },
+            {
+                id: '03',
+                name: '能力雷達圖',
+                src: './img/project_11/學習護照2_01.png' // 對應 Milestone 雷達圖
+            },
+            {
+                id: '04',
+                name: '完整總覽',
+                src: './img/project_11/學習護照full.png'        // 使用完整長圖
+            }
+        ];
+
+        const App = () => {
+            const [loading, setLoading] = useState(true);
+            const [activeTab, setActiveTab] = useState('context');
+            const [currentImage, setCurrentImage] = useState(MAIN_IMAGE);
+            const [activeGalleryId, setActiveGalleryId] = useState('01');
+
+            const [showBackToHero, setShowBackToHero] = useState(false);
+            const mainContainerRef = useRef(null);
+            const splitRef = useRef(null);
+            const heroRef = useRef(null);
+
+            // Determine if the browser-like header should be shown
+            const showBrowserHeader = !['context', 'process'].includes(activeTab);
+
+            useEffect(() => {
+                const timer = setTimeout(() => setLoading(false), 1500);
+                return () => clearTimeout(timer);
+            }, []);
+
+            // 定義每個 Tab 切換時，左側要顯示哪張圖
+            useEffect(() => {
+                switch (activeTab) {
+                    case 'context':
+                        // 背景：顯示完整主圖
+                        setCurrentImage(MAIN_IMAGE);
+                        setActiveGalleryId(null);
+                        break;
+                    case 'process':
+                        // 流程 (評核機制)：顯示評核表圖片 (Index 1)
+                        setCurrentImage(MAIN_IMAGE);
+                        setActiveGalleryId(null);
+                        break;
+                    case 'solution':
+                        // 方案 (能力可視化)：顯示雷達圖 (Index 2)
+                        setCurrentImage(GALLERY_IMAGES[0].src);
+                        setActiveGalleryId(null);
+                        break;
+                    case 'climax':
+                        // 成果：預設顯示第一張 (儀表板) 並開啟下方按鈕列
+                        setCurrentImage(GALLERY_IMAGES[0].src);
+                        setActiveGalleryId(GALLERY_IMAGES[0].id);
+                        break;
+                    default:
+                        setCurrentImage(MAIN_IMAGE);
+                        setActiveGalleryId(null);
+                }
+            }, [activeTab]);
+
+            const handleGallerySwitch = (imgObj) => {
+                setCurrentImage(imgObj.src);
+                setActiveGalleryId(imgObj.id);
+            };
+
+            const handleScroll = (e) => {
+                const scrollTop = e.target.scrollTop;
+                const windowHeight = window.innerHeight;
+                if (scrollTop > windowHeight * 0.5) {
+                    setShowBackToHero(true);
+                } else {
+                    setShowBackToHero(false);
+                }
+            };
+
+            const scrollToSection = (ref) => {
+                if (ref.current) {
+                    ref.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            const goBack = () => {
+                window.location.href = "index.html#portfolio";
+            };
+
+            return (
+                <React.Fragment>
+                    {/* Loader */}
+                    <div className={`loader ${loading ? '' : 'hidden'}`}>
+                        <div className="loader-animation"></div>
+                    </div>
+
+                    {/* Back Button Only */}
+                    <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
+                        <button
+                            onClick={goBack}
+                            className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40"
+                        >
+                            <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">
+                                Back to Portfolio
+                            </span>
+                        </button>
+                    </nav>
+
+                    {/* Back to Hero Button */}
+                    <button
+                        onClick={() => scrollToSection(heroRef)}
+                        className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+                        title="Back to Hero Section"
+                    >
+                        <i className="fas fa-arrow-up"></i>
+                    </button>
+
+                    {/* MAIN SCROLL CONTAINER */}
+                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+
+                        {/* 1. HERO SECTION */}
+                        <section ref={heroRef} className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                            <div className="container max-w-6xl mx-auto px-8 z-20">
+                                <div className="max-w-3xl text-left">
+                                    <div className="inline-block px-4 py-1 rounded-full border border-white text-white text-xs font-bold tracking-widest mb-6 fade-in-up " style={{ animationDelay: '0.1s' }}>
+                                        LEGACY MODERNIZATION
+                                    </div>
+                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left" style={{ animationDelay: '0.2s' }}>
+                                        台北醫學大學<br />
+                                        <span className="text-white bg-clip-text bg-gradient-to-r">臨床教育學習護照</span>
+                                    </h1>
+                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
+                                        在舊有設備限制下，將繁瑣的成績表格轉化為視覺化儀表板，<br />為醫學生打造看見成長軌跡的高效系統。
+                                    </h2>
+                                    <button
+                                        onClick={() => scrollToSection(splitRef)}
+                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(43,108,176,0.4)] transform hover:-translate-y-1"
+                                        style={{ animationDelay: '0.4s' }}
+                                    >
+                                        探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 2. SPLIT SCREEN (Robust Layout) */}
+                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+
+                            {/* LEFT: Image Preview */}
+                            <div className="
+                                w-full h-[40vh] shrink-0 z-20
+                                lg:w-3/5 lg:h-full
+                                bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 
+                                border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
+                            ">
+                                <div className="relative w-full h-auto max-w-4xl max-h-[90%] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+                                    {/* Conditional Browser Header */}
+                                    {showBrowserHeader && (
+                                        <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
+                                            <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                        </div>
+                                    )}
+
+                                    <div className="flex-1 min-h-0 overflow-y-auto custom-scroll relative bg-white/5">
+                                        <img
+                                            src={currentImage}
+                                            alt="Preview"
+                                            className="w-full h-auto block transition-opacity duration-500"
+                                        />
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                            {/* RIGHT: Narrative Scroll */}
+                            <div className="
+                                flex-1 w-full relative z-10
+                                lg:w-2/5 lg:h-full
+                                flex flex-col
+                            ">
+                                <div className="w-full h-full flex flex-col glass-panel relative">
+
+                                    {/* Sticky Header */}
+                                    <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                        <div className="p-8 pb-0">
+                                            <h2 className="text-2xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">TMU 學習護照<br />電子歷程檔案系統</h2>
+                                            {/* Modified Subtitle Translation */}
+                                            <p className="text-gray-400 text-sm mb-4">Clinical Education E-Portfolio System</p>
+
+                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-6 pb-1">
+                                                {[
+                                                    { id: 'context', label: '01. 背景與痛點' },
+                                                    { id: 'process', label: '02. 流程' },
+                                                    { id: 'solution', label: '03. 方案' },
+                                                    { id: 'climax', label: '04. 成果' }
+                                                ].map(tab => (
+                                                    <button
+                                                        key={tab.id}
+                                                        onClick={() => setActiveTab(tab.id)}
+                                                        className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id
+                                                            ? 'text-primary border-b-2 border-primary pb-1'
+                                                            : 'text-gray-500 hover:text-white pb-1'
+                                                            }`}
+                                                    >
+                                                        {tab.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Scrollable Content */}
+                                    <div className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll">
+
+                                        {/* 1. CONTEXT - STAR: Situation & Task */}
+                                        {activeTab === 'context' && (
+                                            <div className="space-y-12 animate-fadeIn">
+                                                <div className="space-y-6">
+                                                    <h3 className="text-2xl font-bold text-white mb-4">專案背景 Context</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                                                        這是一個針對台北醫學大學醫學生臨床實習設計的電子學習歷程系統。我們的核心任務是將原本僅為純 HTML 文字列表的舊網頁，升級為一個具備視覺化圖表與決策輔助功能的現代化儀表板。
+                                                    </p>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="feature-card p-4">
+                                                            <div className="text-xs text-gray-500 uppercase mb-1">My Role</div>
+                                                            <div className="font-bold text-white">前端工程 / UI設計</div>
+                                                        </div>
+                                                        <div className="feature-card p-4">
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tech & Constraints</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
+                                                                    <Icons.Code /> <span className="ml-1">HTML/JS</span>
+                                                                </span>
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30">
+                                                                    <Icons.Browser /> <span className="ml-1">Legacy Support</span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full h-px bg-white/10"></div>
+                                                <div className="space-y-6">
+                                                    <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                                                        <span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>
+                                                        痛點與挑戰 The Conflict
+                                                    </h3>
+                                                    <div className="feature-card p-5 border-l-4 border-l-secondary">
+                                                        <h4 className="text-secondary font-bold text-sm mb-3">升級前的困境</h4>
+                                                        <ul className="space-y-4 text-gray-300">
+                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">資訊破碎 (Information Fragmentation)</strong>學生成績散落在密密麻麻的文字列表中，難以快速掌握缺少的學分或能力短版。</div></li>
+                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">環境限制 (Legacy Constraints)</strong>醫院臨床工作站多為舊型電腦，無法支援高運算需求的現代 Web 3D 或複雜動畫。</div></li>
+                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">缺乏洞察 (Lack of Insight)</strong>僅紀錄「分數」而未呈現「趨勢」，學生無法進行有效的自我反思與能力追蹤。</div></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 2. PROCESS - STAR: Action (Steps) */}
+                                        {activeTab === 'process' && (
+                                            <div className="space-y-8 animate-fadeIn">
+                                                <h3 className="text-2xl font-bold text-white mb-2">執行過程 The Process</h3>
+                                                <p className="text-xs text-gray-400 mb-6">在技術限制中尋求最佳體驗的四個步驟</p>
+                                                <div className="relative pl-4 border-l border-white/10 space-y-8">
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">01. 版面重構 (Layout Optimization)</h4><p className="text-xs text-gray-400">捨棄華麗動態，改採清晰的區塊式架構，將資訊分為「教學活動」、「多元評核」與「能力表現」三大模組。</p></div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">02. 輕量化技術 (Lightweight Strategy)</h4><p className="text-xs text-gray-400">選用相容舊版瀏覽器的輕量級 JavaScript 圖表庫，確保在低階硬體上也能流暢繪製圖表。</p></div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">03. 視覺轉化 (Data Visualization)</h4><p className="text-xs text-gray-400">將條列式數據轉化為「長條圖」（課程進度）與「雷達圖」（核心能力），讓數據產生意義。</p></div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(43,108,176,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">04. 反思設計 (Reflection Gap)</h4><p className="text-xs text-gray-400">設計「雙色雷達圖」重疊自評與師評數據，透過視覺差異引導學生進行後設認知 (Metacognition) 訓練。</p></div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 3. SOLUTION - STAR: Action (Highlights) */}
+                                        {activeTab === 'solution' && (
+                                            <div className="space-y-8 animate-fadeIn">
+                                                <h3 className="text-2xl font-bold text-white mb-6">解決方案與亮點 The Solution</h3>
+                                                <div className="space-y-4">
+                                                    {/* 滑鼠滑過卡片時，切換到對應的圖片 (使用 GALLERY_IMAGES 的索引) */}
+                                                    <div className="feature-card p-5 flex items-start space-x-4" onMouseEnter={() => setCurrentImage(GALLERY_IMAGES[0].src)}>
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0"><Icons.Chart /></div>
+                                                        <div><h4 className="font-bold text-white text-sm mb-1">進度追蹤儀表板</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 利用長條圖區分一般與通識課程，學生登入即知「還缺什麼課」，無需人工核對。</p></div>
+                                                    </div>
+
+                                                    <div className="feature-card p-5 flex items-start space-x-4" onMouseEnter={() => setCurrentImage(GALLERY_IMAGES[2].src)}>
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center text-secondary shrink-0"><Icons.Radar /></div>
+                                                        <div><h4 className="font-bold text-white text-sm mb-1">EPA 能力雷達圖</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 落實能力導向教育 (CBME)，追蹤學生在特定醫療行為上的信任層級 (Entrustment Level) 變化。</p></div>
+                                                    </div>
+
+                                                    <div className="feature-card p-5 flex items-start space-x-4" onMouseEnter={() => setCurrentImage(GALLERY_IMAGES[1].src)}>
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-accent shrink-0"><Icons.Gap /></div>
+                                                        <div><h4 className="font-bold text-white text-sm mb-1">自我評估落差分析</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 直觀呈現「自評」與「師評」的分數落差，幫助學生看見盲點，修正學習態度。</p></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 4. CLIMAX - STAR: Result */}
+                                        {activeTab === 'climax' && (
+                                            <div className="space-y-8 animate-fadeIn">
+                                                <h3 className="text-2xl font-bold text-white mb-4">成果展示 Result</h3>
+                                                <p className="text-gray-400 mb-6 text-sm">從純文字到全方位成長地圖的轉變。</p>
+                                                <div className="grid gap-4">
+                                                    {GALLERY_IMAGES.map((img) => (
+                                                        <button
+                                                            key={img.id}
+                                                            onClick={() => handleGallerySwitch(img)}
+                                                            className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? 'border-primary bg-white/5' : ''}`}
+                                                        >
+                                                            <div className="flex justify-between items-center mb-2">
+                                                                <h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                                                                    <span className="text-primary mr-2">{img.id}.</span>{img.name}
+                                                                </h4>
+                                                                <i className={`fas fa-arrow-left transform transition-all ${activeGalleryId === img.id ? 'text-primary -translate-x-1' : 'text-gray-600 group-hover:text-primary group-hover:-translate-x-1'}`}></i>
+                                                            </div>
+                                                            <p className="text-xs text-gray-500 group-hover:text-gray-400">
+                                                                {img.id === '01' && '總覽課程完成度與核心指標。'}
+                                                                {img.id === '02' && '整合 Mini-CEX 與 DOPS 評分統計。'}
+                                                                {img.id === '03' && '視覺化呈現六大核心能力消長。'}
+                                                                {img.id === '04' && '支援行政所需的報表輸出功能。'}
+                                                            </p>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                    </div>
+                </React.Fragment>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</body>
+
+</html>

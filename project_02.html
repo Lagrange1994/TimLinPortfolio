@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新竹縣警察局 | 雲端智慧影像分析系統 (APP Ver.) - UI/UX Case Study</title>
+
+    <!-- Favicon -->
+    <link href="./img/favicon/favicon.ico" rel="shortcut icon" type="image/ico">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff4a00',
+                        secondary: '#FFD700', // Yellow
+                        // Updated Dark Theme Colors (Even Darker Warm/Coffee tones)
+                        dark: '#080201',
+                        'dark-light': '#140502',
+                        'dark-lighter': '#240a05',
+                        accent: '#F5F5DC',
+                        'soft-bg': '#F0F2F5',
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
+                        heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* BASIC SETUP */
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #080201;
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            color: #fff;
+        }
+
+        #main-container {
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .page-section {
+            width: 100vw;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* UI Elements - Adjusted gradients for darker coffee theme */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(20, 5, 2, 0.95), rgba(8, 2, 1, 0.98));
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Feature Card Styles */
+        .feature-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 74, 0, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(255, 74, 0, 0.2);
+        }
+
+        .feature-card.active {
+            border-color: #ff4a00;
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 15px rgba(255, 74, 0, 0.1);
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #080201;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #240a05;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff4a00;
+        }
+
+        /* Animations */
+        .fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Comparison Slider Styles */
+        .comparison-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .comparison-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .comparison-slider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ff4a00;
+            cursor: ew-resize;
+            z-index: 10;
+        }
+
+        /* Fixed vertical centering */
+        .comparison-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 32px;
+            height: 32px;
+            background: #ff4a00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Hero Background Custom */
+        .hero-bg-custom {
+            background-image: url('./img/project_02/hero_img.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .hero-bg-custom::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(8, 2, 1, 0.2) 0%, rgba(8, 2, 1, 0.5) 100%);
+            z-index: 1;
+        }
+
+        /* Back Button Styles */
+        .back-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn:hover i {
+            transform: translateX(-4px);
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0F1115;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-animation {
+            width: 65px;
+            aspect-ratio: 1;
+            position: relative;
+        }
+
+        .loader-animation:before,
+        .loader-animation:after {
+            content: "";
+            position: absolute;
+            border-radius: 50px;
+            box-shadow: 0 0 0 3px inset #fff;
+            animation: l4 2.5s infinite;
+        }
+
+        .loader-animation:after {
+            animation-delay: -1.25s;
+        }
+
+        @keyframes l4 {
+            0% {
+                inset: 0 35px 35px 0;
+            }
+
+            12.5% {
+                inset: 0 35px 0 0;
+            }
+
+            25% {
+                inset: 35px 35px 0 0;
+            }
+
+            37.5% {
+                inset: 35px 0 0 0;
+            }
+
+            50% {
+                inset: 35px 0 0 35px;
+            }
+
+            62.5% {
+                inset: 0 0 0 35px;
+            }
+
+            75% {
+                inset: 0 0 35px 35px;
+            }
+
+            87.5% {
+                inset: 0 0 35px 0;
+            }
+
+            100% {
+                inset: 0 35px 35px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- DATA DEFINITIONS ---
+
+        // Section 02: Simplification & Trade-offs
+        const SIMPLIFICATION_POINTS = [
+            {
+                id: 'simple-01',
+                title: '空間與佈局 (Space)',
+                icon: 'fa-layer-group',
+                web: { desc: '多欄位、多視窗並列', type: 'Complex' },
+                app: { desc: '垂直單欄、Card UI 堆疊', type: 'Simple' },
+                insight: '捨棄儀表板的總覽性，換取手機直向操作的流暢度。'
+            },
+            {
+                id: 'simple-02',
+                title: '數據呈現 (Data)',
+                icon: 'fa-chart-bar',
+                web: { desc: '詳細數據表格、參數列表', type: 'Complex' },
+                app: { desc: '視覺燈號、顏色警示', type: 'Simple' },
+                insight: '將「讀數字」轉化為「看顏色」，降低戶外判讀的認知負荷。'
+            },
+            {
+                id: 'simple-03',
+                title: '任務焦點 (Task)',
+                icon: 'fa-bullseye',
+                web: { desc: '多功能整合 Dashboard', type: 'Complex' },
+                app: { desc: '單一任務導向 (Task-Oriented)', type: 'Simple' },
+                insight: '每次進入頁面只專注解決一個問題（如：查車牌），避免功能干擾。'
+            },
+            {
+                id: 'simple-04',
+                title: '操作互動 (Interaction)',
+                icon: 'fa-hand-pointer',
+                web: { desc: '滑鼠精細操作、多層篩選', type: 'Complex' },
+                app: { desc: '大尺寸觸控、模糊搜尋', type: 'Simple' },
+                insight: '針對手指觸控優化，並加入模糊比對以應對現場輸入的不便。'
+            }
+        ];
+
+        // Section 03: Before (Web) & After (App) Features
+        const APP_FEATURES = [
+            {
+                id: 'feat-01',
+                title: '登入與身份驗證',
+                desc: '從傳統後台登入轉向更具現代感的身份驗證。',
+                beforeImg: './img/project_01/home_01.png',
+                afterImg: './img/project_02/mobile_mockup_04@2x.png',
+                point: '移除不必要的背景與圖片，聚焦在登入流程上。'
+            },
+            {
+                id: 'feat-02',
+                title: '設備維運監控',
+                desc: '將伺服器列表轉化為直觀的燈號卡片。',
+                beforeImg: './img/project_01/cam_02.png',
+                afterImg: './img/project_02/mobile_mockup_01@2x.png',
+                point: '直接顯示毫秒 (ms) 延遲，以紅/綠燈號代表連線狀態，並針對垂直滑動優化了區域切換。'
+            },
+            {
+                id: 'feat-03',
+                title: '車牌模糊搜尋',
+                desc: '針對現場輸入困難，提供更彈性的搜尋機制。',
+                beforeImg: './img/project_01/search_01.png',
+                afterImg: './img/project_02/mobile_mockup_02@2x.png',
+                point: '新增「模糊比對數」與「字數」設定，解決監視器畫面不清或輸入不全的問題。'
+            },
+            {
+                id: 'feat-04',
+                title: '搜尋結果可視化',
+                desc: '將表格行轉化為易讀的卡片資訊。',
+                beforeImg: './img/project_01/search_02.png',
+                afterImg: './img/project_02/mobile_mockup_03@2x.png',
+                point: '以高亮顏色標示「失竊/通緝」，並提供一鍵「移除/結案」的大按鈕，提升現場處置效率。'
+            },
+            {
+                id: 'feat-05',
+                title: '軌跡追蹤地圖',
+                desc: '地圖介面的行動化適配。',
+                beforeImg: './img/project_01/track_01.png',
+                afterImg: './img/project_02/mobile_mockup_06@2x.png',
+                point: '清晰的序號 (01, 02...) 標示路徑，在手機小螢幕上仍能清楚判讀嫌疑犯移動方向。'
+            },
+            {
+                id: 'feat-06',
+                title: '智慧水情監控',
+                desc: '結合即時影像與數據圖表的防災儀表板。',
+                beforeImg: './img/project_01/flood_01.png',
+                afterImg: './img/project_02/mobile_mockup_05@2x.png',
+                point: '單一重點呈現：上方即時影像確認災情，下方長條圖快速判斷各里水位警戒。'
+            }
+        ];
+
+        // Section 04: App Gallery - Added Descriptions
+        const APP_GALLERY = [
+            { id: 'g01', title: '設備狀態檢視', desc: '即時監控各路口設備連線狀態與延遲毫秒數。', src: './img/project_02/mobile_mockup_01@2x.png', tag: 'Monitoring' },
+            { id: 'g02', title: '車牌模糊搜尋', desc: '支援模糊比對與字數篩選，快速鎖定目標車輛。', src: './img/project_02/mobile_mockup_02@2x.png', tag: 'Search' },
+            { id: 'g03', title: '搜尋結果卡片', desc: '高亮顯示失竊或通緝車輛，提供一鍵快速操作。', src: './img/project_02/mobile_mockup_03@2x.png', tag: 'Results' },
+            { id: 'g04', title: '系統登入', desc: '簡化的登入流程。', src: './img/project_02/mobile_mockup_04@2x.png', tag: 'Login' },
+            { id: 'g05', title: '水情防災資訊', desc: '整合即時影像與水位數據，視覺化呈現災情趨勢。', src: './img/project_02/mobile_mockup_05@2x.png', tag: 'Disaster' },
+            { id: 'g06', title: '行車軌跡查詢', desc: '地圖化呈現車輛移動路徑，輔助刑偵軌跡分析。', src: './img/project_02/mobile_mockup_06@2x.png', tag: 'Tracking' },
+        ];
+
+
+        // --- COMPONENTS ---
+
+        // 1. Comparison Slider Component
+        const ComparisonSlider = ({ beforeImage, afterImage }) => {
+            const [sliderPosition, setSliderPosition] = useState(50);
+            const containerRef = useRef(null);
+            const isDragging = useRef(false);
+
+            const handleMouseDown = () => { isDragging.current = true; };
+            const handleMouseUp = () => { isDragging.current = false; };
+
+            const handleMouseMove = (e) => {
+                if (!isDragging.current || !containerRef.current) return;
+                const rect = containerRef.current.getBoundingClientRect();
+                const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+                const percentage = (x / rect.width) * 100;
+                setSliderPosition(percentage);
+            };
+
+            const handleTouchMove = (e) => {
+                if (!isDragging.current || !containerRef.current) return;
+                const rect = containerRef.current.getBoundingClientRect();
+                const x = Math.max(0, Math.min(e.touches[0].clientX - rect.left, rect.width));
+                const percentage = (x / rect.width) * 100;
+                setSliderPosition(percentage);
+            }
+
+            useEffect(() => {
+                window.addEventListener('mouseup', handleMouseUp);
+                window.addEventListener('touchend', handleMouseUp);
+                return () => {
+                    window.removeEventListener('mouseup', handleMouseUp);
+                    window.removeEventListener('touchend', handleMouseUp);
+                };
+            }, []);
+
+            return (
+                <div
+                    ref={containerRef}
+                    className="comparison-container w-full h-full relative select-none cursor-ew-resize bg-dark-light rounded-xl overflow-hidden border border-white/10"
+                    onMouseMove={handleMouseMove}
+                    onTouchMove={handleTouchMove}
+                    onMouseDown={handleMouseDown}
+                    onTouchStart={handleMouseDown}
+                >
+                    {/* BEFORE (WEB) - Browser Frame */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#0f0402] p-4 lg:p-8 overflow-hidden">
+                        <div className="w-full max-w-4xl bg-dark-light rounded-lg border border-white/10 shadow-2xl overflow-hidden flex flex-col opacity-50 grayscale transition-all">
+                            <div className="h-6 bg-[#140502] border-b border-white/5 flex items-center px-3 space-x-1.5">
+                                <div className="w-2 h-2 rounded-full bg-[#FF5F56]"></div>
+                                <div className="w-2 h-2 rounded-full bg-[#FFBD2E]"></div>
+                                <div className="w-2 h-2 rounded-full bg-[#27C93F]"></div>
+                            </div>
+                            <div className="relative bg-white/5 flex-1 flex items-center justify-center overflow-hidden">
+                                <img src={beforeImage} className="w-full h-auto object-contain" alt="Web Version" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* AFTER (APP) - Phone Frame (Notch Removed) */}
+                    <div
+                        className="absolute inset-0 flex items-center justify-center bg-[#0f0402]"
+                        style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+                    >
+                        <div className="relative w-[260px] sm:w-[280px] border-[8px] border-[#2d2d2d] rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-black">
+                            <img src={afterImage} className="w-full h-auto block" alt="App Version" />
+                        </div>
+                    </div>
+
+                    {/* Slider Handle */}
+                    <div
+                        className="comparison-slider"
+                        style={{ left: `${sliderPosition}%` }}
+                    >
+                        <div className="comparison-handle">
+                            <i className="fas fa-arrows-alt-h text-white text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Reusable Window Frame Component for [01] and [02]
+        const WindowFrame = ({ src, alt }) => {
+            return (
+                <div className="flex items-center justify-center p-8 w-full h-full">
+                    <div
+                        className="relative bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col shrink-0 animate-fadeIn"
+                        style={{ maxWidth: '100%', maxHeight: '90vh', width: 'auto', height: 'auto' }}
+                    >
+                        <div className="relative overflow-hidden bg-white/5">
+                            <img
+                                src={src}
+                                alt={alt}
+                                className="block w-auto h-auto max-w-full"
+                                style={{ maxHeight: '90vh' }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Phone Frame Component for [04. Gallery]
+        const PhoneFrame = ({ src, alt }) => {
+            return (
+                <div className="flex items-center justify-center p-8 w-full h-full">
+                    <div className="relative w-[280px] sm:w-[320px] border-[8px] border-[#2d2d2d] rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-black animate-fadeIn">
+                        <img src={src} alt={alt} className="w-full h-auto block" />
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [loading, setLoading] = useState(true);
+            const [activeTab, setActiveTab] = useState('context');
+            const [showBackToHero, setShowBackToHero] = useState(false);
+            const [activeFeature, setActiveFeature] = useState(APP_FEATURES[0]);
+            const [activeGalleryImg, setActiveGalleryImg] = useState(APP_GALLERY[0].src);
+
+            const heroRef = useRef(null);
+            const splitRef = useRef(null);
+
+            useEffect(() => {
+                const timer = setTimeout(() => setLoading(false), 1000);
+                return () => clearTimeout(timer);
+            }, []);
+
+            const handleScroll = (e) => {
+                const scrollTop = e.target.scrollTop;
+                const windowHeight = window.innerHeight;
+                if (scrollTop > windowHeight * 0.5) {
+                    setShowBackToHero(true);
+                } else {
+                    setShowBackToHero(false);
+                }
+            };
+
+            const scrollToSection = (ref) => {
+                if (ref.current) ref.current.scrollIntoView({ behavior: 'smooth' });
+            };
+
+            const goBack = () => {
+                window.location.href = "index.html#portfolio";
+            };
+
+            const renderLeftPanel = () => {
+                switch (activeTab) {
+                    case 'context':
+                        return <WindowFrame src="./img/project_02/p2_01.png" alt="App Hero" />;
+                    case 'focus':
+                        return <WindowFrame src="./img/project_02/p2_02.png" alt="Simplification" />;
+                    case 'features':
+                        return (
+                            <div className="w-full h-full p-4 lg:p-12">
+                                <ComparisonSlider
+                                    beforeImage={activeFeature.beforeImg}
+                                    afterImage={activeFeature.afterImg}
+                                />
+                                <div className="text-center mt-4 text-xs text-gray-500">
+                                    <i className="fas fa-arrows-alt-h mr-2"></i>拖曳滑桿比較 Web vs App 差異
+                                </div>
+                            </div>
+                        );
+                    case 'gallery':
+                        return <PhoneFrame src={activeGalleryImg} alt="Gallery View" />;
+                    default:
+                        return null;
+                }
+            };
+
+            return (
+                <React.Fragment>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
+
+                    {/* Navigation */}
+                    <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
+                        <button
+                            onClick={goBack}
+                            className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40"
+                        >
+                            <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">
+                                Back to Portfolio
+                            </span>
+                        </button>
+                    </nav>
+
+                    {/* Back to Hero Button */}
+                    <button
+                        onClick={() => scrollToSection(heroRef)}
+                        className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+                        title="Back to Hero Section"
+                    >
+                        <i className="fas fa-arrow-up"></i>
+                    </button>
+
+                    <div id="main-container" onScroll={handleScroll}>
+                        {/* 1. HERO */}
+                        <section ref={heroRef} className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+
+                            <div className="container max-w-6xl mx-auto px-8 z-20">
+                                <div className="max-w-3xl text-left">
+                                    <div className="inline-block px-4 py-1 rounded-full border border-secondary/50 bg-secondary/20 text-secondary text-xs font-bold tracking-widest mb-6 fade-in-up " style={{ animationDelay: '0.1s' }}>
+                                        MOBILE COMMAND CENTER
+                                    </div>
+                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left" style={{ animationDelay: '0.2s' }}>
+                                        新竹縣警察局<br />
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">APP 雲端影像分析系統</span>
+                                    </h1>
+                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
+                                        將龐大的警政後台裝進口袋。採用現代化輕擬態 (Soft UI) 設計，針對戶外執勤優化，實現「車過即知、指尖辦案」的行動即戰力。
+                                    </h2>
+                                    <button
+                                        onClick={() => scrollToSection(splitRef)}
+                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(255,74,0,0.4)] transform hover:-translate-y-1"
+                                        style={{ animationDelay: '0.4s' }}
+                                    >
+                                        探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 2. SPLIT LAYOUT */}
+                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+
+                            {/* LEFT: Dynamic Visual Area */}
+                            <div className="w-full lg:w-3/5 h-[40vh] lg:h-full bg-dark relative border-r border-white/5 overflow-hidden">
+                                {renderLeftPanel()}
+                            </div>
+
+                            {/* RIGHT: Content Area */}
+                            <div className="flex-1 w-full lg:w-2/5 h-full flex flex-col glass-panel relative z-10">
+                                {/* Tabs */}
+                                <div className="p-8 pb-0 border-b border-white/10 bg-dark/50 backdrop-blur-md">
+                                    <h2 className="text-2xl font-bold mb-1">新竹縣警察局<br />APP雲端影像分析系統</h2>
+                                    <p className="text-gray-400 text-sm mb-4">Mobile Experience Optimization</p>
+
+                                    <div className="flex space-x-6 overflow-x-auto custom-scroll mt-6 pb-1">
+                                        {[
+                                            { id: 'context', label: '01. 背景' },
+                                            { id: 'focus', label: '02. 取捨與精簡' },
+                                            { id: 'features', label: '03. 特色對照' },
+                                            { id: 'gallery', label: '04. 介面鑑賞' }
+                                        ].map(tab => (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => setActiveTab(tab.id)}
+                                                className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}
+                                            >
+                                                {tab.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Content Scroll */}
+                                <div className="flex-1 p-6 lg:p-8 overflow-y-auto custom-scroll pb-24">
+
+                                    {/* 01. Context */}
+                                    {activeTab === 'context' && (
+                                        <div className="space-y-8 animate-fadeIn">
+                                            <h3 className="text-xl font-bold text-white mb-4">設計挑戰：從複雜後台到行動指尖</h3>
+                                            <p className="text-gray-300 leading-relaxed text-sm">
+                                                傳統警政系統功能繁雜、數據量大，通常依賴滑鼠鍵盤在大螢幕上操作。然而，外勤員警需要在風吹日曬的戶外環境下，透過小尺寸的手機螢幕快速獲取關鍵情資。
+                                            </p>
+                                            <div className="grid grid-cols-2 gap-4 mt-6">
+                                                <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                                                    <i className="fas fa-mobile-alt text-primary mb-2 text-xl"></i>
+                                                    <h4 className="font-bold text-sm">行動優先</h4>
+                                                    <p className="text-xs text-gray-400 mt-1">針對單手操作與觸控優化</p>
+                                                </div>
+                                                <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                                                    <i className="fas fa-feather-alt text-secondary mb-2 text-xl"></i>
+                                                    <h4 className="font-bold text-sm">輕擬態風格</h4>
+                                                    <p className="text-xs text-gray-400 mt-1">柔和介面減輕視覺疲勞</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 02. Simplification */}
+                                    {activeTab === 'focus' && (
+                                        <div className="space-y-6 animate-fadeIn">
+                                            <div className="mb-4">
+                                                <h3 className="text-xl font-bold text-white">行動化的取捨與精簡</h3>
+                                                <p className="text-xs text-gray-400 mt-1">Web vs App 的設計策略對比</p>
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                {SIMPLIFICATION_POINTS.map((point) => (
+                                                    <div key={point.id} className="feature-card p-5 border-l-4 border-l-primary hover:translate-x-1 transition-all duration-300 group">
+                                                        {/* Header - UPDATED Icon colors to yellow (secondary) */}
+                                                        <div className="flex items-center mb-3">
+                                                            <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary mr-3">
+                                                                <i className={`fas ${point.icon}`}></i>
+                                                            </div>
+                                                            <h4 className="font-bold text-white">{point.title}</h4>
+                                                        </div>
+
+                                                        {/* Comparison Box */}
+                                                        <div className="flex items-center justify-between text-xs mb-3 bg-black/20 p-2 rounded-lg border border-white/5">
+                                                            <div className="text-gray-500 w-1/2 pr-2 border-r border-gray-700">
+                                                                <span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">WEB (Complex)</span>
+                                                                {point.web.desc}
+                                                            </div>
+                                                            <div className="text-secondary w-1/2 pl-2"> {/* Text is secondary color (Yellow) */}
+                                                                <span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">APP (Simple)</span>
+                                                                {point.app.desc}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Insight Quote */}
+                                                        <div className="text-xs text-gray-300 italic border-l-2 border-secondary pl-3">
+                                                            "{point.insight}"
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 03. Features */}
+                                    {activeTab === 'features' && (
+                                        <div className="space-y-6 animate-fadeIn">
+                                            <div className="mb-4">
+                                                <h3 className="text-xl font-bold text-white">APP 特色呈現</h3>
+                                                <p className="text-xs text-gray-400 mt-1">點擊下方項目，左側將顯示 Before/After 對照</p>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                {APP_FEATURES.map((feat) => (
+                                                    <button
+                                                        key={feat.id}
+                                                        onClick={() => setActiveFeature(feat)}
+                                                        className={`w-full text-left p-4 rounded-xl border transition-all ${activeFeature.id === feat.id ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}
+                                                    >
+                                                        <h4 className={`font-bold text-sm mb-1 ${activeFeature.id === feat.id ? 'text-primary' : 'text-white'}`}>
+                                                            {feat.title}
+                                                        </h4>
+                                                        <p className="text-xs text-gray-400 mb-2">{feat.desc}</p>
+                                                        {activeFeature.id === feat.id && (
+                                                            <div className="text-xs text-white bg-dark/50 p-2 rounded mt-2 border-l-2 border-secondary animate-fadeIn">
+                                                                <i className="fas fa-lightbulb text-yellow-400 mr-1"></i> {feat.point}
+                                                            </div>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 04. Gallery - UPDATED with Descriptions (Tag removed) */}
+                                    {activeTab === 'gallery' && (
+                                        <div className="space-y-6 animate-fadeIn">
+                                            <h3 className="text-xl font-bold text-white mb-4">介面總覽 Gallery</h3>
+                                            <div className="space-y-3">
+                                                {APP_GALLERY.map((img) => (
+                                                    <button
+                                                        key={img.id}
+                                                        onClick={() => setActiveGalleryImg(img.src)}
+                                                        className={`w-full text-left feature-card p-4 transition-all group flex items-center justify-between ${activeGalleryImg === img.src ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(255,74,0,0.1)]' : 'border-white/5 hover:bg-white/5'}`}
+                                                    >
+                                                        <div className="flex-1 min-w-0 pr-4">
+                                                            <div className="flex items-center mb-1">
+                                                                {/* Removed Tag span */}
+                                                                <span className={`font-bold text-sm truncate transition-colors ${activeGalleryImg === img.src ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                                                                    {img.title}
+                                                                </span>
+                                                            </div>
+                                                            <p className={`text-xs truncate transition-colors ${activeGalleryImg === img.src ? 'text-gray-400' : 'text-gray-600 group-hover:text-gray-500'}`}>
+                                                                {img.desc}
+                                                            </p>
+                                                        </div>
+
+                                                        {/* Arrow */}
+                                                        <i className={`fas fa-chevron-right ml-4 transform transition-all text-xs ${activeGalleryImg === img.src ? 'text-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                </div>
+                            </div>
+                        </section>
+                    </div >
+                </React.Fragment >
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

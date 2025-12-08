@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>石門水庫觀光服務網 | UX Design Case Study</title>
+
+    <!-- Favicon Fix: 增加版本號 (?v=2) 強制瀏覽器重新抓取，並同時支援舊版寫法 -->
+    <link rel="shortcut icon" href="./img/favicon/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- FIX: Upgraded to modern Babel for better stability -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- ADDED: Momo Trust Display for Heading Font matching Project 08 -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        // FIX: Added safety check for Tailwind initialization to prevent ReferenceError
+        function initTailwindConfig() {
+            if (typeof tailwind === 'undefined') return;
+
+            tailwind.config = {
+                darkMode: 'class',
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: '#00A0E9', /* 水庫藍 */
+                            secondary: '#FFB800', /* 活潑黃 */
+                            dark: '#0F172A',
+                            'dark-light': '#1E293B',
+                            'dark-lighter': '#334155',
+                            accent: '#22D3EE'
+                        },
+                        fontFamily: {
+                            sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
+                            // ADDED: Heading font configuration
+                            heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
+                        },
+                    }
+                }
+            };
+        }
+
+        // Try to init immediately, or wait for load event if tailwind isn't ready
+        if (typeof tailwind !== 'undefined') {
+            initTailwindConfig();
+        } else {
+            window.addEventListener('load', initTailwindConfig);
+            // Fallback: check again after a short delay just in case
+            setTimeout(initTailwindConfig, 500);
+        }
+    </script>
+
+    <style>
+        /* BASIC SETUP */
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0F172A;
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            color: #fff;
+        }
+
+        /* MAIN SCROLL CONTAINER */
+        #main-container {
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* SECTIONS */
+        .page-section {
+            width: 100vw;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(34, 211, 238, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(34, 211, 238, 0.2);
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0F172A;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00A0E9;
+        }
+
+        /* Animations */
+        .fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loader - Updated to match Project 08 */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0F172A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        /* Project 08 Loader Animation Style */
+        .loader-animation {
+            width: 65px;
+            aspect-ratio: 1;
+            position: relative;
+        }
+
+        .loader-animation:before,
+        .loader-animation:after {
+            content: "";
+            position: absolute;
+            border-radius: 50px;
+            box-shadow: 0 0 0 3px inset #ffffff;
+            /* White loading ring */
+            animation: l4 2.5s infinite;
+        }
+
+        .loader-animation:after {
+            animation-delay: -1.25s;
+        }
+
+        @keyframes l4 {
+            0% {
+                inset: 0 35px 35px 0;
+            }
+
+            12.5% {
+                inset: 0 35px 0 0;
+            }
+
+            25% {
+                inset: 35px 35px 0 0;
+            }
+
+            37.5% {
+                inset: 35px 0 0 0;
+            }
+
+            50% {
+                inset: 35px 0 0 35px;
+            }
+
+            62.5% {
+                inset: 0 0 0 35px;
+            }
+
+            75% {
+                inset: 0 0 35px 35px;
+            }
+
+            87.5% {
+                inset: 0 0 35px 0;
+            }
+
+            100% {
+                inset: 0 35px 35px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Custom Icons based on the analysis
+        const Icons = {
+            XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
+            AI: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l-9 18h18L12 3z" /><circle cx="12" cy="13" r="2" /></svg>,
+            Chart: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+            Mascot: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            Map: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0121 18.382V7.618a1 1 0 01-1.447-.894L15 7m0 13V7" /></svg>,
+            Palette: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>,
+            File: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+            Process: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>,
+            Search: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>,
+            Design: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
+        };
+
+        // Analysis Features Data (Highlights)
+        const ANALYSIS_FEATURES = [
+            {
+                id: 'feat-01',
+                title: '高度資訊圖表化 (Infographic)',
+                desc: '將法規文字轉化為直觀圖表，解決閱讀疲勞。',
+                icon: 'Chart',
+                image: './img/project_07/石門水庫6觀光服務 6.3.3貴賓參訪申請0819.jpg',
+                note: 'Insight: 人數限制與申請時間採用醒目數字設計，大幅降低認知負擔。'
+            },
+            {
+                id: 'feat-02',
+                title: '活潑的吉祥物行銷',
+                desc: '利用角色引導填表流程，降低公文申請的嚴肅感。',
+                icon: 'Mascot',
+                image: './img/project_07/石門水庫6觀光服務 6.3.3貴賓參訪申請0819.jpg',
+                note: 'Insight: 透過角色扮演（Role-play）增加情境感，提升親和力。'
+            },
+            {
+                id: 'feat-03',
+                title: '直觀的地圖式導航',
+                desc: '將景點與動線直接整合在地理位置上，而非純清單。',
+                icon: 'Map',
+                image: './img/project_07/石門水庫6觀光服務 6.3.4預約解說申請0822.jpg',
+                note: 'Insight: 使用者能預先建立空間感，明確知道「去哪裡看什麼」。'
+            },
+            {
+                id: 'feat-04',
+                title: '一致性的視覺識別',
+                desc: '嚴格遵守藍、青、湖水綠的主色調，搭配圓形元素。',
+                icon: 'Palette',
+                image: './img/project_07/石門水庫6觀光服務 6.3.6街頭藝人申請0822.jpg',
+                note: 'Insight: 視覺語彙統一，強化了「水資源」與「觀光」的品牌聯想。'
+            }
+        ];
+
+        // Gallery Images
+        const GALLERY_IMAGES = [
+            { id: '01', name: '賞花主題地圖', src: './img/project_07/new0327石門水庫   觀光服務   石門水庫   賞花主題.jpg', desc: '結合時間軸與空間地圖的視覺化設計' },
+            { id: '02', name: '貴賓參訪申請', src: './img/project_07/石門水庫6觀光服務 6.3.3貴賓參訪申請0819.jpg', desc: '大區塊按鈕與清楚的流程圖示' },
+            { id: '03', name: '預約解說導覽', src: './img/project_07/石門水庫6觀光服務 6.3.4預約解說申請0822.jpg', desc: '將導覽路線與景點地圖結合' },
+            { id: '04', name: '街頭藝人申請', src: './img/project_07/石門水庫6觀光服務 6.3.6街頭藝人申請0822.jpg', desc: '場地位置以氣泡地圖呈現' }
+        ];
+
+        // NEW: Define Hero Image Source
+        const HERO_IMAGE_SRC = './img/project_07/hero_img.png';
+
+        const App = () => {
+            const [loading, setLoading] = useState(true);
+            const [activeTab, setActiveTab] = useState('request');
+            const [currentImage, setCurrentImage] = useState('./img/project_07/display.png');
+            const [activeGalleryId, setActiveGalleryId] = useState(null);
+            const [activeFeatureId, setActiveFeatureId] = useState(null);
+            const [imgError, setImgError] = useState(false);
+            const [showBackToHero, setShowBackToHero] = useState(false);
+
+            const heroRef = useRef(null);
+            const contentRef = useRef(null);
+            const mainContainerRef = useRef(null);
+
+            useEffect(() => {
+                setTimeout(() => setLoading(false), 1200);
+            }, []);
+
+            // Determine if we should show the "Browser Window" style
+            const isBrowserMode = ['highlights', 'gallery'].includes(activeTab);
+
+            // Tab switching logic
+            useEffect(() => {
+                setImgError(false);
+                switch (activeTab) {
+                    case 'request':
+                        setCurrentImage('./img/project_07/display.png');
+                        setActiveGalleryId(null);
+                        setActiveFeatureId(null);
+                        break;
+                    case 'process':
+                        setCurrentImage('./img/project_07/display.png');
+                        setActiveGalleryId(null);
+                        setActiveFeatureId(null);
+                        break;
+                    case 'highlights':
+                        setCurrentImage(ANALYSIS_FEATURES[0].image);
+                        setActiveFeatureId(ANALYSIS_FEATURES[0].id);
+                        setActiveGalleryId(null);
+                        break;
+                    case 'gallery':
+                        setCurrentImage(GALLERY_IMAGES[0].src);
+                        setActiveGalleryId(GALLERY_IMAGES[0].id);
+                        setActiveFeatureId(null);
+                        break;
+                    default:
+                        setCurrentImage('./img/project_07/display.png');
+                }
+            }, [activeTab]);
+
+            const handleGallerySwitch = (imgObj) => {
+                setImgError(false);
+                setCurrentImage(imgObj.src);
+                setActiveGalleryId(imgObj.id);
+            };
+
+            const handleFeatureSwitch = (featObj) => {
+                setImgError(false);
+                setCurrentImage(featObj.image);
+                setActiveFeatureId(featObj.id);
+            };
+
+            const scrollToContent = () => {
+                if (contentRef.current) {
+                    contentRef.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            const scrollToSection = (ref) => {
+                if (ref.current) {
+                    ref.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            const handleScroll = (e) => {
+                const scrollTop = e.target.scrollTop;
+                const windowHeight = window.innerHeight;
+                if (scrollTop > windowHeight * 0.5) {
+                    setShowBackToHero(true);
+                } else {
+                    setShowBackToHero(false);
+                }
+            };
+
+            const goBack = () => {
+                window.location.href = "index.html#portfolio";
+            };
+
+            return (
+                <React.Fragment>
+                    {/* Loader - Using the new style */}
+                    <div className={`loader ${loading ? '' : 'hidden'}`}>
+                        <div className="loader-animation"></div>
+                    </div>
+
+                    {/* Back Button (Top Left) */}
+                    <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
+                        <button
+                            onClick={goBack}
+                            className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40"
+                        >
+                            <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">
+                                Back to Portfolio
+                            </span>
+                        </button>
+                    </nav>
+
+                    {/* Back to Hero Button (Bottom Right) */}
+                    <button
+                        onClick={() => scrollToSection(heroRef)}
+                        className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+                        title="Back to Hero Section"
+                    >
+                        <i className="fas fa-arrow-up"></i>
+                    </button>
+
+                    {/* MAIN SCROLL CONTAINER */}
+                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+
+                        {/* 1. HERO SECTION - Updated with inline style for background image */}
+                        <section ref={heroRef} className="page-section flex items-center justify-center bg-dark relative overflow-hidden">
+                            {/* Background Image Element - Filters removed */}
+                            <div
+                                className="absolute inset-0 z-0 bg-cover bg-center"
+                                style={{
+                                    backgroundImage: `url('${HERO_IMAGE_SRC}')`,
+                                }}
+                            ></div>
+                            <div className="absolute inset-0 bg-gradient-to-b from-dark/20 to-dark/60 z-10"></div>
+
+                            <div className="container max-w-6xl mx-auto px-8 z-20">
+                                <div className="max-w-3xl text-left">
+                                    <div className="inline-block px-4 py-1 rounded-full border border-white text-white text-xs font-bold tracking-widest mb-6 fade-in-up  font-sans" style={{ animationDelay: '0.1s' }}>
+                                        GOV. DIGITAL TRANSFORMATION
+                                    </div>
+                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left font-heading" style={{ animationDelay: '0.2s' }}>
+                                        石門水庫<br />
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-white font-heading">觀光服務申請系統</span>
+                                    </h1>
+                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
+                                        從繁瑣公文到親民體驗。<br />協助公部門將紙本申請流程數位化，打造友善的線上服務入口。
+                                    </h2>
+                                    <button
+                                        onClick={scrollToContent}
+                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(0,160,233,0.4)] transform hover:-translate-y-1"
+                                        style={{ animationDelay: '0.4s' }}
+                                    >
+                                        探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 2. SPLIT SCREEN */}
+                        <section ref={contentRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+
+                            {/* LEFT: Image Preview - DYNAMIC CONTAINER */}
+                            <div className="
+                                w-full h-[40vh] shrink-0 z-20
+                                lg:w-3/5 lg:h-full
+                                bg-[#1e293b] flex items-center justify-center p-4 lg:p-12 
+                                border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
+                            ">
+                                {/* The Container: Changes style based on isBrowserMode */}
+                                <div className={`
+                                    relative transition-all duration-500 shadow-2xl rounded-xl border border-white/10 overflow-hidden
+                                    ${isBrowserMode
+                                        ? 'w-full h-full max-w-4xl max-h-[90%] bg-dark-light flex flex-col' // Browser Mode: Fixed frame
+                                        : 'w-auto h-auto max-w-4xl max-h-[90%] bg-transparent flex flex-col' // Poster Mode: Adapts to image size
+                                    }
+                                `}>
+                                    {/* Browser Header: Only shown in Browser Mode */}
+                                    {isBrowserMode && (
+                                        <div className="h-8 bg-[#334155] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
+                                            <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+
+                                        </div>
+                                    )}
+
+                                    {/* Image Container: Scrollable in Browser Mode, Fitted in Poster Mode */}
+                                    <div className={`
+                                        relative
+                                        ${isBrowserMode
+                                            ? 'flex-1 min-h-0 overflow-y-auto bg-white/5'
+                                            : 'overflow-hidden flex items-center justify-center'
+                                        }
+                                    `}>
+                                        {imgError ? (
+                                            <div className="h-full flex items-center justify-center text-center p-8 bg-dark-light/80">
+                                                <div>
+                                                    <i className="fas fa-image text-4xl text-gray-600 mb-4"></i>
+                                                    <p className="text-gray-400">Image not found<br />
+                                                        <span className="text-xs text-gray-600">{currentImage}</span></p>
+                                                    <p className="text-xs text-yellow-500 mt-2">請確保圖片檔案位於同一目錄下</p>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <img
+                                                src={currentImage}
+                                                alt="Preview"
+                                                className={`
+                                                    transition-all duration-500 block
+                                                    ${isBrowserMode
+                                                        ? 'w-full h-auto' // Browser Mode: Full width, scroll down
+                                                        : 'max-w-full max-h-[85vh] object-contain' // Poster Mode: Fit entirely in view
+                                                    }
+                                                `}
+                                                onError={() => setImgError(true)}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* RIGHT: Narrative Scroll */}
+                            <div className="
+                                flex-1 w-full relative z-10
+                                lg:w-2/5 lg:h-full
+                                flex flex-col
+                            ">
+                                <div className="w-full h-full flex flex-col glass-panel relative">
+
+                                    {/* Sticky Header */}
+                                    <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                        <div className="p-8 pb-0">
+                                            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-1 leading-tight">石門水庫觀光服務申請系統</h2>
+                                            <p className="text-gray-400 text-sm mb-4">UI/UX Design Audit Report</p>
+
+                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-6 pb-1">
+                                                {[
+                                                    { id: 'request', label: '01. 業主需求' },
+                                                    { id: 'process', label: '02. 製作流程' },
+                                                    { id: 'highlights', label: '03. 設計特色' },
+                                                    { id: 'gallery', label: '04. 頁面展示' }
+                                                ].map(tab => (
+                                                    <button
+                                                        key={tab.id}
+                                                        onClick={() => setActiveTab(tab.id)}
+                                                        className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id
+                                                            ? 'text-primary border-b-2 border-primary pb-1'
+                                                            : 'text-gray-500 hover:text-white pb-1'
+                                                            }`}
+                                                    >
+                                                        {tab.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Scrollable Content */}
+                                    <div className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll">
+
+                                        {/* 1. REQUEST (業主需求) */}
+                                        {activeTab === 'request' && (
+                                            <div className="space-y-12 animate-fadeIn">
+                                                <div className="space-y-6">
+                                                    <h3 className="text-2xl font-bold text-white mb-4">業主需求 Client Request</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                                                        北區水資源局希望將現有的觀光行政流程全面數位化，新增<strong className="text-white">「貴賓參訪」、「預約解說」與「街頭藝人」</strong>等線上申請頁面。
+                                                        <br /><br />
+                                                        目標是取代繁瑣的紙本公文與電話往返，減輕行政人員負擔，同時期望透過友善的介面設計，拉近機關與民眾的距離。
+                                                    </p>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="feature-card p-4">
+                                                            <div className="text-xs text-gray-500 uppercase mb-1">My Role</div>
+                                                            <div className="font-bold text-white">UI 設計師</div>
+                                                        </div>
+                                                        <div className="feature-card p-4">
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
+                                                                    <Icons.XD /> <span className="ml-1">Adobe XD</span>
+                                                                </span>
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30">
+                                                                    <Icons.AI /> <span className="ml-1">Illustrator</span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 gap-4">
+                                                        <div className="feature-card p-5 border-l-4 border-l-secondary">
+                                                            <h4 className="text-secondary font-bold text-sm mb-3">待新增頁面列表</h4>
+                                                            <ul className="space-y-3 text-gray-300">
+                                                                <li className="flex items-start text-sm">
+                                                                    <span className="text-primary mr-3 mt-1"><i className="fas fa-check-circle"></i></span>
+                                                                    <div>
+                                                                        <strong className="text-white">貴賓參訪申請</strong>
+                                                                        <span className="block text-xs text-gray-500">供機關團體線上預約，需整合人數與時間限制說明。</span>
+                                                                    </div>
+                                                                </li>
+                                                                <li className="flex items-start text-sm">
+                                                                    <span className="text-primary mr-3 mt-1"><i className="fas fa-check-circle"></i></span>
+                                                                    <div>
+                                                                        <strong className="text-white">預約解說導覽</strong>
+                                                                        <span className="block text-xs text-gray-500">結合地圖與路線說明，讓申請者了解導覽內容。</span>
+                                                                    </div>
+                                                                </li>
+                                                                <li className="flex items-start text-sm">
+                                                                    <span className="text-primary mr-3 mt-1"><i className="fas fa-check-circle"></i></span>
+                                                                    <div>
+                                                                        <strong className="text-white">街頭藝人與場地申請</strong>
+                                                                        <span className="block text-xs text-gray-500">明確標示可展演區域與相關規範。</span>
+                                                                    </div>
+                                                                </li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 2. PROCESS (製作流程) */}
+                                        {activeTab === 'process' && (
+                                            <div className="space-y-8 animate-fadeIn">
+                                                <h3 className="text-2xl font-bold text-white mb-2">製作流程 Workflow</h3>
+
+
+                                                <div className="relative pl-4 border-l border-white/10 space-y-8">
+                                                    <div className="relative">
+                                                        <div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div>
+                                                        <h4 className="text-sm font-bold text-primary mb-1">Step 1. 盤點與解構</h4>
+                                                        <p className="text-sm text-gray-300">
+                                                            收集所有紙本申請書與管理要點，將文字拆解為「必要條件」（如：申請期限、人數下限、證件需求）。
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="relative">
+                                                        <div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div>
+                                                        <h4 className="text-sm font-bold text-white mb-1">Step 2. 動線簡化</h4>
+                                                        <p className="text-sm text-gray-300">
+                                                            設計流暢的引導動線：<br />
+                                                            <span className="text-accent">閱讀須知 &rarr; 確認資格 &rarr; 選擇日期 &rarr; 填寫表單</span>
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="relative">
+                                                        <div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div>
+                                                        <h4 className="text-sm font-bold text-white mb-1">Step 3. 視覺轉化 (Visualizing)</h4>
+                                                        <p className="text-sm text-gray-300">
+                                                            將枯燥的數字與注意事項轉化為醒目的粗體與圖表，降低閱讀疲勞。
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="relative">
+                                                        <div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-secondary"></div>
+                                                        <h4 className="text-sm font-bold text-secondary mb-1">Step 4. 地圖整合</h4>
+                                                        <p className="text-sm text-gray-300">
+                                                            繪製專屬的向量地圖，將申請場地與導覽路線具象化，讓使用者對「地點」有直觀認識。
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 3. HIGHLIGHTS (強調特色) */}
+                                        {activeTab === 'highlights' && (
+                                            <div className="space-y-8 animate-fadeIn">
+                                                <h3 className="text-2xl font-bold text-white mb-6">設計特色 Highlights</h3>
+                                                <div className="space-y-4">
+                                                    {ANALYSIS_FEATURES.map((feat) => {
+                                                        const IconComp = Icons[feat.icon];
+                                                        return (
+                                                            <button
+                                                                key={feat.id}
+                                                                onClick={() => handleFeatureSwitch(feat)}
+                                                                className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(34,211,238,0.1)]' : 'border-white/5 hover:bg-white/5'}`}
+                                                            >
+                                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? 'bg-primary text-white' : 'bg-white/10 text-primary'}`}>
+                                                                    <IconComp />
+                                                                </div>
+                                                                <div>
+                                                                    <h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? 'text-primary' : 'text-white'}`}>{feat.title}</h4>
+                                                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                                                        {feat.desc}
+                                                                        <br /><br />
+                                                                        <span className={`font-semibold ${activeFeatureId === feat.id ? 'text-white' : 'text-gray-500'}`}>{feat.note}</span>
+                                                                    </p>
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 4. GALLERY (頁面展示) */}
+                                        {activeTab === 'gallery' && (
+                                            <div className="space-y-8 animate-fadeIn">
+                                                <h3 className="text-2xl font-bold text-white mb-4">頁面展示 Gallery</h3>
+                                                <p className="text-gray-400 mb-6 text-sm">點擊下方卡片預覽各個申請頁面的最終設計成果。</p>
+                                                <div className="grid gap-4">
+                                                    {GALLERY_IMAGES.map((img) => (
+                                                        <button
+                                                            key={img.id}
+                                                            onClick={() => handleGallerySwitch(img)}
+                                                            className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? 'border-primary bg-white/5' : ''}`}
+                                                        >
+                                                            <div className="flex justify-between items-center mb-2">
+                                                                <h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                                                                    <span className="text-primary mr-2">{img.id}.</span>{img.name}
+                                                                </h4>
+                                                                <i className={`fas fa-eye transform transition-all ${activeGalleryId === img.id ? 'text-primary' : 'text-gray-600 group-hover:text-primary'}`}></i>
+                                                            </div>
+                                                            <p className="text-xs text-gray-500 group-hover:text-gray-400">{img.desc}</p>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </React.Fragment>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

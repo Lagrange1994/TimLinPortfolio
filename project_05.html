@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新竹市動物園 | 內部管理與行動應變系統 - UX Case Study</title>
+
+    <!-- Favicon Fix: 增加版本號 (?v=2) 強制瀏覽器重新抓取，並同時支援舊版寫法 -->
+    <link rel="shortcut icon" href="./img/favicon/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#86C232',    /* 調整為動物園的自然綠色調 */
+                        secondary: '#FF9671',  /* 溫暖的輔助色 */
+                        dark: '#1A1D1A',
+                        'dark-light': '#262926',
+                        'dark-lighter': '#3D403D',
+                        accent: '#FFC75F'      /* 強調色 */
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
+                        heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* BASIC SETUP */
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1A1D1A;
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            color: #fff;
+        }
+
+        /* MAIN SCROLL CONTAINER */
+        #main-container {
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* SECTIONS */
+        .page-section {
+            width: 100vw;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(38, 41, 38, 0.95), rgba(26, 29, 26, 0.98));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(134, 194, 50, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(134, 194, 50, 0.2);
+        }
+
+        /* Scrollbars */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #3D403D;
+            border-radius: 10px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #86C232;
+        }
+
+        /* Unified Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1A1D1A;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3D403D;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #86C232;
+        }
+
+        /* Animations */
+        .fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom Hero Background - 使用森林系背景 */
+        .hero-bg-custom {
+            background-image: url('./img/project_05/hero_img.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .hero-bg-custom::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(26, 29, 26, 0.4) 0%, rgba(26, 29, 26, 0.7) 100%);
+            z-index: 1;
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1A1D1A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-animation {
+            width: 65px;
+            aspect-ratio: 1;
+            position: relative;
+        }
+
+        .loader-animation:before,
+        .loader-animation:after {
+            content: "";
+            position: absolute;
+            border-radius: 50px;
+            box-shadow: 0 0 0 3px inset #fff;
+            animation: l4 2.5s infinite;
+        }
+
+        .loader-animation:after {
+            animation-delay: -1.25s;
+        }
+
+        @keyframes l4 {
+            0% {
+                inset: 0 35px 35px 0;
+            }
+
+            12.5% {
+                inset: 0 35px 0 0;
+            }
+
+            25% {
+                inset: 35px 35px 0 0;
+            }
+
+            37.5% {
+                inset: 35px 0 0 0;
+            }
+
+            50% {
+                inset: 35px 0 0 35px;
+            }
+
+            62.5% {
+                inset: 0 0 0 35px;
+            }
+
+            75% {
+                inset: 0 0 35px 35px;
+            }
+
+            87.5% {
+                inset: 0 0 35px 0;
+            }
+
+            100% {
+                inset: 0 35px 35px 0;
+            }
+        }
+
+        .back-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn:hover i {
+            transform: translateX(-4px);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Icons Component
+        const Icons = {
+            Figma: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2H8.5C6.57 2 5 3.57 5 5.5C5 7.43 6.57 9 8.5 9H12V2Z" /><path d="M12 9H8.5C6.57 9 5 10.57 5 12.5C5 14.43 6.57 16 8.5 16H12V9Z" /><path d="M12 16H8.5C6.57 16 5 17.57 5 19.5C5 21.43 6.57 23 8.5 23C10.43 23 12 21.43 12 19.5V16Z" /><path d="M12 2H15.5C17.43 2 19 3.57 19 5.5C19 7.43 17.43 9 15.5 9H12V2Z" /><circle cx="15.5" cy="12.5" r="3.5" /></svg>,
+            Illustrator: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 4H4V20H20V4Z" /><path d="M8 16L11 8L14 16" /><path d="M8.5 14H13.5" /><circle cx="17" cy="15" r="1" /></svg>,
+            Chart: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
+            Mobile: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>,
+            Alert: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
+            Map: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>,
+            Calendar: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
+            Camera: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>,
+        };
+
+        // NEW: Hierarchical Gallery Data Structure
+        const GALLERY_CATEGORIES = [
+            {
+                id: 'cat_web',
+                title: '網頁管理後台 (Web)',
+                type: 'web',
+                images: [
+                    { id: 'web-01', name: '首頁儀表板', src: './img/project_05/竹市動物園_後台_首頁.jpg' },
+                    { id: 'web-02', name: '人流熱區分析', src: './img/project_05/竹市動物園_後台_人流分析.jpg' },
+                    { id: 'web-03', name: '營運行事曆', src: './img/project_05/竹市動物園_後台_行事曆.jpg' },
+                    { id: 'web-04', name: '園區影像監控', src: './img/project_05/竹市動物園_後台_園區影像.jpg' },
+                    { id: 'web-05', name: '動物知識庫', src: './img/project_05/竹市動物園_後台_知識庫.jpg' }
+                ]
+            },
+            {
+                id: 'cat_app',
+                title: '行動應用程式 (App)',
+                type: 'app',
+                images: [
+                    { id: 'app-01', name: '登入頁面', src: './img/project_05/竹市動物園_APP(內部)_登入頁.png' },
+                    { id: 'app-02', name: '行動首頁', src: './img/project_05/竹市動物園_APP(內部)_首頁.png' },
+                    { id: 'app-03', name: '園區即時資訊', src: './img/project_05/竹市動物園_APP(內部)_園區即時資訊.png' },
+                    { id: 'app-04', name: '緊急協助通報', src: './img/project_05/竹市動物園_APP(內部)_緊急協助通報.png' },
+                    { id: 'app-05', name: '行動行事曆', src: './img/project_05/竹市動物園_APP(內部)_行事曆.png' },
+                    { id: 'app-06', name: '行動知識庫', src: './img/project_05/竹市動物園_APP(內部)_知識庫.png' }
+                ]
+            }
+        ];
+
+        const App = () => {
+            const [loading, setLoading] = useState(true);
+            const [activeTab, setActiveTab] = useState('context');
+            // Initialize with the first image of the first category
+            const [currentImage, setCurrentImage] = useState(GALLERY_CATEGORIES[0].images[0].src);
+            const [activeGalleryId, setActiveGalleryId] = useState(GALLERY_CATEGORIES[0].images[0].id);
+            const [imageType, setImageType] = useState('web');
+
+            // New state to track active feature card ID for Process and Solution tabs
+            const [activeFeatureId, setActiveFeatureId] = useState(null);
+
+            const [showBackToHero, setShowBackToHero] = useState(false);
+            const mainContainerRef = useRef(null);
+            const splitRef = useRef(null);
+            const heroRef = useRef(null);
+
+            useEffect(() => {
+                const timer = setTimeout(() => setLoading(false), 1500);
+                return () => clearTimeout(timer);
+            }, []);
+
+            useEffect(() => {
+                // When tab changes, reset active feature and set default image
+                setActiveFeatureId(null);
+
+                switch (activeTab) {
+                    case 'context':
+                        updateImageDisplay('./img/project_05/display.png', null, 'web');
+                        break;
+                    case 'process':
+                        // Default to the first feature image for Process tab
+                        updateImageDisplay('./img/project_05/竹市動物園_後台_首頁.jpg', 'web-feat-01', 'web');
+                        setActiveFeatureId('web-feat-01');
+                        break;
+                    case 'solution':
+                        // Default to the first feature image for Solution tab
+                        updateImageDisplay('./img/project_05/竹市動物園_APP(內部)_緊急協助通報.png', 'app-feat-01', 'app');
+                        setActiveFeatureId('app-feat-01');
+                        break;
+                    case 'climax':
+                        // Reset to the first image when entering climax tab
+                        const firstImg = GALLERY_CATEGORIES[0].images[0];
+                        updateImageDisplay(firstImg.src, firstImg.id, 'web');
+                        break;
+                    default:
+                        updateImageDisplay('./img/project_05/竹市動物園_後台_首頁.jpg', null, 'web');
+                }
+            }, [activeTab]);
+
+            const updateImageDisplay = (src, id, type) => {
+                setCurrentImage(src);
+                // Only set activeGalleryId if it matches one of the gallery IDs (for climax tab)
+                // or if we want to track it separately. For now, we use activeFeatureId for process/solution.
+                if (activeTab === 'climax') {
+                    setActiveGalleryId(id);
+                }
+                setImageType(type);
+            };
+
+            const handleGallerySwitch = (imgObj, type) => {
+                updateImageDisplay(imgObj.src, imgObj.id, type);
+            };
+
+            // New handler for feature card clicks
+            const handleFeatureClick = (src, id, type) => {
+                setCurrentImage(src);
+                setActiveFeatureId(id);
+                setImageType(type);
+            };
+
+            const handleScroll = (e) => {
+                const scrollTop = e.target.scrollTop;
+                const windowHeight = window.innerHeight;
+                if (scrollTop > windowHeight * 0.5) {
+                    setShowBackToHero(true);
+                } else {
+                    setShowBackToHero(false);
+                }
+            };
+
+            const scrollToSection = (ref) => {
+                if (ref.current) {
+                    ref.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            const goBack = () => {
+                window.location.href = "index.html#portfolio";
+            };
+
+            return (
+                <React.Fragment>
+                    {/* Loader */}
+                    <div className={`loader ${loading ? '' : 'hidden'}`}>
+                        <div className="loader-animation"></div>
+                    </div>
+
+                    {/* Back Button */}
+                    <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
+                        <button
+                            onClick={goBack}
+                            className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40"
+                        >
+                            <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">
+                                Back to Portfolio
+                            </span>
+                        </button>
+                    </nav>
+
+                    {/* Back to Hero Button */}
+                    <button
+                        onClick={() => scrollToSection(heroRef)}
+                        className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+                    >
+                        <i className="fas fa-arrow-up"></i>
+                    </button>
+
+                    {/* MAIN SCROLL CONTAINER */}
+                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+
+                        {/* 1. HERO SECTION */}
+                        <section ref={heroRef} className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                            <div className="container max-w-6xl mx-auto px-8 z-20">
+                                <div className="max-w-3xl text-left">
+                                    <div className="inline-block px-4 py-1 rounded-full border border-accent/50 bg-accent/20 text-accent text-xs font-bold tracking-widest mb-6 fade-in-up" style={{ animationDelay: '0.1s' }}>
+                                        SMART ZOO MANAGEMENT
+                                    </div>
+                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left" style={{ animationDelay: '0.2s' }}>
+                                        新竹市動物園<br />
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">內部管理<br />與行動應變系統</span>
+                                    </h1>
+                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
+                                        從辦公室的「數據司令部」到現場的「行動先鋒」，<br />打造全方位的智慧園區管理體驗。
+                                    </h2>
+                                    <button
+                                        onClick={() => scrollToSection(splitRef)}
+                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(134,194,50,0.4)] transform hover:-translate-y-1"
+                                        style={{ animationDelay: '0.4s' }}
+                                    >
+                                        探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 2. SPLIT SCREEN (Content) */}
+                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+
+                            {/* LEFT: Image Preview (Adaptive for Mobile/Web screenshots) */}
+                            <div className="
+                                w-full h-[40vh] shrink-0 z-20
+                                lg:w-3/5 lg:h-full
+                                bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 
+                                border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
+                            ">
+                                {/* 根據是 APP 還是 Web 調整容器寬高比 */}
+                                <div className={`relative transition-all duration-500 flex flex-col shadow-2xl overflow-hidden
+                                    ${imageType === 'app' ? 'w-[350px] bg-transparent' : 'w-full max-w-4xl max-h-[85%] rounded-xl border border-white/10 bg-dark-light'}
+                                `}>
+
+                                    {/* Web Browser Header - 根據使用者需求，context [01.] Tab 不顯示 */}
+                                    {imageType === 'web' && activeTab !== 'context' && (
+                                        <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
+                                            <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                        </div>
+                                    )}
+
+                                    <div className={`relative overflow-hidden group ${imageType === 'app' ? '' : 'bg-white/5'}`}>
+                                        <img
+                                            src={currentImage}
+                                            alt="Preview"
+                                            className="w-full h-auto object-contain max-h-[80vh]"
+                                        />
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            {/* RIGHT: Narrative Scroll */}
+                            <div className="
+                                flex-1 w-full relative z-10
+                                lg:w-2/5 lg:h-full
+                                flex flex-col
+                            ">
+                                <div className="w-full h-full flex flex-col glass-panel relative">
+
+                                    {/* Sticky Header */}
+                                    <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                        <div className="p-8 pb-0">
+                                            <h2 className="text-2xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">新竹市動物園<br />內部管理與行動應變系統</h2>
+                                            <p className="text-gray-400 text-sm mb-4">Internal Management & Mobile Response</p>
+
+                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-6 pb-1">
+                                                {[
+                                                    { id: 'context', label: '01. 背景與挑戰' },
+                                                    { id: 'process', label: '02. 網頁系統' },
+                                                    { id: 'solution', label: '03. 行動APP' },
+                                                    { id: 'climax', label: '04. 介面總覽' }
+                                                ].map(tab => (
+                                                    <button
+                                                        key={tab.id}
+                                                        onClick={() => setActiveTab(tab.id)}
+                                                        className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id
+                                                            ? 'text-primary border-b-2 border-primary pb-1'
+                                                            : 'text-gray-500 hover:text-white pb-1'
+                                                            }`}
+                                                    >
+                                                        {tab.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Scrollable Content */}
+                                    <div className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll">
+
+                                        {/* 1. CONTEXT (背景) */}
+                                        {activeTab === 'context' && (
+                                            <div className="space-y-12 animate-fadeIn">
+                                                <div className="space-y-6">
+                                                    <h3 className="text-2xl font-bold text-white mb-4">專案背景 Context</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                                                        這是一個專為新竹市動物園內部員工與志工設計的整合管理系統。目標是將龐大的園區營運數據（動物照護、志工排班、人流安全）進行高效整合，並延伸至行動端以應對現場突發狀況。
+                                                    </p>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="feature-card p-4">
+                                                            <div className="text-xs text-gray-500 uppercase mb-1">My Role</div>
+                                                            <div className="font-bold text-white">UI 設計師</div>
+                                                        </div>
+                                                        <div className="feature-card p-4">
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
+                                                                    <Icons.Figma /> <span className="ml-1">Figma</span>
+                                                                </span>
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30">
+                                                                    <Icons.Illustrator /> <span className="ml-1">Illustrator</span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full h-px bg-white/10"></div>
+                                                <div className="space-y-6">
+                                                    <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                                                        <span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>
+                                                        管理痛點 Pain Points
+                                                    </h3>
+                                                    <div className="feature-card p-5 border-l-4 border-l-secondary">
+                                                        <h4 className="text-secondary font-bold text-sm mb-3">轉型前的困境</h4>
+                                                        <ul className="space-y-4 text-gray-300">
+                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">決策受限於辦公室</strong>管理者必須回到後台電腦才能查看人流數據，無法即時現場調度。</div></li>
+                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">緊急反應速度慢</strong>遇到遊客受傷或設施故障，通報流程繁瑣，延誤黃金處理時間。</div></li>
+                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">現場資訊斷層</strong>志工在現場被遊客詢問動物知識或活動時間時，無法快速查閱正確資訊。</div></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 2. PROCESS (網頁版解方) - With Clickable Feature Cards */}
+                                        {activeTab === 'process' && (
+                                            <div className="space-y-8 animate-fadeIn">
+                                                <h3 className="text-2xl font-bold text-white mb-6">網頁後台 (Desktop)</h3>
+
+                                                {/* 網頁版重點摘要區塊 */}
+                                                <div className="feature-card p-5 border-l-4 border-l-primary mb-8">
+                                                    <h4 className="text-primary font-bold text-lg mb-3 flex items-center">
+                                                        <i className="fas fa-chess-rook mr-2"></i> 決策與分析司令部
+                                                    </h4>
+                                                    <ul className="space-y-3">
+                                                        <li className="flex items-start text-sm text-gray-300">
+                                                            <span className="text-primary mr-2">•</span>
+                                                            <span><strong className="text-white">全盤數據：</strong>人流長期趨勢分析、歷史報表。</span>
+                                                        </li>
+                                                        <li className="flex items-start text-sm text-gray-300">
+                                                            <span className="text-primary mr-2">•</span>
+                                                            <span><strong className="text-white">深度管理：</strong>排班管理、知識庫建檔、系統設定。</span>
+                                                        </li>
+                                                        <li className="flex items-start text-sm text-gray-300">
+                                                            <span className="text-primary mr-2">•</span>
+                                                            <span><strong className="text-white">適用情境：</strong>辦公室內的行政作業與策略規劃。</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+
+                                                {/* Separator Line */}
+                                                <div className="w-full h-px bg-white/10 mb-8"></div>
+
+                                                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                                                    <span className="w-1 h-6 bg-primary rounded-full mr-3"></span>
+                                                    核心功能 Core Features
+                                                </h3>
+
+                                                <div className="space-y-4">
+                                                    {/* Clickable Card 1: 數據儀表板 */}
+                                                    <button
+                                                        onClick={() => handleFeatureClick('./img/project_05/竹市動物園_後台_首頁.jpg', 'web-feat-01', 'web')}
+                                                        className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'web-feat-01' ? 'border-primary bg-white/10 shadow-[0_0_15px_rgba(134,194,50,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
+                                                    >
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === 'web-feat-01' ? 'bg-primary text-dark' : 'bg-gradient-to-br from-primary/20 to-primary/5 text-primary'}`}>
+                                                            <Icons.Chart />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === 'web-feat-01' ? 'text-primary' : 'text-white'}`}>全方位數據儀表板</h4>
+                                                            <p className="text-xs text-gray-400 leading-relaxed">
+                                                                將人流趨勢、動物出席(90%)與事件處理進度整合於首頁，協助管理者一目瞭然掌握園區脈動。
+                                                            </p>
+                                                        </div>
+                                                    </button>
+
+                                                    {/* Clickable Card 2: 營運行事曆 */}
+                                                    <button
+                                                        onClick={() => handleFeatureClick('./img/project_05/竹市動物園_後台_行事曆.jpg', 'web-feat-02', 'web')}
+                                                        className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'web-feat-02' ? 'border-blue-400 bg-white/10 shadow-[0_0_15px_rgba(96,165,250,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
+                                                    >
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === 'web-feat-02' ? 'bg-blue-400 text-dark' : 'bg-gradient-to-br from-blue-400/20 to-blue-400/5 text-blue-400'}`}>
+                                                            <Icons.Calendar />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === 'web-feat-02' ? 'text-blue-400' : 'text-white'}`}>智慧排班與維護</h4>
+                                                            <p className="text-xs text-gray-400 leading-relaxed">
+                                                                清晰顯示每日志工排班與設施維護事件(如：稼水驅動)，確保人力配置與園區運作無縫接軌。
+                                                            </p>
+                                                        </div>
+                                                    </button>
+
+                                                    {/* Clickable Card 3: 監控與分析 */}
+                                                    <button
+                                                        onClick={() => handleFeatureClick('./img/project_05/竹市動物園_後台_園區影像.jpg', 'web-feat-03', 'web')}
+                                                        className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'web-feat-03' ? 'border-purple-400 bg-white/10 shadow-[0_0_15px_rgba(192,132,252,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
+                                                    >
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === 'web-feat-03' ? 'bg-purple-400 text-dark' : 'bg-gradient-to-br from-purple-400/20 to-purple-400/5 text-purple-400'}`}>
+                                                            <Icons.Camera />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === 'web-feat-03' ? 'text-purple-400' : 'text-white'}`}>即時監控與知識庫</h4>
+                                                            <p className="text-xs text-gray-400 leading-relaxed">
+                                                                結合即時影像監控與人流熱區分析，並整合內部動物知識庫，建構完整的安全與資訊防護網。
+                                                            </p>
+                                                        </div>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 3. SOLUTION (行動版解方) - With Clickable Feature Cards */}
+                                        {activeTab === 'solution' && (
+                                            <div className="space-y-8 animate-fadeIn">
+                                                <h3 className="text-2xl font-bold text-white mb-6">手機 APP (Mobile)</h3>
+
+                                                {/* 手機版重點摘要區塊 */}
+                                                <div className="feature-card p-5 border-l-4 border-l-secondary mb-8">
+                                                    <h4 className="text-secondary font-bold text-lg mb-3 flex items-center">
+                                                        <i className="fas fa-bolt mr-2"></i> 現場執行與應變先鋒
+                                                    </h4>
+                                                    <ul className="space-y-3">
+                                                        <li className="flex items-start text-sm text-gray-300">
+                                                            <span className="text-secondary mr-2">•</span>
+                                                            <span><strong className="text-white">即時資訊：</strong>現場人流熱區圖 (Heatmap)、當日活動。</span>
+                                                        </li>
+                                                        <li className="flex items-start text-sm text-gray-300">
+                                                            <span className="text-secondary mr-2">•</span>
+                                                            <span><strong className="text-white">緊急應變：</strong>專屬緊急協助按鈕 (長按3秒)。</span>
+                                                        </li>
+                                                        <li className="flex items-start text-sm text-gray-300">
+                                                            <span className="text-secondary mr-2">•</span>
+                                                            <span><strong className="text-white">適用情境：</strong>巡邏、現場導覽、突發狀況處理</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+
+                                                {/* Separator Line */}
+                                                <div className="w-full h-px bg-white/10 mb-8"></div>
+
+                                                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                                                    <span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>
+                                                    行動亮點 Mobile Highlights
+                                                </h3>
+
+                                                <div className="space-y-4">
+                                                    {/* Clickable Card 1: 緊急協助 */}
+                                                    <button
+                                                        onClick={() => handleFeatureClick('./img/project_05/竹市動物園_APP(內部)_緊急協助通報.png', 'app-feat-01', 'app')}
+                                                        className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'app-feat-01' ? 'border-secondary bg-white/10 shadow-[0_0_15px_rgba(255,150,113,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
+                                                    >
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === 'app-feat-01' ? 'bg-secondary text-dark' : 'bg-gradient-to-br from-secondary/20 to-secondary/5 text-secondary'}`}>
+                                                            <Icons.Alert />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === 'app-feat-01' ? 'text-secondary' : 'text-white'}`}>緊急協助通報</h4>
+                                                            <p className="text-xs text-gray-400 leading-relaxed">
+                                                                <span className="text-secondary font-semibold">行動端獨有:</span> 長按 3 秒即可啟動標準通報流程，大幅縮短受傷或設施故障的反應時間，確保園區安全。
+                                                            </p>
+                                                        </div>
+                                                    </button>
+
+                                                    {/* Clickable Card 2: 即時熱區 */}
+                                                    <button
+                                                        onClick={() => handleFeatureClick('./img/project_05/竹市動物園_APP(內部)_園區即時資訊.png', 'app-feat-02', 'app')}
+                                                        className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'app-feat-02' ? 'border-accent bg-white/10 shadow-[0_0_15px_rgba(255,199,95,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
+                                                    >
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === 'app-feat-02' ? 'bg-accent text-dark' : 'bg-gradient-to-br from-accent/20 to-accent/5 text-accent'}`}>
+                                                            <Icons.Map />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === 'app-feat-02' ? 'text-accent' : 'text-white'}`}>即時人流熱區</h4>
+                                                            <p className="text-xs text-gray-400 leading-relaxed">
+                                                                <span className="text-accent font-semibold">決策支援:</span> 巡邏人員透過手機地圖，一眼識別擁擠區域（如：可愛動物區 250人），立即進行分流引導。
+                                                            </p>
+                                                        </div>
+                                                    </button>
+
+                                                    {/* Clickable Card 3: 行動儀表板 */}
+                                                    <button
+                                                        onClick={() => handleFeatureClick('./img/project_05/竹市動物園_APP(內部)_首頁.png', 'app-feat-03', 'app')}
+                                                        className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'app-feat-03' ? 'border-primary bg-white/10 shadow-[0_0_15px_rgba(134,194,50,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
+                                                    >
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === 'app-feat-03' ? 'bg-primary text-dark' : 'bg-gradient-to-br from-primary/20 to-primary/5 text-primary'}`}>
+                                                            <Icons.Mobile />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === 'app-feat-03' ? 'text-primary' : 'text-white'}`}>行動儀表板</h4>
+                                                            <p className="text-xs text-gray-400 leading-relaxed">
+                                                                <span className="text-primary font-semibold">即時掌控:</span> 管理層無需進辦公室，滑動手機即可掌握動物出席率 (90%) 與志工出勤狀況。
+                                                            </p>
+                                                        </div>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 4. CLIMAX (Hierarchical Gallery) */}
+                                        {activeTab === 'climax' && (
+                                            <div className="space-y-8 animate-fadeIn pb-12">
+                                                <h3 className="text-2xl font-bold text-white mb-4">介面總覽 Gallery</h3>
+                                                <p className="text-gray-400 mb-8 text-sm">以下分為兩大模組展示完整的系統介面。</p>
+
+                                                <div className="space-y-6">
+                                                    {GALLERY_CATEGORIES.map((category) => (
+                                                        <div key={category.id} className="space-y-3">
+                                                            {/* Category Header */}
+                                                            <h4 className={`font-bold text-md flex items-center ${category.type === 'web' ? 'text-primary' : 'text-secondary'}`}>
+                                                                <span className={`w-2 h-2 rounded-full mr-2 ${category.type === 'web' ? 'bg-primary' : 'bg-secondary'}`}></span>
+                                                                {category.title}
+                                                            </h4>
+                                                            {/* Image Grid for this Category */}
+                                                            <div className="grid gap-3 pl-4 border-l border-white/10">
+                                                                {category.images.map((img) => (
+                                                                    <button
+                                                                        key={img.id}
+                                                                        onClick={() => handleGallerySwitch(img, category.type)}
+                                                                        className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(134,194,50,0.1)]' : 'border-white/5'}`}
+                                                                    >
+                                                                        <div className="flex justify-between items-center">
+                                                                            <h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}>
+                                                                                <span className={`${category.type === 'web' ? 'text-primary/70' : 'text-secondary/70'} mr-2 text-xs font-mono`}>{img.id}</span>
+                                                                                {img.name}
+                                                                            </h4>
+                                                                            {/* Icon indicating active state */}
+                                                                            <i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? (category.type === 'web' ? 'text-primary' : 'text-secondary') + ' translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
+                                                                        </div>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                    </div>
+                </React.Fragment>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</body>
+
+</html>

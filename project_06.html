@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>桃園捷運 App 改版 | UX/UI Case Study</title>
+
+    <!-- Favicon Fix: 增加版本號 (?v=2) 強制瀏覽器重新抓取，並同時支援舊版寫法 -->
+    <link rel="shortcut icon" href="./img/favicon/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7F3F98', // 桃捷紫
+                        secondary: '#00A0E9', // 桃捷藍
+                        dark: '#121212',
+                        'dark-light': '#1E1E1E',
+                        accent: '#F59E0B'
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #121212;
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            color: #fff;
+        }
+
+        #main-container {
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .page-section {
+            width: 100vw;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(18, 18, 18, 0.98));
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Style A: Standard/Original Card (For Tabs 01 & 05) */
+        .feature-card-standard {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card-standard:hover {
+            transform: translateY(-2px);
+            border-color: rgba(127, 63, 152, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(127, 63, 152, 0.2);
+        }
+
+        /* Style B: Minimal/Interactive Card (For Tabs 02-04) */
+        .feature-card-minimal {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            border-top-width: 1px;
+            border-right-width: 1px;
+            border-bottom-width: 1px;
+            border-left-width: 4px;
+            border-top-color: transparent;
+            border-right-color: transparent;
+            border-bottom-color: transparent;
+        }
+
+        .feature-card-minimal:hover {
+            transform: translateY(-2px);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3D3D3D;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7F3F98;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-bg-metro {
+            background-image: url('./img/project_06/hero_img.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .hero-bg-metro::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(18, 18, 18, 0.2) 0%, rgba(18, 18, 18, 0.5) 100%);
+            z-index: 1;
+        }
+
+        /* Phone Frame (No fixed aspect ratio now) */
+        .phone-frame-auto {
+            border: 8px solid #333;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+            background: #000;
+            /* Removed aspect-ratio to allow auto height */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(43, 108, 176, 0.4);
+            /* Updated to new primary */
+            box-shadow: 0 10px 30px -10px rgba(43, 108, 176, 0.2);
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0F1115;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-animation {
+            width: 65px;
+            aspect-ratio: 1;
+            position: relative;
+        }
+
+        .loader-animation:before,
+        .loader-animation:after {
+            content: "";
+            position: absolute;
+            border-radius: 50px;
+            box-shadow: 0 0 0 3px inset #ffffff;
+            animation: l4 2.5s infinite;
+        }
+
+        .loader-animation:after {
+            animation-delay: -1.25s;
+        }
+
+        @keyframes l4 {
+            0% {
+                inset: 0 35px 35px 0;
+            }
+
+            12.5% {
+                inset: 0 35px 0 0;
+            }
+
+            25% {
+                inset: 35px 35px 0 0;
+            }
+
+            37.5% {
+                inset: 35px 0 0 0;
+            }
+
+            50% {
+                inset: 35px 0 0 35px;
+            }
+
+            62.5% {
+                inset: 0 0 0 35px;
+            }
+
+            75% {
+                inset: 0 0 35px 35px;
+            }
+
+            87.5% {
+                inset: 0 0 35px 0;
+            }
+
+            100% {
+                inset: 0 35px 35px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- Icons ---
+        const Icons = {
+            XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
+            AI: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l-9 18h18L12 3z" /><circle cx="12" cy="13" r="2" /></svg>,
+            Train: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2zM16 3v18M8 3v18M3 12h18" /></svg>,
+            Shop: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>,
+            User: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
+            Question: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            Loop: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
+            Check: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            Popup: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+        };
+
+        // --- 🌟 Gallery Data (05. 所有畫面) ---
+        const GALLERY_ITEMS = [
+            { id: 'home', name: '首頁概覽', desc: '整合快捷入口與即時資訊', src: './img/project_06/home.png' },
+            { id: 'timetable', name: '時刻表查詢', desc: '優化後的卡片式介面', src: './img/project_06/time_table_a.png' },
+            { id: 'shop_home', name: '商城首頁', desc: '原生化的商品瀏覽體驗', src: './img/project_06/shop.png' },
+            { id: 'shop_detail', name: '商品內頁', desc: '完整的商品資訊與庫存', src: './img/project_06/shop_detail.png' },
+            { id: 'redemption', name: '兌換專區', desc: '虛實整合的分類列表', src: './img/project_06/shop_a.png' },
+            { id: 'event_list', name: '最新消息', desc: '最新消息顯示', src: './img/project_06/news.png' },
+            { id: 'popup', name: '領取彈窗', desc: '多樣化的領取機制', src: './img/project_06/event_a.png' }
+        ];
+
+        // --- Scenario Data (Before & After) ---
+        const SCENARIOS = {
+            context: {
+                title: 'Project Overview',
+                content: (
+                    <img src="./img/project_06/display.png" className="w-full h-auto rounded-lg shadow-lg" alt="Overview Cover" />
+                )
+            },
+            ux_strategy: {
+                title: '時刻表查詢',
+                before: (
+                    <img src="./img/project_06/time_table_b.png" className="w-full h-full object-cover" alt="Timetable Before" />
+                ),
+                after: (
+                    <img src="./img/project_06/time_table_a.png" className="w-full h-full object-cover" alt="Timetable After" />
+                )
+            },
+            biz_value: {
+                title: '商城與兌換',
+                before: (
+                    <img src="./img/project_06/shop_b.png" className="w-full h-full object-cover" alt="Shop Before" />
+                ),
+                after: (
+                    <img src="./img/project_06/shop_a.png" className="w-full h-full object-cover" alt="Shop After" />
+                )
+            },
+            engagement: {
+                title: '活動閉環',
+                before: (
+                    <img src="./img/project_06/event_b.png" className="w-full h-full object-cover" alt="Event Before" />
+                ),
+                after: (
+                    <img src="./img/project_06/event_a.png" className="w-full h-full object-cover" alt="Event After" />
+                )
+            }
+        };
+
+        const App = () => {
+            const [loading, setLoading] = useState(true);
+            const [activeTab, setActiveTab] = useState('context');
+            const [comparisonMode, setComparisonMode] = useState('after');
+            const [activeGalleryItem, setActiveGalleryItem] = useState(GALLERY_ITEMS[0]);
+            const [showBackToTop, setShowBackToTop] = useState(false);
+
+            const mainContainerRef = useRef(null);
+            const splitRef = useRef(null);
+
+            useEffect(() => {
+                const timer = setTimeout(() => setLoading(false), 1000);
+                return () => clearTimeout(timer);
+            }, []);
+
+            useEffect(() => {
+                setComparisonMode('after');
+            }, [activeTab]);
+
+            const handleScroll = (e) => {
+                if (e.target.scrollTop > 300) {
+                    setShowBackToTop(true);
+                } else {
+                    setShowBackToTop(false);
+                }
+            };
+
+            const scrollToSection = (ref) => {
+                if (ref.current) {
+                    ref.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            const scrollToTop = () => {
+                if (mainContainerRef.current) {
+                    mainContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            };
+
+            // --- Render Logic for Left Visual ---
+            const renderVisualContent = () => {
+                if (activeTab === 'gallery') {
+                    // Using w-full h-auto object-contain to respect the image size within the container
+                    return <img src={activeGalleryItem.src} className="w-full h-auto object-contain animate-fade-in" alt={activeGalleryItem.name} key={activeGalleryItem.id} />;
+                }
+                if (activeTab === 'context') {
+                    return SCENARIOS.context.content;
+                }
+                return SCENARIOS[activeTab][comparisonMode];
+            };
+
+            // Context Mode Check
+            const isContext = activeTab === 'context';
+
+            const goBack = () => {
+                window.location.href = "index.html#portfolio";
+            };
+
+            return (
+                <React.Fragment>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
+
+                    <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
+                        <button
+                            onClick={goBack}
+                            className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40"
+                        >
+                            <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">
+                                Back to Portfolio
+                            </span>
+                        </button>
+                    </nav>
+
+                    {/* 2. Back to Top */}
+                    <button
+                        onClick={scrollToTop}
+                        className={`fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full bg-primary text-white shadow-lg flex items-center justify-center transition-all duration-300 hover:bg-white hover:text-primary hover:-translate-y-1 ${showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+                    >
+                        <i className="fas fa-arrow-up"></i>
+                    </button>
+
+                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+
+                        {/* HERO */}
+                        <section className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-metro">
+                            <div className="container max-w-6xl mx-auto px-8 z-20">
+                                <div className="max-w-3xl text-left">
+                                    <div className="inline-block px-4 py-1 rounded-full border border-white bg-black/20 text-white text-xs font-bold tracking-widest mb-6 fade-in-up">
+                                        APP REDESIGN
+                                    </div>
+                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up" style={{ animationDelay: '0.1s' }}>
+                                        桃園捷運 i-搭桃捷<br />
+                                        <span className="text-white">體驗升級改版計畫</span>
+                                    </h1>
+                                    <h2 className="text-xl md:text-2xl text-gray-200 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed" style={{ animationDelay: '0.2s' }}>
+                                        優化通勤族的乘車體驗，整合點數經濟的商業生態。<br />
+                                        從時刻查詢到商城兌換，打造無縫接軌的數位旅程。
+                                    </h2>
+                                    <button onClick={() => scrollToSection(splitRef)} className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-lg transform hover:-translate-y-1" style={{ animationDelay: '0.3s' }}>
+                                        探索設計旅程 <i className="fas fa-arrow-down ml-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* SPLIT SCREEN */}
+                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+
+                            {/* LEFT: Visual Area */}
+                            <div className="w-full h-[50vh] shrink-0 z-20 lg:w-1/2 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative transition-colors duration-500">
+                                <div className="absolute top-10 left-10 w-32 h-32 bg-primary/20 blur-[60px] rounded-full"></div>
+                                <div className="absolute bottom-10 right-10 w-40 h-40 bg-secondary/20 blur-[60px] rounded-full"></div>
+
+                                {/* Dynamic Wrapper */}
+                                <div className={`
+                                    relative z-10 transform transition-all duration-500
+                                    ${isContext
+                                        ? 'w-full max-w-3xl h-auto flex items-center justify-center bg-transparent' // 01. Context: Wide, no border
+                                        : 'w-[280px] lg:w-[320px] h-auto bg-white shadow-2xl border-8 border-[#333] rounded-[30px] overflow-hidden' // 02-05: Phone Width, Auto Height, Phone Border
+                                    }
+                                `}>
+                                    {/* Content Container */}
+                                    <div className={`w-full h-full bg-gray-100 flex items-center justify-center overflow-hidden ${isContext ? 'rounded-xl' : ''}`}>
+                                        {renderVisualContent()}
+                                    </div>
+                                </div>
+
+                                {/* Controls */}
+                                <div className="mt-8 z-20 flex flex-col items-center space-y-3">
+                                    {activeTab !== 'context' && activeTab !== 'gallery' && (
+                                        <div className="flex bg-black/40 backdrop-blur-md rounded-full p-1 border border-white/10 shadow-lg">
+                                            <button
+                                                onClick={() => setComparisonMode('before')}
+                                                className={`px-6 py-2 rounded-full text-xs font-bold transition-all duration-300 ${comparisonMode === 'before' ? 'bg-red-500/80 text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
+                                            >
+                                                Before
+                                            </button>
+                                            <button
+                                                onClick={() => setComparisonMode('after')}
+                                                className={`px-6 py-2 rounded-full text-xs font-bold transition-all duration-300 ${comparisonMode === 'after' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
+                                            >
+                                                After
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* RIGHT: Narrative Content */}
+                            <div className="flex-1 w-full relative z-10 lg:w-1/2 lg:h-full flex flex-col">
+                                <div className="w-full h-full flex flex-col glass-panel relative">
+
+                                    <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                        <div className="p-8 pb-0">
+                                            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-1 leading-tight">桃捷APP改動計畫</h2>
+                                            <p className="text-gray-400 text-sm mb-4">Revamp Plan & Design Strategy</p>
+
+                                            <div className="flex space-x-8 overflow-x-auto custom-scroll mt-6 pb-1 border-b border-white/5">
+                                                {[
+                                                    { id: 'context', label: '01. 概覽與挑戰' },
+                                                    { id: 'ux_strategy', label: '02. 資訊可讀性 (UX)' },
+                                                    { id: 'biz_value', label: '03. 商業整合 (Biz)' },
+                                                    { id: 'engagement', label: '04. 活動閉環 (Loop)' },
+                                                    { id: 'gallery', label: '05. 所有畫面 (Gallery)' }
+                                                ].map(tab => (
+                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-all pb-3 relative ${activeTab === tab.id ? 'text-primary' : 'text-gray-500 hover:text-white'}`}>
+                                                        {tab.label}
+                                                        {activeTab === tab.id && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></span>}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex-1 p-6 lg:p-10 pb-24 overflow-y-auto custom-scroll">
+
+                                        {/* 1. Context (Standard Card Style) */}
+                                        {activeTab === 'context' && (
+                                            <div className="space-y-10 animate-fade-in">
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-white mb-3">專案背景 Project Overview</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                                                        桃園捷運 App 承載著通勤查詢與會員經濟的雙重任務。然而舊版介面在資訊呈現上過於擁擠，且商業功能（商城、兌換）散落在外部網頁，導致使用者體驗斷裂。本次改版旨在透過資訊重整，達成「好查、好買、好用」的目標。
+                                                    </p>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="feature-card p-4">
+                                                            <div className="text-xs text-gray-500 uppercase mb-1">My Role</div>
+                                                            <div className="font-bold text-white">UI 設計師</div>
+                                                        </div>
+                                                        <div className="feature-card p-4">
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
+                                                                    <Icons.XD /><span className="ml-1">Adobe XD</span>
+                                                                </span>
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30">
+                                                                    <Icons.AI /><span className="ml-1">Illustrator</span>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full h-px bg-white/10"></div>
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-white mb-4">雙重挑戰 The Challenge</h3>
+                                                    <div className="grid gap-5">
+                                                        {/* User Pain Point (Standard Style) */}
+                                                        <div className="feature-card-standard p-6 border-l-4 border-l-secondary">
+                                                            <div className="flex items-center mb-3 text-secondary">
+                                                                <Icons.User /><span className="ml-2 font-bold text-sm uppercase tracking-wider">User Pain Points</span>
+                                                            </div>
+                                                            <h4 className="text-white font-bold text-lg mb-2">轉乘資訊迷航，求助無門</h4>
+                                                            <ul className="list-disc list-inside text-sm text-gray-400 space-y-1">
+                                                                <li>票價時刻表未對齊，難以一眼辨識出發/抵達時間。</li>
+                                                                <li>高鐵與捷運班次缺乏視覺連動，難以辨認轉乘資訊，轉乘規劃困難。</li>
+                                                                <li>會員遇到問題時，App 內缺乏即時的常見問答入口。</li>
+                                                            </ul>
+                                                        </div>
+                                                        {/* Business Pain Point (Standard Style) */}
+                                                        <div className="feature-card-standard p-6 border-l-4 border-l-primary">
+                                                            <div className="flex items-center mb-3 text-primary">
+                                                                <Icons.Shop /><span className="ml-2 font-bold text-sm uppercase tracking-wider">Business Pain Points</span>
+                                                            </div>
+                                                            <h4 className="text-white font-bold text-lg mb-2">商業轉換率低，流量流失</h4>
+                                                            <ul className="list-disc list-inside text-sm text-gray-400 space-y-1">
+                                                                <li>缺乏原生商城，跳轉網頁導致使用者流失。</li>
+                                                                <li>兌換專區分類混亂，降低會員消耗點數的意願。</li>
+                                                                <li>活動訊息與領取流程斷裂，行銷成效打折。</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 2. UX Strategy (Minimal Card Style) */}
+                                        {activeTab === 'ux_strategy' && (
+                                            <div className="space-y-8 animate-fade-in">
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-white mb-2">策略 I：資訊可讀性優化</h3>
+                                                    <p className="text-xs text-secondary font-bold tracking-wide uppercase mb-4">Enhancing Information Accessibility</p>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-6">
+                                                        針對「時刻表難讀」的痛點，我們捨棄了傳統的表格清單，改採資訊層級分明的卡片式設計，將使用者的注意力聚焦在「時間」與「銜接」上。
+                                                    </p>
+                                                </div>
+                                                <div className="space-y-4">
+                                                    {/* Card 1 (Top): Secondary Blue */}
+                                                    <div className="feature-card-minimal p-6 border-l-4 border-l-secondary hover:border-secondary cursor-pointer" onClick={() => setComparisonMode('after')}>
+                                                        <div className="flex items-start">
+                                                            <div className="w-10 h-10 rounded-full bg-secondary/20 text-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Train /></div>
+                                                            <div className="ml-5">
+                                                                <h4 className="text-white font-bold text-lg">卡片式時刻表 (Card-based UI)</h4>
+                                                                <p className="text-sm text-gray-400 mt-2 leading-relaxed">
+                                                                    以"北上"與"南下"區分高鐵方向，列出停靠車站資訊，將列車時刻表上下對齊，並透過視覺引導線，自動媒合建議銜接的高鐵車次。
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Card 2 (Bottom): Primary Purple */}
+                                                    <div className="feature-card-minimal p-6 border-l-4 border-l-primary hover:border-primary">
+                                                        <div className="flex items-start">
+                                                            <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-1"><Icons.Question /></div>
+                                                            <div className="ml-5">
+                                                                <h4 className="text-white font-bold text-lg">即時自助服務 (Self-Service)</h4>
+                                                                <p className="text-sm text-gray-400 mt-2 leading-relaxed">
+                                                                    在會員專區新增「常見問答」入口，提供第一線的自助解決方案，減少客服負擔。
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 3. Biz Integration (Minimal Card Style) */}
+                                        {activeTab === 'biz_value' && (
+                                            <div className="space-y-8 animate-fade-in">
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-white mb-2">策略 II：商業生態整合</h3>
+                                                    <p className="text-xs text-secondary font-bold tracking-wide uppercase mb-4">Native Commerce & Redemption</p>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-6">
+                                                        將原本外連的網頁體驗「原生化 (Native)」，消除跳轉帶來的摩擦感，並透過清晰的分類架構提升點數經濟的轉換率。
+                                                    </p>
+                                                </div>
+
+                                                {/* Card 1 (Top): Secondary Blue */}
+                                                <div className="feature-card-minimal p-6 border-l-4 border-l-secondary hover:border-secondary cursor-pointer" onClick={() => setComparisonMode('after')}>
+                                                    <div className="flex items-start">
+                                                        <div className="w-10 h-10 rounded-full bg-secondary/20 text-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Shop /></div>
+                                                        <div className="ml-5">
+                                                            <h4 className="text-white font-bold text-lg">桃捷商城原生化</h4>
+                                                            <p className="text-sm text-gray-300 leading-relaxed mt-2">
+                                                                新增獨立商城內頁，完整呈現商品圖文、價格與庫存，提升購買意願，消除跳轉摩擦感。
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Card 2 (Bottom): Primary Purple */}
+                                                <div className="feature-card-minimal p-6 border-l-4 border-l-primary hover:border-primary">
+                                                    <div className="flex items-start">
+                                                        <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-1"><Icons.Shop /></div>
+                                                        <div className="ml-5">
+                                                            <h4 className="text-white font-bold text-lg">兌換專區架構重整</h4>
+                                                            <div className="text-sm text-gray-400 mt-2 space-y-1">
+                                                                <ul className="list-disc list-inside">
+                                                                    <li>採用兩層式架構 (類別 > 商品)。</li>
+                                                                    <li>明確區分「虛擬票券」與「實體商品」。</li>
+                                                                    <li>內頁增加「限購數量」與詳細說明。</li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 4. Loop (Minimal Card Style) */}
+                                        {activeTab === 'engagement' && (
+                                            <div className="space-y-8 animate-fade-in">
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-white mb-3">策略 III：活動閉環設計</h3>
+                                                    <p className="text-xs text-secondary font-bold tracking-wide uppercase mb-4">Closing the Loop</p>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-6">
+                                                        所有的行銷活動最終都應導向「行動」。我們優化了從瀏覽訊息到領取獎勵的路徑，打造完整的 Engagement Loop。
+                                                    </p>
+                                                </div>
+
+                                                <div className="space-y-4">
+                                                    {/* Card 1 (Top): Secondary Blue */}
+                                                    <div className="feature-card-minimal p-6 border-l-4 border-l-secondary hover:border-secondary cursor-pointer" onClick={() => setComparisonMode('after')}>
+                                                        <div className="flex items-start">
+                                                            <div className="w-10 h-10 rounded-full bg-secondary/20 text-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Loop /></div>
+                                                            <div className="ml-5">
+                                                                <h4 className="text-white font-bold text-lg">明確的行動呼籲 (CTA)</h4>
+                                                                <p className="text-sm text-gray-400 mt-2 leading-relaxed">
+                                                                    在內頁底部置入顯眼的「我要領取」按鈕，明確引導使用者進行下一步，避免瀏覽中斷。
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Card 2 (Bottom): Primary Purple */}
+                                                    <div className="feature-card-minimal p-6 border-l-4 border-l-primary hover:border-primary">
+                                                        <div className="flex items-start">
+                                                            <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-1"><Icons.Popup /></div>
+                                                            <div className="ml-5">
+                                                                <h4 className="text-white font-bold text-lg">彈出式領取機制 (Popup)</h4>
+                                                                <p className="text-sm text-gray-400 mt-2 leading-relaxed">
+                                                                    取代原本的靜態文字，點擊後即時彈出條碼或優惠碼，優化領取體驗，減少跳轉等待。
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 5. Gallery (Standard Card Style - Reverted to original design) */}
+                                        {activeTab === 'gallery' && (
+                                            <div className="space-y-8 animate-fade-in">
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-white mb-3">所有介面總覽 Gallery</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-6">
+                                                        <span className="text-primary font-bold">Value Delivered:</span><br />
+                                                        透過這次改版，我們不僅解決了使用者的操作痛點，更為桃捷構建了可持續發展的會員商業模式。<br /><br />
+                                                        瀏覽所有的改版介面細節。點擊下方卡片，左側將同步顯示對應的設計畫面。
+                                                    </p>
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-3">
+                                                    <div className="text-xs font-bold text-gray-500 uppercase mb-1">Interface Gallery</div>
+                                                    {GALLERY_ITEMS.map((item) => (
+                                                        <button
+                                                            key={item.id}
+                                                            onClick={() => setActiveGalleryItem(item)}
+                                                            /* Reverted to original: full border, no left stripe */
+                                                            className={`text-left feature-card-standard p-4 hover:border-primary transition-colors group flex items-center ${activeGalleryItem.id === item.id ? 'border-primary bg-white/5' : 'border-white/10'}`}
+                                                        >
+                                                            <div className="flex-1">
+                                                                <h4 className={`font-bold transition-colors text-sm mb-1 ${activeGalleryItem.id === item.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                                                                    {item.name}
+                                                                </h4>
+                                                                <p className="text-xs text-gray-500 group-hover:text-gray-400">
+                                                                    {item.desc}
+                                                                </p>
+                                                            </div>
+                                                            <i className={`fas fa-chevron-left transform transition-all ml-4 ${activeGalleryItem.id === item.id ? 'text-primary -translate-x-1' : 'text-gray-600 group-hover:text-primary group-hover:-translate-x-1'}`}></i>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                    </div>
+                </React.Fragment>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
