@@ -312,6 +312,27 @@
                 return () => clearTimeout(timer);
             }, []);
 
+            // --- KEYBOARD NAVIGATION (NEW) ---
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (!mainContainerRef.current) return;
+
+                    const scrollAmount = 100; // 每次按鍵的滾動距離 (像素)
+
+                    if (e.key === 'ArrowDown') {
+                        // 阻止預設行為以避免雙重滾動 (視瀏覽器而定)
+                        // e.preventDefault(); 
+                        mainContainerRef.current.scrollBy({ top: scrollAmount, behavior: 'smooth' });
+                    } else if (e.key === 'ArrowUp') {
+                        // e.preventDefault();
+                        mainContainerRef.current.scrollBy({ top: -scrollAmount, behavior: 'smooth' });
+                    }
+                };
+
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, []);
+
             // --- SCROLL HANDLER ---
             const handleScroll = (e) => {
                 const scrollTop = e.target.scrollTop;
@@ -375,7 +396,7 @@
                             <div className="container max-w-6xl mx-auto px-8 z-20">
                                 <div className="max-w-3xl text-left">
                                     <div className="inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 fade-in-up " style={{ animationDelay: '0.1s' }}>
-                                        UI/UX CASE STUDY
+                                        AIRPORT WEBSITE DESIGN PROPOSAL
                                     </div>
                                     <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left" style={{ animationDelay: '0.2s' }}>
                                         恆春航空站<br />
@@ -451,7 +472,7 @@
                                 {/* Header */}
                                 <div className="p-8 pb-0 shrink-0">
                                     <h2 className="text-3xl font-bold text-white font-heading mb-1">恆春航空站網站設計提案</h2>
-                                    <p className="text-gray-400 text-sm">Hengchun Airport Web Redesign</p>
+                                    <p className="text-gray-400 text-sm">Hengchun Airport Web Design Proposal</p>
 
                                     <div className="flex space-x-6 border-b border-white/10 mt-6 overflow-x-auto custom-scroll pb-1">
                                         {[
@@ -556,7 +577,7 @@
                                             <div className="relative">
                                                 <div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(0,212,255,0.5)]"></div>
                                                 <h4 className="text-sm font-bold text-white mb-1">04. 視覺優化</h4>
-                                                <p className="text-xs text-gray-400">細修 v15/v16 雙版本，平衡美感與資訊密度。</p>
+                                                <p className="text-xs text-gray-400">重新梳理繁雜資訊並分門別類，讓不同需求的使用者能直覺獲取所需內容。</p>
                                             </div>
                                         </div>
                                     </div>
@@ -594,7 +615,7 @@
                                                 <div>
                                                     <h4 className="font-bold text-white text-sm mb-1">彈性化資訊佈局</h4>
                                                     <p className="text-xs text-gray-400 leading-relaxed">
-                                                        規劃 v15 (圖像導航) 服務遊客，v16 (清單列表) 服務商務客，解決了「美觀 vs 效率」的矛盾。
+                                                        在資訊呈現上明確劃分為「最新消息」與「機場資訊」兩大核心類別，分別對應即時公告與靜態導覽需求，讓使用者能依據查找目的快速分流。
                                                     </p>
                                                 </div>
                                             </div>
