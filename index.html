@@ -97,10 +97,11 @@
             position: relative;
         }
 
-        /* 預設 (手機版)：區塊高度自動，可見 */
+        /* 預設 (手機版)：區塊高度設定 */
         .snap-section {
             height: auto;
-            min-height: 0;
+            min-height: 100vh;
+            /* 修改：手機版最低高度設為 100vh，確保佔滿一屏 */
             width: 100%;
             position: relative;
             opacity: 1;
@@ -108,11 +109,28 @@
             padding-top: 80px;
             /* 手機版頂部留白給 Navbar */
             padding-bottom: 40px;
+            /* 加入 Flex 讓內容在 100vh 內垂直置中 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* 預設 (手機版)：針對 Contact + Footer 的特殊設定 */
+        #contact.snap-section {
+            /* Contact 區塊也設為 100vh 以確保 Footer 撐到底部 */
+            /* 如果內容很少，footer 會貼底；如果內容多，會自動延伸 */
+            min-height: 100vh;
+            padding-bottom: 0;
+            /* 移除底部內距，讓 Footer 緊貼邊緣 */
+            justify-content: space-between;
+            /* 確保內容與 Footer 分開 */
         }
 
         /* 預設 (手機版)：取消最後一頁的 Flex 撐開效果，讓 Footer 自然排列 */
         .snap-section-last {
-            display: block;
+            display: flex;
+            /* 改為 flex 以支援 justify-between */
+            flex-direction: column;
         }
 
         /* === 動畫項目預設狀態 === */
@@ -597,7 +615,7 @@
         <div class="p-6">
             <div class="flex justify-between items-center mb-8">
                 <span class="text-xl font-bold gradient-text-brand font-heading">Tim<span
-                        class="text-white">.C</span></span>
+                        class="text-white">Lin</span></span>
                 <button id="close-menu" class="text-white focus:outline-none">
                     <i class="fas fa-times text-xl"></i>
                 </button>
@@ -763,8 +781,9 @@
                                     alt="Adobe XD" class="w-8 h-8 object-contain"></div>
                             <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Adobe XD</h4>
                             <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="5">0</span>+ <span class="text-sm md:text-base">yrs</span></div>
-
+                                    data-target="4">0</span>
+                                <span class="text-sm md:text-base">yrs</span>
+                            </div>
                         </div>
                         <!-- Photoshop -->
                         <div class="skill-card stagger-item">
@@ -773,7 +792,9 @@
                                     alt="Photoshop" class="w-8 h-8 object-contain"></div>
                             <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Photoshop</h4>
                             <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="5">0</span>+ <span class="text-sm md:text-base">yrs</span></div>
+                                    data-target="4">0</span>
+                                <span class="text-sm md:text-base">yrs</span>
+                            </div>
                         </div>
                         <!-- Illustrator -->
                         <div class="skill-card stagger-item">
@@ -782,7 +803,9 @@
                                     alt="Illustrator" class="w-8 h-8 object-contain"></div>
                             <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Illustrator</h4>
                             <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="5">0</span>+ <span class="text-sm md:text-base">yrs</span></div>
+                                    data-target="3">0</span>
+                                <span class="text-sm md:text-base">yrs</span>
+                            </div>
                         </div>
                         <!-- HTML/CSS -->
                         <div class="skill-card stagger-item">
@@ -796,18 +819,17 @@
                             <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
                                     data-target="5">0</span>+ <span class="text-sm md:text-base">yrs</span></div>
                         </div>
-                        <!-- Tailwind CSS -->
+                        <!-- Blender (Replaces JavaScript) -->
                         <div class="skill-card stagger-item">
                             <div class="skill-icon"><img
-                                    src="https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg"
-                                    alt="Tailwind CSS" class="w-8 h-8 object-contain"></div>
-                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Tailwind CSS</h4>
+                                    src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/blender/blender-original.svg"
+                                    alt="Blender" class="w-8 h-8 object-contain"></div>
+                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Blender</h4>
                             <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
                                     data-target="3">0</span>
                                 <span class="text-sm md:text-base">yrs</span>
                             </div>
                         </div>
-
                         <!-- React -->
                         <div class="skill-card stagger-item">
                             <div class="skill-icon"><img
@@ -819,26 +841,24 @@
                                 <span class="text-sm md:text-base">yrs</span>
                             </div>
                         </div>
-                        <!-- Blender (Replaces JavaScript) -->
+                        <!-- Tailwind CSS -->
                         <div class="skill-card stagger-item">
                             <div class="skill-icon"><img
-                                    src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/blender/blender-original.svg"
-                                    alt="Blender" class="w-8 h-8 object-contain"></div>
-                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Blender</h4>
+                                    src="https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg"
+                                    alt="Tailwind CSS" class="w-8 h-8 object-contain"></div>
+                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Tailwind CSS</h4>
                             <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="2">0</span>
+                                    data-target="3">0</span>
                                 <span class="text-sm md:text-base">yrs</span>
                             </div>
                         </div>
-
-
                         <!-- Spline (Replaces Responsive Design) -->
                         <div class="skill-card stagger-item">
                             <div class="skill-icon"><img src="./img/others/spline_logo.webp" alt="Spline"
                                     class="w-8 h-8 object-contain rounded-full"></div>
                             <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Spline</h4>
                             <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="1">0</span>
+                                    data-target="2">0</span>
                                 <span class="text-sm md:text-base">yrs</span>
                             </div>
                         </div>
@@ -971,7 +991,7 @@
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm md:text-base font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
-                                    <p class="text-xs text-gray-200 mb-4">人流分析與網站管理介面</p>
+                                    <p class="text-xs md:text-sm text-gray-200 mb-4">人流分析與網站管理介面</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Web
@@ -989,7 +1009,7 @@
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm md:text-base font-bold mb-2 font-heading">桃園捷運APP</h3>
-                                    <p class="text-xs text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
+                                    <p class="text-xs md:text-sm text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">UI/UX</span>
@@ -1129,9 +1149,9 @@
                                     <p class="text-xs md:text-sm text-gray-200 mb-4">航空站網站改版提案.</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">UI/UX</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Adobe
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
                                             XD</span>
                                     </div>
                                 </div>
