@@ -97,7 +97,7 @@
             position: relative;
         }
 
-        /* 預設 (手機版)：區塊高度設定 */
+        /* 預設 (手機版)：區塊高度自動，可見 */
         .snap-section {
             height: auto;
             min-height: 100vh;
@@ -118,7 +118,6 @@
         /* 預設 (手機版)：針對 Contact + Footer 的特殊設定 */
         #contact.snap-section {
             /* Contact 區塊也設為 100vh 以確保 Footer 撐到底部 */
-            /* 如果內容很少，footer 會貼底；如果內容多，會自動延伸 */
             min-height: 100vh;
             padding-bottom: 0;
             /* 移除底部內距，讓 Footer 緊貼邊緣 */
@@ -615,7 +614,7 @@
         <div class="p-6">
             <div class="flex justify-between items-center mb-8">
                 <span class="text-xl font-bold gradient-text-brand font-heading">Tim<span
-                        class="text-white">Lin</span></span>
+                        class="text-white">.C</span></span>
                 <button id="close-menu" class="text-white focus:outline-none">
                     <i class="fas fa-times text-xl"></i>
                 </button>
@@ -991,7 +990,7 @@
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm md:text-base font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
-                                    <p class="text-xs md:text-sm text-gray-200 mb-4">人流分析與網站管理介面</p>
+                                    <p class="text-xs text-gray-200 mb-4">人流分析與網站管理介面</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Web
@@ -1009,7 +1008,7 @@
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm md:text-base font-bold mb-2 font-heading">桃園捷運APP</h3>
-                                    <p class="text-xs md:text-sm text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
+                                    <p class="text-xs text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">UI/UX</span>
@@ -1149,9 +1148,9 @@
                                     <p class="text-xs md:text-sm text-gray-200 mb-4">航空站網站改版提案.</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">UI/UX</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Adobe
                                             XD</span>
                                     </div>
                                 </div>
@@ -1704,17 +1703,21 @@
                 history.scrollRestoration = 'manual';
             }
 
-            setTimeout(() => {
-                document.querySelector('.loader').classList.add('hidden');
+            const loader = document.querySelector('.loader');
 
-                // === 檢查 URL hash 或 sessionStorage 並跳轉 ===
+            // 定義隱藏 Loader 並進入頁面的函式
+            function hideLoader() {
+                if (loader.classList.contains('hidden')) return;
+                loader.classList.add('hidden');
+
+                // === 頁面初始化邏輯 ===
+
+                // 1. 檢查網址 Hash 或 sessionStorage
                 let initialIndex = 0;
-                const hash = window.location.hash; // e.g., "#portfolio"
+                const hash = window.location.hash;
 
                 if (hash) {
-                    // 移除 # 字號取得 ID
                     const targetId = hash.substring(1);
-                    // 尋找對應的 section
                     const sectionsArray = Array.from(sections);
                     const targetSection = document.getElementById(targetId);
 
@@ -1725,56 +1728,92 @@
                         }
                     }
                 } else {
-                    // 如果沒有 Hash，檢查 sessionStorage
                     const savedIndex = sessionStorage.getItem('lastSectionIndex');
                     if (savedIndex !== null) {
                         initialIndex = parseInt(savedIndex, 10);
                     }
                 }
 
+                // 2. 根據裝置模式執行對應邏輯
                 if (!isMobile()) {
-                    // 桌機版：如果有指定區塊，直接設定捲動位置 (不播放慢速移動動畫)
+                    // 桌機版
                     if (initialIndex > 0) {
+                        // 直接跳轉到指定區塊
                         currentSectionIndex = initialIndex;
 
-                        // 直接設定 scrollTop，瞬間跳轉
-                        scroller.scrollTop = sections[initialIndex].offsetTop;
-
-                        // 更新 Active 狀態
+                        // 確保樣式正確
                         sections.forEach(s => s.classList.remove('active-section'));
                         sections[initialIndex].classList.add('active-section');
 
-                        // 更新導航與按鈕狀態
+                        // 設置捲動位置
+                        scroller.scrollTop = sections[initialIndex].offsetTop;
+
                         updateNav(initialIndex);
 
-                        // 顯示 Back to Top
                         const backToTopBtn = document.getElementById('back-to-top');
                         backToTopBtn.classList.remove('opacity-0', 'invisible');
                         backToTopBtn.classList.add('opacity-100', 'visible');
 
-                        // 觸發進場動畫 (淡入、數字跳動)
+                        // 觸發進場動畫
                         triggerInternalAnimations(sections[initialIndex]);
                     } else {
-                        // 預設：首頁動畫
-                        triggerInternalAnimations(sections[0]);
+                        // 預設首頁
+                        currentSectionIndex = 0;
+                        sections[0].classList.add('active-section');
                         updateNav(0);
+                        triggerInternalAnimations(sections[0]);
                     }
                 } else {
-                    // 手機版
+                    // 手機版：直接顯示內容
                     document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
                     document.querySelectorAll('.stagger-item').forEach(el => {
                         el.style.opacity = 1;
                         el.style.transform = 'translateY(0)';
                     });
 
-                    // 手機版如果有 hash，手動確保一下位置
                     if (initialIndex > 0 && hash) {
                         const targetSection = sections[initialIndex];
-                        targetSection.scrollIntoView();
+                        if (targetSection) {
+                            // 稍微延遲以確保佈局完成
+                            setTimeout(() => {
+                                const headerOffset = 80;
+                                const elementPosition = targetSection.getBoundingClientRect().top;
+                                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                                window.scrollTo({ top: offsetPosition, behavior: "auto" });
+                            }, 100);
+                        }
                     }
                 }
-            }, 1000);
+            }
 
+            // === Spline 模型載入偵測 ===
+            const splineViewers = document.querySelectorAll('spline-viewer');
+            const totalSplineModels = splineViewers.length;
+            let loadedSplineModels = 0;
+
+            // 安全機制：最長等待 4 秒
+            const safetyNetTimeout = setTimeout(hideLoader, 4000);
+
+            if (totalSplineModels === 0) {
+                hideLoader();
+                clearTimeout(safetyNetTimeout);
+            } else {
+                splineViewers.forEach(viewer => {
+                    // 監聽 load 事件
+                    viewer.addEventListener('load', () => {
+                        loadedSplineModels++;
+                        if (loadedSplineModels >= totalSplineModels) {
+                            // 稍微延遲一點點，確保渲染完成
+                            setTimeout(() => {
+                                hideLoader();
+                                clearTimeout(safetyNetTimeout);
+                            }, 500);
+                        }
+                    });
+                });
+            }
+
+            // 初始化導航與其他組件
             const nav = document.querySelector('nav.hidden.md\\:flex');
             if (nav) {
                 const links = nav.querySelectorAll('.nav-link');
