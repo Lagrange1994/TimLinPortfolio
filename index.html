@@ -675,27 +675,43 @@
             </div>
         </section>
 
-        <!-- 關於我區塊 (About) - 已加入 stagger-item -->
+        <!-- 關於我區塊 (About) - 更新為大型卡片設計 (圖片左、文字右、無 8-bit) -->
         <section id="about" class="snap-section bg-dark-light md:flex md:items-center">
-            <div class="container max-w-7xl mx-auto px-8">
+            <div class="container max-w-7xl mx-auto px-8 w-full">
+                <!-- 標題 -->
                 <div class="text-center mb-10 stagger-item">
                     <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-heading">About <span
                             class="gradient-text font-heading">Me</span></h2>
                     <div class="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto"></div>
                 </div>
-                <div class="flex flex-col md:flex-row items-center">
-                    <div class="md:w-1/3 mb-10 md:mb-0 stagger-item">
-                        <div class="relative">
-                            <img src="./img/about_me.jpg" alt="Tim Lin Working"
-                                class="w-full max-w-md mx-auto rounded-lg relative z-10 aspect-square object-cover">
+
+                <!-- 大型整合卡片 -->
+                <div
+                    class="relative w-full bg-[#1E1E1E] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl fade-in">
+
+                    <!-- 背景圖片層 (Desktop: 左側, Mobile: 頂部) -->
+                    <div class="absolute top-0 left-0 w-full h-1/2 md:h-full md:w-1/2 stagger-item">
+                        <img src="./img/about_me.jpg" alt="Tim Lin Working"
+                            class="w-full h-full object-cover opacity-100 mix-blend-normal">
+                        <!-- 漸層遮罩：讓圖片邊緣柔和淡出到背景色 -->
+                        <!-- Mobile: 底部漸層向上 (from solid to transparent) -->
+                        <div
+                            class="absolute inset-0 bg-gradient-to-t from-[#1E1E1E] from-10% to-transparent to-50% md:hidden">
+                        </div>
+                        <!-- Desktop: 右側漸層向左 (from solid to transparent) -->
+                        <div
+                            class="absolute inset-0 hidden md:block bg-gradient-to-l from-[#1E1E1E] from-10% to-transparent to-50%">
                         </div>
                     </div>
-                    <div class="md:w-2/3 md:pl-16">
-                        <h3 class="text-lg md:text-2xl font-bold mb-4 font-heading stagger-item">結合嚴謹邏輯與前瞻技術的資深產品設計師
-                        </h3>
 
-                        <!-- 第一段：專業後台與系統設計 -->
-                        <p class="text-xs md:text-base text-gray-400 mb-6 stagger-item">
+                    <!-- 內容層 (Desktop: 右側, Mobile: 下方) -->
+                    <div
+                        class="relative z-10 p-8 md:p-16 md:w-2/3 ml-auto flex flex-col justify-center mt-[40%] md:mt-0">
+                        <h3
+                            class="text-lg md:text-2xl font-bold mb-4 font-heading text-white drop-shadow-md stagger-item">
+                            結合嚴謹邏輯與前瞻技術的資深產品設計師</h3>
+
+                        <p class="text-xs md:text-base text-gray-300 mb-6 drop-shadow-sm stagger-item">
                             擁有五年以上的設計實務經驗，我專精於為專業人員打造高複雜度的後台管理系統。從<span
                                 class="text-white font-bold">警政雲端智慧影像分析系統</span>、<span
                                 class="text-white font-bold">環保局數據管理平台</span>到<span
@@ -704,16 +720,14 @@
                                 XD</span> 梳理龐雜的資訊架構，將繁瑣的業務邏輯轉化為直觀、精準且高效的數位工作環境。
                         </p>
 
-                        <!-- 第二段：商業娛樂與 3D 視覺 -->
-                        <p class="text-xs md:text-base text-gray-400 mb-6 stagger-item">
+                        <p class="text-xs md:text-base text-gray-300 mb-6 drop-shadow-sm stagger-item">
                             除了嚴謹的系統設計，我也具備豐富的<span class="text-white font-bold">多媒體娛樂產業</span>與<span
-                                class="text-white font-bold">一般商業專案</span>執行經驗，致力於為品牌創造具備視覺張力與高互動性的數位體驗。我熱衷於導入創新技術以拓展設計邊界，熟練運用
+                                class="text-white font-bold">一般商業專案</span>執行經驗。我熱衷於導入創新技術，熟練運用
                             <span class="text-white font-bold">Blender</span> 與 <span
                                 class="text-white font-bold">Spline</span> 等 3D 工具，為平面介面注入空間感與沉浸式視覺效果。
                         </p>
 
-                        <!-- 第三段：AI 工具與技術協作 -->
-                        <p class="text-xs md:text-base text-gray-400 mb-8 stagger-item">
+                        <p class="text-xs md:text-base text-gray-300 mb-6 drop-shadow-sm stagger-item">
                             為了追求極致的工作效率，我積極整合前沿 AI 工具優化設計流程——運用 <span class="text-white font-bold">Gemini</span>
                             輔助邏輯發想，並搭配
                             <span class="text-white font-bold">Stitch</span> 與 <span
@@ -722,22 +736,31 @@
                                 class="text-white font-bold">Vue.js</span>
                             基礎，能有效縮短設計與開發之間的溝通距離，確保創意完美落地。
                         </p>
-                        <div class="grid grid-cols-2 gap-6 mb-8 stagger-item">
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mt-4 stagger-item">
                             <div>
-                                <h4 class="text-xs md:text-base font-medium text-gray-300 font-heading">Name:</h4>
-                                <p class="text-xs md:text-base">Tim Lin</p>
+                                <h4
+                                    class="text-xs md:text-sm font-medium text-gray-400 font-heading uppercase tracking-wider">
+                                    Name</h4>
+                                <p class="text-xs md:text-base font-semibold text-white">Tim Lin</p>
                             </div>
                             <div>
-                                <h4 class="text-xs md:text-base font-medium text-gray-300 font-heading">Email:</h4>
-                                <p class="text-xs md:text-base">lyfun0202@gmail.com</p>
+                                <h4
+                                    class="text-xs md:text-sm font-medium text-gray-400 font-heading uppercase tracking-wider">
+                                    Location</h4>
+                                <p class="text-xs md:text-base font-semibold text-white">Taipei, Taiwan</p>
                             </div>
                             <div>
-                                <h4 class="text-xs md:text-base font-medium text-gray-300 font-heading">Location:</h4>
-                                <p class="text-xs md:text-base">Taipei, Taiwan</p>
+                                <h4
+                                    class="text-xs md:text-sm font-medium text-gray-400 font-heading uppercase tracking-wider">
+                                    Experience</h4>
+                                <p class="text-xs md:text-base font-semibold text-white">5+ Years</p>
                             </div>
                             <div>
-                                <h4 class="text-xs md:text-base font-medium text-gray-300 font-heading">Experience:</h4>
-                                <p class="text-xs md:text-base">5+ Years</p>
+                                <h4
+                                    class="text-xs md:text-sm font-medium text-gray-400 font-heading uppercase tracking-wider">
+                                    Email</h4>
+                                <p class="text-xs md:text-base font-semibold text-white">lyfun0202@gmail.com</p>
                             </div>
                         </div>
                     </div>
@@ -969,7 +992,7 @@
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_02.html" aria-hidden="true">
+                                href="project_02.html">
                                 <img src="./img/my_portfolio/video_analyzation_app.png"
                                     alt="video analization system app" class="w-full h-full object-cover">
                                 <div class="project-overlay">
@@ -985,7 +1008,7 @@
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_05.html" aria-hidden="true">
+                                href="project_05.html">
                                 <img src="./img/my_portfolio/zoo.png" alt="zoo monitering web"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
@@ -1003,7 +1026,7 @@
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_06.html" aria-hidden="true">
+                                href="project_06.html">
                                 <img src="./img/my_portfolio/Taoyuan_MRT.png" alt="Taoyuan MRT App"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
@@ -1148,9 +1171,9 @@
                                     <p class="text-xs md:text-sm text-gray-200 mb-4">航空站網站改版提案.</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">UI/UX</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Adobe
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
                                             XD</span>
                                     </div>
                                 </div>
@@ -1950,7 +1973,7 @@
                             scroller.scrollTop = portfolioSection.offsetTop;
                         }, 50);
 
-                        // --- 新增：展開時觸發網格內卡片的淡入動畫 ---
+                        // --- 新增：展開時觸發網格內卡片的淡入動畫 (純淡入，無上浮) ---
                         const gridCards = gridContainer.querySelectorAll('.project-card');
                         gsap.fromTo(gridCards,
                             { opacity: 0 },
