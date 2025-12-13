@@ -526,7 +526,7 @@
             );
         };
 
-        // Phone Frame Component
+        // Phone Frame Component - UPDATED: Mobile p-4, Desktop p-12
         const PhoneFrame = ({ src, alt }) => {
             return (
                 <div className="flex items-center justify-center p-4 lg:p-12 w-full h-full">
@@ -545,7 +545,6 @@
             const [activeFeature, setActiveFeature] = useState(APP_FEATURES[0]);
             const [activeGalleryImg, setActiveGalleryImg] = useState(APP_GALLERY[0].src);
 
-            // GSAP State
             const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
             const isScrollingRef = useRef(false);
             const mainContainerRef = useRef(null);
@@ -559,13 +558,11 @@
                 return () => clearTimeout(timer);
             }, []);
 
-            // Initialize Sections
             useEffect(() => {
                 sectionsRef.current = [heroRef.current, splitRef.current];
                 if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
             }, [loading]);
 
-            // === GSAP SCROLL LOGIC ===
             const scrollToSection = (index) => {
                 if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
 
@@ -707,7 +704,7 @@
                         return <WindowFrame src="./img/project_02/p2_02.png" alt="Simplification" />;
                     case 'features':
                         return (
-                            // UPDATED: p-4 for mobile, lg:p-12 for desktop
+                            // UPDATED: Mobile p-4, Desktop p-12
                             <div className="w-full h-full p-4 lg:p-12 flex flex-col">
                                 <div className="flex-1 w-full relative min-h-0">
                                     <ComparisonSlider
@@ -763,7 +760,8 @@
                                     <div className={`inline-block px-4 py-1 rounded-full border border-secondary/50 bg-secondary/20 text-secondary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>
                                         MOBILE COMMAND CENTER
                                     </div>
-                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
+                                    {/* H1 Font Updated to font-heading */}
+                                    <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
                                         新竹縣警察局<br />
                                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">APP 雲端影像分析系統</span>
                                     </h1>
@@ -784,7 +782,7 @@
                         {/* 2. SPLIT LAYOUT */}
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark overflow-hidden">
 
-                            {/* LEFT: Visual Area (50vh on Mobile, 60% Width on Desktop) */}
+                            {/* LEFT: Visual Area */}
                             <div className="
                                 w-full h-[35vh] shrink-0 z-20
                                 lg:w-3/5 lg:h-full
@@ -793,7 +791,7 @@
                                 {renderLeftPanel()}
                             </div>
 
-                            {/* RIGHT: Content Area (50vh on Mobile, 40% Width on Desktop) */}
+                            {/* RIGHT: Content Area */}
                             <div className="
                                 w-full h-[65vh] relative z-10
                                 lg:w-2/5 lg:h-full
