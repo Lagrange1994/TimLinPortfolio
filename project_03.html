@@ -6,18 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>高雄市警察局 | 新世代智慧科技辦案系統 - UI/UX Case Study</title>
 
-    <!-- Favicon Fix: 增加版本號 (?v=2) 強制瀏覽器重新抓取，並同時支援舊版寫法 -->
     <link rel="shortcut icon" href="./img/favicon/favicon.ico">
     <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
 
-    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
 
-    <!-- Fonts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -31,8 +30,8 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#00A8E8',   /* Adjusted to a cleaner Tech Blue */
-                        secondary: '#FF9F1C', /* Orange for Maintenance/Alerts */
+                        primary: '#00A8E8',   /* Project 03 Original Blue */
+                        secondary: '#FF9F1C', /* Project 03 Original Orange */
                         dark: '#0F172A',
                         'dark-light': '#1E293B',
                         'dark-lighter': '#334155',
@@ -42,46 +41,59 @@
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
                         heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
                     },
-                    backgroundImage: {
-                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-                    }
                 }
             }
         }
     </script>
 
     <style>
-        /* BASIC SETUP */
+        /* === 基礎設定 === */
         body,
         html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
             background-color: #0F172A;
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
+            overflow: hidden;
+            /* 防止 Body 原生滾動 */
+            overscroll-behavior: none;
+            /* 防止 Safari 彈跳 */
         }
 
-        /* MAIN SCROLL CONTAINER */
-        #main-container {
+        /* === 主捲動容器 === */
+        #main-scroller {
             width: 100vw;
             height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-        }
-
-        /* SECTIONS */
-        .page-section {
-            width: 100vw;
-            min-height: 100vh;
-            position: relative;
             overflow: hidden;
+            position: relative;
         }
 
-        /* Glassmorphism */
+        /* === 全頁滾動區塊 === */
+        .snap-section {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .snap-section.active-section {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* === Hero 區塊設定 === */
+        #hero {
+            touch-action: none;
+        }
+
+        /* === 玻璃擬態與卡片 === */
         .glass-panel {
             background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
             backdrop-filter: blur(20px);
@@ -104,25 +116,6 @@
             box-shadow: 0 10px 30px -10px rgba(0, 168, 232, 0.2);
         }
 
-        /* Typography */
-        .gradient-text {
-            background: linear-gradient(90deg, #00A8E8, #2EC4B6, #FF9F1C);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-size: 200% auto;
-            animation: gradientMove 5s linear infinite;
-        }
-
-        @keyframes gradientMove {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            100% {
-                background-position: 200% 50%;
-            }
-        }
-
         /* Scrollbars */
         .custom-scroll::-webkit-scrollbar {
             width: 6px;
@@ -142,41 +135,36 @@
             background: #00A8E8;
         }
 
-        /* Unified Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #0F172A;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #00A8E8;
+        /* === 內容滾動區域 (手機版關鍵) === */
+        .scroll-content {
+            overflow-y: auto !important;
+            touch-action: pan-y !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            height: 100%;
         }
 
         /* Animations */
         .fade-in-up {
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(40px);
         }
 
         @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        /* Custom Hero Background - Abstract Data Theme */
+        /* Hero Background */
         .hero-bg-custom {
-            /* Using the dashboard image as a blurred background for the hero */
             background-image: url('./img/project_03/hero_img.png');
             background-size: cover;
             background-position: top center;
@@ -187,7 +175,6 @@
             content: '';
             position: absolute;
             inset: 0;
-            /* Darker overlay to make text pop */
             background: linear-gradient(to bottom, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.6) 100%);
             z-index: 1;
         }
@@ -285,7 +272,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Icons Component
+        // Icons
         const Icons = {
             Figma: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2H8.5C6.57 2 5 3.57 5 5.5C5 7.43 6.57 9 8.5 9H12V2Z" /><path d="M12 9H8.5C6.57 9 5 10.57 5 12.5C5 14.43 6.57 16 8.5 16H12V9Z" /><path d="M12 16H8.5C6.57 16 5 17.57 5 19.5C5 21.43 6.57 23 8.5 23C10.43 23 12 21.43 12 19.5V16Z" /><path d="M12 2H15.5C17.43 2 19 3.57 19 5.5C19 7.43 17.43 9 15.5 9H12V2Z" /><circle cx="15.5" cy="12.5" r="3.5" /></svg>,
             Illustrator: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 4H4V20H20V4Z" /><path d="M8 16L11 8L14 16" /><path d="M8.5 14H13.5" /><circle cx="17" cy="15" r="1" /></svg>,
@@ -296,85 +283,35 @@
             Camera: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
         };
 
-        // NEW: Solution Features Data Structure (Updated for Maintenance/Health Focus)
         const SOLUTION_FEATURES = [
-            {
-                id: 'sol-01',
-                title: '硬體健康度監控看板',
-                desc: '將 CPU/GPU 負載與 IoT 設備的 Ping 值連線狀態可視化。管理者在調閱畫面失敗前，即可先一步發現異常。',
-                icon: 'Server',
-                image: './img/project_03/工作區域 1@2x.png',
-                benefit: 'Benefit: 確保 AI 運算資源與前端攝影機的戰備狀態。'
-            },
-            {
-                id: 'sol-02',
-                title: '全透明維修履歷',
-                desc: '將傳統電話叫修轉化為「可視化進度條」。清楚記錄表單送出、廠商接單、維修中到結案的每一個時間節點。',
-                icon: 'Timeline',
-                image: './img/project_03/工作區域 4@2x.png',
-                benefit: 'Benefit: 釐清行政責任，大幅減少內部溝通內耗。'
-            },
-            {
-                id: 'sol-03',
-                title: '標準化報修流程',
-                desc: '結構化的通報表單設計，引導第一線員警準確填寫設備編號與故障類型，降低誤報率。',
-                icon: 'List',
-                image: './img/project_03/工作區域 12@2x.png',
-                benefit: 'Benefit: 提升報修資訊準確度，加速廠商處理效率。'
-            },
-            {
-                id: 'sol-04',
-                title: '路口設備整合調閱',
-                desc: '在地圖上點擊路口，即顯示該節點所有向度的攝影機狀態與畫面，實現直覺化的 GIS 空間管理。',
-                icon: 'Camera',
-                image: './img/project_03/工作區域 8@2x.png',
-                benefit: 'Benefit: 直覺化的路口即時調閱與狀態檢視。'
-            }
+            { id: 'sol-01', title: '硬體健康度監控看板', desc: '將 CPU/GPU 負載與 IoT 設備的 Ping 值連線狀態可視化。管理者在調閱畫面失敗前，即可先一步發現異常。', icon: 'Server', image: './img/project_03/工作區域 1@2x.png', benefit: 'Benefit: 確保 AI 運算資源與前端攝影機的戰備狀態。' },
+            { id: 'sol-02', title: '全透明維修履歷', desc: '將傳統電話叫修轉化為「可視化進度條」。清楚記錄表單送出、廠商接單、維修中到結案的每一個時間節點。', icon: 'Timeline', image: './img/project_03/工作區域 4@2x.png', benefit: 'Benefit: 釐清行政責任，大幅減少內部溝通內耗。' },
+            { id: 'sol-03', title: '標準化報修流程', desc: '結構化的通報表單設計，引導第一線員警準確填寫設備編號與故障類型，降低誤報率。', icon: 'List', image: './img/project_03/工作區域 12@2x.png', benefit: 'Benefit: 提升報修資訊準確度，加速廠商處理效率。' },
+            { id: 'sol-04', title: '路口設備整合調閱', desc: '在地圖上點擊路口，即顯示該節點所有向度的攝影機狀態與畫面，實現直覺化的 GIS 空間管理。', icon: 'Camera', image: './img/project_03/工作區域 8@2x.png', benefit: 'Benefit: 直覺化的路口即時調閱與狀態檢視。' }
         ];
 
-        // NEW: Hierarchical Gallery Data Structure
         const GALLERY_CATEGORIES = [
-            {
-                id: 'cat_health',
-                title: '系統健康度與維運',
-                images: [
-                    { id: '01-01', name: '營運監控 Dashboard', src: './img/project_03/工作區域 1@2x.png' },
-                    { id: '01-02', name: '維修通報流程追蹤', src: './img/project_03/工作區域 4@2x.png' },
-                    { id: '01-03', name: '通報列表管理', src: './img/project_03/工作區域 6@2x.png' },
-                    { id: '01-04', name: '已登記尋車列表', src: './img/project_03/工作區域 5@2x.png' }
-                ]
-            },
-            {
-                id: 'cat_surveillance',
-                title: 'GIS 與影像監控',
-                images: [
-                    { id: '02-01', name: '路口設備狀態整合', src: './img/project_03/工作區域 8@2x.png' },
-                    { id: '02-02', name: '全區域地圖監控', src: './img/project_03/工作區域 7@2x.png' },
-                    { id: '02-03', name: 'AI 影像辨識畫面', src: './img/project_03/工作區域 11@2x.png' }
-                ]
-            },
-            {
-                id: 'cat_search',
-                title: '車牌辨識與查詢',
-                images: [
-                    { id: '03-01', name: '車牌模糊搜尋', src: './img/project_03/工作區域 2@2x.png' },
-                    { id: '03-02', name: '辨識結果彈窗', src: './img/project_03/工作區域 3@2x.png' }
-                ]
-            }
+            { id: 'cat_health', title: '系統健康度與維運', images: [{ id: '01-01', name: '營運監控 Dashboard', src: './img/project_03/工作區域 1@2x.png' }, { id: '01-02', name: '維修通報流程追蹤', src: './img/project_03/工作區域 4@2x.png' }, { id: '01-03', name: '通報列表管理', src: './img/project_03/工作區域 6@2x.png' }, { id: '01-04', name: '已登記尋車列表', src: './img/project_03/工作區域 5@2x.png' }] },
+            { id: 'cat_surveillance', title: 'GIS 與影像監控', images: [{ id: '02-01', name: '路口設備狀態整合', src: './img/project_03/工作區域 8@2x.png' }, { id: '02-02', name: '全區域地圖監控', src: './img/project_03/工作區域 7@2x.png' }, { id: '02-03', name: 'AI 影像辨識畫面', src: './img/project_03/工作區域 11@2x.png' }] },
+            { id: 'cat_search', title: '車牌辨識與查詢', images: [{ id: '03-01', name: '車牌模糊搜尋', src: './img/project_03/工作區域 2@2x.png' }, { id: '03-02', name: '辨識結果彈窗', src: './img/project_03/工作區域 3@2x.png' }] }
         ];
 
         const App = () => {
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('context');
-            // Initialize with the first image
-            const [currentImage, setCurrentImage] = useState('context');
+            const [currentImage, setCurrentImage] = useState('./img/project_03/display.png');
             const [activeGalleryId, setActiveGalleryId] = useState(null);
             const [activeSolutionId, setActiveSolutionId] = useState(null);
-
             const [showBackToHero, setShowBackToHero] = useState(false);
+
+            // GSAP Scroll Logic State
+            const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+            const isScrollingRef = useRef(false);
             const mainContainerRef = useRef(null);
-            const splitRef = useRef(null);
+            const sectionsRef = useRef([]);
+            const contentScrollRef = useRef(null);
             const heroRef = useRef(null);
+            const splitRef = useRef(null);
 
             useEffect(() => {
                 const timer = setTimeout(() => setLoading(false), 1500);
@@ -382,7 +319,12 @@
             }, []);
 
             useEffect(() => {
-                // Reset states when tab changes for better UX
+                // Initialize refs for GSAP
+                sectionsRef.current = [heroRef.current, splitRef.current];
+                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
+            }, [loading]);
+
+            useEffect(() => {
                 switch (activeTab) {
                     case 'context':
                         setCurrentImage('./img/project_03/display.png');
@@ -390,7 +332,7 @@
                         setActiveSolutionId(null);
                         break;
                     case 'process':
-                        setCurrentImage('./img/project_03/display.png'); // Show the workflow image
+                        setCurrentImage('./img/project_03/display.png');
                         setActiveGalleryId(null);
                         setActiveSolutionId(null);
                         break;
@@ -410,6 +352,141 @@
                 }
             }, [activeTab]);
 
+            // === GSAP SCROLL LOGIC ===
+            const scrollToSection = (index) => {
+                if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
+
+                isScrollingRef.current = true;
+                const targetSection = sectionsRef.current[index];
+                const currentSection = sectionsRef.current[currentSectionIndex];
+
+                setShowBackToHero(index > 0);
+
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        isScrollingRef.current = false;
+                        setCurrentSectionIndex(index);
+                        if (currentSection !== targetSection) {
+                            currentSection.classList.remove('active-section');
+                        }
+                        targetSection.classList.add('active-section');
+                    }
+                });
+
+                if (currentSectionIndex !== index) {
+                    tl.to(currentSection, {
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: "power2.out"
+                    });
+                }
+
+                tl.to(mainContainerRef.current, {
+                    scrollTo: { y: targetSection.offsetTop, autoKill: false },
+                    duration: 1.2,
+                    ease: "power2.inOut"
+                }, "<");
+
+                tl.to(targetSection, {
+                    opacity: 1,
+                    duration: 1,
+                    onStart: () => {
+                        targetSection.classList.add('active-section');
+                        targetSection.style.visibility = 'visible';
+                    }
+                }, "-=0.8");
+            };
+
+            const handleWheel = (e) => {
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+
+                // Handle nested scrolling in split view
+                if (isSplitView && contentEl) {
+                    const { scrollTop, scrollHeight, clientHeight } = contentEl;
+
+                    if (e.deltaY < 0 && scrollTop <= 0) {
+                        // Reached top of content, scroll to previous section
+                        scrollToSection(0);
+                        return;
+                    }
+                    if (scrollHeight > clientHeight) {
+                        // Allow internal scrolling if content overflows
+                        return;
+                    }
+                }
+
+                if (isScrollingRef.current) return;
+
+                if (e.deltaY > 0) {
+                    if (currentSectionIndex < sectionsRef.current.length - 1) {
+                        scrollToSection(currentSectionIndex + 1);
+                    }
+                } else {
+                    if (currentSectionIndex > 0) {
+                        if (isSplitView && contentEl && contentEl.scrollTop > 0) return;
+                        scrollToSection(currentSectionIndex - 1);
+                    }
+                }
+            };
+
+            const touchStartY = useRef(0);
+
+            const handleTouchStart = (e) => {
+                touchStartY.current = e.touches[0].clientY;
+            };
+
+            const handleTouchEnd = (e) => {
+                if (isScrollingRef.current) return;
+                const touchEndY = e.changedTouches[0].clientY;
+                const diff = touchStartY.current - touchEndY;
+
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                const isInsideContent = contentEl && contentEl.contains(e.target);
+
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                        // Swipe Up (Scroll Down)
+                        if (isSplitView && isInsideContent) {
+                            const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                            if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) {
+                                return;
+                            }
+                        }
+
+                        if (currentSectionIndex < sectionsRef.current.length - 1) {
+                            scrollToSection(currentSectionIndex + 1);
+                        }
+                    } else {
+                        // Swipe Down (Scroll Up)
+                        if (isSplitView && isInsideContent) {
+                            if (contentEl.scrollTop > 0) {
+                                return;
+                            }
+                        }
+
+                        if (currentSectionIndex > 0) {
+                            scrollToSection(currentSectionIndex - 1);
+                        }
+                    }
+                }
+            };
+
+            useEffect(() => {
+                const container = mainContainerRef.current;
+                if (container) {
+                    window.addEventListener('wheel', handleWheel, { passive: false });
+                    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+                    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+                }
+                return () => {
+                    window.removeEventListener('wheel', handleWheel);
+                    window.removeEventListener('touchstart', handleTouchStart);
+                    window.removeEventListener('touchend', handleTouchEnd);
+                };
+            }, [currentSectionIndex]);
+
             const handleGallerySwitch = (imgObj) => {
                 setCurrentImage(imgObj.src);
                 setActiveGalleryId(imgObj.id);
@@ -418,22 +495,6 @@
             const handleSolutionSwitch = (solObj) => {
                 setCurrentImage(solObj.image);
                 setActiveSolutionId(solObj.id);
-            };
-
-            const handleScroll = (e) => {
-                const scrollTop = e.target.scrollTop;
-                const windowHeight = window.innerHeight;
-                if (scrollTop > windowHeight * 0.5) {
-                    setShowBackToHero(true);
-                } else {
-                    setShowBackToHero(false);
-                }
-            };
-
-            const scrollToSection = (ref) => {
-                if (ref.current) {
-                    ref.current.scrollIntoView({ behavior: 'smooth' });
-                }
             };
 
             const goBack = () => {
@@ -447,7 +508,7 @@
                         <div className="loader-animation"></div>
                     </div>
 
-                    {/* Back Button Only */}
+                    {/* Back Button */}
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <button
                             onClick={goBack}
@@ -462,7 +523,7 @@
 
                     {/* Back to Hero Button */}
                     <button
-                        onClick={() => scrollToSection(heroRef)}
+                        onClick={() => scrollToSection(0)}
                         className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
                         title="Back to Hero Section"
                     >
@@ -470,25 +531,25 @@
                     </button>
 
                     {/* MAIN SCROLL CONTAINER */}
-                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+                    <div id="main-scroller" ref={mainContainerRef}>
 
                         {/* 1. HERO SECTION */}
-                        <section ref={heroRef} className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                        <section id="hero" ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark hero-bg-custom">
                             <div className="container max-w-6xl mx-auto px-8 z-20">
                                 <div className="max-w-3xl text-left">
-                                    <div className="inline-block px-4 py-1 rounded-full border border-white bg-black/20 text-white text-xs font-bold tracking-widest mb-6 fade-in-up ]" style={{ animationDelay: '0.1s' }}>
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-white bg-black/20 text-white text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>
                                         System Reliability & Logistics
                                     </div>
-                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left" style={{ animationDelay: '0.2s' }}>
+                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
                                         高雄市警察局<br />
                                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">新世代智慧科技<br />辦案系統</span>
                                     </h1>
-                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
+                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>
                                         如果說 AI 是大腦，這套系統就是免疫系統。從「環境感知」轉向「系統維運」，打造確保辦案工具隨時可用的後勤中樞。
                                     </h2>
                                     <button
-                                        onClick={() => scrollToSection(splitRef)}
-                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(0,168,232,0.4)] transform hover:-translate-y-1"
+                                        onClick={() => scrollToSection(1)}
+                                        className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(0,168,232,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`}
                                         style={{ animationDelay: '0.4s' }}
                                     >
                                         探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
@@ -497,31 +558,33 @@
                             </div>
                         </section>
 
-                        {/* 2. SPLIT SCREEN (Robust Layout) */}
-                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+                        {/* 2. SPLIT SCREEN */}
+                        <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark overflow-hidden">
 
-                            {/* LEFT: Image Preview */}
+                            {/* LEFT: Image Preview (Mobile Fixed Height) */}
                             <div className="
-                                w-full h-[40vh] shrink-0 z-20
+                                w-full shrink-0 z-20
                                 lg:w-3/5 lg:h-full
                                 bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 
                                 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
                             ">
-                                <div className="relative w-full h-auto max-w-4xl max-h-[90%] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
-                                    {/* Browser Bar - Only show for Solution (03) and Climax (04) */}
-                                    {(activeTab === 'solution' || activeTab === 'climax') && (
-                                        <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
-                                            <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
-                                            <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
-                                            <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                {/* NEW WRAPPER DIV for Mobile Height Fix */}
+                                <div className="w-full h-[35vh] lg:h-full flex items-center justify-center">
+                                    <div className="relative w-full max-w-4xl max-h-full lg:max-h-[90%] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+                                        {(activeTab === 'solution' || activeTab === 'climax') && (
+                                            <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
+                                                <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
+                                                <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+                                                <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                            </div>
+                                        )}
+                                        <div className="relative overflow-hidden bg-white/5 group h-full">
+                                            <img
+                                                src={currentImage}
+                                                alt="Preview"
+                                                className="w-full h-full object-contain transition-opacity duration-500"
+                                            />
                                         </div>
-                                    )}
-                                    <div className="flex-1 relative overflow-hidden bg-white/5 group flex items-center justify-center">
-                                        <img
-                                            src={currentImage}
-                                            alt="Preview"
-                                            className="w-full h-full object-contain transition-opacity duration-500"
-                                        />
                                     </div>
                                 </div>
                             </div>
@@ -531,16 +594,18 @@
                                 flex-1 w-full relative z-10
                                 lg:w-2/5 lg:h-full
                                 flex flex-col
+                                h-auto
+                                min-h-0
                             ">
-                                <div className="w-full h-full flex flex-col glass-panel relative">
+                                <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
 
                                     {/* Sticky Header */}
                                     <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
-                                        <div className="p-8 pb-0">
-                                            <h2 className="text-2xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">高雄市警察局<br />新世代智慧科技辦案系統</h2>
-                                            <p className="text-gray-400 text-sm mb-4">New Generation Smart Technology Investigation System</p>
+                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
+                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">高雄市警察局<br />新世代智慧科技辦案系統</h2>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">New Generation Smart Technology Investigation System</p>
 
-                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-6 pb-1">
+                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 scroll-content">
                                                 {[
                                                     { id: 'context', label: '01. 背景與轉型' },
                                                     { id: 'process', label: '02. 流程' },
@@ -563,7 +628,7 @@
                                     </div>
 
                                     {/* Scrollable Content */}
-                                    <div className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll">
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
 
                                         {/* 1. CONTEXT */}
                                         {activeTab === 'context' && (
@@ -589,7 +654,6 @@
                                                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30">
                                                                     <Icons.Illustrator /> <span className="ml-1">Illustrator</span>
                                                                 </span>
-
                                                             </div>
                                                         </div>
                                                     </div>
@@ -726,6 +790,23 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
 </body>
 
 </html>
