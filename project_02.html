@@ -6,18 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新竹縣警察局 | 雲端智慧影像分析系統 (APP Ver.) - UI/UX Case Study</title>
 
-    <!-- Favicon -->
     <link href="./img/favicon/favicon.ico" rel="shortcut icon" type="image/ico">
 
-    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Fonts -->
     <link
         href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
         rel="stylesheet">
@@ -30,7 +30,7 @@
                     colors: {
                         primary: '#ff4a00',
                         secondary: '#FFD700', // Yellow
-                        // Updated Dark Theme Colors (Even Darker Warm/Coffee tones)
+                        // Dark Theme Colors (Warm/Coffee tones)
                         dark: '#080201',
                         'dark-light': '#140502',
                         'dark-lighter': '#240a05',
@@ -47,35 +47,56 @@
     </script>
 
     <style>
-        /* BASIC SETUP */
+        /* === 基礎設定 === */
         body,
         html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
             background-color: #080201;
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
+            overflow: hidden;
+            /* 關鍵：禁止原生滾動 */
+            overscroll-behavior: none;
         }
 
-        #main-container {
+        /* === 主捲動容器 === */
+        #main-scroller {
             width: 100vw;
             height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-        }
-
-        .page-section {
-            width: 100vw;
-            min-height: 100vh;
-            position: relative;
             overflow: hidden;
+            position: relative;
         }
 
-        /* UI Elements - Adjusted gradients for darker coffee theme */
+        /* === 全頁滾動區塊 === */
+        .snap-section {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .snap-section.active-section {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* === 內容滾動區域 === */
+        .scroll-content {
+            overflow-y: auto !important;
+            touch-action: pan-y !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            height: 100%;
+        }
+
+        /* UI Elements */
         .glass-panel {
             background: linear-gradient(135deg, rgba(20, 5, 2, 0.95), rgba(8, 2, 1, 0.98));
             backdrop-filter: blur(20px);
@@ -105,32 +126,53 @@
         }
 
         /* Scrollbars */
-        ::-webkit-scrollbar {
+        .custom-scroll::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
 
-        ::-webkit-scrollbar-track {
-            background: #080201;
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        ::-webkit-scrollbar-thumb {
+        .custom-scroll::-webkit-scrollbar-thumb {
             background: #240a05;
             border-radius: 4px;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
             background: #ff4a00;
         }
 
         /* Animations */
         .fade-in-up {
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(40px);
         }
 
         @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -185,7 +227,6 @@
             background-image: url('./img/project_02/hero_img.png');
             background-size: cover;
             background-position: center;
-            position: relative;
         }
 
         .hero-bg-custom::before {
@@ -380,7 +421,7 @@
             }
         ];
 
-        // Section 04: App Gallery - Added Descriptions
+        // Section 04: App Gallery
         const APP_GALLERY = [
             { id: 'g01', title: '設備狀態檢視', desc: '即時監控各路口設備連線狀態與延遲毫秒數。', src: './img/project_02/mobile_mockup_01@2x.png', tag: 'Monitoring' },
             { id: 'g02', title: '車牌模糊搜尋', desc: '支援模糊比對與字數篩選，快速鎖定目標車輛。', src: './img/project_02/mobile_mockup_02@2x.png', tag: 'Search' },
@@ -406,16 +447,14 @@
                 if (!isDragging.current || !containerRef.current) return;
                 const rect = containerRef.current.getBoundingClientRect();
                 const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-                const percentage = (x / rect.width) * 100;
-                setSliderPosition(percentage);
+                setSliderPosition((x / rect.width) * 100);
             };
 
             const handleTouchMove = (e) => {
                 if (!isDragging.current || !containerRef.current) return;
                 const rect = containerRef.current.getBoundingClientRect();
                 const x = Math.max(0, Math.min(e.touches[0].clientX - rect.left, rect.width));
-                const percentage = (x / rect.width) * 100;
-                setSliderPosition(percentage);
+                setSliderPosition((x / rect.width) * 100);
             }
 
             useEffect(() => {
@@ -436,27 +475,23 @@
                     onMouseDown={handleMouseDown}
                     onTouchStart={handleMouseDown}
                 >
-                    {/* BEFORE (WEB) - Browser Frame */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#0f0402] p-4 lg:p-8 overflow-hidden">
-                        <div className="w-full max-w-4xl bg-dark-light rounded-lg border border-white/10 shadow-2xl overflow-hidden flex flex-col opacity-50 grayscale transition-all">
-                            <div className="h-6 bg-[#140502] border-b border-white/5 flex items-center px-3 space-x-1.5">
-                                <div className="w-2 h-2 rounded-full bg-[#FF5F56]"></div>
-                                <div className="w-2 h-2 rounded-full bg-[#FFBD2E]"></div>
-                                <div className="w-2 h-2 rounded-full bg-[#27C93F]"></div>
-                            </div>
-                            <div className="relative bg-white/5 flex-1 flex items-center justify-center overflow-hidden">
-                                <img src={beforeImage} className="w-full h-auto object-contain" alt="Web Version" />
-                            </div>
+                    {/* BEFORE (WEB) */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#0f0402] p-4 lg:p-8">
+                        <div className="w-full h-full max-w-full max-h-full flex items-center justify-center opacity-50 grayscale">
+                            <img src={beforeImage} className="max-w-full max-h-full object-contain" alt="Web Version" />
                         </div>
                     </div>
 
-                    {/* AFTER (APP) - Phone Frame (Notch Removed) */}
+                    {/* AFTER (APP) */}
                     <div
                         className="absolute inset-0 flex items-center justify-center bg-[#0f0402]"
                         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
                     >
-                        <div className="relative w-[260px] sm:w-[280px] border-[8px] border-[#2d2d2d] rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-black">
-                            <img src={afterImage} className="w-full h-auto block" alt="App Version" />
+                        <div className="w-full h-full max-w-full max-h-full flex items-center justify-center">
+                            {/* MODIFIED: rounded-[1.25rem] for mobile, lg:rounded-[2.5rem] for desktop */}
+                            <div className="relative h-full aspect-[9/19] border-[4px] md:border-[8px] border-[#2d2d2d] rounded-[1.25rem] lg:rounded-[2.5rem] overflow-hidden bg-black">
+                                <img src={afterImage} className="w-full h-full object-cover" alt="App Version" />
+                            </div>
                         </div>
                     </div>
 
@@ -473,33 +508,31 @@
             );
         };
 
-        // Reusable Window Frame Component for [01] and [02]
+        // Window Frame Component
         const WindowFrame = ({ src, alt }) => {
             return (
-                <div className="flex items-center justify-center p-8 w-full h-full">
+                <div className="flex items-center justify-center p-4 lg:p-12 w-full h-full">
                     <div
                         className="relative bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col shrink-0 animate-fadeIn"
-                        style={{ maxWidth: '100%', maxHeight: '90vh', width: 'auto', height: 'auto' }}
+                        style={{ maxWidth: '100%', maxHeight: '100%' }}
                     >
-                        <div className="relative overflow-hidden bg-white/5">
-                            <img
-                                src={src}
-                                alt={alt}
-                                className="block w-auto h-auto max-w-full"
-                                style={{ maxHeight: '90vh' }}
-                            />
-                        </div>
+                        <img
+                            src={src}
+                            alt={alt}
+                            className="block w-auto h-auto max-w-full max-h-full object-contain"
+                        />
                     </div>
                 </div>
             );
         };
 
-        // Phone Frame Component for [04. Gallery]
+        // Phone Frame Component
         const PhoneFrame = ({ src, alt }) => {
             return (
-                <div className="flex items-center justify-center p-8 w-full h-full">
-                    <div className="relative w-[280px] sm:w-[320px] border-[8px] border-[#2d2d2d] rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-black animate-fadeIn">
-                        <img src={src} alt={alt} className="w-full h-auto block" />
+                <div className="flex items-center justify-center p-4 lg:p-12 w-full h-full">
+                    {/* MODIFIED: rounded-[1.25rem] for mobile, lg:rounded-[2.5rem] for desktop */}
+                    <div className="relative h-full w-auto max-w-full aspect-[9/19] border-[6px] md:border-[8px] border-[#2d2d2d] rounded-[1.25rem] lg:rounded-[2.5rem] overflow-hidden shadow-2xl bg-black animate-fadeIn shrink-0">
+                        <img src={src} alt={alt} className="w-full h-full object-cover block" />
                     </div>
                 </div>
             );
@@ -512,6 +545,12 @@
             const [activeFeature, setActiveFeature] = useState(APP_FEATURES[0]);
             const [activeGalleryImg, setActiveGalleryImg] = useState(APP_GALLERY[0].src);
 
+            // GSAP State
+            const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+            const isScrollingRef = useRef(false);
+            const mainContainerRef = useRef(null);
+            const sectionsRef = useRef([]);
+            const contentScrollRef = useRef(null);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
 
@@ -520,19 +559,141 @@
                 return () => clearTimeout(timer);
             }, []);
 
-            const handleScroll = (e) => {
-                const scrollTop = e.target.scrollTop;
-                const windowHeight = window.innerHeight;
-                if (scrollTop > windowHeight * 0.5) {
-                    setShowBackToHero(true);
+            // Initialize Sections
+            useEffect(() => {
+                sectionsRef.current = [heroRef.current, splitRef.current];
+                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
+            }, [loading]);
+
+            // === GSAP SCROLL LOGIC ===
+            const scrollToSection = (index) => {
+                if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
+
+                isScrollingRef.current = true;
+                const targetSection = sectionsRef.current[index];
+                const currentSection = sectionsRef.current[currentSectionIndex];
+
+                setShowBackToHero(index > 0);
+
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        isScrollingRef.current = false;
+                        setCurrentSectionIndex(index);
+                        if (currentSection !== targetSection) {
+                            currentSection.classList.remove('active-section');
+                        }
+                        targetSection.classList.add('active-section');
+                    }
+                });
+
+                if (currentSectionIndex !== index) {
+                    tl.to(currentSection, {
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: "power2.out"
+                    });
+                }
+
+                tl.to(mainContainerRef.current, {
+                    scrollTo: { y: targetSection.offsetTop, autoKill: false },
+                    duration: 1.2,
+                    ease: "power2.inOut"
+                }, "<");
+
+                tl.to(targetSection, {
+                    opacity: 1,
+                    duration: 1,
+                    onStart: () => {
+                        targetSection.classList.add('active-section');
+                        targetSection.style.visibility = 'visible';
+                    }
+                }, "-=0.8");
+            };
+
+            const handleWheel = (e) => {
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+
+                if (isSplitView && contentEl) {
+                    const { scrollTop, scrollHeight, clientHeight } = contentEl;
+
+                    if (e.deltaY < 0 && scrollTop <= 0) {
+                        scrollToSection(0);
+                        return;
+                    }
+                    if (scrollHeight > clientHeight) {
+                        return;
+                    }
+                }
+
+                if (isScrollingRef.current) return;
+
+                if (e.deltaY > 0) {
+                    if (currentSectionIndex < sectionsRef.current.length - 1) {
+                        scrollToSection(currentSectionIndex + 1);
+                    }
                 } else {
-                    setShowBackToHero(false);
+                    if (currentSectionIndex > 0) {
+                        if (isSplitView && contentEl && contentEl.scrollTop > 0) return;
+                        scrollToSection(currentSectionIndex - 1);
+                    }
                 }
             };
 
-            const scrollToSection = (ref) => {
-                if (ref.current) ref.current.scrollIntoView({ behavior: 'smooth' });
+            const touchStartY = useRef(0);
+
+            const handleTouchStart = (e) => {
+                touchStartY.current = e.touches[0].clientY;
             };
+
+            const handleTouchEnd = (e) => {
+                if (isScrollingRef.current) return;
+                const touchEndY = e.changedTouches[0].clientY;
+                const diff = touchStartY.current - touchEndY;
+
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                const isInsideContent = contentEl && contentEl.contains(e.target);
+
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                        if (isSplitView && isInsideContent) {
+                            const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                            if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) {
+                                return;
+                            }
+                        }
+
+                        if (currentSectionIndex < sectionsRef.current.length - 1) {
+                            scrollToSection(currentSectionIndex + 1);
+                        }
+                    } else {
+                        if (isSplitView && isInsideContent) {
+                            if (contentEl.scrollTop > 0) {
+                                return;
+                            }
+                        }
+
+                        if (currentSectionIndex > 0) {
+                            scrollToSection(currentSectionIndex - 1);
+                        }
+                    }
+                }
+            };
+
+            useEffect(() => {
+                const container = mainContainerRef.current;
+                if (container) {
+                    window.addEventListener('wheel', handleWheel, { passive: false });
+                    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+                    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+                }
+                return () => {
+                    window.removeEventListener('wheel', handleWheel);
+                    window.removeEventListener('touchstart', handleTouchStart);
+                    window.removeEventListener('touchend', handleTouchEnd);
+                };
+            }, [currentSectionIndex]);
 
             const goBack = () => {
                 window.location.href = "index.html#portfolio";
@@ -546,12 +707,15 @@
                         return <WindowFrame src="./img/project_02/p2_02.png" alt="Simplification" />;
                     case 'features':
                         return (
-                            <div className="w-full h-full p-4 lg:p-12">
-                                <ComparisonSlider
-                                    beforeImage={activeFeature.beforeImg}
-                                    afterImage={activeFeature.afterImg}
-                                />
-                                <div className="text-center mt-4 text-xs text-gray-500">
+                            // UPDATED: p-4 for mobile, lg:p-12 for desktop
+                            <div className="w-full h-full p-4 lg:p-12 flex flex-col">
+                                <div className="flex-1 w-full relative min-h-0">
+                                    <ComparisonSlider
+                                        beforeImage={activeFeature.beforeImg}
+                                        afterImage={activeFeature.afterImg}
+                                    />
+                                </div>
+                                <div className="text-center mt-2 text-xs text-gray-500 shrink-0">
                                     <i className="fas fa-arrows-alt-h mr-2"></i>拖曳滑桿比較 Web vs App 差異
                                 </div>
                             </div>
@@ -582,32 +746,33 @@
 
                     {/* Back to Hero Button */}
                     <button
-                        onClick={() => scrollToSection(heroRef)}
+                        onClick={() => scrollToSection(0)}
                         className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
                         title="Back to Hero Section"
                     >
                         <i className="fas fa-arrow-up"></i>
                     </button>
 
-                    <div id="main-container" onScroll={handleScroll}>
+                    <div id="main-scroller" ref={mainContainerRef}>
+
                         {/* 1. HERO */}
-                        <section ref={heroRef} className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                        <section id="hero" ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative hero-bg-custom">
 
                             <div className="container max-w-6xl mx-auto px-8 z-20">
                                 <div className="max-w-3xl text-left">
-                                    <div className="inline-block px-4 py-1 rounded-full border border-secondary/50 bg-secondary/20 text-secondary text-xs font-bold tracking-widest mb-6 fade-in-up " style={{ animationDelay: '0.1s' }}>
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-secondary/50 bg-secondary/20 text-secondary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>
                                         MOBILE COMMAND CENTER
                                     </div>
-                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left" style={{ animationDelay: '0.2s' }}>
+                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
                                         新竹縣警察局<br />
                                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">APP 雲端影像分析系統</span>
                                     </h1>
-                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
+                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>
                                         將龐大的警政後台裝進口袋。採用現代化輕擬態 (Soft UI) 設計，針對戶外執勤優化，實現「車過即知、指尖辦案」的行動即戰力。
                                     </h2>
                                     <button
-                                        onClick={() => scrollToSection(splitRef)}
-                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(255,74,0,0.4)] transform hover:-translate-y-1"
+                                        onClick={() => scrollToSection(1)}
+                                        className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(255,74,0,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`}
                                         style={{ animationDelay: '0.4s' }}
                                     >
                                         探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
@@ -617,165 +782,178 @@
                         </section>
 
                         {/* 2. SPLIT LAYOUT */}
-                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+                        <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark overflow-hidden">
 
-                            {/* LEFT: Dynamic Visual Area */}
-                            <div className="w-full lg:w-3/5 h-[40vh] lg:h-full bg-dark relative border-r border-white/5 overflow-hidden">
+                            {/* LEFT: Visual Area (50vh on Mobile, 60% Width on Desktop) */}
+                            <div className="
+                                w-full h-[35vh] shrink-0 z-20
+                                lg:w-3/5 lg:h-full
+                                bg-dark relative border-b lg:border-b-0 lg:border-r border-white/5 overflow-hidden flex items-center justify-center
+                            ">
                                 {renderLeftPanel()}
                             </div>
 
-                            {/* RIGHT: Content Area */}
-                            <div className="flex-1 w-full lg:w-2/5 h-full flex flex-col glass-panel relative z-10">
-                                {/* Tabs */}
-                                <div className="p-8 pb-0 border-b border-white/10 bg-dark/50 backdrop-blur-md">
-                                    <h2 className="text-2xl font-bold mb-1">新竹縣警察局<br />APP雲端影像分析系統</h2>
-                                    <p className="text-gray-400 text-sm mb-4">Mobile Experience Optimization</p>
+                            {/* RIGHT: Content Area (50vh on Mobile, 40% Width on Desktop) */}
+                            <div className="
+                                w-full h-[65vh] relative z-10
+                                lg:w-2/5 lg:h-full
+                                flex flex-col
+                                min-h-0
+                            ">
+                                <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
 
-                                    <div className="flex space-x-6 overflow-x-auto custom-scroll mt-6 pb-1">
-                                        {[
-                                            { id: 'context', label: '01. 背景' },
-                                            { id: 'focus', label: '02. 取捨與精簡' },
-                                            { id: 'features', label: '03. 特色對照' },
-                                            { id: 'gallery', label: '04. 介面鑑賞' }
-                                        ].map(tab => (
-                                            <button
-                                                key={tab.id}
-                                                onClick={() => setActiveTab(tab.id)}
-                                                className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}
-                                            >
-                                                {tab.label}
-                                            </button>
-                                        ))}
+                                    {/* Tabs (Sticky) */}
+                                    <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
+                                            <h2 className="text-xl lg:text-3xl font-bold mb-1">新竹縣警察局<br />APP雲端影像分析系統</h2>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">Mobile Experience Optimization</p>
+
+                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 scroll-content">
+                                                {[
+                                                    { id: 'context', label: '01. 背景' },
+                                                    { id: 'focus', label: '02. 取捨與精簡' },
+                                                    { id: 'features', label: '03. 特色對照' },
+                                                    { id: 'gallery', label: '04. 介面鑑賞' }
+                                                ].map(tab => (
+                                                    <button
+                                                        key={tab.id}
+                                                        onClick={() => setActiveTab(tab.id)}
+                                                        className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}
+                                                    >
+                                                        {tab.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Content Scroll */}
-                                <div className="flex-1 p-6 lg:p-8 overflow-y-auto custom-scroll pb-24">
+                                    {/* Content Scroll (Scrollable) */}
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 overflow-y-auto custom-scroll pb-24 scroll-content">
 
-                                    {/* 01. Context */}
-                                    {activeTab === 'context' && (
-                                        <div className="space-y-8 animate-fadeIn">
-                                            <h3 className="text-xl font-bold text-white mb-4">設計挑戰：從複雜後台到行動指尖</h3>
-                                            <p className="text-gray-300 leading-relaxed text-sm">
-                                                傳統警政系統功能繁雜、數據量大，通常依賴滑鼠鍵盤在大螢幕上操作。然而，外勤員警需要在風吹日曬的戶外環境下，透過小尺寸的手機螢幕快速獲取關鍵情資。
-                                            </p>
-                                            <div className="grid grid-cols-2 gap-4 mt-6">
-                                                <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                                                    <i className="fas fa-mobile-alt text-primary mb-2 text-xl"></i>
-                                                    <h4 className="font-bold text-sm">行動優先</h4>
-                                                    <p className="text-xs text-gray-400 mt-1">針對單手操作與觸控優化</p>
-                                                </div>
-                                                <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                                                    <i className="fas fa-feather-alt text-secondary mb-2 text-xl"></i>
-                                                    <h4 className="font-bold text-sm">輕擬態風格</h4>
-                                                    <p className="text-xs text-gray-400 mt-1">柔和介面減輕視覺疲勞</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* 02. Simplification */}
-                                    {activeTab === 'focus' && (
-                                        <div className="space-y-6 animate-fadeIn">
-                                            <div className="mb-4">
-                                                <h3 className="text-xl font-bold text-white">行動化的取捨與精簡</h3>
-                                                <p className="text-xs text-gray-400 mt-1">Web vs App 的設計策略對比</p>
-                                            </div>
-
-                                            <div className="space-y-4">
-                                                {SIMPLIFICATION_POINTS.map((point) => (
-                                                    <div key={point.id} className="feature-card p-5 border-l-4 border-l-primary hover:translate-x-1 transition-all duration-300 group">
-                                                        {/* Header - UPDATED Icon colors to yellow (secondary) */}
-                                                        <div className="flex items-center mb-3">
-                                                            <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary mr-3">
-                                                                <i className={`fas ${point.icon}`}></i>
-                                                            </div>
-                                                            <h4 className="font-bold text-white">{point.title}</h4>
-                                                        </div>
-
-                                                        {/* Comparison Box */}
-                                                        <div className="flex items-center justify-between text-xs mb-3 bg-black/20 p-2 rounded-lg border border-white/5">
-                                                            <div className="text-gray-500 w-1/2 pr-2 border-r border-gray-700">
-                                                                <span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">WEB (Complex)</span>
-                                                                {point.web.desc}
-                                                            </div>
-                                                            <div className="text-secondary w-1/2 pl-2"> {/* Text is secondary color (Yellow) */}
-                                                                <span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">APP (Simple)</span>
-                                                                {point.app.desc}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Insight Quote */}
-                                                        <div className="text-xs text-gray-300 italic border-l-2 border-secondary pl-3">
-                                                            "{point.insight}"
-                                                        </div>
+                                        {/* 01. Context */}
+                                        {activeTab === 'context' && (
+                                            <div className="space-y-8 animate-fadeIn">
+                                                <h3 className="text-xl font-bold text-white mb-4">設計挑戰：從複雜後台到行動指尖</h3>
+                                                <p className="text-gray-300 leading-relaxed text-sm">
+                                                    傳統警政系統功能繁雜、數據量大，通常依賴滑鼠鍵盤在大螢幕上操作。然而，外勤員警需要在風吹日曬的戶外環境下，透過小尺寸的手機螢幕快速獲取關鍵情資。
+                                                </p>
+                                                <div className="grid grid-cols-2 gap-4 mt-6">
+                                                    <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                                                        <i className="fas fa-mobile-alt text-primary mb-2 text-xl"></i>
+                                                        <h4 className="font-bold text-sm">行動優先</h4>
+                                                        <p className="text-xs text-gray-400 mt-1">針對單手操作與觸控優化</p>
                                                     </div>
-                                                ))}
+                                                    <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                                                        <i className="fas fa-feather-alt text-secondary mb-2 text-xl"></i>
+                                                        <h4 className="font-bold text-sm">輕擬態風格</h4>
+                                                        <p className="text-xs text-gray-400 mt-1">柔和介面減輕視覺疲勞</p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
 
-                                    {/* 03. Features */}
-                                    {activeTab === 'features' && (
-                                        <div className="space-y-6 animate-fadeIn">
-                                            <div className="mb-4">
-                                                <h3 className="text-xl font-bold text-white">APP 特色呈現</h3>
-                                                <p className="text-xs text-gray-400 mt-1">點擊下方項目，左側將顯示 Before/After 對照</p>
-                                            </div>
+                                        {/* 02. Simplification */}
+                                        {activeTab === 'focus' && (
+                                            <div className="space-y-6 animate-fadeIn">
+                                                <div className="mb-4">
+                                                    <h3 className="text-xl font-bold text-white">行動化的取捨與精簡</h3>
+                                                    <p className="text-xs text-gray-400 mt-1">Web vs App 的設計策略對比</p>
+                                                </div>
 
-                                            <div className="space-y-3">
-                                                {APP_FEATURES.map((feat) => (
-                                                    <button
-                                                        key={feat.id}
-                                                        onClick={() => setActiveFeature(feat)}
-                                                        className={`w-full text-left p-4 rounded-xl border transition-all ${activeFeature.id === feat.id ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}
-                                                    >
-                                                        <h4 className={`font-bold text-sm mb-1 ${activeFeature.id === feat.id ? 'text-primary' : 'text-white'}`}>
-                                                            {feat.title}
-                                                        </h4>
-                                                        <p className="text-xs text-gray-400 mb-2">{feat.desc}</p>
-                                                        {activeFeature.id === feat.id && (
-                                                            <div className="text-xs text-white bg-dark/50 p-2 rounded mt-2 border-l-2 border-secondary animate-fadeIn">
-                                                                <i className="fas fa-lightbulb text-yellow-400 mr-1"></i> {feat.point}
+                                                <div className="space-y-4">
+                                                    {SIMPLIFICATION_POINTS.map((point) => (
+                                                        <div key={point.id} className="feature-card p-5 border-l-4 border-l-primary hover:translate-x-1 transition-all duration-300 group">
+                                                            {/* Header */}
+                                                            <div className="flex items-center mb-3">
+                                                                <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary mr-3">
+                                                                    <i className={`fas ${point.icon}`}></i>
+                                                                </div>
+                                                                <h4 className="font-bold text-white">{point.title}</h4>
                                                             </div>
-                                                        )}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
 
-                                    {/* 04. Gallery - UPDATED with Descriptions (Tag removed) */}
-                                    {activeTab === 'gallery' && (
-                                        <div className="space-y-6 animate-fadeIn">
-                                            <h3 className="text-xl font-bold text-white mb-4">介面總覽 Gallery</h3>
-                                            <div className="space-y-3">
-                                                {APP_GALLERY.map((img) => (
-                                                    <button
-                                                        key={img.id}
-                                                        onClick={() => setActiveGalleryImg(img.src)}
-                                                        className={`w-full text-left feature-card p-4 transition-all group flex items-center justify-between ${activeGalleryImg === img.src ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(255,74,0,0.1)]' : 'border-white/5 hover:bg-white/5'}`}
-                                                    >
-                                                        <div className="flex-1 min-w-0 pr-4">
-                                                            <div className="flex items-center mb-1">
-                                                                {/* Removed Tag span */}
-                                                                <span className={`font-bold text-sm truncate transition-colors ${activeGalleryImg === img.src ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
-                                                                    {img.title}
-                                                                </span>
+                                                            {/* Comparison Box */}
+                                                            <div className="flex items-center justify-between text-xs mb-3 bg-black/20 p-2 rounded-lg border border-white/5">
+                                                                <div className="text-gray-500 w-1/2 pr-2 border-r border-gray-700">
+                                                                    <span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">WEB (Complex)</span>
+                                                                    {point.web.desc}
+                                                                </div>
+                                                                <div className="text-secondary w-1/2 pl-2">
+                                                                    <span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">APP (Simple)</span>
+                                                                    {point.app.desc}
+                                                                </div>
                                                             </div>
-                                                            <p className={`text-xs truncate transition-colors ${activeGalleryImg === img.src ? 'text-gray-400' : 'text-gray-600 group-hover:text-gray-500'}`}>
-                                                                {img.desc}
-                                                            </p>
+
+                                                            {/* Insight Quote */}
+                                                            <div className="text-xs text-gray-300 italic border-l-2 border-secondary pl-3">
+                                                                "{point.insight}"
+                                                            </div>
                                                         </div>
-
-                                                        {/* Arrow */}
-                                                        <i className={`fas fa-chevron-right ml-4 transform transition-all text-xs ${activeGalleryImg === img.src ? 'text-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
-                                                    </button>
-                                                ))}
+                                                    ))}
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
 
+                                        {/* 03. Features */}
+                                        {activeTab === 'features' && (
+                                            <div className="space-y-6 animate-fadeIn">
+                                                <div className="mb-4">
+                                                    <h3 className="text-xl font-bold text-white">APP 特色呈現</h3>
+                                                    <p className="text-xs text-gray-400 mt-1">點擊下方項目，左側將顯示 Before/After 對照</p>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    {APP_FEATURES.map((feat) => (
+                                                        <button
+                                                            key={feat.id}
+                                                            onClick={() => setActiveFeature(feat)}
+                                                            className={`w-full text-left p-4 rounded-xl border transition-all ${activeFeature.id === feat.id ? 'bg-primary/10 border-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}
+                                                        >
+                                                            <h4 className={`font-bold text-sm mb-1 ${activeFeature.id === feat.id ? 'text-primary' : 'text-white'}`}>
+                                                                {feat.title}
+                                                            </h4>
+                                                            <p className="text-xs text-gray-400 mb-2">{feat.desc}</p>
+                                                            {activeFeature.id === feat.id && (
+                                                                <div className="text-xs text-white bg-dark/50 p-2 rounded mt-2 border-l-2 border-secondary animate-fadeIn">
+                                                                    <i className="fas fa-lightbulb text-yellow-400 mr-1"></i> {feat.point}
+                                                                </div>
+                                                            )}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* 04. Gallery */}
+                                        {activeTab === 'gallery' && (
+                                            <div className="space-y-6 animate-fadeIn">
+                                                <h3 className="text-xl font-bold text-white mb-4">介面總覽 Gallery</h3>
+                                                <div className="space-y-3">
+                                                    {APP_GALLERY.map((img) => (
+                                                        <button
+                                                            key={img.id}
+                                                            onClick={() => setActiveGalleryImg(img.src)}
+                                                            className={`w-full text-left feature-card p-4 transition-all group flex items-center justify-between ${activeGalleryImg === img.src ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(255,74,0,0.1)]' : 'border-white/5 hover:bg-white/5'}`}
+                                                        >
+                                                            <div className="flex-1 min-w-0 pr-4">
+                                                                <div className="flex items-center mb-1">
+                                                                    <span className={`font-bold text-sm truncate transition-colors ${activeGalleryImg === img.src ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                                                                        {img.title}
+                                                                    </span>
+                                                                </div>
+                                                                <p className={`text-xs truncate transition-colors ${activeGalleryImg === img.src ? 'text-gray-400' : 'text-gray-600 group-hover:text-gray-500'}`}>
+                                                                    {img.desc}
+                                                                </p>
+                                                            </div>
+
+                                                            {/* Arrow */}
+                                                            <i className={`fas fa-chevron-right ml-4 transform transition-all text-xs ${activeGalleryImg === img.src ? 'text-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                    </div>
                                 </div>
                             </div>
                         </section>
