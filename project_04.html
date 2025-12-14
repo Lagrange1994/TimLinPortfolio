@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>臺南市政府警察局 | 臺南智慧巡簽系統 - UX Case Study</title>
-    <!-- Favicon Fix: 增加版本號 (?v=2) 強制瀏覽器重新抓取，並同時支援舊版寫法 -->
     <link rel="shortcut icon" href="./img/favicon/favicon.ico">
     <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
 
@@ -13,7 +12,9 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,27 +29,24 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#2dd4bf', // Teal/Cyan to match the Police App UI
-                        secondary: '#f87171', // Red for SOS/Alerts
-                        dark: '#121212',
-                        'dark-light': '#1E1E1E',
-                        'dark-lighter': '#2D2D2D',
-                        accent: '#38bdf8' // Light Blue
+                        primary: '#2dd4bf', // Teal
+                        secondary: '#f87171', // Red
+                        dark: '#0F1115',      // P08 Dark
+                        'dark-light': '#1A1D24', // P08 Dark Light
+                        'dark-lighter': '#252932', // P08 Dark Lighter
+                        accent: '#38bdf8'     // Blue
                     },
                     fontFamily: {
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
                         heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
                     },
-                    backgroundImage: {
-                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-                    }
                 }
             }
         }
     </script>
 
     <style>
-        /* BASIC SETUP */
+        /* === PROJECT 08 STYLES === */
         body,
         html {
             margin: 0;
@@ -56,31 +54,38 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #121212;
+            background-color: #0F1115;
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
+            overscroll-behavior: none;
         }
 
-        /* MAIN SCROLL CONTAINER */
-        #main-container {
+        #main-scroller {
             width: 100vw;
             height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
+            overflow: hidden;
+            position: relative;
         }
 
-        /* SECTIONS */
-        .page-section {
+        .snap-section {
             width: 100vw;
-            min-height: 100vh;
+            height: 100vh;
             position: relative;
-            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .snap-section.active-section {
+            opacity: 1;
+            visibility: visible;
         }
 
         /* Glassmorphism */
         .glass-panel {
-            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(18, 18, 18, 0.98));
+            background: linear-gradient(135deg, rgba(26, 29, 36, 0.95), rgba(15, 17, 21, 0.98));
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-left: 1px solid rgba(255, 255, 255, 0.08);
@@ -98,32 +103,20 @@
         .feature-card:hover {
             transform: translateY(-5px);
             border-color: rgba(45, 212, 191, 0.4);
-            /* Primary color hover */
             box-shadow: 0 10px 30px -10px rgba(45, 212, 191, 0.2);
         }
 
-        /* Typography */
-        .gradient-text {
-            background: linear-gradient(90deg, #2dd4bf, #f87171, #38bdf8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-size: 200% auto;
-            animation: gradientMove 5s linear infinite;
-        }
-
-        @keyframes gradientMove {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            100% {
-                background-position: 200% 50%;
-            }
+        .feature-card.active {
+            border-color: rgba(45, 212, 191, 0.8);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+            box-shadow: 0 10px 30px -10px rgba(45, 212, 191, 0.3);
+            transform: translateY(-2px) scale(1.01);
         }
 
         /* Scrollbars */
         .custom-scroll::-webkit-scrollbar {
             width: 6px;
+            height: 6px;
         }
 
         .custom-scroll::-webkit-scrollbar-track {
@@ -139,29 +132,19 @@
             background: #2dd4bf;
         }
 
-        /* Unified Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #121212;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #3D3D3D;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #2dd4bf;
+        .scroll-content {
+            overflow-y: auto !important;
+            touch-action: pan-y !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            height: 100%;
         }
 
         /* Animations */
         .fade-in-up {
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(40px);
         }
 
         @keyframes fadeInUp {
@@ -171,7 +154,23 @@
             }
         }
 
-        /* Custom Hero Background */
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom Hero Background (Using P04 Image) */
         .hero-bg-custom {
             background-image: url('./img/project_04/hero_img.png');
             background-size: cover;
@@ -183,7 +182,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(to bottom, rgba(18, 18, 18, 0.2) 0%, rgba(18, 18, 18, 0.6) 100%);
+            background: linear-gradient(to bottom, rgba(15, 17, 21, 0.2) 0%, rgba(15, 17, 21, 0.5) 100%);
             z-index: 1;
         }
 
@@ -218,7 +217,7 @@
             content: "";
             position: absolute;
             border-radius: 50px;
-            box-shadow: 0 0 0 3px inset #fff;
+            box-shadow: 0 0 0 3px inset #ffffff;
             animation: l4 2.5s infinite;
         }
 
@@ -280,7 +279,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Icons Component
+        // === PROJECT 04 ICONS ===
         const Icons = {
             XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
             AI: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l-9 18h18L12 3z" /><circle cx="12" cy="13" r="2" /></svg>,
@@ -290,7 +289,9 @@
             Lock: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
         };
 
-        // --- UPDATED GALLERY DATA with All 8 Images & Descriptions ---
+        const MAIN_IMAGE = './img/project_04/display.png';
+
+        // === PROJECT 04 DATA ===
         const GALLERY_IMAGES = [
             { id: '01', name: '安全登入', desc: '結合警徽與科技藍綠色調，建立專業且安全的登入入口。', src: './img/project_04/01@2x.png' },
             { id: '02', name: '智慧導航', desc: '清晰的路徑指引線，輔助員警依循規劃路線精準執勤。', src: './img/project_04/03@2x.png' },
@@ -302,36 +303,71 @@
             { id: '08', name: '接收支援', desc: '即時接收鄰近同仁求救訊號，縮短支援反應時間。', src: './img/project_04/08.jpg' }
         ];
 
+        // === PHONE FRAME COMPONENT (Refined to strictly fit Left Side) ===
+        const PhoneFrame = ({ src, alt }) => {
+            return (
+                <div className="w-full h-full flex items-center justify-center pointer-events-none">
+                    <div className="
+                        relative
+                        h-full w-auto max-w-full
+                        aspect-[9/19]
+                        shadow-2xl overflow-hidden
+                        transition-all duration-300
+                        bg-black
+                        border-[6px] md:border-[8px] border-[#2d2d2d]
+                        rounded-[1.25rem] lg:rounded-[2.5rem]
+                    ">
+                        <img
+                            src={src}
+                            alt={alt}
+                            className="w-full h-full object-cover block"
+                        />
+                    </div>
+                </div>
+            );
+        };
+
         const App = () => {
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('context');
-            // Default to Login/Home screen
-            const [currentImage, setCurrentImage] = useState('./img/project_04/display.png');
+            const [currentImage, setCurrentImage] = useState(MAIN_IMAGE);
             const [activeGalleryId, setActiveGalleryId] = useState(null);
-
             const [showBackToHero, setShowBackToHero] = useState(false);
+
+            // GSAP Scroll State
+            const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+            const isScrollingRef = useRef(false);
             const mainContainerRef = useRef(null);
-            const splitRef = useRef(null);
+            const sectionsRef = useRef([]);
             const heroRef = useRef(null);
+            const splitRef = useRef(null);
+
+            // Damping / Mobile Scroll Refs
+            const contentScrollRef = useRef(null);
+            const imageScrollRef = useRef(null);
+            const overscrollAccumulator = useRef(0);
+            const OVERSCROLL_THRESHOLD = 200;
+            const touchStartY = useRef(0);
 
             useEffect(() => {
                 const timer = setTimeout(() => setLoading(false), 1500);
                 return () => clearTimeout(timer);
             }, []);
 
-            // Update image logic based on content context
+            useEffect(() => {
+                sectionsRef.current = [heroRef.current, splitRef.current];
+                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
+            }, [loading]);
+
+            // Update image logic based on tab
             useEffect(() => {
                 switch (activeTab) {
                     case 'context':
-                        setCurrentImage('./img/project_04/display.png'); // Login Screen
-                        setActiveGalleryId(null);
-                        break;
                     case 'process':
-                        setCurrentImage('./img/project_04/display.png'); // Map/Route
+                        setCurrentImage(MAIN_IMAGE);
                         setActiveGalleryId(null);
                         break;
                     case 'solution':
-                        // Changed default to the image of the first card for consistency
                         setCurrentImage('./img/project_04/03@2x.png');
                         setActiveGalleryId(null);
                         break;
@@ -340,7 +376,7 @@
                         setActiveGalleryId(GALLERY_IMAGES[0].id);
                         break;
                     default:
-                        setCurrentImage('./img/project_04/display.png');
+                        setCurrentImage(MAIN_IMAGE);
                         setActiveGalleryId(null);
                 }
             }, [activeTab]);
@@ -350,226 +386,232 @@
                 setActiveGalleryId(imgObj.id);
             };
 
-            const handleScroll = (e) => {
-                const scrollTop = e.target.scrollTop;
-                const windowHeight = window.innerHeight;
-                if (scrollTop > windowHeight * 0.5) {
-                    setShowBackToHero(true);
+            // === GSAP SCROLL LOGIC ===
+            const scrollToSection = (index) => {
+                if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
+                isScrollingRef.current = true;
+                const targetSection = sectionsRef.current[index];
+                const currentSection = sectionsRef.current[currentSectionIndex];
+
+                setShowBackToHero(index > 0);
+                overscrollAccumulator.current = 0;
+
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        isScrollingRef.current = false;
+                        setCurrentSectionIndex(index);
+                        if (currentSection !== targetSection) {
+                            currentSection.classList.remove('active-section');
+                        }
+                        targetSection.classList.add('active-section');
+                    }
+                });
+
+                if (currentSectionIndex !== index) {
+                    tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
+                }
+
+                tl.to(mainContainerRef.current, {
+                    scrollTo: { y: targetSection.offsetTop, autoKill: false },
+                    duration: 1.2,
+                    ease: "power2.inOut"
+                }, "<");
+
+                tl.to(targetSection, {
+                    opacity: 1,
+                    duration: 1,
+                    onStart: () => {
+                        targetSection.classList.add('active-section');
+                        targetSection.style.visibility = 'visible';
+                    }
+                }, "-=0.8");
+            };
+
+            // === DAMPING LOGIC ===
+            const handleWheel = (e) => {
+                if (isScrollingRef.current) return;
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+
+                if (isSplitView) {
+                    if (contentEl && contentEl.contains(e.target)) {
+                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                        if (e.deltaY < 0 && scrollTop <= 0) {
+                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        } else {
+                            overscrollAccumulator.current = 0;
+                            if (scrollHeight > clientHeight && e.deltaY > 0) return;
+                            if (scrollHeight > clientHeight && e.deltaY < 0 && scrollTop > 0) return;
+                        }
+                    } else {
+                        if (e.deltaY < 0) {
+                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        } else {
+                            overscrollAccumulator.current = 0;
+                        }
+                    }
+                }
+
+                if (e.deltaY > 0) {
+                    if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
                 } else {
-                    setShowBackToHero(false);
+                    const thresholdMet = overscrollAccumulator.current >= OVERSCROLL_THRESHOLD;
+                    if (currentSectionIndex > 0 && (!isSplitView || thresholdMet)) scrollToSection(currentSectionIndex - 1);
                 }
             };
 
-            const scrollToSection = (ref) => {
-                if (ref.current) {
-                    ref.current.scrollIntoView({ behavior: 'smooth' });
+            const handleTouchStart = (e) => {
+                touchStartY.current = e.touches[0].clientY;
+                overscrollAccumulator.current = 0;
+            };
+
+            const handleTouchEnd = (e) => {
+                if (isScrollingRef.current) return;
+                const touchEndY = e.changedTouches[0].clientY;
+                const diff = touchStartY.current - touchEndY;
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                const target = e.target;
+                const isInsideContent = contentEl && contentEl.contains(target);
+
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                        overscrollAccumulator.current = 0;
+                        if (isSplitView && isInsideContent) {
+                            const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                            if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
+                        }
+                        if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
+                    } else {
+                        if (isSplitView && isInsideContent) {
+                            if (contentEl.scrollTop > 0) {
+                                overscrollAccumulator.current = 0;
+                                return;
+                            }
+                            overscrollAccumulator.current += Math.abs(diff);
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        }
+                        if (currentSectionIndex > 0) scrollToSection(currentSectionIndex - 1);
+                    }
                 }
             };
 
-            const goBack = () => {
-                window.location.href = "index.html#portfolio";
-            };
+            useEffect(() => {
+                const container = mainContainerRef.current;
+                if (container) {
+                    window.addEventListener('wheel', handleWheel, { passive: false });
+                    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+                    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+                }
+                return () => {
+                    window.removeEventListener('wheel', handleWheel);
+                    window.removeEventListener('touchstart', handleTouchStart);
+                    window.removeEventListener('touchend', handleTouchEnd);
+                };
+            }, [currentSectionIndex]);
 
-            // Logic to determine style based on active tab
-            // [01] Context & [02] Process -> Wide View
-            // [03] Solution & [04] Climax -> Phone View
+            const goBack = () => { window.location.href = "index.html#portfolio"; };
+
             const isWideView = activeTab === 'context' || activeTab === 'process';
 
             return (
                 <React.Fragment>
-                    {/* Loader */}
-                    <div className={`loader ${loading ? '' : 'hidden'}`}>
-                        <div className="loader-animation"></div>
-                    </div>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
-                    {/* Back Button Only */}
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        <button
-                            onClick={goBack}
-                            className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40"
-                        >
+                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
                             <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">
-                                Back to Portfolio
-                            </span>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">Back to Portfolio</span>
                         </button>
                     </nav>
 
-                    {/* Back to Hero Button */}
-                    <button
-                        onClick={() => scrollToSection(heroRef)}
-                        className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
-                        title="Back to Hero Section"
-                    >
+                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`} title="Back to Hero Section">
                         <i className="fas fa-arrow-up"></i>
                     </button>
 
-                    {/* MAIN SCROLL CONTAINER */}
-                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+                    <div id="main-scroller" ref={mainContainerRef}>
 
-                        {/* 1. HERO SECTION */}
-                        <section ref={heroRef} className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                        {/* HERO SECTION */}
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
                             <div className="container max-w-6xl mx-auto px-8 z-20">
                                 <div className="max-w-3xl text-left">
-                                    <div className="inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 fade-in-up " style={{ animationDelay: '0.1s' }}>
-                                        SMART CITY & PUBLIC SAFETY
-                                    </div>
-                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left" style={{ animationDelay: '0.2s' }}>
-                                        臺南市政府警察局<br />
-                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">臺南智慧巡簽系統</span>
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART CITY & PUBLIC SAFETY</div>
+                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
+                                        臺南市政府<br className="md:hidden" />警察局<br />
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent font-heading">
+                                            臺南智慧<br className="md:hidden" />巡簽系統
+                                        </span>
                                     </h1>
-                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
-                                        從「物聯網」到「護聯網」。<br />
-                                        結合智慧導航與緊急互助，為一線員警打造的數位保命符。
-                                    </h2>
-                                    <button
-                                        onClick={() => scrollToSection(splitRef)}
-                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-dark font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(45,212,191,0.4)] transform hover:-translate-y-1"
-                                        style={{ animationDelay: '0.4s' }}
-                                    >
-                                        探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
-                                    </button>
+                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>從「物聯網」到「護聯網」。<br />結合智慧導航與緊急互助，為一線員警打造的數位保命符。</h2>
+                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-dark font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(45,212,191,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
                                 </div>
                             </div>
                         </section>
 
-                        {/* 2. SPLIT SCREEN (Robust Layout) */}
-                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+                        {/* SPLIT SCREEN */}
+                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
 
-                            {/* LEFT: Image Preview */}
-                            <div className="
-                                w-full h-[40vh] shrink-0 z-20
+                            {/* LEFT: Image Preview - FIXED TO CONTAINER */}
+                            <div ref={imageScrollRef} className="
+                                w-full h-[35vh] shrink-0 z-20
                                 lg:w-3/5 lg:h-full
-                                bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 
+                                bg-[#1a1a1a] flex items-center justify-center p-6 lg:p-12 
                                 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
+                                relative
                             ">
-                                {/* Modified Container Logic */}
-                                <div className={`
-                                    relative z-10 transform transition-all duration-500
-                                    ${isWideView
-                                        ? 'relative w-full h-auto max-w-4xl max-h-[90vh] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300' // [01][02] Style: Wide, No Border
-                                        : 'w-[280px] lg:w-[320px] h-auto bg-white shadow-2xl border-8 border-[#333] rounded-[30px] overflow-hidden' // [03][04] Style: Phone Frame
-                                    }
-                                `}>
-                                    <div className={`w-full h-full bg-gray-100 flex items-center justify-center overflow-hidden ${isWideView ? 'bg-transparent' : ''}`}>
-                                        <img
-                                            src={currentImage}
-                                            alt="Preview"
-                                            className={`
-                                                transition-opacity duration-500
-                                                ${isWideView
-                                                    ? 'w-full h-full object-contain rounded-xl shadow-2xl' // Wide View Image Style
-                                                    : 'w-full h-full object-cover' // Phone View Image Style
-                                                }
-                                            `}
-                                        />
-                                    </div>
-
-                                    {/* Image Toggle (Mobile Only) - Visible only on mobile when Climax tab is active */}
-                                    {activeTab === 'climax' && (
-                                        <div className="lg:hidden absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 p-1.5 bg-black/80 backdrop-blur rounded-full border border-white/10 shadow-xl z-20 max-w-[90%] overflow-x-auto custom-scroll">
-                                            {GALLERY_IMAGES.map((img) => (
-                                                <button
-                                                    key={img.id}
-                                                    onClick={() => handleGallerySwitch(img)}
-                                                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${activeGalleryId === img.id ? 'bg-primary text-dark shadow-lg' : 'text-gray-400 hover:text-white'}`}
-                                                >
-                                                    {img.id}
-                                                </button>
-                                            ))}
+                                {
+                                    isWideView ? (
+                                        // Wide View
+                                        <div className="w-full h-full flex items-center justify-center pointer-events-none">
+                                            <div className="relative z-10 w-full h-auto max-w-4xl max-h-[90vh] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
+                                                <div className="w-full h-full bg-transparent flex items-center justify-center overflow-hidden">
+                                                    <img src={currentImage} alt="Preview" className="w-full h-full object-contain rounded-xl shadow-2xl" />
+                                                </div>
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
+                                    ) : (
+                                        // Phone View - Strictly fit to container
+                                        <PhoneFrame src={currentImage} alt="Preview" />
+                                    )
+                                }
+                                {/* REMOVED: Image Toggle Buttons for Mobile. Only cards on right trigger change. */}
                             </div>
 
                             {/* RIGHT: Narrative Scroll */}
-                            <div className="
-                                flex-1 w-full relative z-10
-                                lg:w-2/5 lg:h-full
-                                flex flex-col
-                            ">
-                                <div className="w-full h-full flex flex-col glass-panel relative">
-
-                                    {/* Sticky Header */}
+                            <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
+                                <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
-                                        <div className="p-8 pb-0">
-                                            <h2 className="text-2xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">臺南智慧巡簽系統<br />UI/UX Design</h2>
-                                            {/* Modified Subtitle Translation */}
-                                            <p className="text-gray-400 text-sm mb-4">Tainan City Police Smart Patrol System</p>
-
-                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-6 pb-1">
-                                                {[
-                                                    { id: 'context', label: '01. 背景與痛點' },
-                                                    { id: 'process', label: '02. 流程' },
-                                                    { id: 'solution', label: '03. 方案' },
-                                                    { id: 'climax', label: '04. 成果' }
-                                                ].map(tab => (
-                                                    <button
-                                                        key={tab.id}
-                                                        onClick={() => setActiveTab(tab.id)}
-                                                        className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id
-                                                            ? 'text-primary border-b-2 border-primary pb-1'
-                                                            : 'text-gray-500 hover:text-white pb-1'
-                                                            }`}
-                                                    >
-                                                        {tab.label}
-                                                    </button>
+                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
+                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">臺南智慧巡簽系統<br />UI/UX Design</h2>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-4 font-sans">Tainan City Police Smart Patrol System</p>
+                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 scroll-content">
+                                                {[{ id: 'context', label: '01. 背景與痛點' }, { id: 'process', label: '02. 流程' }, { id: 'solution', label: '03. 方案' }, { id: 'climax', label: '04. 成果' }].map(tab => (
+                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Scrollable Content */}
-                                    <div className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll">
-
-                                        {/* 1. CONTEXT */}
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
                                                 <div className="space-y-6">
-                                                    <h3 className="text-2xl font-bold text-white mb-4">專案背景 Context</h3>
-                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                                                        傳統警政巡邏依賴紙本簽章，不僅耗費人力成本，更難以即時掌握員警動態。本專案旨在透過 GPS、物聯網與視覺化設計，打造一套能提升勤務效率、落實防弊，並保障員警執勤安全的智慧化 App。
-                                                    </p>
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="feature-card p-4">
-                                                            <div className="text-xs text-gray-500 uppercase mb-1">My Role</div>
-                                                            <div className="font-bold text-white">UI 設計師</div>
-                                                        </div>
-                                                        <div className="feature-card p-4">
-                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
-                                                            <div className="flex flex-wrap gap-2">
-                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
-                                                                    <Icons.XD /> <span className="ml-1">Adobe XD</span>
-                                                                </span>
-                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30">
-                                                                    <Icons.AI /> <span className="ml-1">Illustrator</span>
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">專案背景 Context</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">傳統警政巡邏依賴紙本簽章，不僅耗費人力成本，更難以即時掌握員警動態。本專案旨在透過 GPS、物聯網與視覺化設計，打造一套能提升勤務效率、落實防弊，並保障員警執勤安全的智慧化 App。</p>
+                                                    <div className="grid grid-cols-2 gap-4"><div className="feature-card p-4"><div className="text-xs text-gray-500 uppercase mb-1">My Role</div><div className="font-bold text-white">UI 設計師</div></div><div className="feature-card p-4"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><Icons.XD /> <span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span></div></div></div>
                                                 </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
-                                                        <span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>
-                                                        痛點與挑戰 The Conflict
-                                                    </h3>
-                                                    <div className="feature-card p-5 border-l-4 border-l-secondary">
-                                                        <h4 className="text-secondary font-bold text-sm mb-3">傳統紙本巡簽的困境</h4>
-                                                        <ul className="space-y-4 text-gray-300">
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">勤務效率低落</strong>新手員警需耗時記憶路線，容易迷路或繞道。</div></li>
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">管理防弊困難</strong>紙本簽到無法驗證是否本人到場，存在「代簽」風險。</div></li>
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">緊急溝通斷層</strong>遇險時使用無線電報位耗時且不精準，錯失黃金救援時間。</div></li>
-                                                        </ul>
-                                                    </div>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>痛點與挑戰 The Conflict</h3>
+                                                    <div className="feature-card p-5 border-l-4 border-l-secondary"><h4 className="text-secondary font-bold text-sm mb-3">傳統紙本巡簽的困境</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">勤務效率低落</strong>新手員警需耗時記憶路線，容易迷路或繞道。</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">管理防弊困難</strong>紙本簽到無法驗證是否本人到場，存在「代簽」風險。</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">緊急溝通斷層</strong>遇險時使用無線電報位耗時且不精準，錯失黃金救援時間。</div></li></ul></div>
                                                 </div>
                                             </div>
                                         )}
-
-                                        {/* 2. PROCESS */}
                                         {activeTab === 'process' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-2">執行過程 The Process</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">執行過程 The Process</h3>
                                                 <p className="text-xs text-gray-400 mb-6">將「管理需求」轉化為「保命工具」的設計歷程</p>
                                                 <div className="relative pl-4 border-l border-white/10 space-y-8">
                                                     <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">01. 場域觀察</h4><p className="text-xs text-gray-400">分析員警夜間巡邏情境，確定高對比度與單手操作的重要性。</p></div>
@@ -579,53 +621,35 @@
                                                 </div>
                                             </div>
                                         )}
-
-                                        {/* 3. SOLUTION */}
                                         {activeTab === 'solution' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-6">解決方案與亮點 The Solution</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">解決方案與亮點 The Solution</h3>
                                                 <div className="space-y-4">
-                                                    <div className="feature-card p-5 flex items-start space-x-4 cursor-pointer" onClick={() => setCurrentImage('./img/project_04/03@2x.png')}><div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0"><Icons.Map /></div><div><h4 className="font-bold text-white text-sm mb-1">視覺化路徑引導</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 在地圖上直接繪製最佳巡邏路線，取代列表式清單，即便是跨區支援也能無縫接軌。</p></div></div>
-                                                    <div className="feature-card p-5 flex items-start space-x-4 cursor-pointer" onClick={() => setCurrentImage('./img/project_04/04.jpg')}><div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-accent shrink-0"><Icons.Shield /></div><div><h4 className="font-bold text-white text-sm mb-1">數位防弊簽到</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 紀錄精確座標與「守望時間」，系統自動檢測誤差距離(如3m)，杜絕遠端作弊。</p></div></div>
-                                                    <div className="feature-card p-5 flex items-start space-x-4 cursor-pointer" onClick={() => setCurrentImage('./img/project_04/07.jpg')}><div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center text-secondary shrink-0"><Icons.Alert /></div><div><h4 className="font-bold text-white text-sm mb-1">SOS 緊急互助網</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 一鍵發送求救訊號，系統自動通知「最近」的同仁而非僅限同隊，提供精確座標爭取黃金救援時間。</p></div></div>
+                                                    <button onClick={() => setCurrentImage('./img/project_04/03@2x.png')} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0"><Icons.Map /></div><div><h4 className="font-bold text-white text-sm mb-1">視覺化路徑引導</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 在地圖上直接繪製最佳巡邏路線，取代列表式清單，即便是跨區支援也能無縫接軌。</p></div></button>
+                                                    <button onClick={() => setCurrentImage('./img/project_04/04.jpg')} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-accent shrink-0"><Icons.Shield /></div><div><h4 className="font-bold text-white text-sm mb-1">數位防弊簽到</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 紀錄精確座標與「守望時間」，系統自動檢測誤差距離(如3m)，杜絕遠端作弊。</p></div></button>
+                                                    <button onClick={() => setCurrentImage('./img/project_04/07.jpg')} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center text-secondary shrink-0"><Icons.Alert /></div><div><h4 className="font-bold text-white text-sm mb-1">SOS 緊急互助網</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 一鍵發送求救訊號，系統自動通知「最近」的同仁而非僅限同隊，提供精確座標爭取黃金救援時間。</p></div></button>
                                                 </div>
                                             </div>
                                         )}
-
-                                        {/* 4. CLIMAX (Updated with all 8 images & descriptions) */}
                                         {activeTab === 'climax' && (
-                                            <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-4">介面展示 Gallery</h3>
-                                                <p className="text-gray-400 mb-6 text-sm">點擊下方卡片，預覽完整設計介面與功能說明。</p>
-                                                <div className="grid gap-3">
+                                            <div className="space-y-8 animate-fadeIn pb-12">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">介面展示 Gallery</h3>
+                                                <p className="text-gray-400 mb-8 text-sm">點擊下方卡片，預覽完整設計介面與功能說明。</p>
+                                                <div className="space-y-3">
                                                     {GALLERY_IMAGES.map((img) => (
-                                                        <button
-                                                            key={img.id}
-                                                            onClick={() => handleGallerySwitch(img)}
-                                                            className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group flex items-start ${activeGalleryId === img.id ? 'border-primary bg-white/5' : 'border-white/10'}`}
-                                                        >
-                                                            <div className="flex-1">
-                                                                <div className="flex justify-between items-center mb-1">
-                                                                    <h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
-                                                                        <span className="text-primary mr-2">{img.id}.</span>{img.name}
-                                                                    </h4>
-                                                                    <i className={`fas fa-chevron-left transform transition-all text-xs ${activeGalleryId === img.id ? 'text-primary' : 'text-gray-600 group-hover:text-primary opacity-0 group-hover:opacity-100'}`}></i>
-                                                                </div>
-                                                                <p className="text-xs text-gray-500 group-hover:text-gray-400 leading-relaxed">
-                                                                    {img.desc}
-                                                                </p>
-                                                            </div>
+                                                        <button key={img.id} onClick={() => handleGallerySwitch(img)} className={`w-full text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(45,212,191,0.1)]' : 'border-white/5'}`}>
+                                                            <div className="flex justify-between items-center mb-1"><h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}><span className="text-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? 'text-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i></div>
+                                                            <p className="text-xs text-gray-500 group-hover:text-gray-400 leading-relaxed">{img.desc}</p>
                                                         </button>
                                                     ))}
                                                 </div>
                                             </div>
                                         )}
-
+                                        <div className="h-8"></div>
                                     </div>
                                 </div>
                             </div>
                         </section>
-
                     </div>
                 </React.Fragment>
             );
@@ -634,24 +658,6 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-
-    <style>
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-    </style>
 </body>
 
 </html>
