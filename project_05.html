@@ -6,18 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>新竹市動物園 | 內部管理與行動應變系統 - UX Case Study</title>
 
-    <!-- Favicon Fix: 增加版本號 (?v=2) 強制瀏覽器重新抓取，並同時支援舊版寫法 -->
     <link rel="shortcut icon" href="./img/favicon/favicon.ico">
     <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
 
-    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
 
-    <!-- Fonts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -31,8 +30,8 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#86C232',    /* 調整為動物園的自然綠色調 */
-                        secondary: '#FF9671',  /* 溫暖的輔助色 */
+                        primary: '#86C232',    /* 動物園綠色調 */
+                        secondary: '#FF9671',  /* 溫暖輔助色 */
                         dark: '#1A1D1A',
                         'dark-light': '#262926',
                         'dark-lighter': '#3D403D',
@@ -41,9 +40,6 @@
                     fontFamily: {
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
                         heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
-                    },
-                    backgroundImage: {
-                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
                     }
                 }
             }
@@ -58,27 +54,47 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
             background-color: #1A1D1A;
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
+            overflow: hidden;
+            /* 禁止原生滾動 */
+            overscroll-behavior: none;
+            /* 防止瀏覽器彈性效果 */
         }
 
         /* MAIN SCROLL CONTAINER */
-        #main-container {
+        #main-scroller {
             width: 100vw;
             height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
+            overflow: hidden;
+            position: relative;
         }
 
-        /* SECTIONS */
-        .page-section {
+        /* SECTIONS (SNAP) */
+        .snap-section {
             width: 100vw;
-            min-height: 100vh;
+            height: 100vh;
             position: relative;
-            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .snap-section.active-section {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* SCROLLABLE CONTENT AREA */
+        .scroll-content {
+            overflow-y: auto !important;
+            touch-action: pan-y !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            height: 100%;
         }
 
         /* Glassmorphism */
@@ -123,40 +139,42 @@
             background: #86C232;
         }
 
-        /* Unified Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #1A1D1A;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #3D403D;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #86C232;
-        }
-
         /* Animations */
         .fade-in-up {
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(40px);
         }
 
         @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        /* Custom Hero Background - 使用森林系背景 */
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom Hero Background */
         .hero-bg-custom {
             background-image: url('./img/project_05/hero_img.png');
             background-size: cover;
@@ -277,7 +295,7 @@
             Camera: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>,
         };
 
-        // NEW: Hierarchical Gallery Data Structure
+        // Data Structure
         const GALLERY_CATEGORIES = [
             {
                 id: 'cat_web',
@@ -309,44 +327,56 @@
         const App = () => {
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('context');
-            // Initialize with the first image of the first category
+
+            // Image State
             const [currentImage, setCurrentImage] = useState(GALLERY_CATEGORIES[0].images[0].src);
             const [activeGalleryId, setActiveGalleryId] = useState(GALLERY_CATEGORIES[0].images[0].id);
             const [imageType, setImageType] = useState('web');
-
-            // New state to track active feature card ID for Process and Solution tabs
             const [activeFeatureId, setActiveFeatureId] = useState(null);
 
             const [showBackToHero, setShowBackToHero] = useState(false);
+
+            // GSAP State
+            const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+            const isScrollingRef = useRef(false);
             const mainContainerRef = useRef(null);
-            const splitRef = useRef(null);
+            const sectionsRef = useRef([]);
             const heroRef = useRef(null);
+            const splitRef = useRef(null);
+
+            // Damping Refs
+            const contentScrollRef = useRef(null);
+            const overscrollAccumulator = useRef(0);
+            const OVERSCROLL_THRESHOLD = 200;
+            const touchStartY = useRef(0);
 
             useEffect(() => {
                 const timer = setTimeout(() => setLoading(false), 1500);
                 return () => clearTimeout(timer);
             }, []);
 
+            // Initialize Sections for GSAP
             useEffect(() => {
-                // When tab changes, reset active feature and set default image
-                setActiveFeatureId(null);
+                sectionsRef.current = [heroRef.current, splitRef.current];
+                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
+            }, [loading]);
 
+            // Tab Switch Logic
+            useEffect(() => {
+                setActiveFeatureId(null);
                 switch (activeTab) {
                     case 'context':
                         updateImageDisplay('./img/project_05/display.png', null, 'web');
                         break;
                     case 'process':
-                        // Default to the first feature image for Process tab
                         updateImageDisplay('./img/project_05/竹市動物園_後台_首頁.jpg', 'web-feat-01', 'web');
                         setActiveFeatureId('web-feat-01');
                         break;
                     case 'solution':
-                        // Default to the first feature image for Solution tab
                         updateImageDisplay('./img/project_05/竹市動物園_APP(內部)_緊急協助通報.png', 'app-feat-01', 'app');
                         setActiveFeatureId('app-feat-01');
                         break;
                     case 'climax':
-                        // Reset to the first image when entering climax tab
                         const firstImg = GALLERY_CATEGORIES[0].images[0];
                         updateImageDisplay(firstImg.src, firstImg.id, 'web');
                         break;
@@ -357,8 +387,6 @@
 
             const updateImageDisplay = (src, id, type) => {
                 setCurrentImage(src);
-                // Only set activeGalleryId if it matches one of the gallery IDs (for climax tab)
-                // or if we want to track it separately. For now, we use activeFeatureId for process/solution.
                 if (activeTab === 'climax') {
                     setActiveGalleryId(id);
                 }
@@ -369,28 +397,161 @@
                 updateImageDisplay(imgObj.src, imgObj.id, type);
             };
 
-            // New handler for feature card clicks
             const handleFeatureClick = (src, id, type) => {
                 setCurrentImage(src);
                 setActiveFeatureId(id);
                 setImageType(type);
             };
 
-            const handleScroll = (e) => {
-                const scrollTop = e.target.scrollTop;
-                const windowHeight = window.innerHeight;
-                if (scrollTop > windowHeight * 0.5) {
-                    setShowBackToHero(true);
+            // === GSAP SCROLL LOGIC ===
+            const scrollToSection = (index) => {
+                if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
+
+                isScrollingRef.current = true;
+                const targetSection = sectionsRef.current[index];
+                const currentSection = sectionsRef.current[currentSectionIndex];
+
+                setShowBackToHero(index > 0);
+                overscrollAccumulator.current = 0; // Reset damping
+
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        isScrollingRef.current = false;
+                        setCurrentSectionIndex(index);
+                        if (currentSection !== targetSection) {
+                            currentSection.classList.remove('active-section');
+                        }
+                        targetSection.classList.add('active-section');
+                    }
+                });
+
+                if (currentSectionIndex !== index) {
+                    tl.to(currentSection, {
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: "power2.out"
+                    });
+                }
+
+                tl.to(mainContainerRef.current, {
+                    scrollTo: { y: targetSection.offsetTop, autoKill: false },
+                    duration: 1.2,
+                    ease: "power2.inOut"
+                }, "<");
+
+                tl.to(targetSection, {
+                    opacity: 1,
+                    duration: 1,
+                    onStart: () => {
+                        targetSection.classList.add('active-section');
+                        targetSection.style.visibility = 'visible';
+                    }
+                }, "-=0.8");
+            };
+
+            // === DAMPING LOGIC ===
+            const handleWheel = (e) => {
+                if (isScrollingRef.current) return;
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+
+                if (isSplitView) {
+                    // Check if mouse is over the scrolling content
+                    if (contentEl && contentEl.contains(e.target)) {
+                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
+
+                        // Scrolling UP (Trying to go back to Hero)
+                        if (e.deltaY < 0 && scrollTop <= 0) {
+                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return; // Dampen
+                        } else {
+                            overscrollAccumulator.current = 0;
+                            // Block normal scroll logic if we are just scrolling content
+                            if (scrollHeight > clientHeight && e.deltaY > 0) return; // Scrolling down content
+                            if (scrollHeight > clientHeight && e.deltaY < 0 && scrollTop > 0) return; // Scrolling up content
+                        }
+                    } else {
+                        // Mouse is over visual area (left side)
+                        if (e.deltaY < 0) {
+                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        } else {
+                            overscrollAccumulator.current = 0;
+                        }
+                    }
+                }
+
+                // Section Switching Logic
+                if (e.deltaY > 0) {
+                    if (currentSectionIndex < sectionsRef.current.length - 1) {
+                        scrollToSection(currentSectionIndex + 1);
+                    }
                 } else {
-                    setShowBackToHero(false);
+                    const thresholdMet = overscrollAccumulator.current >= OVERSCROLL_THRESHOLD;
+                    if (currentSectionIndex > 0 && (!isSplitView || thresholdMet)) {
+                        scrollToSection(currentSectionIndex - 1);
+                    }
                 }
             };
 
-            const scrollToSection = (ref) => {
-                if (ref.current) {
-                    ref.current.scrollIntoView({ behavior: 'smooth' });
+            const handleTouchStart = (e) => {
+                touchStartY.current = e.touches[0].clientY;
+                overscrollAccumulator.current = 0;
+            };
+
+            const handleTouchEnd = (e) => {
+                if (isScrollingRef.current) return;
+                const touchEndY = e.changedTouches[0].clientY;
+                const diff = touchStartY.current - touchEndY; // Positive = swipe up (scroll down)
+
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                const isInsideContent = contentEl && contentEl.contains(e.target);
+
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                        // Swipe Up (Go Down)
+                        overscrollAccumulator.current = 0;
+                        if (isSplitView && isInsideContent) {
+                            const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                            // If content can still scroll down, don't switch section
+                            if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
+                        }
+                        if (currentSectionIndex < sectionsRef.current.length - 1) {
+                            scrollToSection(currentSectionIndex + 1);
+                        }
+                    } else {
+                        // Swipe Down (Go Up / Back to Hero)
+                        if (isSplitView && isInsideContent) {
+                            if (contentEl.scrollTop > 0) {
+                                overscrollAccumulator.current = 0;
+                                return; // Just scrolling content
+                            }
+                            // Accumulate 'pull'
+                            overscrollAccumulator.current += Math.abs(diff);
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return; // Dampen
+                        }
+
+                        if (currentSectionIndex > 0) {
+                            scrollToSection(currentSectionIndex - 1);
+                        }
+                    }
                 }
             };
+
+            useEffect(() => {
+                const container = mainContainerRef.current;
+                if (container) {
+                    window.addEventListener('wheel', handleWheel, { passive: false });
+                    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+                    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+                }
+                return () => {
+                    window.removeEventListener('wheel', handleWheel);
+                    window.removeEventListener('touchstart', handleTouchStart);
+                    window.removeEventListener('touchend', handleTouchEnd);
+                };
+            }, [currentSectionIndex]);
 
             const goBack = () => {
                 window.location.href = "index.html#portfolio";
@@ -418,32 +579,32 @@
 
                     {/* Back to Hero Button */}
                     <button
-                        onClick={() => scrollToSection(heroRef)}
+                        onClick={() => scrollToSection(0)}
                         className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
                     >
                         <i className="fas fa-arrow-up"></i>
                     </button>
 
                     {/* MAIN SCROLL CONTAINER */}
-                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+                    <div id="main-scroller" ref={mainContainerRef}>
 
                         {/* 1. HERO SECTION */}
-                        <section ref={heroRef} className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                        <section id="hero" ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative hero-bg-custom">
                             <div className="container max-w-6xl mx-auto px-8 z-20">
                                 <div className="max-w-3xl text-left">
-                                    <div className="inline-block px-4 py-1 rounded-full border border-accent/50 bg-accent/20 text-accent text-xs font-bold tracking-widest mb-6 fade-in-up" style={{ animationDelay: '0.1s' }}>
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-accent/50 bg-accent/20 text-accent text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>
                                         SMART ZOO MANAGEMENT
                                     </div>
-                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left" style={{ animationDelay: '0.2s' }}>
+                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
                                         新竹市動物園<br />
                                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">內部管理<br />與行動應變系統</span>
                                     </h1>
-                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
+                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>
                                         從辦公室的「數據司令部」到現場的「行動先鋒」，<br />打造全方位的智慧園區管理體驗。
                                     </h2>
                                     <button
-                                        onClick={() => scrollToSection(splitRef)}
-                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(134,194,50,0.4)] transform hover:-translate-y-1"
+                                        onClick={() => scrollToSection(1)}
+                                        className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(134,194,50,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`}
                                         style={{ animationDelay: '0.4s' }}
                                     >
                                         探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
@@ -453,55 +614,59 @@
                         </section>
 
                         {/* 2. SPLIT SCREEN (Content) */}
-                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+                        <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark overflow-hidden">
 
                             {/* LEFT: Image Preview (Adaptive for Mobile/Web screenshots) */}
                             <div className="
-                                w-full h-[40vh] shrink-0 z-20
+                                w-full h-[35vh] shrink-0 z-20
                                 lg:w-3/5 lg:h-full
                                 bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 
                                 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
                             ">
-                                {/* 根據是 APP 還是 Web 調整容器寬高比 */}
-                                <div className={`relative transition-all duration-500 flex flex-col shadow-2xl overflow-hidden
-                                    ${imageType === 'app' ? 'w-[350px] bg-transparent' : 'w-full max-w-4xl max-h-[85%] rounded-xl border border-white/10 bg-dark-light'}
-                                `}>
+                                {/* Max Width 4XL Constraint & Mobile Fit Fix */}
+                                <div className="w-full max-w-4xl h-full flex items-center justify-center">
+                                    <div className={`relative transition-all duration-500 flex flex-col shadow-2xl overflow-hidden
+                                        ${imageType === 'app' ? 'h-full aspect-[9/19] bg-transparent' : 'w-full max-h-full rounded-xl border border-white/10 bg-dark-light'}
+                                        ${imageType === 'app' ? 'justify-center' : ''}
+                                    `}>
 
-                                    {/* Web Browser Header - 根據使用者需求，context [01.] Tab 不顯示 */}
-                                    {imageType === 'web' && activeTab !== 'context' && (
-                                        <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
-                                            <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
-                                            <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
-                                            <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                        {/* Web Browser Header */}
+                                        {imageType === 'web' && activeTab !== 'context' && (
+                                            <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
+                                                <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
+                                                <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
+                                                <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                            </div>
+                                        )}
+
+                                        <div className={`relative w-full h-full overflow-hidden flex items-center justify-center ${imageType === 'app' ? '' : 'bg-white/5'}`}>
+                                            <img
+                                                src={currentImage}
+                                                alt="Preview"
+                                                className={`block ${imageType === 'app' ? 'w-full h-full object-contain' : 'w-full h-full object-contain'}`}
+                                            />
                                         </div>
-                                    )}
 
-                                    <div className={`relative overflow-hidden group ${imageType === 'app' ? '' : 'bg-white/5'}`}>
-                                        <img
-                                            src={currentImage}
-                                            alt="Preview"
-                                            className="w-full h-auto object-contain max-h-[80vh]"
-                                        />
                                     </div>
-
                                 </div>
                             </div>
 
                             {/* RIGHT: Narrative Scroll */}
                             <div className="
-                                flex-1 w-full relative z-10
+                                w-full relative z-10
                                 lg:w-2/5 lg:h-full
                                 flex flex-col
+                                min-h-0
                             ">
-                                <div className="w-full h-full flex flex-col glass-panel relative">
+                                <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
 
                                     {/* Sticky Header */}
                                     <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
-                                        <div className="p-8 pb-0">
-                                            <h2 className="text-2xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">新竹市動物園<br />內部管理與行動應變系統</h2>
-                                            <p className="text-gray-400 text-sm mb-4">Internal Management & Mobile Response</p>
+                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
+                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">新竹市動物園<br />內部管理與<br className="md:hidden" />行動應變系統</h2>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">Internal Management & Mobile Response</p>
 
-                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-6 pb-1">
+                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 scroll-content">
                                                 {[
                                                     { id: 'context', label: '01. 背景與挑戰' },
                                                     { id: 'process', label: '02. 網頁系統' },
@@ -523,14 +688,15 @@
                                         </div>
                                     </div>
 
-                                    {/* Scrollable Content */}
-                                    <div className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll">
+                                    {/* Scrollable Content (Added ref and scroll-content class) */}
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
 
                                         {/* 1. CONTEXT (背景) */}
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
                                                 <div className="space-y-6">
-                                                    <h3 className="text-2xl font-bold text-white mb-4">專案背景 Context</h3>
+                                                    {/* H3 Size Adjustment */}
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">專案背景 Context</h3>
                                                     <p className="text-gray-300 text-sm leading-relaxed mb-4">
                                                         這是一個專為新竹市動物園內部員工與志工設計的整合管理系統。目標是將龐大的園區營運數據（動物照護、志工排班、人流安全）進行高效整合，並延伸至行動端以應對現場突發狀況。
                                                     </p>
@@ -554,7 +720,7 @@
                                                 </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center">
                                                         <span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>
                                                         管理痛點 Pain Points
                                                     </h3>
@@ -570,10 +736,10 @@
                                             </div>
                                         )}
 
-                                        {/* 2. PROCESS (網頁版解方) - With Clickable Feature Cards */}
+                                        {/* 2. PROCESS (網頁版解方) */}
                                         {activeTab === 'process' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-6">網頁後台 (Desktop)</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">網頁後台 (Desktop)</h3>
 
                                                 {/* 網頁版重點摘要區塊 */}
                                                 <div className="feature-card p-5 border-l-4 border-l-primary mb-8">
@@ -599,13 +765,13 @@
                                                 {/* Separator Line */}
                                                 <div className="w-full h-px bg-white/10 mb-8"></div>
 
-                                                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center">
                                                     <span className="w-1 h-6 bg-primary rounded-full mr-3"></span>
                                                     核心功能 Core Features
                                                 </h3>
 
                                                 <div className="space-y-4">
-                                                    {/* Clickable Card 1: 數據儀表板 */}
+                                                    {/* Clickable Card 1 */}
                                                     <button
                                                         onClick={() => handleFeatureClick('./img/project_05/竹市動物園_後台_首頁.jpg', 'web-feat-01', 'web')}
                                                         className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'web-feat-01' ? 'border-primary bg-white/10 shadow-[0_0_15px_rgba(134,194,50,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
@@ -621,7 +787,7 @@
                                                         </div>
                                                     </button>
 
-                                                    {/* Clickable Card 2: 營運行事曆 */}
+                                                    {/* Clickable Card 2 */}
                                                     <button
                                                         onClick={() => handleFeatureClick('./img/project_05/竹市動物園_後台_行事曆.jpg', 'web-feat-02', 'web')}
                                                         className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'web-feat-02' ? 'border-blue-400 bg-white/10 shadow-[0_0_15px_rgba(96,165,250,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
@@ -637,7 +803,7 @@
                                                         </div>
                                                     </button>
 
-                                                    {/* Clickable Card 3: 監控與分析 */}
+                                                    {/* Clickable Card 3 */}
                                                     <button
                                                         onClick={() => handleFeatureClick('./img/project_05/竹市動物園_後台_園區影像.jpg', 'web-feat-03', 'web')}
                                                         className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'web-feat-03' ? 'border-purple-400 bg-white/10 shadow-[0_0_15px_rgba(192,132,252,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
@@ -656,10 +822,10 @@
                                             </div>
                                         )}
 
-                                        {/* 3. SOLUTION (行動版解方) - With Clickable Feature Cards */}
+                                        {/* 3. SOLUTION (行動版解方) */}
                                         {activeTab === 'solution' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-6">手機 APP (Mobile)</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">手機 APP (Mobile)</h3>
 
                                                 {/* 手機版重點摘要區塊 */}
                                                 <div className="feature-card p-5 border-l-4 border-l-secondary mb-8">
@@ -685,13 +851,13 @@
                                                 {/* Separator Line */}
                                                 <div className="w-full h-px bg-white/10 mb-8"></div>
 
-                                                <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center">
                                                     <span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>
                                                     行動亮點 Mobile Highlights
                                                 </h3>
 
                                                 <div className="space-y-4">
-                                                    {/* Clickable Card 1: 緊急協助 */}
+                                                    {/* Clickable Card 1 */}
                                                     <button
                                                         onClick={() => handleFeatureClick('./img/project_05/竹市動物園_APP(內部)_緊急協助通報.png', 'app-feat-01', 'app')}
                                                         className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'app-feat-01' ? 'border-secondary bg-white/10 shadow-[0_0_15px_rgba(255,150,113,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
@@ -707,7 +873,7 @@
                                                         </div>
                                                     </button>
 
-                                                    {/* Clickable Card 2: 即時熱區 */}
+                                                    {/* Clickable Card 2 */}
                                                     <button
                                                         onClick={() => handleFeatureClick('./img/project_05/竹市動物園_APP(內部)_園區即時資訊.png', 'app-feat-02', 'app')}
                                                         className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'app-feat-02' ? 'border-accent bg-white/10 shadow-[0_0_15px_rgba(255,199,95,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
@@ -723,7 +889,7 @@
                                                         </div>
                                                     </button>
 
-                                                    {/* Clickable Card 3: 行動儀表板 */}
+                                                    {/* Clickable Card 3 */}
                                                     <button
                                                         onClick={() => handleFeatureClick('./img/project_05/竹市動物園_APP(內部)_首頁.png', 'app-feat-03', 'app')}
                                                         className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'app-feat-03' ? 'border-primary bg-white/10 shadow-[0_0_15px_rgba(134,194,50,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
@@ -745,18 +911,16 @@
                                         {/* 4. CLIMAX (Hierarchical Gallery) */}
                                         {activeTab === 'climax' && (
                                             <div className="space-y-8 animate-fadeIn pb-12">
-                                                <h3 className="text-2xl font-bold text-white mb-4">介面總覽 Gallery</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">介面總覽 Gallery</h3>
                                                 <p className="text-gray-400 mb-8 text-sm">以下分為兩大模組展示完整的系統介面。</p>
 
                                                 <div className="space-y-6">
                                                     {GALLERY_CATEGORIES.map((category) => (
                                                         <div key={category.id} className="space-y-3">
-                                                            {/* Category Header */}
                                                             <h4 className={`font-bold text-md flex items-center ${category.type === 'web' ? 'text-primary' : 'text-secondary'}`}>
                                                                 <span className={`w-2 h-2 rounded-full mr-2 ${category.type === 'web' ? 'bg-primary' : 'bg-secondary'}`}></span>
                                                                 {category.title}
                                                             </h4>
-                                                            {/* Image Grid for this Category */}
                                                             <div className="grid gap-3 pl-4 border-l border-white/10">
                                                                 {category.images.map((img) => (
                                                                     <button
@@ -769,7 +933,6 @@
                                                                                 <span className={`${category.type === 'web' ? 'text-primary/70' : 'text-secondary/70'} mr-2 text-xs font-mono`}>{img.id}</span>
                                                                                 {img.name}
                                                                             </h4>
-                                                                            {/* Icon indicating active state */}
                                                                             <i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? (category.type === 'web' ? 'text-primary' : 'text-secondary') + ' translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
                                                                         </div>
                                                                     </button>
@@ -794,24 +957,6 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-
-    <style>
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-    </style>
 </body>
 
 </html>
