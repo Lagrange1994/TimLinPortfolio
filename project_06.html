@@ -6,20 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>桃園捷運 App 改版 | UX/UI Case Study</title>
 
-    <!-- Favicon Fix: 增加版本號 (?v=2) 強制瀏覽器重新抓取，並同時支援舊版寫法 -->
     <link rel="shortcut icon" href="./img/favicon/favicon.ico">
     <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
 
-    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
         rel="stylesheet">
 
     <script>
@@ -36,15 +39,7 @@
                     },
                     fontFamily: {
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.5s ease-out forwards',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        }
+                        heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'], /* Added Heading Font */
                     }
                 }
             }
@@ -52,40 +47,78 @@
     </script>
 
     <style>
+        /* === 基礎設定 === */
         body,
         html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
             background-color: #121212;
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
+            overflow: hidden;
+            /* 禁止原生滾動 */
+            overscroll-behavior: none;
         }
 
-        #main-container {
+        /* === 主捲動容器 === */
+        #main-scroller {
             width: 100vw;
             height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-        }
-
-        .page-section {
-            width: 100vw;
-            min-height: 100vh;
-            position: relative;
             overflow: hidden;
+            position: relative;
         }
 
+        /* === 全頁滾動區塊 === */
+        .snap-section {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .snap-section.active-section {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* === 內容滾動區域 === */
+        .scroll-content {
+            overflow-y: auto !important;
+            touch-action: pan-y !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            height: 100%;
+        }
+
+        /* === 右側 Tab 橫向滾動修正 === */
+        .horizontal-tabs {
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            touch-action: pan-x !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        .horizontal-tabs::-webkit-scrollbar {
+            display: none;
+            /* Chrome/Safari */
+        }
+
+        /* UI Elements */
         .glass-panel {
             background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(18, 18, 18, 0.98));
             backdrop-filter: blur(20px);
             border-left: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* Style A: Standard/Original Card (For Tabs 01 & 05) */
+        /* Style A: Standard/Original Card */
         .feature-card-standard {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
             backdrop-filter: blur(12px);
@@ -100,7 +133,7 @@
             box-shadow: 0 10px 30px -10px rgba(127, 63, 152, 0.2);
         }
 
-        /* Style B: Minimal/Interactive Card (For Tabs 02-04) */
+        /* Style B: Minimal/Interactive Card */
         .feature-card-minimal {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
             backdrop-filter: blur(12px);
@@ -119,31 +152,54 @@
             transform: translateY(-2px);
         }
 
-        ::-webkit-scrollbar {
+        /* Scrollbars */
+        .custom-scroll::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
 
-        ::-webkit-scrollbar-track {
+        .custom-scroll::-webkit-scrollbar-track {
             background: transparent;
         }
 
-        ::-webkit-scrollbar-thumb {
+        .custom-scroll::-webkit-scrollbar-thumb {
             background: #3D3D3D;
             border-radius: 10px;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
             background: #7F3F98;
         }
 
+        /* Animations */
         .fade-in-up {
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(40px);
         }
 
         @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -154,7 +210,6 @@
             background-image: url('./img/project_06/hero_img.png');
             background-size: cover;
             background-position: center;
-            position: relative;
         }
 
         .hero-bg-metro::before {
@@ -165,31 +220,13 @@
             z-index: 1;
         }
 
-        /* Phone Frame (No fixed aspect ratio now) */
-        .phone-frame-auto {
-            border: 8px solid #333;
-            border-radius: 30px;
-            overflow: hidden;
-            position: relative;
-            background: #000;
-            /* Removed aspect-ratio to allow auto height */
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        /* Back Button Styles */
+        .back-btn i {
+            transition: transform 0.3s ease;
         }
 
-        .feature-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(43, 108, 176, 0.4);
-            /* Updated to new primary */
-            box-shadow: 0 10px 30px -10px rgba(43, 108, 176, 0.2);
+        .back-btn:hover i {
+            transform: translateX(-4px);
         }
 
         /* Loader */
@@ -290,7 +327,7 @@
             Popup: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
         };
 
-        // --- 🌟 Gallery Data (05. 所有畫面) ---
+        // --- Data ---
         const GALLERY_ITEMS = [
             { id: 'home', name: '首頁概覽', desc: '整合快捷入口與即時資訊', src: './img/project_06/home.png' },
             { id: 'timetable', name: '時刻表查詢', desc: '優化後的卡片式介面', src: './img/project_06/time_table_a.png' },
@@ -301,39 +338,38 @@
             { id: 'popup', name: '領取彈窗', desc: '多樣化的領取機制', src: './img/project_06/event_a.png' }
         ];
 
-        // --- Scenario Data (Before & After) ---
         const SCENARIOS = {
             context: {
                 title: 'Project Overview',
                 content: (
-                    <img src="./img/project_06/display.png" className="w-full h-auto rounded-lg shadow-lg" alt="Overview Cover" />
+                    <img src="./img/project_06/display.png" className="w-full h-auto object-contain max-h-full rounded-lg shadow-lg" alt="Overview Cover" />
                 )
             },
             ux_strategy: {
                 title: '時刻表查詢',
                 before: (
-                    <img src="./img/project_06/time_table_b.png" className="w-full h-full object-cover" alt="Timetable Before" />
+                    <img src="./img/project_06/time_table_b.png" className="w-full h-full object-cover object-top" alt="Timetable Before" />
                 ),
                 after: (
-                    <img src="./img/project_06/time_table_a.png" className="w-full h-full object-cover" alt="Timetable After" />
+                    <img src="./img/project_06/time_table_a.png" className="w-full h-full object-cover object-top" alt="Timetable After" />
                 )
             },
             biz_value: {
                 title: '商城與兌換',
                 before: (
-                    <img src="./img/project_06/shop_b.png" className="w-full h-full object-cover" alt="Shop Before" />
+                    <img src="./img/project_06/shop_b.png" className="w-full h-full object-cover object-top" alt="Shop Before" />
                 ),
                 after: (
-                    <img src="./img/project_06/shop_a.png" className="w-full h-full object-cover" alt="Shop After" />
+                    <img src="./img/project_06/shop_a.png" className="w-full h-full object-cover object-top" alt="Shop After" />
                 )
             },
             engagement: {
                 title: '活動閉環',
                 before: (
-                    <img src="./img/project_06/event_b.png" className="w-full h-full object-cover" alt="Event Before" />
+                    <img src="./img/project_06/event_b.png" className="w-full h-full object-cover object-top" alt="Event Before" />
                 ),
                 after: (
-                    <img src="./img/project_06/event_a.png" className="w-full h-full object-cover" alt="Event After" />
+                    <img src="./img/project_06/event_a.png" className="w-full h-full object-cover object-top" alt="Event After" />
                 )
             }
         };
@@ -343,10 +379,21 @@
             const [activeTab, setActiveTab] = useState('context');
             const [comparisonMode, setComparisonMode] = useState('after');
             const [activeGalleryItem, setActiveGalleryItem] = useState(GALLERY_ITEMS[0]);
-            const [showBackToTop, setShowBackToTop] = useState(false);
+            const [showBackToHero, setShowBackToHero] = useState(false);
 
+            // GSAP Scroll State
+            const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+            const isScrollingRef = useRef(false);
             const mainContainerRef = useRef(null);
+            const sectionsRef = useRef([]);
+            const heroRef = useRef(null);
             const splitRef = useRef(null);
+
+            // Damping Refs
+            const contentScrollRef = useRef(null);
+            const overscrollAccumulator = useRef(0);
+            const OVERSCROLL_THRESHOLD = 200;
+            const touchStartY = useRef(0);
 
             useEffect(() => {
                 const timer = setTimeout(() => setLoading(false), 1000);
@@ -357,31 +404,168 @@
                 setComparisonMode('after');
             }, [activeTab]);
 
-            const handleScroll = (e) => {
-                if (e.target.scrollTop > 300) {
-                    setShowBackToTop(true);
+            // Initialize Sections
+            useEffect(() => {
+                sectionsRef.current = [heroRef.current, splitRef.current];
+                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
+            }, [loading]);
+
+            // === GSAP SCROLL LOGIC ===
+            const scrollToSection = (index) => {
+                if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
+
+                isScrollingRef.current = true;
+                const targetSection = sectionsRef.current[index];
+                const currentSection = sectionsRef.current[currentSectionIndex];
+
+                setShowBackToHero(index > 0);
+                overscrollAccumulator.current = 0;
+
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        isScrollingRef.current = false;
+                        setCurrentSectionIndex(index);
+                        if (currentSection !== targetSection) {
+                            currentSection.classList.remove('active-section');
+                        }
+                        targetSection.classList.add('active-section');
+                    }
+                });
+
+                if (currentSectionIndex !== index) {
+                    tl.to(currentSection, {
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: "power2.out"
+                    });
+                }
+
+                tl.to(mainContainerRef.current, {
+                    scrollTo: { y: targetSection.offsetTop, autoKill: false },
+                    duration: 1.2,
+                    ease: "power2.inOut"
+                }, "<");
+
+                tl.to(targetSection, {
+                    opacity: 1,
+                    duration: 1,
+                    onStart: () => {
+                        targetSection.classList.add('active-section');
+                        targetSection.style.visibility = 'visible';
+                    }
+                }, "-=0.8");
+            };
+
+            // === DAMPING LOGIC (Mobile Friendly) ===
+            const handleWheel = (e) => {
+                if (isScrollingRef.current) return;
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+
+                if (isSplitView) {
+                    if (contentEl && contentEl.contains(e.target)) {
+                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
+
+                        // Scrolling UP (Top boundary)
+                        if (e.deltaY < 0 && scrollTop <= 0) {
+                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        } else {
+                            overscrollAccumulator.current = 0;
+                            // Block normal scroll logic if scrolling inside content
+                            if (scrollHeight > clientHeight && e.deltaY > 0) return; // Scroll down content
+                            if (scrollHeight > clientHeight && e.deltaY < 0 && scrollTop > 0) return; // Scroll up content
+                        }
+                    } else {
+                        // Mouse over visual area
+                        if (e.deltaY < 0) {
+                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        } else {
+                            overscrollAccumulator.current = 0;
+                        }
+                    }
+                }
+
+                if (e.deltaY > 0) {
+                    if (currentSectionIndex < sectionsRef.current.length - 1) {
+                        scrollToSection(currentSectionIndex + 1);
+                    }
                 } else {
-                    setShowBackToTop(false);
+                    const thresholdMet = overscrollAccumulator.current >= OVERSCROLL_THRESHOLD;
+                    if (currentSectionIndex > 0 && (!isSplitView || thresholdMet)) {
+                        scrollToSection(currentSectionIndex - 1);
+                    }
                 }
             };
 
-            const scrollToSection = (ref) => {
-                if (ref.current) {
-                    ref.current.scrollIntoView({ behavior: 'smooth' });
+            const handleTouchStart = (e) => {
+                touchStartY.current = e.touches[0].clientY;
+                overscrollAccumulator.current = 0;
+            };
+
+            const handleTouchEnd = (e) => {
+                if (isScrollingRef.current) return;
+                const touchEndY = e.changedTouches[0].clientY;
+                const diff = touchStartY.current - touchEndY;
+
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                const isInsideContent = contentEl && contentEl.contains(e.target);
+
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                        // Swipe Up (Go Down)
+                        overscrollAccumulator.current = 0;
+                        if (isSplitView && isInsideContent) {
+                            const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                            if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
+                        }
+                        if (currentSectionIndex < sectionsRef.current.length - 1) {
+                            scrollToSection(currentSectionIndex + 1);
+                        }
+                    } else {
+                        // Swipe Down (Go Back)
+                        if (isSplitView && isInsideContent) {
+                            if (contentEl.scrollTop > 0) {
+                                overscrollAccumulator.current = 0;
+                                return;
+                            }
+                            overscrollAccumulator.current += Math.abs(diff);
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        }
+                        if (currentSectionIndex > 0) {
+                            scrollToSection(currentSectionIndex - 1);
+                        }
+                    }
                 }
             };
 
-            const scrollToTop = () => {
-                if (mainContainerRef.current) {
-                    mainContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+            useEffect(() => {
+                const container = mainContainerRef.current;
+                if (container) {
+                    window.addEventListener('wheel', handleWheel, { passive: false });
+                    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+                    window.addEventListener('touchend', handleTouchEnd, { passive: true });
                 }
+                return () => {
+                    window.removeEventListener('wheel', handleWheel);
+                    window.removeEventListener('touchstart', handleTouchStart);
+                    window.removeEventListener('touchend', handleTouchEnd);
+                };
+            }, [currentSectionIndex]);
+
+            const goBack = () => {
+                window.location.href = "index.html#portfolio";
             };
+
+            const isContext = activeTab === 'context';
 
             // --- Render Logic for Left Visual ---
             const renderVisualContent = () => {
                 if (activeTab === 'gallery') {
-                    // Using w-full h-auto object-contain to respect the image size within the container
-                    return <img src={activeGalleryItem.src} className="w-full h-auto object-contain animate-fade-in" alt={activeGalleryItem.name} key={activeGalleryItem.id} />;
+                    // Mobile fix: ensure object-contain and full dimensions
+                    return <img src={activeGalleryItem.src} className="w-full h-full object-cover object-top" alt={activeGalleryItem.name} key={activeGalleryItem.id} />;
                 }
                 if (activeTab === 'context') {
                     return SCENARIOS.context.content;
@@ -389,17 +573,11 @@
                 return SCENARIOS[activeTab][comparisonMode];
             };
 
-            // Context Mode Check
-            const isContext = activeTab === 'context';
-
-            const goBack = () => {
-                window.location.href = "index.html#portfolio";
-            };
-
             return (
                 <React.Fragment>
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
+                    {/* Navigation */}
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <button
                             onClick={goBack}
@@ -412,99 +590,140 @@
                         </button>
                     </nav>
 
-                    {/* 2. Back to Top */}
+                    {/* Back to Hero Button */}
                     <button
-                        onClick={scrollToTop}
-                        className={`fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full bg-primary text-white shadow-lg flex items-center justify-center transition-all duration-300 hover:bg-white hover:text-primary hover:-translate-y-1 ${showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+                        onClick={() => scrollToSection(0)}
+                        className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
+                        title="Back to Hero Section"
                     >
                         <i className="fas fa-arrow-up"></i>
                     </button>
 
-                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+                    <div id="main-scroller" ref={mainContainerRef}>
 
-                        {/* HERO */}
-                        <section className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-metro">
+                        {/* 1. HERO */}
+                        <section id="hero" ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative hero-bg-metro">
                             <div className="container max-w-6xl mx-auto px-8 z-20">
                                 <div className="max-w-3xl text-left">
-                                    <div className="inline-block px-4 py-1 rounded-full border border-white bg-black/20 text-white text-xs font-bold tracking-widest mb-6 fade-in-up">
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-white bg-black/20 text-white text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>
                                         APP REDESIGN
                                     </div>
-                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up" style={{ animationDelay: '0.1s' }}>
-                                        桃園捷運 i-搭桃捷<br />
-                                        <span className="text-white">體驗升級改版計畫</span>
+                                    <h1 className={`text-5xl lg:text-7xl font-black font-heading mb-8 leading-tight text-white ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
+                                        桃園捷運<br className="md:hidden" /> APP<br />
+                                        <span className="text-white">體驗升級<br className="md:hidden" />改版計畫</span>
                                     </h1>
-                                    <h2 className="text-xl md:text-2xl text-gray-200 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed" style={{ animationDelay: '0.2s' }}>
+                                    <h2 className={`text-xl md:text-2xl text-gray-200 font-light mb-12 max-w-2xl mr-auto leading-relaxed ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>
                                         優化通勤族的乘車體驗，整合點數經濟的商業生態。<br />
                                         從時刻查詢到商城兌換，打造無縫接軌的數位旅程。
                                     </h2>
-                                    <button onClick={() => scrollToSection(splitRef)} className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-lg transform hover:-translate-y-1" style={{ animationDelay: '0.3s' }}>
-                                        探索設計旅程 <i className="fas fa-arrow-down ml-2"></i>
+                                    <button
+                                        onClick={() => scrollToSection(1)}
+                                        className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-lg transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`}
+                                        style={{ animationDelay: '0.4s' }}
+                                    >
+                                        探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
                                     </button>
                                 </div>
                             </div>
                         </section>
 
-                        {/* SPLIT SCREEN */}
-                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+                        {/* 2. SPLIT LAYOUT */}
+                        <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark overflow-hidden">
 
                             {/* LEFT: Visual Area */}
-                            <div className="w-full h-[50vh] shrink-0 z-20 lg:w-1/2 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative transition-colors duration-500">
+                            <div className="
+                                w-full h-[40vh] shrink-0 z-20 
+                                lg:w-1/2 lg:h-full 
+                                bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative transition-colors duration-500
+                            ">
                                 <div className="absolute top-10 left-10 w-32 h-32 bg-primary/20 blur-[60px] rounded-full"></div>
                                 <div className="absolute bottom-10 right-10 w-40 h-40 bg-secondary/20 blur-[60px] rounded-full"></div>
 
-                                {/* Dynamic Wrapper */}
-                                <div className={`
-                                    relative z-10 transform transition-all duration-500
-                                    ${isContext
-                                        ? 'w-full max-w-3xl h-auto flex items-center justify-center bg-transparent' // 01. Context: Wide, no border
-                                        : 'w-[280px] lg:w-[320px] h-auto bg-white shadow-2xl border-8 border-[#333] rounded-[30px] overflow-hidden' // 02-05: Phone Width, Auto Height, Phone Border
-                                    }
-                                `}>
-                                    {/* Content Container */}
-                                    <div className={`w-full h-full bg-gray-100 flex items-center justify-center overflow-hidden ${isContext ? 'rounded-xl' : ''}`}>
-                                        {renderVisualContent()}
+                                {/* Dynamic Wrapper with Max Width Constraint for Ultrawide */}
+                                <div className="w-full h-full max-w-4xl flex flex-col items-center justify-center relative">
+                                    <div className={`
+                                        relative z-10 transform transition-all duration-500 flex items-center justify-center
+                                        flex-1 min-h-0 w-full
+                                    `}>
+                                        <div className={`
+                                            transition-all duration-500 overflow-hidden flex items-center justify-center
+                                            ${isContext
+                                                ? 'w-full h-full bg-transparent shadow-none border-none' // Context
+                                                : 'h-full aspect-[9/19] bg-white shadow-2xl border-[6px] md:border-8 border-[#333] rounded-[1.5rem] lg:rounded-[2.5rem]'
+                                            }
+                                        `}>
+                                            <div className={`w-full h-full flex items-center justify-center overflow-hidden relative ${isContext ? 'bg-transparent' : 'bg-gray-100'}`}>
+                                                {/* Image inside container: fit within bounds */}
+                                                <div className="relative w-full h-full flex items-center justify-center">
+                                                    {isContext ? (
+                                                        renderVisualContent()
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <div className="relative w-full h-full flex items-center justify-center">
+                                                                {/* Render Content */}
+                                                                {activeTab === 'gallery' ? (
+                                                                    <img src={activeGalleryItem.src} className="w-full h-full object-cover object-top" alt={activeGalleryItem.name} />
+                                                                ) : (
+                                                                    SCENARIOS[activeTab][comparisonMode]
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Controls */}
-                                <div className="mt-8 z-20 flex flex-col items-center space-y-3">
+                                    {/* Controls (Moved Below Image for Mobile - Project 10 Style) */}
                                     {activeTab !== 'context' && activeTab !== 'gallery' && (
-                                        <div className="flex bg-black/40 backdrop-blur-md rounded-full p-1 border border-white/10 shadow-lg">
-                                            <button
-                                                onClick={() => setComparisonMode('before')}
-                                                className={`px-6 py-2 rounded-full text-xs font-bold transition-all duration-300 ${comparisonMode === 'before' ? 'bg-red-500/80 text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
-                                            >
-                                                Before
-                                            </button>
-                                            <button
-                                                onClick={() => setComparisonMode('after')}
-                                                className={`px-6 py-2 rounded-full text-xs font-bold transition-all duration-300 ${comparisonMode === 'after' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
-                                            >
-                                                After
-                                            </button>
+                                        <div className="mt-3 z-20 flex items-center justify-center pointer-events-auto shrink-0">
+                                            <div className="flex bg-white/5 backdrop-blur-md rounded-full p-1 border border-white/10 shadow-lg">
+                                                <button
+                                                    onClick={() => setComparisonMode('before')}
+                                                    className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all duration-300 whitespace-nowrap ${comparisonMode === 'before' ? 'bg-red-500/80 text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
+                                                >
+                                                    Before
+                                                </button>
+                                                <button
+                                                    onClick={() => setComparisonMode('after')}
+                                                    className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all duration-300 whitespace-nowrap ${comparisonMode === 'after' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-white'}`}
+                                                >
+                                                    After
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* RIGHT: Narrative Content */}
-                            <div className="flex-1 w-full relative z-10 lg:w-1/2 lg:h-full flex flex-col">
-                                <div className="w-full h-full flex flex-col glass-panel relative">
+                            {/* RIGHT: Content Area */}
+                            <div className="
+                                w-full relative z-10 
+                                lg:w-1/2 lg:h-full 
+                                flex flex-col 
+                                min-h-0
+                            ">
+                                <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
 
                                     <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
-                                        <div className="p-8 pb-0">
-                                            <h2 className="text-2xl lg:text-3xl font-bold text-white mb-1 leading-tight">桃捷APP改動計畫</h2>
-                                            <p className="text-gray-400 text-sm mb-4">Revamp Plan & Design Strategy</p>
+                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
+                                            <h2 className="text-xl lg:text-3xl font-bold text-white mb-1 leading-tight">桃捷APP改動計畫</h2>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">Revamp Plan & Design Strategy</p>
 
-                                            <div className="flex space-x-8 overflow-x-auto custom-scroll mt-6 pb-1 border-b border-white/5">
+                                            {/* Horizontal Tabs - Project 10 Style */}
+                                            <div className="flex space-x-6 horizontal-tabs mt-4 pb-1 border-b border-white/5">
                                                 {[
                                                     { id: 'context', label: '01. 概覽與挑戰' },
-                                                    { id: 'ux_strategy', label: '02. 資訊可讀性 (UX)' },
-                                                    { id: 'biz_value', label: '03. 商業整合 (Biz)' },
-                                                    { id: 'engagement', label: '04. 活動閉環 (Loop)' },
-                                                    { id: 'gallery', label: '05. 所有畫面 (Gallery)' }
+                                                    { id: 'ux_strategy', label: '02. 資訊可讀性' },
+                                                    { id: 'biz_value', label: '03. 商業整合' },
+                                                    { id: 'engagement', label: '04. 活動閉環' },
+                                                    { id: 'gallery', label: '05. 所有畫面' }
                                                 ].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-all pb-3 relative ${activeTab === tab.id ? 'text-primary' : 'text-gray-500 hover:text-white'}`}>
+                                                    <button
+                                                        key={tab.id}
+                                                        onClick={() => setActiveTab(tab.id)}
+                                                        className={`text-sm font-bold whitespace-nowrap transition-all pb-3 relative flex-shrink-0 ${activeTab === tab.id ? 'text-primary' : 'text-gray-500 hover:text-white'}`}
+                                                    >
                                                         {tab.label}
                                                         {activeTab === tab.id && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full"></span>}
                                                     </button>
@@ -513,22 +732,23 @@
                                         </div>
                                     </div>
 
-                                    <div className="flex-1 p-6 lg:p-10 pb-24 overflow-y-auto custom-scroll">
+                                    {/* Scrolling Content */}
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-10 pb-24 overflow-y-auto custom-scroll scroll-content">
 
-                                        {/* 1. Context (Standard Card Style) */}
+                                        {/* 1. Context */}
                                         {activeTab === 'context' && (
-                                            <div className="space-y-10 animate-fade-in">
+                                            <div className="space-y-10 animate-fadeIn">
                                                 <div>
-                                                    <h3 className="text-xl font-bold text-white mb-3">專案背景 Project Overview</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-3">專案背景 Project Overview</h3>
                                                     <p className="text-gray-300 text-sm leading-relaxed mb-4">
                                                         桃園捷運 App 承載著通勤查詢與會員經濟的雙重任務。然而舊版介面在資訊呈現上過於擁擠，且商業功能（商城、兌換）散落在外部網頁，導致使用者體驗斷裂。本次改版旨在透過資訊重整，達成「好查、好買、好用」的目標。
                                                     </p>
                                                     <div className="grid grid-cols-2 gap-4">
-                                                        <div className="feature-card p-4">
+                                                        <div className="feature-card-standard p-4">
                                                             <div className="text-xs text-gray-500 uppercase mb-1">My Role</div>
                                                             <div className="font-bold text-white">UI 設計師</div>
                                                         </div>
-                                                        <div className="feature-card p-4">
+                                                        <div className="feature-card-standard p-4">
                                                             <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
                                                             <div className="flex flex-wrap gap-2">
                                                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
@@ -543,9 +763,8 @@
                                                 </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div>
-                                                    <h3 className="text-xl font-bold text-white mb-4">雙重挑戰 The Challenge</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">雙重挑戰 The Challenge</h3>
                                                     <div className="grid gap-5">
-                                                        {/* User Pain Point (Standard Style) */}
                                                         <div className="feature-card-standard p-6 border-l-4 border-l-secondary">
                                                             <div className="flex items-center mb-3 text-secondary">
                                                                 <Icons.User /><span className="ml-2 font-bold text-sm uppercase tracking-wider">User Pain Points</span>
@@ -557,7 +776,6 @@
                                                                 <li>會員遇到問題時，App 內缺乏即時的常見問答入口。</li>
                                                             </ul>
                                                         </div>
-                                                        {/* Business Pain Point (Standard Style) */}
                                                         <div className="feature-card-standard p-6 border-l-4 border-l-primary">
                                                             <div className="flex items-center mb-3 text-primary">
                                                                 <Icons.Shop /><span className="ml-2 font-bold text-sm uppercase tracking-wider">Business Pain Points</span>
@@ -574,18 +792,17 @@
                                             </div>
                                         )}
 
-                                        {/* 2. UX Strategy (Minimal Card Style) */}
+                                        {/* 2. UX Strategy */}
                                         {activeTab === 'ux_strategy' && (
-                                            <div className="space-y-8 animate-fade-in">
+                                            <div className="space-y-8 animate-fadeIn">
                                                 <div>
-                                                    <h3 className="text-xl font-bold text-white mb-2">策略 I：資訊可讀性優化</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2">策略 I：資訊可讀性優化</h3>
                                                     <p className="text-xs text-secondary font-bold tracking-wide uppercase mb-4">Enhancing Information Accessibility</p>
                                                     <p className="text-gray-300 text-sm leading-relaxed mb-6">
                                                         針對「時刻表難讀」的痛點，我們捨棄了傳統的表格清單，改採資訊層級分明的卡片式設計，將使用者的注意力聚焦在「時間」與「銜接」上。
                                                     </p>
                                                 </div>
                                                 <div className="space-y-4">
-                                                    {/* Card 1 (Top): Secondary Blue */}
                                                     <div className="feature-card-minimal p-6 border-l-4 border-l-secondary hover:border-secondary cursor-pointer" onClick={() => setComparisonMode('after')}>
                                                         <div className="flex items-start">
                                                             <div className="w-10 h-10 rounded-full bg-secondary/20 text-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Train /></div>
@@ -598,7 +815,6 @@
                                                         </div>
                                                     </div>
 
-                                                    {/* Card 2 (Bottom): Primary Purple */}
                                                     <div className="feature-card-minimal p-6 border-l-4 border-l-primary hover:border-primary">
                                                         <div className="flex items-start">
                                                             <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-1"><Icons.Question /></div>
@@ -614,18 +830,17 @@
                                             </div>
                                         )}
 
-                                        {/* 3. Biz Integration (Minimal Card Style) */}
+                                        {/* 3. Biz Integration */}
                                         {activeTab === 'biz_value' && (
-                                            <div className="space-y-8 animate-fade-in">
+                                            <div className="space-y-8 animate-fadeIn">
                                                 <div>
-                                                    <h3 className="text-xl font-bold text-white mb-2">策略 II：商業生態整合</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2">策略 II：商業生態整合</h3>
                                                     <p className="text-xs text-secondary font-bold tracking-wide uppercase mb-4">Native Commerce & Redemption</p>
                                                     <p className="text-gray-300 text-sm leading-relaxed mb-6">
                                                         將原本外連的網頁體驗「原生化 (Native)」，消除跳轉帶來的摩擦感，並透過清晰的分類架構提升點數經濟的轉換率。
                                                     </p>
                                                 </div>
 
-                                                {/* Card 1 (Top): Secondary Blue */}
                                                 <div className="feature-card-minimal p-6 border-l-4 border-l-secondary hover:border-secondary cursor-pointer" onClick={() => setComparisonMode('after')}>
                                                     <div className="flex items-start">
                                                         <div className="w-10 h-10 rounded-full bg-secondary/20 text-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Shop /></div>
@@ -638,7 +853,6 @@
                                                     </div>
                                                 </div>
 
-                                                {/* Card 2 (Bottom): Primary Purple */}
                                                 <div className="feature-card-minimal p-6 border-l-4 border-l-primary hover:border-primary">
                                                     <div className="flex items-start">
                                                         <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-1"><Icons.Shop /></div>
@@ -657,11 +871,11 @@
                                             </div>
                                         )}
 
-                                        {/* 4. Loop (Minimal Card Style) */}
+                                        {/* 4. Loop */}
                                         {activeTab === 'engagement' && (
-                                            <div className="space-y-8 animate-fade-in">
+                                            <div className="space-y-8 animate-fadeIn">
                                                 <div>
-                                                    <h3 className="text-xl font-bold text-white mb-3">策略 III：活動閉環設計</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-3">策略 III：活動閉環設計</h3>
                                                     <p className="text-xs text-secondary font-bold tracking-wide uppercase mb-4">Closing the Loop</p>
                                                     <p className="text-gray-300 text-sm leading-relaxed mb-6">
                                                         所有的行銷活動最終都應導向「行動」。我們優化了從瀏覽訊息到領取獎勵的路徑，打造完整的 Engagement Loop。
@@ -669,7 +883,6 @@
                                                 </div>
 
                                                 <div className="space-y-4">
-                                                    {/* Card 1 (Top): Secondary Blue */}
                                                     <div className="feature-card-minimal p-6 border-l-4 border-l-secondary hover:border-secondary cursor-pointer" onClick={() => setComparisonMode('after')}>
                                                         <div className="flex items-start">
                                                             <div className="w-10 h-10 rounded-full bg-secondary/20 text-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Loop /></div>
@@ -682,7 +895,6 @@
                                                         </div>
                                                     </div>
 
-                                                    {/* Card 2 (Bottom): Primary Purple */}
                                                     <div className="feature-card-minimal p-6 border-l-4 border-l-primary hover:border-primary">
                                                         <div className="flex items-start">
                                                             <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center shrink-0 mt-1"><Icons.Popup /></div>
@@ -698,11 +910,11 @@
                                             </div>
                                         )}
 
-                                        {/* 5. Gallery (Standard Card Style - Reverted to original design) */}
+                                        {/* 5. Gallery */}
                                         {activeTab === 'gallery' && (
-                                            <div className="space-y-8 animate-fade-in">
+                                            <div className="space-y-8 animate-fadeIn">
                                                 <div>
-                                                    <h3 className="text-xl font-bold text-white mb-3">所有介面總覽 Gallery</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-3">所有介面總覽 Gallery</h3>
                                                     <p className="text-gray-300 text-sm leading-relaxed mb-6">
                                                         <span className="text-primary font-bold">Value Delivered:</span><br />
                                                         透過這次改版，我們不僅解決了使用者的操作痛點，更為桃捷構建了可持續發展的會員商業模式。<br /><br />
@@ -715,7 +927,6 @@
                                                         <button
                                                             key={item.id}
                                                             onClick={() => setActiveGalleryItem(item)}
-                                                            /* Reverted to original: full border, no left stripe */
                                                             className={`text-left feature-card-standard p-4 hover:border-primary transition-colors group flex items-center ${activeGalleryItem.id === item.id ? 'border-primary bg-white/5' : 'border-white/10'}`}
                                                         >
                                                             <div className="flex-1">
