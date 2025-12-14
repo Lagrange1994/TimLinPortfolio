@@ -6,18 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Love Two live app | 互動式直播社群設計</title>
 
-    <!-- Favicon Fix: 增加版本號 (?v=2) 強制瀏覽器重新抓取，並同時支援舊版寫法 -->
     <link rel="shortcut icon" href="./img/favicon/favicon.ico">
     <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
 
-    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
 
-    <!-- Fonts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -31,21 +30,17 @@
             theme: {
                 extend: {
                     colors: {
-                        // Updated Colors based on the App Design (Teal/Green Theme)
-                        primary: '#00D2A0', // App Primary Green (青綠色)
-                        secondary: '#FFB800', // Rank Gold (等級金)
-                        dark: '#0F1115', // Deep Dark Background
+                        primary: '#00D2A0',
+                        secondary: '#FFB800',
+                        dark: '#0F1115',
                         'dark-light': '#1A1D24',
                         'dark-lighter': '#252932',
-                        accent: '#FF4757' // Red Packet/Live Tag Red
+                        accent: '#FF4757'
                     },
                     fontFamily: {
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
                         heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
                     },
-                    backgroundImage: {
-                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-                    }
                 }
             }
         }
@@ -63,23 +58,30 @@
             background-color: #0F1115;
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
+            overscroll-behavior: none;
         }
 
-        /* MAIN SCROLL CONTAINER */
-        #main-container {
+        #main-scroller {
             width: 100vw;
             height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
+            overflow: hidden;
+            position: relative;
         }
 
-        /* SECTIONS */
-        .page-section {
+        .snap-section {
             width: 100vw;
-            min-height: 100vh;
+            height: 100vh;
             position: relative;
-            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .snap-section.active-section {
+            opacity: 1;
+            visibility: visible;
         }
 
         /* Glassmorphism */
@@ -102,35 +104,14 @@
         .feature-card:hover {
             transform: translateY(-5px);
             border-color: rgba(0, 210, 160, 0.4);
-            /* Updated to new primary */
             box-shadow: 0 10px 30px -10px rgba(0, 210, 160, 0.2);
         }
 
-        /* Feature Card Active State */
         .feature-card.active {
             border-color: rgba(0, 210, 160, 0.8);
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
             box-shadow: 0 10px 30px -10px rgba(0, 210, 160, 0.3);
             transform: translateY(-2px) scale(1.01);
-        }
-
-        /* Typography */
-        .gradient-text {
-            background: linear-gradient(90deg, #00D2A0, #FFB800, #FF4757);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-size: 200% auto;
-            animation: gradientMove 5s linear infinite;
-        }
-
-        @keyframes gradientMove {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            100% {
-                background-position: 200% 50%;
-            }
         }
 
         /* Scrollbars */
@@ -152,30 +133,19 @@
             background: #00D2A0;
         }
 
-        /* Unified Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #0F1115;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #3D3D3D;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #00D2A0;
+        .scroll-content {
+            overflow-y: auto !important;
+            touch-action: pan-y !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            height: 100%;
         }
 
         /* Animations */
         .fade-in-up {
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(40px);
         }
 
         @keyframes fadeInUp {
@@ -185,7 +155,23 @@
             }
         }
 
-        /* Custom Hero Background - Party/Night Theme */
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom Hero Background */
         .hero-bg-custom {
             background-image: url('./img/project_08/hero_img.png');
             background-size: cover;
@@ -294,7 +280,6 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Icons Component
         const Icons = {
             Code: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>,
             Mobile: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>,
@@ -304,10 +289,8 @@
             Star: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>,
         };
 
-        // 使用者上傳的圖片檔名 mapping
-        const MAIN_IMAGE = './img/project_08/work10.jpg';
+        const MAIN_IMAGE = './img/project_08/work10.png';
 
-        // Legacy Image Options for Solution Tab (Features)
         const GALLERY_IMAGES = [
             { id: '01', name: '遊戲化任務', src: './img/project_08/Home Page daily task.png' },
             { id: '02', name: '雙軌等級系統', src: './img/project_08/My Profile.png' },
@@ -315,21 +298,16 @@
             { id: '04', name: '直播結算', src: './img/project_08/end live.png' }
         ];
 
-        // NEW: Hierarchical Categories for Ecosystem Result (Climax Tab)
         const ECOSYSTEM_CATEGORIES = [
             {
-                id: 'cat_tasks',
-                title: '首頁與任務',
-                images: [
+                id: 'cat_tasks', title: '首頁與任務', images: [
                     { id: '01-01', name: '直播首頁', src: './img/project_08/Home Page.png' },
                     { id: '01-02', name: '每日任務清單', src: './img/project_08/Home Page daily task.png' },
                     { id: '01-03', name: '即時排行榜', src: './img/project_08/Home Page daily board.png' }
                 ]
             },
             {
-                id: 'cat_live',
-                title: '直播間互動',
-                images: [
+                id: 'cat_live', title: '直播間互動', images: [
                     { id: '02-01', name: '虛擬禮物面板', src: './img/project_08/Home Page gift.png' },
                     { id: '02-02', name: '代幣儲值商店', src: './img/project_08/Home Page store.png' },
                     { id: '02-03', name: '直播分享引導', src: './img/project_08/Home Page share.png' },
@@ -337,18 +315,14 @@
                 ]
             },
             {
-                id: 'cat_social',
-                title: '社交動態牆',
-                images: [
+                id: 'cat_social', title: '社交動態牆', images: [
                     { id: '03-01', name: '追蹤動態首頁', src: './img/project_08/follow.png' },
                     { id: '03-02', name: '動態詳情頁', src: './img/project_08/follow moment.png' },
                     { id: '03-03', name: '用戶互動選單', src: './img/project_08/follow moment 2.png' }
                 ]
             },
             {
-                id: 'cat_profile',
-                title: '個人成長體系',
-                images: [
+                id: 'cat_profile', title: '個人成長體系', images: [
                     { id: '04-01', name: '個人主頁', src: './img/project_08/My Profile.png' },
                     { id: '04-02', name: '個人資訊彈窗', src: './img/project_08/self.png' },
                     { id: '04-03', name: '貢獻等級說明', src: './img/project_08/My rank Contributor.png' },
@@ -357,12 +331,29 @@
             }
         ];
 
-        // Phone Frame Component (Added for Tabs 03 and 04)
+        // === UPDATED PHONE FRAME COMPONENT ===
+        // Using "Project 02" styling for border and radius.
+        // Applying "Project 12 logic" via the parent container's max-w-4xl constraint below.
         const PhoneFrame = ({ src, alt }) => {
             return (
-                <div className="flex items-center justify-center p-8 w-full h-full">
-                    <div className="relative w-[280px] sm:w-[320px] border-[8px] border-[#2d2d2d] rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-black animate-fadeIn">
-                        <img src={src} alt={alt} className="w-full h-auto block" />
+                <div className="w-full h-full flex items-center justify-center pointer-events-none">
+                    <div className="
+                        relative
+                        h-full w-auto max-w-full
+                        aspect-[9/19]
+                        shadow-2xl overflow-hidden
+                        transition-all duration-300
+                        bg-black
+                        
+                        /* Project 02 Styling */
+                        border-[6px] md:border-[8px] border-[#2d2d2d]
+                        rounded-[1.25rem] lg:rounded-[2.5rem]
+                    ">
+                        <img
+                            src={src}
+                            alt={alt}
+                            className="w-full h-full object-cover block"
+                        />
                     </div>
                 </div>
             );
@@ -373,34 +364,45 @@
             const [activeTab, setActiveTab] = useState('context');
             const [currentImage, setCurrentImage] = useState(MAIN_IMAGE);
             const [activeGalleryId, setActiveGalleryId] = useState('01');
-
             const [showBackToHero, setShowBackToHero] = useState(false);
+
+            // GSAP Scroll State
+            const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+            const isScrollingRef = useRef(false);
             const mainContainerRef = useRef(null);
-            const splitRef = useRef(null);
+            const sectionsRef = useRef([]);
             const heroRef = useRef(null);
+            const splitRef = useRef(null);
+
+            // Damping / Mobile Scroll Refs
+            const contentScrollRef = useRef(null);
+            const imageScrollRef = useRef(null);
+            const overscrollAccumulator = useRef(0);
+            const OVERSCROLL_THRESHOLD = 200;
+            const touchStartY = useRef(0);
 
             useEffect(() => {
                 const timer = setTimeout(() => setLoading(false), 1500);
                 return () => clearTimeout(timer);
             }, []);
 
-            // 定義每個 Tab 切換時，左側要顯示哪張圖
+            useEffect(() => {
+                sectionsRef.current = [heroRef.current, splitRef.current];
+                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
+            }, [loading]);
+
             useEffect(() => {
                 switch (activeTab) {
                     case 'context':
-                        setCurrentImage(MAIN_IMAGE); // 首頁 (直播中)
-                        setActiveGalleryId(null);
-                        break;
                     case 'process':
-                        setCurrentImage(MAIN_IMAGE); // 任務系統
+                        setCurrentImage(MAIN_IMAGE);
                         setActiveGalleryId(null);
                         break;
                     case 'solution':
-                        setCurrentImage(GALLERY_IMAGES[0].src); // 預設顯示第一個功能
-                        setActiveGalleryId('01'); // 預設選取第一個
+                        setCurrentImage(GALLERY_IMAGES[0].src);
+                        setActiveGalleryId('01');
                         break;
                     case 'climax':
-                        // Default to first image of first category
                         const firstImg = ECOSYSTEM_CATEGORIES[0].images[0];
                         setCurrentImage(firstImg.src);
                         setActiveGalleryId(firstImg.id);
@@ -411,197 +413,221 @@
                 }
             }, [activeTab]);
 
-            const handleGallerySwitch = (imgObj) => {
-                setCurrentImage(imgObj.src);
-                setActiveGalleryId(imgObj.id);
+            // === GSAP SCROLL LOGIC ===
+            const scrollToSection = (index) => {
+                if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
+                isScrollingRef.current = true;
+                const targetSection = sectionsRef.current[index];
+                const currentSection = sectionsRef.current[currentSectionIndex];
+
+                setShowBackToHero(index > 0);
+                overscrollAccumulator.current = 0;
+
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        isScrollingRef.current = false;
+                        setCurrentSectionIndex(index);
+                        if (currentSection !== targetSection) {
+                            currentSection.classList.remove('active-section');
+                        }
+                        targetSection.classList.add('active-section');
+                    }
+                });
+
+                if (currentSectionIndex !== index) {
+                    tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
+                }
+
+                tl.to(mainContainerRef.current, {
+                    scrollTo: { y: targetSection.offsetTop, autoKill: false },
+                    duration: 1.2,
+                    ease: "power2.inOut"
+                }, "<");
+
+                tl.to(targetSection, {
+                    opacity: 1,
+                    duration: 1,
+                    onStart: () => {
+                        targetSection.classList.add('active-section');
+                        targetSection.style.visibility = 'visible';
+                    }
+                }, "-=0.8");
             };
 
-            const handleScroll = (e) => {
-                const scrollTop = e.target.scrollTop;
-                const windowHeight = window.innerHeight;
-                if (scrollTop > windowHeight * 0.5) {
-                    setShowBackToHero(true);
+            // === DAMPING LOGIC ===
+            const handleWheel = (e) => {
+                if (isScrollingRef.current) return;
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+
+                if (isSplitView) {
+                    if (contentEl && contentEl.contains(e.target)) {
+                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                        if (e.deltaY < 0 && scrollTop <= 0) {
+                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        } else {
+                            overscrollAccumulator.current = 0;
+                            if (scrollHeight > clientHeight && e.deltaY > 0) return;
+                            if (scrollHeight > clientHeight && e.deltaY < 0 && scrollTop > 0) return;
+                        }
+                    } else {
+                        if (e.deltaY < 0) {
+                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        } else {
+                            overscrollAccumulator.current = 0;
+                        }
+                    }
+                }
+
+                if (e.deltaY > 0) {
+                    if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
                 } else {
-                    setShowBackToHero(false);
+                    const thresholdMet = overscrollAccumulator.current >= OVERSCROLL_THRESHOLD;
+                    if (currentSectionIndex > 0 && (!isSplitView || thresholdMet)) scrollToSection(currentSectionIndex - 1);
                 }
             };
 
-            const scrollToSection = (ref) => {
-                if (ref.current) {
-                    ref.current.scrollIntoView({ behavior: 'smooth' });
+            const handleTouchStart = (e) => {
+                touchStartY.current = e.touches[0].clientY;
+                overscrollAccumulator.current = 0;
+            };
+
+            const handleTouchEnd = (e) => {
+                if (isScrollingRef.current) return;
+                const touchEndY = e.changedTouches[0].clientY;
+                const diff = touchStartY.current - touchEndY;
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                const target = e.target;
+                const isInsideContent = contentEl && contentEl.contains(target);
+
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                        overscrollAccumulator.current = 0;
+                        if (isSplitView && isInsideContent) {
+                            const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                            if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
+                        }
+                        if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
+                    } else {
+                        if (isSplitView && isInsideContent) {
+                            if (contentEl.scrollTop > 0) {
+                                overscrollAccumulator.current = 0;
+                                return;
+                            }
+                            overscrollAccumulator.current += Math.abs(diff);
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        }
+                        if (currentSectionIndex > 0) scrollToSection(currentSectionIndex - 1);
+                    }
                 }
             };
 
-            const goBack = () => {
-                window.location.href = "index.html#portfolio";
-            };
+            useEffect(() => {
+                const container = mainContainerRef.current;
+                if (container) {
+                    window.addEventListener('wheel', handleWheel, { passive: false });
+                    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+                    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+                }
+                return () => {
+                    window.removeEventListener('wheel', handleWheel);
+                    window.removeEventListener('touchstart', handleTouchStart);
+                    window.removeEventListener('touchend', handleTouchEnd);
+                };
+            }, [currentSectionIndex]);
+
+            const goBack = () => { window.location.href = "index.html#portfolio"; };
+            const handleGallerySwitch = (imgObj) => { setCurrentImage(imgObj.src); setActiveGalleryId(imgObj.id); };
 
             return (
                 <React.Fragment>
-                    {/* Loader */}
-                    <div className={`loader ${loading ? '' : 'hidden'}`}>
-                        <div className="loader-animation"></div>
-                    </div>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
-                    {/* Back Button */}
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        <button
-                            onClick={goBack}
-                            className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40"
-                        >
+                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
                             <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">
-                                Back to Portfolio
-                            </span>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">Back to Portfolio</span>
                         </button>
                     </nav>
 
-                    {/* Back to Hero Button */}
-                    <button
-                        onClick={() => scrollToSection(heroRef)}
-                        className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
-                        title="Back to Hero Section"
-                    >
+                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`} title="Back to Hero Section">
                         <i className="fas fa-arrow-up"></i>
                     </button>
 
-                    {/* MAIN SCROLL CONTAINER */}
-                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+                    <div id="main-scroller" ref={mainContainerRef}>
 
-                        {/* 1. HERO SECTION */}
-                        <section ref={heroRef} className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                        {/* HERO SECTION */}
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
                             <div className="container max-w-6xl mx-auto px-8 z-20">
                                 <div className="max-w-3xl text-left">
-                                    <div className="inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 fade-in-up font-sans" style={{ animationDelay: '0.1s' }}>
-                                        SOCIAL LIVE STREAMING APP
-                                    </div>
-                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left font-heading" style={{ animationDelay: '0.2s' }}>
-                                        Love Two live app<br />
-                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary font-heading">遊戲化留存設計</span>
-                                    </h1>
-                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
-                                        透過「青綠色」科技感視覺與深度的遊戲化任務設計，解決用戶留存痛點，打造全時段的社交直播生態。
-                                    </h2>
-                                    <button
-                                        onClick={() => scrollToSection(splitRef)}
-                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-dark font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(0,210,160,0.4)] transform hover:-translate-y-1"
-                                        style={{ animationDelay: '0.4s' }}
-                                    >
-                                        探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
-                                    </button>
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 font-sans ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SOCIAL LIVE STREAMING APP</div>
+                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>Love Two live app<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary font-heading">遊戲化留存設計</span></h1>
+                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>透過「青綠色」科技感視覺與深度的遊戲化任務設計，解決用戶留存痛點，打造全時段的社交直播生態。</h2>
+                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-dark font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(0,210,160,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
                                 </div>
                             </div>
                         </section>
 
-                        {/* 2. SPLIT SCREEN (Robust Layout) */}
-                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+                        {/* SPLIT SCREEN */}
+                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
 
-                            {/* LEFT: Image Preview - UPDATED WITH CONDITIONAL PHONE FRAME */}
-                            <div className="
-                                w-full h-[40vh] shrink-0 z-20
+                            {/* LEFT: Image Preview - FIXED IPHONE RATIO FOR MOBILE */}
+                            <div ref={imageScrollRef} className="
+                                w-full h-[35vh] shrink-0 z-20
                                 lg:w-3/5 lg:h-full
-                                bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 
+                                bg-[#1a1a1a] flex items-center justify-center p-6 lg:p-12 
                                 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
                             ">
                                 {
                                     (activeTab === 'solution' || activeTab === 'climax') ? (
                                         <PhoneFrame src={currentImage} alt="Preview" />
                                     ) : (
-                                        <div className="relative w-auto max-w-full max-w-4xl flex flex-col items-center justify-center">
-                                            <img
-                                                src={currentImage}
-                                                alt="Preview"
-                                                className="w-auto h-auto max-h-[85vh] max-w-full rounded-2xl shadow-2xl border border-white/10 object-contain transition-opacity duration-500"
-                                            />
+                                        <div className="w-full h-full flex items-center justify-center pointer-events-none">
+                                            {/* Project 12 Logic: w-full max-w-4xl for the image container */}
+                                            <div className="relative w-full max-w-4xl h-auto max-h-full flex flex-col items-center justify-center">
+                                                <img src={currentImage} alt="Preview" className="block w-auto h-auto max-h-full max-w-full rounded-2xl shadow-2xl border border-white/10 object-contain transition-opacity duration-500" />
+                                            </div>
                                         </div>
                                     )
                                 }
                             </div>
 
                             {/* RIGHT: Narrative Scroll */}
-                            <div className="
-                                flex-1 w-full relative z-10
-                                lg:w-2/5 lg:h-full
-                                flex flex-col
-                            ">
-                                <div className="w-full h-full flex flex-col glass-panel relative">
-
-                                    {/* Sticky Header */}
+                            <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
+                                <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
-                                        <div className="p-8 pb-0">
-                                            <h2 className="text-2xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">Love Two live app<br />遊戲化留存設計</h2>
-                                            <p className="text-gray-400 text-sm mb-4 font-sans">Gamified Social Live Streaming Platform</p>
-
-                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-6 pb-1">
-                                                {[
-                                                    { id: 'context', label: '01. 視覺策略' },
-                                                    { id: 'process', label: '02. 設計策略' },
-                                                    { id: 'solution', label: '03. 主要功能' },
-                                                    { id: 'climax', label: '04. 生態系成果' }
-                                                ].map(tab => (
-                                                    <button
-                                                        key={tab.id}
-                                                        onClick={() => setActiveTab(tab.id)}
-                                                        className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id
-                                                            ? 'text-primary border-b-2 border-primary pb-1'
-                                                            : 'text-gray-500 hover:text-white pb-1'
-                                                            }`}
-                                                    >
-                                                        {tab.label}
-                                                    </button>
+                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
+                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">Love Two live app<br />遊戲化留存設計</h2>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-4 font-sans">Gamified Social Live Streaming Platform</p>
+                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 scroll-content">
+                                                {[{ id: 'context', label: '01. 視覺策略' }, { id: 'process', label: '02. 設計策略' }, { id: 'solution', label: '03. 主要功能' }, { id: 'climax', label: '04. 生態系成果' }].map(tab => (
+                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Scrollable Content */}
-                                    <div className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll">
-
-                                        {/* 1. CONTEXT */}
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
                                                 <div className="space-y-6">
-                                                    <h3 className="text-2xl font-bold text-white mb-4">視覺策略與市場區隔</h3>
-                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                                                        在充斥著「紅色」與「粉色」的直播應用市場中，本專案的核心目標是透過強烈的色彩區隔來重塑品牌認知。我們大膽捨棄了業界慣用的暖色系，轉而採用冷色調的<b>「青綠色 (Teal)」</b>作為主視覺，旨在打造一個更具科技感、更年輕，且能降低用戶視覺焦慮的沈浸式社交空間。
-                                                    </p>
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="feature-card p-4">
-                                                            <div className="text-xs text-gray-500 uppercase mb-1">My Role</div>
-                                                            <div className="font-bold text-white">UI設計師</div>
-                                                        </div>
-                                                        <div className="feature-card p-4">
-                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
-                                                            <div className="flex flex-wrap gap-2">
-                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
-                                                                    <span className=""></span> Adobe XD
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">視覺策略與市場區隔</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">在充斥著「紅色」與「粉色」的直播應用市場中，本專案的核心目標是透過強烈的色彩區隔來重塑品牌認知。我們大膽捨棄了業界慣用的暖色系，轉而採用冷色調的<b>「青綠色 (Teal)」</b>作為主視覺，旨在打造一個更具科技感、更年輕，且能降低用戶視覺焦慮的沈浸式社交空間。</p>
+                                                    <div className="grid grid-cols-2 gap-4"><div className="feature-card p-4"><div className="text-xs text-gray-500 uppercase mb-1">My Role</div><div className="font-bold text-white">UI設計師</div></div><div className="feature-card p-4"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><span className=""></span> Adobe XD</span></div></div></div>
                                                 </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
-                                                        <span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>
-                                                        核心視覺策略 Core Visual Strategy
-                                                    </h3>
-                                                    <div className="feature-card p-5 border-l-4 border-l-secondary">
-                                                        <h4 className="text-secondary font-bold text-sm mb-3">為什麼選擇青綠色？</h4>
-                                                        <ul className="space-y-4 text-gray-300">
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-primary mr-3 mt-1"><i className="fas fa-palette"></i></span><div><strong className="text-gray-200 block text-sm">對抗視覺疲勞 (Anti-Fatigue)</strong>競品常見的大紅色容易引發焦慮與緊迫感，導致用戶無法長時間停留。青綠色則傳遞放鬆、成長的心理暗示，有效延長觀看時長。</div></li>
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-primary mr-3 mt-1"><i className="fas fa-gamepad"></i></span><div><strong className="text-gray-200 block text-sm">遊戲化氛圍 (Gaming Vibe)</strong>配合深色模式 (Dark Mode)，螢光綠能營造出類似電競或科幻電影的沈浸感，讓「解任務」與「送禮物」更像是在玩遊戲，而非單純的消費。</div></li>
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-primary mr-3 mt-1"><i className="fas fa-fingerprint"></i></span><div><strong className="text-gray-200 block text-sm">品牌年輕化 (Gen Z Identity)</strong>跳脫傳統直播「俗氣」、「秀場」的刻板印象，透過清新的視覺語言吸引更注重質感與社群互動的 Z 世代用戶。</div></li>
-                                                        </ul>
-                                                    </div>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>核心視覺策略 Core Visual Strategy</h3>
+                                                    <div className="feature-card p-5 border-l-4 border-l-secondary"><h4 className="text-secondary font-bold text-sm mb-3">為什麼選擇青綠色？</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-primary mr-3 mt-1"><i className="fas fa-palette"></i></span><div><strong className="text-gray-200 block text-sm">對抗視覺疲勞 (Anti-Fatigue)</strong>競品常見的大紅色容易引發焦慮與緊迫感，導致用戶無法長時間停留。青綠色則傳遞放鬆、成長的心理暗示，有效延長觀看時長。</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-primary mr-3 mt-1"><i className="fas fa-gamepad"></i></span><div><strong className="text-gray-200 block text-sm">遊戲化氛圍 (Gaming Vibe)</strong>配合深色模式 (Dark Mode)，螢光綠能營造出類似電競或科幻電影的沈浸感，讓「解任務」與「送禮物」更像是在玩遊戲，而非單純的消費。</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-primary mr-3 mt-1"><i className="fas fa-fingerprint"></i></span><div><strong className="text-gray-200 block text-sm">品牌年輕化 (Gen Z Identity)</strong>跳脫傳統直播「俗氣」、「秀場」的刻板印象，透過清新的視覺語言吸引更注重質感與社群互動的 Z 世代用戶。</div></li></ul></div>
                                                 </div>
                                             </div>
                                         )}
-
-                                        {/* 2. PROCESS */}
                                         {activeTab === 'process' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-2">設計策略 The Process</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">設計策略 The Process</h3>
                                                 <p className="text-xs text-gray-400 mb-6">從視覺到機制，全方位的留存設計</p>
                                                 <div className="relative pl-4 border-l border-white/10 space-y-8">
                                                     <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">01. 視覺風格重塑 (Visual Identity)</h4><p className="text-xs text-gray-400">採用深色模式搭配高飽和度「青綠色 (Teal)」，營造清新、科技且耐看的品牌形象，區隔市場競品。</p></div>
@@ -611,87 +637,28 @@
                                                 </div>
                                             </div>
                                         )}
-
-                                        {/* 3. SOLUTION - CLICKABLE CARDS */}
                                         {activeTab === 'solution' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-6">主要功能與特色 Key Features</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">主要功能與特色 Key Features</h3>
                                                 <div className="space-y-4">
-
-                                                    {/* Feature 1 */}
-                                                    <button
-                                                        onClick={() => handleGallerySwitch(GALLERY_IMAGES[0])}
-                                                        className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '01' ? 'active' : 'hover:bg-white/5'}`}
-                                                    >
-                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '01' ? 'bg-primary text-dark' : 'bg-primary/20 text-primary'}`}>
-                                                            <Icons.Game />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '01' ? 'text-white' : 'text-gray-200'}`}>遊戲化任務系統 (Gamified Tasks)</h4>
-                                                            <p className="text-xs text-gray-400 leading-relaxed">透過「兔子進度條」與「倒數紅包」將觀看時間轉化為積分獎勵。利用 Zeigarnik 效應，讓用戶為了完成任務而主動停留，大幅提升平台黏著度。</p>
-                                                        </div>
-                                                    </button>
-
-                                                    {/* Feature 2 */}
-                                                    <button
-                                                        onClick={() => handleGallerySwitch(GALLERY_IMAGES[2])}
-                                                        className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '03' ? 'active' : 'hover:bg-white/5'}`}
-                                                    >
-                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '03' ? 'bg-secondary text-dark' : 'bg-secondary/20 text-secondary'}`}>
-                                                            <Icons.Social />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '03' ? 'text-white' : 'text-gray-200'}`}>社群動態牆 (Social Moments)</h4>
-                                                            <p className="text-xs text-gray-400 leading-relaxed">整合「即時直播流」與「圖文動態」，填補主播下線後的內容空窗期。用戶可隨時按讚、互動，打造全天候活躍的社交閉環。</p>
-                                                        </div>
-                                                    </button>
-
-                                                    {/* Feature 3 */}
-                                                    <button
-                                                        onClick={() => handleGallerySwitch(GALLERY_IMAGES[1])}
-                                                        className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '02' ? 'active' : 'hover:bg-white/5'}`}
-                                                    >
-                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '02' ? 'bg-accent text-white' : 'bg-accent/20 text-accent'}`}>
-                                                            <Icons.Rank />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '02' ? 'text-white' : 'text-gray-200'}`}>雙軌等級體系 (Dual-Track Ranking)</h4>
-                                                            <p className="text-xs text-gray-400 leading-relaxed">區分「主播等級」與「貢獻等級」，透過顯性的徽章與排行榜展示社交資本。滿足大戶的虛榮心，同時給予新手主播明確的成長指引。</p>
-                                                        </div>
-                                                    </button>
-
+                                                    <button onClick={() => handleGallerySwitch(GALLERY_IMAGES[0])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '01' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '01' ? 'bg-primary text-dark' : 'bg-primary/20 text-primary'}`}><Icons.Game /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '01' ? 'text-white' : 'text-gray-200'}`}>遊戲化任務系統 (Gamified Tasks)</h4><p className="text-xs text-gray-400 leading-relaxed">透過「兔子進度條」與「倒數紅包」將觀看時間轉化為積分獎勵。利用 Zeigarnik 效應，讓用戶為了完成任務而主動停留，大幅提升平台黏著度。</p></div></button>
+                                                    <button onClick={() => handleGallerySwitch(GALLERY_IMAGES[2])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '03' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '03' ? 'bg-secondary text-dark' : 'bg-secondary/20 text-secondary'}`}><Icons.Social /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '03' ? 'text-white' : 'text-gray-200'}`}>社群動態牆 (Social Moments)</h4><p className="text-xs text-gray-400 leading-relaxed">整合「即時直播流」與「圖文動態」，填補主播下線後的內容空窗期。用戶可隨時按讚、互動，打造全天候活躍的社交閉環。</p></div></button>
+                                                    <button onClick={() => handleGallerySwitch(GALLERY_IMAGES[1])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '02' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '02' ? 'bg-accent text-white' : 'bg-accent/20 text-accent'}`}><Icons.Rank /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '02' ? 'text-white' : 'text-gray-200'}`}>雙軌等級體系 (Dual-Track Ranking)</h4><p className="text-xs text-gray-400 leading-relaxed">區分「主播等級」與「貢獻等級」，透過顯性的徽章與排行榜展示社交資本。滿足大戶的虛榮心，同時給予新手主播明確的成長指引。</p></div></button>
                                                 </div>
                                             </div>
                                         )}
-
-                                        {/* 4. CLIMAX - HIERARCHICAL GALLERY */}
                                         {activeTab === 'climax' && (
                                             <div className="space-y-8 animate-fadeIn pb-12">
-                                                <h3 className="text-2xl font-bold text-white mb-4">生態系成果 Ecosystem Gallery</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">生態系成果 Ecosystem Gallery</h3>
                                                 <p className="text-gray-400 mb-8 text-sm">從直播到社交，打造完整的沈浸式娛樂生態系。</p>
                                                 <div className="space-y-6">
                                                     {ECOSYSTEM_CATEGORIES.map((category) => (
                                                         <div key={category.id} className="space-y-3">
-                                                            {/* Category Header */}
-                                                            <h4 className="text-primary font-bold text-md flex items-center">
-                                                                <span className="w-2 h-2 rounded-full bg-primary mr-2"></span>
-                                                                {category.title}
-                                                            </h4>
-                                                            {/* Image Grid for this Category */}
+                                                            <h4 className="text-primary font-bold text-md flex items-center"><span className="w-2 h-2 rounded-full bg-primary mr-2"></span>{category.title}</h4>
                                                             <div className="grid gap-3 pl-4 border-l border-white/10">
                                                                 {category.images.map((img) => (
-                                                                    <button
-                                                                        key={img.id}
-                                                                        onClick={() => handleGallerySwitch(img)}
-                                                                        className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(0,210,160,0.1)]' : 'border-white/5'}`}
-                                                                    >
-                                                                        <div className="flex justify-between items-center">
-                                                                            <h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}>
-                                                                                {img.name}
-                                                                            </h4>
-                                                                            {/* Icon indicating active state */}
-                                                                            <i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? 'text-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
-                                                                        </div>
+                                                                    <button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(0,210,160,0.1)]' : 'border-white/5'}`}>
+                                                                        <div className="flex justify-between items-center"><h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}>{img.name}</h4><i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? 'text-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i></div>
                                                                     </button>
                                                                 ))}
                                                             </div>
@@ -700,12 +667,11 @@
                                                 </div>
                                             </div>
                                         )}
-
+                                        <div className="h-8"></div>
                                     </div>
                                 </div>
                             </div>
                         </section>
-
                     </div>
                 </React.Fragment>
             );
@@ -714,24 +680,6 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-
-    <style>
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-    </style>
 </body>
 
 </html>
