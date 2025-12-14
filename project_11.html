@@ -4,20 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台北醫學大學 | 臨床教育學習護照 - Legacy Modernization</title>
+    <title>台北醫學大學 | 臨床教育學習護照 - Case Study</title>
 
-    <!-- Favicon Fix: 增加版本號 (?v=2) 強制瀏覽器重新抓取，並同時支援舊版寫法 -->
     <link rel="shortcut icon" href="./img/favicon/favicon.ico">
     <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
 
-    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
 
-    <!-- Fonts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -31,28 +30,24 @@
             theme: {
                 extend: {
                     colors: {
-                        // Updated Colors based on the uploaded image
-                        primary: '#2B6CB0', // System Header Blue (系統藍)
-                        secondary: '#C53030', // TMU Logo Red (北醫紅)
+                        primary: '#2B6CB0', // System Header Blue
+                        secondary: '#C53030', // TMU Logo Red
                         dark: '#121212',
                         'dark-light': '#1E1E1E',
                         'dark-lighter': '#2D2D2D',
-                        accent: '#ED8936' // Print Button Orange (按鈕橘)
+                        accent: '#ED8936'
                     },
                     fontFamily: {
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
                         heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
                     },
-                    backgroundImage: {
-                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-                    }
                 }
             }
         }
     </script>
 
     <style>
-        /* BASIC SETUP */
+        /* 1. BASIC LAYOUT SETUP (COPIED FROM PROJECT 10) */
         body,
         html {
             margin: 0;
@@ -60,29 +55,86 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
+            /* 禁止原生滾動 */
             background-color: #121212;
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
+            overscroll-behavior: none;
+            /* 防止瀏覽器彈性效果 */
         }
 
-        /* MAIN SCROLL CONTAINER */
-        #main-container {
+        /* 2. MAIN SCROLL CONTAINER */
+        #main-scroller {
             width: 100vw;
             height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-        }
-
-        /* SECTIONS */
-        .page-section {
-            width: 100vw;
-            min-height: 100vh;
-            position: relative;
             overflow: hidden;
+            position: relative;
         }
 
-        /* Glassmorphism */
+        /* 3. SNAP SECTIONS */
+        .snap-section {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .snap-section.active-section {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Custom Hero Background */
+        .hero-bg-custom {
+            background-image: url('./img/project_11/hero_img.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .hero-bg-custom::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(18, 18, 18, 0.3) 0%, rgba(18, 18, 18, 0.8) 100%);
+            z-index: 1;
+        }
+
+        /* Animations (Project 10 Style) */
+        .fade-in-up {
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Glassmorphism & Cards */
         .glass-panel {
             background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(18, 18, 18, 0.98));
             backdrop-filter: blur(20px);
@@ -102,32 +154,14 @@
         .feature-card:hover {
             transform: translateY(-5px);
             border-color: rgba(43, 108, 176, 0.4);
-            /* Updated to new primary */
             box-shadow: 0 10px 30px -10px rgba(43, 108, 176, 0.2);
-        }
-
-        /* Typography */
-        .gradient-text {
-            background: linear-gradient(90deg, #2B6CB0, #C53030, #ED8936);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-size: 200% auto;
-            animation: gradientMove 5s linear infinite;
-        }
-
-        @keyframes gradientMove {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            100% {
-                background-position: 200% 50%;
-            }
+            background: rgba(255, 255, 255, 0.08);
         }
 
         /* Scrollbars */
         .custom-scroll::-webkit-scrollbar {
             width: 6px;
+            height: 6px;
         }
 
         .custom-scroll::-webkit-scrollbar-track {
@@ -143,52 +177,13 @@
             background: #2B6CB0;
         }
 
-        /* Unified Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #121212;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #3D3D3D;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #2B6CB0;
-        }
-
-        /* Animations */
-        .fade-in-up {
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Custom Hero Background - Medical/Clean Theme */
-        .hero-bg-custom {
-            background-image: url('./img/project_11/hero_img.png');
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-
-        .hero-bg-custom::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom, rgba(18, 18, 18, 0.2) 0%, rgba(18, 18, 18, 0.5) 100%);
-            z-index: 1;
+        /* 內容滾動區域 (Critical for Mobile Scroll) */
+        .scroll-content {
+            overflow-y: auto !important;
+            touch-action: pan-y !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            height: 100%;
         }
 
         /* Loader */
@@ -284,7 +279,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Icons Component - Updated for Dev/Medical context
+        // Icons
         const Icons = {
             Code: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>,
             Browser: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>,
@@ -294,32 +289,12 @@
             Efficiency: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
         };
 
-        // 完整長圖 (用於預設背景與全覽)
         const MAIN_IMAGE = './img/project_11/display.png';
-
-        // Image Options for Climax Gallery
-        // 這裡填入您上傳的具體檔案名稱
         const GALLERY_IMAGES = [
-            {
-                id: '01',
-                name: '學習儀表板',
-                src: './img/project_11/學習護照1_01.png' // 對應儀表板 (Dashboard)
-            },
-            {
-                id: '02',
-                name: '多元評核表',
-                src: './img/project_11/學習護照2_02.png' // 對應 Mini-CEX 表格
-            },
-            {
-                id: '03',
-                name: '能力雷達圖',
-                src: './img/project_11/學習護照2_01.png' // 對應 Milestone 雷達圖
-            },
-            {
-                id: '04',
-                name: '完整總覽',
-                src: './img/project_11/學習護照full.png'        // 使用完整長圖
-            }
+            { id: '01', name: '學習儀表板', src: './img/project_11/學習護照1_01.png' },
+            { id: '02', name: '多元評核表', src: './img/project_11/學習護照2_02.png' },
+            { id: '03', name: '能力雷達圖', src: './img/project_11/學習護照2_01.png' },
+            { id: '04', name: '完整總覽', src: './img/project_11/學習護照full.png' }
         ];
 
         const App = () => {
@@ -327,72 +302,213 @@
             const [activeTab, setActiveTab] = useState('context');
             const [currentImage, setCurrentImage] = useState(MAIN_IMAGE);
             const [activeGalleryId, setActiveGalleryId] = useState('01');
-
             const [showBackToHero, setShowBackToHero] = useState(false);
-            const mainContainerRef = useRef(null);
-            const splitRef = useRef(null);
-            const heroRef = useRef(null);
 
-            // Determine if the browser-like header should be shown
+            // GSAP Scroll State
+            const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+            const isScrollingRef = useRef(false);
+            const mainContainerRef = useRef(null);
+            const sectionsRef = useRef([]);
+            const heroRef = useRef(null);
+            const splitRef = useRef(null);
+
+            // Damping / Mobile Scroll Refs
+            const contentScrollRef = useRef(null);
+            const imageScrollRef = useRef(null);
+            const overscrollAccumulator = useRef(0);
+            const OVERSCROLL_THRESHOLD = 200;
+            const touchStartY = useRef(0);
+
             const showBrowserHeader = !['context', 'process'].includes(activeTab);
 
             useEffect(() => {
-                const timer = setTimeout(() => setLoading(false), 1500);
+                const timer = setTimeout(() => setLoading(false), 2000);
                 return () => clearTimeout(timer);
             }, []);
 
-            // 定義每個 Tab 切換時，左側要顯示哪張圖
+            useEffect(() => {
+                // Initialize sections for GSAP
+                sectionsRef.current = [heroRef.current, splitRef.current];
+                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
+            }, [loading]);
+
+            // Tab logic affecting images
             useEffect(() => {
                 switch (activeTab) {
                     case 'context':
-                        // 背景：顯示完整主圖
-                        setCurrentImage(MAIN_IMAGE);
-                        setActiveGalleryId(null);
-                        break;
                     case 'process':
-                        // 流程 (評核機制)：顯示評核表圖片 (Index 1)
                         setCurrentImage(MAIN_IMAGE);
                         setActiveGalleryId(null);
                         break;
                     case 'solution':
-                        // 方案 (能力可視化)：顯示雷達圖 (Index 2)
-                        setCurrentImage(GALLERY_IMAGES[0].src);
+                        setCurrentImage(GALLERY_IMAGES[2].src); // Radar
                         setActiveGalleryId(null);
                         break;
                     case 'climax':
-                        // 成果：預設顯示第一張 (儀表板) 並開啟下方按鈕列
                         setCurrentImage(GALLERY_IMAGES[0].src);
                         setActiveGalleryId(GALLERY_IMAGES[0].id);
                         break;
                     default:
                         setCurrentImage(MAIN_IMAGE);
-                        setActiveGalleryId(null);
                 }
             }, [activeTab]);
+
+            // === GSAP SCROLL LOGIC ===
+            const scrollToSection = (index) => {
+                if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
+
+                isScrollingRef.current = true;
+                const targetSection = sectionsRef.current[index];
+                const currentSection = sectionsRef.current[currentSectionIndex];
+
+                setShowBackToHero(index > 0);
+                overscrollAccumulator.current = 0;
+
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        isScrollingRef.current = false;
+                        setCurrentSectionIndex(index);
+                        if (currentSection !== targetSection) {
+                            currentSection.classList.remove('active-section');
+                        }
+                        targetSection.classList.add('active-section');
+                    }
+                });
+
+                if (currentSectionIndex !== index) {
+                    tl.to(currentSection, {
+                        opacity: 0,
+                        duration: 0.8,
+                        ease: "power2.out"
+                    });
+                }
+
+                tl.to(mainContainerRef.current, {
+                    scrollTo: { y: targetSection.offsetTop, autoKill: false },
+                    duration: 1.2,
+                    ease: "power2.inOut"
+                }, "<");
+
+                tl.to(targetSection, {
+                    opacity: 1,
+                    duration: 1,
+                    onStart: () => {
+                        targetSection.classList.add('active-section');
+                        targetSection.style.visibility = 'visible';
+                    }
+                }, "-=0.8");
+            };
+
+            // === DAMPING & EVENT HANDLERS ===
+            const handleWheel = (e) => {
+                if (isScrollingRef.current) return;
+
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                const imageEl = imageScrollRef.current;
+                const isHoveringImage = imageEl && imageEl.contains(e.target);
+                const isHoveringContent = contentEl && contentEl.contains(e.target);
+
+                // Damping Logic for Split View
+                if (isSplitView) {
+                    if (isHoveringContent) {
+                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                        // Scrolling Up at Top
+                        if (e.deltaY < 0 && scrollTop <= 0) {
+                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        } else {
+                            // Reset if scrolling down or not at top
+                            overscrollAccumulator.current = 0;
+                            // Allow internal scroll if content exists
+                            if (scrollHeight > clientHeight && e.deltaY > 0) return;
+                            if (scrollHeight > clientHeight && e.deltaY < 0 && scrollTop > 0) return;
+                        }
+                    } else if (isHoveringImage) {
+                        // Image damping logic
+                        const { scrollTop } = imageEl;
+                        if (e.deltaY < 0 && scrollTop <= 0) {
+                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        } else {
+                            overscrollAccumulator.current = 0;
+                        }
+                    }
+                }
+
+                if (e.deltaY > 0) {
+                    if (currentSectionIndex < sectionsRef.current.length - 1) {
+                        scrollToSection(currentSectionIndex + 1);
+                    }
+                } else {
+                    const thresholdMet = overscrollAccumulator.current >= OVERSCROLL_THRESHOLD;
+                    if (currentSectionIndex > 0 && (!isSplitView || thresholdMet)) {
+                        scrollToSection(currentSectionIndex - 1);
+                    }
+                }
+            };
+
+            const handleTouchStart = (e) => {
+                touchStartY.current = e.touches[0].clientY;
+                overscrollAccumulator.current = 0;
+            };
+
+            const handleTouchEnd = (e) => {
+                if (isScrollingRef.current) return;
+                const touchEndY = e.changedTouches[0].clientY;
+                const diff = touchStartY.current - touchEndY;
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                const target = e.target;
+                const isInsideContent = contentEl && contentEl.contains(target);
+
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) { // Swipe Up (Next)
+                        overscrollAccumulator.current = 0;
+                        if (isSplitView && isInsideContent) {
+                            const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                            // Prevent page scroll if content can still scroll down
+                            if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
+                        }
+                        if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
+
+                    } else { // Swipe Down (Prev)
+                        if (isSplitView && isInsideContent) {
+                            // If content can still scroll up, don't change page
+                            if (contentEl.scrollTop > 0) {
+                                overscrollAccumulator.current = 0;
+                                return;
+                            }
+                            // Add damping if at top
+                            overscrollAccumulator.current += Math.abs(diff);
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        }
+                        if (currentSectionIndex > 0) scrollToSection(currentSectionIndex - 1);
+                    }
+                }
+            };
+
+            useEffect(() => {
+                const container = mainContainerRef.current;
+                if (container) {
+                    window.addEventListener('wheel', handleWheel, { passive: false });
+                    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+                    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+                }
+                return () => {
+                    window.removeEventListener('wheel', handleWheel);
+                    window.removeEventListener('touchstart', handleTouchStart);
+                    window.removeEventListener('touchend', handleTouchEnd);
+                };
+            }, [currentSectionIndex]);
+
+            const goBack = () => {
+                window.location.href = "index.html#portfolio";
+            };
 
             const handleGallerySwitch = (imgObj) => {
                 setCurrentImage(imgObj.src);
                 setActiveGalleryId(imgObj.id);
-            };
-
-            const handleScroll = (e) => {
-                const scrollTop = e.target.scrollTop;
-                const windowHeight = window.innerHeight;
-                if (scrollTop > windowHeight * 0.5) {
-                    setShowBackToHero(true);
-                } else {
-                    setShowBackToHero(false);
-                }
-            };
-
-            const scrollToSection = (ref) => {
-                if (ref.current) {
-                    ref.current.scrollIntoView({ behavior: 'smooth' });
-                }
-            };
-
-            const goBack = () => {
-                window.location.href = "index.html#portfolio";
             };
 
             return (
@@ -402,7 +518,7 @@
                         <div className="loader-animation"></div>
                     </div>
 
-                    {/* Back Button Only */}
+                    {/* Navbar */}
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <button
                             onClick={goBack}
@@ -417,7 +533,7 @@
 
                     {/* Back to Hero Button */}
                     <button
-                        onClick={() => scrollToSection(heroRef)}
+                        onClick={() => scrollToSection(0)}
                         className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
                         title="Back to Hero Section"
                     >
@@ -425,25 +541,28 @@
                     </button>
 
                     {/* MAIN SCROLL CONTAINER */}
-                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+                    <div id="main-scroller" ref={mainContainerRef}>
 
                         {/* 1. HERO SECTION */}
-                        <section ref={heroRef} className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                        <section
+                            ref={heroRef}
+                            className="snap-section active-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom"
+                        >
                             <div className="container max-w-6xl mx-auto px-8 z-20">
                                 <div className="max-w-3xl text-left">
-                                    <div className="inline-block px-4 py-1 rounded-full border border-white text-white text-xs font-bold tracking-widest mb-6 fade-in-up " style={{ animationDelay: '0.1s' }}>
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-white text-white text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>
                                         LEGACY MODERNIZATION
                                     </div>
-                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left" style={{ animationDelay: '0.2s' }}>
+                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
                                         台北醫學大學<br />
                                         <span className="text-white bg-clip-text bg-gradient-to-r">臨床教育學習護照</span>
                                     </h1>
-                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
+                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>
                                         在舊有設備限制下，將繁瑣的成績表格轉化為視覺化儀表板，<br />為醫學生打造看見成長軌跡的高效系統。
                                     </h2>
                                     <button
-                                        onClick={() => scrollToSection(splitRef)}
-                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(43,108,176,0.4)] transform hover:-translate-y-1"
+                                        onClick={() => scrollToSection(1)}
+                                        className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(43,108,176,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`}
                                         style={{ animationDelay: '0.4s' }}
                                     >
                                         探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
@@ -452,18 +571,20 @@
                             </div>
                         </section>
 
-                        {/* 2. SPLIT SCREEN (Robust Layout) */}
-                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+                        {/* 2. SPLIT SCREEN */}
+                        <section
+                            ref={splitRef}
+                            className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative"
+                        >
 
                             {/* LEFT: Image Preview */}
                             <div className="
-                                w-full h-[40vh] shrink-0 z-20
+                                w-full h-[35vh] shrink-0 z-20
                                 lg:w-3/5 lg:h-full
                                 bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 
                                 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
                             ">
-                                <div className="relative w-full h-auto max-w-4xl max-h-[90%] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
-                                    {/* Conditional Browser Header */}
+                                <div className="relative w-full h-auto max-w-4xl max-h-full lg:max-h-[90%] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
                                     {showBrowserHeader && (
                                         <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
                                             <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
@@ -471,16 +592,13 @@
                                             <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
                                         </div>
                                     )}
-
-                                    <div className="flex-1 min-h-0 overflow-y-auto custom-scroll relative bg-white/5">
+                                    <div ref={imageScrollRef} className="flex-1 min-h-0 overflow-y-auto custom-scroll relative bg-white/5">
                                         <img
                                             src={currentImage}
                                             alt="Preview"
                                             className="w-full h-auto block transition-opacity duration-500"
                                         />
                                     </div>
-
-
                                 </div>
                             </div>
 
@@ -489,17 +607,17 @@
                                 flex-1 w-full relative z-10
                                 lg:w-2/5 lg:h-full
                                 flex flex-col
+                                h-auto min-h-0
                             ">
-                                <div className="w-full h-full flex flex-col glass-panel relative">
+                                <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
 
-                                    {/* Sticky Header */}
+                                    {/* Header */}
                                     <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
-                                        <div className="p-8 pb-0">
-                                            <h2 className="text-2xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">TMU 學習護照<br />電子歷程檔案系統</h2>
-                                            {/* Modified Subtitle Translation */}
-                                            <p className="text-gray-400 text-sm mb-4">Clinical Education E-Portfolio System</p>
+                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
+                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">TMU 學習護照<br />電子歷程檔案系統</h2>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">Clinical Education E-Portfolio System</p>
 
-                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-6 pb-1">
+                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 scroll-content">
                                                 {[
                                                     { id: 'context', label: '01. 背景與痛點' },
                                                     { id: 'process', label: '02. 流程' },
@@ -509,9 +627,9 @@
                                                     <button
                                                         key={tab.id}
                                                         onClick={() => setActiveTab(tab.id)}
-                                                        className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id
-                                                            ? 'text-primary border-b-2 border-primary pb-1'
-                                                            : 'text-gray-500 hover:text-white pb-1'
+                                                        className={`text-sm font-bold whitespace-nowrap transition-colors pb-1 ${activeTab === tab.id
+                                                            ? 'text-primary border-b-2 border-primary'
+                                                            : 'text-gray-500 hover:text-white'
                                                             }`}
                                                     >
                                                         {tab.label}
@@ -521,14 +639,15 @@
                                         </div>
                                     </div>
 
-                                    {/* Scrollable Content */}
-                                    <div className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll">
+                                    {/* Content (Mobile Scrollable) */}
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
 
-                                        {/* 1. CONTEXT - STAR: Situation & Task */}
+                                        {/* CONTEXT */}
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
                                                 <div className="space-y-6">
-                                                    <h3 className="text-2xl font-bold text-white mb-4">專案背景 Context</h3>
+                                                    {/* Updated h3 size */}
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">專案背景 Context</h3>
                                                     <p className="text-gray-300 text-sm leading-relaxed mb-4">
                                                         這是一個針對台北醫學大學醫學生臨床實習設計的電子學習歷程系統。我們的核心任務是將原本僅為純 HTML 文字列表的舊網頁，升級為一個具備視覺化圖表與決策輔助功能的現代化儀表板。
                                                     </p>
@@ -552,14 +671,15 @@
                                                 </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+                                                    {/* Updated h3 size */}
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center">
                                                         <span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>
                                                         痛點與挑戰 The Conflict
                                                     </h3>
                                                     <div className="feature-card p-5 border-l-4 border-l-secondary">
                                                         <h4 className="text-secondary font-bold text-sm mb-3">升級前的困境</h4>
                                                         <ul className="space-y-4 text-gray-300">
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">資訊破碎 (Information Fragmentation)</strong>學生成績散落在密密麻麻的文字列表中，難以快速掌握缺少的學分或能力短版。</div></li>
+                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">資訊破碎 (Fragmentation)</strong>學生成績散落在密密麻麻的文字列表中，難以快速掌握缺少的學分或能力短版。</div></li>
                                                             <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">環境限制 (Legacy Constraints)</strong>醫院臨床工作站多為舊型電腦，無法支援高運算需求的現代 Web 3D 或複雜動畫。</div></li>
                                                             <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">缺乏洞察 (Lack of Insight)</strong>僅紀錄「分數」而未呈現「趨勢」，學生無法進行有效的自我反思與能力追蹤。</div></li>
                                                         </ul>
@@ -568,48 +688,48 @@
                                             </div>
                                         )}
 
-                                        {/* 2. PROCESS - STAR: Action (Steps) */}
+                                        {/* PROCESS */}
                                         {activeTab === 'process' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-2">執行過程 The Process</h3>
+                                                {/* Updated h3 size */}
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">執行過程 The Process</h3>
                                                 <p className="text-xs text-gray-400 mb-6">在技術限制中尋求最佳體驗的四個步驟</p>
                                                 <div className="relative pl-4 border-l border-white/10 space-y-8">
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">01. 版面重構 (Layout Optimization)</h4><p className="text-xs text-gray-400">捨棄華麗動態，改採清晰的區塊式架構，將資訊分為「教學活動」、「多元評核」與「能力表現」三大模組。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">02. 輕量化技術 (Lightweight Strategy)</h4><p className="text-xs text-gray-400">選用相容舊版瀏覽器的輕量級 JavaScript 圖表庫，確保在低階硬體上也能流暢繪製圖表。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">03. 視覺轉化 (Data Visualization)</h4><p className="text-xs text-gray-400">將條列式數據轉化為「長條圖」（課程進度）與「雷達圖」（核心能力），讓數據產生意義。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(43,108,176,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">04. 反思設計 (Reflection Gap)</h4><p className="text-xs text-gray-400">設計「雙色雷達圖」重疊自評與師評數據，透過視覺差異引導學生進行後設認知 (Metacognition) 訓練。</p></div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">01. 版面重構</h4><p className="text-xs text-gray-400">捨棄華麗動態，改採清晰的區塊式架構，將資訊分為「教學活動」、「多元評核」與「能力表現」三大模組。</p></div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">02. 輕量化技術</h4><p className="text-xs text-gray-400">選用相容舊版瀏覽器的輕量級 JavaScript 圖表庫，確保在低階硬體上也能流暢繪製圖表。</p></div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">03. 視覺轉化</h4><p className="text-xs text-gray-400">將條列式數據轉化為「長條圖」（課程進度）與「雷達圖」（核心能力），讓數據產生意義。</p></div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(43,108,176,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">04. 反思設計</h4><p className="text-xs text-gray-400">設計「雙色雷達圖」重疊自評與師評數據，透過視覺差異引導學生進行後設認知。</p></div>
                                                 </div>
                                             </div>
                                         )}
 
-                                        {/* 3. SOLUTION - STAR: Action (Highlights) */}
+                                        {/* SOLUTION */}
                                         {activeTab === 'solution' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-6">解決方案與亮點 The Solution</h3>
+                                                {/* Updated h3 size */}
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">解決方案 The Solution</h3>
                                                 <div className="space-y-4">
-                                                    {/* 滑鼠滑過卡片時，切換到對應的圖片 (使用 GALLERY_IMAGES 的索引) */}
                                                     <div className="feature-card p-5 flex items-start space-x-4" onMouseEnter={() => setCurrentImage(GALLERY_IMAGES[0].src)}>
                                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0"><Icons.Chart /></div>
                                                         <div><h4 className="font-bold text-white text-sm mb-1">進度追蹤儀表板</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 利用長條圖區分一般與通識課程，學生登入即知「還缺什麼課」，無需人工核對。</p></div>
                                                     </div>
-
                                                     <div className="feature-card p-5 flex items-start space-x-4" onMouseEnter={() => setCurrentImage(GALLERY_IMAGES[2].src)}>
                                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center text-secondary shrink-0"><Icons.Radar /></div>
-                                                        <div><h4 className="font-bold text-white text-sm mb-1">EPA 能力雷達圖</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 落實能力導向教育 (CBME)，追蹤學生在特定醫療行為上的信任層級 (Entrustment Level) 變化。</p></div>
+                                                        <div><h4 className="font-bold text-white text-sm mb-1">EPA 能力雷達圖</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 落實能力導向教育 (CBME)，追蹤學生在特定醫療行為上的信任層級變化。</p></div>
                                                     </div>
-
                                                     <div className="feature-card p-5 flex items-start space-x-4" onMouseEnter={() => setCurrentImage(GALLERY_IMAGES[1].src)}>
                                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-accent shrink-0"><Icons.Gap /></div>
-                                                        <div><h4 className="font-bold text-white text-sm mb-1">自我評估落差分析</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 直觀呈現「自評」與「師評」的分數落差，幫助學生看見盲點，修正學習態度。</p></div>
+                                                        <div><h4 className="font-bold text-white text-sm mb-1">自我評估落差分析</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 直觀呈現「自評」與「師評」的分數落差，幫助學生看見盲點。</p></div>
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
 
-                                        {/* 4. CLIMAX - STAR: Result */}
+                                        {/* CLIMAX */}
                                         {activeTab === 'climax' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-4">成果展示 Result</h3>
+                                                {/* Updated h3 size */}
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">成果展示 Result</h3>
                                                 <p className="text-gray-400 mb-6 text-sm">從純文字到全方位成長地圖的轉變。</p>
                                                 <div className="grid gap-4">
                                                     {GALLERY_IMAGES.map((img) => (
@@ -636,6 +756,9 @@
                                             </div>
                                         )}
 
+                                        {/* Footer Spacer */}
+                                        <div className="h-8"></div>
+
                                     </div>
                                 </div>
                             </div>
@@ -649,24 +772,6 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-
-    <style>
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-    </style>
 </body>
 
 </html>

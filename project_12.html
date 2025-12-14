@@ -6,18 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>中央存保Golden House – 購得好房-接金幣理財遊戲 | UX Case Study</title>
 
-    <!-- Favicon Fix: 增加版本號 (?v=2) 強制瀏覽器重新抓取，並同時支援舊版寫法 -->
     <link rel="shortcut icon" href="./img/favicon/favicon.ico">
     <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
 
-    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
 
-    <!-- Fonts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -31,7 +30,7 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#EAC435', /* Modified to Gold for this project */
+                        primary: '#EAC435',
                         secondary: '#FF6584',
                         dark: '#121212',
                         'dark-light': '#1E1E1E',
@@ -40,6 +39,7 @@
                     },
                     fontFamily: {
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
+                        // "Momo Trust Display" is mapped to font-heading
                         heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
                     },
                     backgroundImage: {
@@ -51,7 +51,7 @@
     </script>
 
     <style>
-        /* BASIC SETUP */
+        /* 1. BASIC LAYOUT SETUP */
         body,
         html {
             margin: 0;
@@ -62,26 +62,81 @@
             background-color: #121212;
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
+            overscroll-behavior: none;
         }
 
-        /* MAIN SCROLL CONTAINER */
-        #main-container {
+        /* 2. MAIN SCROLL CONTAINER */
+        #main-scroller {
             width: 100vw;
             height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-        }
-
-        /* SECTIONS */
-        .page-section {
-            width: 100vw;
-            min-height: 100vh;
-            position: relative;
             overflow: hidden;
+            position: relative;
         }
 
-        /* Glassmorphism */
+        /* 3. SNAP SECTIONS */
+        .snap-section {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .snap-section.active-section {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Custom Hero Background */
+        .hero-bg-custom {
+            background-image: url('./img/project_12/hero_img.png');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .hero-bg-custom::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(18, 18, 18, 0.2) 0%, rgba(18, 18, 18, 0.5) 100%);
+            z-index: 1;
+        }
+
+        /* Animations */
+        .fade-in-up {
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Glassmorphism & Cards */
         .glass-panel {
             background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(18, 18, 18, 0.98));
             backdrop-filter: blur(20px);
@@ -104,25 +159,6 @@
             box-shadow: 0 10px 30px -10px rgba(234, 196, 53, 0.2);
         }
 
-        /* Typography */
-        .gradient-text {
-            background: linear-gradient(90deg, #EAC435, #FF6584, #00D4FF);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-size: 200% auto;
-            animation: gradientMove 5s linear infinite;
-        }
-
-        @keyframes gradientMove {
-            0% {
-                background-position: 0% 50%;
-            }
-
-            100% {
-                background-position: 200% 50%;
-            }
-        }
-
         /* Scrollbars */
         .custom-scroll::-webkit-scrollbar {
             width: 6px;
@@ -142,54 +178,13 @@
             background: #EAC435;
         }
 
-        /* Unified Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #121212;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #3D3D3D;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #EAC435;
-        }
-
-        /* Animations */
-        .fade-in-up {
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Custom Hero Background */
-        .hero-bg-custom {
-            /* Using a warm, abstract background to fit the "Morandi" but keep the dark UI style */
-            background-image: url('./img/project_12/hero_img.png');
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-
-        .hero-bg-custom::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom, rgba(18, 18, 18, 0.2) 0%, rgba(18, 18, 18, 0.5) 100%);
-            z-index: 1;
+        /* Content Scroll Area */
+        .scroll-content {
+            overflow-y: auto !important;
+            touch-action: pan-y !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            height: 100%;
         }
 
         /* Loader */
@@ -269,7 +264,6 @@
             }
         }
 
-
         .back-btn i {
             transition: transform 0.3s ease;
         }
@@ -286,7 +280,6 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Icons Component
         const Icons = {
             Figma: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z" /><path d="M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z" /><path d="M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z" /><path d="M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z" /><path d="M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z" /></svg>,
             AI: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l-9 18h18L12 3z" /><circle cx="12" cy="13" r="2" /></svg>,
@@ -296,7 +289,6 @@
             Storm: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
         };
 
-        // Image Options for Climax Gallery - Using Uploaded Filenames
         const GALLERY_IMAGES = [
             { id: '01', name: '溫馨主視覺', src: './img/project_12/接金幣-01遊戲畫面.jpg' },
             { id: '02', name: '擬人化危機', src: './img/project_12/接金幣-09金融風暴.jpg' },
@@ -308,16 +300,25 @@
         const App = () => {
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('context');
-            // Default image to the first game screen
             const [currentImage, setCurrentImage] = useState('./img/project_12/display.png');
             const [activeGalleryId, setActiveGalleryId] = useState('01');
-
             const [showBackToHero, setShowBackToHero] = useState(false);
-            const mainContainerRef = useRef(null);
-            const splitRef = useRef(null);
-            const heroRef = useRef(null);
 
-            // Determine if the browser-like header should be shown
+            // GSAP Scroll State
+            const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+            const isScrollingRef = useRef(false);
+            const mainContainerRef = useRef(null);
+            const sectionsRef = useRef([]);
+            const heroRef = useRef(null);
+            const splitRef = useRef(null);
+
+            // Damping / Mobile Scroll Refs
+            const contentScrollRef = useRef(null);
+            const imageScrollRef = useRef(null);
+            const overscrollAccumulator = useRef(0);
+            const OVERSCROLL_THRESHOLD = 200;
+            const touchStartY = useRef(0);
+
             const showBrowserHeader = !['context', 'process'].includes(activeTab);
 
             useEffect(() => {
@@ -326,11 +327,13 @@
             }, []);
 
             useEffect(() => {
+                sectionsRef.current = [heroRef.current, splitRef.current];
+                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
+            }, [loading]);
+
+            useEffect(() => {
                 switch (activeTab) {
                     case 'context':
-                        setCurrentImage('./img/project_12/display.png');
-                        setActiveGalleryId(null);
-                        break;
                     case 'process':
                         setCurrentImage('./img/project_12/display.png');
                         setActiveGalleryId(null);
@@ -349,80 +352,189 @@
                 }
             }, [activeTab]);
 
-            const handleGallerySwitch = (imgObj) => {
-                setCurrentImage(imgObj.src);
-                setActiveGalleryId(imgObj.id);
+            // === GSAP SCROLL LOGIC ===
+            const scrollToSection = (index) => {
+                if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
+
+                isScrollingRef.current = true;
+                const targetSection = sectionsRef.current[index];
+                const currentSection = sectionsRef.current[currentSectionIndex];
+
+                setShowBackToHero(index > 0);
+                overscrollAccumulator.current = 0;
+
+                const tl = gsap.timeline({
+                    onComplete: () => {
+                        isScrollingRef.current = false;
+                        setCurrentSectionIndex(index);
+                        if (currentSection !== targetSection) {
+                            currentSection.classList.remove('active-section');
+                        }
+                        targetSection.classList.add('active-section');
+                    }
+                });
+
+                if (currentSectionIndex !== index) {
+                    tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
+                }
+
+                tl.to(mainContainerRef.current, {
+                    scrollTo: { y: targetSection.offsetTop, autoKill: false },
+                    duration: 1.2,
+                    ease: "power2.inOut"
+                }, "<");
+
+                tl.to(targetSection, {
+                    opacity: 1,
+                    duration: 1,
+                    onStart: () => {
+                        targetSection.classList.add('active-section');
+                        targetSection.style.visibility = 'visible';
+                    }
+                }, "-=0.8");
             };
 
-            const handleScroll = (e) => {
-                const scrollTop = e.target.scrollTop;
-                const windowHeight = window.innerHeight;
-                if (scrollTop > windowHeight * 0.5) {
-                    setShowBackToHero(true);
+            // === DAMPING & EVENT HANDLERS ===
+            const handleWheel = (e) => {
+                if (isScrollingRef.current) return;
+
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                const imageEl = imageScrollRef.current;
+                const isHoveringImage = imageEl && imageEl.contains(e.target);
+                const isHoveringContent = contentEl && contentEl.contains(e.target);
+
+                // Damping Logic for Split View
+                if (isSplitView) {
+                    if (isHoveringContent) {
+                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                        if (e.deltaY < 0 && scrollTop <= 0) {
+                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        } else {
+                            overscrollAccumulator.current = 0;
+                            if (scrollHeight > clientHeight && e.deltaY > 0) return;
+                            if (scrollHeight > clientHeight && e.deltaY < 0 && scrollTop > 0) return;
+                        }
+                    } else if (isHoveringImage) {
+                        const { scrollTop } = imageEl;
+                        if (e.deltaY < 0 && scrollTop <= 0) {
+                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        } else {
+                            overscrollAccumulator.current = 0;
+                        }
+                    }
+                }
+
+                if (e.deltaY > 0) {
+                    if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
                 } else {
-                    setShowBackToHero(false);
+                    const thresholdMet = overscrollAccumulator.current >= OVERSCROLL_THRESHOLD;
+                    if (currentSectionIndex > 0 && (!isSplitView || thresholdMet)) scrollToSection(currentSectionIndex - 1);
                 }
             };
 
-            const scrollToSection = (ref) => {
-                if (ref.current) {
-                    ref.current.scrollIntoView({ behavior: 'smooth' });
+            const handleTouchStart = (e) => {
+                touchStartY.current = e.touches[0].clientY;
+                overscrollAccumulator.current = 0;
+            };
+
+            const handleTouchEnd = (e) => {
+                if (isScrollingRef.current) return;
+                const touchEndY = e.changedTouches[0].clientY;
+                const diff = touchStartY.current - touchEndY;
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                const target = e.target;
+                const isInsideContent = contentEl && contentEl.contains(target);
+
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) { // Swipe Up (Next)
+                        overscrollAccumulator.current = 0;
+                        if (isSplitView && isInsideContent) {
+                            const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                            if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
+                        }
+                        if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
+                    } else { // Swipe Down (Prev)
+                        if (isSplitView && isInsideContent) {
+                            if (contentEl.scrollTop > 0) {
+                                overscrollAccumulator.current = 0;
+                                return;
+                            }
+                            overscrollAccumulator.current += Math.abs(diff);
+                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                        }
+                        if (currentSectionIndex > 0) scrollToSection(currentSectionIndex - 1);
+                    }
                 }
             };
+
+            useEffect(() => {
+                const container = mainContainerRef.current;
+                if (container) {
+                    window.addEventListener('wheel', handleWheel, { passive: false });
+                    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+                    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+                }
+                return () => {
+                    window.removeEventListener('wheel', handleWheel);
+                    window.removeEventListener('touchstart', handleTouchStart);
+                    window.removeEventListener('touchend', handleTouchEnd);
+                };
+            }, [currentSectionIndex]);
 
             const goBack = () => {
                 window.location.href = "index.html#portfolio";
             };
 
+            const handleGallerySwitch = (imgObj) => {
+                setCurrentImage(imgObj.src);
+                setActiveGalleryId(imgObj.id);
+            };
+
             return (
                 <React.Fragment>
-                    {/* Loader */}
                     <div className={`loader ${loading ? '' : 'hidden'}`}>
                         <div className="loader-animation"></div>
                     </div>
 
-                    {/* Back Button Only */}
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        <button
-                            onClick={goBack}
-                            className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40"
-                        >
+                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
                             <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">
-                                Back to Portfolio
-                            </span>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">Back to Portfolio</span>
                         </button>
                     </nav>
 
-                    {/* Back to Hero Button */}
                     <button
-                        onClick={() => scrollToSection(heroRef)}
+                        onClick={() => scrollToSection(0)}
                         className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
                         title="Back to Hero Section"
                     >
                         <i className="fas fa-arrow-up"></i>
                     </button>
 
-                    {/* MAIN SCROLL CONTAINER */}
-                    <div id="main-container" ref={mainContainerRef} onScroll={handleScroll}>
+                    <div id="main-scroller" ref={mainContainerRef}>
 
                         {/* 1. HERO SECTION */}
-                        <section ref={heroRef} className="page-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
                             <div className="container max-w-6xl mx-auto px-8 z-20">
                                 <div className="max-w-3xl text-left">
-                                    <div className="inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 fade-in-up " style={{ animationDelay: '0.1s' }}>
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>
                                         FINANCIAL EDUCATION GAME
                                     </div>
-                                    <h1 className="text-5xl lg:text-7xl font-black mb-8 leading-tight text-white fade-in-up drop-shadow-2xl text-left" style={{ animationDelay: '0.2s' }}>
-                                        中央存保Golden House – 購得好房<br />
+                                    {/* MODIFIED: Added font-heading class to "Golden House" */}
+                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
+                                        中央存保 <span className="font-heading">Golden House</span> – 購得好房<br />
                                         <span className="text-transparent bg-clip-text bg-primary">理財教育網頁遊戲</span>
                                     </h1>
-                                    <h2 className="text-xl md:text-2xl text-gray-300 font-light mb-12 fade-in-up max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left" style={{ animationDelay: '0.3s' }}>
+                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>
                                         讓「買房」與「存款保險」觀念不再沈重，打造寓教於樂的互動體驗。
                                     </h2>
                                     <button
-                                        onClick={() => scrollToSection(splitRef)}
-                                        className="px-10 py-4 bg-primary border border-primary/50 rounded-full text-black font-bold text-lg hover:bg-white hover:text-primary transition-all fade-in-up shadow-[0_10px_30px_rgba(234,196,53,0.4)] transform hover:-translate-y-1"
+                                        onClick={() => scrollToSection(1)}
+                                        className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-black font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(234,196,53,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`}
                                         style={{ animationDelay: '0.4s' }}
                                     >
                                         探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
@@ -431,20 +543,12 @@
                             </div>
                         </section>
 
-                        {/* 2. SPLIT SCREEN (Robust Layout) */}
-                        <section ref={splitRef} className="page-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+                        {/* 2. SPLIT SCREEN */}
+                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
 
                             {/* LEFT: Image Preview */}
-                            <div className="
-                                w-full h-[40vh] shrink-0 z-20
-                                lg:w-3/5 lg:h-full
-                                bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 
-                                border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
-                            ">
-                                {/* Modified container: h-auto instead of h-full to fit image height */}
-                                <div className="relative w-full h-auto max-w-4xl max-h-[90vh] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300">
-
-                                    {/* Conditional Browser Header */}
+                            <div className="w-full h-[35vh] shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl">
+                                <div className="relative w-full h-auto max-w-4xl max-h-full lg:max-h-[90%] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300">
                                     {showBrowserHeader && (
                                         <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
                                             <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
@@ -452,36 +556,22 @@
                                             <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
                                         </div>
                                     )}
-
-                                    <div className="relative overflow-hidden bg-white/5 group">
-                                        {/* Modified image: w-full h-auto to respect aspect ratio */}
-                                        <img
-                                            src={currentImage}
-                                            alt="Preview"
-                                            className="w-full h-auto block transition-opacity duration-500"
-                                        />
+                                    <div ref={imageScrollRef} className="flex-1 min-h-0 overflow-y-auto custom-scroll relative bg-white/5 group">
+                                        <img src={currentImage} alt="Preview" className="w-full h-auto block transition-opacity duration-500" />
                                     </div>
-
-                                    {/* Removed Image Toggle Tab for Climax tab as requested */}
                                 </div>
                             </div>
 
                             {/* RIGHT: Narrative Scroll */}
-                            <div className="
-                                flex-1 w-full relative z-10
-                                lg:w-2/5 lg:h-full
-                                flex flex-col
-                            ">
-                                <div className="w-full h-full flex flex-col glass-panel relative">
+                            <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
+                                <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
 
-                                    {/* Sticky Header */}
                                     <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
-                                        <div className="p-8 pb-0">
-                                            <h2 className="text-2xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">中央存保Golden House – 購得好房<br />理財教育網頁遊戲</h2>
-                                            {/* Modified Subtitle Translation */}
-                                            <p className="text-gray-400 text-sm mb-4">Financial Education Web Game</p>
+                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
+                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">中央存保Golden House – 購得好房<br />理財教育網頁遊戲</h2>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">Financial Education Web Game</p>
 
-                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-6 pb-1">
+                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 scroll-content">
                                                 {[
                                                     { id: 'context', label: '01. 背景目標' },
                                                     { id: 'process', label: '02. 設計策略' },
@@ -491,10 +581,7 @@
                                                     <button
                                                         key={tab.id}
                                                         onClick={() => setActiveTab(tab.id)}
-                                                        className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id
-                                                            ? 'text-primary border-b-2 border-primary pb-1'
-                                                            : 'text-gray-500 hover:text-white pb-1'
-                                                            }`}
+                                                        className={`text-sm font-bold whitespace-nowrap transition-colors pb-1 ${activeTab === tab.id ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-white'}`}
                                                     >
                                                         {tab.label}
                                                     </button>
@@ -503,14 +590,13 @@
                                         </div>
                                     </div>
 
-                                    {/* Scrollable Content */}
-                                    <div className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll">
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
 
-                                        {/* 1. CONTEXT */}
+                                        {/* CONTEXT */}
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
                                                 <div className="space-y-6">
-                                                    <h3 className="text-2xl font-bold text-white mb-4">專案背景 Context</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">專案背景 Context</h3>
                                                     <p className="text-gray-300 text-sm leading-relaxed mb-4">
                                                         許多民眾對於「買房」與「存款保險」等議題感到遙遠或壓力大，傳統的文字宣導難以產生共鳴。我們的任務是打造一款 Web Game，透過直覺的機制降低學習門檻。
                                                     </p>
@@ -522,22 +608,15 @@
                                                         <div className="feature-card p-4">
                                                             <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
                                                             <div className="flex flex-wrap gap-2">
-                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
-                                                                    <Icons.Figma /> <span className="ml-1">Figma</span>
-                                                                </span>
-                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30">
-                                                                    <Icons.AI /> <span className="ml-1">Illustrator</span>
-                                                                </span>
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><Icons.Figma /> <span className="ml-1">Figma</span></span>
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
-                                                        <span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>
-                                                        痛點與挑戰 The Conflict
-                                                    </h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>痛點與挑戰 The Conflict</h3>
                                                     <div className="feature-card p-5 border-l-4 border-l-secondary">
                                                         <h4 className="text-secondary font-bold text-sm mb-3">傳統宣導的困境</h4>
                                                         <ul className="space-y-4 text-gray-300">
@@ -550,10 +629,10 @@
                                             </div>
                                         )}
 
-                                        {/* 2. PROCESS (Strategy) */}
+                                        {/* PROCESS */}
                                         {activeTab === 'process' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-2">設計策略 Design Strategy</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">設計策略 Design Strategy</h3>
                                                 <p className="text-xs text-gray-400 mb-6">如何將嚴肅議題轉化為沈浸式體驗</p>
                                                 <div className="relative pl-4 border-l border-white/10 space-y-8">
                                                     <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">01. 視覺心理學</h4><p className="text-xs text-gray-400">捨棄科技感，改用「莫蘭迪色系」繪製田園背景，營造「成家」的溫馨願景，降低焦慮。</p></div>
@@ -564,22 +643,19 @@
                                             </div>
                                         )}
 
-                                        {/* 3. SOLUTION (Features) */}
+                                        {/* SOLUTION */}
                                         {activeTab === 'solution' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-6">核心特色 Core Features</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">核心特色 Core Features</h3>
                                                 <div className="space-y-4">
-                                                    {/* Added onClick and cursor-pointer for interaction */}
                                                     <div className="feature-card p-5 flex items-start space-x-4 cursor-pointer hover:bg-white/5 active:scale-[0.98] transition-all" onMouseEnter={() => setCurrentImage('./img/project_12/接金幣-01遊戲畫面.jpg')}>
                                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0"><Icons.Home /></div>
                                                         <div><h4 className="font-bold text-white text-sm mb-1">沈浸式溫馨視覺</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Mood:</span> 低飽和度背景與柔和色調，傳遞歲月靜好的氛圍，符合「安居樂業」的最終目標。</p></div>
                                                     </div>
-
                                                     <div className="feature-card p-5 flex items-start space-x-4 cursor-pointer hover:bg-white/5 active:scale-[0.98] transition-all" onMouseEnter={() => setCurrentImage('./img/project_12/接金幣-09金融風暴.jpg')}>
                                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center text-secondary shrink-0"><Icons.Storm /></div>
                                                         <div><h4 className="font-bold text-white text-sm mb-1">隨機事件：金融風暴</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Event:</span> 擬人化的龍捲風會捲走金幣，視覺化呈現市場波動與資產縮水，製造遊戲張力。</p></div>
                                                     </div>
-
                                                     <div className="feature-card p-5 flex items-start space-x-4 cursor-pointer hover:bg-white/5 active:scale-[0.98] transition-all" onMouseEnter={() => setCurrentImage('./img/project_12/接金幣-10金融風暴popup.jpg')}>
                                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-accent shrink-0"><Icons.Shield /></div>
                                                         <div><h4 className="font-bold text-white text-sm mb-1">UI 轉換：冷靜與防護</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Interaction:</span> 危機時介面轉為深藍色，暗示理性思考。答對問題即啟動防護，強化正確觀念的重要性。</p></div>
@@ -588,10 +664,10 @@
                                             </div>
                                         )}
 
-                                        {/* 4. CLIMAX (Gallery) */}
+                                        {/* CLIMAX */}
                                         {activeTab === 'climax' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-2xl font-bold text-white mb-4">介面展示 Gallery</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">介面展示 Gallery</h3>
                                                 <p className="text-gray-400 mb-6 text-sm">點擊下方卡片查看遊戲畫面細節。</p>
                                                 <div className="grid gap-4">
                                                     {GALLERY_IMAGES.map((img) => (
@@ -612,12 +688,11 @@
                                                 </div>
                                             </div>
                                         )}
-
+                                        <div className="h-8"></div>
                                     </div>
                                 </div>
                             </div>
                         </section>
-
                     </div>
                 </React.Fragment>
             );
@@ -626,24 +701,6 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-
-    <style>
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-    </style>
 </body>
 
 </html>
