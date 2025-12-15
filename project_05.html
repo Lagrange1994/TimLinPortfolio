@@ -30,12 +30,12 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#86C232',    /* 動物園綠色調 */
-                        secondary: '#FF9671',  /* 溫暖輔助色 */
+                        primary: '#86C232',
+                        secondary: '#FF9671',
                         dark: '#1A1D1A',
                         'dark-light': '#262926',
                         'dark-lighter': '#3D403D',
-                        accent: '#FFC75F'      /* 強調色 */
+                        accent: '#FFC75F'
                     },
                     fontFamily: {
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
@@ -58,9 +58,7 @@
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
             overflow: hidden;
-            /* 禁止原生滾動 */
             overscroll-behavior: none;
-            /* 防止瀏覽器彈性效果 */
         }
 
         /* MAIN SCROLL CONTAINER */
@@ -88,10 +86,11 @@
             visibility: visible;
         }
 
-        /* SCROLLABLE CONTENT AREA */
+        /* SCROLLABLE CONTENT AREA (VERTICAL ONLY) */
         .scroll-content {
             overflow-y: auto !important;
             touch-action: pan-y !important;
+            /* 關鍵：這會阻擋橫向滑動，所以不能用在 Tab 上 */
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
             height: 100%;
@@ -597,7 +596,7 @@
                                     </div>
                                     <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
                                         新竹市動物園<br />
-                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">內部管理<br />與行動應變系統</span>
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent to-primary">內部管理與<br />行動應變系統</span>
                                     </h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>
                                         從辦公室的「數據司令部」到現場的「行動先鋒」，<br />打造全方位的智慧園區管理體驗。
@@ -662,11 +661,14 @@
 
                                     {/* Sticky Header */}
                                     <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
-                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">新竹市動物園<br />內部管理與<br className="md:hidden" />行動應變系統</h2>
+                                        <div className="p-6 lg:p-8 pb-0">
+                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">新竹市動物園<br />內部管理與行動應變系統</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-4">Internal Management & Mobile Response</p>
 
-                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 scroll-content">
+                                            {/* FIXED: Removed 'scroll-content' class from this div. 
+                                                'scroll-content' was enforcing touch-action: pan-y, which blocked horizontal scrolling.
+                                            */}
+                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full">
                                                 {[
                                                     { id: 'context', label: '01. 背景與挑戰' },
                                                     { id: 'process', label: '02. 網頁系統' },
