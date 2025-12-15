@@ -7,10 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tim Lin - Web Designer Portfolio</title>
 
-    <!-- Favicon -->
     <link href="./img/favicon/favicon.ico" rel="shortcut icon" type="image/ico">
 
-    <!-- 外部資源：Tailwind, FontAwesome, Google Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,11 +17,8 @@
         href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@100..900&family=Quicksand:wght@300..700&display=swap"
         rel="stylesheet">
 
-    <!-- 3D Viewer & Animation Libraries -->
     <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.96/build/spline-viewer.js"></script>
-    <!-- 引入 GSAP 核心 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
-    <!-- 引入 ScrollToPlugin (控制捲動位置必須) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
 
@@ -229,14 +224,54 @@
             border-color: rgba(255, 255, 255, 0.35);
         }
 
-        /* === 技能卡片特定樣式 === */
+        /* === 技能卡片特定樣式 (區分手機與桌機) === */
+        /* 手機版預設 (橫向排列) */
         .skill-card {
-            border-radius: 16px;
-            padding: 1.5rem;
+            border-radius: 12px;
+            /* 手機版小圓角 */
+            padding: 0.75rem;
+            /* 手機版小內距 */
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            /* 手機版橫向 */
             align-items: center;
-            text-align: center;
+            text-align: left;
+            /* 手機版靠左 */
+        }
+
+        .skill-icon {
+            width: 36px;
+            /* 手機版小圖標 */
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(255, 101, 132, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.5rem;
+            /* 手機版右邊距 */
+            margin-bottom: 0;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        /* 桌機版覆蓋 (恢復原始設計) */
+        @media (min-width: 768px) {
+            .skill-card {
+                border-radius: 16px;
+                padding: 1.5rem;
+                flex-direction: column;
+                /* 桌機版直向 */
+                text-align: center;
+                /* 桌機版置中 */
+            }
+
+            .skill-icon {
+                width: 60px;
+                height: 60px;
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
         }
 
         .skill-card.visible:hover {
@@ -246,34 +281,37 @@
             z-index: 10;
         }
 
-        .skill-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(255, 101, 132, 0.2));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        }
-
         .skill-card.visible:hover .skill-icon {
             background: linear-gradient(135deg, rgba(108, 99, 255, 0.4), rgba(255, 101, 132, 0.4));
             transform: scale(1.1);
         }
 
         .skill-icon i {
-            font-size: 1.5rem;
+            /* 手機版 Icon 字體小 */
+            font-size: 1rem;
             color: #ffffff;
+        }
+
+        @media (min-width: 768px) {
+            .skill-icon i {
+                font-size: 1.5rem;
+                /* 桌機版恢復 */
+            }
         }
 
         .skill-percentage {
             font-weight: bold;
-            margin: 0.5rem 0;
+            margin: 0;
             background: linear-gradient(90deg, #6C63FF, #FF6584);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+
+        @media (min-width: 768px) {
+            .skill-percentage {
+                margin: 0.5rem 0;
+                /* 桌機版恢復間距 */
+            }
         }
 
         /* === 專案卡片樣式 === */
@@ -578,15 +616,12 @@
 </head>
 
 <body class="dark">
-    <!-- 載入畫面 -->
     <div class="loader">
         <div class="loader-animation"></div>
     </div>
 
-    <!-- 3D 背景 -->
     <spline-viewer id="spline-bg" url="https://prod.spline.design/vKVXVdHe8QipCESp/scene.splinecode"></spline-viewer>
 
-    <!-- 導航列 -->
     <header id="main-header" class="fixed top-0 left-0 w-full z-50 transition-all duration-300">
         <div id="nav-container" class="container max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <a href="#" class="text-2xl font-bold gradient-text-brand font-heading">Tim<span
@@ -594,7 +629,6 @@
 
             <nav class="hidden md:flex space-x-2 relative">
                 <span id="nav-hover-bg"></span>
-                <!-- 注意：href 改為 JS 控制，取消預設錨點跳轉以配合 GSAP 動畫 -->
                 <a onclick="scrollToSection(0)" class="nav-link active" data-index="0">Home</a>
                 <a onclick="scrollToSection(1)" class="nav-link" data-index="1">About</a>
                 <a onclick="scrollToSection(2)" class="nav-link" data-index="2">Skills</a>
@@ -608,7 +642,6 @@
         </div>
     </header>
 
-    <!-- 手機版選單覆蓋層 -->
     <div class="menu-overlay" id="menu-overlay"></div>
     <div class="mobile-menu" id="mobile-menu">
         <div class="p-6">
@@ -620,7 +653,6 @@
                 </button>
             </div>
             <nav class="flex flex-col space-y-6">
-                <!-- 手機版選單連結直接指向 scrollToSection，內部會判斷模式 -->
                 <a onclick="scrollToSection(0)" class="mobile-nav-link text-lg">Home</a>
                 <a onclick="scrollToSection(1)" class="mobile-nav-link text-lg">About</a>
                 <a onclick="scrollToSection(2)" class="mobile-nav-link text-lg">Skills</a>
@@ -637,10 +669,8 @@
         </div>
     </div>
 
-    <!-- 主捲動容器：包裹所有可捲動內容 -->
     <main id="main-scroller">
 
-        <!-- 首頁區塊 (Home) - 內容加入 stagger-item -->
         <section id="home" class="snap-section active-section md:flex md:items-center">
             <div class="container max-w-7xl mx-auto px-8 pt-4 pb-4 md:py-16">
                 <div class="flex flex-col md:flex-row items-center">
@@ -675,38 +705,35 @@
             </div>
         </section>
 
-        <!-- 關於我區塊 (About) - 更新為大型卡片設計 (圖片左、文字右、無 8-bit) -->
         <section id="about" class="snap-section bg-dark-light md:flex md:items-center">
             <div class="container max-w-7xl mx-auto px-8 w-full">
-                <!-- 標題 -->
                 <div class="text-center mb-10 stagger-item">
                     <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-heading">About <span
                             class="gradient-text font-heading">Me</span></h2>
                     <div class="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto"></div>
                 </div>
 
-                <!-- 大型整合卡片 -->
                 <div
-                    class="relative w-full bg-[#1E1E1E] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl fade-in">
+                    class="relative w-full bg-[#1E1E1E] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl fade-in flex flex-col md:block">
 
-                    <!-- 背景圖片層 (Desktop: 左側, Mobile: 頂部) -->
-                    <div class="absolute top-0 left-0 w-full h-1/2 md:h-full md:w-1/2 stagger-item">
+                    <div
+                        class="absolute top-6 left-1/2 -translate-x-1/2 w-24 h-3 bg-[#121212] rounded-full shadow-[inset_0_1px_3px_rgba(0,0,0,1)] z-20">
+                    </div>
+
+                    <div
+                        class="relative w-full h-64 sm:h-80 md:absolute md:top-0 md:left-0 md:h-full md:w-1/2 stagger-item">
                         <img src="./img/about_me.jpg" alt="Tim Lin Working"
                             class="w-full h-full object-cover opacity-100 mix-blend-normal">
-                        <!-- 漸層遮罩：讓圖片邊緣柔和淡出到背景色 -->
-                        <!-- Mobile: 底部漸層向上 (from solid to transparent) -->
                         <div
                             class="absolute inset-0 bg-gradient-to-t from-[#1E1E1E] from-10% to-transparent to-50% md:hidden">
                         </div>
-                        <!-- Desktop: 右側漸層向左 (from solid to transparent) -->
                         <div
                             class="absolute inset-0 hidden md:block bg-gradient-to-l from-[#1E1E1E] from-10% to-transparent to-50%">
                         </div>
                     </div>
 
-                    <!-- 內容層 (Desktop: 右側, Mobile: 下方) -->
                     <div
-                        class="relative z-10 p-8 md:p-16 md:w-2/3 ml-auto flex flex-col justify-center mt-[40%] md:mt-0">
+                        class="relative z-10 p-8 md:p-16 md:w-2/3 md:ml-auto md:flex md:flex-col md:justify-center md:min-h-[500px]">
                         <h3
                             class="text-lg md:text-2xl font-bold mb-4 font-heading text-white drop-shadow-md stagger-item">
                             結合嚴謹邏輯與前瞻技術的資深產品設計師</h3>
@@ -747,6 +774,12 @@
                             <div>
                                 <h4
                                     class="text-xs md:text-sm font-medium text-gray-400 font-heading uppercase tracking-wider">
+                                    Email</h4>
+                                <p class="text-xs md:text-base font-semibold text-white">lyfun0202@gmail.com</p>
+                            </div>
+                            <div>
+                                <h4
+                                    class="text-xs md:text-sm font-medium text-gray-400 font-heading uppercase tracking-wider">
                                     Location</h4>
                                 <p class="text-xs md:text-base font-semibold text-white">Taipei, Taiwan</p>
                             </div>
@@ -756,19 +789,12 @@
                                     Experience</h4>
                                 <p class="text-xs md:text-base font-semibold text-white">5+ Years</p>
                             </div>
-                            <div>
-                                <h4
-                                    class="text-xs md:text-sm font-medium text-gray-400 font-heading uppercase tracking-wider">
-                                    Email</h4>
-                                <p class="text-xs md:text-base font-semibold text-white">lyfun0202@gmail.com</p>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 技能區塊 (Skills) - 已加入 stagger-item -->
         <section id="skills" class="snap-section md:flex md:items-center">
             <div class="container max-w-7xl mx-auto px-8">
                 <div class="text-center mb-10 stagger-item">
@@ -779,109 +805,142 @@
                 <div class="mb-12">
                     <h3 class="text-lg md:text-2xl font-bold mb-8 text-center font-heading stagger-item">Design &
                         Development Skills</h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-                        <!-- UI/UX Design -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
                         <div class="skill-card stagger-item">
                             <div class="skill-icon"><i class="fas fa-paint-brush"></i></div>
-                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">UI/UX Design</h4>
-                            <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="5">0</span>+ <span class="text-sm md:text-base">yrs</span></div>
-                        </div>
-                        <!-- Figma -->
-                        <div class="skill-card stagger-item">
-                            <div class="skill-icon"><img
-                                    src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg"
-                                    alt="Figma" class="w-8 h-8 object-contain"></div>
-                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Figma</h4>
-                            <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="5">0</span>+ <span class="text-sm md:text-base">yrs</span></div>
-                        </div>
-                        <!-- Adobe XD -->
-                        <div class="skill-card stagger-item">
-                            <div class="skill-icon"><img
-                                    src="https://upload.wikimedia.org/wikipedia/commons/c/c2/Adobe_XD_CC_icon.svg"
-                                    alt="Adobe XD" class="w-8 h-8 object-contain"></div>
-                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Adobe XD</h4>
-                            <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="4">0</span>
-                                <span class="text-sm md:text-base">yrs</span>
+                            <div class="flex-grow min-w-0 md:w-full md:text-center">
+                                <h4 class="text-xs md:text-base font-medium mb-0 md:mb-2 font-heading truncate">UI/UX
+                                </h4>
+                                <div class="skill-percentage text-sm md:text-2xl"><span class="counter"
+                                        data-target="5">0</span>+ <span class="text-[10px] md:text-base">yrs</span>
+                                </div>
                             </div>
                         </div>
-                        <!-- Photoshop -->
                         <div class="skill-card stagger-item">
-                            <div class="skill-icon"><img
-                                    src="https://upload.wikimedia.org/wikipedia/commons/a/af/Adobe_Photoshop_CC_icon.svg"
-                                    alt="Photoshop" class="w-8 h-8 object-contain"></div>
-                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Photoshop</h4>
-                            <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="4">0</span>
-                                <span class="text-sm md:text-base">yrs</span>
+                            <div class="skill-icon">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg"
+                                    alt="Figma" class="w-full h-full p-1.5 md:p-0 md:w-8 md:h-8 object-contain">
+                            </div>
+                            <div class="flex-grow min-w-0 md:w-full md:text-center">
+                                <h4 class="text-xs md:text-base font-medium mb-0 md:mb-2 font-heading truncate">Figma
+                                </h4>
+                                <div class="skill-percentage text-sm md:text-2xl"><span class="counter"
+                                        data-target="5">0</span>+ <span class="text-[10px] md:text-base">yrs</span>
+                                </div>
                             </div>
                         </div>
-                        <!-- Illustrator -->
                         <div class="skill-card stagger-item">
-                            <div class="skill-icon"><img
-                                    src="https://upload.wikimedia.org/wikipedia/commons/f/fb/Adobe_Illustrator_CC_icon.svg"
-                                    alt="Illustrator" class="w-8 h-8 object-contain"></div>
-                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Illustrator</h4>
-                            <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="3">0</span>
-                                <span class="text-sm md:text-base">yrs</span>
+                            <div class="skill-icon">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c2/Adobe_XD_CC_icon.svg"
+                                    alt="Adobe XD" class="w-full h-full p-1.5 md:p-0 md:w-8 md:h-8 object-contain">
+                            </div>
+                            <div class="flex-grow min-w-0 md:w-full md:text-center">
+                                <h4 class="text-xs md:text-base font-medium mb-0 md:mb-2 font-heading truncate">Adobe XD
+                                </h4>
+                                <div class="skill-percentage text-sm md:text-2xl"><span class="counter"
+                                        data-target="4">0</span>
+                                    <span class="text-[10px] md:text-base">yrs</span>
+                                </div>
                             </div>
                         </div>
-                        <!-- HTML/CSS -->
                         <div class="skill-card stagger-item">
-                            <div class="skill-icon flex space-x-1">
+                            <div class="skill-icon">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/a/af/Adobe_Photoshop_CC_icon.svg"
+                                    alt="Photoshop" class="w-full h-full p-1.5 md:p-0 md:w-8 md:h-8 object-contain">
+                            </div>
+                            <div class="flex-grow min-w-0 md:w-full md:text-center">
+                                <h4 class="text-xs md:text-base font-medium mb-0 md:mb-2 font-heading truncate">
+                                    Photoshop</h4>
+                                <div class="skill-percentage text-sm md:text-2xl"><span class="counter"
+                                        data-target="4">0</span>
+                                    <span class="text-[10px] md:text-base">yrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="skill-card stagger-item">
+                            <div class="skill-icon">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fb/Adobe_Illustrator_CC_icon.svg"
+                                    alt="Illustrator" class="w-full h-full p-1.5 md:p-0 md:w-8 md:h-8 object-contain">
+                            </div>
+                            <div class="flex-grow min-w-0 md:w-full md:text-center">
+                                <h4 class="text-xs md:text-base font-medium mb-0 md:mb-2 font-heading truncate">
+                                    Illustrator
+                                </h4>
+                                <div class="skill-percentage text-sm md:text-2xl"><span class="counter"
+                                        data-target="3">0</span>
+                                    <span class="text-[10px] md:text-base">yrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="skill-card stagger-item">
+                            <div class="skill-icon flex md:space-x-1 p-1 md:p-0">
                                 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg"
-                                    alt="HTML5" class="w-6 h-6 object-contain">
+                                    alt="HTML5" class="w-1/2 h-full object-contain md:w-6 md:h-6">
                                 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg"
-                                    alt="CSS3" class="w-6 h-6 object-contain">
+                                    alt="CSS3" class="w-1/2 h-full object-contain md:w-6 md:h-6">
                             </div>
-                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">HTML/CSS</h4>
-                            <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="5">0</span>+ <span class="text-sm md:text-base">yrs</span></div>
-                        </div>
-                        <!-- Blender (Replaces JavaScript) -->
-                        <div class="skill-card stagger-item">
-                            <div class="skill-icon"><img
-                                    src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/blender/blender-original.svg"
-                                    alt="Blender" class="w-8 h-8 object-contain"></div>
-                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Blender</h4>
-                            <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="3">0</span>
-                                <span class="text-sm md:text-base">yrs</span>
+                            <div class="flex-grow min-w-0 md:w-full md:text-center">
+                                <h4 class="text-xs md:text-base font-medium mb-0 md:mb-2 font-heading truncate">HTML/CSS
+                                </h4>
+                                <div class="skill-percentage text-sm md:text-2xl"><span class="counter"
+                                        data-target="5">0</span>+ <span class="text-[10px] md:text-base">yrs</span>
+                                </div>
                             </div>
                         </div>
-                        <!-- React -->
                         <div class="skill-card stagger-item">
-                            <div class="skill-icon"><img
-                                    src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg"
-                                    alt="React" class="w-8 h-8 object-contain"></div>
-                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">React</h4>
-                            <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="3">0</span>
-                                <span class="text-sm md:text-base">yrs</span>
+                            <div class="skill-icon">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/blender/blender-original.svg"
+                                    alt="Blender" class="w-full h-full p-1.5 md:p-0 md:w-8 md:h-8 object-contain">
+                            </div>
+                            <div class="flex-grow min-w-0 md:w-full md:text-center">
+                                <h4 class="text-xs md:text-base font-medium mb-0 md:mb-2 font-heading truncate">Blender
+                                </h4>
+                                <div class="skill-percentage text-sm md:text-2xl"><span class="counter"
+                                        data-target="3">0</span>
+                                    <span class="text-[10px] md:text-base">yrs</span>
+                                </div>
                             </div>
                         </div>
-                        <!-- Tailwind CSS -->
                         <div class="skill-card stagger-item">
-                            <div class="skill-icon"><img
-                                    src="https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg"
-                                    alt="Tailwind CSS" class="w-8 h-8 object-contain"></div>
-                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Tailwind CSS</h4>
-                            <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="3">0</span>
-                                <span class="text-sm md:text-base">yrs</span>
+                            <div class="skill-icon">
+                                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg"
+                                    alt="React" class="w-full h-full p-1.5 md:p-0 md:w-8 md:h-8 object-contain">
+                            </div>
+                            <div class="flex-grow min-w-0 md:w-full md:text-center">
+                                <h4 class="text-xs md:text-base font-medium mb-0 md:mb-2 font-heading truncate">React
+                                </h4>
+                                <div class="skill-percentage text-sm md:text-2xl"><span class="counter"
+                                        data-target="3">0</span>
+                                    <span class="text-[10px] md:text-base">yrs</span>
+                                </div>
                             </div>
                         </div>
-                        <!-- Spline (Replaces Responsive Design) -->
                         <div class="skill-card stagger-item">
-                            <div class="skill-icon"><img src="./img/others/spline_logo.webp" alt="Spline"
-                                    class="w-8 h-8 object-contain rounded-full"></div>
-                            <h4 class="text-xs md:text-base font-medium mb-2 font-heading">Spline</h4>
-                            <div class="skill-percentage text-lg md:text-2xl"><span class="counter"
-                                    data-target="2">0</span>
-                                <span class="text-sm md:text-base">yrs</span>
+                            <div class="skill-icon">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/d/d5/Tailwind_CSS_Logo.svg"
+                                    alt="Tailwind CSS" class="w-full h-full p-1.5 md:p-0 md:w-8 md:h-8 object-contain">
+                            </div>
+                            <div class="flex-grow min-w-0 md:w-full md:text-center">
+                                <h4 class="text-xs md:text-base font-medium mb-0 md:mb-2 font-heading truncate">Tailwind
+                                </h4>
+                                <div class="skill-percentage text-sm md:text-2xl"><span class="counter"
+                                        data-target="3">0</span>
+                                    <span class="text-[10px] md:text-base">yrs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="skill-card stagger-item">
+                            <div class="skill-icon">
+                                <img src="./img/others/spline_logo.webp" alt="Spline"
+                                    class="w-full h-full object-contain rounded-full md:w-8 md:h-8">
+                            </div>
+                            <div class="flex-grow min-w-0 md:w-full md:text-center">
+                                <h4 class="text-xs md:text-base font-medium mb-0 md:mb-2 font-heading truncate">Spline
+                                </h4>
+                                <div class="skill-percentage text-sm md:text-2xl"><span class="counter"
+                                        data-target="2">0</span>
+                                    <span class="text-[10px] md:text-base">yrs</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -889,36 +948,32 @@
             </div>
         </section>
 
-        <!-- 作品集區塊 (Portfolio) - 已加入 stagger-item -->
         <section id="portfolio" class="snap-section bg-dark-light md:flex md:items-center">
             <div class="container max-w-7xl mx-auto px-8">
-                <!-- 標題部分 -->
                 <div class="text-center mb-10 stagger-item">
                     <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-heading">My <span
                             class="gradient-text font-heading">Portfolio</span></h2>
                     <div class="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto mb-6"></div>
                 </div>
 
-                <!-- 無限捲動作品列表 (整體視為一個動畫項目) -->
-                <div id="portfolio-scroller" class="stagger-item">
-                    <!-- 第一排捲動 (左到右) -->
-                    <div class="scroller mb-1">
+                <div id="portfolio-scroller-mobile" class="stagger-item md:hidden">
+                    <div class="scroller mb-2">
                         <div class="scroller-inner animate-scroll-ltr">
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
                                 href="project_01.html">
                                 <img src="./img/my_portfolio/video_analyzation.png" alt="video analization system"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
+                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Web
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
                                             Dev</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Figma</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">React</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">React</span>
                                     </div>
                                 </div>
                             </a>
@@ -927,139 +982,168 @@
                                 <img src="./img/my_portfolio/video_analyzation_app.png"
                                     alt="video analization system app" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app
-                                    </h3>
+                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
                                     <p class="text-xs text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">UI/UX</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Figma</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_05.html">
-                                <img src="./img/my_portfolio/zoo.png" alt="zoo monitering web"
+                                href="project_03.html">
+                                <img src="./img/my_portfolio/police.png" alt="Kaohsiung Police Station"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
-                                    <p class="text-xs text-gray-200 mb-4">人流分析與網站管理介面</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
+                                    <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Web
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
                                             Dev</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Figma</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Vue</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">React</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_06.html">
-                                <img src="./img/my_portfolio/Taoyuan_MRT.png" alt="Taoyuan MRT App"
+                                href="project_04.html">
+                                <img src="./img/my_portfolio/Tainan Police.png" alt="Tainan Police Station"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">桃園捷運APP</h3>
-                                    <p class="text-xs text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
+                                    <p class="text-xs text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">UI/UX</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Adobe
-                                            XD</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
                             </a>
-                            <!-- 重複的項目以實現無限捲動 -->
+
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
                                 href="project_01.html" aria-hidden="true">
                                 <img src="./img/my_portfolio/video_analyzation.png" alt="video analization system"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
+                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Web
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
                                             Dev</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Figma</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">React</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">React</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_02.html">
+                                href="project_02.html" aria-hidden="true">
                                 <img src="./img/my_portfolio/video_analyzation_app.png"
                                     alt="video analization system app" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app
-                                    </h3>
+                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
                                     <p class="text-xs text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">UI/UX</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Figma</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_05.html">
-                                <img src="./img/my_portfolio/zoo.png" alt="zoo monitering web"
+                                href="project_03.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/police.png" alt="Kaohsiung Police Station"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
-                                    <p class="text-xs text-gray-200 mb-4">人流分析與網站管理介面</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
+                                    <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Web
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
                                             Dev</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Figma</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Vue</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">React</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_06.html">
-                                <img src="./img/my_portfolio/Taoyuan_MRT.png" alt="Taoyuan MRT App"
+                                href="project_04.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/Tainan Police.png" alt="Tainan Police Station"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">桃園捷運APP</h3>
-                                    <p class="text-xs text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
+                                    <p class="text-xs text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">UI/UX</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Adobe
-                                            XD</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
                             </a>
                         </div>
                     </div>
 
-                    <!-- 第二排捲動 (右到左) -->
-                    <div class="scroller">
+                    <div class="scroller mb-2">
                         <div class="scroller-inner animate-scroll-rtl">
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_05.html">
+                                <img src="./img/my_portfolio/zoo.png" alt="zoo monitering web"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
+                                    <p class="text-xs text-gray-200 mb-4">人流分析與網站管理介面</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Vue</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
+                                href="project_06.html">
+                                <img src="./img/my_portfolio/Taoyuan_MRT.png" alt="Taoyuan MRT App"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">桃園捷運APP</h3>
+                                    <p class="text-xs text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
+                                            XD</span>
+                                    </div>
+                                </div>
+                            </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
                                 href="project_07.html">
                                 <img src="./img/my_portfolio/dam.png" alt="Shihmen Dam"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">石門水庫網站</h3>
+                                    <h3 class="text-sm font-bold mb-2 font-heading">石門水庫網站</h3>
                                     <p class="text-xs text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Web
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
                                             Dev</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">HTML/CSS</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
@@ -1068,14 +1152,393 @@
                                 <img src="./img/my_portfolio/stream.png" alt="stream live app UI"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">Love-Two live app UI
-                                    </h3>
-                                    <p class="text-xs md:text-sm text-gray-200 mb-4">直播app提案與設計</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading">Love-Two live app UI</h3>
+                                    <p class="text-xs text-gray-200 mb-4">直播app提案與設計</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">UI/UX</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Adobe
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
+                                            XD</span>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_05.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/zoo.png" alt="zoo monitering web"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
+                                    <p class="text-xs text-gray-200 mb-4">人流分析與網站管理介面</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Vue</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
+                                href="project_06.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/Taoyuan_MRT.png" alt="Taoyuan MRT App"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">桃園捷運APP</h3>
+                                    <p class="text-xs text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
+                                            XD</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_07.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/dam.png" alt="Shihmen Dam"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">石門水庫網站</h3>
+                                    <p class="text-xs text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
+                                href="project_08.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/stream.png" alt="stream live app UI"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">Love-Two live app UI</h3>
+                                    <p class="text-xs text-gray-200 mb-4">直播app提案與設計</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
+                                            XD</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="scroller">
+                        <div class="scroller-inner animate-scroll-ltr">
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_09.html">
+                                <img src="./img/my_portfolio/enviroment.png" alt="enviroment protection"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
+                                    <p class="text-xs text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_10.html">
+                                <img src="./img/my_portfolio/aviation.png" alt="aviation web"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">恆春航空站</h3>
+                                    <p class="text-xs text-gray-200 mb-4">航空站網站改版提案.</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
+                                            XD</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_11.html">
+                                <img src="./img/my_portfolio/student.png" alt="student"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
+                                    <p class="text-xs text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_12.html">
+                                <img src="./img/my_portfolio/coin.png" alt="coin" class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
+                                    <p class="text-xs text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
+                                            XD</span>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_09.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/enviroment.png" alt="enviroment protection"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
+                                    <p class="text-xs text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_10.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/aviation.png" alt="aviation web"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">恆春航空站</h3>
+                                    <p class="text-xs text-gray-200 mb-4">航空站網站改版提案.</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
+                                            XD</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_11.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/student.png" alt="student"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
+                                    <p class="text-xs text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_12.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/coin.png" alt="coin" class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-sm font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
+                                    <p class="text-xs text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
+                                            XD</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="portfolio-scroller-desktop" class="stagger-item hidden md:block">
+                    <div class="scroller mb-1">
+                        <div class="scroller-inner animate-scroll-ltr">
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_01.html">
+                                <img src="./img/my_portfolio/video_analyzation.png" alt="video analization system"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
+                                    <p class="text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">React</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
+                                href="project_02.html">
+                                <img src="./img/my_portfolio/video_analyzation_app.png"
+                                    alt="video analization system app" class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app
+                                    </h3>
+                                    <p class="text-sm text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_05.html">
+                                <img src="./img/my_portfolio/zoo.png" alt="zoo monitering web"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-base font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
+                                    <p class="text-sm text-gray-200 mb-4">人流分析與網站管理介面</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Vue</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
+                                href="project_06.html">
+                                <img src="./img/my_portfolio/Taoyuan_MRT.png" alt="Taoyuan MRT App"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-base font-bold mb-2 font-heading">桃園捷運APP</h3>
+                                    <p class="text-sm text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
+                                            XD</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_01.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/video_analyzation.png" alt="video analization system"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
+                                    <p class="text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">React</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
+                                href="project_02.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/video_analyzation_app.png"
+                                    alt="video analization system app" class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app
+                                    </h3>
+                                    <p class="text-sm text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_05.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/zoo.png" alt="zoo monitering web"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-base font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
+                                    <p class="text-sm text-gray-200 mb-4">人流分析與網站管理介面</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Vue</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
+                                href="project_06.html" aria-hidden="true">
+                                <img src="./img/my_portfolio/Taoyuan_MRT.png" alt="Taoyuan MRT App"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-base font-bold mb-2 font-heading">桃園捷運APP</h3>
+                                    <p class="text-sm text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
+                                            XD</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="scroller">
+                        <div class="scroller-inner animate-scroll-rtl">
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
+                                href="project_07.html">
+                                <img src="./img/my_portfolio/dam.png" alt="Shihmen Dam"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-base font-bold mb-2 font-heading">石門水庫網站</h3>
+                                    <p class="text-sm text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
+                                href="project_08.html">
+                                <img src="./img/my_portfolio/stream.png" alt="stream live app UI"
+                                    class="w-full h-full object-cover">
+                                <div class="project-overlay">
+                                    <h3 class="text-base font-bold mb-2 font-heading">Love-Two live app UI
+                                    </h3>
+                                    <p class="text-sm text-gray-200 mb-4">直播app提案與設計</p>
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
                                             XD</span>
                                     </div>
                                 </div>
@@ -1085,14 +1548,14 @@
                                 <img src="./img/my_portfolio/enviroment.png" alt="enviroment protection"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
-                                    <p class="text-xs md:text-sm text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
+                                    <p class="text-sm text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Web
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
                                             Dev</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">HTML/CSS</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
@@ -1101,31 +1564,30 @@
                                 <img src="./img/my_portfolio/aviation.png" alt="aviation web"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">恆春航空站</h3>
-                                    <p class="text-xs md:text-sm text-gray-200 mb-4">航空站網站改版提案.</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading">恆春航空站</h3>
+                                    <p class="text-sm text-gray-200 mb-4">航空站網站改版提案.</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">UI/UX</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Adobe
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
                                             XD</span>
                                     </div>
                                 </div>
                             </a>
-                            <!-- 重複的項目以實現無限捲動 -->
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
                                 href="project_07.html" aria-hidden="true">
                                 <img src="./img/my_portfolio/dam.png" alt="Shihmen Dam"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">石門水庫網站</h3>
-                                    <p class="text-xs md:text-sm text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading">石門水庫網站</h3>
+                                    <p class="text-sm text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Web
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
                                             Dev</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">HTML/CSS</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
@@ -1134,14 +1596,14 @@
                                 <img src="./img/my_portfolio/stream.png" alt="stream live app UI"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">Love-Two live app UI
+                                    <h3 class="text-base font-bold mb-2 font-heading">Love-Two live app UI
                                     </h3>
-                                    <p class="text-xs md:text-sm text-gray-200 mb-4">直播app提案與設計</p>
+                                    <p class="text-sm text-gray-200 mb-4">直播app提案與設計</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">UI/UX</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Adobe
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
                                             XD</span>
                                     </div>
                                 </div>
@@ -1151,14 +1613,14 @@
                                 <img src="./img/my_portfolio/enviroment.png" alt="enviroment protection"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
-                                    <p class="text-xs md:text-sm text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
+                                    <p class="text-sm text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
                                     <div class="flex space-x-2">
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">Web
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
                                             Dev</span>
                                         <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] md:text-xs rounded-full border border-white">HTML/CSS</span>
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
@@ -1167,8 +1629,8 @@
                                 <img src="./img/my_portfolio/aviation.png" alt="aviation web"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm md:text-base font-bold mb-2 font-heading">恆春航空站</h3>
-                                    <p class="text-xs md:text-sm text-gray-200 mb-4">航空站網站改版提案.</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading">恆春航空站</h3>
+                                    <p class="text-sm text-gray-200 mb-4">航空站網站改版提案.</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
@@ -1182,7 +1644,6 @@
                     </div>
                 </div>
 
-                <!-- 作品集過濾器 (預設隱藏，點擊按鈕展開) - 加入 stagger-item -->
                 <div id="portfolio-filters" class="flex flex-wrap justify-center mb-8 hidden stagger-item">
                     <button
                         class="portfolio-filter-btn active m-2 px-6 py-2 rounded-full bg-primary text-white shadow-primary"
@@ -1195,7 +1656,6 @@
                         data-filter="web">Web Design</button>
                 </div>
 
-                <!-- 作品集網格 (預設隱藏，點擊按鈕展開) - 加入 stagger-item -->
                 <div id="portfolio-grid"
                     class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 hidden stagger-item">
                     <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
@@ -1394,7 +1854,6 @@
                     </a>
                 </div>
 
-                <!-- 展開/收合按鈕 - 加入 stagger-item -->
                 <div class="text-center mt-8 stagger-item">
                     <a id="toggle-portfolio-view" href="#portfolio"
                         class="inline-flex items-center px-5 py-2 md:px-8 md:py-3 text-xs md:text-base bg-gradient-to-r from-primary to-secondary rounded-full font-medium transition duration-300 shadow-primary hover:shadow-primary-hover cursor-pointer">
@@ -1405,9 +1864,7 @@
             </div>
         </section>
 
-        <!-- 整合後的最後一頁：包含 Contact 與 Footer -->
         <div id="contact" class="snap-section snap-section-last flex flex-col">
-            <!-- 聯絡我區塊內容 - 已加入 stagger-item -->
             <section class="flex-grow py-20 flex items-center">
                 <div class="container max-w-7xl mx-auto px-8 w-full">
                     <div class="text-center mb-10 stagger-item">
@@ -1471,7 +1928,6 @@
                 </div>
             </section>
 
-            <!-- 頁尾 (Footer) - 位於 snap-section 的底部 -->
             <footer class="bg-dark-light py-12 w-full">
                 <div class="container mx-auto px-4">
                     <div class="flex flex-col md:flex-row justify-between items-center">
@@ -1492,7 +1948,6 @@
 
     </main>
 
-    <!-- 回到頂部按鈕 -->
     <button id="back-to-top" onclick="scrollToSection(0)"
         class="fixed bottom-8 right-8 w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center opacity-0 invisible transition-all duration-300 shadow-primary hover:shadow-primary-hover cursor-pointer z-[9999]">
         <i class="fas fa-arrow-up"></i>
@@ -1664,7 +2119,31 @@
             }
         }
 
-        // === 觸發區塊內部動畫 ===
+        // === 獨立的計數動畫函式 ===
+        function animateCounter(card) {
+            const counterElement = card.querySelector('.counter');
+            if (counterElement && !counterElement.classList.contains('counted')) {
+                const target = parseInt(counterElement.getAttribute('data-target'));
+                const duration = 1500;
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                    const val = Math.floor(easeOutQuart * target);
+                    counterElement.innerText = val;
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    } else {
+                        counterElement.innerText = target;
+                        counterElement.classList.add('counted');
+                    }
+                };
+                window.requestAnimationFrame(step);
+            }
+        }
+
+        // === 觸發區塊內部動畫 (桌機切換用) ===
         function triggerInternalAnimations(section) {
             // 1. 錯落式上浮動畫
             const staggerItems = section.querySelectorAll('.stagger-item');
@@ -1690,27 +2169,37 @@
             const skillCards = section.querySelectorAll('.skill-card');
             skillCards.forEach(card => {
                 card.classList.add('visible');
-                const counterElement = card.querySelector('.counter');
-                if (counterElement && !counterElement.classList.contains('counted')) {
-                    const target = parseInt(counterElement.getAttribute('data-target'));
-                    const duration = 1500;
-                    let startTimestamp = null;
-                    const step = (timestamp) => {
-                        if (!startTimestamp) startTimestamp = timestamp;
-                        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-                        const val = Math.floor(easeOutQuart * target);
-                        counterElement.innerText = val;
-                        if (progress < 1) {
-                            window.requestAnimationFrame(step);
-                        } else {
-                            counterElement.innerText = target;
-                            counterElement.classList.add('counted');
-                        }
-                    };
-                    window.requestAnimationFrame(step);
-                }
+                animateCounter(card);
             });
+        }
+
+        // === 初始化手機版動畫觀察者 (修正手機數字動畫) ===
+        function initMobileAnimations() {
+            if (!isMobile()) return;
+
+            const observerOptions = {
+                root: null,
+                threshold: 0.2 // 當物件進入畫面 20% 時觸發
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const target = entry.target;
+
+                        // 如果是技能卡片，觸發數字動畫
+                        if (target.classList.contains('skill-card')) {
+                            target.classList.add('visible');
+                            animateCounter(target);
+                            observer.unobserve(target); // 動畫執行過後取消監聽
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            // 監聽所有技能卡片
+            const skillCards = document.querySelectorAll('.skill-card');
+            skillCards.forEach(card => observer.observe(card));
         }
 
         function closeMenuHandler() {
@@ -1793,6 +2282,9 @@
                         el.style.opacity = 1;
                         el.style.transform = 'translateY(0)';
                     });
+
+                    // 啟動手機版 Scroll 監聽 (數字動畫用)
+                    initMobileAnimations();
 
                     if (initialIndex > 0 && hash) {
                         const targetSection = sections[initialIndex];
@@ -1915,7 +2407,11 @@
             const toggleButton = document.getElementById('toggle-portfolio-view');
             const buttonText = document.getElementById('toggle-portfolio-text');
             const buttonIcon = document.getElementById('toggle-portfolio-icon');
-            const scrollerContainer = document.getElementById('portfolio-scroller');
+
+            // 取得輪播容器
+            const scrollerContainerMobile = document.getElementById('portfolio-scroller-mobile');
+            const scrollerContainerDesktop = document.getElementById('portfolio-scroller-desktop');
+
             const gridContainer = document.getElementById('portfolio-grid');
             const filterContainer = document.getElementById('portfolio-filters');
             const body = document.body;
@@ -1927,19 +2423,32 @@
                 const isGridVisible = !gridContainer.classList.contains('hidden');
 
                 if (isGridVisible) {
-                    // 收合：回到視差滾動模式
-                    scrollerContainer.classList.remove('hidden');
+                    // =================================================
+                    // 收合邏輯：回到視差滾動模式 (Fold)
+                    // =================================================
+
+                    // 1. 清除強制隱藏的行內樣式，讓 CSS Class 重新接管
+                    if (scrollerContainerMobile) scrollerContainerMobile.style.display = '';
+                    if (scrollerContainerDesktop) scrollerContainerDesktop.style.display = '';
+
+                    // 2. 重置 Class 以確保響應式行為正確 (手機顯示 Mobile 版，桌機顯示 Desktop 版)
+                    if (scrollerContainerMobile) scrollerContainerMobile.className = 'stagger-item md:hidden';
+                    if (scrollerContainerDesktop) scrollerContainerDesktop.className = 'stagger-item hidden md:block';
+
+                    // 隱藏網格與過濾器
                     gridContainer.classList.add('hidden');
                     filterContainer.classList.add('hidden');
+
+                    // 更新按鈕文字與圖示
                     buttonText.innerText = 'View All Projects';
                     buttonIcon.classList.remove('fa-chevron-up');
                     buttonIcon.classList.add('fa-arrow-right');
 
-                    // 恢復 Immersive Scroll 設定
+                    // 恢復 Immersive Scroll 設定 (鎖定捲動)
                     isPortfolioExpanded = false;
                     body.classList.remove('expanded-view');
 
-                    // 直接定位回 Portfolio 區塊，不使用動畫
+                    // 直接定位回 Portfolio 區塊頂部
                     currentSectionIndex = 3;
                     scroller.scrollTop = sections[3].offsetTop;
 
@@ -1948,32 +2457,41 @@
                     updateNav(3);
 
                 } else {
-                    // 展開：進入正常滾動模式
-                    scrollerContainer.classList.add('hidden');
+                    // =================================================
+                    // 展開邏輯：進入正常滾動模式 (View All)
+                    // =================================================
+
+                    // 修改重點：使用 style.display = 'none' 強制隱藏
+                    // 這會覆蓋掉 CSS 中的 md:block，解決桌機版無法隱藏的問題
+                    if (scrollerContainerMobile) scrollerContainerMobile.style.display = 'none';
+                    if (scrollerContainerDesktop) scrollerContainerDesktop.style.display = 'none';
+
+                    // 顯示網格與過濾器
                     gridContainer.classList.remove('hidden');
                     filterContainer.classList.remove('hidden');
+
+                    // 預設點擊 "All" 過濾器
                     const allFilterButton = document.querySelector('.portfolio-filter-btn[data-filter="all"]');
                     if (allFilterButton) allFilterButton.click();
+
+                    // 更新按鈕文字與圖示
                     buttonText.innerText = 'Fold';
                     buttonIcon.classList.remove('fa-arrow-right');
                     buttonIcon.classList.add('fa-chevron-up');
 
-                    // 啟用 Normal Scroll 設定
+                    // 啟用 Normal Scroll 設定 (允許捲動)
                     isPortfolioExpanded = true;
                     body.classList.add('expanded-view');
 
-                    // 確保目前位置正確 (稍微調整位置以看到內容)
+                    // 確保目前位置正確 (定位到 Portfolio 標題下方)
                     const portfolioSection = document.getElementById('portfolio');
                     if (portfolioSection) {
-                        // 在切換 overflow: auto 後，確保視窗位置在 Portfolio
-                        // 由於 #main-scroller 變成 scrollable，我們需要設定它的 scrollTop
-                        const scroller = document.getElementById('main-scroller');
+                        const mainScroller = document.getElementById('main-scroller');
                         setTimeout(() => {
-                            // 簡單定位到 Portfolio 開始處
-                            scroller.scrollTop = portfolioSection.offsetTop;
+                            mainScroller.scrollTop = portfolioSection.offsetTop;
                         }, 50);
 
-                        // --- 新增：展開時觸發網格內卡片的淡入動畫 (純淡入，無上浮) ---
+                        // 展開時觸發網格內卡片的淡入動畫
                         const gridCards = gridContainer.querySelectorAll('.project-card');
                         gsap.fromTo(gridCards,
                             { opacity: 0 },
@@ -2002,6 +2520,5 @@
         }
     </script>
 </body>
-
 
 </html>
