@@ -171,7 +171,7 @@
 
         /* Custom Hero Background (Using P04 Image) */
         .hero-bg-custom {
-            background-image: url('./img/project_04/hero_img.png');
+            background-image: url('./img/project_04/hero_img.jpg');
             background-size: cover;
             background-position: center;
             position: relative;
@@ -288,15 +288,15 @@
             Lock: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
         };
 
-        const MAIN_IMAGE = './img/project_04/display.png';
+        const MAIN_IMAGE = './img/project_04/display.jpg';
 
         // === PROJECT 04 DATA ===
         const GALLERY_IMAGES = [
-            { id: '01', name: '安全登入', desc: '結合警徽與科技藍綠色調，建立專業且安全的登入入口。', src: './img/project_04/01@2x.png' },
-            { id: '02', name: '智慧導航', desc: '清晰的路徑指引線，輔助員警依循規劃路線精準執勤。', src: './img/project_04/03@2x.png' },
+            { id: '01', name: '安全登入', desc: '結合警徽與科技藍綠色調，建立專業且安全的登入入口。', src: './img/project_04/01@2x.jpg' },
+            { id: '02', name: '智慧導航', desc: '清晰的路徑指引線，輔助員警依循規劃路線精準執勤。', src: './img/project_04/03@2x.jpg' },
             { id: '03', name: '督導地圖', desc: '主管專屬視角，即時掌握轄區內所有巡邏箱狀態與熱點。', src: './img/project_04/03督導首頁.jpg' },
             { id: '04', name: '巡邏簽到', desc: '整合 GPS 定位與停留計時，確保簽到數據真實有效。', src: './img/project_04/04.jpg' },
-            { id: '05', name: '督導稽核', desc: '詳列誤差距離與異常紀錄，落實勤務數據化管理。', src: './img/project_04/04 督導.png' },
+            { id: '05', name: '督導稽核', desc: '詳列誤差距離與異常紀錄，落實勤務數據化管理。', src: './img/project_04/04 督導.jpg' },
             { id: '06', name: '站點資訊', desc: '點擊地圖標記即顯示詳細資料，操作直觀流暢。', src: './img/project_04/05.jpg' },
             { id: '07', name: '發送求救', desc: '緊急狀況一鍵觸發，立即傳送座標與身分資訊。', src: './img/project_04/07.jpg' },
             { id: '08', name: '接收支援', desc: '即時接收鄰近同仁求救訊號，縮短支援反應時間。', src: './img/project_04/08.jpg' }
@@ -367,7 +367,7 @@
                         setActiveGalleryId(null);
                         break;
                     case 'solution':
-                        setCurrentImage('./img/project_04/03@2x.png');
+                        setCurrentImage('./img/project_04/03@2x.jpg');
                         setActiveGalleryId(null);
                         break;
                     case 'climax':
@@ -624,7 +624,7 @@
                                             <div className="space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-6">解決方案與亮點 The Solution</h3>
                                                 <div className="space-y-4">
-                                                    <button onClick={() => setCurrentImage('./img/project_04/03@2x.png')} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0"><Icons.Map /></div><div><h4 className="font-bold text-white text-sm mb-1">視覺化路徑引導</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 在地圖上直接繪製最佳巡邏路線，取代列表式清單，即便是跨區支援也能無縫接軌。</p></div></button>
+                                                    <button onClick={() => setCurrentImage('./img/project_04/03@2x.jpg')} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0"><Icons.Map /></div><div><h4 className="font-bold text-white text-sm mb-1">視覺化路徑引導</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 在地圖上直接繪製最佳巡邏路線，取代列表式清單，即便是跨區支援也能無縫接軌。</p></div></button>
                                                     <button onClick={() => setCurrentImage('./img/project_04/04.jpg')} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-accent shrink-0"><Icons.Shield /></div><div><h4 className="font-bold text-white text-sm mb-1">數位防弊簽到</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 紀錄精確座標與「守望時間」，系統自動檢測誤差距離(如3m)，杜絕遠端作弊。</p></div></button>
                                                     <button onClick={() => setCurrentImage('./img/project_04/07.jpg')} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center text-secondary shrink-0"><Icons.Alert /></div><div><h4 className="font-bold text-white text-sm mb-1">SOS 緊急互助網</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 一鍵發送求救訊號，系統自動通知「最近」的同仁而非僅限同隊，提供精確座標爭取黃金救援時間。</p></div></button>
                                                 </div>
