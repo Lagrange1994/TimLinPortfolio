@@ -162,7 +162,7 @@
 
         /* Hero Background */
         .hero-bg-custom {
-            background-image: url('./img/project_01/hero_img.png');
+            background-image: url('./img/project_01/hero_img.jpg');
             background-size: cover;
             background-position: center;
         }
@@ -282,21 +282,21 @@
         };
 
         const SOLUTION_FEATURES = [
-            { id: 'sol-01', title: '全知視角營運儀表板', desc: '整合 Server 資源、CAM 連線狀態與即時氣象，提供系統健康度的一站式概覽，從被動報修轉為主動預警。', icon: 'Dashboard', image: './img/project_01/home_02.png', benefit: 'Benefit: 讓維運人員一眼掌握系統健康度，主動預警。' },
-            { id: 'sol-02', title: 'GIS 空間邏輯查詢', desc: '獨創「交集/聯集」查詢邏輯，能迅速找出同時出現在多個案發現場的嫌疑車輛，大幅縮短刑偵過濾時間。', icon: 'Map', image: './img/project_01/track_04.png', benefit: 'Benefit: 迅速限縮同時出現在多個犯罪現場的嫌疑車輛。' },
-            { id: 'sol-03', title: '主動式車輛聯防', desc: '建立動態黑名單（失竊/涉案），結合 LPR 技術實現「車過即知」的自動化警示與簡訊推播。', icon: 'Bell', image: './img/project_01/search_03.png', benefit: 'Benefit: 實現「車過即知」的即時打擊能力。' },
-            { id: 'sol-04', title: '戰情中心級 AI 監控', desc: '地圖與影像雙向連動，結合 AI 物件框選（人/車流），實現直覺化的路口即時調閱與戰情指揮。', icon: 'Eye', image: './img/project_01/cam_01.png', benefit: 'Benefit: 直覺化的路口即時調閱與戰情指揮。' },
-            { id: 'sol-05', title: '智慧防災水情監控', desc: '結合 IoT 感測器與監視影像，透過紅/橘/藍分級警示與實景尺標，將抽象水位數據轉化為直觀的決策輔助資訊。', icon: 'Water', image: './img/project_01/flood_02.png', benefit: 'Benefit: 視覺化的實景對照，協助指揮官快速判斷災情等級。' },
-            { id: 'sol-06', title: '軟硬體全域維運', desc: '整合前端 GIS 設備地圖與後端 Server 效能監測，從記憶體負載到磁碟 I/O，提供 IT 人員深度的系統健康診斷工具。', icon: 'Server', image: './img/project_01/performance_02.png', benefit: 'Benefit: 實現從業務操作層到系統維護層的無縫管理。' }
+            { id: 'sol-01', title: '全知視角營運儀表板', desc: '整合 Server 資源、CAM 連線狀態與即時氣象，提供系統健康度的一站式概覽，從被動報修轉為主動預警。', icon: 'Dashboard', image: './img/project_01/home_02.jpg', benefit: 'Benefit: 讓維運人員一眼掌握系統健康度，主動預警。' },
+            { id: 'sol-02', title: 'GIS 空間邏輯查詢', desc: '獨創「交集/聯集」查詢邏輯，能迅速找出同時出現在多個案發現場的嫌疑車輛，大幅縮短刑偵過濾時間。', icon: 'Map', image: './img/project_01/track_04.jpg', benefit: 'Benefit: 迅速限縮同時出現在多個犯罪現場的嫌疑車輛。' },
+            { id: 'sol-03', title: '主動式車輛聯防', desc: '建立動態黑名單（失竊/涉案），結合 LPR 技術實現「車過即知」的自動化警示與簡訊推播。', icon: 'Bell', image: './img/project_01/search_03.jpg', benefit: 'Benefit: 實現「車過即知」的即時打擊能力。' },
+            { id: 'sol-04', title: '戰情中心級 AI 監控', desc: '地圖與影像雙向連動，結合 AI 物件框選（人/車流），實現直覺化的路口即時調閱與戰情指揮。', icon: 'Eye', image: './img/project_01/cam_01.jpg', benefit: 'Benefit: 直覺化的路口即時調閱與戰情指揮。' },
+            { id: 'sol-05', title: '智慧防災水情監控', desc: '結合 IoT 感測器與監視影像，透過紅/橘/藍分級警示與實景尺標，將抽象水位數據轉化為直觀的決策輔助資訊。', icon: 'Water', image: './img/project_01/flood_02.jpg', benefit: 'Benefit: 視覺化的實景對照，協助指揮官快速判斷災情等級。' },
+            { id: 'sol-06', title: '軟硬體全域維運', desc: '整合前端 GIS 設備地圖與後端 Server 效能監測，從記憶體負載到磁碟 I/O，提供 IT 人員深度的系統健康診斷工具。', icon: 'Server', image: './img/project_01/performance_02.jpg', benefit: 'Benefit: 實現從業務操作層到系統維護層的無縫管理。' }
         ];
 
         const GALLERY_CATEGORIES = [
-            { id: 'cat_home', title: '登入與首頁', images: [{ id: '01-01', name: '系統登入介面', src: './img/project_01/home_01.png' }, { id: '01-02', name: '營運儀表板首頁', src: './img/project_01/home_02.png' }] },
-            { id: 'cat_trajectory', title: '行車軌跡查詢', images: [{ id: '02-01', name: '單車軌跡搜尋', src: './img/project_01/track_01.png' }, { id: '02-02', name: '多車軌跡比對', src: './img/project_01/track_02.png' }, { id: '02-03', name: '交集邏輯分析', src: './img/project_01/track_03.png' }, { id: '02-04', name: '聯集範圍搜尋', src: './img/project_01/track_04.png' }] },
-            { id: 'cat_alerts', title: '尋車通報', images: [{ id: '03-01', name: '尋車通報列表', src: './img/project_01/search_01.png' }, { id: '03-02', name: '系統自動比對警示', src: './img/project_01/search_02.png' }, { id: '03-03', name: '已登記車牌查詢', src: './img/project_01/search_03.png' }, { id: '03-04', name: '多管道通知設定', src: './img/project_01/search_04.png' }] },
-            { id: 'cat_surveillance', title: '監視影像', images: [{ id: '04-01', name: 'GIS 地圖影像模式', src: './img/project_01/cam_01.png' }, { id: '04-02', name: '設備狀態(正常)', src: './img/project_01/cam_02.png' }, { id: '04-03', name: '設備狀態(異常)', src: './img/project_01/cam_03.png' }, { id: '04-04', name: '多分割即時調閱', src: './img/project_01/cam_04.png' }, { id: '04-05', name: '單一畫面 AI 辨識', src: './img/project_01/cam_05.png' }, { id: '04-06', name: '影像物件框選', src: './img/project_01/cam_06.png' }] },
-            { id: 'cat_flood', title: '積淹水管理', images: [{ id: '05-01', name: '水情資訊儀表板', src: './img/project_01/flood_01.png' }, { id: '05-02', name: '實景尺標告警設定', src: './img/project_01/flood_02.png' }] },
-            { id: 'cat_performance', title: '設備與效能', images: [{ id: '06-01', name: 'GIS 設備地圖管理', src: './img/project_01/performance_01.png' }, { id: '06-02', name: '伺服器效能監測報表', src: './img/project_01/performance_02.png' }] }
+            { id: 'cat_home', title: '登入與首頁', images: [{ id: '01-01', name: '系統登入介面', src: './img/project_01/home_01.jpg' }, { id: '01-02', name: '營運儀表板首頁', src: './img/project_01/home_02.jpg' }] },
+            { id: 'cat_trajectory', title: '行車軌跡查詢', images: [{ id: '02-01', name: '單車軌跡搜尋', src: './img/project_01/track_01.jpg' }, { id: '02-02', name: '多車軌跡比對', src: './img/project_01/track_02.jpg' }, { id: '02-03', name: '交集邏輯分析', src: './img/project_01/track_03.jpg' }, { id: '02-04', name: '聯集範圍搜尋', src: './img/project_01/track_04.jpg' }] },
+            { id: 'cat_alerts', title: '尋車通報', images: [{ id: '03-01', name: '尋車通報列表', src: './img/project_01/search_01.jpg' }, { id: '03-02', name: '系統自動比對警示', src: './img/project_01/search_02.jpg' }, { id: '03-03', name: '已登記車牌查詢', src: './img/project_01/search_03.jpg' }, { id: '03-04', name: '多管道通知設定', src: './img/project_01/search_04.jpg' }] },
+            { id: 'cat_surveillance', title: '監視影像', images: [{ id: '04-01', name: 'GIS 地圖影像模式', src: './img/project_01/cam_01.jpg' }, { id: '04-02', name: '設備狀態(正常)', src: './img/project_01/cam_02.jpg' }, { id: '04-03', name: '設備狀態(異常)', src: './img/project_01/cam_03.jpg' }, { id: '04-04', name: '多分割即時調閱', src: './img/project_01/cam_04.jpg' }, { id: '04-05', name: '單一畫面 AI 辨識', src: './img/project_01/cam_05.jpg' }, { id: '04-06', name: '影像物件框選', src: './img/project_01/cam_06.jpg' }] },
+            { id: 'cat_flood', title: '積淹水管理', images: [{ id: '05-01', name: '水情資訊儀表板', src: './img/project_01/flood_01.jpg' }, { id: '05-02', name: '實景尺標告警設定', src: './img/project_01/flood_02.jpg' }] },
+            { id: 'cat_performance', title: '設備與效能', images: [{ id: '06-01', name: 'GIS 設備地圖管理', src: './img/project_01/performance_01.jpg' }, { id: '06-02', name: '伺服器效能監測報表', src: './img/project_01/performance_02.jpg' }] }
         ];
 
         const App = () => {
@@ -329,12 +329,12 @@
             useEffect(() => {
                 switch (activeTab) {
                     case 'context':
-                        setCurrentImage('./img/project_01/display.png');
+                        setCurrentImage('./img/project_01/display.jpg');
                         setActiveGalleryId(null);
                         setActiveSolutionId(null);
                         break;
                     case 'process':
-                        setCurrentImage('./img/project_01/display.png');
+                        setCurrentImage('./img/project_01/display.jpg');
                         setActiveGalleryId(null);
                         setActiveSolutionId(null);
                         break;
@@ -350,7 +350,7 @@
                         setActiveSolutionId(null);
                         break;
                     default:
-                        setCurrentImage('./img/project_01/display.png');
+                        setCurrentImage('./img/project_01/display.jpg');
                         setActiveGalleryId(null);
                 }
             }, [activeTab]);
