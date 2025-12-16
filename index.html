@@ -612,6 +612,91 @@
                 transform: translateX(0%);
             }
         }
+
+        /* ================================
+   Section Header Component (Refined)
+   ================================ */
+
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        /* 標題本體 */
+        .section-header h2 {
+            font-family: 'Momo Trust Display', 'Noto Sans TC', sans-serif;
+            font-weight: 700;
+            line-height: 1.1;
+            position: relative;
+        }
+
+        /* ===== Mobile：置中 ===== */
+        .section-header {
+            text-align: center;
+        }
+
+        /* Mobile horizontal line (below title) */
+        .section-header::after {
+            content: "";
+            display: block;
+            width: 5rem;
+            height: 4px;
+            margin: 1rem auto 0 auto;
+            background: linear-gradient(to right, #6C63FF, #FF6584);
+            border-radius: 2px;
+        }
+
+
+        /* ===== Desktop：靠左 + 精準垂直線 ===== */
+        @media (min-width: 768px) {
+
+            .section-header {
+                text-align: left;
+                /* baseline grid */
+                position: relative;
+            }
+
+            /* 移除 mobile 橫線 */
+            .section-header::before {
+                display: none;
+            }
+
+            .section-header h2 {
+                font-size: clamp(2.5rem, 3vw, 3.5rem);
+            }
+
+            /* 垂直裝飾線：只跟文字高度 */
+            .section-header h2::before {
+                content: "";
+                position: absolute;
+                left: -1.5rem;
+                top: 0.05em;
+                width: 4px;
+                height: 1em;
+                /* 關鍵：只吃文字高度 */
+                background: linear-gradient(to bottom, #6C63FF, #FF6584);
+                border-radius: 2px;
+
+                transform-origin: top;
+                transform: scaleY(0);
+                /* 動畫初始狀態 */
+            }
+        }
+
+        /* Desktop: horizontal line align left */
+        @media (min-width: 768px) {
+            .section-header::after {
+                margin-left: 0;
+                margin-right: 0;
+            }
+        }
+
+
+        /* ===== Mobile 字級 ===== */
+        @media (max-width: 767px) {
+            .section-header h2 {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 
@@ -707,11 +792,12 @@
 
         <section id="about" class="snap-section bg-dark-light md:flex md:items-center">
             <div class="container max-w-7xl mx-auto px-8 w-full">
-                <div class="text-center mb-10 stagger-item">
-                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-heading">About <span
-                            class="gradient-text font-heading">Me</span></h2>
-                    <div class="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto"></div>
+                <div class="section-header stagger-item">
+                    <h2>
+                        About <span class="gradient-text">Me</span>
+                    </h2>
                 </div>
+
 
                 <div
                     class="relative w-full bg-[#1E1E1E] rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl fade-in flex flex-col md:block">
@@ -797,13 +883,15 @@
 
         <section id="skills" class="snap-section md:flex md:items-center">
             <div class="container max-w-7xl mx-auto px-8">
-                <div class="text-center mb-10 stagger-item">
-                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-heading">My <span
-                            class="gradient-text font-heading">Skills</span></h2>
-                    <div class="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto"></div>
+                <div class="section-header stagger-item">
+                    <h2>
+                        My <span class="gradient-text">Skills</span>
+                    </h2>
                 </div>
+
                 <div class="mb-12">
-                    <h3 class="text-lg md:text-2xl font-bold mb-8 text-center font-heading stagger-item">Design &
+                    <h3 class="text-lg md:text-2xl font-bold mb-8 lg:text-left text-center font-heading stagger-item">
+                        Design &
                         Development Skills</h3>
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
                         <div class="skill-card stagger-item">
@@ -950,11 +1038,12 @@
 
         <section id="portfolio" class="snap-section bg-dark-light md:flex md:items-center">
             <div class="container max-w-7xl mx-auto px-8">
-                <div class="text-center mb-10 stagger-item">
-                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-heading">My <span
-                            class="gradient-text font-heading">Portfolio</span></h2>
-                    <div class="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto mb-6"></div>
+                <div class="section-header stagger-item">
+                    <h2>
+                        My <span class="gradient-text">Portfolio</span>
+                    </h2>
                 </div>
+
 
                 <div id="portfolio-scroller-mobile" class="stagger-item md:hidden">
                     <div class="scroller mb-2">
@@ -1867,14 +1956,18 @@
         <div id="contact" class="snap-section snap-section-last flex flex-col">
             <section class="flex-grow py-20 flex items-center">
                 <div class="container max-w-7xl mx-auto px-8 w-full">
-                    <div class="text-center mb-10 stagger-item">
-                        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 font-heading">Contact <span
-                                class="gradient-text font-heading">Me</span></h2>
-                        <div class="w-24 h-1 bg-gradient-to-r from-primary to-secondary mx-auto mb-6"></div>
-                        <p class="text-xs md:text-base text-gray-200 max-w-2xl mx-auto">
-                            有專案合作需求？歡迎隨時與我聯繫。
-                        </p>
+                    <div class="section-header stagger-item">
+                        <h2>
+                            Contact <span class="gradient-text">Me</span>
+                        </h2>
                     </div>
+
+                    <div>
+                        <h3
+                            class="text-lg md:text-2xl font-bold mb-8 lg:text-left text-center font-heading stagger-item">
+                            有專案合作需求？歡迎隨時與我聯繫</h3>
+                    </div>
+
                     <div class="flex flex-col gap-12 items-center">
                         <div class="w-full">
                             <div class="card p-8 rounded-lg h-full stagger-item">
@@ -2057,6 +2150,8 @@
                 }
             }, "-=1.0");
         }
+
+
 
         // === 監聽滑鼠滾輪事件 (僅限桌機) ===
         window.addEventListener('wheel', (e) => {
