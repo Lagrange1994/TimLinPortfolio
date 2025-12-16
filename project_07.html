@@ -321,12 +321,12 @@
             { id: '04', name: '街頭藝人申請', src: './img/project_07/石門水庫6觀光服務 6.3.6街頭藝人申請0822.jpg', desc: '場地位置以氣泡地圖呈現' }
         ];
 
-        const HERO_IMAGE_SRC = './img/project_07/hero_img.png';
+        const HERO_IMAGE_SRC = './img/project_07/hero_img.jpg';
 
         const App = () => {
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('request');
-            const [currentImage, setCurrentImage] = useState('./img/project_07/display.png');
+            const [currentImage, setCurrentImage] = useState('./img/project_07/display.jpg');
             const [activeGalleryId, setActiveGalleryId] = useState(null);
             const [activeFeatureId, setActiveFeatureId] = useState(null);
             const [imgError, setImgError] = useState(false);
@@ -361,7 +361,7 @@
                 switch (activeTab) {
                     case 'request':
                     case 'process':
-                        setCurrentImage('./img/project_07/display.png');
+                        setCurrentImage('./img/project_07/display.jpg');
                         setActiveGalleryId(null);
                         setActiveFeatureId(null);
                         break;
@@ -376,7 +376,7 @@
                         setActiveFeatureId(null);
                         break;
                     default:
-                        setCurrentImage('./img/project_07/display.png');
+                        setCurrentImage('./img/project_07/display.jpg');
                 }
 
                 // 切換 Tab 時，若有需要可選擇重置內容捲動 (選擇性)
