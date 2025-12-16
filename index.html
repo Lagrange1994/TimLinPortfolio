@@ -388,17 +388,83 @@
             max-width: 100%;
         }
 
+        /* =========================================
+           NavBar 樣式修復 (回到截圖樣式)
+           ========================================= */
         .nav-link {
+            /* 1. 核心排版：保留原始設定，不加 display: block/flex */
             position: relative;
             transition: all 0.3s ease;
             z-index: 10;
             padding: 0.5rem 1rem;
             border-radius: 9999px;
+            /* 膠囊形狀 */
+            cursor: pointer;
+
+            /* 2. 外觀修復：強制覆蓋 <a> 標籤的預設藍色與底線 */
+            text-decoration: none !important;
+            color: rgba(255, 255, 255, 0.7) !important;
+            /* 未選取時：灰白色 */
+
+            /* 3. 重要：確保不會被瀏覽器預設樣式撐開 */
+            line-height: 1.5;
+            border: none;
+            background: transparent;
+        }
+
+        /* 選取狀態 (Active) / 滑鼠懸停 (Hover) */
+        .nav-link.active,
+        .nav-link:hover {
+            color: #ffffff !important;
+            /* 選取時：亮白色 */
+        }
+
+        /* 鍵盤 Tab 鍵選取時的樣式 (保留鍵盤功能) */
+        .nav-link:focus-visible {
+            outline: none;
+            /* 移除預設黑框 */
+            background: rgba(255, 255, 255, 0.1);
+            /* 給一個淡淡的背景提示 */
+            color: #ffffff !important;
+        }
+
+        /* 手機版選單樣式 (獨立分開，互不影響) */
+        .mobile-nav-link {
+            display: block;
+            /* 手機版需要垂直佔滿一行 */
+            color: #ffffff !important;
+            text-decoration: none !important;
             cursor: pointer;
         }
 
-        .nav-link.active {
-            color: #fff;
+        .mobile-nav-link:focus-visible {
+            outline: 2px solid #6C63FF;
+        }
+
+        /* 手機版連結 (獨立設定，確保不影響桌機) */
+        .mobile-nav-link {
+            color: #fff !important;
+            text-decoration: none !important;
+            display: block;
+            /* 手機版才需要 block */
+        }
+
+        /* === 導航連結 (手機版) === */
+        .mobile-nav-link {
+            /* 強制修正樣式 */
+            color: #ffffff !important;
+            text-decoration: none !important;
+            cursor: pointer;
+            display: block;
+            outline: none;
+        }
+
+        .mobile-nav-link:focus-visible {
+            outline: 2px solid #6C63FF;
+            outline-offset: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            /* 鍵盤選到時加一點背景色 */
+            border-radius: 8px;
         }
 
         #nav-hover-bg {
@@ -714,11 +780,12 @@
 
             <nav class="hidden md:flex space-x-2 relative">
                 <span id="nav-hover-bg"></span>
-                <a onclick="scrollToSection(0)" class="nav-link active" data-index="0">Home</a>
-                <a onclick="scrollToSection(1)" class="nav-link" data-index="1">About</a>
-                <a onclick="scrollToSection(2)" class="nav-link" data-index="2">Skills</a>
-                <a onclick="scrollToSection(3)" class="nav-link" data-index="3">Portfolio</a>
-                <a onclick="scrollToSection(4)" class="nav-link" data-index="4">Contact Me</a>
+                <a href="javascript:void(0)" onclick="scrollToSection(0)" class="nav-link active"
+                    data-index="0">Home</a>
+                <a href="javascript:void(0)" onclick="scrollToSection(1)" class="nav-link" data-index="1">About</a>
+                <a href="javascript:void(0)" onclick="scrollToSection(2)" class="nav-link" data-index="2">Skills</a>
+                <a href="javascript:void(0)" onclick="scrollToSection(3)" class="nav-link" data-index="3">Portfolio</a>
+                <a href="javascript:void(0)" onclick="scrollToSection(4)" class="nav-link" data-index="4">Contact Me</a>
             </nav>
 
             <button id="menu-toggle" class="md:hidden text-white focus:outline-none">
@@ -2615,6 +2682,46 @@
             closeMenu.addEventListener('click', closeMenuHandler);
             menuOverlay.addEventListener('click', closeMenuHandler);
         }
+
+        // === 新增：鍵盤導航控制 ===
+        window.addEventListener('keydown', (e) => {
+            // 1. 如果是手機版、正在捲動中、或是作品集展開模式，則使用預設行為 (不攔截)
+            if (isMobile() || isScrolling || isPortfolioExpanded) return;
+
+            switch (e.key) {
+                case 'ArrowDown':
+                case 'PageDown':
+                    // 防止網頁預設捲動
+                    e.preventDefault();
+                    scrollToSection(currentSectionIndex + 1);
+                    break;
+
+                case 'ArrowUp':
+                case 'PageUp':
+                    e.preventDefault();
+                    scrollToSection(currentSectionIndex - 1);
+                    break;
+
+                case 'Home':
+                    e.preventDefault();
+                    scrollToSection(0); // 回到頂部
+                    break;
+
+                case 'End':
+                    e.preventDefault();
+                    scrollToSection(totalSections - 1); // 跳到底部
+                    break;
+
+                case ' ': // 空白鍵 (Space)
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        scrollToSection(currentSectionIndex - 1); // Shift + Space 往上
+                    } else {
+                        scrollToSection(currentSectionIndex + 1); // Space 往下
+                    }
+                    break;
+            }
+        });
     </script>
 </body>
 
