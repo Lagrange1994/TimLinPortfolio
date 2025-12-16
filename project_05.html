@@ -174,7 +174,7 @@
 
         /* Custom Hero Background */
         .hero-bg-custom {
-            background-image: url('./img/project_05/hero_img.png');
+            background-image: url('./img/project_05/hero_img.jpg');
             background-size: cover;
             background-position: center;
             position: relative;
@@ -312,12 +312,12 @@
                 title: '行動應用程式 (App)',
                 type: 'app',
                 images: [
-                    { id: 'app-01', name: '登入頁面', src: './img/project_05/竹市動物園_APP(內部)_登入頁.png' },
-                    { id: 'app-02', name: '行動首頁', src: './img/project_05/竹市動物園_APP(內部)_首頁.png' },
-                    { id: 'app-03', name: '園區即時資訊', src: './img/project_05/竹市動物園_APP(內部)_園區即時資訊.png' },
-                    { id: 'app-04', name: '緊急協助通報', src: './img/project_05/竹市動物園_APP(內部)_緊急協助通報.png' },
-                    { id: 'app-05', name: '行動行事曆', src: './img/project_05/竹市動物園_APP(內部)_行事曆.png' },
-                    { id: 'app-06', name: '行動知識庫', src: './img/project_05/竹市動物園_APP(內部)_知識庫.png' }
+                    { id: 'app-01', name: '登入頁面', src: './img/project_05/竹市動物園_APP(內部)_登入頁.jpg' },
+                    { id: 'app-02', name: '行動首頁', src: './img/project_05/竹市動物園_APP(內部)_首頁.jpg' },
+                    { id: 'app-03', name: '園區即時資訊', src: './img/project_05/竹市動物園_APP(內部)_園區即時資訊.jpg' },
+                    { id: 'app-04', name: '緊急協助通報', src: './img/project_05/竹市動物園_APP(內部)_緊急協助通報.jpg' },
+                    { id: 'app-05', name: '行動行事曆', src: './img/project_05/竹市動物園_APP(內部)_行事曆.jpg' },
+                    { id: 'app-06', name: '行動知識庫', src: './img/project_05/竹市動物園_APP(內部)_知識庫.jpg' }
                 ]
             }
         ];
@@ -364,14 +364,14 @@
                 setActiveFeatureId(null);
                 switch (activeTab) {
                     case 'context':
-                        updateImageDisplay('./img/project_05/display.png', null, 'web');
+                        updateImageDisplay('./img/project_05/display.jpg', null, 'web');
                         break;
                     case 'process':
                         updateImageDisplay('./img/project_05/竹市動物園_後台_首頁.jpg', 'web-feat-01', 'web');
                         setActiveFeatureId('web-feat-01');
                         break;
                     case 'solution':
-                        updateImageDisplay('./img/project_05/竹市動物園_APP(內部)_緊急協助通報.png', 'app-feat-01', 'app');
+                        updateImageDisplay('./img/project_05/竹市動物園_APP(內部)_緊急協助通報.jpg', 'app-feat-01', 'app');
                         setActiveFeatureId('app-feat-01');
                         break;
                     case 'climax':
@@ -860,7 +860,7 @@
                                                 <div className="space-y-4">
                                                     {/* Clickable Card 1 */}
                                                     <button
-                                                        onClick={() => handleFeatureClick('./img/project_05/竹市動物園_APP(內部)_緊急協助通報.png', 'app-feat-01', 'app')}
+                                                        onClick={() => handleFeatureClick('./img/project_05/竹市動物園_APP(內部)_緊急協助通報.jpg', 'app-feat-01', 'app')}
                                                         className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'app-feat-01' ? 'border-secondary bg-white/10 shadow-[0_0_15px_rgba(255,150,113,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
                                                     >
                                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === 'app-feat-01' ? 'bg-secondary text-dark' : 'bg-gradient-to-br from-secondary/20 to-secondary/5 text-secondary'}`}>
@@ -876,7 +876,7 @@
 
                                                     {/* Clickable Card 2 */}
                                                     <button
-                                                        onClick={() => handleFeatureClick('./img/project_05/竹市動物園_APP(內部)_園區即時資訊.png', 'app-feat-02', 'app')}
+                                                        onClick={() => handleFeatureClick('./img/project_05/竹市動物園_APP(內部)_園區即時資訊.jpg', 'app-feat-02', 'app')}
                                                         className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'app-feat-02' ? 'border-accent bg-white/10 shadow-[0_0_15px_rgba(255,199,95,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
                                                     >
                                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === 'app-feat-02' ? 'bg-accent text-dark' : 'bg-gradient-to-br from-accent/20 to-accent/5 text-accent'}`}>
@@ -892,7 +892,7 @@
 
                                                     {/* Clickable Card 3 */}
                                                     <button
-                                                        onClick={() => handleFeatureClick('./img/project_05/竹市動物園_APP(內部)_首頁.png', 'app-feat-03', 'app')}
+                                                        onClick={() => handleFeatureClick('./img/project_05/竹市動物園_APP(內部)_首頁.jpg', 'app-feat-03', 'app')}
                                                         className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === 'app-feat-03' ? 'border-primary bg-white/10 shadow-[0_0_15px_rgba(134,194,50,0.2)]' : 'border-white/10 hover:bg-white/5'}`}
                                                     >
                                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === 'app-feat-03' ? 'bg-primary text-dark' : 'bg-gradient-to-br from-primary/20 to-primary/5 text-primary'}`}>
