@@ -41,6 +41,9 @@
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
                         heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
                     },
+                    animation: {
+                        pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
                 }
             }
         }
@@ -58,9 +61,7 @@
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
             overflow: hidden;
-            /* 防止 Body 原生滾動 */
             overscroll-behavior: none;
-            /* 防止 Safari 彈跳 */
         }
 
         /* === 主捲動容器 === */
@@ -134,7 +135,7 @@
             background: #00A8E8;
         }
 
-        /* === 內容滾動區域 (手機版關鍵) === */
+        /* === 內容滾動區域 === */
         .scroll-content {
             overflow-y: auto !important;
             touch-action: pan-y !important;
@@ -280,15 +281,52 @@
         const { useState, useEffect, useRef } = React;
 
         // --- HELPER COMPONENT: Responsive Image (WebP Support) ---
-        const ResponsiveImage = ({ src, className, alt, style, ...props }) => {
+        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
 
             return (
                 <picture style={{ display: 'contents' }}>
                     <source srcSet={webpSrc} type="image/webp" />
-                    <img src={src} className={className} alt={alt} style={style} {...props} />
+                    <img
+                        src={src}
+                        className={className}
+                        alt={alt}
+                        style={style}
+                        onLoad={onLoad}
+                        {...props}
+                    />
                 </picture>
+            );
+        };
+
+        // --- NEW COMPONENT: Image with Skeleton Loading ---
+        const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
+            const [loaded, setLoaded] = useState(false);
+
+            // Reset loaded state when src changes
+            useEffect(() => {
+                setLoaded(false);
+            }, [src]);
+
+            return (
+                <div className={`relative ${containerClassName || 'w-full h-full'}`}>
+                    {/* Skeleton Loader */}
+                    {!loaded && (
+                        <div className="absolute inset-0 bg-dark-lighter/50 animate-pulse rounded-lg z-10 flex items-center justify-center">
+                            <i className="fas fa-image text-white/10 text-3xl"></i>
+                        </div>
+                    )}
+
+                    {/* Actual Image */}
+                    <ResponsiveImage
+                        src={src}
+                        alt={alt}
+                        className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+                        onLoad={() => setLoaded(true)}
+                        {...props}
+                    />
+                </div>
             );
         };
 
@@ -333,32 +371,23 @@
             const heroRef = useRef(null);
             const splitRef = useRef(null);
 
-            // === 圖片預載邏輯 (取代舊的 setTimeout) ===
+            // === 調整後的 Loading 邏輯 ===
             useEffect(() => {
-                // 1. 收集所有需要預載的圖片路徑
-                const imagesToLoad = [
-                    './img/project_03/hero_img.jpg',
-                    './img/project_03/display.jpg',
-                    ...SOLUTION_FEATURES.map(s => s.image),
-                    ...GALLERY_CATEGORIES.flatMap(c => c.images.map(i => i.src))
-                ];
+                // 1. 只監聽 Hero 圖片的載入
+                const heroImagePromise = new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = './img/project_03/hero_img.jpg';
+                    img.onload = () => resolve('hero loaded');
+                    img.onerror = () => resolve('hero error'); // 失敗也讓它過，避免卡死
+                });
 
-                // 2. 定義單張圖片載入的 Promise
-                const loadImage = (url) => {
-                    return new Promise((resolve, reject) => {
-                        const img = new Image();
-                        img.src = url;
-                        // 載入成功或失敗都 resolve，避免因為一張圖壞掉導致全站卡在 loading
-                        img.onload = () => resolve(url);
-                        img.onerror = () => resolve(url);
-                    });
-                };
+                // 2. 至少等待 1.0 秒
+                const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
 
-                // 3. 等待所有圖片載入完成
-                Promise.all(imagesToLoad.map(loadImage))
+                // 3. 兩者都完成後，解除 Loading
+                Promise.all([heroImagePromise, timerPromise])
                     .then(() => {
-                        // 圖片都載入後，給予 500ms 的緩衝讓動畫平滑淡出
-                        setTimeout(() => setLoading(false), 500);
+                        setLoading(false);
                     });
             }, []);
 
@@ -457,11 +486,9 @@
                     const { scrollTop, scrollHeight, clientHeight } = contentEl;
 
                     if (e.deltaY < 0 && scrollTop <= 0) {
-                        // Reached top of content, BUT UPWARD SCROLL IS LOCKED
-                        return; // Do nothing
+                        return; // Locked scroll up
                     }
                     if (scrollHeight > clientHeight) {
-                        // Allow internal scrolling if content overflows
                         return;
                     }
                 }
@@ -469,12 +496,11 @@
                 if (isScrollingRef.current) return;
 
                 if (e.deltaY > 0) {
-                    // Scroll DOWN -> Allowed
                     if (currentSectionIndex < sectionsRef.current.length - 1) {
                         scrollToSection(currentSectionIndex + 1);
                     }
                 } else {
-                    // Scroll UP -> Locked
+                    // Locked scroll up
                 }
             };
 
@@ -495,7 +521,7 @@
 
                 if (Math.abs(diff) > 50) {
                     if (diff > 0) {
-                        // Swipe Up (Scroll Down) -> Allowed
+                        // Swipe Up (Scroll Down)
                         if (isSplitView && isInsideContent) {
                             const { scrollTop, scrollHeight, clientHeight } = contentEl;
                             if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) {
@@ -507,7 +533,7 @@
                             scrollToSection(currentSectionIndex + 1);
                         }
                     } else {
-                        // Swipe Down (Scroll Up) -> Locked
+                        // Locked Swipe Down
                     }
                 }
             };
@@ -618,11 +644,12 @@
                                             </div>
                                         )}
                                         <div className="relative overflow-hidden bg-white/5 group h-full">
-                                            {/* UPDATED: Using ResponsiveImage instead of img */}
-                                            <ResponsiveImage
+                                            {/* UPDATED: Using ImageWithSkeleton for Skeleton Loading Effect */}
+                                            <ImageWithSkeleton
                                                 src={currentImage}
                                                 alt="Preview"
-                                                className="w-full h-full object-contain transition-opacity duration-500"
+                                                className="w-full h-full object-contain"
+                                                containerClassName="w-full h-full"
                                             />
                                         </div>
                                     </div>
