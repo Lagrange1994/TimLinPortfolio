@@ -63,6 +63,21 @@
             overscroll-behavior: none;
         }
 
+        /* === Skeleton Shimmer Effect (新增) === */
+        /* 取代原本的 pulse-bg */
+        .skeleton {
+            background: #1e293b;
+            background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position-x: -200%;
+            }
+        }
+
         /* === 主捲動容器 === */
         #main-scroller {
             width: 100vw;
@@ -321,7 +336,7 @@
             );
         };
 
-        // --- NEW COMPONENT: Image with Skeleton Loading ---
+        // --- NEW COMPONENT: Image with Skeleton Loading (UPDATED WITH SHIMMER) ---
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
 
@@ -332,7 +347,8 @@
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
                     {!loaded && (
-                        <div className="absolute inset-0 bg-dark-lighter/50 animate-pulse rounded-lg z-10 flex items-center justify-center pointer-events-none">
+                        // 使用新的 skeleton class，取代原本的 bg-dark-lighter/50 animate-pulse
+                        <div className="absolute inset-0 skeleton rounded-lg z-10 flex items-center justify-center pointer-events-none">
                             <i className="fas fa-image text-white/10 text-3xl"></i>
                         </div>
                     )}
