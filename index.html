@@ -2116,56 +2116,46 @@
     </button>
 
     <script>
-        // === 全域變數：控制捲動狀態 ===
+        // === 全域變數 ===
         let currentSectionIndex = 0;
         let isScrolling = false;
-        let isPortfolioExpanded = false; // 新增：狀態變數
+        let isPortfolioExpanded = false;
         const sections = document.querySelectorAll('.snap-section');
         const totalSections = sections.length;
         const scroller = document.getElementById('main-scroller');
 
-        // 判斷是否為手機模式 (< 768px)
+        // 判斷是否為手機模式
         const isMobile = () => window.innerWidth < 768;
 
-        // === 核心功能：捲動邏輯 (區分手機/桌機) ===
+        // === 核心功能：捲動邏輯 ===
         function scrollToSection(index) {
-            // 如果是手機模式，使用原生捲動
             if (isMobile()) {
                 const targetSection = sections[index];
                 if (targetSection) {
                     const headerOffset = 80;
                     const elementPosition = targetSection.getBoundingClientRect().top;
                     const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-                    window.scrollTo({
-                        top: offsetPosition,
-                        behavior: "smooth"
-                    });
+                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                 }
                 closeMenuHandler();
                 return;
             }
 
-            // 如果在展開模式下被觸發導航 (例如點選 Nav Link)
-            // 先收合 Portfolio，再進行導航
+            // 如果在展開模式下切換頁面，先收合再移動
             if (isPortfolioExpanded) {
-                // 手動觸發收合邏輯
                 const toggleButton = document.getElementById('toggle-portfolio-view');
                 if (toggleButton) toggleButton.click();
-
-                // 稍微延遲以等待收合開始，然後導航
                 setTimeout(() => scrollToSection(index), 300);
                 return;
             }
 
-            // --- 桌機版 GSAP 動畫邏輯 ---
             if (index < 0 || index >= totalSections || isScrolling) return;
 
             isScrolling = true;
             const targetSection = sections[index];
             const currentSection = sections[currentSectionIndex];
 
-            // 更新網址 Hash 與 sessionStorage (確保重新整理後停留在同一頁)
+            // 更新網址與 Session
             const targetId = targetSection.id;
             if (targetId) {
                 history.replaceState(null, null, `#${targetId}`);
@@ -2183,25 +2173,13 @@
                     }
                     targetSection.classList.add('active-section');
 
-                    const backToTopBtn = document.getElementById('back-to-top');
-                    if (index > 0) {
-                        backToTopBtn.classList.remove('opacity-0', 'invisible');
-                        backToTopBtn.classList.add('opacity-100', 'visible');
-                    } else {
-                        backToTopBtn.classList.add('opacity-0', 'invisible');
-                        backToTopBtn.classList.remove('opacity-100', 'visible');
-                    }
-
+                    toggleBackToTop(index > 0);
                     triggerInternalAnimations(targetSection);
                 }
             });
 
             if (currentSectionIndex !== index) {
-                tl.to(currentSection, {
-                    opacity: 0,
-                    duration: 0.8,
-                    ease: "power2.out"
-                });
+                tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
             }
 
             tl.to(scroller, {
@@ -2220,308 +2198,235 @@
             }, "-=1.0");
         }
 
-
-
-        // === 監聽滑鼠滾輪事件 (僅限桌機) ===
-        window.addEventListener('wheel', (e) => {
-            if (isMobile() || isScrolling || isPortfolioExpanded) return; // 展開模式下忽略
-
-            if (e.deltaY > 0) {
-                scrollToSection(currentSectionIndex + 1);
+        function toggleBackToTop(show) {
+            const btn = document.getElementById('back-to-top');
+            if (show) {
+                btn.classList.remove('opacity-0', 'invisible');
+                btn.classList.add('opacity-100', 'visible');
             } else {
-                scrollToSection(currentSectionIndex - 1);
+                btn.classList.add('opacity-0', 'invisible');
+                btn.classList.remove('opacity-100', 'visible');
             }
+        }
+
+        // === 監聽事件 ===
+        window.addEventListener('wheel', (e) => {
+            if (isMobile() || isScrolling || isPortfolioExpanded) return;
+            if (e.deltaY > 0) scrollToSection(currentSectionIndex + 1);
+            else scrollToSection(currentSectionIndex - 1);
         }, { passive: true });
 
-        // === 監聽觸控事件 ===
         let touchStartY = 0;
-        window.addEventListener('touchstart', (e) => {
-            touchStartY = e.touches[0].clientY;
-        }, { passive: true });
-
+        window.addEventListener('touchstart', (e) => touchStartY = e.touches[0].clientY, { passive: true });
         window.addEventListener('touchend', (e) => {
-            if (isMobile() || isScrolling || isPortfolioExpanded) return; // 展開模式下忽略
-            const touchEndY = e.changedTouches[0].clientY;
-            const diff = touchStartY - touchEndY;
-
+            if (isMobile() || isScrolling || isPortfolioExpanded) return;
+            const diff = touchStartY - e.changedTouches[0].clientY;
             if (Math.abs(diff) > 50) {
-                if (diff > 0) {
-                    scrollToSection(currentSectionIndex + 1);
-                } else {
-                    scrollToSection(currentSectionIndex - 1);
-                }
+                if (diff > 0) scrollToSection(currentSectionIndex + 1);
+                else scrollToSection(currentSectionIndex - 1);
             }
         }, { passive: true });
 
-
-        // === 更新導航列狀態 ===
         function updateNav(index) {
             const navLinks = document.querySelectorAll('.nav-link');
             const mobileLinks = document.querySelectorAll('.mobile-nav-link');
             const hoverBg = document.getElementById('nav-hover-bg');
-            const desktopNav = document.querySelector('nav.hidden.md\\:flex');
 
             navLinks.forEach(link => link.classList.remove('active'));
             mobileLinks.forEach(link => link.classList.remove('active'));
 
             if (navLinks[index]) {
                 navLinks[index].classList.add('active');
-                if (desktopNav && hoverBg) {
+                if (hoverBg) {
                     hoverBg.style.left = navLinks[index].offsetLeft + 'px';
                     hoverBg.style.width = navLinks[index].offsetWidth + 'px';
                     hoverBg.style.opacity = '1';
                 }
             }
-
-            if (mobileLinks[index]) {
-                mobileLinks[index].classList.add('active');
-            }
+            if (mobileLinks[index]) mobileLinks[index].classList.add('active');
 
             const header = document.getElementById('main-header');
-            if (header) {
-                header.classList.toggle('scrolled', index > 0);
-            }
+            if (header) header.classList.toggle('scrolled', index > 0);
         }
 
-        // === 獨立的計數動畫函式 ===
-        function animateCounter(card) {
-            const counterElement = card.querySelector('.counter');
-            if (counterElement && !counterElement.classList.contains('counted')) {
-                const target = parseInt(counterElement.getAttribute('data-target'));
-                const duration = 1500;
-                let startTimestamp = null;
-                const step = (timestamp) => {
-                    if (!startTimestamp) startTimestamp = timestamp;
-                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-                    const val = Math.floor(easeOutQuart * target);
-                    counterElement.innerText = val;
-                    if (progress < 1) {
-                        window.requestAnimationFrame(step);
-                    } else {
-                        counterElement.innerText = target;
-                        counterElement.classList.add('counted');
-                    }
-                };
-                window.requestAnimationFrame(step);
-            }
-        }
-
-        // === 觸發區塊內部動畫 (桌機切換用) ===
         function triggerInternalAnimations(section) {
-            // 1. 錯落式上浮動畫
             const staggerItems = section.querySelectorAll('.stagger-item');
             if (staggerItems.length > 0) {
                 gsap.fromTo(staggerItems,
                     { opacity: 0, y: 50 },
-                    {
-                        opacity: 1,
-                        y: 0,
-                        duration: 0.8, // 加快動畫速度 (原 1.2)
-                        stagger: 0.1, // 加快出現間隔 (原 0.2)
-                        ease: "power3.out",
-                        clearProps: "transform"
-                    }
+                    { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power3.out", clearProps: "transform" }
                 );
             }
-
-            // 2. 舊有的淡入動畫
-            const fadeElements = section.querySelectorAll('.fade-in');
-            fadeElements.forEach(el => el.classList.add('visible'));
-
-            // 3. 技能卡片數字跑動動畫
-            const skillCards = section.querySelectorAll('.skill-card');
-            skillCards.forEach(card => {
+            section.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
+            section.querySelectorAll('.skill-card').forEach(card => {
                 card.classList.add('visible');
                 animateCounter(card);
             });
         }
 
-        // === 初始化手機版動畫觀察者 (修正手機數字動畫) ===
+        function animateCounter(card) {
+            const counter = card.querySelector('.counter');
+            if (counter && !counter.classList.contains('counted')) {
+                const target = parseInt(counter.getAttribute('data-target'));
+                let start = null;
+                const step = (ts) => {
+                    if (!start) start = ts;
+                    const progress = Math.min((ts - start) / 1500, 1);
+                    counter.innerText = Math.floor((1 - Math.pow(1 - progress, 4)) * target);
+                    if (progress < 1) requestAnimationFrame(step);
+                    else { counter.innerText = target; counter.classList.add('counted'); }
+                };
+                requestAnimationFrame(step);
+            }
+        }
+
         function initMobileAnimations() {
             if (!isMobile()) return;
-
-            const observerOptions = {
-                root: null,
-                threshold: 0.2 // 當物件進入畫面 20% 時觸發
-            };
-
-            const observer = new IntersectionObserver((entries, observer) => {
+            const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        const target = entry.target;
-
-                        // 如果是技能卡片，觸發數字動畫
-                        if (target.classList.contains('skill-card')) {
-                            target.classList.add('visible');
-                            animateCounter(target);
-                            observer.unobserve(target); // 動畫執行過後取消監聽
-                        }
+                        entry.target.classList.add('visible');
+                        if (entry.target.classList.contains('skill-card')) animateCounter(entry.target);
+                        observer.unobserve(entry.target);
                     }
                 });
-            }, observerOptions);
-
-            // 監聽所有技能卡片
-            const skillCards = document.querySelectorAll('.skill-card');
-            skillCards.forEach(card => observer.observe(card));
+            }, { threshold: 0.2 });
+            document.querySelectorAll('.skill-card').forEach(c => observer.observe(c));
         }
 
         function closeMenuHandler() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            const menuOverlay = document.getElementById('menu-overlay');
-            if (mobileMenu) mobileMenu.classList.remove('active');
-            if (menuOverlay) menuOverlay.classList.remove('active');
+            document.getElementById('mobile-menu')?.classList.remove('active');
+            document.getElementById('menu-overlay')?.classList.remove('active');
         }
 
-        window.onload = function () {
-            // 禁止瀏覽器自動恢復捲動位置 (交給我們手動控制)
-            if ('scrollRestoration' in history) {
-                history.scrollRestoration = 'manual';
+        // === 點擊記錄邏輯 (事件委派) ===
+        document.addEventListener('click', function (e) {
+            const card = e.target.closest('.project-card');
+            if (card && isPortfolioExpanded) {
+                const scroller = document.getElementById('main-scroller');
+                sessionStorage.setItem('portfolioScrollPos', scroller.scrollTop);
+                const activeFilter = document.querySelector('.portfolio-filter-btn.active');
+                if (activeFilter) sessionStorage.setItem('portfolioActiveFilter', activeFilter.getAttribute('data-filter'));
             }
+        });
 
+        // === WINDOW ONLOAD ===
+        window.onload = function () {
+            if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
             const loader = document.querySelector('.loader');
 
-            // 定義隱藏 Loader 並進入頁面的函式
             function hideLoader() {
                 if (loader.classList.contains('hidden')) return;
                 loader.classList.add('hidden');
 
-                // === 頁面初始化邏輯 ===
-
-                // 1. 檢查網址 Hash 或 sessionStorage
                 let initialIndex = 0;
                 const hash = window.location.hash;
-
                 if (hash) {
-                    const targetId = hash.substring(1);
-                    const sectionsArray = Array.from(sections);
-                    const targetSection = document.getElementById(targetId);
+                    const targetSection = document.getElementById(hash.substring(1));
+                    if (targetSection) initialIndex = Array.from(sections).indexOf(targetSection);
+                } else {
+                    const saved = sessionStorage.getItem('lastSectionIndex');
+                    if (saved !== null) initialIndex = parseInt(saved, 10);
+                }
 
-                    if (targetSection) {
-                        const index = sectionsArray.indexOf(targetSection);
-                        if (index !== -1) {
-                            initialIndex = index;
+                // === 關鍵修正：區分「還原模式」與「一般模式」 ===
+                const savedExpandedState = sessionStorage.getItem('portfolioExpanded');
+                const isRestoreMode = (savedExpandedState === 'true' && initialIndex === 3 && !isMobile());
+
+                if (!isMobile()) {
+                    if (isRestoreMode) {
+                        // === A. 還原模式 ===
+                        currentSectionIndex = 3;
+
+                        sections.forEach(s => s.classList.remove('active-section'));
+                        sections[3].classList.add('active-section');
+                        sections[3].style.opacity = 1;
+                        sections[3].style.visibility = 'visible';
+
+                        updateNav(3);
+                        toggleBackToTop(true);
+
+                        const toggleButton = document.getElementById('toggle-portfolio-view');
+                        if (toggleButton) {
+                            toggleButton.click();
+
+                            const savedFilter = sessionStorage.getItem('portfolioActiveFilter');
+                            if (savedFilter) {
+                                const filterBtn = document.querySelector(`.portfolio-filter-btn[data-filter="${savedFilter}"]`);
+                                if (filterBtn) filterBtn.click();
+                            }
+
+                            const savedScrollPos = sessionStorage.getItem('portfolioScrollPos');
+                            if (savedScrollPos) {
+                                requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                        scroller.scrollTo({ top: parseFloat(savedScrollPos), behavior: 'auto' });
+                                        setTimeout(() => { scroller.scrollTop = parseFloat(savedScrollPos); }, 100);
+                                    });
+                                });
+                            }
+                        }
+
+                    } else {
+                        // === B. 一般模式 ===
+                        if (initialIndex > 0) {
+                            currentSectionIndex = initialIndex;
+                            sections.forEach(s => s.classList.remove('active-section'));
+                            sections[initialIndex].classList.add('active-section');
+                            scroller.scrollTop = sections[initialIndex].offsetTop;
+                            updateNav(initialIndex);
+                            toggleBackToTop(true);
+                            triggerInternalAnimations(sections[initialIndex]);
+                        } else {
+                            currentSectionIndex = 0;
+                            sections[0].classList.add('active-section');
+                            updateNav(0);
+                            triggerInternalAnimations(sections[0]);
                         }
                     }
                 } else {
-                    const savedIndex = sessionStorage.getItem('lastSectionIndex');
-                    if (savedIndex !== null) {
-                        initialIndex = parseInt(savedIndex, 10);
-                    }
-                }
-
-                // 2. 根據裝置模式執行對應邏輯
-                if (!isMobile()) {
-                    // 桌機版
-                    if (initialIndex > 0) {
-                        // 直接跳轉到指定區塊
-                        currentSectionIndex = initialIndex;
-
-                        // 確保樣式正確
-                        sections.forEach(s => s.classList.remove('active-section'));
-                        sections[initialIndex].classList.add('active-section');
-
-                        // 設置捲動位置
-                        scroller.scrollTop = sections[initialIndex].offsetTop;
-
-                        updateNav(initialIndex);
-
-                        const backToTopBtn = document.getElementById('back-to-top');
-                        backToTopBtn.classList.remove('opacity-0', 'invisible');
-                        backToTopBtn.classList.add('opacity-100', 'visible');
-
-                        // 觸發進場動畫
-                        triggerInternalAnimations(sections[initialIndex]);
-                    } else {
-                        // 預設首頁
-                        currentSectionIndex = 0;
-                        sections[0].classList.add('active-section');
-                        updateNav(0);
-                        triggerInternalAnimations(sections[0]);
-                    }
-                } else {
-                    // 手機版：直接顯示內容
                     document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
                     document.querySelectorAll('.stagger-item').forEach(el => {
                         el.style.opacity = 1;
                         el.style.transform = 'translateY(0)';
                     });
-
-                    // 啟動手機版 Scroll 監聽 (數字動畫用)
                     initMobileAnimations();
-
                     if (initialIndex > 0 && hash) {
                         const targetSection = sections[initialIndex];
-                        if (targetSection) {
-                            // 稍微延遲以確保佈局完成
-                            setTimeout(() => {
-                                const headerOffset = 80;
-                                const elementPosition = targetSection.getBoundingClientRect().top;
-                                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-                                window.scrollTo({ top: offsetPosition, behavior: "auto" });
-                            }, 100);
-                        }
+                        setTimeout(() => {
+                            const offsetPosition = targetSection.getBoundingClientRect().top + window.pageYOffset - 80;
+                            window.scrollTo({ top: offsetPosition, behavior: "auto" });
+                        }, 100);
                     }
                 }
-
-                // === 修改處：檢查是否有儲存的展開狀態，並恢復 ===
-                // 只有當初始位置是在 Portfolio 區塊 (index 3) 時才執行
-                const savedExpandedState = sessionStorage.getItem('portfolioExpanded');
-                if (savedExpandedState === 'true' && initialIndex === 3) {
-                    const toggleButton = document.getElementById('toggle-portfolio-view');
-                    // 稍微延遲一點點以確保 DOM 準備好，然後自動點擊按鈕
-                    setTimeout(() => {
-                        if (toggleButton) toggleButton.click();
-                    }, 100);
-                }
             }
 
-            // === Spline 模型載入偵測 ===
-            const splineViewers = document.querySelectorAll('spline-viewer');
-            const totalSplineModels = splineViewers.length;
-            let loadedSplineModels = 0;
-
-            // 安全機制：最長等待 4 秒
-            const safetyNetTimeout = setTimeout(hideLoader, 4000);
-
-            if (totalSplineModels === 0) {
-                hideLoader();
-                clearTimeout(safetyNetTimeout);
-            } else {
-                splineViewers.forEach(viewer => {
-                    // 監聽 load 事件
-                    viewer.addEventListener('load', () => {
-                        loadedSplineModels++;
-                        if (loadedSplineModels >= totalSplineModels) {
-                            // 稍微延遲一點點，確保渲染完成
-                            setTimeout(() => {
-                                hideLoader();
-                                clearTimeout(safetyNetTimeout);
-                            }, 500);
-                        }
-                    });
-                });
+            const splines = document.querySelectorAll('spline-viewer');
+            let loaded = 0;
+            const timeout = setTimeout(hideLoader, 4000);
+            if (splines.length === 0) { hideLoader(); clearTimeout(timeout); }
+            else {
+                splines.forEach(s => s.addEventListener('load', () => {
+                    loaded++;
+                    if (loaded >= splines.length) setTimeout(() => { hideLoader(); clearTimeout(timeout); }, 500);
+                }));
             }
 
-            // 初始化導航與其他組件
             const nav = document.querySelector('nav.hidden.md\\:flex');
             if (nav) {
-                const links = nav.querySelectorAll('.nav-link');
                 const hoverBg = document.getElementById('nav-hover-bg');
-
-                links.forEach(link => {
+                nav.querySelectorAll('.nav-link').forEach(link => {
                     link.addEventListener('mouseenter', () => {
                         hoverBg.style.left = link.offsetLeft + 'px';
                         hoverBg.style.width = link.offsetWidth + 'px';
                         hoverBg.style.opacity = '1';
                     });
                 });
-
                 nav.addEventListener('mouseleave', () => {
-                    const activeLink = nav.querySelector('.nav-link.active');
-                    if (activeLink) {
-                        hoverBg.style.left = activeLink.offsetLeft + 'px';
-                        hoverBg.style.width = activeLink.offsetWidth + 'px';
+                    const active = nav.querySelector('.nav-link.active');
+                    if (active) {
+                        hoverBg.style.left = active.offsetLeft + 'px';
+                        hoverBg.style.width = active.offsetWidth + 'px';
                     }
                 });
             }
@@ -2533,211 +2438,132 @@
             window.addEventListener('scroll', () => {
                 if (!isMobile()) return;
                 const header = document.getElementById('main-header');
-                const backToTopBtn = document.getElementById('back-to-top');
-
-                if (window.scrollY > 50) {
-                    header.classList.add('scrolled');
-                } else {
-                    header.classList.remove('scrolled');
-                }
-
-                if (window.scrollY > 300) {
-                    backToTopBtn.classList.remove('opacity-0', 'invisible');
-                    backToTopBtn.classList.add('opacity-100', 'visible');
-                } else {
-                    backToTopBtn.classList.add('opacity-0', 'invisible');
-                    backToTopBtn.classList.remove('opacity-100', 'visible');
-                }
+                if (window.scrollY > 50) header.classList.add('scrolled');
+                else header.classList.remove('scrolled');
+                toggleBackToTop(window.scrollY > 300);
             });
         };
 
         function initPortfolioFilter() {
-            const filterButtons = document.querySelectorAll('.portfolio-filter-btn');
-            const projectCards = document.querySelectorAll('#portfolio-grid .project-card');
-
-            filterButtons.forEach(button => {
-                button.addEventListener('click', function () {
-                    filterButtons.forEach(btn => {
-                        btn.classList.remove('active', 'bg-primary', 'shadow-primary');
-                        btn.classList.add('bg-dark-lighter');
+            const btns = document.querySelectorAll('.portfolio-filter-btn');
+            const cards = document.querySelectorAll('#portfolio-grid .project-card');
+            btns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    btns.forEach(b => {
+                        b.classList.remove('active', 'bg-primary', 'shadow-primary');
+                        b.classList.add('bg-dark-lighter');
                     });
                     this.classList.add('active', 'bg-primary', 'shadow-primary');
                     this.classList.remove('bg-dark-lighter');
-
                     const filter = this.getAttribute('data-filter');
-
-                    projectCards.forEach(card => {
-                        if (filter === 'all' || card.getAttribute('data-category') === filter) {
-                            card.style.display = 'block';
-                        } else {
-                            card.style.display = 'none';
-                        }
+                    cards.forEach(c => {
+                        if (filter === 'all' || c.getAttribute('data-category') === filter) c.style.display = 'block';
+                        else c.style.display = 'none';
                     });
                 });
             });
         }
 
-        // === 初始化作品集展開/收合功能 (包含模式切換) ===
         function initPortfolioToggle() {
-            const toggleButton = document.getElementById('toggle-portfolio-view');
-            const buttonText = document.getElementById('toggle-portfolio-text');
-            const buttonIcon = document.getElementById('toggle-portfolio-icon');
+            const btn = document.getElementById('toggle-portfolio-view');
+            if (!btn) return;
 
-            // 取得輪播容器
-            const scrollerContainerMobile = document.getElementById('portfolio-scroller-mobile');
-            const scrollerContainerDesktop = document.getElementById('portfolio-scroller-desktop');
+            const btnText = document.getElementById('toggle-portfolio-text');
+            const btnIcon = document.getElementById('toggle-portfolio-icon');
+            const scrollMob = document.getElementById('portfolio-scroller-mobile');
+            const scrollDesk = document.getElementById('portfolio-scroller-desktop');
+            const grid = document.getElementById('portfolio-grid');
+            const filters = document.getElementById('portfolio-filters');
 
-            const gridContainer = document.getElementById('portfolio-grid');
-            const filterContainer = document.getElementById('portfolio-filters');
-            const body = document.body;
-
-            if (!toggleButton) return;
-
-            toggleButton.addEventListener('click', function (e) {
-                e.preventDefault();
-                const isGridVisible = !gridContainer.classList.contains('hidden');
+            btn.addEventListener('click', function (e) {
+                if (e) e.preventDefault();
+                const isGridVisible = !grid.classList.contains('hidden');
 
                 if (isGridVisible) {
-                    // =================================================
-                    // 收合邏輯：回到視差滾動模式 (Fold)
-                    // =================================================
-
-                    // === 修改處：儲存狀態為收合 ===
+                    // === 收合邏輯 (Back to Scroller) ===
                     sessionStorage.setItem('portfolioExpanded', 'false');
 
-                    // 1. 清除強制隱藏的行內樣式，讓 CSS Class 重新接管
-                    if (scrollerContainerMobile) scrollerContainerMobile.style.display = '';
-                    if (scrollerContainerDesktop) scrollerContainerDesktop.style.display = '';
+                    // 1. 重置 Scroller 顯示屬性 (但先設為透明，避免跳動)
+                    if (scrollMob) {
+                        scrollMob.style.display = '';
+                        scrollMob.className = 'stagger-item md:hidden';
+                        scrollMob.style.opacity = '0'; // 關鍵：先隱藏
+                        scrollMob.style.visibility = 'visible';
+                    }
+                    if (scrollDesk) {
+                        scrollDesk.style.display = '';
+                        scrollDesk.className = 'stagger-item hidden md:block';
+                        scrollDesk.style.opacity = '0'; // 關鍵：先隱藏
+                        scrollDesk.style.visibility = 'visible';
+                    }
 
-                    // 2. 重置 Class 以確保響應式行為正確 (手機顯示 Mobile 版，桌機顯示 Desktop 版)
-                    if (scrollerContainerMobile) scrollerContainerMobile.className = 'stagger-item md:hidden';
-                    if (scrollerContainerDesktop) scrollerContainerDesktop.className = 'stagger-item hidden md:block';
+                    // 2. 關鍵修正：將按鈕容器也先隱藏，讓它跟 Scroller 一起浮現
+                    const btnContainer = btn.closest('.stagger-item');
+                    if (btnContainer) btnContainer.style.opacity = '0';
 
-                    // 隱藏網格與過濾器
-                    gridContainer.classList.add('hidden');
-                    filterContainer.classList.add('hidden');
-
-                    // 更新按鈕文字與圖示
-                    buttonText.innerText = 'View All Projects';
-                    buttonIcon.classList.remove('fa-chevron-up');
-                    buttonIcon.classList.add('fa-arrow-right');
-
-                    // 恢復 Immersive Scroll 設定 (鎖定捲動)
+                    grid.classList.add('hidden');
+                    filters.classList.add('hidden');
+                    btnText.innerText = 'View All Projects';
+                    btnIcon.className = 'fas fa-arrow-right ml-2';
                     isPortfolioExpanded = false;
-                    body.classList.remove('expanded-view');
+                    document.body.classList.remove('expanded-view');
 
-                    // 直接定位回 Portfolio 區塊頂部
                     currentSectionIndex = 3;
                     scroller.scrollTop = sections[3].offsetTop;
-
                     sections.forEach(s => s.classList.remove('active-section'));
                     sections[3].classList.add('active-section');
                     updateNav(3);
 
+                    // 3. 觸發整體動畫 (Scroller + Button 會一起慢慢浮現)
+                    triggerInternalAnimations(sections[3]);
+
                 } else {
-                    // =================================================
-                    // 展開邏輯：進入正常滾動模式 (View All)
-                    // =================================================
-
-                    // === 修改處：儲存狀態為展開 ===
+                    // === 展開邏輯 (Expand to Grid) ===
                     sessionStorage.setItem('portfolioExpanded', 'true');
+                    if (scrollMob) scrollMob.style.display = 'none';
+                    if (scrollDesk) scrollDesk.style.display = 'none';
+                    grid.classList.remove('hidden');
+                    filters.classList.remove('hidden');
 
-                    // 修改重點：使用 style.display = 'none' 強制隱藏
-                    // 這會覆蓋掉 CSS 中的 md:block，解決桌機版無法隱藏的問題
-                    if (scrollerContainerMobile) scrollerContainerMobile.style.display = 'none';
-                    if (scrollerContainerDesktop) scrollerContainerDesktop.style.display = 'none';
+                    const allBtn = document.querySelector('.portfolio-filter-btn[data-filter="all"]');
+                    if (allBtn && !document.querySelector('.portfolio-filter-btn.active')) allBtn.click();
 
-                    // 顯示網格與過濾器
-                    gridContainer.classList.remove('hidden');
-                    filterContainer.classList.remove('hidden');
-
-                    // 預設點擊 "All" 過濾器
-                    const allFilterButton = document.querySelector('.portfolio-filter-btn[data-filter="all"]');
-                    if (allFilterButton) allFilterButton.click();
-
-                    // 更新按鈕文字與圖示
-                    buttonText.innerText = 'Fold';
-                    buttonIcon.classList.remove('fa-arrow-right');
-                    buttonIcon.classList.add('fa-chevron-up');
-
-                    // 啟用 Normal Scroll 設定 (允許捲動)
+                    btnText.innerText = 'Fold';
+                    btnIcon.className = 'fas fa-chevron-up ml-2';
                     isPortfolioExpanded = true;
-                    body.classList.add('expanded-view');
+                    document.body.classList.add('expanded-view');
 
-                    // 確保目前位置正確 (定位到 Portfolio 標題下方)
-                    const portfolioSection = document.getElementById('portfolio');
-                    if (portfolioSection) {
-                        const mainScroller = document.getElementById('main-scroller');
-                        setTimeout(() => {
-                            mainScroller.scrollTop = portfolioSection.offsetTop;
-                        }, 50);
-
-                        // 展開時觸發網格內卡片的淡入動畫
-                        const gridCards = gridContainer.querySelectorAll('.project-card');
-                        gsap.fromTo(gridCards,
-                            { opacity: 0 },
-                            { opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" }
-                        );
+                    const gridCards = grid.querySelectorAll('.project-card');
+                    if (gridCards[0].style.opacity !== '1') {
+                        gsap.fromTo(gridCards, { opacity: 0 }, { opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" });
                     }
+
+                    setTimeout(() => {
+                        if (Math.abs(scroller.scrollTop - sections[3].offsetTop) > 100) {
+                            scroller.scrollTop = sections[3].offsetTop;
+                        }
+                    }, 50);
                 }
             });
         }
 
         function initMobileMenu() {
-            const menuToggle = document.getElementById('menu-toggle');
-            const closeMenu = document.getElementById('close-menu');
-            const mobileMenu = document.getElementById('mobile-menu');
-            const menuOverlay = document.getElementById('menu-overlay');
-
-            if (!menuToggle) return;
-
-            menuToggle.addEventListener('click', function () {
-                mobileMenu.classList.add('active');
-                menuOverlay.classList.add('active');
+            const toggle = document.getElementById('menu-toggle');
+            if (!toggle) return;
+            toggle.addEventListener('click', () => {
+                document.getElementById('mobile-menu').classList.add('active');
+                document.getElementById('menu-overlay').classList.add('active');
             });
-
-            closeMenu.addEventListener('click', closeMenuHandler);
-            menuOverlay.addEventListener('click', closeMenuHandler);
+            document.getElementById('close-menu').addEventListener('click', closeMenuHandler);
+            document.getElementById('menu-overlay').addEventListener('click', closeMenuHandler);
         }
 
-        // === 新增：鍵盤導航控制 ===
         window.addEventListener('keydown', (e) => {
-            // 1. 如果是手機版、正在捲動中、或是作品集展開模式，則使用預設行為 (不攔截)
             if (isMobile() || isScrolling || isPortfolioExpanded) return;
-
-            switch (e.key) {
-                case 'ArrowDown':
-                case 'PageDown':
-                    // 防止網頁預設捲動
-                    e.preventDefault();
-                    scrollToSection(currentSectionIndex + 1);
-                    break;
-
-                case 'ArrowUp':
-                case 'PageUp':
-                    e.preventDefault();
-                    scrollToSection(currentSectionIndex - 1);
-                    break;
-
-                case 'Home':
-                    e.preventDefault();
-                    scrollToSection(0); // 回到頂部
-                    break;
-
-                case 'End':
-                    e.preventDefault();
-                    scrollToSection(totalSections - 1); // 跳到底部
-                    break;
-
-                case ' ': // 空白鍵 (Space)
-                    e.preventDefault();
-                    if (e.shiftKey) {
-                        scrollToSection(currentSectionIndex - 1); // Shift + Space 往上
-                    } else {
-                        scrollToSection(currentSectionIndex + 1); // Space 往下
-                    }
-                    break;
-            }
+            if (['ArrowDown', 'PageDown', ' '].includes(e.key) && !e.shiftKey) { e.preventDefault(); scrollToSection(currentSectionIndex + 1); }
+            if (['ArrowUp', 'PageUp'].includes(e.key) || (e.key === ' ' && e.shiftKey)) { e.preventDefault(); scrollToSection(currentSectionIndex - 1); }
+            if (e.key === 'Home') { e.preventDefault(); scrollToSection(0); }
+            if (e.key === 'End') { e.preventDefault(); scrollToSection(totalSections - 1); }
         });
     </script>
 </body>
