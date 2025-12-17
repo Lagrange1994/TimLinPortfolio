@@ -166,6 +166,13 @@
             height: 100%;
         }
 
+        /* 關鍵修正：圖片容器專用捲動設定 */
+        .scrollable-area {
+            overflow-y: auto !important;
+            overscroll-behavior: contain;
+            /* 防止滾動鏈鎖 */
+        }
+
         /* Animations */
         .fade-in-up {
             animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -297,7 +304,6 @@
         // --- HELPER COMPONENT: Responsive Image (WebP Support) ---
         const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
-            // 簡單的 WebP 替換邏輯：假設同目錄下有同名的 .webp 檔案
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
 
             return (
@@ -319,21 +325,17 @@
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
 
-            // 當 src 改變時，重置 loaded 狀態以顯示骨架屏
             useEffect(() => {
                 setLoaded(false);
             }, [src]);
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {/* Skeleton Loader (Tailwind Pulse) */}
                     {!loaded && (
-                        <div className="absolute inset-0 bg-dark-lighter/50 animate-pulse rounded-lg z-10 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-dark-lighter/50 animate-pulse rounded-lg z-10 flex items-center justify-center pointer-events-none">
                             <i className="fas fa-image text-white/10 text-3xl"></i>
                         </div>
                     )}
-
-                    {/* Actual Image */}
                     <ResponsiveImage
                         src={src}
                         alt={alt}
@@ -398,8 +400,6 @@
             { id: '04', name: '街頭藝人申請', src: './img/project_07/石門水庫6觀光服務 6.3.6街頭藝人申請0822.jpg', desc: '場地位置以氣泡地圖呈現' }
         ];
 
-        // 這裡不需要 HERO_IMAGE_SRC 常數，因為已經移至 CSS class 控制以支援 WebP
-
         const App = () => {
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('request');
@@ -414,27 +414,21 @@
             const mainContainerRef = useRef(null);
             const sectionsRef = useRef([]);
             const contentScrollRef = useRef(null);
+            const imageScrollRef = useRef(null);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
 
-            // === 圖片容器 Ref 與 阻尼累加器 (即使鎖住滾動，內部內容滾動仍可能需要) ===
-            const imageScrollRef = useRef(null);
-
-            // === 1. Loading Logic (Wait for Hero Image + 1s) ===
+            // === 1. Loading Logic ===
             useEffect(() => {
-                // 1. 監聽 Hero 圖片的載入
                 const heroImagePromise = new Promise((resolve, reject) => {
                     const img = new Image();
-                    // 預載入 JPG (如果瀏覽器支援 WebP，CSS 會處理，但這裡確保至少一張圖載完)
                     img.src = './img/project_07/hero_img.jpg';
                     img.onload = () => resolve('hero loaded');
-                    img.onerror = () => resolve('hero error'); // 失敗也讓它過
+                    img.onerror = () => resolve('hero error');
                 });
 
-                // 2. 至少等待 1.0 秒
                 const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
 
-                // 3. 兩者都完成後，解除 Loading
                 Promise.all([heroImagePromise, timerPromise])
                     .then(() => {
                         setLoading(false);
@@ -446,12 +440,10 @@
                 if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
             }, [loading]);
 
-            // === 2. Tab Scroll Reset ===
-            // 當 Tab 切換時，自動將 scroll-content 捲動回最上方
+            // === 2. Tab Switch Reset ===
             useEffect(() => {
-                if (contentScrollRef.current) {
-                    contentScrollRef.current.scrollTop = 0;
-                }
+                if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
+                if (imageScrollRef.current) imageScrollRef.current.scrollTop = 0;
             }, [activeTab]);
 
             useEffect(() => {
@@ -527,24 +519,30 @@
             const handleWheel = (e) => {
                 if (isScrollingRef.current) return;
 
-                const isSplitView = currentSectionIndex === 1;
-                const contentEl = contentScrollRef.current;
+                const scrollable = e.target.closest('.scrollable-area');
 
-                // === Handle Internal Scrolling Logic ===
-                if (isSplitView && contentEl) {
-                    const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                if (scrollable) {
+                    const { scrollTop, scrollHeight, clientHeight } = scrollable;
+                    const isScrollable = scrollHeight > clientHeight;
 
-                    // 如果正在往上捲，且內容已經到頂了 -> 正常來說這會觸發上一頁，但我們現在要鎖住
-                    if (e.deltaY < 0 && scrollTop <= 0) {
-                        return; // 鎖定：不執行任何動作 (Locked scroll up)
-                    }
-                    // 如果內容比容器長，優先讓內容捲動
-                    if (scrollHeight > clientHeight) {
-                        // 讓瀏覽器原生行為處理內容捲動，不觸發全頁切換
-                        return;
+                    // 關鍵修正：內容滾動優先
+                    if (isScrollable) {
+                        // 1. 向上捲動：一律 Return (允許原生滾動，不觸發上一頁)
+                        if (e.deltaY < 0) {
+                            return;
+                        }
+
+                        // 2. 向下捲動：
+                        const atBottom = Math.abs(scrollHeight - clientHeight - scrollTop) <= 1; // 1px 緩衝
+                        if (!atBottom) {
+                            // 還沒到底，允許原生滾動
+                            return;
+                        }
+                        // 已經到底，程式碼繼續往下執行，觸發全頁切換
                     }
                 }
 
+                // === Page Switching Logic ===
                 if (e.deltaY > 0) {
                     // 向下滾動：允許從 Hero -> Split View
                     if (currentSectionIndex < sectionsRef.current.length - 1) {
@@ -566,23 +564,35 @@
                 if (isScrollingRef.current) return;
                 const touchEndY = e.changedTouches[0].clientY;
                 const diff = touchStartY.current - touchEndY;
-                const isSplitView = currentSectionIndex === 1;
-                const contentEl = contentScrollRef.current;
-                const isInsideContent = contentEl && contentEl.contains(e.target);
+
+                const scrollable = e.target.closest('.scrollable-area');
 
                 if (Math.abs(diff) > 50) {
                     if (diff > 0) {
-                        // Swipe Up (Next Page / Scroll Down)
-                        if (isSplitView && isInsideContent) {
-                            const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                            if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
+                        // Swipe Up (Finger moves up, Content moves down)
+
+                        if (scrollable) {
+                            const { scrollTop, scrollHeight, clientHeight } = scrollable;
+                            // 檢查是否到底 (buffer 1px)
+                            const atBottom = Math.abs(scrollHeight - clientHeight - scrollTop) <= 1;
+
+                            // 如果還沒到底，不要換頁
+                            if (scrollHeight > clientHeight && !atBottom) return;
                         }
+
                         if (currentSectionIndex < sectionsRef.current.length - 1) {
                             scrollToSection(currentSectionIndex + 1);
                         }
 
                     } else {
-                        // Swipe Down (Prev Page / Scroll Up)
+                        // Swipe Down (Finger moves down, Content moves up)
+
+                        if (scrollable) {
+                            const { scrollTop } = scrollable;
+                            // 如果還沒到頂，允許原生滾動
+                            if (scrollTop > 0) return;
+                        }
+
                         // 鎖定：不執行回到上一頁的動作
                     }
                 }
@@ -642,7 +652,7 @@
 
                     <div id="main-scroller" ref={mainContainerRef}>
 
-                        {/* 1. HERO SECTION (Updated with CSS class for WebP) */}
+                        {/* 1. HERO SECTION */}
                         <section id="hero" ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark hero-bg-custom">
                             <div className="container max-w-6xl mx-auto px-8 z-20">
                                 <div className="max-w-3xl text-left">
@@ -680,16 +690,16 @@
                                             </div>
                                         )}
 
+                                        {/* 圖片容器修正：使用 block 確保從頂部開始渲染，解決切頭切尾問題 */}
                                         <div
                                             ref={imageScrollRef}
                                             className={`
-                                            relative w-full h-full
+                                            relative w-full h-full scrollable-area
                                             ${isBrowserMode
-                                                    ? 'flex-1 min-h-0 overflow-y-auto bg-white/5'
+                                                    ? 'flex-1 min-h-0 block bg-white/5' // 改為 block
                                                     : 'overflow-hidden flex items-center justify-center h-full'
                                                 }
                                         `}>
-                                            {/* UPDATED: Using ImageWithSkeleton */}
                                             <ImageWithSkeleton
                                                 src={currentImage}
                                                 alt="Preview"
@@ -700,7 +710,7 @@
                                                         : 'max-w-full max-h-full object-contain'
                                                     }
                                                 `}
-                                                containerClassName="w-full h-full flex items-center justify-center"
+                                                containerClassName={isBrowserMode ? 'w-full h-auto' : 'w-full h-full flex items-center justify-center'}
                                             />
                                         </div>
                                     </div>
@@ -742,8 +752,8 @@
                                         </div>
                                     </div>
 
-                                    {/* Content Scroll Area - Ref attached here for resetting scrollTop */}
-                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
+                                    {/* Content Scroll Area */}
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 scroll-content scrollable-area custom-scroll">
                                         {/* 1. REQUEST */}
                                         {activeTab === 'request' && (
                                             <div className="space-y-12 animate-fadeIn">
