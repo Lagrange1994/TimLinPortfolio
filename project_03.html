@@ -41,9 +41,6 @@
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
                         heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
                     },
-                    animation: {
-                        pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    }
                 }
             }
         }
@@ -163,17 +160,13 @@
             }
         }
 
-        /* Hero Background Custom - Updated for WebP Support */
+        /* Hero Background Custom */
         .hero-bg-custom {
-            /* Fallback for older browsers */
             background-image: url('./img/project_03/hero_img.jpg');
-
-            /* Modern browsers: choose between WebP and JPG */
             background-image: -webkit-image-set(url('./img/project_03/hero_img.webp') 1x,
                     url('./img/project_03/hero_img.jpg') 1x);
             background-image: image-set(url('./img/project_03/hero_img.webp') 1x,
                     url('./img/project_03/hero_img.jpg') 1x);
-
             background-size: cover;
             background-position: top center;
             position: relative;
@@ -271,6 +264,20 @@
         .back-btn:hover i {
             transform: translateX(-4px);
         }
+
+        /* === Skeleton Shimmer Effect (新增) === */
+        .skeleton {
+            background: #1e293b;
+            background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position-x: -200%;
+            }
+        }
     </style>
 </head>
 
@@ -300,25 +307,23 @@
             );
         };
 
-        // --- NEW COMPONENT: Image with Skeleton Loading ---
+        // --- COMPONENT: Image with Skeleton Loading (Modified) ---
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
 
-            // Reset loaded state when src changes
             useEffect(() => {
                 setLoaded(false);
             }, [src]);
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {/* Skeleton Loader */}
+                    {/* 使用 .skeleton 類別 */}
                     {!loaded && (
-                        <div className="absolute inset-0 bg-dark-lighter/50 animate-pulse rounded-lg z-10 flex items-center justify-center">
+                        <div className="absolute inset-0 skeleton rounded-lg z-10 flex items-center justify-center">
                             <i className="fas fa-image text-white/10 text-3xl"></i>
                         </div>
                     )}
 
-                    {/* Actual Image */}
                     <ResponsiveImage
                         src={src}
                         alt={alt}
@@ -371,20 +376,17 @@
             const heroRef = useRef(null);
             const splitRef = useRef(null);
 
-            // === 調整後的 Loading 邏輯 ===
+            // === Loading Logic (Hero + Timer) ===
             useEffect(() => {
-                // 1. 只監聽 Hero 圖片的載入
                 const heroImagePromise = new Promise((resolve, reject) => {
                     const img = new Image();
                     img.src = './img/project_03/hero_img.jpg';
                     img.onload = () => resolve('hero loaded');
-                    img.onerror = () => resolve('hero error'); // 失敗也讓它過，避免卡死
+                    img.onerror = () => resolve('hero error');
                 });
 
-                // 2. 至少等待 1.0 秒
                 const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
 
-                // 3. 兩者都完成後，解除 Loading
                 Promise.all([heroImagePromise, timerPromise])
                     .then(() => {
                         setLoading(false);
@@ -392,7 +394,6 @@
             }, []);
 
             useEffect(() => {
-                // Initialize refs for GSAP
                 sectionsRef.current = [heroRef.current, splitRef.current];
                 if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
             }, [loading]);
@@ -644,7 +645,7 @@
                                             </div>
                                         )}
                                         <div className="relative overflow-hidden bg-white/5 group h-full">
-                                            {/* UPDATED: Using ImageWithSkeleton for Skeleton Loading Effect */}
+                                            {/* UPDATED: Using ImageWithSkeleton with custom css class */}
                                             <ImageWithSkeleton
                                                 src={currentImage}
                                                 alt="Preview"
@@ -857,23 +858,6 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-    <style>
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-    </style>
 </body>
 
 </html>
