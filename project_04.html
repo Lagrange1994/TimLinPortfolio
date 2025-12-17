@@ -169,15 +169,11 @@
             }
         }
 
-        /* === Skeleton Shimmer Effect (Modified) === */
+        /* === SKELETON LOADING ANIMATION === */
         .skeleton {
-            /* Visual Style */
-            background: #000000;
-            background: linear-gradient(110deg, #1d1d1d 8%, #484848 18%, #1d1d1d 33%);
+            background: linear-gradient(90deg, #1A1D24 25%, #252932 50%, #1A1D24 75%);
             background-size: 200% 100%;
-            animation: shimmer 1.5s infinite linear;
-
-            /* Positioning (Required for overlay) */
+            animation: shimmer 1.5s infinite;
             width: 100%;
             height: 100%;
             position: absolute;
@@ -187,8 +183,12 @@
         }
 
         @keyframes shimmer {
-            to {
-                background-position-x: -200%;
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
             }
         }
 
@@ -306,6 +306,7 @@
         const { useState, useEffect, useRef } = React;
 
         // === COMPONENT: Image with Skeleton Loading ===
+        // Replaces simple ResponsiveImage to add loading state
         const ImageWithSkeleton = ({ src, className, alt, style, ...props }) => {
             const [isLoaded, setIsLoaded] = useState(false);
 
