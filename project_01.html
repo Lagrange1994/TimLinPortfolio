@@ -318,9 +318,48 @@
             // Ref for the right content scroll container
             const contentScrollRef = useRef(null);
 
+            // === 圖片預載入邏輯 ===
             useEffect(() => {
-                const timer = setTimeout(() => setLoading(false), 1500);
-                return () => clearTimeout(timer);
+                const loadAllImages = async () => {
+                    // 1. 收集所有需要預載入的圖片網址
+                    const heroImage = './img/project_01/hero_img.jpg';
+                    const defaultPreview = './img/project_01/display.jpg';
+
+                    const solutionImages = SOLUTION_FEATURES.map(item => item.image);
+                    const galleryImages = GALLERY_CATEGORIES.flatMap(cat => cat.images.map(img => img.src));
+
+                    // 合併並去重
+                    const allImages = [heroImage, defaultPreview, ...solutionImages, ...galleryImages];
+                    const uniqueImages = [...new Set(allImages)];
+
+                    // 2. 建立 Promise 陣列
+                    const imagePromises = uniqueImages.map(src => {
+                        return new Promise((resolve, reject) => {
+                            const img = new Image();
+                            img.src = src;
+                            img.onload = () => resolve(src);
+                            // 即使圖片載入失敗也 resolve，避免卡死
+                            img.onerror = () => {
+                                console.warn(`Failed to load image: ${src}`);
+                                resolve(src);
+                            };
+                        });
+                    });
+
+                    // 3. 等待所有圖片載入完成 + 至少等待 1.5 秒 (保持動畫流暢)
+                    try {
+                        await Promise.all([
+                            Promise.all(imagePromises),
+                            new Promise(resolve => setTimeout(resolve, 1500))
+                        ]);
+                    } catch (error) {
+                        console.error("Image loading error", error);
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+
+                loadAllImages();
             }, []);
 
             useEffect(() => {
@@ -356,11 +395,6 @@
                         setActiveGalleryId(null);
                 }
             }, [activeTab]);
-
-            useEffect(() => {
-                const timer = setTimeout(() => setLoading(false), 1500);
-                return () => clearTimeout(timer);
-            }, []);
 
             useEffect(() => {
                 sectionsRef.current = [heroRef.current, splitRef.current];
