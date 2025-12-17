@@ -106,13 +106,13 @@
         /* Custom Hero Background - Updated for WebP Support */
         .hero-bg-custom {
             /* Fallback */
-            background-image: url('./img/project_12/hero_img.png');
+            background-image: url('./img/project_12/hero_img.jpg');
 
             /* Modern browsers: choose between WebP and PNG */
             background-image: -webkit-image-set(url('./img/project_12/hero_img.webp') 1x,
-                    url('./img/project_12/hero_img.png') 1x);
+                    url('./img/project_12/hero_img.jpg') 1x);
             background-image: image-set(url('./img/project_12/hero_img.webp') 1x,
-                    url('./img/project_12/hero_img.png') 1x);
+                    url('./img/project_12/hero_img.jpg') 1x);
 
             background-size: cover;
             background-position: center;
@@ -381,7 +381,7 @@
         const App = () => {
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('context');
-            const [currentImage, setCurrentImage] = useState('./img/project_12/display.png');
+            const [currentImage, setCurrentImage] = useState('./img/project_12/display.jpg');
             const [activeGalleryId, setActiveGalleryId] = useState('01');
             const [showBackToHero, setShowBackToHero] = useState(false);
 
@@ -405,8 +405,8 @@
                 // 1. Listen for Hero image load
                 const heroImagePromise = new Promise((resolve, reject) => {
                     const img = new Image();
-                    // Project 12 uses .png for hero
-                    img.src = './img/project_12/hero_img.png';
+                    // Project 12 uses .jpg for hero
+                    img.src = './img/project_12/hero_img.jpg';
                     img.onload = () => resolve('hero loaded');
                     img.onerror = () => resolve('hero error');
                 });
@@ -441,7 +441,7 @@
                 switch (activeTab) {
                     case 'context':
                     case 'process':
-                        setCurrentImage('./img/project_12/display.png');
+                        setCurrentImage('./img/project_12/display.jpg');
                         setActiveGalleryId(null);
                         break;
                     case 'solution':
@@ -453,7 +453,7 @@
                         setActiveGalleryId(GALLERY_IMAGES[0].id);
                         break;
                     default:
-                        setCurrentImage('./img/project_12/display.png');
+                        setCurrentImage('./img/project_12/display.jpg');
                         setActiveGalleryId(null);
                 }
             }, [activeTab]);
@@ -512,16 +512,13 @@
                 if (isSplitView) {
                     // 1. Check Image Side Scroll
                     if (isOverImage) {
-                        const { scrollTop, scrollHeight, clientHeight } = imageEl;
+                        // Image no longer scrolls, so we just treat it as a trigger for section switch
+                        // Logic simplified:
                         if (e.deltaY < 0) {
                             // Scrolling UP: Allow native scroll but NEVER go to Hero
                             return;
-                        } else {
-                            // Scrolling DOWN
-                            if (scrollHeight > clientHeight) {
-                                if (scrollTop + clientHeight < scrollHeight - 2) return; // Internal scroll
-                            }
                         }
+                        // Scrolling DOWN -> Allow fall through to Next Section
                     }
 
                     // 2. Check Content Side Scroll
@@ -575,10 +572,7 @@
                                 const { scrollTop, scrollHeight, clientHeight } = contentEl;
                                 if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
                             }
-                            if (isInsideImage) {
-                                const { scrollTop, scrollHeight, clientHeight } = imageEl;
-                                if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
-                            }
+                            // Image no longer scrolls internally, so we don't need to check its scroll position
                         }
                         if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
                     } else { // Swipe Down (Prev)
@@ -640,7 +634,6 @@
                                     <div className={`inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>
                                         FINANCIAL EDUCATION GAME
                                     </div>
-                                    {/* MODIFIED: Added font-heading class to "Golden House" */}
                                     <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
                                         中央存保 <span className="font-heading"><br className="md:hidden" />Golden House</span><br className="md:hidden" />購得好房<br />
                                         <span className="text-transparent bg-clip-text bg-primary">理財教育<br className="md:hidden" />網頁遊戲</span>
@@ -664,6 +657,8 @@
 
                             {/* LEFT: Image Preview */}
                             <div className="w-full h-[35vh] shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl">
+
+                                {/* MODIFIED: Container now uses h-auto to fit content, but max-h constrained by viewport logic */}
                                 <div className="relative w-full h-auto max-w-4xl max-h-full lg:max-h-[90%] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300">
                                     {showBrowserHeader && (
                                         <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
@@ -673,8 +668,8 @@
                                         </div>
                                     )}
 
-                                    {/* MODIFIED: Use ImageWithSkeleton and apply logic for full scrolling if showBrowserHeader is active */}
-                                    <div ref={imageScrollRef} className={`flex-1 min-h-0 overflow-y-auto custom-scroll relative bg-white/5 group h-full ${showBrowserHeader ? 'block' : 'flex items-center justify-center'}`}>
+                                    {/* MODIFIED: Removed scroll classes (overflow-y-auto), removed min-h-0/flex-1. Added h-auto, overflow-hidden. */}
+                                    <div ref={imageScrollRef} className={`w-full h-auto overflow-hidden relative bg-white/5 group ${showBrowserHeader ? 'block' : 'flex items-center justify-center'}`}>
                                         <ImageWithSkeleton
                                             src={currentImage}
                                             alt="Preview"
