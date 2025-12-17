@@ -594,9 +594,45 @@
                 }
             }, [activeTab]);
 
+            // === REPLACED: Image Preload Logic ===
             useEffect(() => {
-                const timer = setTimeout(() => setLoading(false), 1000);
-                return () => clearTimeout(timer);
+                // 1. Collect all images to preload
+                const imagesToLoad = [
+                    './img/project_02/hero_img.jpg', // Hero Background
+                    './img/project_02/p2_01.jpg',    // WindowFrame
+                    './img/project_02/p2_02.jpg'     // WindowFrame
+                ];
+
+                // Add Feature images
+                APP_FEATURES.forEach(feat => {
+                    imagesToLoad.push(feat.beforeImg);
+                    imagesToLoad.push(feat.afterImg);
+                });
+
+                // Add Gallery images
+                APP_GALLERY.forEach(item => {
+                    imagesToLoad.push(item.src);
+                });
+
+                // 2. Minimum Time Promise (1.5s)
+                const minTimePromise = new Promise(resolve => setTimeout(resolve, 1500));
+
+                // 3. Image Loading Promises
+                const imagePromises = imagesToLoad.map(src => {
+                    return new Promise((resolve) => {
+                        const img = new Image();
+                        img.src = src;
+                        // On successful load or error, we resolve the promise to continue
+                        img.onload = () => resolve();
+                        img.onerror = () => resolve();
+                    });
+                });
+
+                // 4. Wait for BOTH: Min time AND all images loaded
+                Promise.all([minTimePromise, ...imagePromises]).then(() => {
+                    setLoading(false);
+                });
+
             }, []);
 
             // Initialize Sections
