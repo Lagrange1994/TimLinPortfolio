@@ -39,7 +39,7 @@
                     },
                     fontFamily: {
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
-                        heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'], /* Added Heading Font */
+                        heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
                     }
                 }
             }
@@ -58,7 +58,6 @@
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
             overflow: hidden;
-            /* 禁止原生滾動 */
             overscroll-behavior: none;
         }
 
@@ -103,12 +102,10 @@
             touch-action: pan-x !important;
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
-            /* Firefox */
         }
 
         .horizontal-tabs::-webkit-scrollbar {
             display: none;
-            /* Chrome/Safari */
         }
 
         /* UI Elements */
@@ -118,7 +115,6 @@
             border-left: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* Style A: Standard/Original Card */
         .feature-card-standard {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
             backdrop-filter: blur(12px);
@@ -133,7 +129,6 @@
             box-shadow: 0 10px 30px -10px rgba(127, 63, 152, 0.2);
         }
 
-        /* Style B: Minimal/Interactive Card */
         .feature-card-minimal {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
             backdrop-filter: blur(12px);
@@ -206,8 +201,17 @@
             }
         }
 
+        /* Hero Background Custom - Updated for WebP Support */
         .hero-bg-metro {
+            /* Fallback for older browsers */
             background-image: url('./img/project_06/hero_img.jpg');
+
+            /* Modern browsers: choose between WebP and JPG */
+            background-image: -webkit-image-set(url('./img/project_06/hero_img.webp') 1x,
+                    url('./img/project_06/hero_img.jpg') 1x);
+            background-image: image-set(url('./img/project_06/hero_img.webp') 1x,
+                    url('./img/project_06/hero_img.jpg') 1x);
+
             background-size: cover;
             background-position: center;
         }
@@ -314,6 +318,56 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        // --- HELPER COMPONENT: Responsive Image (WebP Support) ---
+        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
+            if (!src) return null;
+            const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+
+            return (
+                <picture style={{ display: 'contents' }}>
+                    <source srcSet={webpSrc} type="image/webp" />
+                    <img
+                        src={src}
+                        className={className}
+                        alt={alt}
+                        style={style}
+                        onLoad={onLoad}
+                        {...props}
+                    />
+                </picture>
+            );
+        };
+
+        // --- NEW COMPONENT: Image with Skeleton Loading ---
+        const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
+            const [loaded, setLoaded] = useState(false);
+
+            // Reset loaded state when src changes
+            useEffect(() => {
+                setLoaded(false);
+            }, [src]);
+
+            return (
+                <div className={`relative ${containerClassName || 'w-full h-full'}`}>
+                    {/* Skeleton Loader */}
+                    {!loaded && (
+                        <div className="absolute inset-0 bg-[#333]/50 animate-pulse rounded-lg z-10 flex items-center justify-center">
+                            <i className="fas fa-image text-white/10 text-3xl"></i>
+                        </div>
+                    )}
+
+                    {/* Actual Image */}
+                    <ResponsiveImage
+                        src={src}
+                        alt={alt}
+                        className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+                        onLoad={() => setLoaded(true)}
+                        {...props}
+                    />
+                </div>
+            );
+        };
+
         // --- Icons ---
         const Icons = {
             XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
@@ -338,38 +392,45 @@
             { id: 'popup', name: '領取彈窗', desc: '多樣化的領取機制', src: './img/project_06/event_a.jpg' }
         ];
 
+        // Using ImageWithSkeleton directly in SCENARIOS for the "Before/After" visuals
+        // UPDATED: Added containerClassName for Context to center the image vertically
         const SCENARIOS = {
             context: {
                 title: 'Project Overview',
                 content: (
-                    <img src="./img/project_06/display.jpg" className="w-full h-auto object-contain max-h-full rounded-lg shadow-lg" alt="Overview Cover" />
+                    <ImageWithSkeleton
+                        src="./img/project_06/display.jpg"
+                        containerClassName="w-full h-full flex items-center justify-center"
+                        className="w-full h-auto object-contain max-h-full rounded-lg shadow-lg"
+                        alt="Overview Cover"
+                    />
                 )
             },
             ux_strategy: {
                 title: '時刻表查詢',
                 before: (
-                    <img src="./img/project_06/time_table_b.jpg" className="w-full h-full object-cover object-top" alt="Timetable Before" />
+                    <ImageWithSkeleton src="./img/project_06/time_table_b.jpg" className="w-full h-full object-cover object-center" alt="Timetable Before" />
                 ),
                 after: (
-                    <img src="./img/project_06/time_table_a.jpg" className="w-full h-full object-cover object-top" alt="Timetable After" />
+                    <ImageWithSkeleton src="./img/project_06/time_table_a.jpg" className="w-full h-full object-cover object-center" alt="Timetable After" />
                 )
             },
             biz_value: {
                 title: '商城與兌換',
                 before: (
-                    <img src="./img/project_06/shop_b.jpg" className="w-full h-full object-cover object-top" alt="Shop Before" />
+                    <ImageWithSkeleton src="./img/project_06/shop_b.jpg" className="w-full h-full object-cover object-center" alt="Shop Before" />
                 ),
                 after: (
-                    <img src="./img/project_06/shop_a.jpg" className="w-full h-full object-cover object-top" alt="Shop After" />
+                    <ImageWithSkeleton src="./img/project_06/shop_a.jpg" className="w-full h-full object-cover object-center" alt="Shop After" />
                 )
             },
             engagement: {
                 title: '活動閉環',
                 before: (
-                    <img src="./img/project_06/event_b.jpg" className="w-full h-full object-cover object-top" alt="Event Before" />
+                    <ImageWithSkeleton src="./img/project_06/event_b.jpg" className="w-full h-full object-cover object-center" alt="Event Before" />
                 ),
                 after: (
-                    <img src="./img/project_06/event_a.jpg" className="w-full h-full object-cover object-top" alt="Event After" />
+                    <ImageWithSkeleton src="./img/project_06/event_a.jpg" className="w-full h-full object-cover object-center" alt="Event After" />
                 )
             }
         };
@@ -395,13 +456,35 @@
             const OVERSCROLL_THRESHOLD = 200;
             const touchStartY = useRef(0);
 
+            // === 調整後的 Loading 邏輯 (參考 Project 03) ===
             useEffect(() => {
-                const timer = setTimeout(() => setLoading(false), 1000);
-                return () => clearTimeout(timer);
+                // 1. 只監聽 Hero 圖片的載入
+                const heroImagePromise = new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = './img/project_06/hero_img.jpg';
+                    img.onload = () => resolve('hero loaded');
+                    img.onerror = () => resolve('hero error'); // 失敗也讓它過
+                });
+
+                // 2. 至少等待 1.0 秒
+                const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
+
+                // 3. 兩者都完成後，解除 Loading
+                Promise.all([heroImagePromise, timerPromise])
+                    .then(() => {
+                        setLoading(false);
+                    });
             }, []);
 
             useEffect(() => {
                 setComparisonMode('after');
+            }, [activeTab]);
+
+            // === Auto-scroll to top when activeTab changes (New Feature) ===
+            useEffect(() => {
+                if (contentScrollRef.current) {
+                    contentScrollRef.current.scrollTop = 0;
+                }
             }, [activeTab]);
 
             // Initialize Sections
@@ -456,7 +539,7 @@
                 }, "-=0.8");
             };
 
-            // === DAMPING LOGIC (Mobile Friendly) ===
+            // === DAMPING LOGIC (Mobile Friendly) & SCROLL LOCK (New Feature) ===
             const handleWheel = (e) => {
                 if (isScrollingRef.current) return;
                 const isSplitView = currentSectionIndex === 1;
@@ -468,8 +551,8 @@
 
                         // Scrolling UP (Top boundary)
                         if (e.deltaY < 0 && scrollTop <= 0) {
-                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                            // Locked scroll up via wheel
+                            return;
                         } else {
                             overscrollAccumulator.current = 0;
                             // Block normal scroll logic if scrolling inside content
@@ -479,8 +562,8 @@
                     } else {
                         // Mouse over visual area
                         if (e.deltaY < 0) {
-                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                            // Locked scroll up via wheel
+                            return;
                         } else {
                             overscrollAccumulator.current = 0;
                         }
@@ -492,10 +575,8 @@
                         scrollToSection(currentSectionIndex + 1);
                     }
                 } else {
-                    const thresholdMet = overscrollAccumulator.current >= OVERSCROLL_THRESHOLD;
-                    if (currentSectionIndex > 0 && (!isSplitView || thresholdMet)) {
-                        scrollToSection(currentSectionIndex - 1);
-                    }
+                    // LOCKED: Do not allow scrolling up to hero via wheel
+                    // scrollToSection(currentSectionIndex - 1);
                 }
             };
 
@@ -525,18 +606,7 @@
                             scrollToSection(currentSectionIndex + 1);
                         }
                     } else {
-                        // Swipe Down (Go Back)
-                        if (isSplitView && isInsideContent) {
-                            if (contentEl.scrollTop > 0) {
-                                overscrollAccumulator.current = 0;
-                                return;
-                            }
-                            overscrollAccumulator.current += Math.abs(diff);
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
-                        }
-                        if (currentSectionIndex > 0) {
-                            scrollToSection(currentSectionIndex - 1);
-                        }
+                        // Swipe Down (LOCKED - Do not go back to Hero)
                     }
                 }
             };
@@ -564,8 +634,8 @@
             // --- Render Logic for Left Visual ---
             const renderVisualContent = () => {
                 if (activeTab === 'gallery') {
-                    // Mobile fix: ensure object-contain and full dimensions
-                    return <img src={activeGalleryItem.src} className="w-full h-full object-cover object-top" alt={activeGalleryItem.name} key={activeGalleryItem.id} />;
+                    // UPDATED: object-top -> object-center
+                    return <ImageWithSkeleton src={activeGalleryItem.src} className="w-full h-full object-cover object-center" alt={activeGalleryItem.name} key={activeGalleryItem.id} />;
                 }
                 if (activeTab === 'context') {
                     return SCENARIOS.context.content;
@@ -590,7 +660,7 @@
                         </button>
                     </nav>
 
-                    {/* Back to Hero Button */}
+                    {/* Back to Hero Button - Updated to be the ONLY way to go up */}
                     <button
                         onClick={() => scrollToSection(0)}
                         className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
@@ -662,7 +732,7 @@
                                                             <div className="relative w-full h-full flex items-center justify-center">
                                                                 {/* Render Content */}
                                                                 {activeTab === 'gallery' ? (
-                                                                    <img src={activeGalleryItem.src} className="w-full h-full object-cover object-top" alt={activeGalleryItem.name} />
+                                                                    <ImageWithSkeleton src={activeGalleryItem.src} className="w-full h-full object-cover object-center" alt={activeGalleryItem.name} />
                                                                 ) : (
                                                                     SCENARIOS[activeTab][comparisonMode]
                                                                 )}
