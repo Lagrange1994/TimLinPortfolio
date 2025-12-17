@@ -92,13 +92,13 @@
         /* Custom Hero Background - Updated for WebP Support */
         .hero-bg-custom {
             /* Fallback */
-            background-image: url('./img/project_10/hero_img.png');
+            background-image: url('./img/project_10/hero_img.jpg');
 
             /* Modern browsers: choose between WebP and PNG */
             background-image: -webkit-image-set(url('./img/project_10/hero_img.webp') 1x,
-                    url('./img/project_10/hero_img.png') 1x);
+                    url('./img/project_10/hero_img.jpg') 1x);
             background-image: image-set(url('./img/project_10/hero_img.webp') 1x,
-                    url('./img/project_10/hero_img.png') 1x);
+                    url('./img/project_10/hero_img.jpg') 1x);
 
             background-size: cover;
             background-position: center;
@@ -383,7 +383,7 @@
                 // 1. Listen for Hero image load
                 const heroImagePromise = new Promise((resolve, reject) => {
                     const img = new Image();
-                    img.src = './img/project_10/hero_img.png';
+                    img.src = './img/project_10/hero_img.jpg';
                     img.onload = () => resolve('hero loaded');
                     img.onerror = () => resolve('hero error');
                 });
