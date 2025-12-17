@@ -58,7 +58,6 @@
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
             overflow: hidden;
-            /* 關鍵：禁止原生滾動 */
             overscroll-behavior: none;
         }
 
@@ -178,6 +177,29 @@
             }
         }
 
+        /* Skeleton Loading Animation */
+        @keyframes pulse-bg {
+
+            0%,
+            100% {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+
+            50% {
+                background-color: rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        .skeleton-loader {
+            animation: pulse-bg 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
         /* Comparison Slider Styles */
         .comparison-container {
             position: relative;
@@ -202,7 +224,8 @@
             width: 2px;
             background: #ff4a00;
             cursor: ew-resize;
-            z-index: 10;
+            z-index: 20;
+            /* Increased z-index to be above skeletons */
         }
 
         /* Fixed vertical centering */
@@ -338,16 +361,53 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- HELPER COMPONENT: Responsive Image (WebP Support) ---
-        const ResponsiveImage = ({ src, className, alt, style, ...props }) => {
+        // --- HELPER COMPONENTS ---
+
+        // 1. Responsive Image (WebP Support)
+        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
 
             return (
                 <picture style={{ display: 'contents' }}>
                     <source srcSet={webpSrc} type="image/webp" />
-                    <img src={src} className={className} alt={alt} style={style} {...props} />
+                    <img
+                        src={src}
+                        className={className}
+                        alt={alt}
+                        style={style}
+                        onLoad={onLoad} // Pass onLoad up
+                        {...props}
+                    />
                 </picture>
+            );
+        };
+
+        // 2. Image With Skeleton Loader
+        // This component shows a skeleton pulse until the image triggers onLoad
+        const ImageWithSkeleton = ({ src, alt, className, containerClassName }) => {
+            const [loaded, setLoaded] = useState(false);
+
+            // If src changes, reset loaded state
+            useEffect(() => {
+                setLoaded(false);
+            }, [src]);
+
+            return (
+                <div className={`relative w-full h-full overflow-hidden ${containerClassName || ''}`}>
+                    {/* Skeleton */}
+                    {!loaded && (
+                        <div className="skeleton-loader"></div>
+                    )}
+
+                    {/* Actual Image */}
+                    <ResponsiveImage
+                        src={src}
+                        alt={alt}
+                        className={`${className} transition-opacity duration-500 ease-in-out ${loaded ? 'opacity-100' : 'opacity-0'}`}
+                        onLoad={() => setLoaded(true)}
+                    />
+                </div>
             );
         };
 
@@ -495,14 +555,20 @@
                     onMouseDown={handleMouseDown}
                     onTouchStart={handleMouseDown}
                 >
-                    {/* BEFORE (WEB) - Using ResponsiveImage */}
+                    {/* BEFORE (WEB) - Using ImageWithSkeleton */}
                     <div className="absolute inset-0 flex items-center justify-center bg-[#0f0402] p-4 lg:p-8">
-                        <div className="w-full h-full max-w-full max-h-full flex items-center justify-center opacity-50 grayscale">
-                            <ResponsiveImage src={beforeImage} className="max-w-full max-h-full object-contain" alt="Web Version" />
+                        <div className="w-full h-full max-w-full max-h-full flex items-center justify-center opacity-50 grayscale relative">
+                            {/* Note: We use containerClassName to ensure full size for skeleton */}
+                            <ImageWithSkeleton
+                                src={beforeImage}
+                                className="max-w-full max-h-full object-contain"
+                                containerClassName="flex items-center justify-center"
+                                alt="Web Version"
+                            />
                         </div>
                     </div>
 
-                    {/* AFTER (APP) - Using ResponsiveImage */}
+                    {/* AFTER (APP) - Using ImageWithSkeleton */}
                     <div
                         className="absolute inset-0 flex items-center justify-center bg-[#0f0402]"
                         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
@@ -510,7 +576,11 @@
                         <div className="w-full h-full max-w-full max-h-full flex items-center justify-center">
                             {/* MODIFIED: rounded-[1.25rem] for mobile, lg:rounded-[2.5rem] for desktop */}
                             <div className="relative h-full aspect-[9/19] border-[4px] md:border-[8px] border-[#2d2d2d] rounded-[1.25rem] lg:rounded-[2.5rem] overflow-hidden bg-black">
-                                <ResponsiveImage src={afterImage} className="w-full h-full object-cover" alt="App Version" />
+                                <ImageWithSkeleton
+                                    src={afterImage}
+                                    className="w-full h-full object-cover"
+                                    alt="App Version"
+                                />
                             </div>
                         </div>
                     </div>
@@ -535,11 +605,11 @@
                     {/* Max Width Constraint */}
                     <div className="w-full max-w-4xl h-full flex items-center justify-center">
                         <div
-                            className="relative bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col shrink-0 animate-fadeIn"
+                            className="relative bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col shrink-0 animate-fadeIn w-full"
                             style={{ maxWidth: '100%', maxHeight: '100%' }}
                         >
-                            {/* Updated to use ResponsiveImage */}
-                            <ResponsiveImage
+                            {/* Updated to use ImageWithSkeleton */}
+                            <ImageWithSkeleton
                                 src={src}
                                 alt={alt}
                                 className="block w-auto h-auto max-w-full max-h-full object-contain"
@@ -558,8 +628,8 @@
                     <div className="w-full max-w-4xl h-full flex items-center justify-center">
                         {/* MODIFIED: rounded-[1.25rem] for mobile, lg:rounded-[2.5rem] for desktop */}
                         <div className="relative h-full w-auto max-w-full aspect-[9/19] border-[6px] md:border-[8px] border-[#2d2d2d] rounded-[1.25rem] lg:rounded-[2.5rem] overflow-hidden shadow-2xl bg-black animate-fadeIn shrink-0">
-                            {/* Updated to use ResponsiveImage */}
-                            <ResponsiveImage src={src} alt={alt} className="w-full h-full object-cover block" />
+                            {/* Updated to use ImageWithSkeleton */}
+                            <ImageWithSkeleton src={src} alt={alt} className="w-full h-full object-cover block" />
                         </div>
                     </div>
                 </div>
@@ -594,42 +664,25 @@
                 }
             }, [activeTab]);
 
-            // === REPLACED: Image Preload Logic ===
+            // === MODIFIED: Image Preload Logic (Only wait for Hero) ===
             useEffect(() => {
-                // 1. Collect all images to preload
-                const imagesToLoad = [
-                    './img/project_02/hero_img.jpg', // Hero Background
-                    './img/project_02/p2_01.jpg',    // WindowFrame
-                    './img/project_02/p2_02.jpg'     // WindowFrame
-                ];
+                // 1. Only preload the Hero Image
+                const heroSrc = './img/project_02/hero_img.jpg';
 
-                // Add Feature images
-                APP_FEATURES.forEach(feat => {
-                    imagesToLoad.push(feat.beforeImg);
-                    imagesToLoad.push(feat.afterImg);
-                });
-
-                // Add Gallery images
-                APP_GALLERY.forEach(item => {
-                    imagesToLoad.push(item.src);
-                });
-
-                // 2. Minimum Time Promise (1.5s)
+                // 2. Minimum Time Promise (1.5s) - Requirement
                 const minTimePromise = new Promise(resolve => setTimeout(resolve, 1500));
 
-                // 3. Image Loading Promises
-                const imagePromises = imagesToLoad.map(src => {
-                    return new Promise((resolve) => {
-                        const img = new Image();
-                        img.src = src;
-                        // On successful load or error, we resolve the promise to continue
-                        img.onload = () => resolve();
-                        img.onerror = () => resolve();
-                    });
+                // 3. Hero Loading Promise
+                const heroPromise = new Promise((resolve) => {
+                    const img = new Image();
+                    img.src = heroSrc;
+                    img.onload = () => resolve();
+                    img.onerror = () => resolve();
                 });
 
-                // 4. Wait for BOTH: Min time AND all images loaded
-                Promise.all([minTimePromise, ...imagePromises]).then(() => {
+                // 4. Wait for Hero Image + Min Time, then show page. 
+                //    Other images will load with skeletons.
+                Promise.all([minTimePromise, heroPromise]).then(() => {
                     setLoading(false);
                 });
 
