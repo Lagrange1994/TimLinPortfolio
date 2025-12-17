@@ -44,9 +44,19 @@
                     backgroundImage: {
                         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
                     },
-                    // 新增 Pulse 動畫設定 (for Skeleton Loading)
+                    // --- 新增流光動畫設定 ---
                     animation: {
-                        pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        shimmer: 'shimmer 1.5s infinite', // 1.5秒循環一次
+                    },
+                    keyframes: {
+                        shimmer: {
+                            '0%': {
+                                transform: 'translateX(-100%)'
+                            },
+                            '100%': {
+                                transform: 'translateX(100%)'
+                            }
+                        }
                     }
                 }
             }
@@ -311,7 +321,7 @@
             );
         };
 
-        // --- HELPER COMPONENT: Image with Skeleton Loading ---
+        // --- HELPER COMPONENT: Image with Shimmer Skeleton Loading ---
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
 
@@ -322,10 +332,15 @@
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {/* Skeleton Loader */}
+                    {/* Skeleton Loader with Shimmer Effect */}
                     {!loaded && (
-                        <div className="absolute inset-0 bg-dark-lighter/50 animate-pulse rounded-lg z-10 flex items-center justify-center pointer-events-none">
-                            <i className="fas fa-image text-white/10 text-3xl"></i>
+                        <div className="absolute inset-0 bg-dark-lighter z-10 rounded-lg overflow-hidden flex items-center justify-center pointer-events-none">
+
+                            {/* Static Icon */}
+                            <i className="fas fa-image text-white/10 text-3xl relative z-10"></i>
+
+                            {/* Shimmer Overlay: Moving Gradient */}
+                            <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent z-20"></div>
                         </div>
                     )}
 
