@@ -223,7 +223,15 @@
 
         /* Hero Background Custom */
         .hero-bg-custom {
+            /* Fallback for older browsers */
             background-image: url('./img/project_02/hero_img.jpg');
+
+            /* Modern browsers: choose between WebP and JPG */
+            background-image: -webkit-image-set(url('./img/project_02/hero_img.webp') 1x,
+                    url('./img/project_02/hero_img.jpg') 1x);
+            background-image: image-set(url('./img/project_02/hero_img.webp') 1x,
+                    url('./img/project_02/hero_img.jpg') 1x);
+
             background-size: cover;
             background-position: center;
         }
@@ -329,6 +337,19 @@
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
+
+        // --- HELPER COMPONENT: Responsive Image (WebP Support) ---
+        const ResponsiveImage = ({ src, className, alt, style, ...props }) => {
+            if (!src) return null;
+            const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+
+            return (
+                <picture style={{ display: 'contents' }}>
+                    <source srcSet={webpSrc} type="image/webp" />
+                    <img src={src} className={className} alt={alt} style={style} {...props} />
+                </picture>
+            );
+        };
 
         // --- DATA DEFINITIONS ---
 
@@ -474,14 +495,14 @@
                     onMouseDown={handleMouseDown}
                     onTouchStart={handleMouseDown}
                 >
-                    {/* BEFORE (WEB) */}
+                    {/* BEFORE (WEB) - Using ResponsiveImage */}
                     <div className="absolute inset-0 flex items-center justify-center bg-[#0f0402] p-4 lg:p-8">
                         <div className="w-full h-full max-w-full max-h-full flex items-center justify-center opacity-50 grayscale">
-                            <img src={beforeImage} className="max-w-full max-h-full object-contain" alt="Web Version" />
+                            <ResponsiveImage src={beforeImage} className="max-w-full max-h-full object-contain" alt="Web Version" />
                         </div>
                     </div>
 
-                    {/* AFTER (APP) */}
+                    {/* AFTER (APP) - Using ResponsiveImage */}
                     <div
                         className="absolute inset-0 flex items-center justify-center bg-[#0f0402]"
                         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
@@ -489,7 +510,7 @@
                         <div className="w-full h-full max-w-full max-h-full flex items-center justify-center">
                             {/* MODIFIED: rounded-[1.25rem] for mobile, lg:rounded-[2.5rem] for desktop */}
                             <div className="relative h-full aspect-[9/19] border-[4px] md:border-[8px] border-[#2d2d2d] rounded-[1.25rem] lg:rounded-[2.5rem] overflow-hidden bg-black">
-                                <img src={afterImage} className="w-full h-full object-cover" alt="App Version" />
+                                <ResponsiveImage src={afterImage} className="w-full h-full object-cover" alt="App Version" />
                             </div>
                         </div>
                     </div>
@@ -517,7 +538,8 @@
                             className="relative bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col shrink-0 animate-fadeIn"
                             style={{ maxWidth: '100%', maxHeight: '100%' }}
                         >
-                            <img
+                            {/* Updated to use ResponsiveImage */}
+                            <ResponsiveImage
                                 src={src}
                                 alt={alt}
                                 className="block w-auto h-auto max-w-full max-h-full object-contain"
@@ -536,7 +558,8 @@
                     <div className="w-full max-w-4xl h-full flex items-center justify-center">
                         {/* MODIFIED: rounded-[1.25rem] for mobile, lg:rounded-[2.5rem] for desktop */}
                         <div className="relative h-full w-auto max-w-full aspect-[9/19] border-[6px] md:border-[8px] border-[#2d2d2d] rounded-[1.25rem] lg:rounded-[2.5rem] overflow-hidden shadow-2xl bg-black animate-fadeIn shrink-0">
-                            <img src={src} alt={alt} className="w-full h-full object-cover block" />
+                            {/* Updated to use ResponsiveImage */}
+                            <ResponsiveImage src={src} alt={alt} className="w-full h-full object-cover block" />
                         </div>
                     </div>
                 </div>
@@ -563,6 +586,13 @@
             const overscrollAccumulator = useRef(0);
             const OVERSCROLL_THRESHOLD = 200; // Increased resistance required
             const touchStartY = useRef(0);
+
+            // === NEW: Auto-scroll to top when activeTab changes ===
+            useEffect(() => {
+                if (contentScrollRef.current) {
+                    contentScrollRef.current.scrollTop = 0;
+                }
+            }, [activeTab]);
 
             useEffect(() => {
                 const timer = setTimeout(() => setLoading(false), 1000);
@@ -634,8 +664,8 @@
 
                         // Scrolling UP (Trying to go back to Hero)
                         if (e.deltaY < 0 && scrollTop <= 0) {
+                            // We allow "attempting" to scroll up, but we block the section switch below
                             overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return; // Dampen
                         } else {
                             overscrollAccumulator.current = 0;
                             // Block normal scroll logic if we are just scrolling content
@@ -646,7 +676,6 @@
                         // Mouse is over visual area (left side)
                         if (e.deltaY < 0) {
                             overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
                         } else {
                             overscrollAccumulator.current = 0;
                         }
@@ -655,15 +684,13 @@
 
                 // Section Switching Logic
                 if (e.deltaY > 0) {
+                    // SCROLL DOWN: Allowed
                     if (currentSectionIndex < sectionsRef.current.length - 1) {
                         scrollToSection(currentSectionIndex + 1);
                     }
                 } else {
-                    const thresholdMet = overscrollAccumulator.current >= OVERSCROLL_THRESHOLD;
-                    // Only go back if threshold met OR we are not in the split view (e.g. going from hero up - unlikely)
-                    if (currentSectionIndex > 0 && (!isSplitView || thresholdMet)) {
-                        scrollToSection(currentSectionIndex - 1);
-                    }
+                    // SCROLL UP: Disabled (Locked)
+                    // The logic to switch to section -1 has been removed.
                 }
             };
 
@@ -683,7 +710,7 @@
 
                 if (Math.abs(diff) > 50) {
                     if (diff > 0) {
-                        // Swipe Up (Go Down)
+                        // Swipe Up (Go Down) - Allowed
                         overscrollAccumulator.current = 0;
                         if (isSplitView && isInsideContent) {
                             const { scrollTop, scrollHeight, clientHeight } = contentEl;
@@ -694,20 +721,8 @@
                             scrollToSection(currentSectionIndex + 1);
                         }
                     } else {
-                        // Swipe Down (Go Up / Back to Hero)
-                        if (isSplitView && isInsideContent) {
-                            if (contentEl.scrollTop > 0) {
-                                overscrollAccumulator.current = 0;
-                                return; // Just scrolling content
-                            }
-                            // Accumulate 'pull'
-                            overscrollAccumulator.current += Math.abs(diff);
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return; // Dampen
-                        }
-
-                        if (currentSectionIndex > 0) {
-                            scrollToSection(currentSectionIndex - 1);
-                        }
+                        // Swipe Down (Go Up / Back to Hero) - Disabled (Locked)
+                        // Logic removed.
                     }
                 }
             };
