@@ -43,6 +43,9 @@
                     },
                     backgroundImage: {
                         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+                    },
+                    animation: {
+                        pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
@@ -176,9 +179,17 @@
             }
         }
 
-        /* Custom Hero Background - 保留原始 CSS 遮罩 */
+        /* Custom Hero Background - Updated for WebP Support */
         .hero-bg-custom {
+            /* Fallback */
             background-image: url('./img/project_09/hero_img.png');
+
+            /* Modern browsers: choose between WebP and PNG */
+            background-image: -webkit-image-set(url('./img/project_09/hero_img.webp') 1x,
+                    url('./img/project_09/hero_img.png') 1x);
+            background-image: image-set(url('./img/project_09/hero_img.webp') 1x,
+                    url('./img/project_09/hero_img.png') 1x);
+
             background-size: cover;
             background-position: center;
             position: relative;
@@ -285,6 +296,57 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        // --- HELPER COMPONENT: Responsive Image (WebP Support) ---
+        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
+            if (!src) return null;
+            // Support replacement for jpg, jpeg, png
+            const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+
+            return (
+                <picture style={{ display: 'contents' }}>
+                    <source srcSet={webpSrc} type="image/webp" />
+                    <img
+                        src={src}
+                        className={className}
+                        alt={alt}
+                        style={style}
+                        onLoad={onLoad}
+                        {...props}
+                    />
+                </picture>
+            );
+        };
+
+        // --- NEW COMPONENT: Image with Skeleton Loading ---
+        const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
+            const [loaded, setLoaded] = useState(false);
+
+            // Reset loaded state when src changes
+            useEffect(() => {
+                setLoaded(false);
+            }, [src]);
+
+            return (
+                <div className={`relative ${containerClassName || 'w-full h-full'}`}>
+                    {/* Skeleton Loader */}
+                    {!loaded && (
+                        <div className="absolute inset-0 bg-dark-lighter/50 animate-pulse rounded-lg z-10 flex items-center justify-center pointer-events-none">
+                            <i className="fas fa-image text-white/10 text-3xl"></i>
+                        </div>
+                    )}
+
+                    {/* Actual Image */}
+                    <ResponsiveImage
+                        src={src}
+                        alt={alt}
+                        className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+                        onLoad={() => setLoaded(true)}
+                        {...props}
+                    />
+                </div>
+            );
+        };
+
         // Icons Component
         const Icons = {
             XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
@@ -351,12 +413,26 @@
             // Scroll Content Refs for Damping Logic
             const contentScrollRef = useRef(null);
             const imageScrollRef = useRef(null);
-            const overscrollAccumulator = useRef(0);
-            const OVERSCROLL_THRESHOLD = 200; // Damping threshold
             const touchStartY = useRef(0);
 
+            // === UPDATED: Loading Logic (Wait for Hero + Timer) ===
             useEffect(() => {
-                setTimeout(() => setLoading(false), 1200);
+                // 1. Listen for Hero image load
+                const heroImagePromise = new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = './img/project_09/hero_img.png';
+                    img.onload = () => resolve('hero loaded');
+                    img.onerror = () => resolve('hero error');
+                });
+
+                // 2. Minimum timer (1.0s)
+                const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
+
+                // 3. Resolve both
+                Promise.all([heroImagePromise, timerPromise])
+                    .then(() => {
+                        setLoading(false);
+                    });
             }, []);
 
             useEffect(() => {
@@ -364,6 +440,17 @@
                 sectionsRef.current = [heroRef.current, splitRef.current];
                 if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
             }, [loading]);
+
+            // === NEW: Auto-scroll to top when activeTab changes ===
+            useEffect(() => {
+                if (contentScrollRef.current) {
+                    contentScrollRef.current.scrollTop = 0;
+                }
+                // Also reset image scroll if needed
+                if (imageScrollRef.current) {
+                    imageScrollRef.current.scrollTop = 0;
+                }
+            }, [activeTab]);
 
             // Reset image/tabs when switching main context
             useEffect(() => {
@@ -402,7 +489,6 @@
                 const currentSection = sectionsRef.current[currentSectionIndex];
 
                 setShowBackToHero(index > 0);
-                overscrollAccumulator.current = 0; // Reset damping
 
                 const tl = gsap.timeline({
                     onComplete: () => {
@@ -440,85 +526,102 @@
             };
 
             const handleWheel = (e) => {
-                if (isScrollingRef.current) return;
-
                 const isSplitView = currentSectionIndex === 1;
                 const contentEl = contentScrollRef.current;
                 const imageEl = imageScrollRef.current;
-                const isHoveringImage = imageEl && imageEl.contains(e.target);
-                const isHoveringContent = contentEl && contentEl.contains(e.target);
 
-                // Damping / Internal Scroll Logic
+                const target = e.target;
+                const isOverContent = contentEl && contentEl.contains(target);
+                const isOverImage = imageEl && imageEl.contains(target);
+
+                // === UPDATED: Logic to fix Image Scrolling ===
+
                 if (isSplitView) {
-                    if (isHoveringContent) {
-                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                        if (e.deltaY < 0 && scrollTop <= 0) { // Scrolling Up at Top
-                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
+                    // 1. Check Image Side Scroll
+                    if (isOverImage) {
+                        const { scrollTop, scrollHeight, clientHeight } = imageEl;
+
+                        if (e.deltaY < 0) {
+                            // Scrolling UP
+                            // Always allow native scroll. Never go to Hero.
+                            return;
                         } else {
-                            overscrollAccumulator.current = 0;
-                            if (scrollHeight > clientHeight && e.deltaY > 0) return; // Allow internal scroll down
+                            // Scrolling DOWN
+                            if (scrollHeight > clientHeight) {
+                                // If scrollable
+                                if (scrollTop + clientHeight < scrollHeight - 2) return; // Allow internal image scroll down
+                                // If at bottom, Fall through to allow Page Switch
+                            }
                         }
-                    } else if (isHoveringImage) {
-                        // Similar logic for image side if needed
-                        const { scrollTop } = imageEl;
+                    }
+
+                    // 2. Check Content Side Scroll
+                    if (isOverContent) {
+                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
                         if (e.deltaY < 0 && scrollTop <= 0) {
-                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
-                        } else {
-                            overscrollAccumulator.current = 0;
-                            // Assuming image area is mostly static or contained, let it pass to page scroll if no scrollbar
+                            // Locked scroll up at top of content (Prevent going to Hero)
+                            return;
+                        }
+                        if (scrollHeight > clientHeight) {
+                            // Allow internal content scrolling
+                            const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 2;
+                            const isAtTop = scrollTop <= 0;
+
+                            if (!isAtTop && !isAtBottom) return; // Middle: scroll content
+                            if (isAtTop && e.deltaY > 0) return; // Top but scrolling down: scroll content
+                            if (isAtBottom && e.deltaY < 0) return; // Bottom but scrolling up: scroll content
                         }
                     }
                 }
 
+                if (isScrollingRef.current) return;
+
                 if (e.deltaY > 0) {
+                    // Scrolling DOWN -> Go to next section
                     if (currentSectionIndex < sectionsRef.current.length - 1) {
                         scrollToSection(currentSectionIndex + 1);
                     }
                 } else {
-                    const thresholdMet = overscrollAccumulator.current >= OVERSCROLL_THRESHOLD;
-                    if (currentSectionIndex > 0 && (!isSplitView || thresholdMet)) {
-                        scrollToSection(currentSectionIndex - 1);
-                    }
+                    // Scrolling UP -> LOCKED (Do nothing)
                 }
             };
 
             const handleTouchStart = (e) => {
                 touchStartY.current = e.touches[0].clientY;
-                overscrollAccumulator.current = 0;
             };
 
             const handleTouchEnd = (e) => {
                 if (isScrollingRef.current) return;
                 const touchEndY = e.changedTouches[0].clientY;
                 const diff = touchStartY.current - touchEndY;
+
                 const isSplitView = currentSectionIndex === 1;
                 const contentEl = contentScrollRef.current;
+                const imageEl = imageScrollRef.current;
+
                 const target = e.target;
                 const isInsideContent = contentEl && contentEl.contains(target);
+                const isInsideImage = imageEl && imageEl.contains(target);
+
+                // === UPDATED: Lock Swipe Up (Going back to Hero) ===
 
                 if (Math.abs(diff) > 50) {
                     if (diff > 0) { // Swipe Up (Scroll Down / Next Page)
-                        overscrollAccumulator.current = 0;
-                        if (isSplitView && isInsideContent) {
-                            const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                            // If content can still scroll down, don't page switch
-                            if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
+                        if (isSplitView) {
+                            if (isInsideContent) {
+                                const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                                if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
+                            }
+                            if (isInsideImage) {
+                                const { scrollTop, scrollHeight, clientHeight } = imageEl;
+                                if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
+                            }
                         }
+
                         if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
 
                     } else { // Swipe Down (Scroll Up / Prev Page)
-                        if (isSplitView && isInsideContent) {
-                            if (contentEl.scrollTop > 0) {
-                                overscrollAccumulator.current = 0;
-                                return;
-                            }
-                            // Add resistance
-                            overscrollAccumulator.current += Math.abs(diff);
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
-                        }
-                        if (currentSectionIndex > 0) scrollToSection(currentSectionIndex - 1);
+                        // Completely Locked - Do not go back to Hero
                     }
                 }
             };
@@ -575,7 +678,7 @@
                         </button>
                     </nav>
 
-                    {/* Back to Hero Button (Float) */}
+                    {/* Back to Hero Button (Float) - Only way to go up */}
                     <button
                         onClick={() => scrollToSection(0)}
                         className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
@@ -634,11 +737,15 @@
                                                 <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
                                             </div>
                                         )}
-                                        <div ref={imageScrollRef} className="flex-1 min-h-0 overflow-y-auto custom-scroll relative bg-white/5 flex items-center justify-center">
-                                            <img
+                                        {/* Image Container with Scroll Ref */}
+                                        {/* FIX: Removed 'flex items-center justify-center' when showBrowserHeader is true to allow full scrolling */}
+                                        <div ref={imageScrollRef} className={`flex-1 min-h-0 overflow-y-auto custom-scroll relative bg-white/5 group h-full ${showBrowserHeader ? 'block' : 'flex items-center justify-center'}`}>
+                                            {/* UPDATED: Use ImageWithSkeleton for Skeleton Loading Effect */}
+                                            <ImageWithSkeleton
                                                 src={currentImage}
                                                 alt="Preview"
-                                                className={`transition-opacity duration-500 block ${showBrowserHeader ? 'w-full h-auto self-start' : 'max-w-full max-h-full object-contain'}`}
+                                                className={`transition-opacity duration-500 block ${showBrowserHeader ? 'w-full h-auto' : 'max-w-full max-h-full object-contain'}`}
+                                                containerClassName={showBrowserHeader ? 'w-full h-auto' : 'w-full h-full flex items-center justify-center'}
                                             />
                                         </div>
                                     </div>
