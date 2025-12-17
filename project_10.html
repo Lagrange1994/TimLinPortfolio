@@ -41,9 +41,6 @@
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
                         heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
                     },
-                    animation: {
-                        pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    }
                 }
             }
         }
@@ -95,13 +92,13 @@
         /* Custom Hero Background - Updated for WebP Support */
         .hero-bg-custom {
             /* Fallback */
-            background-image: url('./img/project_10/hero_img.jpg');
+            background-image: url('./img/project_10/hero_img.png');
 
             /* Modern browsers: choose between WebP and PNG */
             background-image: -webkit-image-set(url('./img/project_10/hero_img.webp') 1x,
-                    url('./img/project_10/hero_img.jpg') 1x);
+                    url('./img/project_10/hero_img.png') 1x);
             background-image: image-set(url('./img/project_10/hero_img.webp') 1x,
-                    url('./img/project_10/hero_img.jpg') 1x);
+                    url('./img/project_10/hero_img.png') 1x);
 
             background-size: cover;
             background-position: center;
@@ -114,6 +111,20 @@
             inset: 0;
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.6) 100%);
             z-index: 1;
+        }
+
+        /* Skeleton Shimmer Effect (New) */
+        .skeleton {
+            background: #1e293b;
+            background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position-x: -200%;
+            }
         }
 
         /* Animations */
@@ -320,9 +331,9 @@
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {/* Skeleton Loader (Tailwind Pulse) */}
+                    {/* Skeleton Loader (Custom Shimmer) */}
                     {!loaded && (
-                        <div className="absolute inset-0 bg-dark-lighter/50 animate-pulse rounded-lg z-10 flex items-center justify-center pointer-events-none">
+                        <div className="absolute inset-0 skeleton rounded-lg z-10 flex items-center justify-center pointer-events-none">
                             <i className="fas fa-image text-white/10 text-3xl"></i>
                         </div>
                     )}
@@ -372,7 +383,7 @@
                 // 1. Listen for Hero image load
                 const heroImagePromise = new Promise((resolve, reject) => {
                     const img = new Image();
-                    img.src = './img/project_10/hero_img.jpg';
+                    img.src = './img/project_10/hero_img.png';
                     img.onload = () => resolve('hero loaded');
                     img.onerror = () => resolve('hero error');
                 });
