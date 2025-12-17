@@ -309,6 +309,22 @@
                 inset: 0 35px 35px 0;
             }
         }
+
+        /* === Skeleton Shimmer Effect (新增) === */
+        /* 使用深黑色調以符合網頁主題 */
+        .skeleton {
+            background: #1a1a1a;
+            /* Fallback */
+            background: linear-gradient(110deg, #1a1a1a 8%, #2a2a2a 18%, #1a1a1a 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position-x: -200%;
+            }
+        }
     </style>
 </head>
 
@@ -339,6 +355,7 @@
         };
 
         // --- NEW COMPONENT: Image with Skeleton Loading ---
+        // UPDATED: Now uses custom .skeleton class instead of Tailwind pulse
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
 
@@ -349,9 +366,9 @@
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {/* Skeleton Loader */}
+                    {/* Skeleton Loader with Custom Shimmer */}
                     {!loaded && (
-                        <div className="absolute inset-0 bg-[#333]/50 animate-pulse rounded-lg z-10 flex items-center justify-center">
+                        <div className="absolute inset-0 skeleton rounded-lg z-10 flex items-center justify-center">
                             <i className="fas fa-image text-white/10 text-3xl"></i>
                         </div>
                     )}
