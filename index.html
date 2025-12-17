@@ -2463,6 +2463,17 @@
                         }
                     }
                 }
+
+                // === 修改處：檢查是否有儲存的展開狀態，並恢復 ===
+                // 只有當初始位置是在 Portfolio 區塊 (index 3) 時才執行
+                const savedExpandedState = sessionStorage.getItem('portfolioExpanded');
+                if (savedExpandedState === 'true' && initialIndex === 3) {
+                    const toggleButton = document.getElementById('toggle-portfolio-view');
+                    // 稍微延遲一點點以確保 DOM 準備好，然後自動點擊按鈕
+                    setTimeout(() => {
+                        if (toggleButton) toggleButton.click();
+                    }, 100);
+                }
             }
 
             // === Spline 模型載入偵測 ===
@@ -2591,6 +2602,9 @@
                     // 收合邏輯：回到視差滾動模式 (Fold)
                     // =================================================
 
+                    // === 修改處：儲存狀態為收合 ===
+                    sessionStorage.setItem('portfolioExpanded', 'false');
+
                     // 1. 清除強制隱藏的行內樣式，讓 CSS Class 重新接管
                     if (scrollerContainerMobile) scrollerContainerMobile.style.display = '';
                     if (scrollerContainerDesktop) scrollerContainerDesktop.style.display = '';
@@ -2624,6 +2638,9 @@
                     // =================================================
                     // 展開邏輯：進入正常滾動模式 (View All)
                     // =================================================
+
+                    // === 修改處：儲存狀態為展開 ===
+                    sessionStorage.setItem('portfolioExpanded', 'true');
 
                     // 修改重點：使用 style.display = 'none' 強制隱藏
                     // 這會覆蓋掉 CSS 中的 md:block，解決桌機版無法隱藏的問題
