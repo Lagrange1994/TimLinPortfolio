@@ -2269,7 +2269,6 @@
                 return;
             }
 
-            // 如果在展開模式下切換頁面，先收合再移動
             if (isPortfolioExpanded) {
                 const toggleButton = document.getElementById('toggle-portfolio-view');
                 if (toggleButton) toggleButton.click();
@@ -2283,7 +2282,6 @@
             const targetSection = sections[index];
             const currentSection = sections[currentSectionIndex];
 
-            // 更新網址與 Session
             const targetId = targetSection.id;
             if (targetId) {
                 history.replaceState(null, null, `#${targetId}`);
@@ -2427,7 +2425,7 @@
             document.getElementById('menu-overlay')?.classList.remove('active');
         }
 
-        // === 點擊記錄邏輯 (事件委派) ===
+        // === 點擊記錄邏輯 ===
         document.addEventListener('click', function (e) {
             const card = e.target.closest('.project-card');
             if (card && isPortfolioExpanded) {
@@ -2441,6 +2439,18 @@
         // === WINDOW ONLOAD ===
         window.onload = function () {
             if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+            // F5 重新整理偵測與重置
+            const navEntry = performance.getEntriesByType("navigation")[0];
+            if (navEntry && navEntry.type === 'reload') {
+                window.scrollTo(0, 0);
+                sessionStorage.removeItem('lastSectionIndex');
+                sessionStorage.removeItem('portfolioExpanded');
+                sessionStorage.removeItem('portfolioScrollPos');
+                sessionStorage.removeItem('portfolioActiveFilter');
+                history.replaceState(null, null, ' ');
+            }
+
             const loader = document.querySelector('.loader');
 
             function hideLoader() {
@@ -2457,7 +2467,7 @@
                     if (saved !== null) initialIndex = parseInt(saved, 10);
                 }
 
-                // === 關鍵修正：區分「還原模式」與「一般模式」 ===
+                // 還原模式判斷
                 const savedExpandedState = sessionStorage.getItem('portfolioExpanded');
                 const isRestoreMode = (savedExpandedState === 'true' && initialIndex === 3 && !isMobile());
 
@@ -2510,6 +2520,8 @@
                             sections[0].classList.add('active-section');
                             updateNav(0);
                             triggerInternalAnimations(sections[0]);
+                            scroller.scrollTop = 0;
+                            window.scrollTo(0, 0);
                         }
                     }
                 } else {
@@ -2608,24 +2620,22 @@
                 const isGridVisible = !grid.classList.contains('hidden');
 
                 if (isGridVisible) {
-                    // === 收合邏輯 (Back to Scroller) ===
+                    // === 收合邏輯 (Fold) ===
                     sessionStorage.setItem('portfolioExpanded', 'false');
 
-                    // 1. 重置 Scroller 顯示屬性 (但先設為透明，避免跳動)
                     if (scrollMob) {
                         scrollMob.style.display = '';
                         scrollMob.className = 'stagger-item md:hidden';
-                        scrollMob.style.opacity = '0'; // 關鍵：先隱藏
+                        scrollMob.style.opacity = '0';
                         scrollMob.style.visibility = 'visible';
                     }
                     if (scrollDesk) {
                         scrollDesk.style.display = '';
                         scrollDesk.className = 'stagger-item hidden md:block';
-                        scrollDesk.style.opacity = '0'; // 關鍵：先隱藏
+                        scrollDesk.style.opacity = '0';
                         scrollDesk.style.visibility = 'visible';
                     }
 
-                    // 2. 關鍵修正：將按鈕容器也先隱藏，讓它跟 Scroller 一起浮現
                     const btnContainer = btn.closest('.stagger-item');
                     if (btnContainer) btnContainer.style.opacity = '0';
 
@@ -2642,11 +2652,10 @@
                     sections[3].classList.add('active-section');
                     updateNav(3);
 
-                    // 3. 觸發整體動畫 (Scroller + Button 會一起慢慢浮現)
                     triggerInternalAnimations(sections[3]);
 
                 } else {
-                    // === 展開邏輯 (Expand to Grid) ===
+                    // === 展開邏輯 (Expand) ===
                     sessionStorage.setItem('portfolioExpanded', 'true');
                     if (scrollMob) scrollMob.style.display = 'none';
                     if (scrollDesk) scrollDesk.style.display = 'none';
@@ -2662,6 +2671,14 @@
                     document.body.classList.add('expanded-view');
 
                     const gridCards = grid.querySelectorAll('.project-card');
+
+                    // === 關鍵修正：確保卡片具有互動性 ===
+                    // 加入 .visible 確保 pointer-events: auto 生效
+                    gridCards.forEach(card => {
+                        card.classList.add('visible');
+                        card.style.pointerEvents = 'auto'; // 雙重保險
+                    });
+
                     if (gridCards[0].style.opacity !== '1') {
                         gsap.fromTo(gridCards, { opacity: 0 }, { opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" });
                     }
