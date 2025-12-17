@@ -44,9 +44,9 @@
                     backgroundImage: {
                         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
                     },
-                    // --- 新增流光動畫設定 ---
+                    // --- 流光動畫設定 ---
                     animation: {
-                        shimmer: 'shimmer 1.5s infinite', // 1.5秒循環一次
+                        shimmer: 'shimmer 1.5s infinite',
                     },
                     keyframes: {
                         shimmer: {
@@ -106,13 +106,13 @@
         /* Custom Hero Background - Updated for WebP Support */
         .hero-bg-custom {
             /* Fallback */
-            background-image: url('./img/project_12/hero_img.jpg');
+            background-image: url('./img/project_12/hero_img.png');
 
             /* Modern browsers: choose between WebP and PNG */
             background-image: -webkit-image-set(url('./img/project_12/hero_img.webp') 1x,
-                    url('./img/project_12/hero_img.jpg') 1x);
+                    url('./img/project_12/hero_img.png') 1x);
             background-image: image-set(url('./img/project_12/hero_img.webp') 1x,
-                    url('./img/project_12/hero_img.jpg') 1x);
+                    url('./img/project_12/hero_img.png') 1x);
 
             background-size: cover;
             background-position: center;
@@ -332,15 +332,20 @@
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {/* Skeleton Loader with Shimmer Effect */}
+                    {/* Skeleton Loader with 110deg Shimmer Effect */}
                     {!loaded && (
                         <div className="absolute inset-0 bg-dark-lighter z-10 rounded-lg overflow-hidden flex items-center justify-center pointer-events-none">
 
                             {/* Static Icon */}
                             <i className="fas fa-image text-white/10 text-3xl relative z-10"></i>
 
-                            {/* Shimmer Overlay: Moving Gradient */}
-                            <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent z-20"></div>
+                            {/* Shimmer Overlay: Moving Gradient at 110 degrees */}
+                            <div
+                                className="absolute inset-0 -translate-x-full animate-shimmer z-20"
+                                style={{
+                                    background: 'linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%)'
+                                }}
+                            ></div>
                         </div>
                     )}
 
@@ -376,7 +381,7 @@
         const App = () => {
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('context');
-            const [currentImage, setCurrentImage] = useState('./img/project_12/display.jpg');
+            const [currentImage, setCurrentImage] = useState('./img/project_12/display.png');
             const [activeGalleryId, setActiveGalleryId] = useState('01');
             const [showBackToHero, setShowBackToHero] = useState(false);
 
@@ -400,8 +405,8 @@
                 // 1. Listen for Hero image load
                 const heroImagePromise = new Promise((resolve, reject) => {
                     const img = new Image();
-                    // Project 12 uses .jpg for hero
-                    img.src = './img/project_12/hero_img.jpg';
+                    // Project 12 uses .png for hero
+                    img.src = './img/project_12/hero_img.png';
                     img.onload = () => resolve('hero loaded');
                     img.onerror = () => resolve('hero error');
                 });
@@ -436,7 +441,7 @@
                 switch (activeTab) {
                     case 'context':
                     case 'process':
-                        setCurrentImage('./img/project_12/display.jpg');
+                        setCurrentImage('./img/project_12/display.png');
                         setActiveGalleryId(null);
                         break;
                     case 'solution':
@@ -448,7 +453,7 @@
                         setActiveGalleryId(GALLERY_IMAGES[0].id);
                         break;
                     default:
-                        setCurrentImage('./img/project_12/display.jpg');
+                        setCurrentImage('./img/project_12/display.png');
                         setActiveGalleryId(null);
                 }
             }, [activeTab]);
