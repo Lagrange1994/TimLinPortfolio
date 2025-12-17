@@ -169,9 +169,17 @@
             }
         }
 
-        /* Custom Hero Background (Using P04 Image) */
+        /* Custom Hero Background (Using P04 Image with WebP support) */
         .hero-bg-custom {
+            /* Fallback for older browsers */
             background-image: url('./img/project_04/hero_img.jpg');
+
+            /* Modern browsers: choose between WebP and JPG */
+            background-image: -webkit-image-set(url('./img/project_04/hero_img.webp') 1x,
+                    url('./img/project_04/hero_img.jpg') 1x);
+            background-image: image-set(url('./img/project_04/hero_img.webp') 1x,
+                    url('./img/project_04/hero_img.jpg') 1x);
+
             background-size: cover;
             background-position: center;
             position: relative;
@@ -278,6 +286,19 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        // === HELPER COMPONENT: Responsive Image (WebP Support) ===
+        const ResponsiveImage = ({ src, className, alt, style, ...props }) => {
+            if (!src) return null;
+            const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+
+            return (
+                <picture style={{ display: 'contents' }}>
+                    <source srcSet={webpSrc} type="image/webp" />
+                    <img src={src} className={className} alt={alt} style={style} {...props} />
+                </picture>
+            );
+        };
+
         // === PROJECT 04 ICONS ===
         const Icons = {
             XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
@@ -302,7 +323,7 @@
             { id: '08', name: '接收支援', desc: '即時接收鄰近同仁求救訊號，縮短支援反應時間。', src: './img/project_04/08.jpg' }
         ];
 
-        // === PHONE FRAME COMPONENT (Refined to strictly fit Left Side) ===
+        // === PHONE FRAME COMPONENT ===
         const PhoneFrame = ({ src, alt }) => {
             return (
                 <div className="w-full h-full flex items-center justify-center pointer-events-none">
@@ -316,7 +337,7 @@
                         border-[6px] md:border-[8px] border-[#2d2d2d]
                         rounded-[1.25rem] lg:rounded-[2.5rem]
                     ">
-                        <img
+                        <ResponsiveImage
                             src={src}
                             alt={alt}
                             className="w-full h-full object-cover block"
@@ -348,9 +369,57 @@
             const OVERSCROLL_THRESHOLD = 200;
             const touchStartY = useRef(0);
 
+            // === Auto-scroll to top when activeTab changes ===
             useEffect(() => {
-                const timer = setTimeout(() => setLoading(false), 1500);
-                return () => clearTimeout(timer);
+                if (contentScrollRef.current) {
+                    contentScrollRef.current.scrollTop = 0;
+                }
+            }, [activeTab]);
+
+            // === IMAGE PRELOADING LOGIC ===
+            useEffect(() => {
+                const preloadImages = async () => {
+                    // List of all critical images to preload
+                    const imagesToLoad = [
+                        './img/project_04/hero_img.jpg',
+                        MAIN_IMAGE,
+                        './img/project_04/03@2x.jpg', // Used in Solution tab
+                        ...GALLERY_IMAGES.map(img => img.src)
+                    ];
+
+                    // Generate a list containing both JPG and WebP versions
+                    const allUrlsToFetch = [];
+                    imagesToLoad.forEach(url => {
+                        allUrlsToFetch.push(url);
+                        // Also preload the WebP version to ensure ResponsiveImage works instantly
+                        if (url.match(/\.(jpg|jpeg|png)$/i)) {
+                            allUrlsToFetch.push(url.replace(/\.(jpg|jpeg|png)$/i, '.webp'));
+                        }
+                    });
+
+                    // Create a promise for each image
+                    const promises = allUrlsToFetch.map(src => {
+                        return new Promise((resolve) => {
+                            const img = new Image();
+                            img.src = src;
+                            // Resolve whether it loads successfully or fails (to avoid sticking)
+                            img.onload = resolve;
+                            img.onerror = resolve;
+                        });
+                    });
+
+                    // Wait for all images to settle
+                    try {
+                        await Promise.all(promises);
+                    } catch (err) {
+                        console.error("Image preload error", err);
+                    }
+
+                    // Minimum delay to prevent flickering if cache is instant, then hide loader
+                    setLoading(false);
+                };
+
+                preloadImages();
             }, []);
 
             useEffect(() => {
@@ -426,7 +495,7 @@
                 }, "-=0.8");
             };
 
-            // === DAMPING LOGIC ===
+            // === DAMPING LOGIC (Locked Upward Scroll) ===
             const handleWheel = (e) => {
                 if (isScrollingRef.current) return;
                 const isSplitView = currentSectionIndex === 1;
@@ -437,7 +506,6 @@
                         const { scrollTop, scrollHeight, clientHeight } = contentEl;
                         if (e.deltaY < 0 && scrollTop <= 0) {
                             overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
                         } else {
                             overscrollAccumulator.current = 0;
                             if (scrollHeight > clientHeight && e.deltaY > 0) return;
@@ -446,7 +514,6 @@
                     } else {
                         if (e.deltaY < 0) {
                             overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
                         } else {
                             overscrollAccumulator.current = 0;
                         }
@@ -456,8 +523,7 @@
                 if (e.deltaY > 0) {
                     if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
                 } else {
-                    const thresholdMet = overscrollAccumulator.current >= OVERSCROLL_THRESHOLD;
-                    if (currentSectionIndex > 0 && (!isSplitView || thresholdMet)) scrollToSection(currentSectionIndex - 1);
+                    // Locked: Cannot scroll up to previous section via wheel
                 }
             };
 
@@ -484,15 +550,13 @@
                         }
                         if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
                     } else {
+                        // Locked: Cannot scroll up via swipe (except internal content scroll)
                         if (isSplitView && isInsideContent) {
                             if (contentEl.scrollTop > 0) {
                                 overscrollAccumulator.current = 0;
                                 return;
                             }
-                            overscrollAccumulator.current += Math.abs(diff);
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
                         }
-                        if (currentSectionIndex > 0) scrollToSection(currentSectionIndex - 1);
                     }
                 }
             };
@@ -566,7 +630,8 @@
                                         <div className="w-full h-full flex items-center justify-center pointer-events-none">
                                             <div className="relative z-10 w-full h-auto max-w-4xl max-h-[90vh] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
                                                 <div className="w-full h-full bg-transparent flex items-center justify-center overflow-hidden">
-                                                    <img src={currentImage} alt="Preview" className="w-full h-full object-contain rounded-xl shadow-2xl" />
+                                                    {/* Changed to ResponsiveImage */}
+                                                    <ResponsiveImage src={currentImage} alt="Preview" className="w-full h-full object-contain rounded-xl shadow-2xl" />
                                                 </div>
                                             </div>
                                         </div>
@@ -575,7 +640,6 @@
                                         <PhoneFrame src={currentImage} alt="Preview" />
                                     )
                                 }
-                                {/* REMOVED: Image Toggle Buttons for Mobile. Only cards on right trigger change. */}
                             </div>
 
                             {/* RIGHT: Narrative Scroll */}
