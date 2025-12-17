@@ -172,9 +172,40 @@
             }
         }
 
-        /* Custom Hero Background */
+        /* Skeleton Loading Animation */
+        @keyframes pulse-bg {
+
+            0%,
+            100% {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+
+            50% {
+                background-color: rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        .skeleton-loader {
+            animation: pulse-bg 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        /* Custom Hero Background (Updated for WebP/JPG Support) */
         .hero-bg-custom {
+            /* Fallback */
             background-image: url('./img/project_05/hero_img.jpg');
+
+            /* Modern browsers */
+            background-image: -webkit-image-set(url('./img/project_05/hero_img.webp') 1x,
+                    url('./img/project_05/hero_img.jpg') 1x);
+            background-image: image-set(url('./img/project_05/hero_img.webp') 1x,
+                    url('./img/project_05/hero_img.jpg') 1x);
+
             background-size: cover;
             background-position: center;
             position: relative;
@@ -281,6 +312,55 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
+        // --- HELPER COMPONENTS (For Smart Loading & Formats) ---
+
+        // 1. Responsive Image (WebP Support)
+        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
+            if (!src) return null;
+            // Simple logic: assume .webp exists if .jpg/.png is provided
+            const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+
+            return (
+                <picture style={{ display: 'contents' }}>
+                    <source srcSet={webpSrc} type="image/webp" />
+                    <img
+                        src={src}
+                        className={className}
+                        alt={alt}
+                        style={style}
+                        onLoad={onLoad}
+                        {...props}
+                    />
+                </picture>
+            );
+        };
+
+        // 2. Image With Skeleton Loader
+        const ImageWithSkeleton = ({ src, alt, className, containerClassName }) => {
+            const [loaded, setLoaded] = useState(false);
+
+            useEffect(() => {
+                setLoaded(false);
+            }, [src]);
+
+            return (
+                <div className={`relative w-full h-full overflow-hidden ${containerClassName || ''}`}>
+                    {/* Skeleton */}
+                    {!loaded && (
+                        <div className="skeleton-loader"></div>
+                    )}
+
+                    {/* Actual Image */}
+                    <ResponsiveImage
+                        src={src}
+                        alt={alt}
+                        className={`${className} transition-opacity duration-500 ease-in-out ${loaded ? 'opacity-100' : 'opacity-0'}`}
+                        onLoad={() => setLoaded(true)}
+                    />
+                </div>
+            );
+        };
+
         // Icons Component
         const Icons = {
             Figma: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2H8.5C6.57 2 5 3.57 5 5.5C5 7.43 6.57 9 8.5 9H12V2Z" /><path d="M12 9H8.5C6.57 9 5 10.57 5 12.5C5 14.43 6.57 16 8.5 16H12V9Z" /><path d="M12 16H8.5C6.57 16 5 17.57 5 19.5C5 21.43 6.57 23 8.5 23C10.43 23 12 21.43 12 19.5V16Z" /><path d="M12 2H15.5C17.43 2 19 3.57 19 5.5C19 7.43 17.43 9 15.5 9H12V2Z" /><circle cx="15.5" cy="12.5" r="3.5" /></svg>,
@@ -348,9 +428,25 @@
             const OVERSCROLL_THRESHOLD = 200;
             const touchStartY = useRef(0);
 
+            // === 1. SMART LOADING LOGIC ===
             useEffect(() => {
-                const timer = setTimeout(() => setLoading(false), 1500);
-                return () => clearTimeout(timer);
+                const heroSrc = './img/project_05/hero_img.jpg';
+
+                // 1. Minimum Time Promise (1.0s)
+                const minTimePromise = new Promise(resolve => setTimeout(resolve, 1000));
+
+                // 2. Hero Loading Promise
+                const heroPromise = new Promise((resolve) => {
+                    const img = new Image();
+                    img.src = heroSrc;
+                    img.onload = () => resolve();
+                    img.onerror = () => resolve();
+                });
+
+                // Wait for both
+                Promise.all([minTimePromise, heroPromise]).then(() => {
+                    setLoading(false);
+                });
             }, []);
 
             // Initialize Sections for GSAP
@@ -358,6 +454,13 @@
                 sectionsRef.current = [heroRef.current, splitRef.current];
                 if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
             }, [loading]);
+
+            // === 2. TAB SCROLL TO TOP ===
+            useEffect(() => {
+                if (contentScrollRef.current) {
+                    contentScrollRef.current.scrollTop = 0;
+                }
+            }, [activeTab]);
 
             // Tab Switch Logic
             useEffect(() => {
@@ -447,7 +550,7 @@
                 }, "-=0.8");
             };
 
-            // === DAMPING LOGIC ===
+            // === 3. SCROLL LOCK LOGIC (Only Down, No Up) ===
             const handleWheel = (e) => {
                 if (isScrollingRef.current) return;
                 const isSplitView = currentSectionIndex === 1;
@@ -460,8 +563,8 @@
 
                         // Scrolling UP (Trying to go back to Hero)
                         if (e.deltaY < 0 && scrollTop <= 0) {
+                            // Accumulate for effect, but DO NOT SWITCH SECTIONS
                             overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return; // Dampen
                         } else {
                             overscrollAccumulator.current = 0;
                             // Block normal scroll logic if we are just scrolling content
@@ -472,7 +575,6 @@
                         // Mouse is over visual area (left side)
                         if (e.deltaY < 0) {
                             overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return;
                         } else {
                             overscrollAccumulator.current = 0;
                         }
@@ -481,14 +583,14 @@
 
                 // Section Switching Logic
                 if (e.deltaY > 0) {
+                    // SCROLL DOWN: ALLOWED
                     if (currentSectionIndex < sectionsRef.current.length - 1) {
                         scrollToSection(currentSectionIndex + 1);
                     }
                 } else {
-                    const thresholdMet = overscrollAccumulator.current >= OVERSCROLL_THRESHOLD;
-                    if (currentSectionIndex > 0 && (!isSplitView || thresholdMet)) {
-                        scrollToSection(currentSectionIndex - 1);
-                    }
+                    // SCROLL UP: BLOCKED
+                    // User must use the "Back to Top" button
+                    // Logic to switch to (currentSectionIndex - 1) is removed.
                 }
             };
 
@@ -508,7 +610,7 @@
 
                 if (Math.abs(diff) > 50) {
                     if (diff > 0) {
-                        // Swipe Up (Go Down)
+                        // Swipe Up (Go Down) -> ALLOWED
                         overscrollAccumulator.current = 0;
                         if (isSplitView && isInsideContent) {
                             const { scrollTop, scrollHeight, clientHeight } = contentEl;
@@ -519,20 +621,8 @@
                             scrollToSection(currentSectionIndex + 1);
                         }
                     } else {
-                        // Swipe Down (Go Up / Back to Hero)
-                        if (isSplitView && isInsideContent) {
-                            if (contentEl.scrollTop > 0) {
-                                overscrollAccumulator.current = 0;
-                                return; // Just scrolling content
-                            }
-                            // Accumulate 'pull'
-                            overscrollAccumulator.current += Math.abs(diff);
-                            if (overscrollAccumulator.current < OVERSCROLL_THRESHOLD) return; // Dampen
-                        }
-
-                        if (currentSectionIndex > 0) {
-                            scrollToSection(currentSectionIndex - 1);
-                        }
+                        // Swipe Down (Go Up / Back to Hero) -> BLOCKED
+                        // Logic removed.
                     }
                 }
             };
@@ -638,7 +728,8 @@
                                         )}
 
                                         <div className={`relative w-full h-full overflow-hidden flex items-center justify-center ${imageType === 'app' ? '' : 'bg-white/5'}`}>
-                                            <img
+                                            {/* REPLACED WITH SKELETON IMAGE COMPONENT */}
+                                            <ImageWithSkeleton
                                                 src={currentImage}
                                                 alt="Preview"
                                                 className={`block ${imageType === 'app' ? 'w-full h-full object-contain' : 'w-full h-full object-contain'}`}
@@ -664,9 +755,6 @@
                                             <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">新竹市動物園<br />內部管理與行動應變系統</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-4">Internal Management & Mobile Response</p>
 
-                                            {/* FIXED: Removed 'scroll-content' class from this div. 
-                                                'scroll-content' was enforcing touch-action: pan-y, which blocked horizontal scrolling.
-                                            */}
                                             <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full">
                                                 {[
                                                     { id: 'context', label: '01. 背景與挑戰' },
