@@ -182,13 +182,13 @@
         /* Custom Hero Background - Updated for WebP Support */
         .hero-bg-custom {
             /* Fallback */
-            background-image: url('./img/project_09/hero_img.png');
+            background-image: url('./img/project_09/hero_img.jpg');
 
             /* Modern browsers: choose between WebP and PNG */
             background-image: -webkit-image-set(url('./img/project_09/hero_img.webp') 1x,
-                    url('./img/project_09/hero_img.png') 1x);
+                    url('./img/project_09/hero_img.jpg') 1x);
             background-image: image-set(url('./img/project_09/hero_img.webp') 1x,
-                    url('./img/project_09/hero_img.png') 1x);
+                    url('./img/project_09/hero_img.jpg') 1x);
 
             background-size: cover;
             background-position: center;
@@ -379,7 +379,7 @@
                 title: '視覺化預約系統',
                 desc: '整合即時日曆視圖，解決人工登記的衝突痛點。',
                 icon: 'Efficiency',
-                image: './img/project_09/Room Reservation.png',
+                image: './img/project_09/Room Reservation.jpg',
                 benefit: 'Benefit: 透過直觀的日曆視圖，員工可一秒辨識空檔並直接預約，杜絕撞期，大幅節省溝通成本。'
             },
             {
@@ -387,7 +387,7 @@
                 title: '結構化員工通訊錄',
                 desc: '打破部門藩籬，建立統一的數位化聯絡中心。',
                 icon: 'Users',
-                image: './img/project_09/menu.png',
+                image: './img/project_09/menu.jpg',
                 benefit: 'Benefit: 清晰列出人員職稱、科室與分機，強化跨部門協作效率。'
             },
             {
@@ -395,23 +395,23 @@
                 title: '分級權限管理',
                 desc: '針對不同科室與職級設定專屬權限，確保資料流向安全可控。',
                 icon: 'Lock',
-                image: './img/project_09/manage.png',
+                image: './img/project_09/manage.jpg',
                 benefit: 'Benefit: 針對不同科室設定專屬權限，確保資料流向安全可控。'
             }
         ];
 
         // Gallery Images
         const GALLERY_IMAGES = [
-            { id: '01', name: '管理者後台', src: './img/project_09/manage.png' },
-            { id: '02', name: '消息中心', src: './img/project_09/News.png' },
-            { id: '03', name: '預約表單', src: './img/project_09/Room Reservation non.png' },
-            { id: '04', name: '局務會議', src: './img/project_09/Authority.png' }
+            { id: '01', name: '管理者後台', src: './img/project_09/manage.jpg' },
+            { id: '02', name: '消息中心', src: './img/project_09/News.jpg' },
+            { id: '03', name: '預約表單', src: './img/project_09/Room Reservation non.jpg' },
+            { id: '04', name: '局務會議', src: './img/project_09/Authority.jpg' }
         ];
 
         const App = () => {
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('context');
-            const [currentImage, setCurrentImage] = useState('./img/project_09/display.png');
+            const [currentImage, setCurrentImage] = useState('./img/project_09/display.jpg');
             const [activeGalleryId, setActiveGalleryId] = useState(null);
             const [activeSolutionId, setActiveSolutionId] = useState(null);
             const [showBackToHero, setShowBackToHero] = useState(false);
@@ -434,7 +434,7 @@
                 // 1. Listen for Hero image load
                 const heroImagePromise = new Promise((resolve, reject) => {
                     const img = new Image();
-                    img.src = './img/project_09/hero_img.png';
+                    img.src = './img/project_09/hero_img.jpg';
                     img.onload = () => resolve('hero loaded');
                     img.onerror = () => resolve('hero error');
                 });
@@ -470,12 +470,12 @@
             useEffect(() => {
                 switch (activeTab) {
                     case 'context':
-                        setCurrentImage('./img/project_09/display.png');
+                        setCurrentImage('./img/project_09/display.jpg');
                         setActiveGalleryId(null);
                         setActiveSolutionId(null);
                         break;
                     case 'process':
-                        setCurrentImage('./img/project_09/display.png');
+                        setCurrentImage('./img/project_09/display.jpg');
                         setActiveGalleryId(null);
                         setActiveSolutionId(null);
                         break;
@@ -490,7 +490,7 @@
                         setActiveSolutionId(null);
                         break;
                     default:
-                        setCurrentImage('./img/project_09/display.png');
+                        setCurrentImage('./img/project_09/display.jpg');
                 }
             }, [activeTab]);
 
