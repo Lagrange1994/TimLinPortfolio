@@ -43,6 +43,13 @@
                     },
                     animation: {
                         pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        shimmer: 'shimmer 1.5s infinite linear', // 新增流光動畫
+                    },
+                    keyframes: {
+                        shimmer: {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(100%)' }
+                        }
                     }
                 }
             }
@@ -310,7 +317,7 @@
             );
         };
 
-        // --- NEW COMPONENT: Image with Skeleton Loading ---
+        // --- NEW COMPONENT: Image with Skeleton Shimmer Loading ---
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
 
@@ -321,10 +328,16 @@
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {/* Skeleton Loader */}
+                    {/* Skeleton Loader with Shimmer Effect */}
                     {!loaded && (
-                        <div className="absolute inset-0 bg-dark-lighter/50 animate-pulse rounded-lg z-10 flex items-center justify-center pointer-events-none">
-                            <i className="fas fa-image text-white/10 text-3xl"></i>
+                        <div className="absolute inset-0 bg-dark-lighter rounded-lg z-10 overflow-hidden flex items-center justify-center pointer-events-none">
+                            {/* Static Background Icon (Optional) */}
+                            <div className="absolute z-10 opacity-20">
+                                <i className="fas fa-image text-white text-3xl"></i>
+                            </div>
+
+                            {/* Shimmer Overlay */}
+                            <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent z-20"></div>
                         </div>
                     )}
 
