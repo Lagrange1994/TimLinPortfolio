@@ -90,7 +90,6 @@
         .scroll-content {
             overflow-y: auto !important;
             touch-action: pan-y !important;
-            /* 關鍵：這會阻擋橫向滑動，所以不能用在 Tab 上 */
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
             height: 100%;
@@ -172,27 +171,19 @@
             }
         }
 
-        /* Skeleton Loading Animation */
-        @keyframes pulse-bg {
-
-            0%,
-            100% {
-                background-color: rgba(255, 255, 255, 0.05);
-            }
-
-            50% {
-                background-color: rgba(255, 255, 255, 0.15);
-            }
+        /* === Skeleton Shimmer Effect (新增) === */
+        /* 取代原本的 pulse-bg */
+        .skeleton {
+            background: #1e293b;
+            background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
         }
 
-        .skeleton-loader {
-            animation: pulse-bg 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 10;
+        @keyframes shimmer {
+            to {
+                background-position-x: -200%;
+            }
         }
 
         /* Custom Hero Background (Updated for WebP/JPG Support) */
@@ -312,12 +303,11 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- HELPER COMPONENTS (For Smart Loading & Formats) ---
+        // --- HELPER COMPONENTS ---
 
         // 1. Responsive Image (WebP Support)
         const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
-            // Simple logic: assume .webp exists if .jpg/.png is provided
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
 
             return (
@@ -335,8 +325,8 @@
             );
         };
 
-        // 2. Image With Skeleton Loader
-        const ImageWithSkeleton = ({ src, alt, className, containerClassName }) => {
+        // 2. Image With Skeleton Loader (Modified with Shimmer Effect)
+        const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
 
             useEffect(() => {
@@ -344,18 +334,20 @@
             }, [src]);
 
             return (
-                <div className={`relative w-full h-full overflow-hidden ${containerClassName || ''}`}>
-                    {/* Skeleton */}
+                <div className={`relative ${containerClassName || 'w-full h-full'}`}>
+                    {/* 使用 .skeleton 類別建立遮罩層 */}
                     {!loaded && (
-                        <div className="skeleton-loader"></div>
+                        <div className="absolute inset-0 skeleton rounded-lg z-10 flex items-center justify-center">
+                            <i className="fas fa-image text-white/10 text-3xl"></i>
+                        </div>
                     )}
 
-                    {/* Actual Image */}
                     <ResponsiveImage
                         src={src}
                         alt={alt}
                         className={`${className} transition-opacity duration-500 ease-in-out ${loaded ? 'opacity-100' : 'opacity-0'}`}
                         onLoad={() => setLoaded(true)}
+                        {...props}
                     />
                 </div>
             );
