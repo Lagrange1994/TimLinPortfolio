@@ -171,8 +171,7 @@
             }
         }
 
-        /* === Skeleton Shimmer Effect (新增) === */
-        /* 取代原本的 pulse-bg */
+        /* === Skeleton Shimmer Effect === */
         .skeleton {
             background: #1e293b;
             background: linear-gradient(to right, #1A1D24 8%, #2A303C 18%, #1A1D24 33%);
@@ -186,17 +185,13 @@
             }
         }
 
-        /* Custom Hero Background (Updated for WebP/JPG Support) */
+        /* Custom Hero Background */
         .hero-bg-custom {
-            /* Fallback */
             background-image: url('./img/project_05/hero_img.jpg');
-
-            /* Modern browsers */
             background-image: -webkit-image-set(url('./img/project_05/hero_img.webp') 1x,
                     url('./img/project_05/hero_img.jpg') 1x);
             background-image: image-set(url('./img/project_05/hero_img.webp') 1x,
                     url('./img/project_05/hero_img.jpg') 1x);
-
             background-size: cover;
             background-position: center;
             position: relative;
@@ -305,7 +300,7 @@
 
         // --- HELPER COMPONENTS ---
 
-        // 1. Responsive Image (WebP Support)
+        // 1. Responsive Image
         const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
@@ -325,7 +320,7 @@
             );
         };
 
-        // 2. Image With Skeleton Loader (Modified with Shimmer Effect)
+        // 2. Image With Skeleton Loader
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
 
@@ -335,13 +330,11 @@
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {/* 使用 .skeleton 類別建立遮罩層 */}
                     {!loaded && (
                         <div className="absolute inset-0 skeleton rounded-lg z-10 flex items-center justify-center">
                             <i className="fas fa-image text-white/10 text-3xl"></i>
                         </div>
                     )}
-
                     <ResponsiveImage
                         src={src}
                         alt={alt}
@@ -420,34 +413,79 @@
             const OVERSCROLL_THRESHOLD = 200;
             const touchStartY = useRef(0);
 
-            // === 1. SMART LOADING LOGIC ===
+            // === RESIZABLE VISUAL HEIGHT (Mobile) - UPDATED TO 35vh MIN ===
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(35); // Default 35vh
+            const isResizingRef = useRef(false);
+
+            // 1. Resize Handle Event Handlers
+            const handleResizeStart = (e) => {
+                if (window.innerWidth >= 1024) return;
+                isResizingRef.current = true;
+                document.body.style.userSelect = 'none'; // Prevent text selection
+            };
+
+            // 2. Resize Logic in useEffect
+            useEffect(() => {
+                const handleResizeMove = (e) => {
+                    if (!isResizingRef.current) return;
+
+                    let clientY;
+                    if (e.type === 'touchmove') {
+                        clientY = e.touches[0].clientY;
+                    } else {
+                        clientY = e.clientY;
+                    }
+
+                    const windowHeight = window.innerHeight;
+                    let newHeightVh = (clientY / windowHeight) * 100;
+
+                    const maxVh = 80;
+                    const minVh = 35; // UPDATED: Minimum height restricted to 35vh
+
+                    if (newHeightVh < minVh) newHeightVh = minVh;
+                    if (newHeightVh > maxVh) newHeightVh = maxVh;
+
+                    setMobileVisualHeight(newHeightVh);
+                };
+
+                const handleResizeEnd = () => {
+                    isResizingRef.current = false;
+                    document.body.style.userSelect = '';
+                };
+
+                window.addEventListener('mousemove', handleResizeMove);
+                window.addEventListener('touchmove', handleResizeMove, { passive: false });
+                window.addEventListener('mouseup', handleResizeEnd);
+                window.addEventListener('touchend', handleResizeEnd);
+
+                return () => {
+                    window.removeEventListener('mousemove', handleResizeMove);
+                    window.removeEventListener('touchmove', handleResizeMove);
+                    window.removeEventListener('mouseup', handleResizeEnd);
+                    window.removeEventListener('touchend', handleResizeEnd);
+                };
+            }, []);
+
+            // === SMART LOADING LOGIC ===
             useEffect(() => {
                 const heroSrc = './img/project_05/hero_img.jpg';
-
-                // 1. Minimum Time Promise (1.0s)
                 const minTimePromise = new Promise(resolve => setTimeout(resolve, 1000));
-
-                // 2. Hero Loading Promise
                 const heroPromise = new Promise((resolve) => {
                     const img = new Image();
                     img.src = heroSrc;
                     img.onload = () => resolve();
                     img.onerror = () => resolve();
                 });
-
-                // Wait for both
                 Promise.all([minTimePromise, heroPromise]).then(() => {
                     setLoading(false);
                 });
             }, []);
 
-            // Initialize Sections for GSAP
             useEffect(() => {
                 sectionsRef.current = [heroRef.current, splitRef.current];
                 if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
             }, [loading]);
 
-            // === 2. TAB SCROLL TO TOP ===
             useEffect(() => {
                 if (contentScrollRef.current) {
                     contentScrollRef.current.scrollTop = 0;
@@ -505,7 +543,7 @@
                 const currentSection = sectionsRef.current[currentSectionIndex];
 
                 setShowBackToHero(index > 0);
-                overscrollAccumulator.current = 0; // Reset damping
+                overscrollAccumulator.current = 0;
 
                 const tl = gsap.timeline({
                     onComplete: () => {
@@ -542,29 +580,22 @@
                 }, "-=0.8");
             };
 
-            // === 3. SCROLL LOCK LOGIC (Only Down, No Up) ===
             const handleWheel = (e) => {
                 if (isScrollingRef.current) return;
                 const isSplitView = currentSectionIndex === 1;
                 const contentEl = contentScrollRef.current;
 
                 if (isSplitView) {
-                    // Check if mouse is over the scrolling content
                     if (contentEl && contentEl.contains(e.target)) {
                         const { scrollTop, scrollHeight, clientHeight } = contentEl;
-
-                        // Scrolling UP (Trying to go back to Hero)
                         if (e.deltaY < 0 && scrollTop <= 0) {
-                            // Accumulate for effect, but DO NOT SWITCH SECTIONS
                             overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
                         } else {
                             overscrollAccumulator.current = 0;
-                            // Block normal scroll logic if we are just scrolling content
-                            if (scrollHeight > clientHeight && e.deltaY > 0) return; // Scrolling down content
-                            if (scrollHeight > clientHeight && e.deltaY < 0 && scrollTop > 0) return; // Scrolling up content
+                            if (scrollHeight > clientHeight && e.deltaY > 0) return;
+                            if (scrollHeight > clientHeight && e.deltaY < 0 && scrollTop > 0) return;
                         }
                     } else {
-                        // Mouse is over visual area (left side)
                         if (e.deltaY < 0) {
                             overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
                         } else {
@@ -573,16 +604,10 @@
                     }
                 }
 
-                // Section Switching Logic
                 if (e.deltaY > 0) {
-                    // SCROLL DOWN: ALLOWED
                     if (currentSectionIndex < sectionsRef.current.length - 1) {
                         scrollToSection(currentSectionIndex + 1);
                     }
-                } else {
-                    // SCROLL UP: BLOCKED
-                    // User must use the "Back to Top" button
-                    // Logic to switch to (currentSectionIndex - 1) is removed.
                 }
             };
 
@@ -592,9 +617,11 @@
             };
 
             const handleTouchEnd = (e) => {
-                if (isScrollingRef.current) return;
+                // IMPORTANT: Prevent scroll triggering if resizing
+                if (isScrollingRef.current || isResizingRef.current) return;
+
                 const touchEndY = e.changedTouches[0].clientY;
-                const diff = touchStartY.current - touchEndY; // Positive = swipe up (scroll down)
+                const diff = touchStartY.current - touchEndY;
 
                 const isSplitView = currentSectionIndex === 1;
                 const contentEl = contentScrollRef.current;
@@ -602,19 +629,14 @@
 
                 if (Math.abs(diff) > 50) {
                     if (diff > 0) {
-                        // Swipe Up (Go Down) -> ALLOWED
                         overscrollAccumulator.current = 0;
                         if (isSplitView && isInsideContent) {
                             const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                            // If content can still scroll down, don't switch section
                             if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
                         }
                         if (currentSectionIndex < sectionsRef.current.length - 1) {
                             scrollToSection(currentSectionIndex + 1);
                         }
-                    } else {
-                        // Swipe Down (Go Up / Back to Hero) -> BLOCKED
-                        // Logic removed.
                     }
                 }
             };
@@ -639,12 +661,10 @@
 
             return (
                 <React.Fragment>
-                    {/* Loader */}
                     <div className={`loader ${loading ? '' : 'hidden'}`}>
                         <div className="loader-animation"></div>
                     </div>
 
-                    {/* Back Button */}
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <button
                             onClick={goBack}
@@ -657,7 +677,6 @@
                         </button>
                     </nav>
 
-                    {/* Back to Hero Button */}
                     <button
                         onClick={() => scrollToSection(0)}
                         className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
@@ -665,7 +684,6 @@
                         <i className="fas fa-arrow-up"></i>
                     </button>
 
-                    {/* MAIN SCROLL CONTAINER */}
                     <div id="main-scroller" ref={mainContainerRef}>
 
                         {/* 1. HERO SECTION */}
@@ -697,15 +715,22 @@
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark overflow-hidden">
 
                             {/* LEFT: Image Preview (Adaptive for Mobile/Web screenshots) */}
+                            {/* UPDATED: Added resize handle and dynamic height logic */}
                             <div className="
-                                w-full h-[35vh] shrink-0 z-20
+                                w-full shrink-0 z-20
                                 lg:w-3/5 lg:h-full
-                                bg-black flex items-center justify-center p-4 lg:p-12 
+                                bg-black flex items-center justify-center p-6 lg:p-12 
                                 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
-                            ">
+                                relative
+                            "
+                                style={{
+                                    height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%',
+                                    transition: isResizingRef.current ? 'none' : 'height 0.3s ease'
+                                }}
+                            >
                                 {/* Max Width 4XL Constraint & Mobile Fit Fix */}
-                                <div className="w-full max-w-full h-full flex items-center justify-center">
-                                    <div className={`relative transition-all duration-500 flex flex-col shadow-2xl overflow-hidden
+                                <div className="w-full max-w-full h-full flex items-center justify-center pointer-events-none">
+                                    <div className={`relative transition-all duration-500 flex flex-col shadow-2xl overflow-hidden pointer-events-auto
                                         ${imageType === 'app' ? 'h-full aspect-[9/19] bg-transparent' : 'w-full max-h-full rounded-xl border border-white/10 bg-dark-light'}
                                         ${imageType === 'app' ? 'justify-center' : ''}
                                     `}>
@@ -720,7 +745,6 @@
                                         )}
 
                                         <div className={`relative w-full h-full overflow-hidden flex items-center justify-center ${imageType === 'app' ? '' : 'bg-white/5'}`}>
-                                            {/* REPLACED WITH SKELETON IMAGE COMPONENT */}
                                             <ImageWithSkeleton
                                                 src={currentImage}
                                                 alt="Preview"
@@ -728,6 +752,19 @@
                                             />
                                         </div>
 
+                                    </div>
+                                </div>
+
+                                {/* RESIZE HANDLE (Mobile Only) */}
+                                <div
+                                    className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2"
+                                    onMouseDown={handleResizeStart}
+                                    onTouchStart={handleResizeStart}
+                                >
+                                    <div className="w-10 h-10 bg-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group">
+                                        <i className="fas fa-chevron-up text-[8px] text-gray-400 group-hover:text-primary mb-0.5"></i>
+                                        <div className="w-4 h-[2px] bg-gray-500 rounded-full"></div>
+                                        <i className="fas fa-chevron-down text-[8px] text-gray-400 group-hover:text-primary mt-0.5"></i>
                                     </div>
                                 </div>
                             </div>
@@ -769,14 +806,13 @@
                                         </div>
                                     </div>
 
-                                    {/* Scrollable Content (Added ref and scroll-content class) */}
+                                    {/* Scrollable Content */}
                                     <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
 
                                         {/* 1. CONTEXT (背景) */}
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
                                                 <div className="space-y-6">
-                                                    {/* H3 Size Adjustment */}
                                                     <h3 className="text-lg md:text-2xl font-bold text-white mb-4">專案背景 Context</h3>
                                                     <p className="text-gray-300 text-sm leading-relaxed mb-4">
                                                         這是一個專為新竹市動物園內部員工與志工設計的整合管理系統。目標是將龐大的園區營運數據（動物照護、志工排班、人流安全）進行高效整合，並延伸至行動端以應對現場突發狀況。

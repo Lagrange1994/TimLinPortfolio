@@ -411,6 +411,57 @@
             const OVERSCROLL_THRESHOLD = 200;
             const touchStartY = useRef(0);
 
+            // === RESIZABLE VISUAL HEIGHT (Mobile) ===
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(35); // Default 35vh
+            const isResizingRef = useRef(false);
+
+            const handleResizeStart = (e) => {
+                if (window.innerWidth >= 1024) return;
+                isResizingRef.current = true;
+                document.body.style.userSelect = 'none';
+            };
+
+            useEffect(() => {
+                const handleResizeMove = (e) => {
+                    if (!isResizingRef.current) return;
+
+                    let clientY;
+                    if (e.type === 'touchmove') {
+                        clientY = e.touches[0].clientY;
+                    } else {
+                        clientY = e.clientY;
+                    }
+
+                    const windowHeight = window.innerHeight;
+                    let newHeightVh = (clientY / windowHeight) * 100;
+
+                    const maxVh = 80;
+                    const minVh = 35; // Changed from 25 to 35 based on user request
+
+                    if (newHeightVh < minVh) newHeightVh = minVh;
+                    if (newHeightVh > maxVh) newHeightVh = maxVh;
+
+                    setMobileVisualHeight(newHeightVh);
+                };
+
+                const handleResizeEnd = () => {
+                    isResizingRef.current = false;
+                    document.body.style.userSelect = '';
+                };
+
+                window.addEventListener('mousemove', handleResizeMove);
+                window.addEventListener('touchmove', handleResizeMove, { passive: false });
+                window.addEventListener('mouseup', handleResizeEnd);
+                window.addEventListener('touchend', handleResizeEnd);
+
+                return () => {
+                    window.removeEventListener('mousemove', handleResizeMove);
+                    window.removeEventListener('touchmove', handleResizeMove);
+                    window.removeEventListener('mouseup', handleResizeEnd);
+                    window.removeEventListener('touchend', handleResizeEnd);
+                };
+            }, []);
+
             // === Auto-scroll to top when activeTab changes ===
             useEffect(() => {
                 if (contentScrollRef.current) {
@@ -565,7 +616,7 @@
             };
 
             const handleTouchEnd = (e) => {
-                if (isScrollingRef.current) return;
+                if (isScrollingRef.current || isResizingRef.current) return; // Block scroll when resizing
                 const touchEndY = e.changedTouches[0].clientY;
                 const diff = touchStartY.current - touchEndY;
                 const isSplitView = currentSectionIndex === 1;
@@ -649,13 +700,19 @@
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
 
                             {/* LEFT: Image Preview - FIXED TO CONTAINER */}
-                            <div ref={imageScrollRef} className="
-                                w-full h-[35vh] shrink-0 z-20
-                                lg:w-3/5 lg:h-full
-                                bg-[#1a1a1a] flex items-center justify-center p-6 lg:p-12 
-                                border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
-                                relative
-                            ">
+                            <div ref={imageScrollRef}
+                                className="
+                                    w-full shrink-0 z-20
+                                    lg:w-3/5 lg:h-full
+                                    bg-[#1a1a1a] flex items-center justify-center p-6 lg:p-12
+                                    border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
+                                    relative
+                                "
+                                style={{
+                                    height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%',
+                                    transition: isResizingRef.current ? 'none' : 'height 0.3s ease'
+                                }}
+                            >
                                 {
                                     isWideView ? (
                                         // Wide View
@@ -677,6 +734,20 @@
                                         <PhoneFrame src={currentImage} alt="Preview" />
                                     )
                                 }
+
+                                {/* RESIZE HANDLE (Mobile Only) */}
+                                <div
+                                    className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2"
+                                    onMouseDown={handleResizeStart}
+                                    onTouchStart={handleResizeStart}
+                                >
+                                    {/* Handle Visual */}
+                                    <div className="w-10 h-10 bg-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group">
+                                        <i className="fas fa-chevron-up text-[8px] text-gray-400 group-hover:text-primary mb-0.5"></i>
+                                        <div className="w-4 h-[2px] bg-gray-500 rounded-full"></div>
+                                        <i className="fas fa-chevron-down text-[8px] text-gray-400 group-hover:text-primary mt-0.5"></i>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* RIGHT: Narrative Scroll */}
