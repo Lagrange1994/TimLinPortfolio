@@ -40,8 +40,11 @@
                         heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
                     },
                     boxShadow: {
-                        'primary': '0 4px 20px rgba(255, 101, 132, 0.35)',
-                        'primary-hover': '0 6px 25px rgba(255, 101, 132, 0.45)'
+                        'primary': '0 0.25rem 1.25rem rgba(255, 101, 132, 0.35)',
+                        'primary-hover': '0 0.375rem 1.5625rem rgba(255, 101, 132, 0.45)'
+                    },
+                    maxWidth: {
+                        '8xl': '96rem'
                     }
                 }
             }
@@ -49,6 +52,17 @@
     </script>
 
     <style>
+        /* === 1. 全局縮放設定 (4K 適配) === */
+        :root {
+            font-size: 16px;
+        }
+
+        @media (min-width: 1024px) {
+            html {
+                font-size: 0.833333vw;
+            }
+        }
+
         /* === 基礎設定 === */
         body {
             font-family: 'Quicksand', '"Noto Sans TC"', 'sans-serif';
@@ -57,13 +71,12 @@
             margin: 0;
             padding: 0;
             overflow-x: hidden;
-            /* 防止水平捲動 */
         }
 
-        /* === 捲動條樣式 (Scrollbar) === */
+        /* === Scrollbar === */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 0.5rem;
+            height: 0.5rem;
         }
 
         ::-webkit-scrollbar-track {
@@ -72,19 +85,18 @@
 
         ::-webkit-scrollbar-thumb {
             background: #3D3D3D;
-            border-radius: 10px;
+            border-radius: 0.625rem;
         }
 
         ::-webkit-scrollbar-thumb:hover {
             background: #8A2BE2;
         }
 
-        /* 預設 (手機版)：允許 Body 滾動 */
+        /* 手機版設定 */
         body {
             overflow-y: auto;
         }
 
-        /* 預設 (手機版)：主容器為正常高度 */
         #main-scroller {
             width: 100%;
             height: auto;
@@ -92,63 +104,46 @@
             position: relative;
         }
 
-        /* 預設 (手機版)：區塊高度自動，可見 */
         .snap-section {
             height: auto;
             min-height: 100vh;
-            /* 修改：手機版最低高度設為 100vh，確保佔滿一屏 */
             width: 100%;
             position: relative;
             opacity: 1;
             visibility: visible;
-            padding-top: 80px;
-            /* 手機版頂部留白給 Navbar */
-            padding-bottom: 40px;
-            /* 加入 Flex 讓內容在 100vh 內垂直置中 */
+            padding-top: 5rem;
+            padding-bottom: 2.5rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
         }
 
-        /* 預設 (手機版)：針對 Contact + Footer 的特殊設定 */
         #contact.snap-section {
-            /* Contact 區塊也設為 100vh 以確保 Footer 撐到底部 */
             min-height: 100vh;
             padding-bottom: 0;
-            /* 移除底部內距，讓 Footer 緊貼邊緣 */
             justify-content: space-between;
-            /* 確保內容與 Footer 分開 */
         }
 
-        /* 預設 (手機版)：取消最後一頁的 Flex 撐開效果，讓 Footer 自然排列 */
         .snap-section-last {
             display: flex;
-            /* 改為 flex 以支援 justify-between */
             flex-direction: column;
         }
 
-        /* === 動畫項目預設狀態 === */
         .stagger-item {
             opacity: 0;
-            /* 預設隱藏，由 GSAP 接管顯示 */
         }
 
-        /* === 桌機版全頁滾動設定 (僅在寬度 >= 768px 時生效) === */
+        /* 桌機版設定 */
         @media (min-width: 768px) {
-
-            /* 禁止 Body 滾動，交給 JS 控制 */
             body {
                 overflow: hidden;
             }
 
-            /* 主捲動容器設定 */
             #main-scroller {
                 height: 100vh;
                 overflow: hidden;
-                /* 隱藏捲動軸，完全由 JS 接管 */
             }
 
-            /* 全頁滾動區塊設定 */
             .snap-section {
                 height: 100vh;
                 display: flex;
@@ -156,127 +151,104 @@
                 justify-content: center;
                 padding-top: 0;
                 padding-bottom: 0;
-
-                /* 淡入淡出效果 */
                 opacity: 0;
                 transition: opacity 1s ease-in-out;
                 visibility: hidden;
             }
 
-            /* 當前活動區塊 */
             .snap-section.active-section {
                 opacity: 1;
                 visibility: visible;
             }
 
-            /* 最後一個區塊 (Contact + Footer) */
             .snap-section-last {
                 justify-content: space-between;
             }
 
-            /* === 展開模式 (Expanded View) - 恢復正常滾動行為 === */
             body.expanded-view #main-scroller {
                 overflow-y: auto !important;
-                /* 啟用捲動軸 */
             }
 
             body.expanded-view .snap-section {
                 height: auto !important;
-                /* 高度隨內容撐開 */
                 min-height: 100vh;
                 opacity: 1 !important;
-                /* 顯示所有區塊 */
                 visibility: visible !important;
                 transform: none !important;
-                /* 移除可能的位移 */
             }
 
             body.expanded-view .snap-section#portfolio {
                 display: block !important;
-                padding-top: 120px;
-                /* 預留頂部空間 */
-                padding-bottom: 100px;
+                padding-top: 7.5rem;
+                padding-bottom: 6.25rem;
             }
 
-            /* 強制顯示所有動畫項目，取消浮現效果 */
             body.expanded-view .stagger-item {
                 opacity: 1 !important;
                 transform: none !important;
             }
         }
 
-        /* === 玻璃擬態卡片樣式 === */
+        /* 卡片與元件樣式 */
         .card,
         .skill-card,
         .project-card {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(0.75rem);
+            -webkit-backdrop-filter: blur(0.75rem);
             border: 1px solid rgba(255, 255, 255, 0.25);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0.5rem 2rem 0 rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
         }
 
-        /* 卡片懸停效果 */
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.15);
+            transform: translateY(-0.3125rem);
+            box-shadow: 0 0.75rem 2.5rem 0 rgba(0, 0, 0, 0.15);
             border-color: rgba(255, 255, 255, 0.35);
         }
 
-        /* === 技能卡片特定樣式 (區分手機與桌機) === */
-        /* 手機版預設 (橫向排列) */
         .skill-card {
-            border-radius: 12px;
-            /* 手機版小圓角 */
+            border-radius: 0.75rem;
             padding: 0.75rem;
-            /* 手機版小內距 */
             display: flex;
             flex-direction: row;
-            /* 手機版橫向 */
             align-items: center;
             text-align: left;
-            /* 手機版靠左 */
         }
 
         .skill-icon {
-            width: 36px;
-            /* 手機版小圖標 */
-            height: 36px;
+            width: 2.25rem;
+            height: 2.25rem;
             border-radius: 50%;
             background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(255, 101, 132, 0.2));
             display: flex;
             align-items: center;
             justify-content: center;
             margin-right: 0.5rem;
-            /* 手機版右邊距 */
             margin-bottom: 0;
             transition: all 0.3s ease;
             flex-shrink: 0;
         }
 
-        /* 桌機版覆蓋 (恢復原始設計) */
         @media (min-width: 768px) {
             .skill-card {
-                border-radius: 16px;
+                border-radius: 1rem;
                 padding: 1.5rem;
                 flex-direction: column;
-                /* 桌機版直向 */
                 text-align: center;
-                /* 桌機版置中 */
             }
 
             .skill-icon {
-                width: 60px;
-                height: 60px;
+                width: 3.75rem;
+                height: 3.75rem;
                 margin-right: 0;
                 margin-bottom: 1rem;
             }
         }
 
         .skill-card.visible:hover {
-            transform: translateY(-5px) scale(1.03);
-            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.15);
+            transform: translateY(-0.3125rem) scale(1.03);
+            box-shadow: 0 0.75rem 2.5rem 0 rgba(0, 0, 0, 0.15);
             border-color: rgba(255, 255, 255, 0.35);
             z-index: 10;
         }
@@ -287,7 +259,6 @@
         }
 
         .skill-icon i {
-            /* 手機版 Icon 字體小 */
             font-size: 1rem;
             color: #ffffff;
         }
@@ -295,7 +266,6 @@
         @media (min-width: 768px) {
             .skill-icon i {
                 font-size: 1.5rem;
-                /* 桌機版恢復 */
             }
         }
 
@@ -310,20 +280,18 @@
         @media (min-width: 768px) {
             .skill-percentage {
                 margin: 0.5rem 0;
-                /* 桌機版恢復間距 */
             }
         }
 
-        /* === 專案卡片樣式 === */
         .project-card {
-            border-radius: 16px;
+            border-radius: 1rem;
             overflow: hidden;
             position: relative;
         }
 
         .project-card.visible:hover {
-            transform: translateY(-5px) scale(1.03);
-            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.15);
+            transform: translateY(-0.3125rem) scale(1.03);
+            box-shadow: 0 0.75rem 2.5rem 0 rgba(0, 0, 0, 0.15);
             border-color: rgba(255, 255, 255, 0.35);
             z-index: 10;
         }
@@ -347,10 +315,9 @@
             opacity: 1;
         }
 
-        /* === 社交圖標 === */
         .social-icon {
-            width: 40px;
-            height: 40px;
+            width: 2.5rem;
+            height: 2.5rem;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             display: flex;
@@ -361,21 +328,24 @@
 
         .social-icon:hover {
             background: linear-gradient(90deg, #8A2BE2, #4A00E0);
-            transform: translateY(-3px);
+            transform: translateY(-0.1875rem);
         }
 
-        /* === 導航列與選單 === */
+        /* === 導航列與選單 (修正：增加左右空隙) === */
         #nav-container {
             transition: all 0.3s ease-in-out;
             margin-top: 1.25rem;
             border-radius: 9999px;
             background-color: rgba(30, 30, 30, 0.5);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(1rem);
+            -webkit-backdrop-filter: blur(1rem);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0.25rem 0.375rem -0.0625rem rgba(0, 0, 0, 0.1);
             margin-left: auto;
             margin-right: auto;
+
+            /* 修正：在膠囊狀態下，讓左右產生空隙 (100% - 2rem = 左右各留 1rem) */
+            width: calc(100% - 2rem);
         }
 
         #main-header.scrolled #nav-container {
@@ -386,76 +356,41 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: none;
             max-width: 100%;
+
+            /* 修正：捲動後恢復滿版 */
+            width: 100%;
         }
 
-        /* =========================================
-           NavBar 樣式修復 (回到截圖樣式)
-           ========================================= */
         .nav-link {
-            /* 1. 核心排版：保留原始設定，不加 display: block/flex */
             position: relative;
             transition: all 0.3s ease;
             z-index: 10;
             padding: 0.5rem 1rem;
             border-radius: 9999px;
-            /* 膠囊形狀 */
             cursor: pointer;
-
-            /* 2. 外觀修復：強制覆蓋 <a> 標籤的預設藍色與底線 */
             text-decoration: none !important;
             color: rgba(255, 255, 255, 0.7) !important;
-            /* 未選取時：灰白色 */
-
-            /* 3. 重要：確保不會被瀏覽器預設樣式撐開 */
             line-height: 1.5;
             border: none;
             background: transparent;
         }
 
-        /* 選取狀態 (Active) / 滑鼠懸停 (Hover) */
         .nav-link.active,
         .nav-link:hover {
             color: #ffffff !important;
-            /* 選取時：亮白色 */
         }
 
-        /* 鍵盤 Tab 鍵選取時的樣式 (保留鍵盤功能) */
         .nav-link:focus-visible {
             outline: none;
-            /* 移除預設黑框 */
             background: rgba(255, 255, 255, 0.1);
-            /* 給一個淡淡的背景提示 */
             color: #ffffff !important;
         }
 
-        /* 手機版選單樣式 (獨立分開，互不影響) */
         .mobile-nav-link {
             display: block;
-            /* 手機版需要垂直佔滿一行 */
             color: #ffffff !important;
             text-decoration: none !important;
             cursor: pointer;
-        }
-
-        .mobile-nav-link:focus-visible {
-            outline: 2px solid #6C63FF;
-        }
-
-        /* 手機版連結 (獨立設定，確保不影響桌機) */
-        .mobile-nav-link {
-            color: #fff !important;
-            text-decoration: none !important;
-            display: block;
-            /* 手機版才需要 block */
-        }
-
-        /* === 導航連結 (手機版) === */
-        .mobile-nav-link {
-            /* 強制修正樣式 */
-            color: #ffffff !important;
-            text-decoration: none !important;
-            cursor: pointer;
-            display: block;
             outline: none;
         }
 
@@ -463,8 +398,7 @@
             outline: 2px solid #6C63FF;
             outline-offset: 2px;
             background: rgba(255, 255, 255, 0.1);
-            /* 鍵盤選到時加一點背景色 */
-            border-radius: 8px;
+            border-radius: 0.5rem;
         }
 
         #nav-hover-bg {
@@ -487,7 +421,7 @@
             background: #1E1E1E;
             z-index: 1000;
             transition: right 0.3s ease;
-            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+            box-shadow: -0.3125rem 0 0.9375rem rgba(0, 0, 0, 0.3);
         }
 
         .mobile-menu.active {
@@ -512,10 +446,9 @@
             visibility: visible;
         }
 
-        /* === 動畫與效果 === */
         .fade-in {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(1.25rem);
             transition: all 0.3s ease, opacity 0.6s ease;
         }
 
@@ -525,14 +458,12 @@
         }
 
         .gradient-text {
-            /* 一般標題：Primary -> Secondary */
             background: linear-gradient(90deg, #6C63FF, #FF6584);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .gradient-text-brand {
-            /* Logo：品牌原始漸層 */
             background: -webkit-linear-gradient(45deg, #8A2BE2, #4A00E0, #00D4FF);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -542,14 +473,13 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             z-index: -1;
             pointer-events: none;
-            /* 確保不阻擋捲動 */
         }
 
-        /* === 載入動畫 (Loader) === */
+        /* Loader */
         .loader {
             position: fixed;
             top: 0;
@@ -626,7 +556,7 @@
             }
         }
 
-        /* === 跑馬燈捲動效果 (Scroller) === */
+        /* Scroller */
         .scroller {
             overflow: hidden;
             -webkit-mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
@@ -640,14 +570,14 @@
         }
 
         .scroller .project-card {
-            width: 248px;
+            width: 15.5rem;
             flex-shrink: 0;
             margin: 0.5rem;
         }
 
         @media (min-width: 768px) {
             .scroller .project-card {
-                width: 372px;
+                width: 23.25rem;
             }
         }
 
@@ -679,15 +609,12 @@
             }
         }
 
-        /* ================================
-   Section Header Component (Refined)
-   ================================ */
-
+        /* Section Header */
         .section-header {
             margin-bottom: 2rem;
+            text-align: center;
         }
 
-        /* 標題本體 */
         .section-header h2 {
             font-family: 'Momo Trust Display', 'Noto Sans TC', sans-serif;
             font-weight: 700;
@@ -695,33 +622,22 @@
             position: relative;
         }
 
-        /* ===== Mobile：置中 ===== */
-        .section-header {
-            text-align: center;
-        }
-
-        /* Mobile horizontal line (below title) */
         .section-header::after {
             content: "";
             display: block;
             width: 5rem;
-            height: 4px;
+            height: 0.25rem;
             margin: 1rem auto 0 auto;
             background: linear-gradient(to right, #6C63FF, #FF6584);
-            border-radius: 2px;
+            border-radius: 0.125rem;
         }
 
-
-        /* ===== Desktop：靠左 + 精準垂直線 ===== */
         @media (min-width: 768px) {
-
             .section-header {
                 text-align: left;
-                /* baseline grid */
                 position: relative;
             }
 
-            /* 移除 mobile 橫線 */
             .section-header::before {
                 display: none;
             }
@@ -730,34 +646,25 @@
                 font-size: clamp(2.5rem, 3vw, 3.5rem);
             }
 
-            /* 垂直裝飾線：只跟文字高度 */
             .section-header h2::before {
                 content: "";
                 position: absolute;
                 left: -1.5rem;
                 top: 0.05em;
-                width: 4px;
+                width: 0.25rem;
                 height: 1em;
-                /* 關鍵：只吃文字高度 */
                 background: linear-gradient(to bottom, #6C63FF, #FF6584);
-                border-radius: 2px;
-
+                border-radius: 0.125rem;
                 transform-origin: top;
                 transform: scaleY(0);
-                /* 動畫初始狀態 */
             }
-        }
 
-        /* Desktop: horizontal line align left */
-        @media (min-width: 768px) {
             .section-header::after {
                 margin-left: 0;
                 margin-right: 0;
             }
         }
 
-
-        /* ===== Mobile 字級 ===== */
         @media (max-width: 767px) {
             .section-header h2 {
                 font-size: 2rem;
@@ -774,7 +681,7 @@
     <spline-viewer id="spline-bg" url="https://prod.spline.design/vKVXVdHe8QipCESp/scene.splinecode"></spline-viewer>
 
     <header id="main-header" class="fixed top-0 left-0 w-full z-50 transition-all duration-300">
-        <div id="nav-container" class="container max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div id="nav-container" class="container max-w-8xl mx-auto px-6 py-4 flex justify-between items-center">
             <a href="#" class="text-2xl font-bold gradient-text-brand font-heading">Tim<span
                     class="text-white">Lin</span></a>
 
@@ -824,20 +731,20 @@
     <main id="main-scroller">
 
         <section id="home" class="snap-section active-section md:flex md:items-center">
-            <div class="container max-w-7xl mx-auto px-8 pt-4 pb-4 md:py-16">
+            <div class="container max-w-8xl mx-auto px-8 pt-4 pb-4 md:py-16">
                 <div class="flex flex-col md:flex-row items-center">
                     <div
-                        class="md:w-7/12 flex justify-center mx-[-1rem] md:mx-0 px-4 h-auto aspect-square md:aspect-auto md:h-[720px] stagger-item">
+                        class="md:w-7/12 flex justify-center mx-[-1rem] md:mx-0 px-4 h-auto aspect-square md:aspect-auto md:h-[45rem] stagger-item">
                         <spline-viewer url="https://prod.spline.design/sA-o0fi-0MJLrsOf/scene.splinecode"
                             class="w-full h-full"></spline-viewer>
                     </div>
                     <div
                         class="md:w-5/12 mt-10 mb10 md:mb-0 flex flex-col items-center text-center md:items-start md:text-left">
-                        <h1 class="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 font-heading stagger-item">
+                        <h1 class="text-3xl sm:text-4xl md:text-7xl font-bold mb-4 font-heading stagger-item">
                             Hi, I'm <span class="">Tim Lin</span>
                         </h1>
                         <h2
-                            class="text-xl sm:text-2xl md:text-3xl font-medium mb-6 text-gray-200 font-heading stagger-item">
+                            class="text-xl sm:text-2xl md:text-4xl font-medium mb-6 text-gray-200 font-heading stagger-item">
                             UI/UX Designer & Web Developer
                         </h2>
                         <p class="text-xs md:text-base text-gray-200 mb-8 max-w-lg stagger-item">
@@ -846,11 +753,11 @@
 
                         <div class="flex space-x-4 stagger-item justify-center md:justify-start">
                             <a onclick="scrollToSection(3)"
-                                class="px-5 py-2 md:px-8 md:py-3 text-xs md:text-base bg-gradient-to-r from-primary to-secondary rounded-full font-medium transition duration-300 shadow-primary hover:shadow-primary-hover cursor-pointer">
+                                class="px-5 py-2 md:px-8 md:py-3 text-xs md:text-lg bg-gradient-to-r from-primary to-secondary rounded-full font-medium transition duration-300 shadow-primary hover:shadow-primary-hover cursor-pointer">
                                 View My Work
                             </a>
                             <a onclick="scrollToSection(4)"
-                                class="px-5 py-2 md:px-8 md:py-3 text-xs md:text-base border border-white border-opacity-20 rounded-full font-medium text-white hover:bg-white hover:bg-opacity-10 transition duration-300 cursor-pointer">
+                                class="px-5 py-2 md:px-8 md:py-3 text-xs md:text-lg border border-white border-opacity-20 rounded-full font-medium text-white hover:bg-white hover:bg-opacity-10 transition duration-300 cursor-pointer">
                                 Contact Me
                             </a>
                         </div>
@@ -860,7 +767,7 @@
         </section>
 
         <section id="about" class="snap-section bg-dark-light md:flex md:items-center">
-            <div class="container max-w-7xl mx-auto px-8 w-full">
+            <div class="container max-w-8xl mx-auto px-8 w-full">
                 <div class="section-header stagger-item">
                     <h2>
                         About <span class="gradient-text">Me</span>
@@ -875,8 +782,7 @@
                         class="absolute top-6 left-1/2 -translate-x-1/2 w-24 h-3 bg-[#121212] rounded-full shadow-[inset_0_1px_3px_rgba(0,0,0,1)] z-20">
                     </div>
 
-                    <div
-                        class="relative w-full h-64 sm:h-80 md:absolute md:top-0 md:left-0 md:h-full md:w-1/2 stagger-item">
+                    <div class="relative w-full sm:h-80 md:absolute md:top-0 md:left-0 md:h-full md:w-1/3 stagger-item">
                         <img src="./img/about_me.jpg" alt="Tim Lin Working"
                             class="w-full h-full object-cover opacity-100 mix-blend-normal">
                         <div
@@ -888,7 +794,7 @@
                     </div>
 
                     <div
-                        class="relative z-10 p-8 md:p-16 md:w-2/3 md:ml-auto md:flex md:flex-col md:justify-center md:min-h-[500px]">
+                        class="relative z-10 p-8 md:p-16 md:w-3/4 md:ml-auto md:flex md:flex-col md:justify-center md:min-h-[31.25rem]">
                         <h3
                             class="text-lg md:text-2xl font-bold mb-4 font-heading text-white drop-shadow-md stagger-item">
                             結合嚴謹邏輯與前瞻技術的資深產品設計師</h3>
@@ -951,7 +857,7 @@
         </section>
 
         <section id="skills" class="snap-section md:flex md:items-center">
-            <div class="container max-w-7xl mx-auto px-8">
+            <div class="container max-w-8xl mx-auto px-8">
                 <div class="section-header stagger-item">
                     <h2>
                         My <span class="gradient-text">Skills</span>
@@ -1106,7 +1012,7 @@
         </section>
 
         <section id="portfolio" class="snap-section bg-dark-light md:flex md:items-center">
-            <div class="container max-w-7xl mx-auto px-8">
+            <div class="container max-w-8xl mx-auto px-8">
                 <div class="section-header stagger-item">
                     <h2>
                         My <span class="gradient-text">Portfolio</span>
@@ -1116,7 +1022,7 @@
 
                 <div id="portfolio-scroller-mobile" class="stagger-item md:hidden">
                     <div class="scroller mb-2">
-                        <div class="scroller-inner animate-scroll-ltr">
+                        <div class="scroller-inner animate-scroll-rtl">
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
                                 href="project_01.html">
                                 <img src="./img/my_portfolio/video_analyzation.jpg" alt="video analization system"
@@ -1151,101 +1057,83 @@
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_03.html">
-                                <img src="./img/my_portfolio/police.jpg" alt="Kaohsiung Police Station"
-                                    class="w-full h-full object-cover">
+                                href="project_03.html"><img src="./img/my_portfolio/police.jpg"
+                                    alt="Kaohsiung Police Station" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
-                                        <span
+                                            Dev</span><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">React</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_04.html">
-                                <img src="./img/my_portfolio/Tainan Police.jpg" alt="Tainan Police Station"
-                                    class="w-full h-full object-cover">
+                                href="project_04.html"><img src="./img/my_portfolio/Tainan Police.jpg"
+                                    alt="Tainan Police Station" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
                             </a>
 
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_01.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/video_analyzation.jpg" alt="video analization system"
+                                href="project_01.html" aria-hidden="true"><img
+                                    src="./img/my_portfolio/video_analyzation.jpg" alt="video analization system"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
-                                        <span
+                                            Dev</span><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">React</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_02.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/video_analyzation_app.jpg"
+                                href="project_02.html" aria-hidden="true"><img
+                                    src="./img/my_portfolio/video_analyzation_app.jpg"
                                     alt="video analization system app" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
                                     <p class="text-xs text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_03.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/police.jpg" alt="Kaohsiung Police Station"
-                                    class="w-full h-full object-cover">
+                                href="project_03.html" aria-hidden="true"><img src="./img/my_portfolio/police.jpg"
+                                    alt="Kaohsiung Police Station" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
-                                        <span
+                                            Dev</span><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">React</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_04.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/Tainan Police.jpg" alt="Tainan Police Station"
+                                href="project_04.html" aria-hidden="true"><img
+                                    src="./img/my_portfolio/Tainan Police.jpg" alt="Tainan Police Station"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
@@ -1254,270 +1142,214 @@
                     </div>
 
                     <div class="scroller mb-2">
-                        <div class="scroller-inner animate-scroll-rtl">
+                        <div class="scroller-inner animate-scroll-ltr">
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_05.html">
-                                <img src="./img/my_portfolio/zoo.jpg" alt="zoo monitering web"
+                                href="project_05.html"><img src="./img/my_portfolio/zoo.jpg" alt="zoo monitering web"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
                                     <p class="text-xs text-gray-200 mb-4">人流分析與網站管理介面</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
-                                        <span
+                                            Dev</span><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Vue</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_06.html">
-                                <img src="./img/my_portfolio/Taoyuan_MRT.jpg" alt="Taoyuan MRT App"
-                                    class="w-full h-full object-cover">
+                                href="project_06.html"><img src="./img/my_portfolio/Taoyuan_MRT.jpg"
+                                    alt="Taoyuan MRT App" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">桃園捷運APP</h3>
                                     <p class="text-xs text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_07.html">
-                                <img src="./img/my_portfolio/dam.jpg" alt="Shihmen Dam"
+                                href="project_07.html"><img src="./img/my_portfolio/dam.jpg" alt="Shihmen Dam"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">石門水庫網站</h3>
                                     <p class="text-xs text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_08.html">
-                                <img src="./img/my_portfolio/stream.jpg" alt="stream live app UI"
+                                href="project_08.html"><img src="./img/my_portfolio/stream.jpg" alt="stream live app UI"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">Love-Two live app UI</h3>
                                     <p class="text-xs text-gray-200 mb-4">直播app提案與設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
 
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_05.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/zoo.jpg" alt="zoo monitering web"
+                                href="project_05.html" aria-hidden="true"><img src="./img/my_portfolio/zoo.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
                                     <p class="text-xs text-gray-200 mb-4">人流分析與網站管理介面</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
-                                        <span
+                                            Dev</span><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Vue</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_06.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/Taoyuan_MRT.jpg" alt="Taoyuan MRT App"
+                                href="project_06.html" aria-hidden="true"><img src="./img/my_portfolio/Taoyuan_MRT.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">桃園捷運APP</h3>
                                     <p class="text-xs text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_07.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/dam.jpg" alt="Shihmen Dam"
+                                href="project_07.html" aria-hidden="true"><img src="./img/my_portfolio/dam.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">石門水庫網站</h3>
                                     <p class="text-xs text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_08.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/stream.jpg" alt="stream live app UI"
+                                href="project_08.html" aria-hidden="true"><img src="./img/my_portfolio/stream.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">Love-Two live app UI</h3>
                                     <p class="text-xs text-gray-200 mb-4">直播app提案與設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
                         </div>
                     </div>
 
                     <div class="scroller">
-                        <div class="scroller-inner animate-scroll-ltr">
+                        <div class="scroller-inner animate-scroll-rtl">
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_09.html">
-                                <img src="./img/my_portfolio/enviroment.jpg" alt="enviroment protection"
-                                    class="w-full h-full object-cover">
+                                href="project_09.html"><img src="./img/my_portfolio/enviroment.jpg"
+                                    alt="enviroment protection" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
                                     <p class="text-xs text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_10.html">
-                                <img src="./img/my_portfolio/aviation.jpg" alt="aviation web"
+                                href="project_10.html"><img src="./img/my_portfolio/aviation.jpg" alt="aviation web"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">恆春航空站</h3>
                                     <p class="text-xs text-gray-200 mb-4">航空站網站改版提案.</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_11.html">
-                                <img src="./img/my_portfolio/student.jpg" alt="student"
+                                href="project_11.html"><img src="./img/my_portfolio/student.jpg" alt="student"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_12.html">
-                                <img src="./img/my_portfolio/coin.jpg" alt="coin" class="w-full h-full object-cover">
+                                href="project_12.html"><img src="./img/my_portfolio/coin.jpg"
+                                    class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
                                     <p class="text-xs text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
 
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_09.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/enviroment.jpg" alt="enviroment protection"
+                                href="project_09.html" aria-hidden="true"><img src="./img/my_portfolio/enviroment.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
                                     <p class="text-xs text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_10.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/aviation.jpg" alt="aviation web"
+                                href="project_10.html" aria-hidden="true"><img src="./img/my_portfolio/aviation.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">恆春航空站</h3>
                                     <p class="text-xs text-gray-200 mb-4">航空站網站改版提案.</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_11.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/student.jpg" alt="student"
+                                href="project_11.html" aria-hidden="true"><img src="./img/my_portfolio/student.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_12.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/coin.jpg" alt="coin" class="w-full h-full object-cover">
+                                href="project_12.html" aria-hidden="true"><img src="./img/my_portfolio/coin.jpg"
+                                    class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
                                     <p class="text-xs text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
                         </div>
@@ -1546,188 +1378,150 @@
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_02.html">
-                                <img src="./img/my_portfolio/video_analyzation_app.jpg"
-                                    alt="video analization system app" class="w-full h-full object-cover">
+                                href="project_02.html"><img src="./img/my_portfolio/video_analyzation_app.jpg"
+                                    class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
                                     <p class="text-sm text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_03.html">
-                                <img src="./img/my_portfolio/police.jpg" alt="Kaohsiung Police Station"
+                                href="project_03.html"><img src="./img/my_portfolio/police.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
                                     <p class="text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
-                                        <span
+                                            Dev</span><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">React</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_04.html">
-                                <img src="./img/my_portfolio/Tainan Police.jpg" alt="Tainan Police Station"
+                                href="project_04.html"><img src="./img/my_portfolio/Tainan Police.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
                                     <p class="text-sm text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_05.html">
-                                <img src="./img/my_portfolio/zoo.jpg" alt="zoo monitering web"
+                                href="project_05.html"><img src="./img/my_portfolio/zoo.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
                                     <p class="text-sm text-gray-200 mb-4">人流分析與網站管理介面</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span>
-                                        <span
+                                            XD</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Vue</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_06.html">
-                                <img src="./img/my_portfolio/Taoyuan_MRT.jpg" alt="Taoyuan MRT App"
+                                href="project_06.html"><img src="./img/my_portfolio/Taoyuan_MRT.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">桃園捷運APP</h3>
                                     <p class="text-sm text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
 
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_01.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/video_analyzation.jpg" alt="video analization system"
+                                href="project_01.html" aria-hidden="true"><img
+                                    src="./img/my_portfolio/video_analyzation.jpg" alt="video analization system"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
                                     <p class="text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
-                                        <span
+                                            Dev</span><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">React</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_02.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/video_analyzation_app.jpg"
-                                    alt="video analization system app" class="w-full h-full object-cover">
+                                href="project_02.html" aria-hidden="true"><img
+                                    src="./img/my_portfolio/video_analyzation_app.jpg"
+                                    class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
                                     <p class="text-sm text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_03.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/police.jpg" alt="Kaohsiung Police Station"
+                                href="project_03.html" aria-hidden="true"><img src="./img/my_portfolio/police.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
                                     <p class="text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
-                                        <span
+                                            Dev</span><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">React</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_04.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/Tainan Police.jpg" alt="Tainan Police Station"
-                                    class="w-full h-full object-cover">
+                                href="project_04.html" aria-hidden="true"><img
+                                    src="./img/my_portfolio/Tainan Police.jpg" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
                                     <p class="text-sm text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_05.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/zoo.jpg" alt="zoo monitering web"
+                                href="project_05.html" aria-hidden="true"><img src="./img/my_portfolio/zoo.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
                                     <p class="text-sm text-gray-200 mb-4">人流分析與網站管理介面</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span>
-                                        <span
+                                            XD</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Vue</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_06.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/Taoyuan_MRT.jpg" alt="Taoyuan MRT App"
+                                href="project_06.html" aria-hidden="true"><img src="./img/my_portfolio/Taoyuan_MRT.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">桃園捷運APP</h3>
                                     <p class="text-sm text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
                         </div>
@@ -1736,194 +1530,154 @@
                     <div class="scroller">
                         <div class="scroller-inner animate-scroll-rtl">
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_07.html">
-                                <img src="./img/my_portfolio/dam.jpg" alt="Shihmen Dam"
+                                href="project_07.html"><img src="./img/my_portfolio/dam.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">石門水庫網站</h3>
                                     <p class="text-sm text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_08.html">
-                                <img src="./img/my_portfolio/stream.jpg" alt="stream live app UI"
+                                href="project_08.html"><img src="./img/my_portfolio/stream.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">Love-Two live app UI</h3>
                                     <p class="text-sm text-gray-200 mb-4">直播app提案與設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_09.html">
-                                <img src="./img/my_portfolio/enviroment.jpg" alt="enviroment protection"
+                                href="project_09.html"><img src="./img/my_portfolio/enviroment.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
                                     <p class="text-sm text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_10.html">
-                                <img src="./img/my_portfolio/aviation.jpg" alt="aviation web"
+                                href="project_10.html"><img src="./img/my_portfolio/aviation.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">恆春航空站</h3>
                                     <p class="text-sm text-gray-200 mb-4">航空站網站改版提案</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_11.html">
-                                <img src="./img/my_portfolio/student.jpg" alt="student"
+                                href="project_11.html"><img src="./img/my_portfolio/student.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
                                     <p class="text-sm text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_12.html">
-                                <img src="./img/my_portfolio/coin.jpg" alt="coin" class="w-full h-full object-cover">
+                                href="project_12.html"><img src="./img/my_portfolio/coin.jpg"
+                                    class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
                                     <p class="text-sm text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
 
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_07.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/dam.jpg" alt="Shihmen Dam"
+                                href="project_07.html" aria-hidden="true"><img src="./img/my_portfolio/dam.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">石門水庫網站</h3>
                                     <p class="text-sm text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_08.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/stream.jpg" alt="stream live app UI"
+                                href="project_08.html" aria-hidden="true"><img src="./img/my_portfolio/stream.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">Love-Two live app UI</h3>
                                     <p class="text-sm text-gray-200 mb-4">直播app提案與設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_09.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/enviroment.jpg" alt="enviroment protection"
+                                href="project_09.html" aria-hidden="true"><img src="./img/my_portfolio/enviroment.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
                                     <p class="text-sm text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_10.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/aviation.jpg" alt="aviation web"
+                                href="project_10.html" aria-hidden="true"><img src="./img/my_portfolio/aviation.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">恆春航空站</h3>
                                     <p class="text-sm text-gray-200 mb-4">航空站網站改版提案</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_11.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/student.jpg" alt="student"
+                                href="project_11.html" aria-hidden="true"><img src="./img/my_portfolio/student.jpg"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
                                     <p class="text-sm text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
-                                    <div class="flex space-x-2">
-                                        <span
+                                    <div class="flex space-x-2"><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span>
-                                        <span
+                                            Dev</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_12.html" aria-hidden="true">
-                                <img src="./img/my_portfolio/coin.jpg" alt="coin" class="w-full h-full object-cover">
+                                href="project_12.html" aria-hidden="true"><img src="./img/my_portfolio/coin.jpg"
+                                    class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
                                     <p class="text-sm text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
-                                    <div class="flex space-x-2">
-                                        <span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                        <span
+                                    <div class="flex space-x-2"><span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span>
-                                    </div>
+                                            XD</span></div>
                                 </div>
                             </a>
                         </div>
@@ -1963,179 +1717,142 @@
                         </div>
                     </a>
                     <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                        href="project_02.html">
-                        <img src="./img/my_portfolio/video_analyzation_app.jpg" alt="video analization system app"
+                        href="project_02.html"><img src="./img/my_portfolio/video_analyzation_app.jpg"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
                             <h3 class="text-base md:text-xl font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
                             <p class="text-xs md:text-sm text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
-                            <div class="flex space-x-2">
-                                <span
-                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                <span
+                            <div class="flex space-x-2"><span
+                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
                             </div>
                         </div>
                     </a>
                     <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                        href="project_03.html">
-                        <img src="./img/my_portfolio/police.jpg" alt="Kaohsiung Police Station"
+                        href="project_03.html"><img src="./img/my_portfolio/police.jpg"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
                             <h3 class="text-base md:text-xl font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
                             <p class="text-xs md:text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                            <div class="flex space-x-2">
-                                <span
+                            <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                    Dev</span>
-                                <span
-                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
-                                <span
+                                    Dev</span><span
+                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">React</span>
                             </div>
                         </div>
                     </a>
                     <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                        href="project_04.html">
-                        <img src="./img/my_portfolio/Tainan Police.jpg" alt="Tainan Police Station"
+                        href="project_04.html"><img src="./img/my_portfolio/Tainan Police.jpg"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
                             <h3 class="text-base md:text-xl font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
                             <p class="text-xs md:text-sm text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
-                            <div class="flex space-x-2">
-                                <span
-                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                <span
+                            <div class="flex space-x-2"><span
+                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
                             </div>
                         </div>
                     </a>
                     <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                        href="project_05.html">
-                        <img src=" ./img/my_portfolio/zoo.jpg" alt="zoo monitering web"
+                        href="project_05.html"><img src=" ./img/my_portfolio/zoo.jpg"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
                             <h3 class="text-base md:text-xl font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
                             <p class="text-xs md:text-sm text-gray-200 mb-4">人流分析與網站管理介面</p>
-                            <div class="flex space-x-2">
-                                <span
+                            <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                    Dev</span>
-                                <span
+                                    Dev</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                    XD</span>
-                                <span
+                                    XD</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Vue</span>
                             </div>
                         </div>
                     </a>
                     <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                        href="project_06.html">
-                        <img src="./img/my_portfolio/Taoyuan_MRT.jpg" alt="Taoyuan MRT App"
+                        href="project_06.html"><img src="./img/my_portfolio/Taoyuan_MRT.jpg"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
                             <h3 class="text-base md:text-xl font-bold mb-2 font-heading">桃園捷運APP</h3>
                             <p class="text-xs md:text-sm text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
-                            <div class="flex space-x-2">
-                                <span
-                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                <span
+                            <div class="flex space-x-2"><span
+                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                    XD</span>
-                            </div>
+                                    XD</span></div>
                         </div>
                     </a>
                     <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                        href="project_07.html">
-                        <img src="./img/my_portfolio/dam.jpg" alt="Shihmen Dam" class="w-full h-full object-cover">
+                        href="project_07.html"><img src="./img/my_portfolio/dam.jpg" class="w-full h-full object-cover">
                         <div class="project-overlay">
                             <h3 class="text-base md:text-xl font-bold mb-2 font-heading">石門水庫網站</h3>
                             <p class="text-xs md:text-sm text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
-                            <div class="flex space-x-2">
-                                <span
+                            <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                    Dev</span>
-                                <span
+                                    Dev</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                             </div>
                         </div>
                     </a>
                     <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                        href="project_08.html">
-                        <img src="./img/my_portfolio/stream.jpg" alt="stream live app UI"
+                        href="project_08.html"><img src="./img/my_portfolio/stream.jpg"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
                             <h3 class="text-base md:text-xl font-bold mb-2 font-heading">Love-Two live app UI</h3>
                             <p class="text-xs md:text-sm text-gray-200 mb-4">直播app提案與設計</p>
-                            <div class="flex space-x-2">
-                                <span
-                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                <span
+                            <div class="flex space-x-2"><span
+                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                    XD</span>
-                            </div>
+                                    XD</span></div>
                         </div>
                     </a>
                     <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                        href="project_09.html">
-                        <img src="./img/my_portfolio/enviroment.jpg" alt="enviroment protection"
+                        href="project_09.html"><img src="./img/my_portfolio/enviroment.jpg"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
                             <h3 class="text-base md:text-xl font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
                             <p class="text-xs md:text-sm text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
-                            <div class="flex space-x-2">
-                                <span
+                            <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                    Dev</span>
-                                <span
+                                    Dev</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                             </div>
                         </div>
                     </a>
                     <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                        href="project_10.html">
-                        <img src="./img/my_portfolio/aviation.jpg" alt="aviation web"
+                        href="project_10.html"><img src="./img/my_portfolio/aviation.jpg"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
                             <h3 class="text-base md:text-xl font-bold mb-2 font-heading">恆春航空站</h3>
                             <p class="text-xs md:text-sm text-gray-200 mb-4">航空站網站改版提案.</p>
-                            <div class="flex space-x-2">
-                                <span
-                                    class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                <span
-                                    class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                    XD</span>
-                            </div>
+                            <div class="flex space-x-2"><span
+                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
+                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
+                                    XD</span></div>
                         </div>
                     </a>
                     <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                        href="project_11.html">
-                        <img src="./img/my_portfolio/student.jpg" alt="student" class="w-full h-full object-cover">
+                        href="project_11.html"><img src="./img/my_portfolio/student.jpg"
+                            class="w-full h-full object-cover">
                         <div class="project-overlay">
                             <h3 class="text-base md:text-xl font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
                             <p class="text-xs md:text-sm text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
-                            <div class="flex space-x-2">
-                                <span
+                            <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                    Dev</span>
-                                <span
+                                    Dev</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                             </div>
                         </div>
                     </a>
                     <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                        href="project_12.html">
-                        <img src="./img/my_portfolio/coin.jpg" alt="coin" class="w-full h-full object-cover">
+                        href="project_12.html"><img src="./img/my_portfolio/coin.jpg"
+                            class="w-full h-full object-cover">
                         <div class="project-overlay">
                             <h3 class="text-base md:text-xl font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
                             <p class="text-xs md:text-sm text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
-                            <div class="flex space-x-2">
-                                <span
-                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
-                                <span
+                            <div class="flex space-x-2"><span
+                                    class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                    XD</span>
-                            </div>
+                                    XD</span></div>
                         </div>
                     </a>
                 </div>
@@ -2152,19 +1869,15 @@
 
         <div id="contact" class="snap-section snap-section-last flex flex-col">
             <section class="flex-grow py-20 flex items-center">
-                <div class="container max-w-7xl mx-auto px-8 w-full">
+                <div class="container max-w-8xl mx-auto px-8 w-full">
                     <div class="section-header stagger-item">
-                        <h2>
-                            Contact <span class="gradient-text">Me</span>
-                        </h2>
+                        <h2>Contact <span class="gradient-text">Me</span></h2>
                     </div>
-
                     <div>
                         <h3
                             class="text-lg md:text-2xl font-bold mb-8 lg:text-left text-center font-heading stagger-item">
                             有專案合作需求？歡迎隨時與我聯繫</h3>
                     </div>
-
                     <div class="flex flex-col gap-12 items-center">
                         <div class="w-full">
                             <div class="card p-8 rounded-lg h-full stagger-item">
@@ -2218,17 +1931,17 @@
                 </div>
             </section>
 
-            <footer class="bg-dark-light py-12 w-full">
-                <div class="container mx-auto px-4">
-                    <div class="flex flex-col md:flex-row justify-between items-center">
-                        <div class="mb-6 md:mb-0">
+            <footer class="bg-dark-light py-6 w-full text-left">
+                <div class="w-full px-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                        <div class="mb-2 md:mb-0">
                             <a href="#" class="text-2xl font-bold gradient-text-brand font-heading">Tim<span
                                     class="text-white">Lin</span></a>
                             <p class="text-xs md:text-base text-gray-400 mt-2">UI/UX Designer & Web Developer</p>
                         </div>
                     </div>
                     <div
-                        class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                        class="border-t border-gray-800 mt-4 pt-4 flex flex-col md:flex-row justify-between items-start md:items-center">
                         <p class="text-gray-400 text-xs sm:text-sm mb-4 md:mb-0">© 2025 Tim Lin. All rights reserved.
                         </p>
                     </div>
@@ -2244,7 +1957,6 @@
     </button>
 
     <script>
-        // === 全域變數 ===
         let currentSectionIndex = 0;
         let isScrolling = false;
         let isPortfolioExpanded = false;
@@ -2252,10 +1964,8 @@
         const totalSections = sections.length;
         const scroller = document.getElementById('main-scroller');
 
-        // 判斷是否為手機模式
         const isMobile = () => window.innerWidth < 768;
 
-        // === 核心功能：捲動邏輯 ===
         function scrollToSection(index) {
             if (isMobile()) {
                 const targetSection = sections[index];
@@ -2268,74 +1978,43 @@
                 closeMenuHandler();
                 return;
             }
-
             if (isPortfolioExpanded) {
                 const toggleButton = document.getElementById('toggle-portfolio-view');
                 if (toggleButton) toggleButton.click();
                 setTimeout(() => scrollToSection(index), 300);
                 return;
             }
-
             if (index < 0 || index >= totalSections || isScrolling) return;
-
             isScrolling = true;
             const targetSection = sections[index];
             const currentSection = sections[currentSectionIndex];
-
             const targetId = targetSection.id;
             if (targetId) {
                 history.replaceState(null, null, `#${targetId}`);
                 sessionStorage.setItem('lastSectionIndex', index);
             }
-
             updateNav(index);
-
             const tl = gsap.timeline({
                 onComplete: () => {
                     isScrolling = false;
                     currentSectionIndex = index;
-                    if (currentSection !== targetSection) {
-                        currentSection.classList.remove('active-section');
-                    }
+                    if (currentSection !== targetSection) { currentSection.classList.remove('active-section'); }
                     targetSection.classList.add('active-section');
-
                     toggleBackToTop(index > 0);
                     triggerInternalAnimations(targetSection);
                 }
             });
-
-            if (currentSectionIndex !== index) {
-                tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
-            }
-
-            tl.to(scroller, {
-                scrollTop: targetSection.offsetTop,
-                duration: 1.5,
-                ease: "power2.inOut"
-            }, "<");
-
-            tl.to(targetSection, {
-                opacity: 1,
-                duration: 1,
-                onStart: () => {
-                    targetSection.classList.add('active-section');
-                    targetSection.style.visibility = 'visible';
-                }
-            }, "-=1.0");
+            if (currentSectionIndex !== index) { tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" }); }
+            tl.to(scroller, { scrollTop: targetSection.offsetTop, duration: 1.5, ease: "power2.inOut" }, "<");
+            tl.to(targetSection, { opacity: 1, duration: 1, onStart: () => { targetSection.classList.add('active-section'); targetSection.style.visibility = 'visible'; } }, "-=1.0");
         }
 
         function toggleBackToTop(show) {
             const btn = document.getElementById('back-to-top');
-            if (show) {
-                btn.classList.remove('opacity-0', 'invisible');
-                btn.classList.add('opacity-100', 'visible');
-            } else {
-                btn.classList.add('opacity-0', 'invisible');
-                btn.classList.remove('opacity-100', 'visible');
-            }
+            if (show) { btn.classList.remove('opacity-0', 'invisible'); btn.classList.add('opacity-100', 'visible'); }
+            else { btn.classList.add('opacity-0', 'invisible'); btn.classList.remove('opacity-100', 'visible'); }
         }
 
-        // === 監聽事件 ===
         window.addEventListener('wheel', (e) => {
             if (isMobile() || isScrolling || isPortfolioExpanded) return;
             if (e.deltaY > 0) scrollToSection(currentSectionIndex + 1);
@@ -2357,10 +2036,8 @@
             const navLinks = document.querySelectorAll('.nav-link');
             const mobileLinks = document.querySelectorAll('.mobile-nav-link');
             const hoverBg = document.getElementById('nav-hover-bg');
-
             navLinks.forEach(link => link.classList.remove('active'));
             mobileLinks.forEach(link => link.classList.remove('active'));
-
             if (navLinks[index]) {
                 navLinks[index].classList.add('active');
                 if (hoverBg) {
@@ -2370,7 +2047,6 @@
                 }
             }
             if (mobileLinks[index]) mobileLinks[index].classList.add('active');
-
             const header = document.getElementById('main-header');
             if (header) header.classList.toggle('scrolled', index > 0);
         }
@@ -2378,16 +2054,10 @@
         function triggerInternalAnimations(section) {
             const staggerItems = section.querySelectorAll('.stagger-item');
             if (staggerItems.length > 0) {
-                gsap.fromTo(staggerItems,
-                    { opacity: 0, y: 50 },
-                    { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power3.out", clearProps: "transform" }
-                );
+                gsap.fromTo(staggerItems, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power3.out", clearProps: "transform" });
             }
             section.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
-            section.querySelectorAll('.skill-card').forEach(card => {
-                card.classList.add('visible');
-                animateCounter(card);
-            });
+            section.querySelectorAll('.skill-card').forEach(card => { card.classList.add('visible'); animateCounter(card); });
         }
 
         function animateCounter(card) {
@@ -2425,7 +2095,6 @@
             document.getElementById('menu-overlay')?.classList.remove('active');
         }
 
-        // === 點擊記錄邏輯 ===
         document.addEventListener('click', function (e) {
             const card = e.target.closest('.project-card');
             if (card && isPortfolioExpanded) {
@@ -2436,11 +2105,8 @@
             }
         });
 
-        // === WINDOW ONLOAD ===
         window.onload = function () {
             if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-
-            // F5 重新整理偵測與重置
             const navEntry = performance.getEntriesByType("navigation")[0];
             if (navEntry && navEntry.type === 'reload') {
                 window.scrollTo(0, 0);
@@ -2452,11 +2118,9 @@
             }
 
             const loader = document.querySelector('.loader');
-
             function hideLoader() {
                 if (loader.classList.contains('hidden')) return;
                 loader.classList.add('hidden');
-
                 let initialIndex = 0;
                 const hash = window.location.hash;
                 if (hash) {
@@ -2467,33 +2131,24 @@
                     if (saved !== null) initialIndex = parseInt(saved, 10);
                 }
 
-                // 還原模式判斷
                 const savedExpandedState = sessionStorage.getItem('portfolioExpanded');
                 const isRestoreMode = (savedExpandedState === 'true' && initialIndex === 3 && !isMobile());
 
                 if (!isMobile()) {
                     if (isRestoreMode) {
-                        // === A. 還原模式 ===
                         currentSectionIndex = 3;
-
                         sections.forEach(s => s.classList.remove('active-section'));
                         sections[3].classList.add('active-section');
                         sections[3].style.opacity = 1;
                         sections[3].style.visibility = 'visible';
-
                         updateNav(3);
                         toggleBackToTop(true);
 
                         const toggleButton = document.getElementById('toggle-portfolio-view');
                         if (toggleButton) {
                             toggleButton.click();
-
                             const savedFilter = sessionStorage.getItem('portfolioActiveFilter');
-                            if (savedFilter) {
-                                const filterBtn = document.querySelector(`.portfolio-filter-btn[data-filter="${savedFilter}"]`);
-                                if (filterBtn) filterBtn.click();
-                            }
-
+                            if (savedFilter) { const filterBtn = document.querySelector(`.portfolio-filter-btn[data-filter="${savedFilter}"]`); if (filterBtn) filterBtn.click(); }
                             const savedScrollPos = sessionStorage.getItem('portfolioScrollPos');
                             if (savedScrollPos) {
                                 requestAnimationFrame(() => {
@@ -2504,9 +2159,7 @@
                                 });
                             }
                         }
-
                     } else {
-                        // === B. 一般模式 ===
                         if (initialIndex > 0) {
                             currentSectionIndex = initialIndex;
                             sections.forEach(s => s.classList.remove('active-section'));
@@ -2526,17 +2179,11 @@
                     }
                 } else {
                     document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
-                    document.querySelectorAll('.stagger-item').forEach(el => {
-                        el.style.opacity = 1;
-                        el.style.transform = 'translateY(0)';
-                    });
+                    document.querySelectorAll('.stagger-item').forEach(el => { el.style.opacity = 1; el.style.transform = 'translateY(0)'; });
                     initMobileAnimations();
                     if (initialIndex > 0 && hash) {
                         const targetSection = sections[initialIndex];
-                        setTimeout(() => {
-                            const offsetPosition = targetSection.getBoundingClientRect().top + window.pageYOffset - 80;
-                            window.scrollTo({ top: offsetPosition, behavior: "auto" });
-                        }, 100);
+                        setTimeout(() => { const offsetPosition = targetSection.getBoundingClientRect().top + window.pageYOffset - 80; window.scrollTo({ top: offsetPosition, behavior: "auto" }); }, 100);
                     }
                 }
             }
@@ -2545,30 +2192,15 @@
             let loaded = 0;
             const timeout = setTimeout(hideLoader, 4000);
             if (splines.length === 0) { hideLoader(); clearTimeout(timeout); }
-            else {
-                splines.forEach(s => s.addEventListener('load', () => {
-                    loaded++;
-                    if (loaded >= splines.length) setTimeout(() => { hideLoader(); clearTimeout(timeout); }, 500);
-                }));
-            }
+            else { splines.forEach(s => s.addEventListener('load', () => { loaded++; if (loaded >= splines.length) setTimeout(() => { hideLoader(); clearTimeout(timeout); }, 500); })); }
 
             const nav = document.querySelector('nav.hidden.md\\:flex');
             if (nav) {
                 const hoverBg = document.getElementById('nav-hover-bg');
                 nav.querySelectorAll('.nav-link').forEach(link => {
-                    link.addEventListener('mouseenter', () => {
-                        hoverBg.style.left = link.offsetLeft + 'px';
-                        hoverBg.style.width = link.offsetWidth + 'px';
-                        hoverBg.style.opacity = '1';
-                    });
+                    link.addEventListener('mouseenter', () => { hoverBg.style.left = link.offsetLeft + 'px'; hoverBg.style.width = link.offsetWidth + 'px'; hoverBg.style.opacity = '1'; });
                 });
-                nav.addEventListener('mouseleave', () => {
-                    const active = nav.querySelector('.nav-link.active');
-                    if (active) {
-                        hoverBg.style.left = active.offsetLeft + 'px';
-                        hoverBg.style.width = active.offsetWidth + 'px';
-                    }
-                });
+                nav.addEventListener('mouseleave', () => { const active = nav.querySelector('.nav-link.active'); if (active) { hoverBg.style.left = active.offsetLeft + 'px'; hoverBg.style.width = active.offsetWidth + 'px'; } });
             }
 
             initPortfolioToggle();
@@ -2589,17 +2221,10 @@
             const cards = document.querySelectorAll('#portfolio-grid .project-card');
             btns.forEach(btn => {
                 btn.addEventListener('click', function () {
-                    btns.forEach(b => {
-                        b.classList.remove('active', 'bg-primary', 'shadow-primary');
-                        b.classList.add('bg-dark-lighter');
-                    });
-                    this.classList.add('active', 'bg-primary', 'shadow-primary');
-                    this.classList.remove('bg-dark-lighter');
+                    btns.forEach(b => { b.classList.remove('active', 'bg-primary', 'shadow-primary'); b.classList.add('bg-dark-lighter'); });
+                    this.classList.add('active', 'bg-primary', 'shadow-primary'); this.classList.remove('bg-dark-lighter');
                     const filter = this.getAttribute('data-filter');
-                    cards.forEach(c => {
-                        if (filter === 'all' || c.getAttribute('data-category') === filter) c.style.display = 'block';
-                        else c.style.display = 'none';
-                    });
+                    cards.forEach(c => { if (filter === 'all' || c.getAttribute('data-category') === filter) c.style.display = 'block'; else c.style.display = 'none'; });
                 });
             });
         }
@@ -2607,7 +2232,6 @@
         function initPortfolioToggle() {
             const btn = document.getElementById('toggle-portfolio-view');
             if (!btn) return;
-
             const btnText = document.getElementById('toggle-portfolio-text');
             const btnIcon = document.getElementById('toggle-portfolio-icon');
             const scrollMob = document.getElementById('portfolio-scroller-mobile');
@@ -2618,76 +2242,31 @@
             btn.addEventListener('click', function (e) {
                 if (e) e.preventDefault();
                 const isGridVisible = !grid.classList.contains('hidden');
-
                 if (isGridVisible) {
-                    // === 收合邏輯 (Fold) ===
                     sessionStorage.setItem('portfolioExpanded', 'false');
-
-                    if (scrollMob) {
-                        scrollMob.style.display = '';
-                        scrollMob.className = 'stagger-item md:hidden';
-                        scrollMob.style.opacity = '0';
-                        scrollMob.style.visibility = 'visible';
-                    }
-                    if (scrollDesk) {
-                        scrollDesk.style.display = '';
-                        scrollDesk.className = 'stagger-item hidden md:block';
-                        scrollDesk.style.opacity = '0';
-                        scrollDesk.style.visibility = 'visible';
-                    }
-
+                    if (scrollMob) { scrollMob.style.display = ''; scrollMob.className = 'stagger-item md:hidden'; scrollMob.style.opacity = '0'; scrollMob.style.visibility = 'visible'; }
+                    if (scrollDesk) { scrollDesk.style.display = ''; scrollDesk.className = 'stagger-item hidden md:block'; scrollDesk.style.opacity = '0'; scrollDesk.style.visibility = 'visible'; }
                     const btnContainer = btn.closest('.stagger-item');
                     if (btnContainer) btnContainer.style.opacity = '0';
-
-                    grid.classList.add('hidden');
-                    filters.classList.add('hidden');
-                    btnText.innerText = 'View All Projects';
-                    btnIcon.className = 'fas fa-arrow-right ml-2';
-                    isPortfolioExpanded = false;
-                    document.body.classList.remove('expanded-view');
-
-                    currentSectionIndex = 3;
-                    scroller.scrollTop = sections[3].offsetTop;
-                    sections.forEach(s => s.classList.remove('active-section'));
-                    sections[3].classList.add('active-section');
-                    updateNav(3);
-
-                    triggerInternalAnimations(sections[3]);
-
+                    grid.classList.add('hidden'); filters.classList.add('hidden');
+                    btnText.innerText = 'View All Projects'; btnIcon.className = 'fas fa-arrow-right ml-2';
+                    isPortfolioExpanded = false; document.body.classList.remove('expanded-view');
+                    currentSectionIndex = 3; scroller.scrollTop = sections[3].offsetTop;
+                    sections.forEach(s => s.classList.remove('active-section')); sections[3].classList.add('active-section');
+                    updateNav(3); triggerInternalAnimations(sections[3]);
                 } else {
-                    // === 展開邏輯 (Expand) ===
                     sessionStorage.setItem('portfolioExpanded', 'true');
                     if (scrollMob) scrollMob.style.display = 'none';
                     if (scrollDesk) scrollDesk.style.display = 'none';
-                    grid.classList.remove('hidden');
-                    filters.classList.remove('hidden');
-
+                    grid.classList.remove('hidden'); filters.classList.remove('hidden');
                     const allBtn = document.querySelector('.portfolio-filter-btn[data-filter="all"]');
                     if (allBtn && !document.querySelector('.portfolio-filter-btn.active')) allBtn.click();
-
-                    btnText.innerText = 'Fold';
-                    btnIcon.className = 'fas fa-chevron-up ml-2';
-                    isPortfolioExpanded = true;
-                    document.body.classList.add('expanded-view');
-
+                    btnText.innerText = 'Fold'; btnIcon.className = 'fas fa-chevron-up ml-2';
+                    isPortfolioExpanded = true; document.body.classList.add('expanded-view');
                     const gridCards = grid.querySelectorAll('.project-card');
-
-                    // === 關鍵修正：確保卡片具有互動性 ===
-                    // 加入 .visible 確保 pointer-events: auto 生效
-                    gridCards.forEach(card => {
-                        card.classList.add('visible');
-                        card.style.pointerEvents = 'auto'; // 雙重保險
-                    });
-
-                    if (gridCards[0].style.opacity !== '1') {
-                        gsap.fromTo(gridCards, { opacity: 0 }, { opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" });
-                    }
-
-                    setTimeout(() => {
-                        if (Math.abs(scroller.scrollTop - sections[3].offsetTop) > 100) {
-                            scroller.scrollTop = sections[3].offsetTop;
-                        }
-                    }, 50);
+                    gridCards.forEach(card => { card.classList.add('visible'); card.style.pointerEvents = 'auto'; });
+                    if (gridCards[0].style.opacity !== '1') { gsap.fromTo(gridCards, { opacity: 0 }, { opacity: 1, duration: 0.6, stagger: 0.1, ease: "power2.out" }); }
+                    setTimeout(() => { if (Math.abs(scroller.scrollTop - sections[3].offsetTop) > 100) { scroller.scrollTop = sections[3].offsetTop; } }, 50);
                 }
             });
         }
@@ -2695,10 +2274,7 @@
         function initMobileMenu() {
             const toggle = document.getElementById('menu-toggle');
             if (!toggle) return;
-            toggle.addEventListener('click', () => {
-                document.getElementById('mobile-menu').classList.add('active');
-                document.getElementById('menu-overlay').classList.add('active');
-            });
+            toggle.addEventListener('click', () => { document.getElementById('mobile-menu').classList.add('active'); document.getElementById('menu-overlay').classList.add('active'); });
             document.getElementById('close-menu').addEventListener('click', closeMenuHandler);
             document.getElementById('menu-overlay').addEventListener('click', closeMenuHandler);
         }
@@ -2712,6 +2288,5 @@
         });
     </script>
 </body>
-
 
 </html>
