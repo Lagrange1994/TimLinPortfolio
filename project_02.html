@@ -603,7 +603,7 @@
             return (
                 <div className="flex items-center justify-center p-4 lg:p-12 w-full h-full">
                     {/* Max Width Constraint */}
-                    <div className="w-full max-w-4xl h-full flex items-center justify-center">
+                    <div className="w-full max-w-full h-full flex items-center justify-center">
                         <div
                             className="relative bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col shrink-0 animate-fadeIn w-full"
                             style={{ maxWidth: '100%', maxHeight: '100%' }}
@@ -625,7 +625,7 @@
             return (
                 <div className="flex items-center justify-center p-4 lg:p-12 w-full h-full">
                     {/* Max Width Constraint */}
-                    <div className="w-full max-w-4xl h-full flex items-center justify-center">
+                    <div className="w-full max-w-full h-full flex items-center justify-center">
                         {/* MODIFIED: rounded-[1.25rem] for mobile, lg:rounded-[2.5rem] for desktop */}
                         <div className="relative h-full w-auto max-w-full aspect-[9/19] border-[6px] md:border-[8px] border-[#2d2d2d] rounded-[1.25rem] lg:rounded-[2.5rem] overflow-hidden shadow-2xl bg-black animate-fadeIn shrink-0">
                             {/* Updated to use ImageWithSkeleton */}
@@ -844,8 +844,8 @@
                         return (
                             // UPDATED: Mobile p-4, Desktop p-12
                             <div className="w-full h-full p-4 lg:p-12 flex items-center justify-center">
-                                {/* Added max-w-4xl Constraint */}
-                                <div className="w-full max-w-4xl h-full flex flex-col">
+                                {/* Added max-w-full Constraint */}
+                                <div className="w-full max-w-full h-full flex flex-col">
                                     <div className="flex-1 w-full relative min-h-0">
                                         <ComparisonSlider
                                             beforeImage={activeFeature.beforeImg}
