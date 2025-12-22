@@ -1116,6 +1116,43 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
+
+        (function () {
+            const TARGET_WIDTH = 1920;
+            const BASE_FONT_SIZE = 16;
+
+            // 定義筆電/小螢幕的寬度區間 (例如 1024px ~ 1600px)
+            const LAPTOP_MIN_WIDTH = 1024;
+            const LAPTOP_MAX_WIDTH = 1600;
+
+            function enforceProportions() {
+                const currentWidth = window.innerWidth;
+                let scaleRatio = 1;
+
+                if (currentWidth >= LAPTOP_MIN_WIDTH) {
+                    if (currentWidth <= LAPTOP_MAX_WIDTH) {
+
+                        scaleRatio = 0.9;
+                    } else {
+                        // === 針對大螢幕 (24吋, 27吋, 32吋 4K) ===
+                        // 超過 1600px 後，恢復嚴格的等比放大 (1920px=1.0, 3840px=2.0)
+                        scaleRatio = currentWidth / TARGET_WIDTH;
+                    }
+
+                    // 計算並套用新的字體大小
+                    const newFontSize = BASE_FONT_SIZE * scaleRatio;
+                    document.documentElement.style.fontSize = `${newFontSize}px`;
+                } else {
+                    // 手機版 (< 1024px) 恢復預設 16px
+                    document.documentElement.style.fontSize = '16px';
+                }
+            }
+
+            // 監聽視窗變化
+            window.addEventListener('resize', enforceProportions);
+            window.addEventListener('DOMContentLoaded', enforceProportions);
+            enforceProportions(); // 立即執行
+        })();
     </script>
 </body>
 
