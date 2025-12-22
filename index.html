@@ -53,13 +53,20 @@
 
     <style>
         /* === 1. 全局縮放設定 (4K 適配) === */
+        /* === 1. 全局縮放設定 (4K 適配) === */
         :root {
             font-size: 16px;
+            /* 手機與平板預設 */
         }
 
         @media (min-width: 1024px) {
             html {
-                font-size: 0.833333vw;
+                /* clamp(最小值, 理想值, 最大值)
+           1. 最小值 14px：確保在 13吋/14吋 筆電上文字不會縮得太小看不見。
+           2. 理想值 0.833333vw：在 1920px 以上的螢幕維持完美比例 (1920px時為16px, 4K時為32px)。
+           3. 最大值 40px：(可選) 避免在 8K 螢幕變得過於巨大，但在 4K 下會保持放大效果。
+        */
+                font-size: clamp(14px, 0.833333vw, 50px);
             }
         }
 
@@ -2141,13 +2148,28 @@
             if (header) header.classList.toggle('scrolled', index > 0);
         }
 
-        function triggerInternalAnimations(section) {
+        function triggerInternalAnimations(section, skipAnimation = false) {
             const staggerItems = section.querySelectorAll('.stagger-item');
+
             if (staggerItems.length > 0) {
-                gsap.fromTo(staggerItems, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power3.out", clearProps: "transform" });
+                if (skipAnimation) {
+                    // 如果是跳過動畫模式，直接設定為最終狀態 (不播放動畫)
+                    gsap.set(staggerItems, { opacity: 1, y: 0, clearProps: "transform" });
+                } else {
+                    // 否則，播放正常的進場動畫
+                    gsap.fromTo(staggerItems,
+                        { opacity: 0, y: 50 },
+                        { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power3.out", clearProps: "transform" }
+                    );
+                }
             }
+
+            // 其他元素直接設為可見
             section.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
-            section.querySelectorAll('.skill-card').forEach(card => { card.classList.add('visible'); animateCounter(card); });
+            section.querySelectorAll('.skill-card').forEach(card => {
+                card.classList.add('visible');
+                animateCounter(card);
+            });
         }
 
         function animateCounter(card) {
@@ -2187,11 +2209,21 @@
 
         document.addEventListener('click', function (e) {
             const card = e.target.closest('.project-card');
-            if (card && isPortfolioExpanded) {
-                const scroller = document.getElementById('main-scroller');
-                sessionStorage.setItem('portfolioScrollPos', scroller.scrollTop);
+            if (card) {
+                // 1. 儲存 Filter 狀態 (手機與桌機通用)
+                // 只要當下有選中的 Filter 按鈕，就記錄下來
                 const activeFilter = document.querySelector('.portfolio-filter-btn.active');
-                if (activeFilter) sessionStorage.setItem('portfolioActiveFilter', activeFilter.getAttribute('data-filter'));
+                if (activeFilter) {
+                    sessionStorage.setItem('portfolioActiveFilter', activeFilter.getAttribute('data-filter'));
+                }
+
+                // 2. 儲存捲動位置
+                if (isMobile()) {
+                    sessionStorage.setItem('mobileScrollPos', window.scrollY);
+                } else if (isPortfolioExpanded) {
+                    const scroller = document.getElementById('main-scroller');
+                    sessionStorage.setItem('portfolioScrollPos', scroller.scrollTop);
+                }
             }
         });
 
@@ -2208,23 +2240,33 @@
             }
 
             const loader = document.querySelector('.loader');
+            /* === 修改後 (請完整替換 hideLoader 內的內容) === */
             function hideLoader() {
                 if (loader.classList.contains('hidden')) return;
                 loader.classList.add('hidden');
+
                 let initialIndex = 0;
                 const hash = window.location.hash;
+
+                // 檢查是否有儲存的捲動位置或狀態 (代表是返回訪問)
+                const savedLastSection = sessionStorage.getItem('lastSectionIndex');
+                const savedMobilePos = sessionStorage.getItem('mobileScrollPos');
+                const savedExpandedState = sessionStorage.getItem('portfolioExpanded');
+
+                // 判斷是否為「返回/刷新」狀態 (只要有任何存檔紀錄，就視為返回)
+                const isReturningVisitor = (savedLastSection !== null || savedMobilePos !== null || savedExpandedState !== null);
+
                 if (hash) {
                     const targetSection = document.getElementById(hash.substring(1));
                     if (targetSection) initialIndex = Array.from(sections).indexOf(targetSection);
-                } else {
-                    const saved = sessionStorage.getItem('lastSectionIndex');
-                    if (saved !== null) initialIndex = parseInt(saved, 10);
+                } else if (savedLastSection !== null) {
+                    initialIndex = parseInt(savedLastSection, 10);
                 }
 
-                const savedExpandedState = sessionStorage.getItem('portfolioExpanded');
-                const isRestoreMode = (savedExpandedState === 'true' && initialIndex === 3 && !isMobile());
-
+                // --- 桌機版處理邏輯 ---
                 if (!isMobile()) {
+                    const isRestoreMode = (savedExpandedState === 'true' && initialIndex === 3);
+
                     if (isRestoreMode) {
                         currentSectionIndex = 3;
                         sections.forEach(s => s.classList.remove('active-section'));
@@ -2234,11 +2276,13 @@
                         updateNav(3);
                         toggleBackToTop(true);
 
+                        // 觸發展開
                         const toggleButton = document.getElementById('toggle-portfolio-view');
                         if (toggleButton) {
                             toggleButton.click();
                             const savedFilter = sessionStorage.getItem('portfolioActiveFilter');
                             if (savedFilter) { const filterBtn = document.querySelector(`.portfolio-filter-btn[data-filter="${savedFilter}"]`); if (filterBtn) filterBtn.click(); }
+
                             const savedScrollPos = sessionStorage.getItem('portfolioScrollPos');
                             if (savedScrollPos) {
                                 requestAnimationFrame(() => {
@@ -2249,6 +2293,9 @@
                                 });
                             }
                         }
+                        // 【關鍵修改】傳入 true，跳過桌機動畫
+                        triggerInternalAnimations(sections[3], true);
+
                     } else {
                         if (initialIndex > 0) {
                             currentSectionIndex = initialIndex;
@@ -2257,23 +2304,89 @@
                             scroller.scrollTop = sections[initialIndex].offsetTop;
                             updateNav(initialIndex);
                             toggleBackToTop(true);
-                            triggerInternalAnimations(sections[initialIndex]);
+                            // 【關鍵修改】如果是返回訪問 (isReturningVisitor)，傳入 true 跳過動畫
+                            triggerInternalAnimations(sections[initialIndex], isReturningVisitor);
                         } else {
                             currentSectionIndex = 0;
                             sections[0].classList.add('active-section');
                             updateNav(0);
-                            triggerInternalAnimations(sections[0]);
+                            // 【關鍵修改】如果是返回訪問，跳過動畫
+                            triggerInternalAnimations(sections[0], isReturningVisitor);
                             scroller.scrollTop = 0;
                             window.scrollTo(0, 0);
                         }
                     }
-                } else {
-                    document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
-                    document.querySelectorAll('.stagger-item').forEach(el => { el.style.opacity = 1; el.style.transform = 'translateY(0)'; });
-                    initMobileAnimations();
-                    if (initialIndex > 0 && hash) {
+                }
+                // --- 手機版處理邏輯 ---
+                else {
+                    // 如果是返回訪問，強制所有動畫元素直接顯示 (不透過 transition)
+                    if (isReturningVisitor) {
+                        // 強制所有 fade-in 元素顯示
+                        document.querySelectorAll('.fade-in').forEach(el => {
+                            el.classList.add('visible');
+                            el.style.transition = 'none'; // 暫時移除過渡效果
+                            el.style.opacity = '1';
+                            el.style.transform = 'translateY(0)';
+                        });
+
+                        // 強制所有 stagger-item 顯示
+                        document.querySelectorAll('.stagger-item').forEach(el => {
+                            el.style.opacity = '1';
+                            el.style.transform = 'none';
+                            el.style.transition = 'none'; // 暫時移除過渡效果
+                        });
+
+                        // 恢復 transition (用 setTimeout 確保下一幀才加回來，避免閃爍)
+                        setTimeout(() => {
+                            document.querySelectorAll('.fade-in, .stagger-item').forEach(el => {
+                                el.style.transition = '';
+                            });
+                        }, 100);
+
+                        // 初始化 observer (但在元素已經 visible 的情況下，它不會再次觸發動畫)
+                        initMobileAnimations();
+                    }
+                    else {
+                        // 第一次訪問，正常播放動畫
+                        document.querySelectorAll('.fade-in').forEach(el => el.classList.add('visible'));
+                        document.querySelectorAll('.stagger-item').forEach(el => { el.style.opacity = 1; el.style.transform = 'translateY(0)'; });
+                        initMobileAnimations();
+                    }
+
+                    /* === 修改後 (加入恢復 Tab 狀態的邏輯) === */
+                    if (savedExpandedState === 'true') {
+                        const toggleBtn = document.getElementById('toggle-portfolio-view');
+                        const grid = document.getElementById('portfolio-grid');
+
+                        // 1. 先觸發展開
+                        if (toggleBtn && grid && grid.classList.contains('hidden')) {
+                            toggleBtn.click();
+                        }
+
+                        // 2. 【新增】恢復 Tab 標籤狀態
+                        // 必須在展開之後執行，因為展開後 Filter 按鈕才會出現
+                        const savedFilter = sessionStorage.getItem('portfolioActiveFilter');
+                        if (savedFilter) {
+                            const filterBtn = document.querySelector(`.portfolio-filter-btn[data-filter="${savedFilter}"]`);
+                            // 如果找到了對應的按鈕，且它還沒被激活，就模擬點擊
+                            if (filterBtn && !filterBtn.classList.contains('active')) {
+                                filterBtn.click();
+                            }
+                        }
+                    }
+
+                    // 手機版：恢復位置
+                    if (savedMobilePos) {
+                        setTimeout(() => {
+                            window.scrollTo({ top: parseFloat(savedMobilePos), behavior: "auto" });
+                            sessionStorage.removeItem('mobileScrollPos');
+                        }, 200);
+                    } else if (initialIndex > 0) {
                         const targetSection = sections[initialIndex];
-                        setTimeout(() => { const offsetPosition = targetSection.getBoundingClientRect().top + window.pageYOffset - 80; window.scrollTo({ top: offsetPosition, behavior: "auto" }); }, 100);
+                        setTimeout(() => {
+                            const offsetPosition = targetSection.getBoundingClientRect().top + window.pageYOffset - 80;
+                            window.scrollTo({ top: offsetPosition, behavior: "auto" });
+                        }, 100);
                     }
                 }
             }
