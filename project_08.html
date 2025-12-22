@@ -175,24 +175,15 @@
 
         /* === NEW: Vertical Bar, Horizontal Movement Shimmer Effect === */
         .skeleton-shimmer {
-            /* Base Dark Color */
             background: #1A1D24;
-            /* Gradient: Left to Right (creates vertical bands) */
-            /* Dark -> Light -> Dark */
             background: linear-gradient(to right, #1A1D24 8%, #2A303C 18%, #1A1D24 33%);
-            /* Width 200% to allow sliding horizontally */
             background-size: 200% 100%;
             animation: shimmer 1.5s infinite linear;
         }
 
         @keyframes shimmer {
-            0% {
-                background-position: -200% 0;
-            }
-
-            100% {
-                /* Move to the right */
-                background-position: 200% 0;
+            to {
+                background-position-x: -200%;
             }
         }
 
