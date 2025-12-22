@@ -331,7 +331,7 @@
             transform: translateY(-0.1875rem);
         }
 
-        /* === 導航列與選單 (修正：增加左右空隙) === */
+        /* === 導航列與選單 === */
         #nav-container {
             transition: all 0.3s ease-in-out;
             margin-top: 1.25rem;
@@ -343,8 +343,6 @@
             box-shadow: 0 0.25rem 0.375rem -0.0625rem rgba(0, 0, 0, 0.1);
             margin-left: auto;
             margin-right: auto;
-
-            /* 修正：在膠囊狀態下，讓左右產生空隙 (100% - 2rem = 左右各留 1rem) */
             width: calc(100% - 2rem);
         }
 
@@ -356,8 +354,6 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: none;
             max-width: 100%;
-
-            /* 修正：捲動後恢復滿版 */
             width: 100%;
         }
 
@@ -670,6 +666,101 @@
                 font-size: 2rem;
             }
         }
+
+        /* === LIQUID GLASS BUTTON EFFECT === */
+        /* 基礎 Liquid Glass 樣式 */
+        .liquid-glass-btn {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            /* 預設高透光背景 */
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow:
+                0 4px 6px rgba(0, 0, 0, 0.1),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 0 15px rgba(255, 255, 255, 0.1);
+            color: #fff;
+            overflow: hidden;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        /* 內部流光效果 (Sheen) */
+        .liquid-glass-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 150%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    rgba(255, 255, 255, 0.1) 40%,
+                    rgba(255, 255, 255, 0.4) 50%,
+                    rgba(255, 255, 255, 0.1) 60%,
+                    transparent 100%);
+            transform: skewX(-25deg);
+            transition: left 0.6s ease;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .liquid-glass-btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            /* Hover 時稍微增加亮度 */
+            box-shadow:
+                0 8px 15px rgba(0, 0, 0, 0.2),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+                inset 0 0 20px rgba(255, 255, 255, 0.2);
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+            color: #fff;
+        }
+
+        .liquid-glass-btn:hover::before {
+            left: 100%;
+            transition: left 0.6s ease;
+        }
+
+        .liquid-glass-btn:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        /* === 漸層色變體 (View My Work & Fold) === */
+        /* 保留 Liquid Glass 的光澤，但使用原來的紅紫漸層背景 */
+        .liquid-glass-gradient {
+            background: linear-gradient(to right, #6C63FF, #FF6584);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow:
+                0 0.25rem 1.25rem rgba(255, 101, 132, 0.35),
+                /* 原本的 shadow-primary */
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .liquid-glass-gradient:hover {
+            box-shadow:
+                0 0.375rem 1.5625rem rgba(255, 101, 132, 0.45),
+                /* 原本的 shadow-primary-hover */
+                inset 0 0 0 1px rgba(255, 255, 255, 0.4),
+                inset 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        /* === Portfolio 篩選按鈕變體 === */
+        /* 未選中時是普通 Liquid Glass，選中/Hover 時變成原本的紫色 */
+        .portfolio-filter-btn:hover,
+        .portfolio-filter-btn.active {
+            background: #6C63FF !important;
+            /* 原本的 primary color */
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow:
+                0 0 15px rgba(108, 99, 255, 0.5),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 
@@ -720,8 +811,8 @@
             </nav>
             <div class="mt-12 flex">
                 <a href="https://github.com/Lagrange1994" target="_blank" rel="noopener noreferrer"
-                    class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white/10 transition-all duration-300 hover:bg-gradient-to-r hover:from-primary hover:to-secondary hover:-translate-y-1">
-                    <i class="fab fa-github"></i>
+                    class="liquid-glass-btn px-4 py-2 rounded-full">
+                    <i class="fab fa-github mr-2"></i>
                     <span class="text-xs sm:text-sm">https://github.com/Lagrange1994</span>
                 </a>
             </div>
@@ -731,10 +822,10 @@
     <main id="main-scroller">
 
         <section id="home" class="snap-section active-section md:flex md:items-center">
-            <div class="container max-w-8xl mx-auto px-8 pt-4 pb-4 md:py-16">
+            <div class="container max-w-8xl px-4 mx-auto">
                 <div class="flex flex-col md:flex-row items-center">
                     <div
-                        class="md:w-1/2 flex justify-center mx-[-1rem] md:mx-0 px-4 h-auto aspect-square md:aspect-auto md:h-[45rem] stagger-item">
+                        class="md:w-1/2 flex justify-center mx-[-1rem] md:mx-0 px-0 h-auto aspect-square md:aspect-auto md:h-[45rem] stagger-item">
                         <spline-viewer url="https://prod.spline.design/sA-o0fi-0MJLrsOf/scene.splinecode"
                             class="w-full h-full"></spline-viewer>
                     </div>
@@ -753,11 +844,11 @@
 
                         <div class="flex space-x-4 stagger-item justify-center md:justify-start">
                             <a onclick="scrollToSection(3)"
-                                class="px-5 py-2 md:px-8 md:py-3 text-xs md:text-lg bg-gradient-to-r from-primary to-secondary rounded-full font-medium transition duration-300 shadow-primary hover:shadow-primary-hover cursor-pointer">
+                                class="liquid-glass-btn liquid-glass-gradient px-5 py-2 md:px-8 md:py-3 text-xs md:text-lg rounded-full font-medium cursor-pointer">
                                 View My Work
                             </a>
                             <a onclick="scrollToSection(4)"
-                                class="px-5 py-2 md:px-8 md:py-3 text-xs md:text-lg border border-white border-opacity-20 rounded-full font-medium text-white hover:bg-white hover:bg-opacity-10 transition duration-300 cursor-pointer">
+                                class="liquid-glass-btn px-5 py-2 md:px-8 md:py-3 text-xs md:text-lg rounded-full font-medium cursor-pointer">
                                 Contact Me
                             </a>
                         </div>
@@ -1686,13 +1777,13 @@
 
                 <div id="portfolio-filters" class="flex flex-nowrap justify-center mb-8 hidden stagger-item">
                     <button
-                        class="portfolio-filter-btn active mx-1 px-3 py-1 md:m-2 md:px-6 md:py-2 text-xs md:text-base rounded-full bg-primary text-white shadow-primary whitespace-nowrap"
+                        class="liquid-glass-btn portfolio-filter-btn active mx-1 px-3 py-1 md:m-2 md:px-6 md:py-2 text-xs md:text-base rounded-full whitespace-nowrap"
                         data-filter="all">All</button>
                     <button
-                        class="portfolio-filter-btn mx-1 px-3 py-1 md:m-2 md:px-6 md:py-2 text-xs md:text-base rounded-full bg-dark-lighter hover:bg-primary hover:text-white transition duration-300 whitespace-nowrap"
+                        class="liquid-glass-btn portfolio-filter-btn mx-1 px-3 py-1 md:m-2 md:px-6 md:py-2 text-xs md:text-base rounded-full whitespace-nowrap"
                         data-filter="mobile">Apps Design</button>
                     <button
-                        class="portfolio-filter-btn mx-1 px-3 py-1 md:m-2 md:px-6 md:py-2 text-xs md:text-base rounded-full bg-dark-lighter hover:bg-primary hover:text-white transition duration-300 whitespace-nowrap"
+                        class="liquid-glass-btn portfolio-filter-btn mx-1 px-3 py-1 md:m-2 md:px-6 md:py-2 text-xs md:text-base rounded-full whitespace-nowrap"
                         data-filter="web">Web Design</button>
                 </div>
 
@@ -1859,7 +1950,7 @@
 
                 <div class="text-center mt-8 stagger-item">
                     <a id="toggle-portfolio-view" href="#portfolio"
-                        class="inline-flex items-center px-5 py-2 md:px-8 md:py-3 text-xs md:text-base bg-gradient-to-r from-primary to-secondary rounded-full font-medium transition duration-300 shadow-primary hover:shadow-primary-hover cursor-pointer">
+                        class="liquid-glass-btn liquid-glass-gradient px-5 py-2 md:px-8 md:py-3 text-xs md:text-base rounded-full font-medium cursor-pointer">
                         <span id="toggle-portfolio-text">View All Projects</span>
                         <i id="toggle-portfolio-icon" class="fas fa-arrow-right ml-2"></i>
                     </a>
@@ -1918,9 +2009,8 @@
                                     <h4 class="text-xs md:text-base font-medium mb-4 font-heading">Follow Me</h4>
                                     <div class="flex">
                                         <a href="https://github.com/Lagrange1994" target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-white/10 transition-all duration-300 hover:bg-gradient-to-r hover:from-primary hover:to-secondary hover:-translate-y-1">
-                                            <i class="fab fa-github"></i>
+                                            rel="noopener noreferrer" class="liquid-glass-btn px-4 py-2 rounded-full">
+                                            <i class="fab fa-github mr-2"></i>
                                             <span class="text-xs sm:text-sm">https://github.com/Lagrange1994</span>
                                         </a>
                                     </div>
@@ -1952,7 +2042,7 @@
     </main>
 
     <button id="back-to-top" onclick="scrollToSection(0)"
-        class="fixed bottom-8 right-8 w-12 h-12 bg-gradient-to-r from-primary to-secondary rounded-full flex items-center justify-center opacity-0 invisible transition-all duration-300 shadow-primary hover:shadow-primary-hover cursor-pointer z-[9999]">
+        class="liquid-glass-btn fixed bottom-8 right-8 w-12 h-12 rounded-full opacity-0 invisible z-[9999] liquid-glass-gradient">
         <i class="fas fa-arrow-up"></i>
     </button>
 
@@ -2221,8 +2311,14 @@
             const cards = document.querySelectorAll('#portfolio-grid .project-card');
             btns.forEach(btn => {
                 btn.addEventListener('click', function () {
-                    btns.forEach(b => { b.classList.remove('active', 'bg-primary', 'shadow-primary'); b.classList.add('bg-dark-lighter'); });
-                    this.classList.add('active', 'bg-primary', 'shadow-primary'); this.classList.remove('bg-dark-lighter');
+                    // 移除 active 樣式 (不再需要切換 bg-primary，因為統一用 liquid glass)
+                    btns.forEach(b => {
+                        b.classList.remove('active');
+                        // 確保移除舊的樣式
+                        b.classList.remove('bg-primary', 'shadow-primary', 'bg-dark-lighter');
+                    });
+                    this.classList.add('active');
+
                     const filter = this.getAttribute('data-filter');
                     cards.forEach(c => { if (filter === 'all' || c.getAttribute('data-category') === filter) c.style.display = 'block'; else c.style.display = 'none'; });
                 });
