@@ -757,16 +757,18 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* Scroller Animations */
+        /* [修改 CSS] Scroller Animations: 移除寫死的 keyframes，改用通用設定 */
         .scroller {
             overflow: hidden;
-            -webkit-mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
-            mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
+            /* 左右遮罩，讓捲動更自然 */
+            -webkit-mask: linear-gradient(90deg, transparent, white 5%, white 95%, transparent);
+            mask: linear-gradient(90deg, transparent, white 5%, white 95%, transparent);
         }
 
         .scroller-inner {
             display: flex;
             flex-wrap: nowrap;
+            /* 關鍵：讓寬度依內容自動撐開，JS 複製後寬度會加倍 */
             width: max-content;
         }
 
@@ -774,6 +776,7 @@
             width: 15.5rem;
             flex-shrink: 0;
             margin: 0.5rem;
+            /* 保持原本間距 */
         }
 
         @media (min-width: 768px) {
@@ -782,31 +785,37 @@
             }
         }
 
-        .animate-scroll-rtl {
-            animation: scroll-rtl 40s linear infinite;
+        /* 當 JS 啟用動畫後 (.scroller[data-animated="true"]) */
+        .scroller[data-animated="true"] .scroller-inner {
+            /* 預設動畫時間 40s，可透過 data-speed 覆蓋 */
+            animation: scroll 40s linear infinite;
         }
 
-        .animate-scroll-ltr {
-            animation: scroll-ltr 40s linear infinite;
+        /* 根據 data-direction 控制方向 */
+        .scroller[data-direction="right"] .scroller-inner {
+            animation-direction: reverse;
+            /* 反轉：原本向左(-50%)，反轉變成向右 */
         }
 
-        @keyframes scroll-rtl {
-            0% {
-                transform: translateX(0%);
-            }
-
-            100% {
-                transform: translateX(-50%);
-            }
+        .scroller[data-direction="left"] .scroller-inner {
+            animation-direction: normal;
+            /* 正常：向左捲動 */
         }
 
-        @keyframes scroll-ltr {
-            0% {
-                transform: translateX(-50%);
-            }
+        /* 根據 data-speed 控制速度 (可選) */
+        .scroller[data-speed="fast"] .scroller-inner {
+            animation-duration: 30s;
+        }
 
-            100% {
-                transform: translateX(0%);
+        .scroller[data-speed="slow"] .scroller-inner {
+            animation-duration: 60s;
+        }
+
+        /* 核心動畫：只需定義向左移動 50% 即可 */
+        /* 因為 JS 複製了一份，總長度是 200%。移動 50% 等於跑完原始的一組，達成無縫循環 */
+        @keyframes scroll {
+            to {
+                transform: translate(-50%);
             }
         }
     </style>
@@ -1178,33 +1187,33 @@
                                     <div class="flex justify-between items-center mb-3 relative z-10">
                                         <h3 class="font-bold text-white text-lg font-heading flex items-center gap-2">
                                             <i class="fas fa-robot text-cyan-300 text-xl"></i>
-                                            AI-Native Workflow
+                                            AI-Tools
                                         </h3>
                                         <span
                                             class="px-3 py-1 bg-cyan-400/20 text-cyan-300 text-[10px] font-bold rounded-full border border-cyan-400/30 shadow-[0_0_10px_rgba(34,211,238,0.2)]">
-                                            DAILY DRIVER
+                                            ADVANCED
                                         </span>
                                     </div>
 
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
                                         <div class="pl-3 border-l-2 border-cyan-500">
                                             <h4 class="text-cyan-300 font-bold text-sm mb-1">Gemini / Claude</h4>
-                                            <p class="text-white text-xs md:text-base leading-relaxed mb-2">
+                                            <p class="text-gray-300 text-xs md:text-base leading-relaxed mb-2">
                                                 <strong class="text-white">邏輯生成與轉譯：</strong> 將設計需求轉化為精準的 Prompt，讓 AI
                                                 產出初始程式碼架構。
                                             </p>
-                                            <p class="text-white text-xs md:text-base leading-relaxed">
+                                            <p class="text-gray-300 text-xs md:text-base leading-relaxed">
                                                 <strong class="text-white">智慧除錯：</strong> 遇到程式錯誤時，擅長描述情境引導 AI
                                                 快速定位問題。
                                             </p>
                                         </div>
                                         <div class="pl-3 border-l-2 border-pink-500">
                                             <h4 class="text-pink-300 font-bold text-sm mb-1">Rodin / Stitch</h4>
-                                            <p class="text-white text-xs md:text-base leading-relaxed mb-2">
+                                            <p class="text-gray-300 text-xs md:text-base leading-relaxed mb-2">
                                                 <strong class="text-white">快速 3D 原型：</strong> 使用 Rodin 將文字概念直接轉化為 3D
                                                 模型，數分鐘內完成建模。
                                             </p>
-                                            <p class="text-white text-xs md:text-base leading-relaxed">
+                                            <p class="text-gray-300 text-xs md:text-base leading-relaxed">
                                                 <strong class="text-white">快速製作UI設計：</strong> 運用 Stitch
                                                 快速生成多種UI設計，低成本進行視覺提案。
                                             </p>
@@ -1303,12 +1312,12 @@
 
 
                 <div id="portfolio-scroller-mobile" class="stagger-item md:hidden">
-                    <div class="scroller mb-2">
-                        <div class="scroller-inner animate-scroll-rtl">
+                    <div class="scroller" data-direction="left" data-speed="slow">
+                        <div class="scroller-inner">
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
                                 href="project_01.html">
                                 <img src="./img/my_portfolio/video_analyzation.webp" alt="video analization system"
-                                    class="w-full h-full object-cover">
+                                    loading="lazy" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
@@ -1326,7 +1335,8 @@
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
                                 href="project_02.html">
                                 <img src="./img/my_portfolio/video_analyzation_app.webp"
-                                    alt="video analization system app" class="w-full h-full object-cover">
+                                    alt="video analization system app" loading="lazy"
+                                    class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
                                     <p class="text-xs text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
@@ -1339,84 +1349,34 @@
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_03.html"><img src="./img/my_portfolio/police.webp"
-                                    alt="Kaohsiung Police Station" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
-                                    <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">React</span>
-                                    </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_04.html"><img src="./img/my_portfolio/Tainan Police.webp"
-                                    alt="Tainan Police Station" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
-                                    <p class="text-xs text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
-                                    </div>
-                                </div>
-                            </a>
-
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_01.html" aria-hidden="true"><img
-                                    src="./img/my_portfolio/video_analyzation.webp" alt="video analization system"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
-                                    <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">React</span>
-                                    </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_02.html" aria-hidden="true"><img
-                                    src="./img/my_portfolio/video_analyzation_app.webp"
-                                    alt="video analization system app" loading="lazy"
+                                href="project_03.html">
+                                <img src="./img/my_portfolio/police.webp" alt="Kaohsiung Police Station" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
-                                    <p class="text-xs text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
-                                    </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_03.html" aria-hidden="true"><img src="./img/my_portfolio/police.webp"
-                                    alt="Kaohsiung Police Station" loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2"><span
+                                    <div class="flex space-x-2">
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span><span
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">React</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_04.html" aria-hidden="true"><img
-                                    src="./img/my_portfolio/Tainan Police.webp" alt="Tainan Police Station"
+                                href="project_04.html">
+                                <img src="./img/my_portfolio/Tainan Police.webp" alt="Tainan Police Station"
                                     loading="lazy" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
@@ -1424,215 +1384,141 @@
                         </div>
                     </div>
 
-                    <div class="scroller mb-2">
-                        <div class="scroller-inner animate-scroll-ltr">
+                    <div class="scroller" data-direction="right" data-speed="slow">
+                        <div class="scroller-inner">
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_05.html"><img src="./img/my_portfolio/zoo.webp" alt="zoo monitering web"
+                                href="project_05.html">
+                                <img src="./img/my_portfolio/zoo.webp" alt="zoo monitering web" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
                                     <p class="text-xs text-gray-200 mb-4">人流分析與網站管理介面</p>
-                                    <div class="flex space-x-2"><span
+                                    <div class="flex space-x-2">
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span><span
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Vue</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_06.html"><img src="./img/my_portfolio/Taoyuan_MRT.webp"
-                                    alt="Taoyuan MRT App" class="w-full h-full object-cover">
+                                href="project_06.html">
+                                <img src="./img/my_portfolio/Taoyuan_MRT.webp" alt="Taoyuan MRT App" loading="lazy"
+                                    class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">桃園捷運APP</h3>
                                     <p class="text-xs text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span></div>
+                                            XD</span>
+                                    </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_07.html"><img src="./img/my_portfolio/dam.webp" alt="Shihmen Dam"
+                                href="project_07.html">
+                                <img src="./img/my_portfolio/dam.webp" alt="Shihmen Dam" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">石門水庫網站</h3>
                                     <p class="text-xs text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
-                                    <div class="flex space-x-2"><span
+                                    <div class="flex space-x-2">
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span><span
+                                            Dev</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_08.html"><img src="./img/my_portfolio/stream.webp"
-                                    alt="stream live app UI" class="w-full h-full object-cover">
+                                href="project_08.html">
+                                <img src="./img/my_portfolio/stream.webp" alt="stream live app UI" loading="lazy"
+                                    class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">Love-Two live app UI</h3>
                                     <p class="text-xs text-gray-200 mb-4">直播app提案與設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span></div>
-                                </div>
-                            </a>
-
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_05.html" aria-hidden="true"><img src="./img/my_portfolio/zoo.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
-                                    <p class="text-xs text-gray-200 mb-4">人流分析與網站管理介面</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Figma</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Vue</span>
+                                            XD</span>
                                     </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_06.html" aria-hidden="true"><img src="./img/my_portfolio/Taoyuan_MRT.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">桃園捷運APP</h3>
-                                    <p class="text-xs text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span></div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_07.html" aria-hidden="true"><img src="./img/my_portfolio/dam.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">石門水庫網站</h3>
-                                    <p class="text-xs text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
-                                    </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_08.html" aria-hidden="true"><img src="./img/my_portfolio/stream.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">Love-Two live app UI</h3>
-                                    <p class="text-xs text-gray-200 mb-4">直播app提案與設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span></div>
                                 </div>
                             </a>
                         </div>
                     </div>
 
-                    <div class="scroller">
-                        <div class="scroller-inner animate-scroll-rtl">
+                    <div class="scroller" data-direction="left" data-speed="slow">
+                        <div class="scroller-inner">
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_09.html"><img src="./img/my_portfolio/enviroment.webp"
-                                    alt="enviroment protection" class="w-full h-full object-cover">
+                                href="project_09.html">
+                                <img src="./img/my_portfolio/enviroment.webp" alt="enviroment protection" loading="lazy"
+                                    class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
                                     <p class="text-xs text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
-                                    <div class="flex space-x-2"><span
+                                    <div class="flex space-x-2">
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span><span
+                                            Dev</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_10.html"><img src="./img/my_portfolio/aviation.webp" alt="aviation web"
+                                href="project_10.html">
+                                <img src="./img/my_portfolio/aviation.webp" alt="aviation web" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">恆春航空站</h3>
                                     <p class="text-xs text-gray-200 mb-4">航空站網站改版提案.</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span></div>
+                                            XD</span>
+                                    </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_11.html"><img src="./img/my_portfolio/student.webp" alt="student"
+                                href="project_11.html">
+                                <img src="./img/my_portfolio/student.webp" alt="student" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
                                     <p class="text-xs text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
-                                    <div class="flex space-x-2"><span
+                                    <div class="flex space-x-2">
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span><span
+                                            Dev</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_12.html"><img src="./img/my_portfolio/coin.webp"
+                                href="project_12.html">
+                                <img src="./img/my_portfolio/coin.webp" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-sm font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
                                     <p class="text-xs text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span></div>
-                                </div>
-                            </a>
-
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_09.html" aria-hidden="true"><img src="./img/my_portfolio/enviroment.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
-                                    <p class="text-xs text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
+                                            XD</span>
                                     </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_10.html" aria-hidden="true"><img src="./img/my_portfolio/aviation.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">恆春航空站</h3>
-                                    <p class="text-xs text-gray-200 mb-4">航空站網站改版提案.</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span></div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_11.html" aria-hidden="true"><img src="./img/my_portfolio/student.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
-                                    <p class="text-xs text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">HTML/CSS</span>
-                                    </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_12.html" aria-hidden="true"><img src="./img/my_portfolio/coin.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
-                                    <p class="text-xs text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Adobe
-                                            XD</span></div>
                                 </div>
                             </a>
                         </div>
@@ -1640,12 +1526,12 @@
                 </div>
 
                 <div id="portfolio-scroller-desktop" class="stagger-item hidden md:block">
-                    <div class="scroller mb-1">
-                        <div class="scroller-inner animate-scroll-ltr">
+                    <div class="scroller" data-direction="right" data-speed="slow">
+                        <div class="scroller-inner">
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
                                 href="project_01.html">
                                 <img src="./img/my_portfolio/video_analyzation.webp" alt="video analization system"
-                                    class="w-full h-full object-cover">
+                                    loading="lazy" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
                                     <p class="text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
@@ -1661,307 +1547,177 @@
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_02.html"><img src="./img/my_portfolio/video_analyzation_app.webp"
+                                href="project_02.html">
+                                <img src="./img/my_portfolio/video_analyzation_app.webp"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
                                     <p class="text-sm text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_03.html"><img src="./img/my_portfolio/police.webp"
-                                    class="w-full h-full object-cover">
+                                href="project_03.html">
+                                <img src="./img/my_portfolio/police.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
                                     <p class="text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2"><span
+                                    <div class="flex space-x-2">
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span><span
+                                            Dev</span>
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">React</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_04.html"><img src="./img/my_portfolio/Tainan Police.webp"
-                                    class="w-full h-full object-cover">
+                                href="project_04.html">
+                                <img src="./img/my_portfolio/Tainan Police.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
                                     <p class="text-sm text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_05.html"><img src="./img/my_portfolio/zoo.webp"
-                                    class="w-full h-full object-cover">
+                                href="project_05.html">
+                                <img src="./img/my_portfolio/zoo.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
                                     <p class="text-sm text-gray-200 mb-4">人流分析與網站管理介面</p>
-                                    <div class="flex space-x-2"><span
+                                    <div class="flex space-x-2">
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span><span
+                                            Dev</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span><span
+                                            XD</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Vue</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_06.html"><img src="./img/my_portfolio/Taoyuan_MRT.webp"
-                                    class="w-full h-full object-cover">
+                                href="project_06.html">
+                                <img src="./img/my_portfolio/Taoyuan_MRT.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">桃園捷運APP</h3>
                                     <p class="text-sm text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span></div>
-                                </div>
-                            </a>
-
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_01.html" aria-hidden="true"><img
-                                    src="./img/my_portfolio/video_analyzation.webp" loading="lazy"
-                                    alt="video analization system" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
-                                    <p class="text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">React</span>
+                                            XD</span>
                                     </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_02.html" aria-hidden="true"><img
-                                    src="./img/my_portfolio/video_analyzation_app.webp" loading="lazy"
-                                    class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
-                                    <p class="text-sm text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
-                                    </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_03.html" aria-hidden="true"><img src="./img/my_portfolio/police.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
-                                    <p class="text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">React</span>
-                                    </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_04.html" aria-hidden="true"><img
-                                    src="./img/my_portfolio/Tainan Police.webp" loading="lazy"
-                                    class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
-                                    <p class="text-sm text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
-                                    </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_05.html" aria-hidden="true"><img src="./img/my_portfolio/zoo.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
-                                    <p class="text-sm text-gray-200 mb-4">人流分析與網站管理介面</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Vue</span>
-                                    </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_06.html" aria-hidden="true"><img src="./img/my_portfolio/Taoyuan_MRT.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">桃園捷運APP</h3>
-                                    <p class="text-sm text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span></div>
                                 </div>
                             </a>
                         </div>
                     </div>
 
-                    <div class="scroller">
-                        <div class="scroller-inner animate-scroll-rtl">
+                    <div class="scroller" data-direction="left" data-speed="slow">
+                        <div class="scroller-inner">
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_07.html"><img src="./img/my_portfolio/dam.webp"
-                                    class="w-full h-full object-cover">
+                                href="project_07.html">
+                                <img src="./img/my_portfolio/dam.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">石門水庫網站</h3>
                                     <p class="text-sm text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
-                                    <div class="flex space-x-2"><span
+                                    <div class="flex space-x-2">
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span><span
+                                            Dev</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_08.html"><img src="./img/my_portfolio/stream.webp"
-                                    class="w-full h-full object-cover">
+                                href="project_08.html">
+                                <img src="./img/my_portfolio/stream.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">Love-Two live app UI</h3>
                                     <p class="text-sm text-gray-200 mb-4">直播app提案與設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span></div>
+                                            XD</span>
+                                    </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_09.html"><img src="./img/my_portfolio/enviroment.webp"
-                                    class="w-full h-full object-cover">
+                                href="project_09.html">
+                                <img src="./img/my_portfolio/enviroment.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
                                     <p class="text-sm text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
-                                    <div class="flex space-x-2"><span
+                                    <div class="flex space-x-2">
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span><span
+                                            Dev</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_10.html"><img src="./img/my_portfolio/aviation.webp"
-                                    class="w-full h-full object-cover">
+                                href="project_10.html">
+                                <img src="./img/my_portfolio/aviation.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">恆春航空站</h3>
                                     <p class="text-sm text-gray-200 mb-4">航空站網站改版提案</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span></div>
+                                            XD</span>
+                                    </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_11.html"><img src="./img/my_portfolio/student.webp"
-                                    class="w-full h-full object-cover">
+                                href="project_11.html">
+                                <img src="./img/my_portfolio/student.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
                                     <p class="text-sm text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
-                                    <div class="flex space-x-2"><span
+                                    <div class="flex space-x-2">
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span><span
+                                            Dev</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
                                     </div>
                                 </div>
                             </a>
                             <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_12.html"><img src="./img/my_portfolio/coin.webp"
-                                    class="w-full h-full object-cover">
+                                href="project_12.html">
+                                <img src="./img/my_portfolio/coin.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
                                     <h3 class="text-base font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
                                     <p class="text-sm text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
+                                    <div class="flex space-x-2">
+                                        <span
+                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
+                                        <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span></div>
-                                </div>
-                            </a>
-
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_07.html" aria-hidden="true"><img src="./img/my_portfolio/dam.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">石門水庫網站</h3>
-                                    <p class="text-sm text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
+                                            XD</span>
                                     </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="mobile"
-                                href="project_08.html" aria-hidden="true"><img src="./img/my_portfolio/stream.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">Love-Two live app UI</h3>
-                                    <p class="text-sm text-gray-200 mb-4">直播app提案與設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span></div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_09.html" aria-hidden="true"><img src="./img/my_portfolio/enviroment.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
-                                    <p class="text-sm text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
-                                    </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_10.html" aria-hidden="true"><img src="./img/my_portfolio/aviation.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">恆春航空站</h3>
-                                    <p class="text-sm text-gray-200 mb-4">航空站網站改版提案</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span></div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_11.html" aria-hidden="true"><img src="./img/my_portfolio/student.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
-                                    <p class="text-sm text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
-                                            Dev</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">HTML/CSS</span>
-                                    </div>
-                                </div>
-                            </a>
-                            <a class="project-card overflow-hidden fade-in aspect-[3/2]" data-category="web"
-                                href="project_12.html" aria-hidden="true"><img src="./img/my_portfolio/coin.webp"
-                                    loading="lazy" class="w-full h-full object-cover">
-                                <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
-                                    <p class="text-sm text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
-                                    <div class="flex space-x-2"><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
-                                            class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
-                                            XD</span></div>
                                 </div>
                             </a>
                         </div>
@@ -2733,6 +2489,42 @@
                 else header.classList.remove('scrolled');
                 toggleBackToTop(window.scrollY > 300);
             });
+
+            // [新增 JS] 初始化無縫輪播 (DOM 減量優化)
+            function initInfiniteScroll() {
+                const scrollers = document.querySelectorAll(".scroller");
+
+                // 檢查是否開啟「減少動效」
+                if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                    addAnimation();
+                }
+
+                function addAnimation() {
+                    scrollers.forEach((scroller) => {
+                        // 標記已處理，讓 CSS 生效
+                        scroller.setAttribute("data-animated", true);
+
+                        const scrollerInner = scroller.querySelector(".scroller-inner");
+                        const scrollerContent = Array.from(scrollerInner.children);
+
+                        // 複製每一項並加入到容器尾端
+                        scrollerContent.forEach((item) => {
+                            const duplicatedItem = item.cloneNode(true);
+                            duplicatedItem.setAttribute("aria-hidden", true); // 避免螢幕閱讀器重複讀取
+
+                            // 確保複製的圖片也有 lazy loading (雖然大部分瀏覽器 cloneNode 會保留屬性)
+                            const img = duplicatedItem.querySelector('img');
+                            if (img) img.setAttribute('loading', 'lazy');
+
+                            scrollerInner.appendChild(duplicatedItem);
+                        });
+                    });
+                }
+            }
+
+            // 立即執行初始化
+            initInfiniteScroll();
+
         };
 
         function initPortfolioFilter() {
