@@ -28,10 +28,10 @@
                 extend: {
                     colors: {
                         primary: '#86c232', // Zoo Green
-                        secondary: '#ff9642', // Alert Orange
+                        secondary: '#FF9671', // Alert Orange
                         dark: '#0F1115',
                         'dark-light': '#1A1D24',
-                        accent: '#222629'
+                        accent: '#FFC75F'
                     },
                     fontFamily: {
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
@@ -95,10 +95,16 @@
             transition: all 0.3s ease;
         }
 
-        .feature-card:hover {
+        .feature-card.border-l-primary:hover {
             transform: translateY(-5px);
             border-color: rgba(134, 194, 50, 0.4);
             box-shadow: 0 10px 30px -10px rgba(134, 194, 50, 0.2);
+        }
+
+        .feature-card.border-l-secondary:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 199, 95, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(255, 199, 95, 0.2);
         }
 
         /* Scrollbars */
@@ -645,7 +651,7 @@
                         <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
-                                    <div className={`inline-block px-4 py-1 rounded-full border border-secondary/50 bg-secondary/20 text-secondary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART ZOO MANAGEMENT</div>
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-accent/50 bg-accent/20 text-accent text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART ZOO MANAGEMENT</div>
                                     <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
                                     <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(134,194,50,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
