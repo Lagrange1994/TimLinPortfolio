@@ -43,7 +43,7 @@
                     },
                     animation: {
                         pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        shimmer: 'shimmer 1.5s infinite linear', // 新增流光動畫
+                        shimmer: 'shimmer 1.5s infinite linear',
                     },
                     keyframes: {
                         shimmer: {
@@ -57,7 +57,7 @@
     </script>
 
     <style>
-        /* 1. BASIC LAYOUT SETUP */
+        /* BASIC SETUP */
         body,
         html {
             margin: 0;
@@ -65,15 +65,27 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            /* 禁止原生滾動 */
             background-color: #121212;
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
             overscroll-behavior: none;
-            /* 防止瀏覽器彈性效果 */
         }
 
-        /* 2. MAIN SCROLL CONTAINER */
+        /* Skeleton Shimmer */
+        .skeleton {
+            background: #1e293b;
+            background: linear-gradient(to right, #1e293b 8%, #334155 18%, #1e293b 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position-x: -200%;
+            }
+        }
+
+        /* Main Scroller */
         #main-scroller {
             width: 100vw;
             height: 100vh;
@@ -81,7 +93,6 @@
             position: relative;
         }
 
-        /* 3. SNAP SECTIONS */
         .snap-section {
             width: 100vw;
             height: 100vh;
@@ -98,17 +109,11 @@
             visibility: visible;
         }
 
-        /* Custom Hero Background - WebP Support */
+        /* Hero */
         .hero-bg-custom {
-            /* Fallback */
             background-image: url('./img/project_11/hero_img.jpg');
-
-            /* Modern browsers: choose between WebP and PNG */
-            background-image: -webkit-image-set(url('./img/project_11/hero_img.webp') 1x,
-                    url('./img/project_11/hero_img.jpg') 1x);
-            background-image: image-set(url('./img/project_11/hero_img.webp') 1x,
-                    url('./img/project_11/hero_img.jpg') 1x);
-
+            background-image: -webkit-image-set(url('./img/project_11/hero_img.webp') 1x, url('./img/project_11/hero_img.jpg') 1x);
+            background-image: image-set(url('./img/project_11/hero_img.webp') 1x, url('./img/project_11/hero_img.jpg') 1x);
             background-size: cover;
             background-position: center;
             position: relative;
@@ -122,37 +127,7 @@
             z-index: 1;
         }
 
-        /* Animations */
-        .fade-in-up {
-            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Glassmorphism & Cards */
+        /* Glassmorphism */
         .glass-panel {
             background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(18, 18, 18, 0.98));
             backdrop-filter: blur(20px);
@@ -194,13 +169,59 @@
             background: #2B6CB0;
         }
 
-        /* 內容滾動區域 (Critical for Mobile Scroll) */
         .scroll-content {
             overflow-y: auto !important;
             touch-action: pan-y !important;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
             height: 100%;
+        }
+
+        .scrollable-area {
+            overflow-y: auto !important;
+            overscroll-behavior: contain;
+        }
+
+        .horizontal-tabs {
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            touch-action: pan-x !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .horizontal-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Animations */
+        .fade-in-up {
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Loader */
@@ -299,20 +320,12 @@
         // --- HELPER COMPONENT: Responsive Image (WebP Support) ---
         const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
-            // Support replacement for jpg, jpeg, png
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
 
             return (
                 <picture style={{ display: 'contents' }}>
                     <source srcSet={webpSrc} type="image/webp" />
-                    <img
-                        src={src}
-                        className={className}
-                        alt={alt}
-                        style={style}
-                        onLoad={onLoad}
-                        {...props}
-                    />
+                    <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} />
                 </picture>
             );
         };
@@ -320,35 +333,13 @@
         // --- NEW COMPONENT: Image with Skeleton Shimmer Loading ---
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
-
-            // Reset loaded state when src changes
-            useEffect(() => {
-                setLoaded(false);
-            }, [src]);
+            useEffect(() => { setLoaded(false); }, [src]);
+            const handleError = () => { console.warn("Image load failed", src); setLoaded(true); };
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {/* Skeleton Loader with Shimmer Effect */}
-                    {!loaded && (
-                        <div className="absolute inset-0 bg-dark-lighter rounded-lg z-10 overflow-hidden flex items-center justify-center pointer-events-none">
-                            {/* Static Background Icon (Optional) */}
-                            <div className="absolute z-10 opacity-20">
-                                <i className="fas fa-image text-white text-3xl"></i>
-                            </div>
-
-                            {/* Shimmer Overlay */}
-                            <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent z-20"></div>
-                        </div>
-                    )}
-
-                    {/* Actual Image */}
-                    <ResponsiveImage
-                        src={src}
-                        alt={alt}
-                        className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-                        onLoad={() => setLoaded(true)}
-                        {...props}
-                    />
+                    {!loaded && (<div className="absolute inset-0 bg-dark-lighter rounded-lg z-10 overflow-hidden flex items-center justify-center pointer-events-none"> <div className="absolute z-10 opacity-20"> <i className="fas fa-image text-white text-3xl"></i> </div> <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent z-20"></div> </div>)}
+                    <ResponsiveImage src={src} alt={alt} className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={() => setLoaded(true)} onError={handleError} {...props} />
                 </div>
             );
         };
@@ -363,19 +354,94 @@
             Efficiency: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
         };
 
+        // --- TRANSLATIONS ---
+        const TRANSLATIONS = {
+            zh: {
+                title_main: "台北醫學大學", title_sub: "臨床教育學習護照",
+                hero_desc: "在舊有設備限制下，將繁瑣的成績表格轉化為視覺化儀表板，為醫學生打造看見成長軌跡的高效系統。",
+                btn_explore: "探索設計旅程", back_home: "Back to Portfolio",
+                tab_context: "01. 背景與痛點", tab_process: "02. 流程", tab_solution: "03. 方案", tab_climax: "04. 成果",
+
+                context_title: "專案背景 Context",
+                context_desc: "這是一個針對台北醫學大學醫學生臨床實習設計的電子學習歷程系統。我們的核心任務是將原本僅為純 HTML 文字列表的舊網頁，升級為一個具備視覺化圖表與決策輔助功能的現代化儀表板。",
+                role_title: "My Role", role_name: "前端工程 / UI設計", tools: "Tech & Constraints",
+                conflict_title: "痛點與挑戰 The Conflict", conflict_sub: "升級前的困境",
+                pain_1_title: "資訊破碎 (Fragmentation)", pain_1_desc: "學生成績散落在密密麻麻的文字列表中，難以快速掌握缺少的學分或能力短版。",
+                pain_2_title: "環境限制 (Legacy Constraints)", pain_2_desc: "醫院臨床工作站多為舊型電腦，無法支援高運算需求的現代 Web 3D 或複雜動畫。",
+                pain_3_title: "缺乏洞察 (Lack of Insight)", pain_3_desc: "僅紀錄「分數」而未呈現「趨勢」，學生無法進行有效的自我反思與能力追蹤。",
+
+                process_title: "執行過程 The Process", process_sub: "在技術限制中尋求最佳體驗的四個步驟",
+                step_1_title: "01. 版面重構", step_1_desc: "捨棄華麗動態，改採清晰的區塊式架構，將資訊分為「教學活動」、「多元評核」與「能力表現」三大模組。",
+                step_2_title: "02. 輕量化技術", step_2_desc: "選用相容舊版瀏覽器的輕量級 JavaScript 圖表庫，確保在低階硬體上也能流暢繪製圖表。",
+                step_3_title: "03. 視覺轉化", step_3_desc: "將條列式數據轉化為「長條圖」（課程進度）與「雷達圖」（核心能力），讓數據產生意義。",
+                step_4_title: "04. 反思設計", step_4_desc: "設計「雙色雷達圖」重疊自評與師評數據，透過視覺差異引導學生進行後設認知。",
+
+                sol_title: "解決方案 The Solution",
+                sol_1_title: "進度追蹤儀表板", sol_1_benefit: "Benefit: 利用長條圖區分一般與通識課程，學生登入即知「還缺什麼課」，無需人工核對。",
+                sol_2_title: "EPA 能力雷達圖", sol_2_benefit: "Benefit: 落實能力導向教育 (CBME)，追蹤學生在特定醫療行為上的信任層級變化。",
+                sol_3_title: "自我評估落差分析", sol_3_benefit: "Benefit: 直觀呈現「自評」與「師評」的分數落差，幫助學生看見盲點。",
+
+                gallery_title: "成果展示 Result", gallery_desc: "從純文字到全方位成長地圖的轉變。",
+                img_dashboard: "學習儀表板", img_dashboard_desc: "總覽課程完成度與核心指標。",
+                img_assess: "多元評核表", img_assess_desc: "整合 Mini-CEX 與 DOPS 評分統計。",
+                img_radar: "能力雷達圖", img_radar_desc: "視覺化呈現六大核心能力消長。",
+                img_report: "完整總覽", img_report_desc: "支援行政所需的報表輸出功能。"
+            },
+            en: {
+                title_main: "Taipei Medical Univ.", title_sub: "Clinical E-Portfolio",
+                hero_desc: "Modernizing legacy systems. Transforming tedious grade tables into visual dashboards for medical students.",
+                btn_explore: "Explore the Journey", back_home: "Back to Portfolio",
+                tab_context: "01. Context", tab_process: "02. Process", tab_solution: "03. Solution", tab_climax: "04. Result",
+
+                context_title: "Project Overview",
+                context_desc: "An e-portfolio system designed for TMU medical students' clinical internships. Our core mission was to upgrade legacy HTML text lists into a modern dashboard with data visualization and decision support features.",
+                role_title: "My Role", role_name: "Front-end Dev / UI Designer", tools: "Tech & Constraints",
+                conflict_title: "The Conflict", conflict_sub: "Pain points before the upgrade",
+                pain_1_title: "Fragmentation", pain_1_desc: "Grades were scattered in dense text lists, making it hard to track missing credits or weak points.",
+                pain_2_title: "Legacy Constraints", pain_2_desc: "Hospital workstations are often outdated, unable to support modern Web 3D or complex animations.",
+                pain_3_title: "Lack of Insight", pain_3_desc: "Only recorded 'scores' without 'trends', hindering effective self-reflection and capability tracking.",
+
+                process_title: "The Process", process_sub: "Four steps to optimal experience within technical limits",
+                step_1_title: "01. Restructuring", step_1_desc: "Discarded flashy animations for a clear block structure: 'Teaching Activities', 'Multi-Source Feedback', and 'Competency Performance'.",
+                step_2_title: "02. Lightweight Tech", step_2_desc: "Selected lightweight JS chart libraries compatible with older browsers to ensure smooth rendering on low-end hardware.",
+                step_3_title: "03. Visualization", step_3_desc: "Transformed list data into 'Bar Charts' (Course Progress) and 'Radar Charts' (Core Competencies) to make data meaningful.",
+                step_4_title: "04. Reflection Design", step_4_desc: "Designed 'Dual-Color Radar Charts' to overlay self-assessment and teacher-assessment data, guiding students in metacognition.",
+
+                sol_title: "The Solution",
+                sol_1_title: "Progress Dashboard", sol_1_benefit: "Benefit: Bar charts separate general and core courses, letting students instantly know 'what's missing' without manual checking.",
+                sol_2_title: "EPA Radar Chart", sol_2_benefit: "Benefit: Implementing Competency-Based Medical Education (CBME) to track trust levels in specific medical behaviors.",
+                sol_3_title: "Self-Assessment Gap", sol_3_benefit: "Benefit: Intuitively displays the score gap between 'Self' and 'Teacher' assessments, helping students spot blind spots.",
+
+                gallery_title: "Result Gallery", gallery_desc: "Transformation from plain text to a comprehensive growth map.",
+                img_dashboard: "Learning Dashboard", img_dashboard_desc: "Overview of course completion and core metrics.",
+                img_assess: "Multi-Source Assessment", img_assess_desc: "Integrating stats for Mini-CEX and DOPS.",
+                img_radar: "Competency Radar", img_radar_desc: "Visualizing the growth of six core competencies.",
+                img_report: "Full Overview", img_report_desc: "Supports report export functions for administration."
+            }
+        };
+
         const MAIN_IMAGE = './img/project_11/display.jpg';
-        const GALLERY_IMAGES = [
-            { id: '01', name: '學習儀表板', src: './img/project_11/學習護照1_01.jpg' },
-            { id: '02', name: '多元評核表', src: './img/project_11/學習護照2_02.jpg' },
-            { id: '03', name: '能力雷達圖', src: './img/project_11/學習護照2_01.jpg' },
-            { id: '04', name: '完整總覽', src: './img/project_11/學習護照full.jpg' }
+
+        // --- Dynamic Data Helpers ---
+        const getSolutionFeatures = (t) => [
+            { id: 'sol-01', title: t('sol_1_title'), benefit: t('sol_1_benefit'), icon: 'Chart', image: './img/project_11/學習護照1_01.jpg' },
+            { id: 'sol-02', title: t('sol_2_title'), benefit: t('sol_2_benefit'), icon: 'Radar', image: './img/project_11/學習護照2_01.jpg' },
+            { id: 'sol-03', title: t('sol_3_title'), benefit: t('sol_3_benefit'), icon: 'Gap', image: './img/project_11/學習護照2_02.jpg' }
+        ];
+
+        const getGalleryImages = (t) => [
+            { id: '01', name: t('img_dashboard'), src: './img/project_11/學習護照1_01.jpg', desc: t('img_dashboard_desc') },
+            { id: '02', name: t('img_assess'), src: './img/project_11/學習護照2_02.jpg', desc: t('img_assess_desc') },
+            { id: '03', name: t('img_radar'), src: './img/project_11/學習護照2_01.jpg', desc: t('img_radar_desc') },
+            { id: '04', name: t('img_report'), src: './img/project_11/學習護照full.jpg', desc: t('img_report_desc') }
         ];
 
         const App = () => {
+            const [lang, setLang] = useState('zh');
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('context');
             const [currentImage, setCurrentImage] = useState(MAIN_IMAGE);
-            const [activeGalleryId, setActiveGalleryId] = useState('01');
+            const [activeGalleryId, setActiveGalleryId] = useState(null);
             const [showBackToHero, setShowBackToHero] = useState(false);
 
             // GSAP Scroll State
@@ -385,53 +451,38 @@
             const sectionsRef = useRef([]);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
-
-            // Scroll Refs
             const contentScrollRef = useRef(null);
             const imageScrollRef = useRef(null);
             const touchStartY = useRef(0);
+            const tabsContainerRef = useRef(null); // Ref for Tabs
 
-            const showBrowserHeader = !['context', 'process'].includes(activeTab);
+            const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
 
-            // === UPDATED: Loading Logic (Wait for Hero + Timer) ===
+            // Derived Data
+            const solutionFeatures = getSolutionFeatures((k) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][k]) ? TRANSLATIONS[lang][k] : k);
+            const galleryImages = getGalleryImages((k) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][k]) ? TRANSLATIONS[lang][k] : k);
+
+            // Initialize
             useEffect(() => {
-                // 1. Listen for Hero image load (Specific to Project 11)
+                const savedLang = localStorage.getItem('preferredLang');
+                const initialLang = savedLang === 'en' ? 'en' : 'zh';
+                setLang(initialLang);
+
                 const heroImagePromise = new Promise((resolve) => {
                     const img = new Image();
                     img.src = './img/project_11/hero_img.jpg';
                     img.onload = () => resolve('hero loaded');
                     img.onerror = () => resolve('hero error');
                 });
-
-                // 2. Minimum timer (1.0s)
                 const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
-
-                // 3. Resolve both
-                Promise.all([heroImagePromise, timerPromise])
-                    .then(() => {
-                        setLoading(false);
-                    });
+                Promise.all([heroImagePromise, timerPromise]).then(() => setLoading(false));
             }, []);
 
+            // Tab / Lang Update
             useEffect(() => {
-                // Initialize sections for GSAP
-                sectionsRef.current = [heroRef.current, splitRef.current];
-                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
-            }, [loading]);
+                if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
+                if (imageScrollRef.current) imageScrollRef.current.scrollTop = 0;
 
-            // === NEW: Auto-scroll to top when activeTab changes ===
-            useEffect(() => {
-                if (contentScrollRef.current) {
-                    contentScrollRef.current.scrollTop = 0;
-                }
-                // Also reset image scroll if needed
-                if (imageScrollRef.current) {
-                    imageScrollRef.current.scrollTop = 0;
-                }
-            }, [activeTab]);
-
-            // Tab logic affecting images
-            useEffect(() => {
                 switch (activeTab) {
                     case 'context':
                     case 'process':
@@ -439,153 +490,78 @@
                         setActiveGalleryId(null);
                         break;
                     case 'solution':
-                        setCurrentImage(GALLERY_IMAGES[2].src); // Radar
+                        setCurrentImage(solutionFeatures[1].image); // Default to Radar
                         setActiveGalleryId(null);
                         break;
                     case 'climax':
-                        setCurrentImage(GALLERY_IMAGES[0].src);
-                        setActiveGalleryId(GALLERY_IMAGES[0].id);
+                        setCurrentImage(galleryImages[0].src);
+                        setActiveGalleryId(galleryImages[0].id);
                         break;
                     default:
                         setCurrentImage(MAIN_IMAGE);
                 }
-            }, [activeTab]);
+            }, [activeTab, lang]);
 
-            // === GSAP SCROLL LOGIC ===
+            useEffect(() => {
+                sectionsRef.current = [heroRef.current, splitRef.current];
+                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
+            }, [loading]);
+
+            // Scroll Logic
             const scrollToSection = (index) => {
                 if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
-
                 isScrollingRef.current = true;
                 const targetSection = sectionsRef.current[index];
                 const currentSection = sectionsRef.current[currentSectionIndex];
-
                 setShowBackToHero(index > 0);
 
                 const tl = gsap.timeline({
                     onComplete: () => {
                         isScrollingRef.current = false;
                         setCurrentSectionIndex(index);
-                        if (currentSection !== targetSection) {
-                            currentSection.classList.remove('active-section');
-                        }
+                        if (currentSection !== targetSection) currentSection.classList.remove('active-section');
                         targetSection.classList.add('active-section');
                     }
                 });
 
-                if (currentSectionIndex !== index) {
-                    tl.to(currentSection, {
-                        opacity: 0,
-                        duration: 0.8,
-                        ease: "power2.out"
-                    });
-                }
-
-                tl.to(mainContainerRef.current, {
-                    scrollTo: { y: targetSection.offsetTop, autoKill: false },
-                    duration: 1.2,
-                    ease: "power2.inOut"
-                }, "<");
-
-                tl.to(targetSection, {
-                    opacity: 1,
-                    duration: 1,
-                    onStart: () => {
-                        targetSection.classList.add('active-section');
-                        targetSection.style.visibility = 'visible';
-                    }
-                }, "-=0.8");
+                if (currentSectionIndex !== index) tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
+                tl.to(mainContainerRef.current, { scrollTo: { y: targetSection.offsetTop, autoKill: false }, duration: 1.2, ease: "power2.inOut" }, "<");
+                tl.to(targetSection, { opacity: 1, duration: 1, onStart: () => { targetSection.classList.add('active-section'); targetSection.style.visibility = 'visible'; } }, "-=0.8");
             };
 
-            // === DAMPING & EVENT HANDLERS (UPDATED for ONE-WAY Scroll) ===
             const handleWheel = (e) => {
-                const isSplitView = currentSectionIndex === 1;
-                const contentEl = contentScrollRef.current;
-                const imageEl = imageScrollRef.current;
-
-                const target = e.target;
-                const isOverContent = contentEl && contentEl.contains(target);
-                const isOverImage = imageEl && imageEl.contains(target);
-
-                if (isSplitView) {
-                    // 1. Check Image Side Scroll
-                    if (isOverImage) {
-                        const { scrollTop, scrollHeight, clientHeight } = imageEl;
-                        if (e.deltaY < 0) {
-                            // Scrolling UP inside Image
-                            // Allow native scroll if not at top, but BLOCK page transition
-                            if (scrollTop > 0) return;
-                            // If at top, DO NOTHING (Lock)
-                        } else {
-                            // Scrolling DOWN
-                            if (scrollHeight > clientHeight) {
-                                if (scrollTop + clientHeight < scrollHeight - 2) return; // Allow internal scroll
-                            }
-                        }
-                    }
-
-                    // 2. Check Content Side Scroll
-                    if (isOverContent) {
-                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                        if (e.deltaY < 0) {
-                            // Scrolling UP inside Content
-                            if (scrollTop > 0) return; // Allow internal scroll up
-                            // If at top, DO NOTHING (Lock)
-                        } else {
-                            // Scrolling DOWN
-                            if (scrollHeight > clientHeight) {
-                                const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 2;
-                                if (!isAtBottom) return; // Allow internal scroll down
-                            }
-                        }
-                    }
-                }
-
                 if (isScrollingRef.current) return;
+                if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
 
-                if (e.deltaY > 0) {
-                    // Scrolling DOWN -> Go to next section (Hero -> Split)
-                    if (currentSectionIndex < sectionsRef.current.length - 1) {
-                        scrollToSection(currentSectionIndex + 1);
+                const scrollable = e.target.closest('.scrollable-area');
+                if (scrollable) {
+                    const { scrollTop, scrollHeight, clientHeight } = scrollable;
+                    const isScrollable = scrollHeight > clientHeight;
+                    if (isScrollable) {
+                        if (e.deltaY < 0) return;
+                        const atBottom = Math.abs(scrollHeight - clientHeight - scrollTop) <= 1;
+                        if (!atBottom) return;
                     }
-                } else {
-                    // Scrolling UP -> LOCKED GLOBAL SCROLL
-                    // Prevent going back to Hero via wheel
                 }
+                if (e.deltaY > 0 && currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
             };
 
-            const handleTouchStart = (e) => {
-                touchStartY.current = e.touches[0].clientY;
-            };
+            const handleTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
 
             const handleTouchEnd = (e) => {
                 if (isScrollingRef.current) return;
-                const touchEndY = e.changedTouches[0].clientY;
-                const diff = touchStartY.current - touchEndY;
+                if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
 
-                const isSplitView = currentSectionIndex === 1;
-                const contentEl = contentScrollRef.current;
-                const imageEl = imageScrollRef.current;
-                const target = e.target;
-                const isInsideContent = contentEl && contentEl.contains(target);
-                const isInsideImage = imageEl && imageEl.contains(target);
+                const diff = touchStartY.current - e.changedTouches[0].clientY;
+                const scrollable = e.target.closest('.scrollable-area');
 
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0) { // Swipe Up (Scroll Down / Next Page)
-                        if (isSplitView) {
-                            if (isInsideContent) {
-                                const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                                if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
-                            }
-                            if (isInsideImage) {
-                                const { scrollTop, scrollHeight, clientHeight } = imageEl;
-                                if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
-                            }
-                        }
-                        if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
-
-                    } else { // Swipe Down (Scroll Up / Prev Page)
-                        // LOCKED - Do not go back to Hero
+                if (Math.abs(diff) > 50 && diff > 0) {
+                    if (scrollable) {
+                        const { scrollTop, scrollHeight, clientHeight } = scrollable;
+                        const atBottom = Math.abs(scrollHeight - clientHeight - scrollTop) <= 1;
+                        if (scrollHeight > clientHeight && !atBottom) return;
                     }
+                    if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
                 }
             };
 
@@ -603,274 +579,105 @@
                 };
             }, [currentSectionIndex]);
 
-            const goBack = () => {
-                window.location.href = "index.html#portfolio";
-            };
+            const goBack = () => { window.location.href = "index.html#portfolio"; };
+            const handleGallerySwitch = (imgObj) => { setCurrentImage(imgObj.src); setActiveGalleryId(imgObj.id); };
+            const handleSolutionSwitch = (solObj) => { setCurrentImage(solObj.image); setActiveGalleryId(null); };
 
-            const handleGallerySwitch = (imgObj) => {
-                setCurrentImage(imgObj.src);
-                setActiveGalleryId(imgObj.id);
-            };
+            const showBrowserHeader = !['context', 'process'].includes(activeTab);
 
             return (
                 <React.Fragment>
-                    {/* Loader */}
-                    <div className={`loader ${loading ? '' : 'hidden'}`}>
-                        <div className="loader-animation"></div>
-                    </div>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
-                    {/* Navbar */}
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        <button
-                            onClick={goBack}
-                            className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40"
-                        >
+                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
                             <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">
-                                Back to Portfolio
-                            </span>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
                         </button>
                     </nav>
 
-                    {/* Back to Hero Button (Only way to go up) */}
-                    <button
-                        onClick={() => scrollToSection(0)}
-                        className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
-                        title="Back to Hero Section"
-                    >
-                        <i className="fas fa-arrow-up"></i>
-                    </button>
+                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="fas fa-arrow-up"></i></button>
 
-                    {/* MAIN SCROLL CONTAINER */}
                     <div id="main-scroller" ref={mainContainerRef}>
-
-                        {/* 1. HERO SECTION */}
-                        <section
-                            ref={heroRef}
-                            className="snap-section active-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom"
-                        >
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
-                                    <div className={`inline-block px-4 py-1 rounded-full border border-white text-white text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>
-                                        LEGACY MODERNIZATION
-                                    </div>
-                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
-                                        台北醫學大學<br />
-                                        <span className="text-white bg-clip-text bg-gradient-to-r">臨床教育<br className="md:hidden" />學習護照</span>
-                                    </h1>
-                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>
-                                        在舊有設備限制下，將繁瑣的成績表格轉化為視覺化儀表板，<br />為醫學生打造看見成長軌跡的高效系統。
-                                    </h2>
-                                    <button
-                                        onClick={() => scrollToSection(1)}
-                                        className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(43,108,176,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`}
-                                        style={{ animationDelay: '0.4s' }}
-                                    >
-                                        探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
-                                    </button>
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-white text-white text-xs font-bold tracking-widest mb-6 font-sans ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>LEGACY MODERNIZATION</div>
+                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-white bg-clip-text bg-gradient-to-r">{t('title_sub')}</span></h1>
+                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
+                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(43,108,176,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
                                 </div>
                             </div>
                         </section>
 
-                        {/* 2. SPLIT SCREEN */}
-                        <section
-                            ref={splitRef}
-                            className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative"
-                        >
-
-                            {/* LEFT: Image Preview */}
-                            <div className="
-                                w-full shrink-0 z-20
-                                lg:w-3/5 lg:h-full
-                                bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 
-                                border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
-                            ">
-                                <div className="
-                                    w-full h-[35vh] lg:h-full flex items-center justify-center
-                                ">
-                                    <div className="relative w-full h-auto max-w-full max-h-full lg:max-h-[90%] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark overflow-hidden">
+                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl">
+                                <div className="w-full h-[35vh] lg:h-full flex items-center justify-center">
+                                    <div className={`relative transition-all duration-500 shadow-2xl rounded-xl border border-white/10 overflow-hidden flex flex-col ${showBrowserHeader ? 'w-full h-full max-w-full max-h-full lg:max-h-[90%] bg-dark-light' : 'w-auto h-auto max-w-full max-h-full lg:max-h-[90%] bg-transparent'}`}>
                                         {showBrowserHeader && (
-                                            <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
-                                                <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
-                                                <div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div>
-                                                <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                            <div className="h-8 bg-[#334155] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
+                                                <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
                                             </div>
                                         )}
-                                        <div ref={imageScrollRef} className={`flex-1 min-h-0 overflow-y-auto custom-scroll relative bg-white/5 group h-full ${showBrowserHeader ? 'block' : 'flex items-center justify-center'}`}>
-                                            {/* UPDATED: Use ImageWithSkeleton */}
-                                            <ImageWithSkeleton
-                                                src={currentImage}
-                                                alt="Preview"
-                                                className={`transition-opacity duration-500 block ${showBrowserHeader ? 'w-full h-auto' : 'max-w-full max-h-full object-contain'}`}
-                                                containerClassName={showBrowserHeader ? 'w-full h-auto' : 'w-full h-full flex items-center justify-center'}
-                                            />
+                                        <div ref={imageScrollRef} className={`relative w-full h-full scrollable-area ${showBrowserHeader ? 'flex-1 min-h-0 block bg-white/5' : 'overflow-hidden flex items-center justify-center h-full'}`}>
+                                            <ImageWithSkeleton src={currentImage} alt="Preview" className={`transition-all duration-500 block ${showBrowserHeader ? 'w-full h-auto' : 'max-w-full max-h-full object-contain'}`} containerClassName={showBrowserHeader ? 'w-full h-auto' : 'w-full h-full flex items-center justify-center'} />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* RIGHT: Narrative Scroll */}
-                            <div className="
-                                flex-1 w-full relative z-10
-                                lg:w-2/5 lg:h-full
-                                flex flex-col
-                                h-auto min-h-0
-                            ">
+                            <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
-
-                                    {/* Header */}
                                     <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
                                         <div className="p-6 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">TMU 學習護照<br />電子歷程檔案系統</h2>
+                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-4">Clinical Education E-Portfolio System</p>
-
-                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 scroll-content">
-                                                {[
-                                                    { id: 'context', label: '01. 背景與痛點' },
-                                                    { id: 'process', label: '02. 流程' },
-                                                    { id: 'solution', label: '03. 方案' },
-                                                    { id: 'climax', label: '04. 成果' }
-                                                ].map(tab => (
-                                                    <button
-                                                        key={tab.id}
-                                                        onClick={() => setActiveTab(tab.id)}
-                                                        className={`text-sm font-bold whitespace-nowrap transition-colors pb-1 ${activeTab === tab.id
-                                                            ? 'text-primary border-b-2 border-primary'
-                                                            : 'text-gray-500 hover:text-white'
-                                                            }`}
-                                                    >
-                                                        {tab.label}
-                                                    </button>
+                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full touch-pan-x">
+                                                {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
+                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Content (Target for Damping Logic) */}
-                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
-
-                                        {/* CONTEXT */}
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content scrollable-area">
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
                                                 <div className="space-y-6">
-                                                    {/* Updated h3 size */}
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">專案背景 Context</h3>
-                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                                                        這是一個針對台北醫學大學醫學生臨床實習設計的電子學習歷程系統。我們的核心任務是將原本僅為純 HTML 文字列表的舊網頁，升級為一個具備視覺化圖表與決策輔助功能的現代化儀表板。
-                                                    </p>
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                                                            <div className="text-xs text-gray-500 uppercase mb-1">My Role</div>
-                                                            <div className="font-bold text-white">前端工程 / UI設計</div>
-                                                        </div>
-                                                        <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tech & Constraints</div>
-                                                            <div className="flex flex-wrap gap-2">
-                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
-                                                                    <Icons.Code /> <span className="ml-1">HTML/JS</span>
-                                                                </span>
-                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30">
-                                                                    <Icons.Browser /> <span className="ml-1">Legacy Support</span>
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
+                                                    <div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><Icons.Code /> <span className="ml-1">HTML/JS</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30"><Icons.Browser /> <span className="ml-1">Legacy Support</span></span></div></div></div>
                                                 </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div className="space-y-6">
-                                                    {/* Updated h3 size */}
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center">
-                                                        <span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>
-                                                        痛點與挑戰 The Conflict
-                                                    </h3>
-                                                    <div className="feature-card p-5 border-l-4 border-l-secondary">
-                                                        <h4 className="text-secondary font-bold text-sm mb-3">升級前的困境</h4>
-                                                        <ul className="space-y-4 text-gray-300">
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">資訊破碎 (Fragmentation)</strong>學生成績散落在密密麻麻的文字列表中，難以快速掌握缺少的學分或能力短版。</div></li>
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">環境限制 (Legacy Constraints)</strong>醫院臨床工作站多為舊型電腦，無法支援高運算需求的現代 Web 3D 或複雜動畫。</div></li>
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">缺乏洞察 (Lack of Insight)</strong>僅紀錄「分數」而未呈現「趨勢」，學生無法進行有效的自我反思與能力追蹤。</div></li>
-                                                        </ul>
-                                                    </div>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3>
+                                                    <div className="feature-card p-5 border-l-4 border-l-secondary"><h4 className="text-secondary font-bold text-sm mb-3">{t('conflict_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div>
                                                 </div>
                                             </div>
                                         )}
-
-                                        {/* PROCESS */}
                                         {activeTab === 'process' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                {/* Updated h3 size */}
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">執行過程 The Process</h3>
-                                                <p className="text-xs text-gray-400 mb-6">在技術限制中尋求最佳體驗的四個步驟</p>
-                                                <div className="relative pl-4 border-l border-white/10 space-y-8">
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">01. 版面重構</h4><p className="text-xs text-gray-400">捨棄華麗動態，改採清晰的區塊式架構，將資訊分為「教學活動」、「多元評核」與「能力表現」三大模組。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">02. 輕量化技術</h4><p className="text-xs text-gray-400">選用相容舊版瀏覽器的輕量級 JavaScript 圖表庫，確保在低階硬體上也能流暢繪製圖表。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">03. 視覺轉化</h4><p className="text-xs text-gray-400">將條列式數據轉化為「長條圖」（課程進度）與「雷達圖」（核心能力），讓數據產生意義。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(43,108,176,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">04. 反思設計</h4><p className="text-xs text-gray-400">設計「雙色雷達圖」重疊自評與師評數據，透過視覺差異引導學生進行後設認知。</p></div>
-                                                </div>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3><p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p>
+                                                <div className="relative pl-4 border-l border-white/10 space-y-8"><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">{t('step_1_title')}</h4><p className="text-xs text-gray-400">{t('step_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">{t('step_2_title')}</h4><p className="text-xs text-gray-400">{t('step_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">{t('step_3_title')}</h4><p className="text-xs text-gray-400">{t('step_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(43,108,176,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_4_title')}</h4><p className="text-xs text-gray-400">{t('step_4_desc')}</p></div></div>
                                             </div>
                                         )}
-
-                                        {/* SOLUTION */}
                                         {activeTab === 'solution' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                {/* Updated h3 size */}
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">解決方案 The Solution</h3>
-                                                <div className="space-y-4">
-                                                    <div className="feature-card p-5 flex items-start space-x-4 cursor-pointer" onMouseEnter={() => setCurrentImage(GALLERY_IMAGES[0].src)}>
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0"><Icons.Chart /></div>
-                                                        <div><h4 className="font-bold text-white text-sm mb-1">進度追蹤儀表板</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 利用長條圖區分一般與通識課程，學生登入即知「還缺什麼課」，無需人工核對。</p></div>
-                                                    </div>
-                                                    <div className="feature-card p-5 flex items-start space-x-4 cursor-pointer" onMouseEnter={() => setCurrentImage(GALLERY_IMAGES[2].src)}>
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center text-secondary shrink-0"><Icons.Radar /></div>
-                                                        <div><h4 className="font-bold text-white text-sm mb-1">EPA 能力雷達圖</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 落實能力導向教育 (CBME)，追蹤學生在特定醫療行為上的信任層級變化。</p></div>
-                                                    </div>
-                                                    <div className="feature-card p-5 flex items-start space-x-4 cursor-pointer" onMouseEnter={() => setCurrentImage(GALLERY_IMAGES[1].src)}>
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-accent shrink-0"><Icons.Gap /></div>
-                                                        <div><h4 className="font-bold text-white text-sm mb-1">自我評估落差分析</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 直觀呈現「自評」與「師評」的分數落差，幫助學生看見盲點。</p></div>
-                                                    </div>
-                                                </div>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">{t('sol_title')}</h3>
+                                                <div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (<button key={sol.id} onClick={() => handleSolutionSwitch(sol)} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group hover:bg-white/5 border-white/5`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors bg-gradient-to-br from-primary/20 to-primary/5 text-primary`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors text-white group-hover:text-primary`}>{sol.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{sol.benefit}</p></div></button>); })}</div>
                                             </div>
                                         )}
-
-                                        {/* CLIMAX */}
                                         {activeTab === 'climax' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                {/* Updated h3 size */}
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">成果展示 Result</h3>
-                                                <p className="text-gray-400 mb-6 text-sm">從純文字到全方位成長地圖的轉變。</p>
-                                                <div className="grid gap-4">
-                                                    {GALLERY_IMAGES.map((img) => (
-                                                        <button
-                                                            key={img.id}
-                                                            onClick={() => handleGallerySwitch(img)}
-                                                            className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? 'border-primary bg-white/5' : ''}`}
-                                                        >
-                                                            <div className="flex justify-between items-center mb-2">
-                                                                <h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
-                                                                    <span className="text-primary mr-2">{img.id}.</span>{img.name}
-                                                                </h4>
-                                                                <i className={`fas fa-arrow-left transform transition-all ${activeGalleryId === img.id ? 'text-primary -translate-x-1' : 'text-gray-600 group-hover:text-primary group-hover:-translate-x-1'}`}></i>
-                                                            </div>
-                                                            <p className="text-xs text-gray-500 group-hover:text-gray-400">
-                                                                {img.id === '01' && '總覽課程完成度與核心指標。'}
-                                                                {img.id === '02' && '整合 Mini-CEX 與 DOPS 評分統計。'}
-                                                                {img.id === '03' && '視覺化呈現六大核心能力消長。'}
-                                                                {img.id === '04' && '支援行政所需的報表輸出功能。'}
-                                                            </p>
-                                                        </button>
-                                                    ))}
-                                                </div>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p>
+                                                <div className="grid gap-4">{galleryImages.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? 'border-primary bg-white/5' : ''}`}><div className="flex justify-between items-center mb-2"><h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}><span className="text-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`fas fa-arrow-left transform transition-all ${activeGalleryId === img.id ? 'text-primary -translate-x-1' : 'text-gray-600 group-hover:text-primary group-hover:-translate-x-1'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400">{img.desc}</p></button>))}</div>
                                             </div>
                                         )}
-
-                                        {/* Footer Spacer */}
                                         <div className="h-8"></div>
-
                                     </div>
                                 </div>
                             </div>
                         </section>
-
                     </div>
                 </React.Fragment>
             );
@@ -878,43 +685,6 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-
-        (function () {
-            const TARGET_WIDTH = 1920;
-            const BASE_FONT_SIZE = 16;
-
-            // 定義筆電/小螢幕的寬度區間 (例如 1024px ~ 1600px)
-            const LAPTOP_MIN_WIDTH = 1024;
-            const LAPTOP_MAX_WIDTH = 1600;
-
-            function enforceProportions() {
-                const currentWidth = window.innerWidth;
-                let scaleRatio = 1;
-
-                if (currentWidth >= LAPTOP_MIN_WIDTH) {
-                    if (currentWidth <= LAPTOP_MAX_WIDTH) {
-
-                        scaleRatio = 0.9;
-                    } else {
-                        // === 針對大螢幕 (24吋, 27吋, 32吋 4K) ===
-                        // 超過 1600px 後，恢復嚴格的等比放大 (1920px=1.0, 3840px=2.0)
-                        scaleRatio = currentWidth / TARGET_WIDTH;
-                    }
-
-                    // 計算並套用新的字體大小
-                    const newFontSize = BASE_FONT_SIZE * scaleRatio;
-                    document.documentElement.style.fontSize = `${newFontSize}px`;
-                } else {
-                    // 手機版 (< 1024px) 恢復預設 16px
-                    document.documentElement.style.fontSize = '16px';
-                }
-            }
-
-            // 監聽視窗變化
-            window.addEventListener('resize', enforceProportions);
-            window.addEventListener('DOMContentLoaded', enforceProportions);
-            enforceProportions(); // 立即執行
-        })();
     </script>
 </body>
 

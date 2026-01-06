@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央存保Golden House – 購得好房-接金幣理財遊戲 | UX Case Study</title>
+    <title>中央存保 Golden House – 購得好房 | Gamified Financial Edu - Case Study</title>
 
     <link rel="shortcut icon" href="./img/favicon/favicon.ico">
     <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
@@ -13,7 +13,6 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
 
@@ -30,32 +29,24 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#EAC435',
-                        secondary: '#FF6584',
+                        primary: '#EAC435', /* 金幣黃 */
+                        secondary: '#FF6584', /* 危機紅 */
                         dark: '#121212',
                         'dark-light': '#1E1E1E',
                         'dark-lighter': '#2D2D2D',
-                        accent: '#00D4FF'
+                        accent: '#00D4FF' /* 防護藍 */
                     },
                     fontFamily: {
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
                         heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
                     },
-                    backgroundImage: {
-                        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-                    },
-                    // --- 流光動畫設定 ---
                     animation: {
-                        shimmer: 'shimmer 1.5s infinite',
+                        shimmer: 'shimmer 1.5s infinite linear',
                     },
                     keyframes: {
                         shimmer: {
-                            '0%': {
-                                transform: 'translateX(-100%)'
-                            },
-                            '100%': {
-                                transform: 'translateX(100%)'
-                            }
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(100%)' }
                         }
                     }
                 }
@@ -64,7 +55,7 @@
     </script>
 
     <style>
-        /* 1. BASIC LAYOUT SETUP */
+        /* BASIC SETUP */
         body,
         html {
             margin: 0;
@@ -78,7 +69,21 @@
             overscroll-behavior: none;
         }
 
-        /* 2. MAIN SCROLL CONTAINER */
+        /* Skeleton Shimmer */
+        .skeleton {
+            background: #1e293b;
+            background: linear-gradient(to right, #1e293b 8%, #334155 18%, #1e293b 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position-x: -200%;
+            }
+        }
+
+        /* Main Scroller */
         #main-scroller {
             width: 100vw;
             height: 100vh;
@@ -86,7 +91,6 @@
             position: relative;
         }
 
-        /* 3. SNAP SECTIONS */
         .snap-section {
             width: 100vw;
             height: 100vh;
@@ -103,17 +107,11 @@
             visibility: visible;
         }
 
-        /* Custom Hero Background - Updated for WebP Support */
+        /* Hero */
         .hero-bg-custom {
-            /* Fallback */
             background-image: url('./img/project_12/hero_img.jpg');
-
-            /* Modern browsers: choose between WebP and PNG */
-            background-image: -webkit-image-set(url('./img/project_12/hero_img.webp') 1x,
-                    url('./img/project_12/hero_img.jpg') 1x);
-            background-image: image-set(url('./img/project_12/hero_img.webp') 1x,
-                    url('./img/project_12/hero_img.jpg') 1x);
-
+            background-image: -webkit-image-set(url('./img/project_12/hero_img.webp') 1x, url('./img/project_12/hero_img.jpg') 1x);
+            background-image: image-set(url('./img/project_12/hero_img.webp') 1x, url('./img/project_12/hero_img.jpg') 1x);
             background-size: cover;
             background-position: center;
             position: relative;
@@ -123,45 +121,14 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(to bottom, rgba(18, 18, 18, 0.2) 0%, rgba(18, 18, 18, 0.5) 100%);
+            background: linear-gradient(to bottom, rgba(18, 18, 18, 0.2) 0%, rgba(18, 18, 18, 0.6) 100%);
             z-index: 1;
         }
 
-        /* Animations */
-        .fade-in-up {
-            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Glassmorphism & Cards */
+        /* Glassmorphism */
         .glass-panel {
             background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(18, 18, 18, 0.98));
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             border-left: 1px solid rgba(255, 255, 255, 0.08);
         }
 
@@ -198,13 +165,64 @@
             background: #EAC435;
         }
 
-        /* Content Scroll Area */
         .scroll-content {
             overflow-y: auto !important;
             touch-action: pan-y !important;
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
             height: 100%;
+        }
+
+        .scrollable-area {
+            overflow-y: auto !important;
+            overscroll-behavior: contain;
+        }
+
+        .horizontal-tabs {
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            touch-action: pan-x !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .horizontal-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Animations */
+        .fade-in-up {
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Loader */
@@ -214,7 +232,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #0F1115;
+            background: #121212;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -303,7 +321,6 @@
         // --- HELPER COMPONENT: Responsive Image (WebP Support) ---
         const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
-            // Support replacement for jpg, jpeg, png to webp
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
 
             return (
@@ -321,35 +338,22 @@
             );
         };
 
-        // --- HELPER COMPONENT: Image with Shimmer Skeleton Loading ---
+        // --- NEW COMPONENT: Image with Skeleton Loading ---
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
 
-            // Reset loaded state when src changes
             useEffect(() => {
                 setLoaded(false);
             }, [src]);
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {/* Skeleton Loader with 110deg Shimmer Effect */}
                     {!loaded && (
-                        <div className="absolute inset-0 bg-dark-lighter z-10 rounded-lg overflow-hidden flex items-center justify-center pointer-events-none">
-
-                            {/* Static Icon */}
-                            <i className="fas fa-image text-white/10 text-3xl relative z-10"></i>
-
-                            {/* Shimmer Overlay: Moving Gradient at 110 degrees */}
-                            <div
-                                className="absolute inset-0 -translate-x-full animate-shimmer z-20"
-                                style={{
-                                    background: 'linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%)'
-                                }}
-                            ></div>
+                        <div className="absolute inset-0 skeleton rounded-lg z-10 flex items-center justify-center">
+                            <i className="fas fa-image text-white/10 text-3xl"></i>
                         </div>
                     )}
 
-                    {/* Actual Image */}
                     <ResponsiveImage
                         src={src}
                         alt={alt}
@@ -361,6 +365,7 @@
             );
         };
 
+        // --- Icons ---
         const Icons = {
             Figma: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 5.5A3.5 3.5 0 0 1 8.5 2H12v7H8.5A3.5 3.5 0 0 1 5 5.5z" /><path d="M12 2h3.5a3.5 3.5 0 1 1 0 7H12V2z" /><path d="M12 12.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 1 1-7 0z" /><path d="M5 19.5A3.5 3.5 0 0 1 8.5 16H12v3.5a3.5 3.5 0 1 1-7 0z" /><path d="M5 12.5A3.5 3.5 0 0 1 8.5 9H12v7H8.5A3.5 3.5 0 0 1 5 12.5z" /></svg>,
             AI: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l-9 18h18L12 3z" /><circle cx="12" cy="13" r="2" /></svg>,
@@ -370,214 +375,207 @@
             Storm: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
         };
 
-        const GALLERY_IMAGES = [
-            { id: '01', name: '溫馨主視覺', src: './img/project_12/接金幣-01遊戲畫面.jpg' },
-            { id: '02', name: '擬人化危機', src: './img/project_12/接金幣-09金融風暴.jpg' },
-            { id: '03', name: '知識防護罩', src: './img/project_12/接金幣-10金融風暴popup.jpg' },
-            { id: '04', name: '結局1', src: './img/project_12/接金幣-11結局01.jpg' },
-            { id: '05', name: '結局2', src: './img/project_12/接金幣-13結局03.jpg' }
+        // --- TRANSLATIONS ---
+        const TRANSLATIONS = {
+            zh: {
+                title_main: "中央存保", title_sub: "購得好房-理財教育網頁遊戲",
+                hero_desc: "讓「買房」與「存款保險」觀念不再沈重，打造寓教於樂的互動體驗。",
+                btn_explore: "探索設計旅程", back_home: "Back to Portfolio",
+                tab_context: "01. 背景與痛點", tab_process: "02. 策略", tab_solution: "03. 特色", tab_climax: "04. 成果",
+
+                context_title: "專案背景 Context",
+                context_desc: "許多民眾對於「買房」與「存款保險」等議題感到遙遠或壓力大，傳統的文字宣導難以產生共鳴。我們的任務是打造一款 Web Game，透過直覺的機制降低學習門檻。",
+                role_title: "My Role", role_name: "Visual / UI 設計師", tools: "Tools",
+                conflict_title: "痛點與挑戰 The Conflict", conflict_sub: "傳統宣導的困境",
+                pain_1_title: "議題沈重感", pain_1_desc: "理財話題容易引發民眾焦慮，導致資訊排斥。",
+                pain_2_title: "法規生硬難懂", pain_2_desc: "存款保險條例等內容枯燥，難以長時間閱讀。",
+                pain_3_title: "缺乏互動反饋", pain_3_desc: "單向的政令宣導缺乏「做中學」的機會。",
+
+                process_title: "設計策略 Design Strategy", process_sub: "如何將嚴肅議題轉化為沈浸式體驗",
+                step_1_title: "01. 視覺心理學", step_1_desc: "捨棄科技感，改用「莫蘭迪色系」繪製田園背景，營造「成家」的溫馨願景，降低焦慮。",
+                step_2_title: "02. 符號具象化", step_2_desc: "利用高彩度的「金黃色」作為資產焦點，深黑色「炸彈」代表風險，直觀引導玩家操作。",
+                step_3_title: "03. 隱喻危機", step_3_desc: "將抽象的金融風暴設計為「擬人化龍捲風」，讓資產流失的過程變得可見且緊迫。",
+                step_4_title: "04. 知識防護", step_4_desc: "打破說教，將枯燥的條文轉化為「遊戲保命道具」，激發玩家主動學習的動機。",
+
+                sol_title: "核心特色 Core Features",
+                sol_1_title: "沈浸式溫馨視覺", sol_1_desc: "低飽和度背景與柔和色調，傳遞歲月靜好的氛圍，符合「安居樂業」的最終目標。", sol_1_label: "Mood:",
+                sol_2_title: "隨機事件：金融風暴", sol_2_desc: "擬人化的龍捲風會捲走金幣，視覺化呈現市場波動與資產縮水，製造遊戲張力。", sol_2_label: "Event:",
+                sol_3_title: "UI 轉換：冷靜與防護", sol_3_desc: "危機時介面轉為深藍色，暗示理性思考。答對問題即啟動防護，強化正確觀念的重要性。", sol_3_label: "Interaction:",
+
+                gallery_title: "介面展示 Gallery", gallery_desc: "點擊下方卡片查看遊戲畫面細節。",
+                gallery_hint: "點擊預覽設計細節。",
+                img_1: "溫馨主視覺", img_2: "擬人化危機", img_3: "知識防護罩", img_4: "結局1", img_5: "結局2"
+            },
+            en: {
+                title_main: "CDIC Golden House", title_sub: "Financial Education Web Game",
+                hero_desc: "From heavy topics to fun interaction. A gamified experience that makes 'buying a home' and 'deposit insurance' accessible.",
+                btn_explore: "Explore the Journey", back_home: "Back to Portfolio",
+                tab_context: "01. Context", tab_process: "02. Strategy", tab_solution: "03. Features", tab_climax: "04. Gallery",
+
+                context_title: "Project Overview",
+                context_desc: "Financial topics like 'home buying' and 'deposit insurance' often feel distant or stressful to the public. Traditional text-based campaigns lack engagement. Our mission was to create a Web Game that lowers the learning barrier through intuitive mechanics.",
+                role_title: "My Role", role_name: "Visual / UI Designer", tools: "Tools",
+                conflict_title: "The Conflict", conflict_sub: "Challenges of traditional campaigns",
+                pain_1_title: "Heavy Topics", pain_1_desc: "Financial topics can trigger anxiety, causing information avoidance.",
+                pain_2_title: "Dry Content", pain_2_desc: "Regulations like deposit insurance acts are boring and hard to read.",
+                pain_3_title: "Lack of Feedback", pain_3_desc: "One-way government announcements lack 'learning by doing' opportunities.",
+
+                process_title: "Design Strategy", process_sub: "Transforming serious topics into immersive experiences",
+                step_1_title: "01. Visual Psychology", step_1_desc: "Used Morandi colors and pastoral backgrounds to create a warm 'home' vision, reducing anxiety.",
+                step_2_title: "02. Symbolism", step_2_desc: "Used high-saturation 'Gold' for assets and dark 'Bombs' for risks to intuitively guide player actions.",
+                step_3_title: "03. Metaphor", step_3_desc: "Visualized abstract financial storms as 'personified tornadoes', making asset loss visible and urgent.",
+                step_4_title: "04. Knowledge Defense", step_4_desc: "Turned boring clauses into 'game-saving items', motivating players to learn actively.",
+
+                sol_title: "Core Features",
+                sol_1_title: "Immersive Warm Visuals", sol_1_desc: "Low-saturation backgrounds and soft tones convey a peaceful atmosphere, aligning with the goal of 'living in peace'.", sol_1_label: "Mood:",
+                sol_2_title: "Random Event: Financial Storm", sol_2_desc: "Personified tornadoes sweep away coins, visualizing market volatility and asset shrinkage to create tension.", sol_2_label: "Event:",
+                sol_3_title: "UI Shift: Calm & Defense", sol_3_desc: "Interface turns deep blue during crises, suggesting rational thinking. Correct answers trigger defense shields.", sol_3_label: "Interaction:",
+
+                gallery_title: "Interface Gallery", gallery_desc: "Click the cards below to view game details.",
+                gallery_hint: "Click to preview details.",
+                img_1: "Warm Key Visual", img_2: "Personified Crisis", img_3: "Knowledge Shield", img_4: "Ending 1", img_5: "Ending 2"
+            }
+        };
+
+        const MAIN_IMAGE = './img/project_12/display.jpg';
+
+        // --- Dynamic Data Helpers ---
+        const getSolutionFeatures = (t) => [
+            { id: 'sol-01', title: t('sol_1_title'), desc: t('sol_1_desc'), label: t('sol_1_label'), icon: 'Home', image: './img/project_12/接金幣-01遊戲畫面.jpg' },
+            { id: 'sol-02', title: t('sol_2_title'), desc: t('sol_2_desc'), label: t('sol_2_label'), icon: 'Storm', image: './img/project_12/接金幣-09金融風暴.jpg' },
+            { id: 'sol-03', title: t('sol_3_title'), desc: t('sol_3_desc'), label: t('sol_3_label'), icon: 'Shield', image: './img/project_12/接金幣-10金融風暴popup.jpg' }
+        ];
+
+        const getGalleryImages = (t) => [
+            { id: '01', name: t('img_1'), src: './img/project_12/接金幣-01遊戲畫面.jpg' },
+            { id: '02', name: t('img_2'), src: './img/project_12/接金幣-09金融風暴.jpg' },
+            { id: '03', name: t('img_3'), src: './img/project_12/接金幣-10金融風暴popup.jpg' },
+            { id: '04', name: t('img_4'), src: './img/project_12/接金幣-11結局01.jpg' },
+            { id: '05', name: t('img_5'), src: './img/project_12/接金幣-13結局03.jpg' }
         ];
 
         const App = () => {
+            const [lang, setLang] = useState('zh');
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('context');
-            const [currentImage, setCurrentImage] = useState('./img/project_12/display.jpg');
-            const [activeGalleryId, setActiveGalleryId] = useState('01');
+            const [currentImage, setCurrentImage] = useState(MAIN_IMAGE);
+            const [activeGalleryId, setActiveGalleryId] = useState(null);
+            const [activeSolutionId, setActiveSolutionId] = useState(null);
             const [showBackToHero, setShowBackToHero] = useState(false);
 
-            // GSAP Scroll State
+            // Refs
             const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
             const isScrollingRef = useRef(false);
             const mainContainerRef = useRef(null);
             const sectionsRef = useRef([]);
-            const heroRef = useRef(null);
-            const splitRef = useRef(null);
-
-            // Damping / Mobile Scroll Refs
             const contentScrollRef = useRef(null);
             const imageScrollRef = useRef(null);
+            const heroRef = useRef(null);
+            const splitRef = useRef(null);
             const touchStartY = useRef(0);
+            const tabsContainerRef = useRef(null);
 
-            const showBrowserHeader = !['context', 'process'].includes(activeTab);
+            const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
 
-            // === UPDATED: Loading Logic (Wait for Hero + Timer) ===
+            // Derived Data
+            const solutionFeatures = getSolutionFeatures((k) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][k]) ? TRANSLATIONS[lang][k] : k);
+            const galleryImages = getGalleryImages((k) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][k]) ? TRANSLATIONS[lang][k] : k);
+
+            // Initialize
             useEffect(() => {
-                // 1. Listen for Hero image load
+                const savedLang = localStorage.getItem('preferredLang');
+                const initialLang = savedLang === 'en' ? 'en' : 'zh';
+                setLang(initialLang);
+
                 const heroImagePromise = new Promise((resolve, reject) => {
                     const img = new Image();
-                    // Project 12 uses .jpg for hero
                     img.src = './img/project_12/hero_img.jpg';
                     img.onload = () => resolve('hero loaded');
                     img.onerror = () => resolve('hero error');
                 });
-
-                // 2. Minimum timer (1.0s)
                 const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
-
-                // 3. Resolve both
-                Promise.all([heroImagePromise, timerPromise])
-                    .then(() => {
-                        setLoading(false);
-                    });
+                Promise.all([heroImagePromise, timerPromise]).then(() => setLoading(false));
             }, []);
+
+            // Tab / Lang Update
+            useEffect(() => {
+                if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
+                if (imageScrollRef.current) imageScrollRef.current.scrollTop = 0;
+
+                switch (activeTab) {
+                    case 'context':
+                    case 'process':
+                        setCurrentImage(MAIN_IMAGE);
+                        setActiveGalleryId(null);
+                        setActiveSolutionId(null);
+                        break;
+                    case 'solution':
+                        setCurrentImage(solutionFeatures[0].image);
+                        setActiveSolutionId(solutionFeatures[0].id);
+                        setActiveGalleryId(null);
+                        break;
+                    case 'climax':
+                        setCurrentImage(galleryImages[0].src);
+                        setActiveGalleryId(galleryImages[0].id);
+                        setActiveSolutionId(null);
+                        break;
+                    default:
+                        setCurrentImage(MAIN_IMAGE);
+                }
+            }, [activeTab, lang]);
 
             useEffect(() => {
                 sectionsRef.current = [heroRef.current, splitRef.current];
                 if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
             }, [loading]);
 
-            // === NEW: Auto-scroll to top when activeTab changes ===
-            useEffect(() => {
-                if (contentScrollRef.current) {
-                    contentScrollRef.current.scrollTop = 0;
-                }
-                // Also reset image scroll if needed
-                if (imageScrollRef.current) {
-                    imageScrollRef.current.scrollTop = 0;
-                }
-            }, [activeTab]);
-
-            useEffect(() => {
-                switch (activeTab) {
-                    case 'context':
-                    case 'process':
-                        setCurrentImage('./img/project_12/display.jpg');
-                        setActiveGalleryId(null);
-                        break;
-                    case 'solution':
-                        setCurrentImage('./img/project_12/接金幣-10金融風暴popup.jpg');
-                        setActiveGalleryId(null);
-                        break;
-                    case 'climax':
-                        setCurrentImage(GALLERY_IMAGES[0].src);
-                        setActiveGalleryId(GALLERY_IMAGES[0].id);
-                        break;
-                    default:
-                        setCurrentImage('./img/project_12/display.jpg');
-                        setActiveGalleryId(null);
-                }
-            }, [activeTab]);
-
-            // === GSAP SCROLL LOGIC ===
+            // Scroll Logic
             const scrollToSection = (index) => {
                 if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
-
                 isScrollingRef.current = true;
                 const targetSection = sectionsRef.current[index];
                 const currentSection = sectionsRef.current[currentSectionIndex];
-
                 setShowBackToHero(index > 0);
 
-                const tl = gsap.timeline({
-                    onComplete: () => {
-                        isScrollingRef.current = false;
-                        setCurrentSectionIndex(index);
-                        if (currentSection !== targetSection) {
-                            currentSection.classList.remove('active-section');
-                        }
-                        targetSection.classList.add('active-section');
-                    }
-                });
-
-                if (currentSectionIndex !== index) {
-                    tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
-                }
-
-                tl.to(mainContainerRef.current, {
-                    scrollTo: { y: targetSection.offsetTop, autoKill: false },
-                    duration: 1.2,
-                    ease: "power2.inOut"
-                }, "<");
-
-                tl.to(targetSection, {
-                    opacity: 1,
-                    duration: 1,
-                    onStart: () => {
-                        targetSection.classList.add('active-section');
-                        targetSection.style.visibility = 'visible';
-                    }
-                }, "-=0.8");
+                const tl = gsap.timeline({ onComplete: () => { isScrollingRef.current = false; setCurrentSectionIndex(index); if (currentSection !== targetSection) currentSection.classList.remove('active-section'); targetSection.classList.add('active-section'); } });
+                if (currentSectionIndex !== index) tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
+                tl.to(mainContainerRef.current, { scrollTo: { y: targetSection.offsetTop, autoKill: false }, duration: 1.2, ease: "power2.inOut" }, "<");
+                tl.to(targetSection, { opacity: 1, duration: 1, onStart: () => { targetSection.classList.add('active-section'); targetSection.style.visibility = 'visible'; } }, "-=0.8");
             };
 
-            // === DAMPING & EVENT HANDLERS (UPDATED for Locked Up Scroll) ===
             const handleWheel = (e) => {
-                const isSplitView = currentSectionIndex === 1;
-                const contentEl = contentScrollRef.current;
-                const imageEl = imageScrollRef.current;
-
-                const target = e.target;
-                const isOverContent = contentEl && contentEl.contains(target);
-                const isOverImage = imageEl && imageEl.contains(target);
-
-                if (isSplitView) {
-                    // 1. Check Image Side Scroll
-                    if (isOverImage) {
-                        // Image no longer scrolls, so we just treat it as a trigger for section switch
-                        // Logic simplified:
-                        if (e.deltaY < 0) {
-                            // Scrolling UP: Allow native scroll but NEVER go to Hero
-                            return;
-                        }
-                        // Scrolling DOWN -> Allow fall through to Next Section
-                    }
-
-                    // 2. Check Content Side Scroll
-                    if (isOverContent) {
-                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                        if (e.deltaY < 0 && scrollTop <= 0) {
-                            // Locked scroll up at top of content (Prevent going to Hero)
-                            return;
-                        }
-                        if (scrollHeight > clientHeight) {
-                            const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 2;
-                            const isAtTop = scrollTop <= 0;
-
-                            if (!isAtTop && !isAtBottom) return; // Middle
-                            if (isAtTop && e.deltaY > 0) return; // Top but going down
-                            if (isAtBottom && e.deltaY < 0) return; // Bottom but going up
-                        }
-                    }
-                }
-
                 if (isScrollingRef.current) return;
+                if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
 
-                if (e.deltaY > 0) {
-                    // Scrolling DOWN -> Allow Next Section
-                    if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
-                } else {
-                    // Scrolling UP -> LOCKED (Do nothing)
-                    // The only way to go back is via the button
+                const scrollable = e.target.closest('.scrollable-area');
+                if (scrollable) {
+                    const { scrollTop, scrollHeight, clientHeight } = scrollable;
+                    const isScrollable = scrollHeight > clientHeight;
+                    if (isScrollable) {
+                        if (e.deltaY < 0) return;
+                        const atBottom = Math.abs(scrollHeight - clientHeight - scrollTop) <= 1;
+                        if (!atBottom) return;
+                    }
                 }
+                if (e.deltaY > 0 && currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
             };
 
-            const handleTouchStart = (e) => {
-                touchStartY.current = e.touches[0].clientY;
-            };
+            const handleTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
 
             const handleTouchEnd = (e) => {
                 if (isScrollingRef.current) return;
-                const touchEndY = e.changedTouches[0].clientY;
-                const diff = touchStartY.current - touchEndY;
-                const isSplitView = currentSectionIndex === 1;
-                const contentEl = contentScrollRef.current;
-                const imageEl = imageScrollRef.current;
-                const target = e.target;
-                const isInsideContent = contentEl && contentEl.contains(target);
-                const isInsideImage = imageEl && imageEl.contains(target);
+                if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
 
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0) { // Swipe Up (Next)
-                        if (isSplitView) {
-                            if (isInsideContent) {
-                                const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                                if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
-                            }
-                            // Image no longer scrolls internally, so we don't need to check its scroll position
-                        }
-                        if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
-                    } else { // Swipe Down (Prev)
-                        // Completely Locked - Do not go back to Hero
+                const diff = touchStartY.current - e.changedTouches[0].clientY;
+                const scrollable = e.target.closest('.scrollable-area');
+
+                if (Math.abs(diff) > 50 && diff > 0) {
+                    if (scrollable) {
+                        const { scrollTop, scrollHeight, clientHeight } = scrollable;
+                        const atBottom = Math.abs(scrollHeight - clientHeight - scrollTop) <= 1;
+                        if (scrollHeight > clientHeight && !atBottom) return;
                     }
+                    if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
                 }
             };
 
@@ -595,69 +593,66 @@
                 };
             }, [currentSectionIndex]);
 
-            const goBack = () => {
-                window.location.href = "index.html#portfolio";
-            };
+            const goBack = () => window.location.href = "index.html#portfolio";
+            const handleGallerySwitch = (imgObj) => { setCurrentImage(imgObj.src); setActiveGalleryId(imgObj.id); };
+            const handleSolutionSwitch = (solObj) => { setCurrentImage(solObj.image); setActiveSolutionId(solObj.id); };
 
-            const handleGallerySwitch = (imgObj) => {
-                setCurrentImage(imgObj.src);
-                setActiveGalleryId(imgObj.id);
-            };
+            const showBrowserHeader = !['context', 'process'].includes(activeTab);
 
             return (
                 <React.Fragment>
-                    <div className={`loader ${loading ? '' : 'hidden'}`}>
-                        <div className="loader-animation"></div>
-                    </div>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
                             <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">Back to Portfolio</span>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
                         </button>
                     </nav>
 
-                    <button
-                        onClick={() => scrollToSection(0)}
-                        className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}
-                        title="Back to Hero Section"
-                    >
-                        <i className="fas fa-arrow-up"></i>
-                    </button>
+                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="fas fa-arrow-up"></i></button>
 
                     <div id="main-scroller" ref={mainContainerRef}>
-
-                        {/* 1. HERO SECTION */}
-                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
-                                <div className="max-w-7xl text-left">
+                                <div className="max-w-5xl text-left">
                                     <div className={`inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>
                                         FINANCIAL EDUCATION GAME
                                     </div>
                                     <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
-                                        中央存保 <span className="font-heading"><br className="md:hidden" />Golden House</span><br className="md:hidden" />購得好房<br />
-                                        <span className="text-transparent bg-clip-text bg-primary">理財教育<br className="md:hidden" />網頁遊戲</span>
+                                        {lang === 'zh' ? (
+                                            <React.Fragment>
+                                                {t('title_main')}<br className="md:hidden" />
+                                                <span className="font-heading text-primary"> Golden House</span>
+                                                <br className="md:hidden" />
+                                                {t('title_sub')}
+                                            </React.Fragment>
+                                        ) : (
+                                            <React.Fragment>
+                                                <span className="font-heading">{t('title_main')}</span>
+                                                <br className="md:hidden" />
+                                                <span className="font-heading text-primary">{t('title_sub')}</span>
+                                            </React.Fragment>
+                                        )}
                                     </h1>
-                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-7xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>
-                                        讓「買房」與「存款保險」觀念不再沈重，打造寓教於樂的互動體驗。
+                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light font-heading mb-12 max-w-7xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>
+                                        {t('hero_desc')}
                                     </h2>
                                     <button
                                         onClick={() => scrollToSection(1)}
                                         className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-black font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(234,196,53,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`}
                                         style={{ animationDelay: '0.4s' }}
                                     >
-                                        探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
+                                        {t('btn_explore')} <i className="fas fa-arrow-down ml-2 animate-bounce"></i>
                                     </button>
                                 </div>
                             </div>
                         </section>
 
-                        {/* 2. SPLIT SCREEN */}
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
-                            {/* LEFT: Image Preview with Skeleton Loading */}
-                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl">
-                                <div className="w-full h-[35vh] lg:h-full flex items-center justify-center">
-                                    <div className="relative w-full max-w-full max-h-full lg:max-h-[90%] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? '35vh' : '100%' }}>
+                                <div className="w-full h-auto flex items-center justify-center">
+                                    <div className="relative w-full h-auto bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 max-h-[80vh]">
                                         {showBrowserHeader && (
                                             <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
                                                 <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div>
@@ -665,10 +660,9 @@
                                                 <div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
                                             </div>
                                         )}
-
-                                        {/* MODIFIED: Removed scroll classes (overflow-y-auto), removed min-h-0/flex-1. Added h-auto, overflow-hidden. */}
                                         <div ref={imageScrollRef} className={`w-full h-auto overflow-hidden relative bg-white/5 group ${showBrowserHeader ? 'block' : 'flex items-center justify-center'}`}>
                                             <ImageWithSkeleton
+                                                key={currentImage}
                                                 src={currentImage}
                                                 alt="Preview"
                                                 className={`transition-opacity duration-500 block ${showBrowserHeader ? 'w-full h-auto' : 'max-w-full max-h-full object-contain'}`}
@@ -679,131 +673,42 @@
                                 </div>
                             </div>
 
-                            {/* RIGHT: Narrative Scroll */}
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
 
                                     <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
                                         <div className="p-6 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">中央存保Golden House – 購得好房<br />理財教育網頁遊戲</h2>
+                                            <div className="mb-2">
+                                                <span className="font-heading text-white text-xl lg:text-3xl font-bold">{lang === 'zh' ? '中央存保' : 'CDIC'}</span>
+                                                <span className="font-heading text-white text-xl lg:text-3xl font-bold"> Golden House</span>
+                                                <br />
+                                                <h2 className="text-xl lg:text-3xl font-bold font-heading text-white mb-1 leading-tight">{t('title_sub')}</h2>
+                                            </div>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-4">Financial Education Web Game</p>
 
-                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 scroll-content">
-                                                {[
-                                                    { id: 'context', label: '01. 背景與痛點' },
-                                                    { id: 'process', label: '02. 策略' },
-                                                    { id: 'solution', label: '03. 特色' },
-                                                    { id: 'climax', label: '04. 成果' }
-                                                ].map(tab => (
-                                                    <button
-                                                        key={tab.id}
-                                                        onClick={() => setActiveTab(tab.id)}
-                                                        className={`text-sm font-bold whitespace-nowrap transition-colors pb-1 ${activeTab === tab.id ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-white'}`}
-                                                    >
-                                                        {tab.label}
-                                                    </button>
+                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full touch-pan-x">
+                                                {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
+                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors pb-1 ${activeTab === tab.id ? 'text-primary border-b-2 border-primary' : 'text-gray-500 hover:text-white'}`}>{tab.label}</button>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content scrollable-area">
 
-                                        {/* CONTEXT */}
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
-                                                <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">專案背景 Context</h3>
-                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">
-                                                        許多民眾對於「買房」與「存款保險」等議題感到遙遠或壓力大，傳統的文字宣導難以產生共鳴。我們的任務是打造一款 Web Game，透過直覺的機制降低學習門檻。
-                                                    </p>
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                                                            <div className="text-xs text-gray-500 uppercase mb-1">My Role</div>
-                                                            <div className="font-bold text-white">Visual / UI 設計師</div>
-                                                        </div>
-                                                        <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
-                                                            <div className="flex flex-wrap gap-2">
-                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><Icons.Figma /> <span className="ml-1">Figma</span></span>
-                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="w-full h-px bg-white/10"></div>
-                                                <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>痛點與挑戰 The Conflict</h3>
-                                                    <div className="feature-card p-5 border-l-4 border-l-secondary">
-                                                        <h4 className="text-secondary font-bold text-sm mb-3">傳統宣導的困境</h4>
-                                                        <ul className="space-y-4 text-gray-300">
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">議題沈重感</strong>理財話題容易引發民眾焦慮，導致資訊排斥。</div></li>
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">法規生硬難懂</strong>存款保險條例等內容枯燥，難以長時間閱讀。</div></li>
-                                                            <li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">缺乏互動反饋</strong>單向的政令宣導缺乏「做中學」的機會。</div></li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold font-heading text-white mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><Icons.Figma /> <span className="ml-1">Figma</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span></div></div></div></div><div className="w-full h-px bg-white/10"></div><div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold font-heading text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3><div className="feature-card p-5 border-l-4 border-l-secondary"><h4 className="text-secondary font-bold text-sm mb-3">{t('conflict_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
                                             </div>
                                         )}
-
-                                        {/* PROCESS */}
                                         {activeTab === 'process' && (
-                                            <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">設計策略 Design Strategy</h3>
-                                                <p className="text-xs text-gray-400 mb-6">如何將嚴肅議題轉化為沈浸式體驗</p>
-                                                <div className="relative pl-4 border-l border-white/10 space-y-8">
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">01. 視覺心理學</h4><p className="text-xs text-gray-400">捨棄科技感，改用「莫蘭迪色系」繪製田園背景，營造「成家」的溫馨願景，降低焦慮。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-white mb-1">02. 符號具象化</h4><p className="text-xs text-gray-400">利用高彩度的「金黃色」作為資產焦點，深黑色「炸彈」代表風險，直觀引導玩家操作。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-white mb-1">03. 隱喻危機</h4><p className="text-xs text-gray-400">將抽象的金融風暴設計為「擬人化龍捲風」，讓資產流失的過程變得可見且緊迫。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(234,196,53,0.5)]"></div><h4 className="text-sm font-bold text-primary mb-1">04. 知識防護</h4><p className="text-xs text-gray-400">打破說教，將枯燥的條文轉化為「遊戲保命道具」，激發玩家主動學習的動機。</p></div>
-                                                </div>
-                                            </div>
+                                            <div className="space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold font-heading text-white mb-2">{t('process_title')}</h3><p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p><div className="relative pl-4 border-l border-white/10 space-y-8"><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">{t('step_1_title')}</h4><p className="text-xs text-gray-400">{t('step_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_2_title')}</h4><p className="text-xs text-gray-400">{t('step_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_3_title')}</h4><p className="text-xs text-gray-400">{t('step_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(234,196,53,0.5)]"></div><h4 className="text-sm font-bold text-primary mb-1">{t('step_4_title')}</h4><p className="text-xs text-gray-400">{t('step_4_desc')}</p></div></div></div>
                                         )}
-
-                                        {/* SOLUTION */}
                                         {activeTab === 'solution' && (
-                                            <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">核心特色 Core Features</h3>
-                                                <div className="space-y-4">
-                                                    <div className="feature-card p-5 flex items-start space-x-4 cursor-pointer hover:bg-white/5 active:scale-[0.98] transition-all" onMouseEnter={() => setCurrentImage('./img/project_12/接金幣-01遊戲畫面.jpg')}>
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0"><Icons.Home /></div>
-                                                        <div><h4 className="font-bold text-white text-sm mb-1">沈浸式溫馨視覺</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Mood:</span> 低飽和度背景與柔和色調，傳遞歲月靜好的氛圍，符合「安居樂業」的最終目標。</p></div>
-                                                    </div>
-                                                    <div className="feature-card p-5 flex items-start space-x-4 cursor-pointer hover:bg-white/5 active:scale-[0.98] transition-all" onMouseEnter={() => setCurrentImage('./img/project_12/接金幣-09金融風暴.jpg')}>
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center text-secondary shrink-0"><Icons.Storm /></div>
-                                                        <div><h4 className="font-bold text-white text-sm mb-1">隨機事件：金融風暴</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Event:</span> 擬人化的龍捲風會捲走金幣，視覺化呈現市場波動與資產縮水，製造遊戲張力。</p></div>
-                                                    </div>
-                                                    <div className="feature-card p-5 flex items-start space-x-4 cursor-pointer hover:bg-white/5 active:scale-[0.98] transition-all" onMouseEnter={() => setCurrentImage('./img/project_12/接金幣-10金融風暴popup.jpg')}>
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-accent shrink-0"><Icons.Shield /></div>
-                                                        <div><h4 className="font-bold text-white text-sm mb-1">UI 轉換：冷靜與防護</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Interaction:</span> 危機時介面轉為深藍色，暗示理性思考。答對問題即啟動防護，強化正確觀念的重要性。</p></div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <div className="space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold font-heading text-white mb-6">{t('sol_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (<button key={sol.id} onClick={() => handleSolutionSwitch(sol)} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeSolutionId === sol.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(234,196,53,0.1)]' : 'border-white/5 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeSolutionId === sol.id ? 'bg-primary text-dark' : 'bg-gradient-to-br from-primary/20 to-primary/5 text-primary'}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeSolutionId === sol.id ? 'text-white' : 'text-gray-200'}`}>{sol.title}</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">{sol.label}</span> {sol.desc}</p></div></button>); })}</div></div>
                                         )}
-
-                                        {/* CLIMAX */}
                                         {activeTab === 'climax' && (
-                                            <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">介面展示 Gallery</h3>
-                                                <p className="text-gray-400 mb-6 text-sm">點擊下方卡片查看遊戲畫面細節。</p>
-                                                <div className="grid gap-4">
-                                                    {GALLERY_IMAGES.map((img) => (
-                                                        <button
-                                                            key={img.id}
-                                                            onClick={() => handleGallerySwitch(img)}
-                                                            className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? 'border-primary bg-white/5' : ''}`}
-                                                        >
-                                                            <div className="flex justify-between items-center mb-2">
-                                                                <h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
-                                                                    <span className="text-primary mr-2">{img.id}.</span>{img.name}
-                                                                </h4>
-                                                                <i className={`fas fa-arrow-left transform transition-all ${activeGalleryId === img.id ? 'text-primary -translate-x-1' : 'text-gray-600 group-hover:text-primary group-hover:-translate-x-1'}`}></i>
-                                                            </div>
-                                                            <p className="text-xs text-gray-500 group-hover:text-gray-400">預覽 {img.name} 的設計細節。</p>
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
+                                            <div className="space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold font-heading text-white mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? 'border-primary bg-white/5' : ''}`}><div className="flex justify-between items-center mb-2"><h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}><span className="text-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`fas fa-arrow-left transform transition-all ${activeGalleryId === img.id ? 'text-primary -translate-x-1' : 'text-gray-600 group-hover:text-primary group-hover:-translate-x-1'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400">{t('gallery_hint')}</p></button>))}</div></div>
                                         )}
                                         <div className="h-8"></div>
                                     </div>
@@ -817,43 +722,6 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-
-        (function () {
-            const TARGET_WIDTH = 1920;
-            const BASE_FONT_SIZE = 16;
-
-            // 定義筆電/小螢幕的寬度區間 (例如 1024px ~ 1600px)
-            const LAPTOP_MIN_WIDTH = 1024;
-            const LAPTOP_MAX_WIDTH = 1600;
-
-            function enforceProportions() {
-                const currentWidth = window.innerWidth;
-                let scaleRatio = 1;
-
-                if (currentWidth >= LAPTOP_MIN_WIDTH) {
-                    if (currentWidth <= LAPTOP_MAX_WIDTH) {
-
-                        scaleRatio = 0.9;
-                    } else {
-                        // === 針對大螢幕 (24吋, 27吋, 32吋 4K) ===
-                        // 超過 1600px 後，恢復嚴格的等比放大 (1920px=1.0, 3840px=2.0)
-                        scaleRatio = currentWidth / TARGET_WIDTH;
-                    }
-
-                    // 計算並套用新的字體大小
-                    const newFontSize = BASE_FONT_SIZE * scaleRatio;
-                    document.documentElement.style.fontSize = `${newFontSize}px`;
-                } else {
-                    // 手機版 (< 1024px) 恢復預設 16px
-                    document.documentElement.style.fontSize = '16px';
-                }
-            }
-
-            // 監聽視窗變化
-            window.addEventListener('resize', enforceProportions);
-            window.addEventListener('DOMContentLoaded', enforceProportions);
-            enforceProportions(); // 立即執行
-        })();
     </script>
 </body>
 

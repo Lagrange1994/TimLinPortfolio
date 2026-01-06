@@ -17,12 +17,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
         tailwind.config = {
@@ -64,6 +64,21 @@
             overscroll-behavior: none;
         }
 
+        /* Skeleton Shimmer */
+        .skeleton {
+            background: #1A1D24;
+            background: linear-gradient(to right, #1A1D24 8%, #2A303C 18%, #1A1D24 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position-x: -200%;
+            }
+        }
+
+        /* Main Scroller */
         #main-scroller {
             width: 100vw;
             height: 100vh;
@@ -143,6 +158,23 @@
             height: 100%;
         }
 
+        .scrollable-area {
+            overflow-y: auto !important;
+            overscroll-behavior: contain;
+        }
+
+        .horizontal-tabs {
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            touch-action: pan-x !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .horizontal-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
         /* Animations */
         .fade-in-up {
             animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -173,31 +205,11 @@
             }
         }
 
-        /* === NEW: Vertical Bar, Horizontal Movement Shimmer Effect === */
-        .skeleton-shimmer {
-            background: #1A1D24;
-            background: linear-gradient(to right, #1A1D24 8%, #2A303C 18%, #1A1D24 33%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite linear;
-        }
-
-        @keyframes shimmer {
-            to {
-                background-position-x: -200%;
-            }
-        }
-
-        /* Custom Hero Background - Updated for WebP Support */
+        /* Hero */
         .hero-bg-custom {
-            /* Fallback */
             background-image: url('./img/project_08/hero_img.jpg');
-
-            /* Modern browsers: choose between WebP and PNG */
-            background-image: -webkit-image-set(url('./img/project_08/hero_img.webp') 1x,
-                    url('./img/project_08/hero_img.jpg') 1x);
-            background-image: image-set(url('./img/project_08/hero_img.webp') 1x,
-                    url('./img/project_08/hero_img.jpg') 1x);
-
+            background-image: -webkit-image-set(url('./img/project_08/hero_img.webp') 1x, url('./img/project_08/hero_img.jpg') 1x);
+            background-image: image-set(url('./img/project_08/hero_img.webp') 1x, url('./img/project_08/hero_img.jpg') 1x);
             background-size: cover;
             background-position: center;
             position: relative;
@@ -304,53 +316,21 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- HELPER COMPONENT: Responsive Image (WebP Support) ---
+        // --- COMPONENTS ---
         const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
-            // Handle different extensions
             const webpSrc = src.replace(/\.(png|jpg|jpeg)$/i, '.webp');
-
-            return (
-                <picture style={{ display: 'contents' }}>
-                    <source srcSet={webpSrc} type="image/webp" />
-                    <img
-                        src={src}
-                        className={className}
-                        alt={alt}
-                        style={style}
-                        onLoad={onLoad}
-                        {...props}
-                    />
-                </picture>
-            );
+            return (<picture style={{ display: 'contents' }}> <source srcSet={webpSrc} type="image/webp" /> <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} /> </picture>);
         };
 
-        // --- NEW COMPONENT: Image with Skeleton Loading (UPDATED with Vertical Shimmer + Icon) ---
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
-
-            useEffect(() => {
-                setLoaded(false);
-            }, [src]);
-
+            useEffect(() => { setLoaded(false); }, [src]);
+            const handleError = () => { console.warn("Image load failed", src); setLoaded(true); };
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'} overflow-hidden rounded-lg`}>
-                    {/* Skeleton Loader with Vertical Shimmer Effect AND Icon */}
-                    {!loaded && (
-                        <div className="absolute inset-0 z-10 skeleton-shimmer flex items-center justify-center">
-                            {/* Icon Restored */}
-                            <i className="fas fa-image text-white/10 text-3xl"></i>
-                        </div>
-                    )}
-
-                    {/* Actual Image */}
-                    <ResponsiveImage
-                        src={src}
-                        alt={alt}
-                        className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-                        onLoad={() => setLoaded(true)}
-                        {...props}
-                    />
+                    {!loaded && (<div className="absolute inset-0 z-10 skeleton flex items-center justify-center"> <i className="fas fa-image text-white/10 text-3xl"></i> </div>)}
+                    <ResponsiveImage src={src} alt={alt} className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={() => setLoaded(true)} onError={handleError} {...props} />
                 </div>
             );
         };
@@ -364,181 +344,220 @@
             Star: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>,
         };
 
+        // --- TRANSLATIONS ---
+        const TRANSLATIONS = {
+            zh: {
+                title_main: "Love Two live app", title_sub: "遊戲化留存設計",
+                hero_desc: "透過「青綠色」科技感視覺與深度的遊戲化任務設計，解決用戶留存痛點，打造全時段的社交直播生態。",
+                btn_explore: "探索設計旅程", back_home: "Back to Portfolio",
+                tab_context: "01. 視覺策略", tab_process: "02. 設計策略", tab_solution: "03. 主要功能", tab_climax: "04. 生態系成果",
+
+                context_title: "視覺策略與市場區隔",
+                context_desc: "在充斥著「紅色」與「粉色」的直播應用市場中，本專案的核心目標是透過強烈的色彩區隔來重塑品牌認知。我們大膽捨棄了業界慣用的暖色系，轉而採用冷色調的「青綠色 (Teal)」作為主視覺，旨在打造一個更具科技感、更年輕，且能降低用戶視覺焦慮的沈浸式社交空間。",
+                role_title: "My Role", role_name: "UI 設計師", tools: "Tools",
+                visual_strat_title: "核心視覺策略 Core Visual Strategy",
+                visual_p1_title: "對抗視覺疲勞", visual_p1_desc: "競品常見的大紅色容易引發焦慮與緊迫感，導致用戶無法長時間停留。青綠色則傳遞放鬆、成長的心理暗示，有效延長觀看時長。",
+                visual_p2_title: "遊戲化氛圍", visual_p2_desc: "配合深色模式 (Dark Mode)，螢光綠能營造出類似電競或科幻電影的沈浸感，讓「解任務」與「送禮物」更像是在玩遊戲，而非單純的消費。",
+                visual_p3_title: "品牌年輕化", visual_p3_desc: "跳脫傳統直播「俗氣」、「秀場」的刻板印象，透過清新的視覺語言吸引更注重質感與社群互動的 Z 世代用戶。",
+
+                process_title: "設計策略 The Process", process_sub: "從視覺到機制，全方位的留存設計",
+                proc_1_title: "01. 視覺風格重塑 (Visual Identity)", proc_1_desc: "採用深色模式搭配高飽和度「青綠色 (Teal)」，營造清新、科技且耐看的品牌形象，區隔市場競品。",
+                proc_2_title: "02. 遊戲化驅動 (Gamification)", proc_2_desc: "設計具象化的「兔子進度條」與每日任務，將觀看行為轉化為「解任務」的遊戲體驗，強制拉長停留時間。",
+                proc_3_title: "03. 社交閉環 (Social Loop)", proc_3_desc: "整合「圖文動態牆 (Moments)」與直播流，填補主播下線後的內容空窗期，打造像 Instagram 般隨時可滑的社交體驗。",
+                proc_4_title: "04. 雙軌經濟 (Dual Economy)", proc_4_desc: "為觀眾與主播分別設計「貢獻勳章」與「職涯等級」，滿足大戶的虛榮心與新手的成長指引。",
+
+                sol_title: "主要功能與特色 Key Features",
+                feat_1_title: "遊戲化任務系統 (Gamified Tasks)", feat_1_desc: "透過「兔子進度條」與「倒數紅包」將觀看時間轉化為積分獎勵。利用 Zeigarnik 效應，讓用戶為了完成任務而主動停留，大幅提升平台黏著度。",
+                feat_2_title: "社群動態牆 (Social Moments)", feat_2_desc: "整合「即時直播流」與「圖文動態」，填補主播下線後的內容空窗期。用戶可隨時按讚、互動，打造全天候活躍的社交閉環。",
+                feat_3_title: "雙軌等級體系 (Dual-Track Ranking)", feat_3_desc: "區分「主播等級」與「貢獻等級」，透過顯性的徽章與排行榜展示社交資本。滿足大戶的虛榮心，同時給予新手主播明確的成長指引。",
+
+                climax_title: "生態系成果 Ecosystem Gallery", climax_desc: "從直播到社交，打造完整的沈浸式娛樂生態系。",
+
+                // Categories
+                cat_tasks: "首頁與任務", cat_live: "直播間互動", cat_social: "社交動態牆", cat_profile: "個人成長體系",
+                img_home: "直播首頁", img_daily_task: "每日任務清單", img_daily_board: "即時排行榜",
+                img_gift: "虛擬禮物面板", img_store: "代幣儲值商店", img_share: "直播分享引導", img_end_live: "直播結束結算",
+                img_follow: "追蹤動態首頁", img_moment: "動態詳情頁", img_moment_2: "用戶互動選單",
+                img_profile: "個人主頁", img_self: "個人資訊彈窗", img_rank_con: "貢獻等級說明", img_rank_broad: "主播等級說明"
+            },
+            en: {
+                title_main: "Love Two live app", title_sub: "Gamified Retention Design",
+                hero_desc: "Utilizing 'Teal' sci-fi visuals and deep gamification strategies to solve retention pain points, creating a 24/7 social live streaming ecosystem.",
+                btn_explore: "Explore the Journey", back_home: "Back to Portfolio",
+                tab_context: "01. Visual Strategy", tab_process: "02. Design Strategy", tab_solution: "03. Key Features", tab_climax: "04. Ecosystem",
+
+                context_title: "Visual Strategy & Market Segmentation",
+                context_desc: "In a market dominated by 'Red' and 'Pink' apps, our goal was to reshape brand perception through strong color differentiation. We boldly adopted a cool 'Teal' tone to create a tech-savvy, youthful, and immersive social space that reduces visual fatigue.",
+                role_title: "My Role", role_name: "UI Designer", tools: "Tools",
+                visual_strat_title: "Core Visual Strategy",
+                visual_p1_title: "Anti-Fatigue", visual_p1_desc: "Common red tones in competitors can trigger anxiety. Teal conveys relaxation and growth, effectively extending viewing time.",
+                visual_p2_title: "Gaming Vibe", visual_p2_desc: "Combined with Dark Mode, neon green creates an immersive esports or sci-fi vibe, making 'tasks' and 'gifting' feel like a game rather than just spending.",
+                visual_p3_title: "Gen Z Identity", visual_p3_desc: "Breaking away from the 'tacky' stereotype of traditional streaming, attracting Gen Z users who value aesthetics and community interaction through a fresh visual language.",
+
+                process_title: "Design Strategy", process_sub: "Comprehensive retention design from visuals to mechanics",
+                proc_1_title: "01. Visual Identity", proc_1_desc: "Using Dark Mode with high-saturation 'Teal' to build a fresh, tech-savvy brand image.",
+                proc_2_title: "02. Gamification", proc_2_desc: "Designing concrete 'Rabbit Progress Bars' and daily tasks to turn viewing into a 'questing' experience.",
+                proc_3_title: "03. Social Loop", proc_3_desc: "Integrating 'Moments' with live streams to fill content gaps when streamers are offline.",
+                proc_4_title: "04. Dual Economy", proc_4_desc: "Designing 'Contribution Badges' and 'Career Levels' for viewers and streamers respectively.",
+
+                sol_title: "Key Features",
+                feat_1_title: "Gamified Tasks", feat_1_desc: "Turning watch time into rewards via progress bars and countdown red envelopes. Leveraging the Zeigarnik effect to keep users engaged.",
+                feat_2_title: "Social Moments", feat_2_desc: "Integrating live streams with photo/text feeds. Users can like and interact anytime, creating a 24/7 active social loop.",
+                feat_3_title: "Dual-Track Ranking", feat_3_desc: "Differentiating 'Streamer Level' and 'Contribution Level' to display social capital via badges and leaderboards.",
+
+                climax_title: "Ecosystem Gallery", climax_desc: "Building a complete immersive entertainment ecosystem from streaming to socializing.",
+
+                // Categories
+                cat_tasks: "Home & Tasks", cat_live: "Live Interaction", cat_social: "Social Wall", cat_profile: "Growth System",
+                img_home: "Live Home", img_daily_task: "Daily Task List", img_daily_board: "Real-time Leaderboard",
+                img_gift: "Virtual Gift Panel", img_store: "Token Store", img_share: "Share Prompt", img_end_live: "Stream Summary",
+                img_follow: "Following Feed", img_moment: "Moment Detail", img_moment_2: "Interaction Menu",
+                img_profile: "My Profile", img_self: "Profile Popup", img_rank_con: "Contributor Level", img_rank_broad: "Streamer Level"
+            }
+        };
+
         const MAIN_IMAGE = './img/project_08/work10.jpg';
 
-        const GALLERY_IMAGES = [
-            { id: '01', name: '遊戲化任務', src: './img/project_08/Home Page daily task.jpg' },
-            { id: '02', name: '雙軌等級系統', src: './img/project_08/My Profile.jpg' },
-            { id: '03', name: '社群動態牆', src: './img/project_08/follow moment.jpg' },
-            { id: '04', name: '直播結算', src: './img/project_08/end live.jpg' }
-        ];
+        const getGalleryImages = (lang) => {
+            const isZh = lang === 'zh';
+            return [
+                { id: '01', name: isZh ? '遊戲化任務' : 'Gamified Tasks', src: './img/project_08/Home Page daily task.jpg' },
+                { id: '02', name: isZh ? '雙軌等級系統' : 'Dual-Track System', src: './img/project_08/My Profile.jpg' },
+                { id: '03', name: isZh ? '社群動態牆' : 'Social Moments', src: './img/project_08/follow moment.jpg' },
+                { id: '04', name: isZh ? '直播結算' : 'Stream Summary', src: './img/project_08/end live.jpg' }
+            ];
+        };
 
-        const ECOSYSTEM_CATEGORIES = [
+        const getEcosystemCategories = (t) => [
             {
-                id: 'cat_tasks', title: '首頁與任務', images: [
-                    { id: '01-01', name: '直播首頁', src: './img/project_08/Home Page.jpg' },
-                    { id: '01-02', name: '每日任務清單', src: './img/project_08/Home Page daily task.jpg' },
-                    { id: '01-03', name: '即時排行榜', src: './img/project_08/Home Page daily board.jpg' }
+                id: 'cat_tasks', title: t('cat_tasks'), images: [
+                    { id: '01-01', name: t('img_home'), src: './img/project_08/Home Page.jpg' },
+                    { id: '01-02', name: t('img_daily_task'), src: './img/project_08/Home Page daily task.jpg' },
+                    { id: '01-03', name: t('img_daily_board'), src: './img/project_08/Home Page daily board.jpg' }
                 ]
             },
             {
-                id: 'cat_live', title: '直播間互動', images: [
-                    { id: '02-01', name: '虛擬禮物面板', src: './img/project_08/Home Page gift.jpg' },
-                    { id: '02-02', name: '代幣儲值商店', src: './img/project_08/Home Page store.jpg' },
-                    { id: '02-03', name: '直播分享引導', src: './img/project_08/Home Page share.jpg' },
-                    { id: '02-04', name: '直播結束結算', src: './img/project_08/end live.jpg' }
+                id: 'cat_live', title: t('cat_live'), images: [
+                    { id: '02-01', name: t('img_gift'), src: './img/project_08/Home Page gift.jpg' },
+                    { id: '02-02', name: t('img_store'), src: './img/project_08/Home Page store.jpg' },
+                    { id: '02-03', name: t('img_share'), src: './img/project_08/Home Page share.jpg' },
+                    { id: '02-04', name: t('img_end_live'), src: './img/project_08/end live.jpg' }
                 ]
             },
             {
-                id: 'cat_social', title: '社交動態牆', images: [
-                    { id: '03-01', name: '追蹤動態首頁', src: './img/project_08/follow.jpg' },
-                    { id: '03-02', name: '動態詳情頁', src: './img/project_08/follow moment.jpg' },
-                    { id: '03-03', name: '用戶互動選單', src: './img/project_08/follow moment 2.jpg' }
+                id: 'cat_social', title: t('cat_social'), images: [
+                    { id: '03-01', name: t('img_follow'), src: './img/project_08/follow.jpg' },
+                    { id: '03-02', name: t('img_moment'), src: './img/project_08/follow moment.jpg' },
+                    { id: '03-03', name: t('img_moment_2'), src: './img/project_08/follow moment 2.jpg' }
                 ]
             },
             {
-                id: 'cat_profile', title: '個人成長體系', images: [
-                    { id: '04-01', name: '個人主頁', src: './img/project_08/My Profile.jpg' },
-                    { id: '04-02', name: '個人資訊彈窗', src: './img/project_08/self.jpg' },
-                    { id: '04-03', name: '貢獻等級說明', src: './img/project_08/My rank Contributor.jpg' },
-                    { id: '04-04', name: '主播等級說明', src: './img/project_08/My rank Broadcast.jpg' }
+                id: 'cat_profile', title: t('cat_profile'), images: [
+                    { id: '04-01', name: t('img_profile'), src: './img/project_08/My Profile.jpg' },
+                    { id: '04-02', name: t('img_self'), src: './img/project_08/self.jpg' },
+                    { id: '04-03', name: t('img_rank_con'), src: './img/project_08/My rank Contributor.jpg' },
+                    { id: '04-04', name: t('img_rank_broad'), src: './img/project_08/My rank Broadcast.jpg' }
                 ]
             }
         ];
 
-        // === UPDATED PHONE FRAME COMPONENT (With Skeleton) ===
+        // --- PHONE FRAME ---
         const PhoneFrame = ({ src, alt }) => {
             return (
                 <div className="w-full h-full flex items-center justify-center pointer-events-none">
-                    <div className="
-                        relative
-                        h-full w-auto max-w-full
-                        aspect-[9/19]
-                        shadow-2xl overflow-hidden
-                        transition-all duration-300
-                        bg-black
-                        border-[6px] md:border-[8px] border-[#2d2d2d]
-                        rounded-[1.25rem] lg:rounded-[2.5rem]
-                    ">
-                        {/* Use ImageWithSkeleton inside the frame */}
-                        <ImageWithSkeleton
-                            src={src}
-                            alt={alt}
-                            className="w-full h-full object-cover block"
-                            containerClassName="w-full h-full bg-[#1a1a1a]"
-                        />
+                    <div className="relative h-full w-auto max-w-full aspect-[9/19] shadow-2xl overflow-hidden transition-all duration-300 bg-black border-[6px] md:border-[8px] border-[#2d2d2d] rounded-[1.25rem] lg:rounded-[2.5rem]">
+                        <ImageWithSkeleton src={src} alt={alt} className="w-full h-full object-cover block" containerClassName="w-full h-full bg-[#1a1a1a]" />
                     </div>
                 </div>
             );
         };
 
+        // --- SIMPLE FRAME ---
+        const SimpleFrame = ({ src, alt }) => (
+            <div className="w-full h-full flex items-center justify-center pointer-events-none ">
+                <div className="relative w-full max-w-full h-auto max-h-full flex flex-col items-center justify-center pointer-events-auto">
+                    <ImageWithSkeleton src={src} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" alt={alt} />
+                </div>
+            </div>
+        );
+
         const App = () => {
+            const [lang, setLang] = useState('zh');
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('context');
             const [currentImage, setCurrentImage] = useState(MAIN_IMAGE);
             const [activeGalleryId, setActiveGalleryId] = useState('01');
             const [showBackToHero, setShowBackToHero] = useState(false);
 
-            // GSAP Scroll State
+            // GSAP State
             const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
             const isScrollingRef = useRef(false);
             const mainContainerRef = useRef(null);
             const sectionsRef = useRef([]);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
-
-            // Damping / Mobile Scroll Refs
             const contentScrollRef = useRef(null);
             const imageScrollRef = useRef(null);
-            const overscrollAccumulator = useRef(0);
-            const OVERSCROLL_THRESHOLD = 200;
             const touchStartY = useRef(0);
-
-            // === RESIZABLE VISUAL HEIGHT (Mobile) ===
-            // Added based on Project 04 logic
-            const [mobileVisualHeight, setMobileVisualHeight] = useState(35); // Default 35vh
             const isResizingRef = useRef(false);
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(35);
+            const tabsContainerRef = useRef(null); // Ref for Tabs
 
-            const handleResizeStart = (e) => {
-                if (window.innerWidth >= 1024) return;
-                isResizingRef.current = true;
-                document.body.style.userSelect = 'none';
-            };
+            const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
 
+            // Direct Data Access (No State)
+            const galleryImages = getGalleryImages(lang);
+            const ecosystemCategories = getEcosystemCategories((k) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][k]) ? TRANSLATIONS[lang][k] : k);
+
+            // Initialize
+            useEffect(() => {
+                const savedLang = localStorage.getItem('preferredLang');
+                const initialLang = savedLang === 'en' ? 'en' : 'zh';
+                setLang(initialLang);
+
+                const heroImagePromise = new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = './img/project_08/hero_img.jpg';
+                    img.onload = () => resolve('hero loaded');
+                    img.onerror = () => resolve('hero error');
+                });
+                const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
+                Promise.all([heroImagePromise, timerPromise]).then(() => setLoading(false));
+
+                const setResponsiveFontSize = () => {
+                    if (window.innerWidth >= 1024) document.documentElement.style.fontSize = (window.innerWidth / 1920) * 16 + "px";
+                    else document.documentElement.style.fontSize = '';
+                };
+                window.addEventListener('resize', setResponsiveFontSize);
+                setResponsiveFontSize();
+
+                return () => window.removeEventListener('resize', setResponsiveFontSize);
+            }, []);
+
+            // Mobile Resize Logic
+            const handleResizeStart = (e) => { if (window.innerWidth >= 1024) return; isResizingRef.current = true; document.body.style.userSelect = 'none'; };
             useEffect(() => {
                 const handleResizeMove = (e) => {
                     if (!isResizingRef.current) return;
-
-                    let clientY;
-                    if (e.type === 'touchmove') {
-                        clientY = e.touches[0].clientY;
-                    } else {
-                        clientY = e.clientY;
-                    }
-
-                    const windowHeight = window.innerHeight;
-                    let newHeightVh = (clientY / windowHeight) * 100;
-
-                    const maxVh = 80;
-                    const minVh = 35; // Minimum height set to 35 as requested
-
-                    if (newHeightVh < minVh) newHeightVh = minVh;
-                    if (newHeightVh > maxVh) newHeightVh = maxVh;
-
+                    let clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+                    let newHeightVh = (clientY / window.innerHeight) * 100;
+                    if (newHeightVh < 35) newHeightVh = 35; if (newHeightVh > 80) newHeightVh = 80;
                     setMobileVisualHeight(newHeightVh);
                 };
-
-                const handleResizeEnd = () => {
-                    isResizingRef.current = false;
-                    document.body.style.userSelect = '';
-                };
-
-                window.addEventListener('mousemove', handleResizeMove);
-                window.addEventListener('touchmove', handleResizeMove, { passive: false });
-                window.addEventListener('mouseup', handleResizeEnd);
-                window.addEventListener('touchend', handleResizeEnd);
-
-                return () => {
-                    window.removeEventListener('mousemove', handleResizeMove);
-                    window.removeEventListener('touchmove', handleResizeMove);
-                    window.removeEventListener('mouseup', handleResizeEnd);
-                    window.removeEventListener('touchend', handleResizeEnd);
-                };
+                const handleResizeEnd = () => { isResizingRef.current = false; document.body.style.userSelect = ''; };
+                window.addEventListener('mousemove', handleResizeMove); window.addEventListener('touchmove', handleResizeMove, { passive: false });
+                window.addEventListener('mouseup', handleResizeEnd); window.addEventListener('touchend', handleResizeEnd);
+                return () => { window.removeEventListener('mousemove', handleResizeMove); window.removeEventListener('touchmove', handleResizeMove); window.removeEventListener('mouseup', handleResizeEnd); window.removeEventListener('touchend', handleResizeEnd); };
             }, []);
 
-            // === UPDATED LOADING LOGIC ===
+            // Tab / Lang Update
             useEffect(() => {
-                // 1. Monitor Hero Image Loading (WebP/PNG Check done by browser, but we load primary src for event)
-                const heroImagePromise = new Promise((resolve) => {
-                    const img = new Image();
-                    img.src = './img/project_08/hero_img.jpg'; // Primary fallback src
-                    img.onload = () => resolve('hero loaded');
-                    img.onerror = () => resolve('hero error'); // Pass even if error
-                });
+                if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
 
-                // 2. Minimum 1.0s Timer
-                const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
+                // Get fresh data refs
+                const newGallery = getGalleryImages(lang);
+                const newEco = getEcosystemCategories((k) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][k]) ? TRANSLATIONS[lang][k] : k);
 
-                // 3. Resolve when both are done
-                Promise.all([heroImagePromise, timerPromise])
-                    .then(() => {
-                        setLoading(false);
-                    });
-            }, []);
-
-            useEffect(() => {
-                sectionsRef.current = [heroRef.current, splitRef.current];
-                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
-            }, [loading]);
-
-            // === Auto-scroll to top when activeTab changes ===
-            useEffect(() => {
-                if (contentScrollRef.current) {
-                    contentScrollRef.current.scrollTop = 0;
-                }
-            }, [activeTab]);
-
-            useEffect(() => {
                 switch (activeTab) {
                     case 'context':
                     case 'process':
@@ -546,135 +565,74 @@
                         setActiveGalleryId(null);
                         break;
                     case 'solution':
-                        setCurrentImage(GALLERY_IMAGES[0].src);
+                        setCurrentImage(newGallery[0].src);
                         setActiveGalleryId('01');
                         break;
                     case 'climax':
-                        const firstImg = ECOSYSTEM_CATEGORIES[0].images[0];
-                        setCurrentImage(firstImg.src);
-                        setActiveGalleryId(firstImg.id);
+                        setCurrentImage(newEco[0].images[0].src);
+                        setActiveGalleryId(newEco[0].images[0].id);
                         break;
                     default:
                         setCurrentImage(MAIN_IMAGE);
                         setActiveGalleryId(null);
                 }
-            }, [activeTab]);
+            }, [activeTab, lang]);
 
-            // === GSAP SCROLL LOGIC ===
+            useEffect(() => {
+                sectionsRef.current = [heroRef.current, splitRef.current];
+                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
+            }, [loading]);
+
+            // Scroll Logic
             const scrollToSection = (index) => {
                 if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
-
-                // === DIRECTION LOCK: If trying to go UP (index 0 from 1), prevent it here if triggered by wheel/touch ===
-                // NOTE: This function is called by the Button too. 
-                // We will handle the lock in handleWheel/handleTouch instead to allow the Button to work.
-
                 isScrollingRef.current = true;
                 const targetSection = sectionsRef.current[index];
                 const currentSection = sectionsRef.current[currentSectionIndex];
-
                 setShowBackToHero(index > 0);
-                overscrollAccumulator.current = 0;
 
-                const tl = gsap.timeline({
-                    onComplete: () => {
-                        isScrollingRef.current = false;
-                        setCurrentSectionIndex(index);
-                        if (currentSection !== targetSection) {
-                            currentSection.classList.remove('active-section');
-                        }
-                        targetSection.classList.add('active-section');
-                    }
-                });
-
-                if (currentSectionIndex !== index) {
-                    tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
-                }
-
-                tl.to(mainContainerRef.current, {
-                    scrollTo: { y: targetSection.offsetTop, autoKill: false },
-                    duration: 1.2,
-                    ease: "power2.inOut"
-                }, "<");
-
-                tl.to(targetSection, {
-                    opacity: 1,
-                    duration: 1,
-                    onStart: () => {
-                        targetSection.classList.add('active-section');
-                        targetSection.style.visibility = 'visible';
-                    }
-                }, "-=0.8");
+                const tl = gsap.timeline({ onComplete: () => { isScrollingRef.current = false; setCurrentSectionIndex(index); if (currentSection !== targetSection) currentSection.classList.remove('active-section'); targetSection.classList.add('active-section'); } });
+                if (currentSectionIndex !== index) tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
+                tl.to(mainContainerRef.current, { scrollTo: { y: targetSection.offsetTop, autoKill: false }, duration: 1.2, ease: "power2.inOut" }, "<");
+                tl.to(targetSection, { opacity: 1, duration: 1, onStart: () => { targetSection.classList.add('active-section'); targetSection.style.visibility = 'visible'; } }, "-=0.8");
             };
 
-            // === DAMPING & SCROLL LOCK LOGIC ===
             const handleWheel = (e) => {
                 if (isScrollingRef.current) return;
+
+                // STOP scroll if inside tabs
+                if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
+
                 const isSplitView = currentSectionIndex === 1;
                 const contentEl = contentScrollRef.current;
-
-                if (isSplitView) {
-                    if (contentEl && contentEl.contains(e.target)) {
-                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                        if (e.deltaY < 0 && scrollTop <= 0) {
-                            // User is scrolling UP at the top of content
-                            // LOCKED: Do NOT go back to Hero
-                            return;
-                        } else {
-                            if (scrollHeight > clientHeight && e.deltaY > 0) return; // Allow native scroll down
-                            if (scrollHeight > clientHeight && e.deltaY < 0 && scrollTop > 0) return; // Allow native scroll up
-                        }
-                    } else {
-                        if (e.deltaY < 0) {
-                            // User is scrolling UP outside content
-                            // LOCKED: Do NOT go back to Hero
-                            return;
+                if (isSplitView && contentEl) {
+                    const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                    if (scrollHeight > clientHeight) {
+                        if (e.deltaY < 0 && scrollTop <= 0) { }
+                        else {
+                            if (e.deltaY > 0 && scrollTop + clientHeight < scrollHeight) return;
+                            if (e.deltaY < 0 && scrollTop > 0) return;
                         }
                     }
                 }
-
-                if (e.deltaY > 0) {
-                    // Scroll Down -> Allowed
-                    if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
-                } else {
-                    // Scroll Up -> Locked for full page transition
-                    // Logic removed here to satisfy requirement: "無法往上滾動"
-                }
-            };
-
-            const handleTouchStart = (e) => {
-                touchStartY.current = e.touches[0].clientY;
-                overscrollAccumulator.current = 0;
+                if (e.deltaY > 0 && currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
             };
 
             const handleTouchEnd = (e) => {
-                // Modified: Block scroll when resizing
                 if (isScrollingRef.current || isResizingRef.current) return;
 
-                const touchEndY = e.changedTouches[0].clientY;
-                const diff = touchStartY.current - touchEndY;
+                // STOP swipe if inside tabs
+                if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
+
+                const diff = touchStartY.current - e.changedTouches[0].clientY;
                 const isSplitView = currentSectionIndex === 1;
                 const contentEl = contentScrollRef.current;
-                const target = e.target;
-                const isInsideContent = contentEl && contentEl.contains(target);
-
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0) {
-                        // Swipe Up (Go Down) -> Allowed
-                        overscrollAccumulator.current = 0;
-                        if (isSplitView && isInsideContent) {
-                            const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                            if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
-                        }
-                        if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
-                    } else {
-                        // Swipe Down (Go Up) -> LOCKED
-                        // "無法往上滾動"
-                        if (isSplitView && isInsideContent && contentEl.scrollTop > 0) {
-                            // Allow native content scroll up (handled by browser naturally mostly, but touch events might need care)
-                            return;
-                        }
-                        // Do NOT trigger scrollToSection(currentSectionIndex - 1);
+                if (Math.abs(diff) > 50 && diff > 0) {
+                    if (isSplitView && contentEl) {
+                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                        if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
                     }
+                    if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
                 }
             };
 
@@ -682,18 +640,19 @@
                 const container = mainContainerRef.current;
                 if (container) {
                     window.addEventListener('wheel', handleWheel, { passive: false });
-                    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+                    window.addEventListener('touchstart', (e) => touchStartY.current = e.touches[0].clientY, { passive: true });
                     window.addEventListener('touchend', handleTouchEnd, { passive: true });
                 }
-                return () => {
-                    window.removeEventListener('wheel', handleWheel);
-                    window.removeEventListener('touchstart', handleTouchStart);
-                    window.removeEventListener('touchend', handleTouchEnd);
-                };
+                return () => { window.removeEventListener('wheel', handleWheel); };
             }, [currentSectionIndex]);
 
-            const goBack = () => { window.location.href = "index.html#portfolio"; };
+            const goBack = () => window.location.href = "index.html#portfolio";
             const handleGallerySwitch = (imgObj) => { setCurrentImage(imgObj.src); setActiveGalleryId(imgObj.id); };
+
+            const renderVisual = () => {
+                if (activeTab === 'solution' || activeTab === 'climax') return <PhoneFrame src={currentImage} alt="Preview" />;
+                return <SimpleFrame src={currentImage} alt="Overview" />;
+            };
 
             return (
                 <React.Fragment>
@@ -702,88 +661,50 @@
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
                             <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">Back to Portfolio</span>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
                         </button>
                     </nav>
 
-                    {/* Back to Hero Button (The ONLY way to go up) */}
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`} title="Back to Hero Section">
-                        <i className="fas fa-arrow-up"></i>
-                    </button>
+                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="fas fa-arrow-up"></i></button>
 
                     <div id="main-scroller" ref={mainContainerRef}>
-
-                        {/* HERO SECTION */}
-                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
-                                    <div className={`inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 font-sans ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SOCIAL LIVE STREAMING APP</div>
-                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>Love Two<br className="md:hidden" /> live app<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary font-heading">遊戲化<br className="md:hidden" />留存設計</span></h1>
-                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>透過「青綠色」科技感視覺與深度的遊戲化任務設計，解決用戶留存痛點，打造全時段的社交直播生態。</h2>
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-dark font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(0,210,160,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SOCIAL LIVE STREAMING APP</div>
+                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
+                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
+                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-dark font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(0,210,160,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
                                 </div>
                             </div>
                         </section>
 
-                        {/* SPLIT SCREEN */}
-                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
-
-                            {/* LEFT: Image Preview - UPDATED: Resizable on Mobile */}
-                            <div ref={imageScrollRef} className="
-                                w-full shrink-0 z-20
-                                lg:w-3/5 lg:h-full
-                                bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 
-                                border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
-                                relative
-                            "
-                                style={{
-                                    height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%',
-                                    transition: isResizingRef.current ? 'none' : 'height 0.3s ease'
-                                }}
-                            >
-                                {
-                                    (activeTab === 'solution' || activeTab === 'climax') ? (
-                                        <PhoneFrame src={currentImage} alt="Preview" />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center pointer-events-none">
-                                            <div className="relative w-full max-w-full h-auto max-h-full flex flex-col items-center justify-center">
-                                                {/* Use ImageWithSkeleton for standard images too */}
-                                                <ImageWithSkeleton
-                                                    src={currentImage}
-                                                    alt="Preview"
-                                                    className="block w-auto h-auto max-h-full max-w-full rounded-2xl shadow-2xl border border-white/10 object-contain"
-                                                    containerClassName="w-full h-full flex items-center justify-center"
-                                                />
+                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark overflow-hidden">
+                            <div ref={imageScrollRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizingRef.current ? 'none' : 'height 0.3s ease' }}>
+                                <div className="absolute top-10 left-10 w-32 h-32 bg-primary/20 blur-[60px] rounded-full"></div>
+                                <div className="absolute bottom-10 right-10 w-40 h-40 bg-secondary/20 blur-[60px] rounded-full"></div>
+                                <div className="w-full h-full max-w-full flex flex-col items-center justify-center relative">
+                                    <div className="relative z-10 transform transition-all duration-500 flex items-center justify-center flex-1 min-h-0 w-full">
+                                        <div className="transition-all duration-500 overflow-hidden flex items-center justify-center w-full h-full">
+                                            <div className="w-full h-full flex items-center justify-center overflow-hidden relative">
+                                                {renderVisual()}
                                             </div>
                                         </div>
-                                    )
-                                }
-
-                                {/* RESIZE HANDLE (Mobile Only) - Added from Project 04 */}
-                                <div
-                                    className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2"
-                                    onMouseDown={handleResizeStart}
-                                    onTouchStart={handleResizeStart}
-                                >
-                                    {/* Handle Visual */}
-                                    <div className="w-10 h-10 bg-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group">
-                                        <i className="fas fa-chevron-up text-[8px] text-gray-400 group-hover:text-primary mb-0.5"></i>
-                                        <div className="w-4 h-[2px] bg-gray-500 rounded-full"></div>
-                                        <i className="fas fa-chevron-down text-[8px] text-gray-400 group-hover:text-primary mt-0.5"></i>
                                     </div>
+                                </div>
+                                <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
+                                    <div className="w-10 h-10 bg-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group"><i className="fas fa-chevron-up text-[8px] text-gray-400 group-hover:text-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="fas fa-chevron-down text-[8px] text-gray-400 group-hover:text-primary mt-0.5"></i></div>
                                 </div>
                             </div>
 
-                            {/* RIGHT: Narrative Scroll */}
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
                                         <div className="p-6 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">Love Two live app<br />遊戲化留存設計</h2>
+                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-4 font-sans">Gamified Social Live Streaming Platform</p>
-
-                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full touch-pan-x">
-                                                {[{ id: 'context', label: '01. 視覺策略' }, { id: 'process', label: '02. 設計策略' }, { id: 'solution', label: '03. 主要功能' }, { id: 'climax', label: '04. 生態系成果' }].map(tab => (
+                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full touch-pan-x">
+                                                {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
                                                     <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
                                                 ))}
                                             </div>
@@ -794,45 +715,45 @@
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
                                                 <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">視覺策略與市場區隔</h3>
-                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">在充斥著「紅色」與「粉色」的直播應用市場中，本專案的核心目標是透過強烈的色彩區隔來重塑品牌認知。我們大膽捨棄了業界慣用的暖色系，轉而採用冷色調的<b>「青綠色 (Teal)」</b>作為主視覺，旨在打造一個更具科技感、更年輕，且能降低用戶視覺焦慮的沈浸式社交空間。</p>
-                                                    <div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">My Role</div><div className="font-bold text-white">UI設計師</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><span className=""></span> Adobe XD</span></div></div></div>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
+                                                    <div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><span className=""></span> Adobe XD</span></div></div></div>
                                                 </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>核心視覺策略 Core Visual Strategy</h3>
-                                                    <div className="feature-card p-5 border-l-4 border-l-secondary"><h4 className="text-secondary font-bold text-sm mb-3">為什麼選擇青綠色？</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-primary mr-3 mt-1"><i className="fas fa-palette"></i></span><div><strong className="text-gray-200 block text-sm">對抗視覺疲勞 (Anti-Fatigue)</strong>競品常見的大紅色容易引發焦慮與緊迫感，導致用戶無法長時間停留。青綠色則傳遞放鬆、成長的心理暗示，有效延長觀看時長。</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-primary mr-3 mt-1"><i className="fas fa-gamepad"></i></span><div><strong className="text-gray-200 block text-sm">遊戲化氛圍 (Gaming Vibe)</strong>配合深色模式 (Dark Mode)，螢光綠能營造出類似電競或科幻電影的沈浸感，讓「解任務」與「送禮物」更像是在玩遊戲，而非單純的消費。</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-primary mr-3 mt-1"><i className="fas fa-fingerprint"></i></span><div><strong className="text-gray-200 block text-sm">品牌年輕化 (Gen Z Identity)</strong>跳脫傳統直播「俗氣」、「秀場」的刻板印象，透過清新的視覺語言吸引更注重質感與社群互動的 Z 世代用戶。</div></li></ul></div>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>{t('visual_strat_title')}</h3>
+                                                    <div className="feature-card p-5 border-l-4 border-l-secondary"><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-primary mr-3 mt-1"><i className="fas fa-palette"></i></span><div><strong className="text-gray-200 block text-sm">{t('visual_p1_title')}</strong>{t('visual_p1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-primary mr-3 mt-1"><i className="fas fa-gamepad"></i></span><div><strong className="text-gray-200 block text-sm">{t('visual_p2_title')}</strong>{t('visual_p2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-primary mr-3 mt-1"><i className="fas fa-fingerprint"></i></span><div><strong className="text-gray-200 block text-sm">{t('visual_p3_title')}</strong>{t('visual_p3_desc')}</div></li></ul></div>
                                                 </div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">設計策略 The Process</h3>
-                                                <p className="text-xs text-gray-400 mb-6">從視覺到機制，全方位的留存設計</p>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3>
+                                                <p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p>
                                                 <div className="relative pl-4 border-l border-white/10 space-y-8">
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">01. 視覺風格重塑 (Visual Identity)</h4><p className="text-xs text-gray-400">採用深色模式搭配高飽和度「青綠色 (Teal)」，營造清新、科技且耐看的品牌形象，區隔市場競品。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">02. 遊戲化驅動 (Gamification)</h4><p className="text-xs text-gray-400">設計具象化的「兔子進度條」與每日任務，將觀看行為轉化為「解任務」的遊戲體驗，強制拉長停留時間。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">03. 社交閉環 (Social Loop)</h4><p className="text-xs text-gray-400">整合「圖文動態牆 (Moments)」與直播流，填補直播空窗期，打造像 Instagram 般隨時可滑的社交體驗。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(0,210,160,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">04. 雙軌經濟 (Dual Economy)</h4><p className="text-xs text-gray-400">為觀眾與主播分別設計「貢獻勳章」與「職涯等級」，滿足大戶的虛榮心與新手的成長指引。</p></div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">{t('proc_1_title')}</h4><p className="text-xs text-gray-400">{t('proc_1_desc')}</p></div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">{t('proc_2_title')}</h4><p className="text-xs text-gray-400">{t('proc_2_desc')}</p></div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">{t('proc_3_title')}</h4><p className="text-xs text-gray-400">{t('proc_3_desc')}</p></div>
+                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(0,210,160,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('proc_4_title')}</h4><p className="text-xs text-gray-400">{t('proc_4_desc')}</p></div>
                                                 </div>
                                             </div>
                                         )}
                                         {activeTab === 'solution' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">主要功能與特色 Key Features</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">{t('sol_title')}</h3>
                                                 <div className="space-y-4">
-                                                    <button onClick={() => handleGallerySwitch(GALLERY_IMAGES[0])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '01' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '01' ? 'bg-primary text-dark' : 'bg-primary/20 text-primary'}`}><Icons.Game /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '01' ? 'text-white' : 'text-gray-200'}`}>遊戲化任務系統 (Gamified Tasks)</h4><p className="text-xs text-gray-400 leading-relaxed">透過「兔子進度條」與「倒數紅包」將觀看時間轉化為積分獎勵。利用 Zeigarnik 效應，讓用戶為了完成任務而主動停留，大幅提升平台黏著度。</p></div></button>
-                                                    <button onClick={() => handleGallerySwitch(GALLERY_IMAGES[2])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '03' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '03' ? 'bg-secondary text-dark' : 'bg-secondary/20 text-secondary'}`}><Icons.Social /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '03' ? 'text-white' : 'text-gray-200'}`}>社群動態牆 (Social Moments)</h4><p className="text-xs text-gray-400 leading-relaxed">整合「即時直播流」與「圖文動態」，填補主播下線後的內容空窗期。用戶可隨時按讚、互動，打造全天候活躍的社交閉環。</p></div></button>
-                                                    <button onClick={() => handleGallerySwitch(GALLERY_IMAGES[1])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '02' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '02' ? 'bg-accent text-white' : 'bg-accent/20 text-accent'}`}><Icons.Rank /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '02' ? 'text-white' : 'text-gray-200'}`}>雙軌等級體系 (Dual-Track Ranking)</h4><p className="text-xs text-gray-400 leading-relaxed">區分「主播等級」與「貢獻等級」，透過顯性的徽章與排行榜展示社交資本。滿足大戶的虛榮心，同時給予新手主播明確的成長指引。</p></div></button>
+                                                    <button onClick={() => handleGallerySwitch(galleryImages[0])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '01' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '01' ? 'bg-primary text-dark' : 'bg-primary/20 text-primary'}`}><Icons.Game /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '01' ? 'text-white' : 'text-gray-200'}`}>{t('feat_1_title')}</h4><p className="text-xs text-gray-400 leading-relaxed">{t('feat_1_desc')}</p></div></button>
+                                                    <button onClick={() => handleGallerySwitch(galleryImages[2])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '03' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '03' ? 'bg-secondary text-dark' : 'bg-secondary/20 text-secondary'}`}><Icons.Social /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '03' ? 'text-white' : 'text-gray-200'}`}>{t('feat_2_title')}</h4><p className="text-xs text-gray-400 leading-relaxed">{t('feat_2_desc')}</p></div></button>
+                                                    <button onClick={() => handleGallerySwitch(galleryImages[1])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '02' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '02' ? 'bg-accent text-white' : 'bg-accent/20 text-accent'}`}><Icons.Rank /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '02' ? 'text-white' : 'text-gray-200'}`}>{t('feat_3_title')}</h4><p className="text-xs text-gray-400 leading-relaxed">{t('feat_3_desc')}</p></div></button>
                                                 </div>
                                             </div>
                                         )}
                                         {activeTab === 'climax' && (
                                             <div className="space-y-8 animate-fadeIn pb-12">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">生態系成果 Ecosystem Gallery</h3>
-                                                <p className="text-gray-400 mb-8 text-sm">從直播到社交，打造完整的沈浸式娛樂生態系。</p>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('climax_title')}</h3>
+                                                <p className="text-gray-400 mb-8 text-sm">{t('climax_desc')}</p>
                                                 <div className="space-y-6">
-                                                    {ECOSYSTEM_CATEGORIES.map((category) => (
+                                                    {ecosystemCategories.map((category) => (
                                                         <div key={category.id} className="space-y-3">
                                                             <h4 className="text-primary font-bold text-md flex items-center"><span className="w-2 h-2 rounded-full bg-primary mr-2"></span>{category.title}</h4>
                                                             <div className="grid gap-3 pl-4 border-l border-white/10">
@@ -859,43 +780,6 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-
-        (function () {
-            const TARGET_WIDTH = 1920;
-            const BASE_FONT_SIZE = 16;
-
-            // 定義筆電/小螢幕的寬度區間 (例如 1024px ~ 1600px)
-            const LAPTOP_MIN_WIDTH = 1024;
-            const LAPTOP_MAX_WIDTH = 1600;
-
-            function enforceProportions() {
-                const currentWidth = window.innerWidth;
-                let scaleRatio = 1;
-
-                if (currentWidth >= LAPTOP_MIN_WIDTH) {
-                    if (currentWidth <= LAPTOP_MAX_WIDTH) {
-
-                        scaleRatio = 0.9;
-                    } else {
-                        // === 針對大螢幕 (24吋, 27吋, 32吋 4K) ===
-                        // 超過 1600px 後，恢復嚴格的等比放大 (1920px=1.0, 3840px=2.0)
-                        scaleRatio = currentWidth / TARGET_WIDTH;
-                    }
-
-                    // 計算並套用新的字體大小
-                    const newFontSize = BASE_FONT_SIZE * scaleRatio;
-                    document.documentElement.style.fontSize = `${newFontSize}px`;
-                } else {
-                    // 手機版 (< 1024px) 恢復預設 16px
-                    document.documentElement.style.fontSize = '16px';
-                }
-            }
-
-            // 監聽視窗變化
-            window.addEventListener('resize', enforceProportions);
-            window.addEventListener('DOMContentLoaded', enforceProportions);
-            enforceProportions(); // 立即執行
-        })();
     </script>
 </body>
 

@@ -4,15 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>臺南市政府警察局 | 臺南智慧巡簽系統 - UX Case Study</title>
-    <link rel="shortcut icon" href="./img/favicon/favicon.ico">
-    <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
+    <title>臺南市政府警察局 | 臺南智慧巡簽系統 - UI/UX Case Study</title>
+    <link href="./img/favicon/favicon.ico" rel="shortcut icon" type="image/ico">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
 
@@ -31,10 +29,10 @@
                     colors: {
                         primary: '#2dd4bf', // Teal
                         secondary: '#f87171', // Red
-                        dark: '#0F1115',      // P08 Dark
-                        'dark-light': '#1A1D24', // P08 Dark Light
-                        'dark-lighter': '#252932', // P08 Dark Lighter
-                        accent: '#38bdf8'     // Blue
+                        dark: '#0F1115',
+                        'dark-light': '#1A1D24',
+                        'dark-lighter': '#252932',
+                        accent: '#38bdf8'
                     },
                     fontFamily: {
                         sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
@@ -46,17 +44,16 @@
     </script>
 
     <style>
-        /* === PROJECT 08 STYLES === */
         body,
         html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
             background-color: #0F1115;
             font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
             color: #fff;
+            overflow: hidden;
             overscroll-behavior: none;
         }
 
@@ -67,6 +64,7 @@
             position: relative;
         }
 
+        /* Sections */
         .snap-section {
             width: 100vw;
             height: 100vh;
@@ -103,13 +101,6 @@
             transform: translateY(-5px);
             border-color: rgba(45, 212, 191, 0.4);
             box-shadow: 0 10px 30px -10px rgba(45, 212, 191, 0.2);
-        }
-
-        .feature-card.active {
-            border-color: rgba(45, 212, 191, 0.8);
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
-            box-shadow: 0 10px 30px -10px rgba(45, 212, 191, 0.3);
-            transform: translateY(-2px) scale(1.01);
         }
 
         /* Scrollbars */
@@ -169,36 +160,23 @@
             }
         }
 
-        /* === SKELETON LOADING ANIMATION === */
+        /* Skeleton */
         .skeleton {
-            background: linear-gradient(to right, #1A1D24 25%, #252932 50%, #1A1D24 75%);
+            background: #1e293b;
+            background: linear-gradient(to right, #1e293b 8%, #334155 18%, #1e293b 33%);
             background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 10;
+            animation: shimmer 1.5s infinite linear;
         }
 
         @keyframes shimmer {
-            0% {
-                background-position: 200% 0;
-            }
-
-            100% {
-                background-position: -200% 0;
+            to {
+                background-position-x: -200%;
             }
         }
 
-        /* Custom Hero Background */
+        /* Hero */
         .hero-bg-custom {
             background-image: url('./img/project_04/hero_img.jpg');
-            background-image: -webkit-image-set(url('./img/project_04/hero_img.webp') 1x,
-                    url('./img/project_04/hero_img.jpg') 1x);
-            background-image: image-set(url('./img/project_04/hero_img.webp') 1x,
-                    url('./img/project_04/hero_img.jpg') 1x);
             background-size: cover;
             background-position: center;
             position: relative;
@@ -305,41 +283,123 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // === COMPONENT: Image with Skeleton Loading ===
-        // Replaces simple ResponsiveImage to add loading state
-        const ImageWithSkeleton = ({ src, className, alt, style, ...props }) => {
-            const [isLoaded, setIsLoaded] = useState(false);
-
-            // Reset loaded state when src changes
-            useEffect(() => {
-                setIsLoaded(false);
-            }, [src]);
-
+        // --- COMPONENTS ---
+        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+            return (
+                <picture style={{ display: 'contents' }}>
+                    <source srcSet={webpSrc} type="image/webp" />
+                    <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} />
+                </picture>
+            );
+        };
+
+        const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
+            const [loaded, setLoaded] = useState(false);
+            useEffect(() => { setLoaded(false); }, [src]);
 
             return (
-                <div className={`relative w-full h-full ${className}`} style={{ ...style, overflow: 'hidden' }}>
-                    {/* Skeleton Overlay */}
-                    {!isLoaded && <div className="skeleton"></div>}
-
-                    {/* Image */}
-                    <picture style={{ display: 'contents' }}>
-                        <source srcSet={webpSrc} type="image/webp" />
-                        <img
-                            src={src}
-                            alt={alt}
-                            className={`w-full h-full transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
-                            style={{ objectFit: 'inherit' }}
-                            onLoad={() => setIsLoaded(true)}
-                            {...props}
-                        />
-                    </picture>
+                <div className={`relative overflow-hidden ${containerClassName || 'w-full h-full'}`}>
+                    {!loaded && <div className="absolute inset-0 skeleton z-10 flex items-center justify-center"><i className="fas fa-image text-white/10 text-3xl"></i></div>}
+                    <ResponsiveImage
+                        src={src}
+                        alt={alt}
+                        className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+                        onLoad={() => setLoaded(true)}
+                        {...props}
+                    />
                 </div>
             );
         };
 
-        // === PROJECT 04 ICONS ===
+        // --- PHONE COMPONENT (For 03 & 04) ---
+        const PhoneFrame = ({ src, alt }) => {
+            return (
+                <div className="flex items-center justify-center w-full h-full p-4 lg:p-8">
+                    <div className="relative h-full w-auto max-w-full aspect-[9/19] border-[6px] md:border-[8px] border-[#2d2d2d] rounded-[1.5rem] lg:rounded-[2.5rem] overflow-hidden shadow-2xl bg-black animate-fadeIn shrink-0">
+                        <ImageWithSkeleton src={src} alt={alt} className="w-full h-full object-cover block" />
+                    </div>
+                </div>
+            );
+        };
+
+        // --- DATA ---
+        const TRANSLATIONS = {
+            zh: {
+                title_main: "臺南市政府警察局",
+                title_sub: "臺南智慧巡簽系統",
+                hero_desc: "從「物聯網」到「護聯網」。結合智慧導航與緊急互助，為一線員警打造的數位保命符。",
+                btn_explore: "探索設計旅程",
+                tab_context: "01. 背景與痛點",
+                tab_process: "02. 流程",
+                tab_solution: "03. 方案",
+                tab_climax: "04. 成果",
+                context_title: "專案背景 Context",
+                context_desc: "傳統警政巡邏依賴紙本簽章，不僅耗費人力成本，更難以即時掌握員警動態。本專案旨在透過 GPS、物聯網與視覺化設計，打造一套能提升勤務效率、落實防弊，並保障員警執勤安全的智慧化 App。",
+                role_title: "My Role",
+                role_name: "UI 設計師",
+                pain_title: "痛點與挑戰 The Conflict",
+                pain_sub: "傳統紙本巡簽的困境",
+                pain_1_title: "勤務效率低落",
+                pain_1_desc: "新手員警需耗時記憶路線，容易迷路或繞道。",
+                pain_2_title: "管理防弊困難",
+                pain_2_desc: "紙本簽到無法驗證是否本人到場，存在「代簽」風險。",
+                pain_3_title: "緊急溝通斷層",
+                pain_3_desc: "遇險時使用無線電報位耗時且不精準，錯失黃金救援時間。",
+                process_title: "執行過程 The Process",
+                process_sub: "將「管理需求」轉化為「保命工具」的設計歷程",
+                process_1_title: "01. 場域觀察",
+                process_1_desc: "分析員警夜間巡邏情境，確定高對比度與單手操作的重要性。",
+                process_2_title: "02. 邏輯規劃",
+                process_2_desc: "設計「最短路徑」導航演算法，以及鄰近警力支援的推播邏輯。",
+                process_3_title: "03. 介面設計",
+                process_3_desc: "運用青色導航線與紅色緊急按鈕，建立直觀的視覺層級。",
+                process_4_title: "04. 防弊驗證",
+                process_4_desc: "導入 GPS 誤差偵測與停留時間計算，確保數據可信度。",
+                solution_title: "解決方案與亮點 The Solution",
+                gallery_title: "介面展示 Gallery",
+                gallery_desc: "點擊下方卡片，預覽完整設計介面與功能說明。",
+                back_home: "Back to Portfolio"
+            },
+            en: {
+                title_main: "Tainan City Police",
+                title_sub: "Smart Patrol System",
+                hero_desc: "From 'IoT' to 'Internet of Protection'. Combining smart navigation and emergency mutual aid to create a digital lifeline for frontline officers.",
+                btn_explore: "Explore the Journey",
+                tab_context: "01. Context",
+                tab_process: "02. Process",
+                tab_solution: "03. Solution",
+                tab_climax: "04. Gallery",
+                context_title: "Context",
+                context_desc: "Traditional police patrols rely on paper signatures, labor-intensive and hard to track. This project aims to build a smart App using GPS, IoT, and visualization to improve efficiency, prevent fraud, and ensure officer safety.",
+                role_title: "My Role",
+                role_name: "UI Designer",
+                pain_title: "Pain Points & Challenges",
+                pain_sub: "Dilemmas of Traditional Patrols",
+                pain_1_title: "Low Efficiency",
+                pain_1_desc: "Rookies spend time memorizing routes, often getting lost or detouring.",
+                pain_2_title: "Fraud Prevention",
+                pain_2_desc: "Paper signatures can't verify presence, risking 'proxy signing'.",
+                pain_3_title: "Communication Gaps",
+                pain_3_desc: "Radio reporting in emergencies is slow and inaccurate, missing golden rescue time.",
+                process_title: "The Process",
+                process_sub: "Transforming 'Management Needs' into 'Lifesaving Tools'",
+                process_1_title: "01. Field Observation",
+                process_1_desc: "Analyzed night patrols, confirming need for high contrast and one-handed use.",
+                process_2_title: "02. Logic Planning",
+                process_2_desc: "Designed 'shortest path' algorithms and nearby support push logic.",
+                process_3_title: "03. UI Design",
+                process_3_desc: "Used teal navigation lines and red emergency buttons for intuitive hierarchy.",
+                process_4_title: "04. Fraud Verification",
+                process_4_desc: "Introduced GPS error detection and dwell time calculation for data credibility.",
+                solution_title: "The Solution & Highlights",
+                gallery_title: "Gallery",
+                gallery_desc: "Click cards below to preview full interface designs.",
+                back_home: "Back to Portfolio"
+            }
+        };
+
         const Icons = {
             XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
             AI: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l-9 18h18L12 3z" /><circle cx="12" cy="13" r="2" /></svg>,
@@ -349,160 +409,136 @@
             Lock: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
         };
 
-        const MAIN_IMAGE = './img/project_04/display.jpg';
+        const getSolutionFeatures = (lang) => {
+            const isZh = lang === 'zh';
+            return [
+                { id: 'sol-01', title: isZh ? '視覺化路徑引導' : 'Visualized Route Guidance', desc: isZh ? '在地圖上直接繪製最佳巡邏路線，取代列表式清單，即便是跨區支援也能無縫接軌。' : 'Draws best patrol routes on map, replacing lists. Seamless transition even for cross-district support.', icon: 'Map', image: './img/project_04/03@2x.jpg', benefit: isZh ? 'Benefit: 直覺路徑指引，減少迷航與繞路。' : 'Benefit: Intuitive guidance reduces lost time.' },
+                { id: 'sol-02', title: isZh ? '數位防弊簽到' : 'Digital Anti-Fraud Sign-in', desc: isZh ? '紀錄精確座標與「守望時間」，系統自動檢測誤差距離(如3m)，杜絕遠端作弊。' : 'Records precise coords and "watch time". Detects distance errors to prevent remote cheating.', icon: 'Shield', image: './img/project_04/04.jpg', benefit: isZh ? 'Benefit: 確保勤務落實，數據真實可信。' : 'Benefit: Ensures duty fulfillment and reliable data.' },
+                { id: 'sol-03', title: isZh ? 'SOS 緊急互助網' : 'SOS Emergency Network', desc: isZh ? '一鍵發送求救訊號，系統自動通知「最近」的同仁而非僅限同隊，提供精確座標爭取黃金救援時間。' : 'One-click SOS notifies "nearest" colleagues (not just team) with coords for rapid rescue.', icon: 'Alert', image: './img/project_04/07.jpg', benefit: isZh ? 'Benefit: 縮短支援反應時間，保障員警安全。' : 'Benefit: Shortens response time, ensuring safety.' }
+            ];
+        };
 
-        // === PROJECT 04 DATA ===
-        const GALLERY_IMAGES = [
-            { id: '01', name: '安全登入', desc: '結合警徽與科技藍綠色調，建立專業且安全的登入入口。', src: './img/project_04/01@2x.jpg' },
-            { id: '02', name: '智慧導航', desc: '清晰的路徑指引線，輔助員警依循規劃路線精準執勤。', src: './img/project_04/03@2x.jpg' },
-            { id: '03', name: '督導地圖', desc: '主管專屬視角，即時掌握轄區內所有巡邏箱狀態與熱點。', src: './img/project_04/03督導首頁.jpg' },
-            { id: '04', name: '巡邏簽到', desc: '整合 GPS 定位與停留計時，確保簽到數據真實有效。', src: './img/project_04/04.jpg' },
-            { id: '05', name: '督導稽核', desc: '詳列誤差距離與異常紀錄，落實勤務數據化管理。', src: './img/project_04/04 督導.jpg' },
-            { id: '06', name: '站點資訊', desc: '點擊地圖標記即顯示詳細資料，操作直觀流暢。', src: './img/project_04/05.jpg' },
-            { id: '07', name: '發送求救', desc: '緊急狀況一鍵觸發，立即傳送座標與身分資訊。', src: './img/project_04/07.jpg' },
-            { id: '08', name: '接收支援', desc: '即時接收鄰近同仁求救訊號，縮短支援反應時間。', src: './img/project_04/08.jpg' }
-        ];
-
-        // === PHONE FRAME COMPONENT ===
-        const PhoneFrame = ({ src, alt }) => {
-            return (
-                <div className="w-full h-full flex items-center justify-center pointer-events-none">
-                    <div className="
-                        relative
-                        h-full w-auto max-w-full
-                        aspect-[9/19]
-                        shadow-2xl overflow-hidden
-                        transition-all duration-300
-                        bg-black
-                        border-[6px] md:border-[8px] border-[#2d2d2d]
-                        rounded-[1.25rem] lg:rounded-[2.5rem]
-                    ">
-                        {/* Modified to use ImageWithSkeleton */}
-                        <ImageWithSkeleton
-                            src={src}
-                            alt={alt}
-                            className="w-full h-full object-cover block"
-                            style={{ objectFit: 'cover' }}
-                        />
-                    </div>
-                </div>
-            );
+        const getGalleryImages = (lang) => {
+            const isZh = lang === 'zh';
+            return [
+                { id: '01', name: isZh ? '安全登入' : 'Secure Login', desc: isZh ? '結合警徽與科技藍綠色調，建立專業且安全的登入入口。' : 'Professional login with police emblem and tech teal tones.', src: './img/project_04/01@2x.jpg' },
+                { id: '02', name: isZh ? '智慧導航' : 'Smart Nav', desc: isZh ? '清晰的路徑指引線，輔助員警依循規劃路線精準執勤。' : 'Clear path lines guide officers on planned routes.', src: './img/project_04/03@2x.jpg' },
+                { id: '03', name: isZh ? '督導地圖' : 'Supervisor Map', desc: isZh ? '主管專屬視角，即時掌握轄區內所有巡邏箱狀態與熱點。' : 'Supervisor view of all patrol box statuses and hotspots.', src: './img/project_04/03_super.jpg' },
+                { id: '04', name: isZh ? '巡邏簽到' : 'Patrol Check-in', desc: isZh ? '整合 GPS 定位與停留計時，確保簽到數據真實有效。' : 'GPS and timer integration for valid check-in data.', src: './img/project_04/04.jpg' },
+                { id: '05', name: isZh ? '督導稽核' : 'Audit Log', desc: isZh ? '詳列誤差距離與異常紀錄，落實勤務數據化管理。' : 'Lists distance errors and anomalies for data management.', src: './img/project_04/04_audit.jpg' },
+                { id: '06', name: isZh ? '站點資訊' : 'Station Info', desc: isZh ? '點擊地圖標記即顯示詳細資料，操作直觀流暢。' : 'Click markers for details, intuitive and smooth.', src: './img/project_04/05.jpg' },
+                { id: '07', name: isZh ? '發送求救' : 'SOS Send', desc: isZh ? '緊急狀況一鍵觸發，立即傳送座標與身分資訊。' : 'One-touch emergency trigger sends coords and ID.', src: './img/project_04/07.jpg' },
+                { id: '08', name: isZh ? '接收支援' : 'Receive Support', desc: isZh ? '即時接收鄰近同仁求救訊號，縮短支援反應時間。' : 'Receive nearby distress signals for quick support.', src: './img/project_04/08.jpg' }
+            ];
         };
 
         const App = () => {
+            const [lang, setLang] = useState('zh');
+            const [solutionFeatures, setSolutionFeatures] = useState([]);
+            const [galleryImages, setGalleryImages] = useState([]);
             const [loading, setLoading] = useState(true);
             const [activeTab, setActiveTab] = useState('context');
-            const [currentImage, setCurrentImage] = useState(MAIN_IMAGE);
+            const [currentImage, setCurrentImage] = useState('./img/project_04/display.jpg');
             const [activeGalleryId, setActiveGalleryId] = useState(null);
             const [showBackToHero, setShowBackToHero] = useState(false);
 
-            // GSAP Scroll State
             const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
             const isScrollingRef = useRef(false);
             const mainContainerRef = useRef(null);
             const sectionsRef = useRef([]);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
-
-            // Damping / Mobile Scroll Refs
             const contentScrollRef = useRef(null);
             const imageScrollRef = useRef(null);
-            const overscrollAccumulator = useRef(0);
-            const OVERSCROLL_THRESHOLD = 200;
+            const tabsContainerRef = useRef(null);
             const touchStartY = useRef(0);
+            const overscrollAccumulator = useRef(0);
 
-            // === RESIZABLE VISUAL HEIGHT (Mobile) ===
-            const [mobileVisualHeight, setMobileVisualHeight] = useState(35); // Default 35vh
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(35);
             const isResizingRef = useRef(false);
 
+            const t = (key) => TRANSLATIONS[lang][key] || key;
+
+            // Initialization
+            useEffect(() => {
+                const savedLang = localStorage.getItem('preferredLang');
+                const initialLang = savedLang === 'en' ? 'en' : 'zh';
+                setLang(initialLang);
+                document.documentElement.lang = initialLang === 'zh' ? 'zh-TW' : 'en';
+
+                const features = getSolutionFeatures(initialLang);
+                const galleries = getGalleryImages(initialLang);
+                setSolutionFeatures(features);
+                setGalleryImages(galleries);
+
+                const setResponsiveFontSize = () => {
+                    const minDesktopWidth = 1024;
+                    if (window.innerWidth >= minDesktopWidth) {
+                        document.documentElement.style.fontSize = (window.innerWidth / 1920) * 16 + "px";
+                    } else {
+                        document.documentElement.style.fontSize = '';
+                    }
+                };
+                window.addEventListener('resize', setResponsiveFontSize);
+                setResponsiveFontSize();
+                return () => window.removeEventListener('resize', setResponsiveFontSize);
+            }, []);
+
+            // Mobile Resize Logic
             const handleResizeStart = (e) => {
                 if (window.innerWidth >= 1024) return;
                 isResizingRef.current = true;
                 document.body.style.userSelect = 'none';
             };
-
             useEffect(() => {
                 const handleResizeMove = (e) => {
                     if (!isResizingRef.current) return;
-
-                    let clientY;
-                    if (e.type === 'touchmove') {
-                        clientY = e.touches[0].clientY;
-                    } else {
-                        clientY = e.clientY;
-                    }
-
-                    const windowHeight = window.innerHeight;
-                    let newHeightVh = (clientY / windowHeight) * 100;
-
-                    const maxVh = 80;
-                    const minVh = 35; // Changed from 25 to 35 based on user request
-
-                    if (newHeightVh < minVh) newHeightVh = minVh;
-                    if (newHeightVh > maxVh) newHeightVh = maxVh;
-
+                    let clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+                    let newHeightVh = (clientY / window.innerHeight) * 100;
+                    if (newHeightVh < 35) newHeightVh = 35; if (newHeightVh > 80) newHeightVh = 80;
                     setMobileVisualHeight(newHeightVh);
                 };
-
-                const handleResizeEnd = () => {
-                    isResizingRef.current = false;
-                    document.body.style.userSelect = '';
-                };
-
-                window.addEventListener('mousemove', handleResizeMove);
-                window.addEventListener('touchmove', handleResizeMove, { passive: false });
-                window.addEventListener('mouseup', handleResizeEnd);
-                window.addEventListener('touchend', handleResizeEnd);
-
-                return () => {
-                    window.removeEventListener('mousemove', handleResizeMove);
-                    window.removeEventListener('touchmove', handleResizeMove);
-                    window.removeEventListener('mouseup', handleResizeEnd);
-                    window.removeEventListener('touchend', handleResizeEnd);
-                };
+                const handleResizeEnd = () => { isResizingRef.current = false; document.body.style.userSelect = ''; };
+                window.addEventListener('mousemove', handleResizeMove); window.addEventListener('touchmove', handleResizeMove, { passive: false });
+                window.addEventListener('mouseup', handleResizeEnd); window.addEventListener('touchend', handleResizeEnd);
+                return () => { window.removeEventListener('mousemove', handleResizeMove); window.removeEventListener('touchmove', handleResizeMove); window.removeEventListener('mouseup', handleResizeEnd); window.removeEventListener('touchend', handleResizeEnd); };
             }, []);
 
-            // === Auto-scroll to top when activeTab changes ===
+            // Data Refresh
             useEffect(() => {
-                if (contentScrollRef.current) {
-                    contentScrollRef.current.scrollTop = 0;
+                if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
+                setSolutionFeatures(getSolutionFeatures(lang));
+                setGalleryImages(getGalleryImages(lang));
+
+                if (activeTab === 'context' || activeTab === 'process') {
+                    setCurrentImage('./img/project_04/display.jpg');
+                    setActiveGalleryId(null);
+                } else if (activeTab === 'solution') {
+                    const features = getSolutionFeatures(lang);
+                    if (features.length > 0) setCurrentImage(features[0].image);
+                    setActiveGalleryId(null);
+                } else if (activeTab === 'climax') {
+                    const galleries = getGalleryImages(lang);
+                    if (galleries.length > 0) {
+                        setCurrentImage(galleries[0].src);
+                        setActiveGalleryId(galleries[0].id);
+                    }
                 }
-            }, [activeTab]);
+            }, [activeTab, lang]);
 
-            // === HERO LOADING STRATEGY ===
+            // Loader Logic
             useEffect(() => {
-                const preloadHero = async () => {
-                    const heroImageSrc = './img/project_04/hero_img.jpg';
-                    const heroWebPSrc = './img/project_04/hero_img.webp';
-
-                    // Promise to load Hero Image
-                    const heroPromise = new Promise((resolve) => {
+                const checkHero = () => {
+                    return new Promise((resolve) => {
                         const img = new Image();
-                        img.src = heroImageSrc; // Preload JPG (CSS fallback)
-
-                        // Also try WebP to be safe for modern browsers, but rely on one to finish
-                        const webpImg = new Image();
-                        webpImg.src = heroWebPSrc;
-
-                        let resolved = false;
-                        const done = () => { if (!resolved) { resolved = true; resolve(); } };
-
-                        img.onload = done;
-                        img.onerror = done;
-                        webpImg.onload = done;
-                        // If WebP fails, JPG might still be loading, so we rely on the faster one or just wait
+                        img.src = './img/project_04/hero_img.jpg';
+                        if (img.complete) { resolve(); return; }
+                        img.onload = () => resolve();
+                        img.onerror = () => resolve();
                     });
-
-                    // Minimum 1.0s delay
-                    const delayPromise = new Promise(resolve => setTimeout(resolve, 1000));
-
-                    // Wait for BOTH Hero Image AND 1s Delay
-                    await Promise.all([heroPromise, delayPromise]);
-
-                    setLoading(false);
                 };
-
-                preloadHero();
+                const minTime = new Promise(r => setTimeout(r, 1000));
+                Promise.all([checkHero(), minTime]).then(() => setLoading(false));
             }, []);
 
             useEffect(() => {
@@ -510,40 +546,15 @@
                 if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
             }, [loading]);
 
-            // Update image logic based on tab
-            useEffect(() => {
-                switch (activeTab) {
-                    case 'context':
-                    case 'process':
-                        setCurrentImage(MAIN_IMAGE);
-                        setActiveGalleryId(null);
-                        break;
-                    case 'solution':
-                        setCurrentImage('./img/project_04/03@2x.jpg');
-                        setActiveGalleryId(null);
-                        break;
-                    case 'climax':
-                        setCurrentImage(GALLERY_IMAGES[0].src);
-                        setActiveGalleryId(GALLERY_IMAGES[0].id);
-                        break;
-                    default:
-                        setCurrentImage(MAIN_IMAGE);
-                        setActiveGalleryId(null);
-                }
-            }, [activeTab]);
+            const handleGallerySwitch = (imgObj) => { setCurrentImage(imgObj.src); setActiveGalleryId(imgObj.id); };
+            const handleSolutionSwitch = (solObj) => { setCurrentImage(solObj.image); setActiveGalleryId(null); };
 
-            const handleGallerySwitch = (imgObj) => {
-                setCurrentImage(imgObj.src);
-                setActiveGalleryId(imgObj.id);
-            };
-
-            // === GSAP SCROLL LOGIC ===
+            // Scroll Logic
             const scrollToSection = (index) => {
                 if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
                 isScrollingRef.current = true;
                 const targetSection = sectionsRef.current[index];
                 const currentSection = sectionsRef.current[currentSectionIndex];
-
                 setShowBackToHero(index > 0);
                 overscrollAccumulator.current = 0;
 
@@ -551,96 +562,51 @@
                     onComplete: () => {
                         isScrollingRef.current = false;
                         setCurrentSectionIndex(index);
-                        if (currentSection !== targetSection) {
-                            currentSection.classList.remove('active-section');
-                        }
+                        if (currentSection !== targetSection) currentSection.classList.remove('active-section');
                         targetSection.classList.add('active-section');
                     }
                 });
-
-                if (currentSectionIndex !== index) {
-                    tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
-                }
-
-                tl.to(mainContainerRef.current, {
-                    scrollTo: { y: targetSection.offsetTop, autoKill: false },
-                    duration: 1.2,
-                    ease: "power2.inOut"
-                }, "<");
-
-                tl.to(targetSection, {
-                    opacity: 1,
-                    duration: 1,
-                    onStart: () => {
-                        targetSection.classList.add('active-section');
-                        targetSection.style.visibility = 'visible';
-                    }
-                }, "-=0.8");
+                if (currentSectionIndex !== index) tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
+                tl.to(mainContainerRef.current, { scrollTo: { y: targetSection.offsetTop, autoKill: false }, duration: 1.2, ease: "power2.inOut" }, "<");
+                tl.to(targetSection, { opacity: 1, duration: 1, onStart: () => { targetSection.classList.add('active-section'); targetSection.style.visibility = 'visible'; } }, "-=0.8");
             };
 
-            // === DAMPING LOGIC ===
             const handleWheel = (e) => {
+                if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
                 if (isScrollingRef.current) return;
                 const isSplitView = currentSectionIndex === 1;
                 const contentEl = contentScrollRef.current;
-
                 if (isSplitView) {
                     if (contentEl && contentEl.contains(e.target)) {
                         const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                        if (e.deltaY < 0 && scrollTop <= 0) {
-                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
-                        } else {
+                        if (e.deltaY < 0 && scrollTop <= 0) { overscrollAccumulator.current += Math.abs(e.deltaY) * 2; }
+                        else {
                             overscrollAccumulator.current = 0;
                             if (scrollHeight > clientHeight && e.deltaY > 0) return;
                             if (scrollHeight > clientHeight && e.deltaY < 0 && scrollTop > 0) return;
                         }
                     } else {
-                        if (e.deltaY < 0) {
-                            overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
-                        } else {
-                            overscrollAccumulator.current = 0;
-                        }
+                        if (e.deltaY < 0) overscrollAccumulator.current += Math.abs(e.deltaY) * 2;
+                        else overscrollAccumulator.current = 0;
                     }
                 }
-
-                if (e.deltaY > 0) {
-                    if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
-                } else {
-                    // Locked: Cannot scroll up via wheel
-                }
-            };
-
-            const handleTouchStart = (e) => {
-                touchStartY.current = e.touches[0].clientY;
-                overscrollAccumulator.current = 0;
+                if (e.deltaY > 0 && currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
             };
 
             const handleTouchEnd = (e) => {
-                if (isScrollingRef.current || isResizingRef.current) return; // Block scroll when resizing
+                if (isScrollingRef.current || isResizingRef.current) return;
+                if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
                 const touchEndY = e.changedTouches[0].clientY;
                 const diff = touchStartY.current - touchEndY;
                 const isSplitView = currentSectionIndex === 1;
                 const contentEl = contentScrollRef.current;
-                const target = e.target;
-                const isInsideContent = contentEl && contentEl.contains(target);
-
-                if (Math.abs(diff) > 50) {
-                    if (diff > 0) {
-                        overscrollAccumulator.current = 0;
-                        if (isSplitView && isInsideContent) {
-                            const { scrollTop, scrollHeight, clientHeight } = contentEl;
-                            if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
-                        }
-                        if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
-                    } else {
-                        // Locked: Cannot scroll up via swipe
-                        if (isSplitView && isInsideContent) {
-                            if (contentEl.scrollTop > 0) {
-                                overscrollAccumulator.current = 0;
-                                return;
-                            }
-                        }
+                const isInsideContent = contentEl && contentEl.contains(e.target);
+                if (Math.abs(diff) > 50 && diff > 0) {
+                    if (isSplitView && isInsideContent) {
+                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                        if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
                     }
+                    if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
                 }
             };
 
@@ -648,19 +614,39 @@
                 const container = mainContainerRef.current;
                 if (container) {
                     window.addEventListener('wheel', handleWheel, { passive: false });
-                    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+                    window.addEventListener('touchstart', (e) => { touchStartY.current = e.touches[0].clientY; overscrollAccumulator.current = 0; }, { passive: true });
                     window.addEventListener('touchend', handleTouchEnd, { passive: true });
                 }
                 return () => {
                     window.removeEventListener('wheel', handleWheel);
-                    window.removeEventListener('touchstart', handleTouchStart);
-                    window.removeEventListener('touchend', handleTouchEnd);
                 };
             }, [currentSectionIndex]);
 
-            const goBack = () => { window.location.href = "index.html#portfolio"; };
+            const goBack = () => window.location.href = "index.html#portfolio";
 
-            const isWideView = activeTab === 'context' || activeTab === 'process';
+            // Conditional Rendering for Left Panel
+            const renderPreview = () => {
+                // 01 Context & 02 Process -> Original Web Container
+                if (activeTab === 'context' || activeTab === 'process') {
+                    return (
+                        <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
+                            <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
+                                <div className="w-full h-full bg-transparent flex items-center justify-center overflow-hidden">
+                                    <ImageWithSkeleton src={currentImage} alt="Preview" className="w-full h-full object-contain" containerClassName="w-full h-full" />
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+                // 03 Solution & 04 Climax -> Phone Frame Container
+                else {
+                    return (
+                        <div className="pointer-events-auto h-full w-full flex items-center justify-center">
+                            <PhoneFrame src={currentImage} alt="Preview" />
+                        </div>
+                    );
+                }
+            };
 
             return (
                 <React.Fragment>
@@ -669,97 +655,43 @@
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
                             <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">Back to Portfolio</span>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
                         </button>
                     </nav>
 
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`} title="Back to Hero Section">
-                        <i className="fas fa-arrow-up"></i>
-                    </button>
+                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="fas fa-arrow-up"></i></button>
 
                     <div id="main-scroller" ref={mainContainerRef}>
-
-                        {/* HERO SECTION */}
                         <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
                                     <div className={`inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART CITY & PUBLIC SAFETY</div>
-                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
-                                        臺南市政府<br className="md:hidden" />警察局<br />
-                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent font-heading">
-                                            臺南智慧<br className="md:hidden" />巡簽系統
-                                        </span>
-                                    </h1>
-                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>從「物聯網」到「護聯網」。<br />結合智慧導航與緊急互助，為一線員警打造的數位保命符。</h2>
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-dark font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(45,212,191,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>探索設計旅程 <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
+                                    <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
+                                    <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
+                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-dark font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(45,212,191,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
                                 </div>
                             </div>
                         </section>
 
-                        {/* SPLIT SCREEN */}
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
 
-                            {/* LEFT: Image Preview - FIXED TO CONTAINER */}
-                            <div ref={imageScrollRef}
-                                className="
-                                    w-full shrink-0 z-20
-                                    lg:w-3/5 lg:h-full
-                                    bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12
-                                    border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl
-                                    relative
-                                "
-                                style={{
-                                    height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%',
-                                    transition: isResizingRef.current ? 'none' : 'height 0.3s ease'
-                                }}
-                            >
-                                {
-                                    isWideView ? (
-                                        // Wide View
-                                        <div className="w-full h-full flex items-center justify-center pointer-events-none">
-                                            <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
-                                                <div className="w-full h-full bg-transparent flex items-center justify-center overflow-hidden">
-                                                    {/* Changed to ImageWithSkeleton */}
-                                                    <ImageWithSkeleton
-                                                        src={currentImage}
-                                                        alt="Preview"
-                                                        className="w-full h-full rounded-xl shadow-2xl"
-                                                        style={{ objectFit: 'contain' }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        // Phone View - Strictly fit to container
-                                        <PhoneFrame src={currentImage} alt="Preview" />
-                                    )
-                                }
-
-                                {/* RESIZE HANDLE (Mobile Only) */}
-                                <div
-                                    className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2"
-                                    onMouseDown={handleResizeStart}
-                                    onTouchStart={handleResizeStart}
-                                >
-                                    {/* Handle Visual */}
-                                    <div className="w-10 h-10 bg-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group">
-                                        <i className="fas fa-chevron-up text-[8px] text-gray-400 group-hover:text-primary mb-0.5"></i>
-                                        <div className="w-4 h-[2px] bg-gray-500 rounded-full"></div>
-                                        <i className="fas fa-chevron-down text-[8px] text-gray-400 group-hover:text-primary mt-0.5"></i>
-                                    </div>
+                            {/* Left Panel: Conditional Rendering */}
+                            <div ref={imageScrollRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizingRef.current ? 'none' : 'height 0.3s ease' }}>
+                                {renderPreview()}
+                                <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
+                                    <div className="w-10 h-10 bg-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group"><i className="fas fa-chevron-up text-[8px] text-gray-400 group-hover:text-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="fas fa-chevron-down text-[8px] text-gray-400 group-hover:text-primary mt-0.5"></i></div>
                                 </div>
                             </div>
 
-                            {/* RIGHT: Narrative Scroll */}
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
                                         <div className="p-6 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">臺南智慧巡簽系統<br />UI/UX Design</h2>
-                                            <p className="text-gray-400 text-xs lg:text-sm mb-4 font-sans">Tainan City Police Smart Patrol System</p>
-                                            <div className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 scroll-content">
-                                                {[{ id: 'context', label: '01. 背景與痛點' }, { id: 'process', label: '02. 流程' }, { id: 'solution', label: '03. 方案' }, { id: 'climax', label: '04. 成果' }].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
+                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-4 font-sans">Smart Patrol System UX Case Study</p>
+                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full touch-pan-x">
+                                                {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
+                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
                                                 ))}
                                             </div>
                                         </div>
@@ -768,53 +700,19 @@
                                     <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
-                                                <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">專案背景 Context</h3>
-                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">傳統警政巡邏依賴紙本簽章，不僅耗費人力成本，更難以即時掌握員警動態。本專案旨在透過 GPS、物聯網與視覺化設計，打造一套能提升勤務效率、落實防弊，並保障員警執勤安全的智慧化 App。</p>
-                                                    <div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">My Role</div><div className="font-bold text-white">UI 設計師</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><Icons.XD /> <span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span></div></div></div>
-                                                </div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><Icons.XD /> <span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>痛點與挑戰 The Conflict</h3>
-                                                    <div className="feature-card p-5 border-l-4 border-l-secondary"><h4 className="text-secondary font-bold text-sm mb-3">傳統紙本巡簽的困境</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">勤務效率低落</strong>新手員警需耗時記憶路線，容易迷路或繞道。</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">管理防弊困難</strong>紙本簽到無法驗證是否本人到場，存在「代簽」風險。</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">緊急溝通斷層</strong>遇險時使用無線電報位耗時且不精準，錯失黃金救援時間。</div></li></ul></div>
-                                                </div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><div className="feature-card p-5 border-l-4 border-l-secondary"><h4 className="text-secondary font-bold text-sm mb-3">{t('pain_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
-                                            <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">執行過程 The Process</h3>
-                                                <p className="text-xs text-gray-400 mb-6">將「管理需求」轉化為「保命工具」的設計歷程</p>
-                                                <div className="relative pl-4 border-l border-white/10 space-y-8">
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">01. 場域觀察</h4><p className="text-xs text-gray-400">分析員警夜間巡邏情境，確定高對比度與單手操作的重要性。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">02. 邏輯規劃</h4><p className="text-xs text-gray-400">設計「最短路徑」導航演算法，以及鄰近警力支援的推播邏輯。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">03. 介面設計</h4><p className="text-xs text-gray-400">運用青色導航線與紅色緊急按鈕，建立直觀的視覺層級。</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(45,212,191,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">04. 防弊驗證</h4><p className="text-xs text-gray-400">導入 GPS 誤差偵測與停留時間計算，確保數據可信度。</p></div>
-                                                </div>
-                                            </div>
+                                            <div className="space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3><p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p><div className="relative pl-4 border-l border-white/10 space-y-8"><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">{t('process_1_title')}</h4><p className="text-xs text-gray-400">{t('process_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">{t('process_2_title')}</h4><p className="text-xs text-gray-400">{t('process_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">{t('process_3_title')}</h4><p className="text-xs text-gray-400">{t('process_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(45,212,191,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('process_4_title')}</h4><p className="text-xs text-gray-400">{t('process_4_desc')}</p></div></div></div>
                                         )}
                                         {activeTab === 'solution' && (
-                                            <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">解決方案與亮點 The Solution</h3>
-                                                <div className="space-y-4">
-                                                    <button onClick={() => setCurrentImage('./img/project_04/03@2x.jpg')} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0"><Icons.Map /></div><div><h4 className="font-bold text-white text-sm mb-1">視覺化路徑引導</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 在地圖上直接繪製最佳巡邏路線，取代列表式清單，即便是跨區支援也能無縫接軌。</p></div></button>
-                                                    <button onClick={() => setCurrentImage('./img/project_04/04.jpg')} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center text-accent shrink-0"><Icons.Shield /></div><div><h4 className="font-bold text-white text-sm mb-1">數位防弊簽到</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 紀錄精確座標與「守望時間」，系統自動檢測誤差距離(如3m)，杜絕遠端作弊。</p></div></button>
-                                                    <button onClick={() => setCurrentImage('./img/project_04/07.jpg')} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center text-secondary shrink-0"><Icons.Alert /></div><div><h4 className="font-bold text-white text-sm mb-1">SOS 緊急互助網</h4><p className="text-xs text-gray-400 leading-relaxed"><span className="text-white font-semibold">Benefit:</span> 一鍵發送求救訊號，系統自動通知「最近」的同仁而非僅限同隊，提供精確座標爭取黃金救援時間。</p></div></button>
-                                                </div>
-                                            </div>
+                                            <div className="space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-6">{t('solution_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (<button key={sol.id} onClick={() => handleSolutionSwitch(sol)} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0"><IconComp /></div><div><h4 className="font-bold text-white text-sm mb-1">{sol.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{sol.desc}<br /><br /><span className="text-white font-semibold">{sol.benefit}</span></p></div></button>); })}</div></div>
                                         )}
                                         {activeTab === 'climax' && (
-                                            <div className="space-y-8 animate-fadeIn pb-12">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">介面展示 Gallery</h3>
-                                                <p className="text-gray-400 mb-8 text-sm">點擊下方卡片，預覽完整設計介面與功能說明。</p>
-                                                <div className="space-y-3">
-                                                    {GALLERY_IMAGES.map((img) => (
-                                                        <button key={img.id} onClick={() => handleGallerySwitch(img)} className={`w-full text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(45,212,191,0.1)]' : 'border-white/5'}`}>
-                                                            <div className="flex justify-between items-center mb-1"><h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}><span className="text-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? 'text-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i></div>
-                                                            <p className="text-xs text-gray-500 group-hover:text-gray-400 leading-relaxed">{img.desc}</p>
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
+                                            <div className="space-y-8 animate-fadeIn pb-12"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p><div className="space-y-3">{galleryImages.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`w-full text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(45,212,191,0.1)]' : 'border-white/5'}`}><div className="flex justify-between items-center mb-1"><h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}><span className="text-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? 'text-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400 leading-relaxed">{img.desc}</p></button>))}</div></div>
                                         )}
                                         <div className="h-8"></div>
                                     </div>
@@ -828,43 +726,6 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-
-        (function () {
-            const TARGET_WIDTH = 1920;
-            const BASE_FONT_SIZE = 16;
-
-            // 定義筆電/小螢幕的寬度區間 (例如 1024px ~ 1600px)
-            const LAPTOP_MIN_WIDTH = 1024;
-            const LAPTOP_MAX_WIDTH = 1600;
-
-            function enforceProportions() {
-                const currentWidth = window.innerWidth;
-                let scaleRatio = 1;
-
-                if (currentWidth >= LAPTOP_MIN_WIDTH) {
-                    if (currentWidth <= LAPTOP_MAX_WIDTH) {
-
-                        scaleRatio = 0.9;
-                    } else {
-                        // === 針對大螢幕 (24吋, 27吋, 32吋 4K) ===
-                        // 超過 1600px 後，恢復嚴格的等比放大 (1920px=1.0, 3840px=2.0)
-                        scaleRatio = currentWidth / TARGET_WIDTH;
-                    }
-
-                    // 計算並套用新的字體大小
-                    const newFontSize = BASE_FONT_SIZE * scaleRatio;
-                    document.documentElement.style.fontSize = `${newFontSize}px`;
-                } else {
-                    // 手機版 (< 1024px) 恢復預設 16px
-                    document.documentElement.style.fontSize = '16px';
-                }
-            }
-
-            // 監聽視窗變化
-            window.addEventListener('resize', enforceProportions);
-            window.addEventListener('DOMContentLoaded', enforceProportions);
-            enforceProportions(); // 立即執行
-        })();
     </script>
 </body>
 

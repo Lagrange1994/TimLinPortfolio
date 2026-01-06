@@ -55,6 +55,15 @@
         /* =========================================
            1. 基礎全域設定 (Base & Reset)
            ========================================= */
+        html,
+        body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden !important;
+            /* 強制禁止水平捲動 */
+            position: relative;
+        }
+
         body {
             font-family: 'Quicksand', '"Noto Sans TC"', 'sans-serif';
             background-color: #121212;
@@ -90,8 +99,10 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            /* 改用 100%，它會自動扣除捲軸寬度 */
+            height: 100%;
+            /* 建議也改用 100% */
             z-index: -1;
             pointer-events: none;
         }
@@ -843,7 +854,33 @@
                 <a href="javascript:void(0)" onclick="scrollToSection(4)" class="nav-link" data-index="4">Contact Me</a>
             </nav>
 
-            <button id="menu-toggle" class="md:hidden text-white focus:outline-none">
+            <div class="hidden md:block relative ml-4">
+                <button id="lang-menu-btn"
+                    class="liquid-glass-btn px-4 py-2 rounded-full text-xs font-bold items-center gap-2 group"
+                    onclick="toggleLangMenu(event)">
+                    <i class="fas fa-globe text-gray-300 group-hover:text-white transition-colors"></i>
+                    <span id="current-lang-text">繁體中文</span> <i
+                        class="fas fa-chevron-down text-[10px] ml-1 opacity-70 group-hover:opacity-100 transition-opacity"></i>
+                </button>
+
+                <div id="lang-dropdown"
+                    class="hidden absolute right-0 top-full mt-3 w-32 bg-[#1E1E1E]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50 transform origin-top-right transition-all duration-200">
+
+                    <button onclick="changeLanguage('zh')"
+                        class="w-full text-left px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors flex items-center justify-between group">
+                        <span>繁體中文</span>
+                        <i class="fas fa-check text-primary opacity-0 lang-check-zh text-xs"></i>
+                    </button>
+
+                    <button onclick="changeLanguage('en')"
+                        class="w-full text-left px-4 py-3 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-colors flex items-center justify-between group">
+                        <span>English</span>
+                        <i class="fas fa-check text-primary opacity-0 lang-check-en text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button id="menu-toggle" class="md:hidden text-white focus:outline-none ml-4">
                 <i class="fas fa-bars text-xl"></i>
             </button>
         </div>
@@ -866,28 +903,55 @@
                 <a onclick="scrollToSection(3)" class="mobile-nav-link text-lg">Portfolio</a>
                 <a onclick="scrollToSection(4)" class="mobile-nav-link text-lg">Contact Me</a>
             </nav>
-            <div class="mt-12 flex">
+            <div class="mt-6 flex flex-col gap-3">
+
+                <button onclick="copyEmail()"
+                    class="liquid-glass-btn px-4 py-2 rounded-full w-full justify-start group active:scale-95 transition-transform">
+                    <i class="fab fa-google mr-2 w-5 text-center group-hover:text-white transition-colors"></i>
+                    <span id="mobile-email-text" class="text-xs sm:text-sm tracking-wide">lyfun0202@gmail.com</span>
+                    <i id="mobile-copy-icon"
+                        class="fas fa-copy ml-auto text-gray-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                </button>
+
                 <a href="https://github.com/Lagrange1994" target="_blank" rel="noopener noreferrer"
-                    class="liquid-glass-btn px-4 py-2 rounded-full">
-                    <i class="fab fa-github mr-2"></i>
-                    <span class="text-xs sm:text-sm">https://github.com/Lagrange1994</span>
+                    class="liquid-glass-btn px-4 py-2 rounded-full w-full justify-start hover:text-white">
+                    <i class="fab fa-github mr-2 w-5 text-center"></i>
+                    <span class="text-xs sm:text-sm tracking-wide">https://github.com/Lagrange1994</span>
                 </a>
             </div>
+
+            <div class="mt-6 border-t border-white/10 pt-6">
+                <p class="text-gray-400 text-sm mb-3 pl-1">Language</p>
+                <div>
+                    <button onclick="changeLanguage('zh')"
+                        class="lang-btn-mobile-zh liquid-glass-btn px-4 py-2 rounded-xl justify-center border-primary/50 bg-primary/20 text-xs sm:text-sm">
+                        繁體中文
+                    </button>
+                    <button onclick="changeLanguage('en')"
+                        class="lang-btn-mobile-en liquid-glass-btn px-4 py-2 rounded-xl justify-center opacity-70 border-white/10 bg-transparent text-xs sm:text-sm">
+                        English
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <main id="main-scroller">
 
-        <section id="home" class="snap-section active-section md:flex md:items-center">
-            <div class="container max-w-8xl px-4 mx-auto">
+        <section id="home" class="snap-section active-section md:flex md:items-center overflow-hidden">
+
+            <div class="container max-w-8xl mx-auto">
                 <div class="flex flex-col md:flex-row items-center">
+
                     <div
-                        class="md:w-1/2 flex justify-center mx-[-1rem] md:mx-0 px-0 h-auto aspect-square md:aspect-auto md:h-[45rem] stagger-item">
+                        class="w-full md:w-1/2 flex justify-center px-0 h-auto aspect-square md:aspect-auto md:h-[45rem] stagger-item relative overflow-hidden">
                         <spline-viewer url="https://prod.spline.design/sA-o0fi-0MJLrsOf/scene.splinecode"
-                            class="w-full h-full"></spline-viewer>
+                            class="w-full h-full overflow-hidden block"></spline-viewer>
                     </div>
+
                     <div
-                        class="md:w-1/2 mt-10 mb10 md:mb-0 flex flex-col items-center text-center md:items-start md:text-left">
+                        class="w-full md:w-1/2 mt-6 mb-6 md:mt-0 md:mb-0 px-6 flex flex-col items-center text-center md:items-start md:text-left">
                         <h1 class="text-4xl sm:text-6xl md:text-8xl font-bold mb-4 font-heading stagger-item">
                             Hi, I'm <span class="">Tim Lin</span>
                         </h1>
@@ -895,8 +959,8 @@
                             class="text-xl sm:text-2xl md:text-4xl font-medium mb-6 text-gray-200 font-heading stagger-item">
                             UI/UX Designer & Web Developer
                         </h2>
-                        <p class="text-xs md:text-base text-gray-200 mb-8 max-w-lg stagger-item">
-                            致力於打造兼具美學與功能的數位體驗<br className="md:hidden" />協助企業推動業務成長並深化用戶互動
+                        <p class="text-xs md:text-base text-gray-200 mb-8 max-w-6xl stagger-item" data-i18n="hero_desc">
+                            致力於打造兼具美學與功能的數位體驗<br class="md:hidden" />協助企業推動業務成長並深化用戶互動
                         </p>
 
                         <div class="flex space-x-4 stagger-item justify-center md:justify-start">
@@ -943,12 +1007,13 @@
                     <div
                         class="relative z-10 p-8 md:p-16 md:w-3/4 md:ml-auto md:flex md:flex-col md:justify-center md:min-h-[31.25rem]">
 
-                        <h3
-                            class="text-lg md:text-2xl font-bold mb-6 font-heading text-white drop-shadow-md stagger-item">
+                        <h3 class="text-lg md:text-2xl font-bold mb-6 font-heading text-white drop-shadow-md stagger-item"
+                            data-i18n="about_role">
                             結合嚴謹邏輯與前瞻技術的資深產品設計師
                         </h3>
 
-                        <p class="text-xs md:text-base text-gray-300 mb-6 drop-shadow-sm stagger-item text-justify">
+                        <p class="text-xs md:text-base text-gray-300 mb-6 drop-shadow-sm stagger-item text-justify"
+                            data-i18n="about_p1">
                             擁有 <strong class="text-white">五年以上的設計實務經驗</strong>，我專精於為專業人員打造高複雜度的後台管理系統。從
                             <span class="text-white font-bold border-b border-white/30 pb-0.5">警政雲端智慧影像分析系統</span>、
                             <span class="text-white font-bold border-b border-white/30 pb-0.5">環保局數據管理平台</span> 到
@@ -958,7 +1023,8 @@
                             梳理龐雜的資訊架構，將繁瑣的業務邏輯轉化為直觀、精準且高效的數位工作環境。
                         </p>
 
-                        <p class="text-xs md:text-base text-gray-300 mb-6 drop-shadow-sm stagger-item text-justify">
+                        <p class="text-xs md:text-base text-gray-300 mb-6 drop-shadow-sm stagger-item text-justify"
+                            data-i18n="about_p2">
                             除了嚴謹的系統設計，我也具備豐富的 <strong class="text-white">多媒體娛樂產業</strong> 與 <strong
                                 class="text-white">一般商業專案執行經驗</strong>。我熱衷於導入創新技術，熟練運用
                             <span class="text-secondary font-bold">Blender</span> 與 <span
@@ -966,7 +1032,8 @@
                             等 3D 工具，為平面介面注入空間感與沉浸式視覺效果。
                         </p>
 
-                        <p class="text-xs md:text-base text-gray-300 mb-8 drop-shadow-sm stagger-item text-justify">
+                        <p class="text-xs md:text-base text-gray-300 mb-8 drop-shadow-sm stagger-item text-justify"
+                            data-i18n="about_p3">
                             為了追求極致的工作效率，我積極整合前沿 <strong class="text-white">AI 工具</strong> 優化設計流程——運用
                             <span class="text-purple-400 font-bold">Gemini</span>
                             輔助邏輯發想，並搭配 <span class="text-purple-400 font-bold">Stitch</span>
@@ -1040,7 +1107,7 @@
                     <div class="design-tools-area md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
 
                         <div
-                            class="card p-4 md:p-6 rounded-2xl skill-card flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20">
+                            class="card p-2 md:p-4 rounded-2xl skill-card flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20">
                             <div
                                 class="skill-icon mb-3 w-12 h-12 md:w-16 md:h-16 p-2 bg-white/5 rounded-full flex items-center justify-center">
                                 <img src="./img/others/Figma_logo.png" alt="Figma Icon"
@@ -1053,7 +1120,7 @@
                         </div>
 
                         <div
-                            class="card p-4 md:p-6 rounded-2xl skill-card flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20">
+                            class="card p-2 md:p-4 rounded-2xl skill-card flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20">
                             <div
                                 class="skill-icon mb-3 w-12 h-12 md:w-16 md:h-16 p-2 bg-white/5 rounded-full flex items-center justify-center">
                                 <img src="./img/others/Adobe_XD_logo.png" alt="Adobe XD Icon"
@@ -1066,7 +1133,7 @@
                         </div>
 
                         <div
-                            class="card p-4 md:p-6 rounded-2xl skill-card flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20">
+                            class="card p-2 md:p-4 rounded-2xl skill-card flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20">
                             <div
                                 class="skill-icon mb-3 w-12 h-12 md:w-16 md:h-16 p-2 bg-white/5 rounded-full flex items-center justify-center">
                                 <img src="./img/others/Photoshop_logo.png" alt="Photoshop Icon"
@@ -1079,7 +1146,7 @@
                         </div>
 
                         <div
-                            class="card p-4 md:p-6 rounded-2xl skill-card flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20">
+                            class="card p-2 md:p-4 rounded-2xl skill-card flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20">
                             <div
                                 class="skill-icon mb-3 w-12 h-12 md:w-16 md:h-16 p-2 bg-white/5 rounded-full flex items-center justify-center">
                                 <img src="./img/others/Illustrator_logo.png" alt="Illustrator Icon"
@@ -1092,7 +1159,7 @@
                         </div>
 
                         <div
-                            class="card p-4 md:p-6 rounded-2xl skill-card flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20">
+                            class="card p-2 md:p-4 rounded-2xl skill-card flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20">
                             <div
                                 class="skill-icon mb-3 w-12 h-12 md:w-16 md:h-16 p-2 bg-white/5 rounded-full flex items-center justify-center">
                                 <img src="./img/others/Blender_logo.png" alt="Blender Icon"
@@ -1105,7 +1172,7 @@
                         </div>
 
                         <div
-                            class="card p-4 md:p-6 rounded-2xl skill-card flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20">
+                            class="card p-2 md:p-4 rounded-2xl skill-card flex flex-col items-center justify-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/20">
                             <div
                                 class="skill-icon mb-3 w-12 h-12 md:w-16 md:h-16 p-2 bg-white/5 rounded-full flex items-center justify-center">
                                 <img src="./img/others/Spline_logo.webp" alt="Spline Icon"
@@ -1118,8 +1185,8 @@
                         </div>
                     </div>
                     <div
-                        class="card dev-skills-panel p-5 md:p-8 rounded-2xl md:col-span-2 md:row-span-2 flex flex-col justify-center">
-                        <div class="mb-4 md:mb-6 flex items-center justify-between">
+                        class="card dev-skills-panel p-4 md:p-6 rounded-2xl md:col-span-2 md:row-span-2 flex flex-col justify-center">
+                        <div class="mb-2 md:mb-4 flex items-center justify-between">
                             <h2 class="text-lg md:text-xl font-bold font-heading text-white">
                                 Tech Stack
                             </h2>
@@ -1138,7 +1205,8 @@
                                         BASIC
                                     </span>
                                 </div>
-                                <p class="text-gray-300 text-xs md:text-base leading-relaxed pl-1">
+                                <p class="text-gray-300 text-xs md:text-base leading-relaxed pl-1"
+                                    data-i18n="skill_html">
                                     了解網頁基礎標籤結構，能協助修改與維護現有的網頁內容。
                                 </p>
                             </div>
@@ -1155,7 +1223,8 @@
                                         ENTRY
                                     </span>
                                 </div>
-                                <p class="text-gray-300 text-xs md:text-base leading-relaxed pl-1">
+                                <p class="text-gray-300 text-xs md:text-base leading-relaxed pl-1"
+                                    data-i18n="skill_css">
                                     具備 Flexbox 排版觀念，能進行簡單的樣式微調與 RWD 修正。
                                 </p>
                             </div>
@@ -1172,12 +1241,12 @@
                                         LEARNING
                                     </span>
                                 </div>
-                                <p class="text-gray-300 text-xs md:text-base leading-relaxed pl-1">
+                                <p class="text-gray-300 text-xs md:text-base leading-relaxed pl-1" data-i18n="skill_js">
                                     能讀懂基礎語法邏輯，配合 AI 工具進行簡單的互動功能修改。
                                 </p>
                             </div>
 
-                            <div class="mt-2 pt-2">
+                            <div class="mt-2">
                                 <div
                                     class="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 p-4 rounded-xl relative overflow-hidden group">
                                     <div
@@ -1196,24 +1265,29 @@
                                     </div>
 
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
+
                                         <div class="pl-3 border-l-2 border-cyan-500">
                                             <h4 class="text-cyan-300 font-bold text-sm mb-1">Gemini / Claude</h4>
-                                            <p class="text-gray-300 text-xs md:text-base leading-relaxed mb-2">
+                                            <p class="text-gray-300 text-xs md:text-base leading-relaxed mb-2"
+                                                data-i18n="ai_gemini_1">
                                                 <strong class="text-white">邏輯生成與轉譯：</strong> 將設計需求轉化為精準的 Prompt，讓 AI
                                                 產出初始程式碼架構。
                                             </p>
-                                            <p class="text-gray-300 text-xs md:text-base leading-relaxed">
-                                                <strong class="text-white">智慧除錯：</strong> 遇到程式錯誤時，擅長描述情境引導 AI
-                                                快速定位問題。
+                                            <p class="text-gray-300 text-xs md:text-base leading-relaxed"
+                                                data-i18n="ai_gemini_2">
+                                                <strong class="text-white">智慧除錯：</strong> 遇到程式錯誤時，擅長描述情境引導 AI 快速定位問題。
                                             </p>
                                         </div>
+
                                         <div class="pl-3 border-l-2 border-pink-500">
                                             <h4 class="text-pink-300 font-bold text-sm mb-1">Rodin / Stitch</h4>
-                                            <p class="text-gray-300 text-xs md:text-base leading-relaxed mb-2">
+                                            <p class="text-gray-300 text-xs md:text-base leading-relaxed mb-2"
+                                                data-i18n="ai_rodin_1">
                                                 <strong class="text-white">快速 3D 原型：</strong> 使用 Rodin 將文字概念直接轉化為 3D
                                                 模型，數分鐘內完成建模。
                                             </p>
-                                            <p class="text-gray-300 text-xs md:text-base leading-relaxed">
+                                            <p class="text-gray-300 text-xs md:text-base leading-relaxed"
+                                                data-i18n="ai_rodin_2">
                                                 <strong class="text-white">快速製作UI設計：</strong> 運用 Stitch
                                                 快速生成多種UI設計，低成本進行視覺提案。
                                             </p>
@@ -1224,7 +1298,7 @@
                         </div>
                     </div>
                     <div
-                        class="card stat-card p-6 md:p-8 rounded-2xl md:col-span-1 flex flex-col relative overflow-hidden group">
+                        class="card stat-card p-4 md:p-6 rounded-2xl md:col-span-1 flex flex-col relative overflow-hidden group">
                         <div class="mb-2 md:mb-4 border-b border-white/10 pb-2 w-full relative z-10">
                             <h3 class="text-lg md:text-xl font-bold font-heading text-white">
                                 Projects Shipped
@@ -1249,7 +1323,7 @@
                         </div>
                     </div>
 
-                    <div class="card project-distribution p-6 md:p-8 rounded-2xl md:col-span-1 flex flex-col">
+                    <div class="card project-distribution p-4 md:p-6 rounded-2xl md:col-span-1 flex flex-col">
                         <div class="mb-4 border-b border-white/10 pb-2 w-full">
                             <h3 class="text-lg md:text-xl font-bold font-heading text-white">
                                 Focus Areas
@@ -1319,8 +1393,9 @@
                                 <img src="./img/my_portfolio/video_analyzation.webp" alt="video analization system"
                                     loading="lazy" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
-                                    <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading" data-i18n="p1_title">
+                                        新竹縣警察局雲端智慧影像分析系統</h3>
+                                    <p class="text-xs text-gray-200 mb-4" data-i18n="p1_desc">警用街頭監視器影像辨識與監測系統介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
@@ -1338,8 +1413,10 @@
                                     alt="video analization system app" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
-                                    <p class="text-xs text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading" data-i18n="p2_title">
+                                        新竹縣警察局雲端智慧影像分析系統app</h3>
+                                    <p class="text-xs text-gray-200 mb-4" data-i18n="p2_desc">
+                                        以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
@@ -1353,8 +1430,9 @@
                                 <img src="./img/my_portfolio/police.webp" alt="Kaohsiung Police Station" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
-                                    <p class="text-xs text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading" data-i18n="p3_title">
+                                        高雄市警察局新世代智慧科技辦案系統</h3>
+                                    <p class="text-xs text-gray-200 mb-4" data-i18n="p3_desc">警用街頭監視器影像辨識與監測系統介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
@@ -1371,8 +1449,9 @@
                                 <img src="./img/my_portfolio/Tainan Police.webp" alt="Tainan Police Station"
                                     loading="lazy" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
-                                    <p class="text-xs text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading" data-i18n="p4_title">
+                                        台南市政府警察局智慧簽巡系統巡系統</h3>
+                                    <p class="text-xs text-gray-200 mb-4" data-i18n="p4_desc">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
@@ -1391,8 +1470,9 @@
                                 <img src="./img/my_portfolio/zoo.webp" alt="zoo monitering web" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
-                                    <p class="text-xs text-gray-200 mb-4">人流分析與網站管理介面</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading" data-i18n="p5_title">新竹市立動物園管理後台
+                                    </h3>
+                                    <p class="text-xs text-gray-200 mb-4" data-i18n="p5_desc">人流分析與網站管理介面</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
@@ -1409,8 +1489,8 @@
                                 <img src="./img/my_portfolio/Taoyuan_MRT.webp" alt="Taoyuan MRT App" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">桃園捷運APP</h3>
-                                    <p class="text-xs text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading" data-i18n="p6_title">桃園捷運APP</h3>
+                                    <p class="text-xs text-gray-200 mb-4" data-i18n="p6_desc">桃園捷運APP最新消息欄位的介面修改</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
@@ -1425,8 +1505,8 @@
                                 <img src="./img/my_portfolio/dam.webp" alt="Shihmen Dam" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">石門水庫網站</h3>
-                                    <p class="text-xs text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading" data-i18n="p7_title">石門水庫網站</h3>
+                                    <p class="text-xs text-gray-200 mb-4" data-i18n="p7_desc">石門水庫網站新增頁面與介面修改</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
@@ -1441,8 +1521,9 @@
                                 <img src="./img/my_portfolio/stream.webp" alt="stream live app UI" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">Love-Two live app UI</h3>
-                                    <p class="text-xs text-gray-200 mb-4">直播app提案與設計</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading" data-i18n="p8_title">Love-Two live
+                                        app UI</h3>
+                                    <p class="text-xs text-gray-200 mb-4" data-i18n="p8_desc">直播app提案與設計</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
@@ -1462,8 +1543,8 @@
                                 <img src="./img/my_portfolio/enviroment.webp" alt="enviroment protection" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
-                                    <p class="text-xs text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading" data-i18n="p9_title">新竹縣環保局網站後台</h3>
+                                    <p class="text-xs text-gray-200 mb-4" data-i18n="p9_desc">環保局網站後台新增頁面與改版</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
@@ -1478,8 +1559,8 @@
                                 <img src="./img/my_portfolio/aviation.webp" alt="aviation web" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">恆春航空站</h3>
-                                    <p class="text-xs text-gray-200 mb-4">航空站網站改版提案.</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading" data-i18n="p10_title">恆春航空站</h3>
+                                    <p class="text-xs text-gray-200 mb-4" data-i18n="p10_desc">航空站網站改版提案.</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
@@ -1494,8 +1575,10 @@
                                 <img src="./img/my_portfolio/student.webp" alt="student" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
-                                    <p class="text-xs text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading" data-i18n="p11_title">台北醫學大學臨床醫學教學系統
+                                    </h3>
+                                    <p class="text-xs text-gray-200 mb-4" data-i18n="p11_desc">醫學院學生用學習歷程資訊管理系統改版與介面設計
+                                    </p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">Web
@@ -1510,8 +1593,9 @@
                                 <img src="./img/my_portfolio/coin.webp" loading="lazy"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-sm font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
-                                    <p class="text-xs text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
+                                    <h3 class="text-sm font-bold mb-2 font-heading" data-i18n="p12_title">中央存保Golden
+                                        House – 購得好房</h3>
+                                    <p class="text-xs text-gray-200 mb-4" data-i18n="p12_desc">中央存保房貸理財宣傳活動網頁小遊戲</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-[10px] rounded-full border border-white">UI/UX</span>
@@ -1533,8 +1617,9 @@
                                 <img src="./img/my_portfolio/video_analyzation.webp" alt="video analization system"
                                     loading="lazy" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
-                                    <p class="text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading" data-i18n="p1_title">
+                                        新竹縣警察局雲端智慧影像分析系統</h3>
+                                    <p class="text-sm text-gray-200 mb-4" data-i18n="p1_desc">警用街頭監視器影像辨識與監測系統介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
@@ -1551,8 +1636,10 @@
                                 <img src="./img/my_portfolio/video_analyzation_app.webp"
                                     class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
-                                    <p class="text-sm text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading" data-i18n="p2_title">
+                                        新竹縣警察局雲端智慧影像分析系統app</h3>
+                                    <p class="text-sm text-gray-200 mb-4" data-i18n="p2_desc">
+                                        以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
@@ -1565,8 +1652,9 @@
                                 href="project_03.html">
                                 <img src="./img/my_portfolio/police.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
-                                    <p class="text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading" data-i18n="p3_title">
+                                        高雄市警察局新世代智慧科技辦案系統</h3>
+                                    <p class="text-sm text-gray-200 mb-4" data-i18n="p3_desc">警用街頭監視器影像辨識與監測系統介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
@@ -1582,8 +1670,9 @@
                                 href="project_04.html">
                                 <img src="./img/my_portfolio/Tainan Police.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
-                                    <p class="text-sm text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading" data-i18n="p4_title">
+                                        台南市政府警察局智慧簽巡系統巡系統</h3>
+                                    <p class="text-sm text-gray-200 mb-4" data-i18n="p4_desc">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
@@ -1596,8 +1685,9 @@
                                 href="project_05.html">
                                 <img src="./img/my_portfolio/zoo.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
-                                    <p class="text-sm text-gray-200 mb-4">人流分析與網站管理介面</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading" data-i18n="p5_title">新竹市立動物園管理後台
+                                    </h3>
+                                    <p class="text-sm text-gray-200 mb-4" data-i18n="p5_desc">人流分析與網站管理介面</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
@@ -1614,8 +1704,8 @@
                                 href="project_06.html">
                                 <img src="./img/my_portfolio/Taoyuan_MRT.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">桃園捷運APP</h3>
-                                    <p class="text-sm text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading" data-i18n="p6_title">桃園捷運APP</h3>
+                                    <p class="text-sm text-gray-200 mb-4" data-i18n="p6_desc">桃園捷運APP最新消息欄位的介面修改</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
@@ -1634,8 +1724,8 @@
                                 href="project_07.html">
                                 <img src="./img/my_portfolio/dam.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">石門水庫網站</h3>
-                                    <p class="text-sm text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading" data-i18n="p7_title">石門水庫網站</h3>
+                                    <p class="text-sm text-gray-200 mb-4" data-i18n="p7_desc">石門水庫網站新增頁面與介面修改</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
@@ -1649,8 +1739,9 @@
                                 href="project_08.html">
                                 <img src="./img/my_portfolio/stream.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">Love-Two live app UI</h3>
-                                    <p class="text-sm text-gray-200 mb-4">直播app提案與設計</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading" data-i18n="p8_title">Love-Two live
+                                        app UI</h3>
+                                    <p class="text-sm text-gray-200 mb-4" data-i18n="p8_desc">直播app提案與設計</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
@@ -1664,8 +1755,9 @@
                                 href="project_09.html">
                                 <img src="./img/my_portfolio/enviroment.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
-                                    <p class="text-sm text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading" data-i18n="p9_title">新竹縣環保局網站後台
+                                    </h3>
+                                    <p class="text-sm text-gray-200 mb-4" data-i18n="p9_desc">環保局網站後台新增頁面與改版</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
@@ -1679,8 +1771,8 @@
                                 href="project_10.html">
                                 <img src="./img/my_portfolio/aviation.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">恆春航空站</h3>
-                                    <p class="text-sm text-gray-200 mb-4">航空站網站改版提案</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading" data-i18n="p10_title">恆春航空站</h3>
+                                    <p class="text-sm text-gray-200 mb-4" data-i18n="p10_desc">航空站網站改版提案</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
@@ -1694,8 +1786,10 @@
                                 href="project_11.html">
                                 <img src="./img/my_portfolio/student.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
-                                    <p class="text-sm text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading" data-i18n="p11_title">
+                                        台北醫學大學臨床醫學教學系統</h3>
+                                    <p class="text-sm text-gray-200 mb-4" data-i18n="p11_desc">醫學院學生用學習歷程資訊管理系統改版與介面設計
+                                    </p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
@@ -1709,8 +1803,9 @@
                                 href="project_12.html">
                                 <img src="./img/my_portfolio/coin.webp" class="w-full h-full object-cover">
                                 <div class="project-overlay">
-                                    <h3 class="text-base font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
-                                    <p class="text-sm text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
+                                    <h3 class="text-base font-bold mb-2 font-heading" data-i18n="p12_title">中央存保Golden
+                                        House – 購得好房</h3>
+                                    <p class="text-sm text-gray-200 mb-4" data-i18n="p12_desc">中央存保房貸理財宣傳活動網頁小遊戲</p>
                                     <div class="flex space-x-2">
                                         <span
                                             class="px-2 py-0.5 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span>
@@ -1743,8 +1838,10 @@
                         <img src="./img/my_portfolio/video_analyzation.webp" alt="video analization system"
                             loading="lazy" class="w-full h-full object-cover">
                         <div class="project-overlay">
-                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統</h3>
-                            <p class="text-xs md:text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
+                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading" data-i18n="p1_title">
+                                新竹縣警察局雲端智慧影像分析系統</h3>
+                            <p class="text-xs md:text-sm text-gray-200 mb-4" data-i18n="p1_desc">警用街頭監視器影像辨識與監測系統介面設計
+                            </p>
                             <div class="flex space-x-2">
                                 <span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
@@ -1760,8 +1857,10 @@
                         href="project_02.html"><img src="./img/my_portfolio/video_analyzation_app.webp" loading="lazy"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
-                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading">新竹縣警察局雲端智慧影像分析系統app</h3>
-                            <p class="text-xs md:text-sm text-gray-200 mb-4">以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
+                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading" data-i18n="p2_title">
+                                新竹縣警察局雲端智慧影像分析系統app</h3>
+                            <p class="text-xs md:text-sm text-gray-200 mb-4" data-i18n="p2_desc">
+                                以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計</p>
                             <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
@@ -1772,8 +1871,10 @@
                         href="project_03.html"><img src="./img/my_portfolio/police.webp" loading="lazy"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
-                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading">高雄市警察局新世代智慧科技辦案系統</h3>
-                            <p class="text-xs md:text-sm text-gray-200 mb-4">警用街頭監視器影像辨識與監測系統介面設計</p>
+                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading" data-i18n="p3_title">
+                                高雄市警察局新世代智慧科技辦案系統</h3>
+                            <p class="text-xs md:text-sm text-gray-200 mb-4" data-i18n="p3_desc">警用街頭監視器影像辨識與監測系統介面設計
+                            </p>
                             <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
                                     Dev</span><span
@@ -1786,8 +1887,10 @@
                         href="project_04.html"><img src="./img/my_portfolio/Tainan Police.webp" loading="lazy"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
-                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading">台南市政府警察局智慧簽巡系統巡系統</h3>
-                            <p class="text-xs md:text-sm text-gray-200 mb-4">巡邏員警專用簽到與巡邏紀錄app介面設計</p>
+                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading" data-i18n="p4_title">
+                                台南市政府警察局智慧簽巡系統巡系統</h3>
+                            <p class="text-xs md:text-sm text-gray-200 mb-4" data-i18n="p4_desc">巡邏員警專用簽到與巡邏紀錄app介面設計
+                            </p>
                             <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Figma</span>
@@ -1798,8 +1901,9 @@
                         href="project_05.html"><img src=" ./img/my_portfolio/zoo.webp" loading="lazy"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
-                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading">新竹市立動物園管理後台</h3>
-                            <p class="text-xs md:text-sm text-gray-200 mb-4">人流分析與網站管理介面</p>
+                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading" data-i18n="p5_title">
+                                新竹市立動物園管理後台</h3>
+                            <p class="text-xs md:text-sm text-gray-200 mb-4" data-i18n="p5_desc">人流分析與網站管理介面</p>
                             <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
                                     Dev</span><span
@@ -1813,8 +1917,9 @@
                         href="project_06.html"><img src="./img/my_portfolio/Taoyuan_MRT.webp" loading="lazy"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
-                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading">桃園捷運APP</h3>
-                            <p class="text-xs md:text-sm text-gray-200 mb-4">桃園捷運APP最新消息欄位的介面修改</p>
+                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading" data-i18n="p6_title">桃園捷運APP
+                            </h3>
+                            <p class="text-xs md:text-sm text-gray-200 mb-4" data-i18n="p6_desc">桃園捷運APP最新消息欄位的介面修改</p>
                             <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
@@ -1825,8 +1930,9 @@
                         href="project_07.html"><img src="./img/my_portfolio/dam.webp" loading="lazy"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
-                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading">石門水庫網站</h3>
-                            <p class="text-xs md:text-sm text-gray-200 mb-4">石門水庫網站新增頁面與介面修改</p>
+                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading" data-i18n="p7_title">石門水庫網站
+                            </h3>
+                            <p class="text-xs md:text-sm text-gray-200 mb-4" data-i18n="p7_desc">石門水庫網站新增頁面與介面修改</p>
                             <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
                                     Dev</span><span
@@ -1838,8 +1944,9 @@
                         href="project_08.html"><img src="./img/my_portfolio/stream.webp" loading="lazy"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
-                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading">Love-Two live app UI</h3>
-                            <p class="text-xs md:text-sm text-gray-200 mb-4">直播app提案與設計</p>
+                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading" data-i18n="p8_title">Love-Two
+                                live app UI</h3>
+                            <p class="text-xs md:text-sm text-gray-200 mb-4" data-i18n="p8_desc">直播app提案與設計</p>
                             <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
@@ -1850,8 +1957,9 @@
                         href="project_09.html"><img src="./img/my_portfolio/enviroment.webp" loading="lazy"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
-                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading">新竹縣環保局網站後台</h3>
-                            <p class="text-xs md:text-sm text-gray-200 mb-4">環保局網站後台新增頁面與改版</p>
+                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading" data-i18n="p9_title">新竹縣環保局網站後台
+                            </h3>
+                            <p class="text-xs md:text-sm text-gray-200 mb-4" data-i18n="p9_desc">環保局網站後台新增頁面與改版</p>
                             <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
                                     Dev</span><span
@@ -1863,8 +1971,9 @@
                         href="project_10.html"><img src="./img/my_portfolio/aviation.webp" loading="lazy"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
-                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading">恆春航空站</h3>
-                            <p class="text-xs md:text-sm text-gray-200 mb-4">航空站網站改版提案.</p>
+                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading" data-i18n="p10_title">恆春航空站
+                            </h3>
+                            <p class="text-xs md:text-sm text-gray-200 mb-4" data-i18n="p10_desc">航空站網站改版提案.</p>
                             <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
@@ -1875,8 +1984,10 @@
                         href="project_11.html"><img src="./img/my_portfolio/student.webp" loading="lazy"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
-                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading">台北醫學大學臨床醫學教學系統</h3>
-                            <p class="text-xs md:text-sm text-gray-200 mb-4">醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
+                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading" data-i18n="p11_title">
+                                台北醫學大學臨床醫學教學系統</h3>
+                            <p class="text-xs md:text-sm text-gray-200 mb-4" data-i18n="p11_desc">
+                                醫學院學生用學習歷程資訊管理系統改版與介面設計</p>
                             <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Web
                                     Dev</span><span
@@ -1888,8 +1999,9 @@
                         href="project_12.html"><img src="./img/my_portfolio/coin.webp" loading="lazy"
                             class="w-full h-full object-cover">
                         <div class="project-overlay">
-                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading">中央存保Golden House – 購得好房</h3>
-                            <p class="text-xs md:text-sm text-gray-200 mb-4">中央存保房貸理財宣傳活動網頁小遊戲</p>
+                            <h3 class="text-base md:text-xl font-bold mb-2 font-heading" data-i18n="p12_title">
+                                中央存保Golden House – 購得好房</h3>
+                            <p class="text-xs md:text-sm text-gray-200 mb-4" data-i18n="p12_desc">中央存保房貸理財宣傳活動網頁小遊戲</p>
                             <div class="flex space-x-2"><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">UI/UX</span><span
                                     class="px-3 py-1 bg-white bg-opacity-20 text-white text-xs rounded-full border border-white">Adobe
@@ -1915,8 +2027,8 @@
                         <h2>Contact <span class="gradient-text">Me</span></h2>
                     </div>
                     <div>
-                        <h3
-                            class="text-lg md:text-2xl font-bold mb-8 lg:text-left text-center font-heading stagger-item">
+                        <h3 class="text-lg md:text-2xl font-bold mb-8 lg:text-left text-center font-heading stagger-item"
+                            data-i18n="contact_sub">
                             有專案合作需求？歡迎隨時與我聯繫</h3>
                     </div>
                     <div class="flex flex-col gap-12 items-center">
@@ -1997,6 +2109,9 @@
     </button>
 
     <script>
+        // ==========================================
+        // 1. 全域變數與基礎設定
+        // ==========================================
         let currentSectionIndex = 0;
         let isScrolling = false;
         let isPortfolioExpanded = false;
@@ -2006,9 +2121,167 @@
 
         const isMobile = () => window.innerWidth < 768;
 
-        // === [修正 2/3] JS: 無延遲的全頁滾動函式 ===
+        // ==========================================
+        // 2. 多語言設定 (i18n)
+        // ==========================================
+        const translations = {
+            zh: {
+                hero_desc: "致力於打造兼具美學與功能的數位體驗<br />協助企業推動業務成長並深化用戶互動",
+                about_role: "結合嚴謹邏輯與前瞻技術的資深產品設計師",
+                about_p1: "擁有 <strong class='text-white'>五年以上的設計實務經驗</strong>，我專精於為專業人員打造高複雜度的後台管理系統。從 <span class='text-white font-bold border-b border-white/30 pb-0.5'>警政雲端智慧影像分析系統</span>、<span class='text-white font-bold border-b border-white/30 pb-0.5'>環保局數據管理平台</span> 到 <span class='text-white font-bold border-b border-white/30 pb-0.5'>醫院醫療管理後台</span>，我擅長運用 <span class='text-primary font-bold'>Figma</span> 與 <span class='text-primary font-bold'>Adobe XD</span> 梳理龐雜的資訊架構，將繁瑣的業務邏輯轉化為直觀、精準且高效的數位工作環境。",
+                about_p2: "除了嚴謹的系統設計，我也具備豐富的 <strong class='text-white'>多媒體娛樂產業</strong> 與 <strong class='text-white'>一般商業專案執行經驗</strong>。我熱衷於導入創新技術，熟練運用 <span class='text-secondary font-bold'>Blender</span> 與 <span class='text-secondary font-bold'>Spline</span> 等 3D 工具，為平面介面注入空間感與沉浸式視覺效果。",
+                about_p3: "為了追求極致的工作效率，我積極整合前沿 <strong class='text-white'>AI 工具</strong> 優化設計流程——運用 <span class='text-purple-400 font-bold'>Gemini</span> 輔助邏輯發想，並搭配 <span class='text-purple-400 font-bold'>Stitch</span> 與 <span class='text-purple-400 font-bold'>Rodin</span> 加速設計資產生成。在技術面，我略通 <span class='text-white font-bold'>React</span> 與 <span class='text-white font-bold'>Vue.js</span> 基礎，能有效縮短設計與開發之間的溝通距離。",
+                skill_html: "了解網頁基礎標籤結構，能協助修改與維護現有的網頁內容。",
+                skill_css: "具備 Flexbox 排版觀念，能進行簡單的樣式微調與 RWD 修正。",
+                skill_js: "能讀懂基礎語法邏輯，配合 AI 工具進行簡單的互動功能修改。",
+
+                // AI Tools (修正後的鍵值)
+                ai_gemini_1: "<strong class='text-white'>邏輯生成與轉譯：</strong> 將設計需求轉化為精準的 Prompt，讓 AI 產出初始程式碼架構。",
+                ai_gemini_2: "<strong class='text-white'>智慧除錯：</strong> 遇到程式錯誤時，擅長描述情境引導 AI 快速定位問題。",
+                ai_rodin_1: "<strong class='text-white'>快速 3D 原型：</strong> 使用 Rodin 將文字概念直接轉化為 3D 模型，數分鐘內完成建模。",
+                ai_rodin_2: "<strong class='text-white'>快速製作UI設計：</strong> 運用 Stitch 快速生成多種UI設計，低成本進行視覺提案。",
+
+                contact_sub: "有專案合作需求？歡迎隨時與我聯繫",
+                // Projects
+                p1_title: "新竹縣警察局雲端智慧影像分析系統", p1_desc: "警用街頭監視器影像辨識與監測系統介面設計",
+                p2_title: "新竹縣警察局雲端智慧影像分析系統app", p2_desc: "以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計",
+                p3_title: "高雄市警察局新世代智慧科技辦案系統", p3_desc: "警用街頭監視器影像辨識與監測系統介面設計",
+                p4_title: "台南市政府警察局智慧簽巡系統", p4_desc: "巡邏員警專用簽到與巡邏紀錄app介面設計",
+                p5_title: "新竹市立動物園管理後台", p5_desc: "人流分析與網站管理介面",
+                p6_title: "桃園捷運APP", p6_desc: "桃園捷運APP最新消息欄位的介面修改",
+                p7_title: "石門水庫網站", p7_desc: "石門水庫網站新增頁面與介面修改",
+                p8_title: "Love-Two live app UI", p8_desc: "直播app提案與設計",
+                p9_title: "新竹縣環保局網站後台", p9_desc: "環保局網站後台新增頁面與改版",
+                p10_title: "恆春航空站", p10_desc: "航空站網站改版提案",
+                p11_title: "台北醫學大學臨床醫學教學系統", p11_desc: "醫學院學生用學習歷程資訊管理系統改版與介面設計",
+                p12_title: "中央存保Golden House – 購得好房", p12_desc: "中央存保房貸理財宣傳活動網頁小遊戲",
+            },
+            en: {
+                hero_desc: "Dedicated to creating digital experiences <br class='md:hidden' /> that combine aesthetics and function.<br class='md:hidden' />Helping businesses drive growth <br class='md:hidden' />and deepen user engagement.",
+                about_role: "Senior Product Designer combining rigorous logic with cutting-edge technology",
+                about_p1: "With over <strong class='text-white'>5 years of practical design experience</strong>, I specialize in building complex backend management systems for professionals. From <span class='text-white font-bold border-b border-white/30 pb-0.5'>Police Cloud Intelligent Video Analysis Systems</span> and <span class='text-white font-bold border-b border-white/30 pb-0.5'>Environmental Bureau Data Platforms</span> to <span class='text-white font-bold border-b border-white/30 pb-0.5'>Hospital Management Dashboards</span>, I excel at using <span class='text-primary font-bold'>Figma</span> and <span class='text-primary font-bold'>Adobe XD</span> to clarify complex information architectures and transform tedious business logic into intuitive, precise, and efficient digital workspaces.",
+                about_p2: "Beyond rigorous system design, I also have extensive experience in the <strong class='text-white'>multimedia entertainment industry</strong> and <strong class='text-white'>commercial projects</strong>. I am passionate about adopting innovative technologies, skillfully using 3D tools like <span class='text-secondary font-bold'>Blender</span> and <span class='text-secondary font-bold'>Spline</span> to inject spatial depth and immersive visual effects into flat interfaces.",
+                about_p3: "To pursue ultimate efficiency, I actively integrate cutting-edge <strong class='text-white'>AI tools</strong> to optimize design processes—using <span class='text-purple-400 font-bold'>Gemini</span> for logic generation, and pairing it with <span class='text-purple-400 font-bold'>Stitch</span> and <span class='text-purple-400 font-bold'>Rodin</span> to accelerate design asset creation. On the technical side, I understand the basics of <span class='text-white font-bold'>React</span> and <span class='text-white font-bold'>Vue.js</span>, enabling me to effectively bridge the gap between design and development.",
+                skill_html: "Understand basic web tag structure; able to assist in modifying and maintaining existing web content.",
+                skill_css: "Understand Flexbox layout concepts; able to perform simple style adjustments and RWD fixes.",
+                skill_js: "Can read basic syntax logic and use AI tools to perform simple interactive function modifications.",
+
+                // AI Tools (修正後的鍵值)
+                ai_gemini_1: "<strong class='text-white'>Logic & Code Generation:</strong> Translating design requirements into precise prompts to generate initial code structures.",
+                ai_gemini_2: "<strong class='text-white'>Intelligent Debugging:</strong> Guiding AI with specific scenarios to quickly identify and fix code issues.",
+                ai_rodin_1: "<strong class='text-white'>Rapid 3D Prototyping:</strong> Utilizing Rodin to transform text-to-3D models in minutes.",
+                ai_rodin_2: "<strong class='text-white'>Rapid UI Iteration:</strong> Using Stitch to generate multiple design variations for efficient visual proposals.",
+
+                contact_sub: "Have a project in mind?<br class='md:hidden' /> Feel free to contact me.",
+                // Projects
+                p1_title: "Hsinchu County Police Cloud Video Analysis System", p1_desc: "UI design for police street surveillance image recognition and monitoring system",
+                p2_title: "Hsinchu County Police Video Analysis App", p2_desc: "Mobile-optimized UI design for police surveillance monitoring system",
+                p3_title: "Kaohsiung Police Smart Investigation System", p3_desc: "Next-gen smart technology investigation system interface design",
+                p4_title: "Tainan Police Smart Patrol System", p4_desc: "App interface design for patrol officers' check-ins and records",
+                p5_title: "Hsinchu Zoo Management Dashboard", p5_desc: "Visitor flow analysis and website management interface",
+                p6_title: "Taoyuan Metro App", p6_desc: "UI modification for the 'Latest News' section of the MRT App",
+                p7_title: "Shihmen Reservoir Website", p7_desc: "New page creation and interface modification for the reservoir website",
+                p8_title: "Love-Two Live Streaming App UI", p8_desc: "Proposal and design for a live streaming application",
+                p9_title: "Hsinchu Environmental Bureau Backend", p9_desc: "New page additions and redesign for the bureau's backend system",
+                p10_title: "Hengchun Airport Website", p10_desc: "Website redesign proposal for the airport",
+                p11_title: "TMU Clinical Teaching System", p11_desc: "Redesign of the learning portfolio management system for medical students",
+                p12_title: "CDIC Golden House – Good Home Purchase", p12_desc: "Web mini-game for Central Deposit Insurance Corp's mortgage education campaign",
+            }
+        };
+
+        let currentLang = 'zh';
+
+        // 1. 切換下拉選單顯示/隱藏
+        function toggleLangMenu(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('lang-dropdown');
+            dropdown.classList.toggle('hidden');
+
+            // [修正] 移除原本的 'fade-in' class，因為它會與全域 CSS 衝突導致透明
+            // 如果您想要簡單的動畫，可以使用 GSAP (因為您已經載入了它)
+            if (!dropdown.classList.contains('hidden')) {
+                gsap.fromTo(dropdown,
+                    { opacity: 0, y: -10 },
+                    { opacity: 1, y: 0, duration: 0.2, ease: "power2.out" }
+                );
+            }
+        }
+
+        // 2. 指定切換語言
+        function changeLanguage(lang) {
+            currentLang = lang;
+            updateContent();
+            saveLanguagePreference();
+            document.getElementById('lang-dropdown')?.classList.add('hidden');
+        }
+
+        // 3. 更新 UI (按鈕文字、勾選狀態、手機版樣式)
+        function updateLangUI() {
+            // A. 更新桌面版按鈕文字
+            const desktopText = document.getElementById('current-lang-text');
+            if (desktopText) {
+                desktopText.innerText = currentLang === 'zh' ? '繁體中文' : 'English';
+            }
+
+            // B. 更新下拉選單的勾選狀態
+            document.querySelectorAll('.lang-check-zh').forEach(el => el.style.opacity = currentLang === 'zh' ? '1' : '0');
+            document.querySelectorAll('.lang-check-en').forEach(el => el.style.opacity = currentLang === 'en' ? '1' : '0');
+
+            // C. 更新手機版按鈕樣式
+            const mobileBtnZh = document.querySelector('.lang-btn-mobile-zh');
+            const mobileBtnEn = document.querySelector('.lang-btn-mobile-en');
+
+            if (mobileBtnZh && mobileBtnEn) {
+                if (currentLang === 'zh') {
+                    mobileBtnZh.classList.add('border-primary/50', 'bg-primary/20');
+                    mobileBtnZh.classList.remove('opacity-70', 'border-white/10', 'bg-transparent');
+                    mobileBtnEn.classList.add('opacity-70', 'border-white/10', 'bg-transparent');
+                    mobileBtnEn.classList.remove('border-primary/50', 'bg-primary/20');
+                } else {
+                    mobileBtnEn.classList.add('border-primary/50', 'bg-primary/20');
+                    mobileBtnEn.classList.remove('opacity-70', 'border-white/10', 'bg-transparent');
+                    mobileBtnZh.classList.add('opacity-70', 'border-white/10', 'bg-transparent');
+                    mobileBtnZh.classList.remove('border-primary/50', 'bg-primary/20');
+                }
+            }
+        }
+
+        // 4. 更新內容
+        function updateContent() {
+            const elements = document.querySelectorAll('[data-i18n]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[currentLang] && translations[currentLang][key]) {
+                    el.innerHTML = translations[currentLang][key];
+                }
+            });
+            updateLangUI();
+        }
+
+        function saveLanguagePreference() {
+            localStorage.setItem('preferredLang', currentLang);
+        }
+
+        function loadLanguagePreference() {
+            const savedLang = localStorage.getItem('preferredLang');
+            if (savedLang) {
+                currentLang = savedLang;
+            }
+        }
+
+        // 5. 點擊外部關閉選單
+        window.addEventListener('click', function (e) {
+            const dropdown = document.getElementById('lang-dropdown');
+            const btn = document.getElementById('lang-menu-btn');
+            if (dropdown && !dropdown.classList.contains('hidden') && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // ==========================================
+        // 3. 滾動與導航功能
+        // ==========================================
         function scrollToSection(index) {
-            // 1. 手機版邏輯
             if (isMobile()) {
                 const targetSection = sections[index];
                 if (targetSection) {
@@ -2020,22 +2293,18 @@
                 closeMenuHandler();
                 return;
             }
-            // 2. 作品集展開時的邏輯
             if (isPortfolioExpanded) {
                 const toggleButton = document.getElementById('toggle-portfolio-view');
                 if (toggleButton) toggleButton.click();
                 setTimeout(() => scrollToSection(index), 300);
                 return;
             }
-            // 3. 防重複觸發與邊界檢查
             if (index < 0 || index >= totalSections || isScrolling) return;
 
-            isScrolling = true; // 鎖定滾動
+            isScrolling = true;
             const targetSection = sections[index];
             const currentSection = sections[currentSectionIndex];
             const targetId = targetSection.id;
-
-            // 抓取目標區塊內的動畫元件
             const targetStaggerItems = targetSection.querySelectorAll('.stagger-item');
             const targetFadeIns = targetSection.querySelectorAll('.fade-in');
 
@@ -2045,10 +2314,9 @@
             }
             updateNav(index);
 
-            // 4. 建立 GSAP 時間軸
             const tl = gsap.timeline({
                 onComplete: () => {
-                    isScrolling = false; // 解鎖滾動
+                    isScrolling = false;
                     currentSectionIndex = index;
                     if (currentSection !== targetSection) { currentSection.classList.remove('active-section'); }
                     targetSection.classList.add('active-section');
@@ -2057,22 +2325,17 @@
                 }
             });
 
-            // [關鍵修正 A] 立即重置目標元件 (時間點: 0)，防止殘影
             tl.add(() => {
                 if (targetStaggerItems.length > 0) gsap.set(targetStaggerItems, { opacity: 0, y: 50 });
                 if (targetFadeIns.length > 0) gsap.set(targetFadeIns, { opacity: 0, y: 20 });
             }, 0);
 
-            // [關鍵修正 B] 舊區塊淡出 (時間點: 0)
             if (currentSectionIndex !== index) {
-                // [修改] 將 duration 改為 1.5 秒，讓消失過程更緩慢平滑
                 tl.to(currentSection, { opacity: 0, duration: 1.5, ease: "power2.out" }, 0);
             }
 
-            // [關鍵修正 C] 滾動立即開始 (時間點: 0)，不再等待淡出完成！
             tl.to(scroller, { scrollTop: targetSection.offsetTop, duration: 1.5, ease: "power2.inOut" }, 0);
 
-            // [關鍵修正 D] 目標區塊淡入 (與滾動重疊，於結束前 1秒開始)
             tl.to(targetSection, {
                 opacity: 1,
                 duration: 1,
@@ -2124,16 +2387,14 @@
             const header = document.getElementById('main-header');
             if (header) header.classList.toggle('scrolled', index > 0);
         }
-        // === [修正 3/3] JS: 動畫觸發函式 ===
+
         function triggerInternalAnimations(section, skipAnimation = false) {
             const staggerItems = section.querySelectorAll('.stagger-item');
 
-            // 1. 區塊進場動畫
             if (staggerItems.length > 0) {
                 if (skipAnimation) {
                     gsap.set(staggerItems, { opacity: 1, y: 0 });
                 } else {
-                    // 使用 fromTo 強制重置位置，解決閃爍與定位問題
                     gsap.fromTo(staggerItems,
                         { opacity: 0, y: 50 },
                         { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power3.out" }
@@ -2141,14 +2402,12 @@
                 }
             }
 
-            // 2. 顯示其他 fade-in 元素
             section.querySelectorAll('.fade-in').forEach(el => {
                 el.classList.add('visible');
                 if (!isMobile()) {
                     if (skipAnimation) {
                         gsap.set(el, { opacity: 1, y: 0 });
                     } else {
-                        // 使用 fromTo 接管動畫，無視 CSS 的干擾
                         gsap.fromTo(el, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", delay: 0.2 });
                     }
                 }
@@ -2158,14 +2417,12 @@
 
             const animationDelay = skipAnimation ? 0 : 800;
 
-            // 3. 觸發數字計數器
             setTimeout(() => {
                 section.querySelectorAll('.counter').forEach(counter => {
                     animateCounter(counter, skipAnimation);
                 });
             }, animationDelay);
 
-            // 4. 觸發長條圖
             const progressBars = section.querySelectorAll('.progress-bar-fill');
             if (progressBars.length > 0) {
                 if (skipAnimation) {
@@ -2189,36 +2446,25 @@
         }
 
         function animateCounter(el, skip = false) {
-            // 判斷傳入的是 .counter 本身，還是包含它的容器
             const counter = el.classList.contains('counter') ? el : el.querySelector('.counter');
-
             if (!counter) return;
-
             const target = parseInt(counter.getAttribute('data-target'));
 
-            // 如果要求跳過動畫 (例如返回瀏覽時)，直接顯示最終數字
             if (skip) {
                 counter.innerText = target;
                 counter.classList.add('counted');
                 return;
             }
 
-            // 如果還沒跑過動畫，才執行
             if (!counter.classList.contains('counted')) {
-                counter.innerText = '0'; // 先歸零
-
+                counter.innerText = '0';
                 let start = null;
-                const duration = 1500; // 動畫時間 1.5秒
-
+                const duration = 1500;
                 const step = (ts) => {
                     if (!start) start = ts;
                     const progress = Math.min((ts - start) / duration, 1);
-
-                    // 使用 Ease Out Quart 緩動公式，讓數字跑起來有快到慢的質感
                     const current = Math.floor((1 - Math.pow(1 - progress, 4)) * target);
-
                     counter.innerText = current;
-
                     if (progress < 1) {
                         requestAnimationFrame(step);
                     } else {
@@ -2232,39 +2478,27 @@
 
         function initMobileAnimations() {
             if (!isMobile()) return;
-
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    // 當元素進入畫面 10% 時觸發
                     if (entry.isIntersecting) {
-                        // 1. 基本淡入 (觸發 CSS)
                         entry.target.classList.add('visible');
-
-                        // 2. 觸發數字跳動 (Projects Shipped)
                         if (entry.target.classList.contains('stat-card')) {
                             animateCounter(entry.target);
                         }
-
-                        // 3. 觸發長條圖動畫 (Focus Areas)
                         if (entry.target.classList.contains('project-distribution')) {
                             const progressBars = entry.target.querySelectorAll('.progress-bar-fill');
                             progressBars.forEach(bar => {
                                 const targetWidth = bar.getAttribute('data-width');
-                                // 使用 GSAP 讓它從 0% 長到目標寬度
                                 gsap.fromTo(bar,
                                     { width: "0%" },
                                     { width: targetWidth, duration: 1.5, ease: "power2.out", delay: 0.2 }
                                 );
                             });
                         }
-
-                        // 動畫只跑一次，跑完就取消監聽
                         observer.unobserve(entry.target);
                     }
                 });
             }, { threshold: 0.1 });
-
-            // 確保 stat-card 與 project-distribution 都有被監聽到
             document.querySelectorAll('.skill-card, .fade-in, .stagger-item, .stat-card, .project-distribution').forEach(c => observer.observe(c));
         }
 
@@ -2276,14 +2510,10 @@
         document.addEventListener('click', function (e) {
             const card = e.target.closest('.project-card');
             if (card) {
-                // 1. 儲存 Filter 狀態 (手機與桌機通用)
-                // 只要當下有選中的 Filter 按鈕，就記錄下來
                 const activeFilter = document.querySelector('.portfolio-filter-btn.active');
                 if (activeFilter) {
                     sessionStorage.setItem('portfolioActiveFilter', activeFilter.getAttribute('data-filter'));
                 }
-
-                // 2. 儲存捲動位置
                 if (isMobile()) {
                     sessionStorage.setItem('mobileScrollPos', window.scrollY);
                 } else if (isPortfolioExpanded) {
@@ -2293,7 +2523,14 @@
             }
         });
 
+        // ==========================================
+        // 4. Window Onload (載入後執行)
+        // ==========================================
         window.onload = function () {
+            // [i18n] 優先載入語言設定並更新內容與UI
+            loadLanguagePreference();
+            updateContent();
+
             if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
             const navEntry = performance.getEntriesByType("navigation")[0];
             if (navEntry && navEntry.type === 'reload') {
@@ -2306,20 +2543,16 @@
             }
 
             const loader = document.querySelector('.loader');
-            /* === 修改後 (請完整替換 hideLoader 內的內容) === */
+
             function hideLoader() {
                 if (loader.classList.contains('hidden')) return;
                 loader.classList.add('hidden');
 
                 let initialIndex = 0;
                 const hash = window.location.hash;
-
-                // 檢查是否有儲存的捲動位置或狀態 (代表是返回訪問)
                 const savedLastSection = sessionStorage.getItem('lastSectionIndex');
                 const savedMobilePos = sessionStorage.getItem('mobileScrollPos');
                 const savedExpandedState = sessionStorage.getItem('portfolioExpanded');
-
-                // 判斷是否為「返回/刷新」狀態 (只要有任何存檔紀錄，就視為返回)
                 const isReturningVisitor = (savedLastSection !== null || savedMobilePos !== null || savedExpandedState !== null);
 
                 if (hash) {
@@ -2329,7 +2562,6 @@
                     initialIndex = parseInt(savedLastSection, 10);
                 }
 
-                // --- 桌機版處理邏輯 ---
                 if (!isMobile()) {
                     const isRestoreMode = (savedExpandedState === 'true' && initialIndex === 3);
 
@@ -2342,7 +2574,6 @@
                         updateNav(3);
                         toggleBackToTop(true);
 
-                        // 觸發展開
                         const toggleButton = document.getElementById('toggle-portfolio-view');
                         if (toggleButton) {
                             toggleButton.click();
@@ -2359,9 +2590,7 @@
                                 });
                             }
                         }
-                        // 【關鍵修改】傳入 true，跳過桌機動畫
                         triggerInternalAnimations(sections[3], true);
-
                     } else {
                         if (initialIndex > 0) {
                             currentSectionIndex = initialIndex;
@@ -2370,82 +2599,57 @@
                             scroller.scrollTop = sections[initialIndex].offsetTop;
                             updateNav(initialIndex);
                             toggleBackToTop(true);
-                            // 【關鍵修改】如果是返回訪問 (isReturningVisitor)，傳入 true 跳過動畫
                             triggerInternalAnimations(sections[initialIndex], isReturningVisitor);
                         } else {
                             currentSectionIndex = 0;
                             sections[0].classList.add('active-section');
                             updateNav(0);
-                            // 【關鍵修改】如果是返回訪問，跳過動畫
                             triggerInternalAnimations(sections[0], isReturningVisitor);
                             scroller.scrollTop = 0;
                             window.scrollTo(0, 0);
                         }
                     }
                 }
-                // --- 手機版處理邏輯 ---
                 else {
-                    // 情境 A：如果是返回訪問 (Refresh 或上一頁)，為了體驗，直接顯示最終狀態
                     if (isReturningVisitor) {
-                        // 1. 強制所有 fade-in 元素顯示
                         document.querySelectorAll('.fade-in').forEach(el => {
                             el.classList.add('visible');
-                            el.style.transition = 'none'; // 暫時移除過渡效果
+                            el.style.transition = 'none';
                             el.style.opacity = '1';
                             el.style.transform = 'translateY(0)';
                         });
-
-                        // 2. 強制所有 stagger-item 顯示
                         document.querySelectorAll('.stagger-item').forEach(el => {
-                            el.classList.add('visible'); // 關鍵：加上 class 讓 CSS 吃得到
+                            el.classList.add('visible');
                             el.style.opacity = '1';
                             el.style.transform = 'none';
-                            el.style.transition = 'none'; // 暫時移除過渡效果
+                            el.style.transition = 'none';
                         });
-
-                        // 3. 恢復 transition (用 setTimeout 確保下一幀才加回來，避免閃爍)
                         setTimeout(() => {
                             document.querySelectorAll('.fade-in, .stagger-item').forEach(el => {
                                 el.style.transition = '';
                             });
                         }, 100);
-
-                        // 4. 初始化 observer (防止有漏網之魚)
                         initMobileAnimations();
                     }
-
-                    // 情境 B：第一次訪問，正常播放動畫
                     else {
-                        // === 關鍵修改：這裡什麼都不要做！不要強制顯示！ ===
-                        // 讓 initMobileAnimations 裡的 IntersectionObserver 去負責觸發動畫
                         initMobileAnimations();
                     }
 
-                    // --- 以下是狀態恢復邏輯 (保持不變) ---
-
-                    /* 恢復 Tab 狀態的邏輯 */
                     if (savedExpandedState === 'true') {
                         const toggleBtn = document.getElementById('toggle-portfolio-view');
                         const grid = document.getElementById('portfolio-grid');
-
-                        // 1. 先觸發展開
                         if (toggleBtn && grid && grid.classList.contains('hidden')) {
                             toggleBtn.click();
                         }
-
-                        // 2. 恢復 Tab 標籤狀態
-                        // 必須在展開之後執行，因為展開後 Filter 按鈕才會出現
                         const savedFilter = sessionStorage.getItem('portfolioActiveFilter');
                         if (savedFilter) {
                             const filterBtn = document.querySelector(`.portfolio-filter-btn[data-filter="${savedFilter}"]`);
-                            // 如果找到了對應的按鈕，且它還沒被激活，就模擬點擊
                             if (filterBtn && !filterBtn.classList.contains('active')) {
                                 filterBtn.click();
                             }
                         }
                     }
 
-                    // 手機版：恢復捲動位置
                     if (savedMobilePos) {
                         setTimeout(() => {
                             window.scrollTo({ top: parseFloat(savedMobilePos), behavior: "auto" });
@@ -2481,6 +2685,7 @@
             initPortfolioToggle();
             initPortfolioFilter();
             initMobileMenu();
+            initInfiniteScroll();
 
             window.addEventListener('scroll', () => {
                 if (!isMobile()) return;
@@ -2489,57 +2694,42 @@
                 else header.classList.remove('scrolled');
                 toggleBackToTop(window.scrollY > 300);
             });
-
-            // [新增 JS] 初始化無縫輪播 (DOM 減量優化)
-            function initInfiniteScroll() {
-                const scrollers = document.querySelectorAll(".scroller");
-
-                // 檢查是否開啟「減少動效」
-                if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-                    addAnimation();
-                }
-
-                function addAnimation() {
-                    scrollers.forEach((scroller) => {
-                        // 標記已處理，讓 CSS 生效
-                        scroller.setAttribute("data-animated", true);
-
-                        const scrollerInner = scroller.querySelector(".scroller-inner");
-                        const scrollerContent = Array.from(scrollerInner.children);
-
-                        // 複製每一項並加入到容器尾端
-                        scrollerContent.forEach((item) => {
-                            const duplicatedItem = item.cloneNode(true);
-                            duplicatedItem.setAttribute("aria-hidden", true); // 避免螢幕閱讀器重複讀取
-
-                            // 確保複製的圖片也有 lazy loading (雖然大部分瀏覽器 cloneNode 會保留屬性)
-                            const img = duplicatedItem.querySelector('img');
-                            if (img) img.setAttribute('loading', 'lazy');
-
-                            scrollerInner.appendChild(duplicatedItem);
-                        });
-                    });
-                }
-            }
-
-            // 立即執行初始化
-            initInfiniteScroll();
-
         };
+
+        // ==========================================
+        // 5. 元件初始化函式 (Init Functions)
+        // ==========================================
+        function initInfiniteScroll() {
+            const scrollers = document.querySelectorAll(".scroller");
+            if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                addAnimation();
+            }
+            function addAnimation() {
+                scrollers.forEach((scroller) => {
+                    scroller.setAttribute("data-animated", true);
+                    const scrollerInner = scroller.querySelector(".scroller-inner");
+                    const scrollerContent = Array.from(scrollerInner.children);
+                    scrollerContent.forEach((item) => {
+                        const duplicatedItem = item.cloneNode(true);
+                        duplicatedItem.setAttribute("aria-hidden", true);
+                        const img = duplicatedItem.querySelector('img');
+                        if (img) img.setAttribute('loading', 'lazy');
+                        scrollerInner.appendChild(duplicatedItem);
+                    });
+                });
+            }
+        }
 
         function initPortfolioFilter() {
             const btns = document.querySelectorAll('.portfolio-filter-btn');
             const cards = document.querySelectorAll('#portfolio-grid .project-card');
             btns.forEach(btn => {
                 btn.addEventListener('click', function () {
-                    // 移除 active 樣式 (不再需要切換 bg-primary，因為統一用 liquid glass)
                     btns.forEach(b => {
                         b.classList.remove('active');
-                        // 確保移除舊的樣式
                         b.classList.remove('bg-primary', 'shadow-primary', 'bg-dark-lighter');
                     });
                     this.classList.add('active');
-
                     const filter = this.getAttribute('data-filter');
                     cards.forEach(c => { if (filter === 'all' || c.getAttribute('data-category') === filter) c.style.display = 'block'; else c.style.display = 'none'; });
                 });
@@ -2560,81 +2750,48 @@
                 if (e) e.preventDefault();
                 const isGridVisible = !grid.classList.contains('hidden');
 
-                // === 收合 (Collapse) ===
                 if (isGridVisible) {
                     sessionStorage.setItem('portfolioExpanded', 'false');
-
-                    // 恢復 Scroller
-                    if (scrollMob) {
-                        scrollMob.style.display = '';
-                        scrollMob.classList.add('visible'); // 確保顯示
-                    }
-                    if (scrollDesk) {
-                        scrollDesk.style.display = '';
-                        gsap.set(scrollDesk, { opacity: 1, y: 0 }); // 確保桌機版歸位
-                    }
-
-                    // 隱藏 Grid
+                    if (scrollMob) { scrollMob.style.display = ''; scrollMob.classList.add('visible'); }
+                    if (scrollDesk) { scrollDesk.style.display = ''; gsap.set(scrollDesk, { opacity: 1, y: 0 }); }
                     grid.classList.add('hidden');
                     filters.classList.add('hidden');
-
-                    // 恢復按鈕文字與狀態
                     btnText.innerText = 'View All Projects';
                     btnIcon.className = 'fas fa-arrow-right ml-2';
                     const btnContainer = btn.closest('.stagger-item');
                     if (btnContainer) gsap.to(btnContainer, { opacity: 1, duration: 0.3 });
-
                     isPortfolioExpanded = false;
                     document.body.classList.remove('expanded-view');
-
-                    // 重置位置到 Portfolio Section 頂部
                     currentSectionIndex = 3;
                     updateNav(3);
                     if (!isMobile()) {
                         scroller.scrollTop = sections[3].offsetTop;
-                        triggerInternalAnimations(sections[3], true); // 重新觸發動畫以確保元件可見
+                        triggerInternalAnimations(sections[3], true);
                     }
                 }
-
-                // === 展開 (Expand) ===
                 else {
                     sessionStorage.setItem('portfolioExpanded', 'true');
-
-                    // 隱藏 Scroller
                     if (scrollMob) scrollMob.style.display = 'none';
                     if (scrollDesk) scrollDesk.style.display = 'none';
-
-                    // 顯示 Grid 與 Filter
                     grid.classList.remove('hidden');
                     filters.classList.remove('hidden');
-
-                    // [關鍵修正] 強制讓 Grid 容器本身變成可見 (解決看不見內容與無法滾動的問題)
                     gsap.set(grid, { opacity: 1, y: 0, clearProps: "transform" });
                     gsap.set(filters, { opacity: 1, y: 0, clearProps: "transform" });
 
-                    // 確保 "All" filter 被選中
                     const allBtn = document.querySelector('.portfolio-filter-btn[data-filter="all"]');
                     if (allBtn && !document.querySelector('.portfolio-filter-btn.active')) allBtn.click();
 
-                    // 更新按鈕狀態
                     btnText.innerText = 'Fold';
                     btnIcon.className = 'fas fa-chevron-up ml-2';
-
                     isPortfolioExpanded = true;
                     document.body.classList.add('expanded-view');
 
-                    // 卡片進場動畫
                     const gridCards = grid.querySelectorAll('.project-card');
-                    gridCards.forEach(card => {
-                        card.classList.add('visible');
-                        card.style.pointerEvents = 'auto';
-                    });
-
+                    gridCards.forEach(card => { card.classList.add('visible'); card.style.pointerEvents = 'auto'; });
                     if (gridCards.length > 0) {
                         gsap.fromTo(gridCards, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" });
                     }
 
-                    // 滾動定位修正
                     setTimeout(() => {
                         const targetTop = sections[3].offsetTop;
                         if (isMobile()) {
@@ -2660,6 +2817,34 @@
             document.getElementById('menu-overlay').addEventListener('click', closeMenuHandler);
         }
 
+        function copyEmail() {
+            const email = "lyfun0202@gmail.com";
+            const textSpan = document.getElementById('mobile-email-text');
+            const icon = document.getElementById('mobile-copy-icon');
+
+            // 執行複製
+            navigator.clipboard.writeText(email).then(() => {
+                // 視覺回饋：文字變色、Icon 變更
+                const originalText = textSpan.innerText;
+                textSpan.innerText = "Copied!";
+                textSpan.classList.add('text-green-400');
+
+                icon.classList.remove('fa-copy');
+                icon.classList.add('fa-check', 'text-green-400', 'opacity-100'); // 強制顯示打勾
+
+                // 2秒後復原
+                setTimeout(() => {
+                    textSpan.innerText = originalText;
+                    textSpan.classList.remove('text-green-400');
+
+                    icon.classList.remove('fa-check', 'text-green-400', 'opacity-100');
+                    icon.classList.add('fa-copy');
+                }, 2000);
+            }).catch(err => {
+                console.error('複製失敗', err);
+            });
+        }
+
         window.addEventListener('keydown', (e) => {
             if (isMobile() || isScrolling || isPortfolioExpanded) return;
             if (['ArrowDown', 'PageDown', ' '].includes(e.key) && !e.shiftKey) { e.preventDefault(); scrollToSection(currentSectionIndex + 1); }
@@ -2668,48 +2853,35 @@
             if (e.key === 'End') { e.preventDefault(); scrollToSection(totalSections - 1); }
         });
 
-
-        // === 修改後：全域等比例縮放腳本 (效能優化版) ===
         function setResponsiveFontSize() {
             const minDesktopWidth = 1024;
             let currentWidth = window.innerWidth;
-
             if (currentWidth < minDesktopWidth) {
-                // [優化] 只有當 style 真的有值時才去清除，避免手機捲動時頻繁觸發 Reflow
                 if (document.documentElement.style.fontSize !== '') {
                     document.documentElement.style.fontSize = '';
                 }
                 return;
             }
-
-            // === 桌機/4K 模式 ===
             const baseWidth = 1920;
             const baseFontSize = 16;
             let newFontSize = (currentWidth / baseWidth) * baseFontSize;
             document.documentElement.style.fontSize = newFontSize + "px";
         }
 
-        // === [關鍵修正] 監聽視窗變動：同時更新字體與校正捲動位置 ===
         window.addEventListener('resize', () => {
-            // 1. 先重新計算字體大小 (這會改變版面高度)
             setResponsiveFontSize();
-
-            // 2. [修正] 立即校正捲動位置，防止內容跑版
-            // 只有在桌機版 (Custom Scroller) 且非展開模式下才需要強制對齊
             if (!isMobile() && !isPortfolioExpanded) {
                 const targetSection = sections[currentSectionIndex];
                 if (targetSection) {
-                    // 強制捲軸跳轉到當前區塊的新位置 (offsetTop)
-                    // 這樣就算區塊高度變了，視野也會保持鎖定在區塊頂部
                     scroller.scrollTop = targetSection.offsetTop;
                 }
             }
         });
 
         window.addEventListener('DOMContentLoaded', setResponsiveFontSize);
-        // 立即執行一次
         setResponsiveFontSize();
     </script>
 </body>
+
 
 </html>
