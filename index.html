@@ -2673,7 +2673,7 @@
 
             const splines = document.querySelectorAll('spline-viewer');
             let loaded = 0;
-            const timeout = setTimeout(hideLoader, 4000);
+            const timeout = setTimeout(hideLoader, 3000);
             if (splines.length === 0) { hideLoader(); clearTimeout(timeout); }
             else { splines.forEach(s => s.addEventListener('load', () => { loaded++; if (loaded >= splines.length) setTimeout(() => { hideLoader(); clearTimeout(timeout); }, 500); })); }
 
