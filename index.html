@@ -21,7 +21,15 @@
         href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@100..900&family=Quicksand:wght@300..700&display=swap"
         rel="stylesheet">
 
-    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.96/build/spline-viewer.js"></script>
+    <script>
+        // 只有當螢幕寬度大於 768px (桌機) 時，才載入 Spline 3D 引擎
+        if (window.innerWidth > 768) {
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = 'https://unpkg.com/@splinetool/viewer@1.10.96/build/spline-viewer.js';
+            document.head.appendChild(script);
+        }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
@@ -802,8 +810,11 @@
 
         /* 當 JS 啟用動畫後 (.scroller[data-animated="true"]) */
         .scroller[data-animated="true"] .scroller-inner {
-            /* 預設動畫時間 40s，可透過 data-speed 覆蓋 */
             animation: scroll 40s linear infinite;
+            will-change: transform;
+            /* <--- 關鍵優化：啟用 GPU 加速 */
+            backface-visibility: hidden;
+            /* <--- 輔助優化 */
         }
 
         /* 根據 data-direction 控制方向 */
