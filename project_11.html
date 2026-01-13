@@ -9,11 +9,11 @@
     <link rel="shortcut icon" href="./img/favicon/favicon.ico">
     <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="./style.css" rel="stylesheet">
+
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
 
@@ -24,40 +24,8 @@
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#2B6CB0', // System Header Blue
-                        secondary: '#C53030', // TMU Logo Red
-                        dark: '#121212',
-                        'dark-light': '#1E1E1E',
-                        'dark-lighter': '#2D2D2D',
-                        accent: '#ED8936'
-                    },
-                    fontFamily: {
-                        sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
-                        heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
-                    },
-                    animation: {
-                        pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        shimmer: 'shimmer 1.5s infinite linear',
-                    },
-                    keyframes: {
-                        shimmer: {
-                            '0%': { transform: 'translateX(-100%)' },
-                            '100%': { transform: 'translateX(100%)' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
     <style>
-        /* BASIC SETUP */
+        /* === 基礎設定 === */
         body,
         html {
             margin: 0;
@@ -71,7 +39,7 @@
             overscroll-behavior: none;
         }
 
-        /* Skeleton Shimmer */
+        /* === Skeleton Shimmer Effect === */
         .skeleton {
             background: #1e293b;
             background: linear-gradient(to right, #1e293b 8%, #334155 18%, #1e293b 33%);
@@ -85,7 +53,7 @@
             }
         }
 
-        /* Main Scroller */
+        /* === 主捲動容器 === */
         #main-scroller {
             width: 100vw;
             height: 100vh;
@@ -93,6 +61,7 @@
             position: relative;
         }
 
+        /* === 全頁滾動區塊 === */
         .snap-section {
             width: 100vw;
             height: 100vh;
@@ -100,8 +69,7 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 1s ease-in-out;
-            display: flex;
-            flex-direction: column;
+            /* [重要修正] 移除了 display: flex 和 flex-direction: column，解決右側內容被壓扁的問題 */
         }
 
         .snap-section.active-section {
@@ -109,7 +77,7 @@
             visibility: visible;
         }
 
-        /* Hero */
+        /* === Hero 區塊設定 === */
         .hero-bg-custom {
             background-image: url('./img/project_11/hero_img.jpg');
             background-image: -webkit-image-set(url('./img/project_11/hero_img.webp') 1x, url('./img/project_11/hero_img.jpg') 1x);
@@ -127,11 +95,10 @@
             z-index: 1;
         }
 
-        /* Glassmorphism */
+        /* === Content Panel & Cards === */
         .glass-panel {
             background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(18, 18, 18, 0.98));
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             border-left: 1px solid rgba(255, 255, 255, 0.08);
         }
 
@@ -145,6 +112,7 @@
 
         .feature-card:hover {
             transform: translateY(-5px);
+            /* [修改] 手動匹配 tmu-primary (#2B6CB0) */
             border-color: rgba(43, 108, 176, 0.4);
             box-shadow: 0 10px 30px -10px rgba(43, 108, 176, 0.2);
             background: rgba(255, 255, 255, 0.08);
@@ -166,9 +134,10 @@
         }
 
         .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: #2B6CB0;
+            background: #2B6CB0; /* tmu-primary */
         }
 
+        /* === 內容滾動區域 === */
         .scroll-content {
             overflow-y: auto !important;
             touch-action: pan-y !important;
@@ -182,6 +151,7 @@
             overscroll-behavior: contain;
         }
 
+        /* === 右側 Tab 橫向滾動修正 === */
         .horizontal-tabs {
             overflow-x: auto !important;
             overflow-y: hidden !important;
@@ -264,41 +234,15 @@
         }
 
         @keyframes l4 {
-            0% {
-                inset: 0 35px 35px 0;
-            }
-
-            12.5% {
-                inset: 0 35px 0 0;
-            }
-
-            25% {
-                inset: 35px 35px 0 0;
-            }
-
-            37.5% {
-                inset: 35px 0 0 0;
-            }
-
-            50% {
-                inset: 35px 0 0 35px;
-            }
-
-            62.5% {
-                inset: 0 0 0 35px;
-            }
-
-            75% {
-                inset: 0 0 35px 35px;
-            }
-
-            87.5% {
-                inset: 0 0 35px 0;
-            }
-
-            100% {
-                inset: 0 35px 35px 0;
-            }
+            0% { inset: 0 35px 35px 0; }
+            12.5% { inset: 0 35px 0 0; }
+            25% { inset: 35px 35px 0 0; }
+            37.5% { inset: 35px 0 0 0; }
+            50% { inset: 35px 0 0 35px; }
+            62.5% { inset: 0 0 0 35px; }
+            75% { inset: 0 0 35px 35px; }
+            87.5% { inset: 0 0 35px 0; }
+            100% { inset: 0 35px 35px 0; }
         }
 
         .back-btn i {
@@ -317,20 +261,13 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- HELPER COMPONENT: Responsive Image (WebP Support) ---
+        // --- COMPONENTS ---
         const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
-
-            return (
-                <picture style={{ display: 'contents' }}>
-                    <source srcSet={webpSrc} type="image/webp" />
-                    <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} />
-                </picture>
-            );
+            return (<picture style={{ display: 'contents' }}> <source srcSet={webpSrc} type="image/webp" /> <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} /> </picture>);
         };
 
-        // --- NEW COMPONENT: Image with Skeleton Shimmer Loading ---
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
             useEffect(() => { setLoaded(false); }, [src]);
@@ -338,7 +275,7 @@
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {!loaded && (<div className="absolute inset-0 bg-dark-lighter rounded-lg z-10 overflow-hidden flex items-center justify-center pointer-events-none"> <div className="absolute z-10 opacity-20"> <i className="fas fa-image text-white text-3xl"></i> </div> <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent z-20"></div> </div>)}
+                    {!loaded && (<div className="absolute inset-0 bg-tmu-dark-lighter rounded-lg z-10 overflow-hidden flex items-center justify-center pointer-events-none"> <div className="absolute z-10 opacity-20"> <i className="fas fa-image text-white text-3xl"></i> </div> <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent z-20"></div> </div>)}
                     <ResponsiveImage src={src} alt={alt} className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={() => setLoaded(true)} onError={handleError} {...props} />
                 </div>
             );
@@ -354,7 +291,7 @@
             Efficiency: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>,
         };
 
-        // --- TRANSLATIONS ---
+        // --- TRANSLATIONS & DATA ---
         const TRANSLATIONS = {
             zh: {
                 title_main: "台北醫學大學", title_sub: "臨床教育學習護照",
@@ -442,19 +379,20 @@
             const [activeTab, setActiveTab] = useState('context');
             const [currentImage, setCurrentImage] = useState(MAIN_IMAGE);
             const [activeGalleryId, setActiveGalleryId] = useState(null);
+            const [activeSolutionId, setActiveSolutionId] = useState(null);
             const [showBackToHero, setShowBackToHero] = useState(false);
 
-            // GSAP Scroll State
+            // Refs
             const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
             const isScrollingRef = useRef(false);
             const mainContainerRef = useRef(null);
             const sectionsRef = useRef([]);
-            const heroRef = useRef(null);
-            const splitRef = useRef(null);
             const contentScrollRef = useRef(null);
             const imageScrollRef = useRef(null);
+            const heroRef = useRef(null);
+            const splitRef = useRef(null);
             const touchStartY = useRef(0);
-            const tabsContainerRef = useRef(null); // Ref for Tabs
+            const tabsContainerRef = useRef(null);
 
             const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
 
@@ -488,14 +426,17 @@
                     case 'process':
                         setCurrentImage(MAIN_IMAGE);
                         setActiveGalleryId(null);
+                        setActiveSolutionId(null);
                         break;
                     case 'solution':
                         setCurrentImage(solutionFeatures[1].image); // Default to Radar
+                        setActiveSolutionId(solutionFeatures[1].id);
                         setActiveGalleryId(null);
                         break;
                     case 'climax':
                         setCurrentImage(galleryImages[0].src);
                         setActiveGalleryId(galleryImages[0].id);
+                        setActiveSolutionId(null);
                         break;
                     default:
                         setCurrentImage(MAIN_IMAGE);
@@ -579,9 +520,9 @@
                 };
             }, [currentSectionIndex]);
 
-            const goBack = () => { window.location.href = "index.html#portfolio"; };
+            const goBack = () => window.location.href = "index.html#portfolio";
             const handleGallerySwitch = (imgObj) => { setCurrentImage(imgObj.src); setActiveGalleryId(imgObj.id); };
-            const handleSolutionSwitch = (solObj) => { setCurrentImage(solObj.image); setActiveGalleryId(null); };
+            const handleSolutionSwitch = (solObj) => { setCurrentImage(solObj.image); setActiveSolutionId(solObj.id); };
 
             const showBrowserHeader = !['context', 'process'].includes(activeTab);
 
@@ -590,30 +531,38 @@
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
-                            <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
+                        {/* [修改] bg-dark-lighter -> bg-tmu-dark-lighter, border-primary -> border-tmu-primary */}
+                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-tmu-primary/50 hover:bg-tmu-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
+                            {/* [修改] text-primary -> text-tmu-primary, group-hover:text-secondary -> group-hover:text-tmu-secondary */}
+                            <i className="fas fa-arrow-left text-tmu-primary group-hover:text-tmu-secondary flex-shrink-0"></i>
                             <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
                         </button>
                     </nav>
 
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="fas fa-arrow-up"></i></button>
+                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-tmu-primary hover:border-tmu-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="fas fa-arrow-up"></i></button>
 
                     <div id="main-scroller" ref={mainContainerRef}>
-                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark hero-bg-custom">
+                        {/* [修改] bg-dark -> bg-tmu-dark */}
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-tmu-dark hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
-                                    <div className={`inline-block px-4 py-1 rounded-full border border-white text-white text-xs font-bold tracking-widest mb-6 font-sans ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>LEGACY MODERNIZATION</div>
-                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-white bg-clip-text bg-gradient-to-r">{t('title_sub')}</span></h1>
+                                    {/* [修改] border-white -> border-tmu-primary, text-white -> text-tmu-primary */}
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-tmu-primary text-tmu-primary text-xs font-bold tracking-widest mb-6 font-sans ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART EDUCATION SYSTEM</div>
+                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-tmu-primary to-white font-heading">{t('title_sub')}</span></h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(43,108,176,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
+                                    {/* [修改] bg-primary -> bg-tmu-primary */}
+                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-tmu-primary border border-tmu-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-tmu-primary transition-all shadow-[0_10px_30px_rgba(43,108,176,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
                                 </div>
                             </div>
                         </section>
 
-                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark overflow-hidden">
+                        {/* [修改] bg-dark -> bg-tmu-dark */}
+                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-tmu-dark overflow-hidden">
+                            {/* [修改] bg-[#1e293b] (保留原色碼) */}
                             <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl">
                                 <div className="w-full h-[35vh] lg:h-full flex items-center justify-center">
-                                    <div className={`relative transition-all duration-500 shadow-2xl rounded-xl border border-white/10 overflow-hidden flex flex-col ${showBrowserHeader ? 'w-full h-full max-w-full max-h-full lg:max-h-[90%] bg-dark-light' : 'w-auto h-auto max-w-full max-h-full lg:max-h-[90%] bg-transparent'}`}>
+                                    {/* [修改] bg-dark-light -> bg-tmu-dark-light */}
+                                    <div className={`relative transition-all duration-500 shadow-2xl rounded-xl border border-white/10 overflow-hidden flex flex-col ${showBrowserHeader ? 'w-full h-full max-w-full max-h-full lg:max-h-[90%] bg-tmu-dark-light' : 'w-auto h-auto max-w-full max-h-full lg:max-h-[90%] bg-transparent'}`}>
                                         {showBrowserHeader && (
                                             <div className="h-8 bg-[#334155] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
                                                 <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
@@ -628,55 +577,50 @@
 
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
-                                    <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                    {/* [修改] bg-dark/95 -> bg-tmu-dark/95 */}
+                                    <div className="sticky top-0 bg-tmu-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
                                         <div className="p-6 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">Clinical Education E-Portfolio System</p>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">UI/UX Design Audit Report</p>
                                             <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full touch-pan-x">
+                                                {/* [修改] text-primary -> text-tmu-primary, border-primary -> border-tmu-primary */}
                                                 {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
+                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-tmu-primary border-b-2 border-tmu-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
                                                 ))}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content scrollable-area">
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 scroll-content scrollable-area custom-scroll">
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
-                                                <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3>
-                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
-                                                    <div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><Icons.Code /> <span className="ml-1">HTML/JS</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30"><Icons.Browser /> <span className="ml-1">Legacy Support</span></span></div></div></div>
-                                                </div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tmu-primary/20 text-tmu-primary border border-tmu-primary/30"><Icons.Code /> <span className="ml-1">HTML/JS</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tmu-secondary/20 text-tmu-secondary border border-tmu-secondary/30"><Icons.Browser /> <span className="ml-1">Legacy Support</span></span></div></div></div></div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3>
-                                                    <div className="feature-card p-5 border-l-4 border-l-secondary"><h4 className="text-secondary font-bold text-sm mb-3">{t('conflict_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div>
-                                                </div>
+                                                {/* [修改] bg-secondary -> bg-tmu-secondary */}
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-tmu-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3><div className="feature-card p-5 border-l-4 border-l-tmu-secondary"><h4 className="text-tmu-secondary font-bold text-sm mb-3">{t('conflict_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-tmu-secondary mr-3 mt-1"><i className="fas fa-times-circle"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-tmu-secondary mr-3 mt-1"><i className="fas fa-times-circle"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-tmu-secondary mr-3 mt-1"><i className="fas fa-times-circle"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
-                                            <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3><p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p>
-                                                <div className="relative pl-4 border-l border-white/10 space-y-8"><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">{t('step_1_title')}</h4><p className="text-xs text-gray-400">{t('step_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">{t('step_2_title')}</h4><p className="text-xs text-gray-400">{t('step_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">{t('step_3_title')}</h4><p className="text-xs text-gray-400">{t('step_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(43,108,176,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_4_title')}</h4><p className="text-xs text-gray-400">{t('step_4_desc')}</p></div></div>
-                                            </div>
+                                            <div className="space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('process_title')}</h3><div className="relative pl-4 border-l border-white/10 space-y-8">
+                                                {/* [修改] bg-primary -> bg-tmu-primary, text-primary -> text-tmu-primary, bg-dark -> bg-tmu-dark */}
+                                                <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tmu-primary"></div><h4 className="text-sm font-bold text-tmu-primary mb-1">{t('step_1_title')}</h4><p className="text-xs text-gray-400">{t('step_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tmu-dark border border-gray-600"></div><h4 className="text-sm font-bold text-tmu-primary mb-1">{t('step_2_title')}</h4><p className="text-xs text-gray-400">{t('step_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tmu-dark border border-gray-600"></div><h4 className="text-sm font-bold text-tmu-primary mb-1">{t('step_3_title')}</h4><p className="text-xs text-gray-400">{t('step_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tmu-primary shadow-[0_0_10px_rgba(43,108,176,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_4_title')}</h4><p className="text-xs text-gray-400">{t('step_4_desc')}</p></div></div></div>
                                         )}
                                         {activeTab === 'solution' && (
-                                            <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">{t('sol_title')}</h3>
-                                                <div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (<button key={sol.id} onClick={() => handleSolutionSwitch(sol)} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group hover:bg-white/5 border-white/5`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors bg-gradient-to-br from-primary/20 to-primary/5 text-primary`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors text-white group-hover:text-primary`}>{sol.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{sol.benefit}</p></div></button>); })}</div>
-                                            </div>
+                                            <div className="space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-6">{t('sol_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (
+                                                /* [修改] border-primary -> border-tmu-primary */
+                                                <button key={sol.id} onClick={() => handleSolutionSwitch(sol)} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeSolutionId === sol.id ? 'border-tmu-primary bg-white/5 shadow-[0_0_15px_rgba(43,108,176,0.1)]' : 'border-white/5 hover:bg-white/5'}`}>
+                                                    {/* [修改] bg-primary -> bg-tmu-primary, text-primary -> text-tmu-primary */}
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeSolutionId === sol.id ? 'bg-tmu-primary text-white' : 'bg-white/10 text-tmu-primary'}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeSolutionId === sol.id ? 'text-tmu-primary' : 'text-white'}`}>{sol.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{sol.benefit}</p></div></button>); })}</div></div>
                                         )}
                                         {activeTab === 'climax' && (
-                                            <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p>
-                                                <div className="grid gap-4">{galleryImages.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? 'border-primary bg-white/5' : ''}`}><div className="flex justify-between items-center mb-2"><h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}><span className="text-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`fas fa-arrow-left transform transition-all ${activeGalleryId === img.id ? 'text-primary -translate-x-1' : 'text-gray-600 group-hover:text-primary group-hover:-translate-x-1'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400">{img.desc}</p></button>))}</div>
-                                            </div>
+                                            /* [關鍵修正] 1. 藍框 (!border-tmu-primary) 2. 白字 (text-white) */
+                                            <div className="space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? '!border-tmu-primary bg-white/5' : ''}`}><div className="flex justify-between items-center mb-2"><h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}><span className="text-tmu-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`fas fa-arrow-left transform transition-all ${activeGalleryId === img.id ? 'text-tmu-primary -translate-x-1' : 'text-gray-600 group-hover:text-tmu-primary group-hover:-translate-x-1'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400">{img.desc}</p></button>))}</div></div>
                                         )}
                                         <div className="h-8"></div>
                                     </div>
                                 </div>
                             </div>
+
                         </section>
                     </div>
                 </React.Fragment>

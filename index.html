@@ -5,7 +5,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <link rel="preconnect" href="https://prod.spline.design">
     <meta charset="UTF-8">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +12,7 @@
 
     <link href="./img/favicon/favicon.ico" rel="shortcut icon" type="image/ico">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="./style.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,34 +25,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
 
-    <script>
-        // Tailwind 設定
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#6C63FF',
-                        secondary: '#FF6584',
-                        dark: '#121212',
-                        'dark-light': '#1E1E1E',
-                        'dark-lighter': '#2D2D2D',
-                    },
-                    fontFamily: {
-                        sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
-                        heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        'primary': '0 0.25rem 1.25rem rgba(255, 101, 132, 0.35)',
-                        'primary-hover': '0 0.375rem 1.5625rem rgba(255, 101, 132, 0.45)'
-                    },
-                    maxWidth: {
-                        '8xl': '96rem'
-                    }
-                }
-            }
-        }
-    </script>
 
     <style>
         /* =========================================
@@ -833,6 +804,14 @@
                 transform: translate(-50%);
             }
         }
+
+        /* [關鍵修正] 解決回到上方按鈕位置跑掉的問題 */
+        #back-to-top {
+            position: fixed !important;
+            bottom: 2rem; /* 對應 bottom-8 */
+            right: 2rem;  /* 對應 right-8 */
+            z-index: 9999;
+        }
     </style>
 </head>
 
@@ -841,7 +820,7 @@
         <div class="loader-animation"></div>
     </div>
 
-    <spline-viewer id="spline-bg" url="https://prod.spline.design/vKVXVdHe8QipCESp/scene.splinecode"></spline-viewer>
+    <spline-viewer id="spline-bg" url="./models/bg_scene.splinecode"></spline-viewer>
 
     <header id="main-header" class="fixed top-0 left-0 w-full z-50 transition-all duration-300">
         <div id="nav-container" class="container max-w-8xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -952,8 +931,7 @@
                         class="w-full md:w-1/2 flex justify-center px-0 h-auto aspect-square md:aspect-auto md:h-[45rem] stagger-item relative overflow-hidden">
                         <img src="./img/figure.png" alt="Hero Figure"
                             class="w-full h-full object-contain md:hidden block pointer-events-none" />
-                        <spline-viewer url="https://prod.spline.design/sA-o0fi-0MJLrsOf/scene.splinecode"
-                            class="w-full h-full overflow-hidden hidden md:block"></spline-viewer>
+                        <spline-viewer url="./models/hero_figure.splinecode" class="w-full h-full overflow-hidden hidden md:block"></spline-viewer>
                     </div>
 
                     <div

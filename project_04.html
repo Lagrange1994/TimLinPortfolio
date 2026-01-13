@@ -7,10 +7,12 @@
     <title>臺南市政府警察局 | 臺南智慧巡簽系統 - UI/UX Case Study</title>
     <link href="./img/favicon/favicon.ico" rel="shortcut icon" type="image/ico">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="./style.css" rel="stylesheet">
+
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
 
@@ -20,28 +22,6 @@
         href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#2dd4bf', // Teal
-                        secondary: '#f87171', // Red
-                        dark: '#0F1115',
-                        'dark-light': '#1A1D24',
-                        'dark-lighter': '#252932',
-                        accent: '#38bdf8'
-                    },
-                    fontFamily: {
-                        sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
-                        heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
 
     <style>
         body,
@@ -72,8 +52,7 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 1s ease-in-out;
-            display: flex;
-            flex-direction: column;
+            /* 這裡留空，讓 HTML 標籤上的 class="flex flex-col lg:flex-row" 發揮作用 */
         }
 
         .snap-section.active-section {
@@ -99,6 +78,7 @@
 
         .feature-card:hover {
             transform: translateY(-5px);
+            /* [修改] 手動匹配 tn-primary (#2dd4bf) */
             border-color: rgba(45, 212, 191, 0.4);
             box-shadow: 0 10px 30px -10px rgba(45, 212, 191, 0.2);
         }
@@ -119,7 +99,7 @@
         }
 
         .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: #2dd4bf;
+            background: #2dd4bf; /* tn-primary */
         }
 
         .scroll-content {
@@ -177,6 +157,8 @@
         /* Hero */
         .hero-bg-custom {
             background-image: url('./img/project_04/hero_img.jpg');
+            background-image: -webkit-image-set(url('./img/project_04/hero_img.webp') 1x, url('./img/project_04/hero_img.jpg') 1x);
+            background-image: image-set(url('./img/project_04/hero_img.webp') 1x, url('./img/project_04/hero_img.jpg') 1x);
             background-size: cover;
             background-position: center;
             position: relative;
@@ -313,7 +295,7 @@
             );
         };
 
-        // --- PHONE COMPONENT (For 03 & 04) ---
+        // --- PHONE COMPONENT ---
         const PhoneFrame = ({ src, alt }) => {
             return (
                 <div className="flex items-center justify-center w-full h-full p-4 lg:p-8">
@@ -630,8 +612,9 @@
                 if (activeTab === 'context' || activeTab === 'process') {
                     return (
                         <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                            <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
+                            <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-tn-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
                                 <div className="w-full h-full bg-transparent flex items-center justify-center overflow-hidden">
+                                    {/* [修改] 圖片填滿：改為 object-contain 確保完整顯示 */}
                                     <ImageWithSkeleton src={currentImage} alt="Preview" className="w-full h-full object-contain" containerClassName="w-full h-full" />
                                 </div>
                             </div>
@@ -653,45 +636,55 @@
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
-                            <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
+                        {/* [修改] bg-dark-lighter -> bg-tn-dark-lighter, border-primary -> border-tn-primary */}
+                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-tn-primary/50 hover:bg-tn-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
+                            {/* [修改] text-primary -> text-tn-primary, group-hover:text-secondary -> group-hover:text-tn-secondary */}
+                            <i className="fas fa-arrow-left text-tn-primary group-hover:text-tn-secondary flex-shrink-0"></i>
                             <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
                         </button>
                     </nav>
 
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="fas fa-arrow-up"></i></button>
+                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-tn-primary hover:border-tn-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="fas fa-arrow-up"></i></button>
 
                     <div id="main-scroller" ref={mainContainerRef}>
-                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative overflow-hidden hero-bg-custom">
+                        {/* [修改] bg-dark -> bg-tn-dark */}
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-tn-dark relative overflow-hidden hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
-                                    <div className={`inline-block px-4 py-1 rounded-full border border-primary/50 bg-primary/20 text-primary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART CITY & PUBLIC SAFETY</div>
-                                    <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
+                                    {/* [修改] border-primary -> border-tn-primary, bg-primary -> bg-tn-primary, text-primary -> text-tn-primary */}
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-tn-primary/50 bg-tn-primary/20 text-tn-primary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART CITY & PUBLIC SAFETY</div>
+                                    <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-tn-primary to-tn-accent font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-dark font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(45,212,191,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
+                                    {/* [修改] bg-primary -> bg-tn-primary, hover:text-primary -> hover:text-tn-primary */}
+                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-tn-primary border border-tn-primary/50 rounded-full text-tn-dark font-bold text-lg hover:bg-white hover:text-tn-primary transition-all shadow-[0_10px_30px_rgba(45,212,191,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
                                 </div>
                             </div>
                         </section>
 
-                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+                        {/* [修改] bg-dark -> bg-tn-dark */}
+                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-tn-dark h-screen overflow-hidden relative">
 
                             {/* Left Panel: Conditional Rendering */}
+                            {/* [修改] bg-[#1a1a1a] 可以微調，但深色背景保持這樣通常沒問題 */}
                             <div ref={imageScrollRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizingRef.current ? 'none' : 'height 0.3s ease' }}>
                                 {renderPreview()}
                                 <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
-                                    <div className="w-10 h-10 bg-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group"><i className="fas fa-chevron-up text-[8px] text-gray-400 group-hover:text-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="fas fa-chevron-down text-[8px] text-gray-400 group-hover:text-primary mt-0.5"></i></div>
+                                    {/* [修改] bg-dark-light -> bg-tn-dark-light, group-hover:text-primary -> group-hover:text-tn-primary */}
+                                    <div className="w-10 h-10 bg-tn-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group"><i className="fas fa-chevron-up text-[8px] text-gray-400 group-hover:text-tn-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="fas fa-chevron-down text-[8px] text-gray-400 group-hover:text-tn-primary mt-0.5"></i></div>
                                 </div>
                             </div>
 
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
-                                    <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                    {/* [修改] bg-dark/95 -> bg-tn-dark/95 */}
+                                    <div className="sticky top-0 bg-tn-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
                                         <div className="p-6 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-4 font-sans">Smart Patrol System UX Case Study</p>
                                             <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full touch-pan-x">
+                                                {/* [修改] text-primary -> text-tn-primary, border-primary -> border-tn-primary */}
                                                 {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
+                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? 'text-tn-primary border-b-2 border-tn-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
                                                 ))}
                                             </div>
                                         </div>
@@ -700,19 +693,26 @@
                                     <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><Icons.XD /> <span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tn-primary/20 text-tn-primary border border-tn-primary/30"><Icons.XD /> <span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tn-secondary/20 text-tn-secondary border border-tn-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><div className="feature-card p-5 border-l-4 border-l-secondary"><h4 className="text-secondary font-bold text-sm mb-3">{t('pain_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
+                                                {/* [修改] bg-secondary -> bg-tn-secondary, text-secondary -> text-tn-secondary */}
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-tn-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><div className="feature-card p-5 border-l-4 border-l-tn-secondary"><h4 className="text-tn-secondary font-bold text-sm mb-3">{t('pain_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-tn-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-tn-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-tn-secondary mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
-                                            <div className="space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3><p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p><div className="relative pl-4 border-l border-white/10 space-y-8"><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary"></div><h4 className="text-sm font-bold text-primary mb-1">{t('process_1_title')}</h4><p className="text-xs text-gray-400">{t('process_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">{t('process_2_title')}</h4><p className="text-xs text-gray-400">{t('process_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-dark border border-gray-600"></div><h4 className="text-sm font-bold text-primary mb-1">{t('process_3_title')}</h4><p className="text-xs text-gray-400">{t('process_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(45,212,191,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('process_4_title')}</h4><p className="text-xs text-gray-400">{t('process_4_desc')}</p></div></div></div>
+                                            <div className="space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3><p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p><div className="relative pl-4 border-l border-white/10 space-y-8">
+                                                {/* [修改] bg-primary -> bg-tn-primary, text-primary -> text-tn-primary, bg-dark -> bg-tn-dark */}
+                                                <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tn-primary"></div><h4 className="text-sm font-bold text-tn-primary mb-1">{t('process_1_title')}</h4><p className="text-xs text-gray-400">{t('process_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tn-dark border border-gray-600"></div><h4 className="text-sm font-bold text-tn-primary mb-1">{t('process_2_title')}</h4><p className="text-xs text-gray-400">{t('process_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tn-dark border border-gray-600"></div><h4 className="text-sm font-bold text-tn-primary mb-1">{t('process_3_title')}</h4><p className="text-xs text-gray-400">{t('process_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tn-primary shadow-[0_0_10px_rgba(45,212,191,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('process_4_title')}</h4><p className="text-xs text-gray-400">{t('process_4_desc')}</p></div></div></div>
                                         )}
                                         {activeTab === 'solution' && (
-                                            <div className="space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-6">{t('solution_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (<button key={sol.id} onClick={() => handleSolutionSwitch(sol)} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all"><div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shrink-0"><IconComp /></div><div><h4 className="font-bold text-white text-sm mb-1">{sol.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{sol.desc}<br /><br /><span className="text-white font-semibold">{sol.benefit}</span></p></div></button>); })}</div></div>
+                                            <div className="space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-6">{t('solution_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (<button key={sol.id} onClick={() => handleSolutionSwitch(sol)} className="w-full text-left feature-card p-5 flex items-start space-x-4 hover:bg-white/5 transition-all">
+                                                {/* [修改] from-primary -> from-tn-primary, text-primary -> text-tn-primary */}
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-tn-primary/20 to-tn-primary/5 flex items-center justify-center text-tn-primary shrink-0"><IconComp /></div><div><h4 className="font-bold text-white text-sm mb-1">{sol.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{sol.desc}<br /><br /><span className="text-white font-semibold">{sol.benefit}</span></p></div></button>); })}</div></div>
                                         )}
                                         {activeTab === 'climax' && (
-                                            <div className="space-y-8 animate-fadeIn pb-12"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p><div className="space-y-3">{galleryImages.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`w-full text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(45,212,191,0.1)]' : 'border-white/5'}`}><div className="flex justify-between items-center mb-1"><h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}><span className="text-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? 'text-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400 leading-relaxed">{img.desc}</p></button>))}</div></div>
+                                            <div className="space-y-8 animate-fadeIn pb-12"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p><div className="space-y-3">{galleryImages.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`w-full text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-tn-primary bg-white/5 shadow-[0_0_15px_rgba(45,212,191,0.1)]' : 'border-white/5'}`}>
+                                                {/* [修改] text-primary -> text-tn-primary */}
+                                                <div className="flex justify-between items-center mb-1"><h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}><span className="text-tn-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? 'text-tn-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400 leading-relaxed">{img.desc}</p></button>))}</div></div>
                                         )}
                                         <div className="h-8"></div>
                                     </div>
