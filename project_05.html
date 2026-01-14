@@ -7,8 +7,7 @@
     <title>新竹市動物園 | 內部管理與行動應變系統 - UX Case Study</title>
     <link href="./img/favicon/favicon.ico" rel="shortcut icon" type="image/ico">
 
-    <link href="./style.css" rel="stylesheet">
-
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -21,6 +20,27 @@
         href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#86c232', // Zoo Green
+                        secondary: '#FF9671', // Alert Orange
+                        dark: '#0F1115',
+                        'dark-light': '#1A1D24',
+                        accent: '#FFC75F'
+                    },
+                    fontFamily: {
+                        sans: ['Quicksand', '"Noto Sans TC"', 'sans-serif'],
+                        heading: ['"Momo Trust Display"', '"Noto Sans TC"', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
 
     <style>
         body,
@@ -50,6 +70,8 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 1s ease-in-out;
+            display: flex;
+            flex-direction: column;
         }
 
         .snap-section.active-section {
@@ -73,13 +95,14 @@
             transition: all 0.3s ease;
         }
 
-        .feature-card.border-l-zoo-primary:hover {
+
+        .feature-card-primary:hover {
             transform: translateY(-5px);
             border-color: rgba(134, 194, 50, 0.4);
             box-shadow: 0 10px 30px -10px rgba(134, 194, 50, 0.2);
         }
 
-        .feature-card.border-l-zoo-secondary:hover {
+        .feature-card-secondary:hover {
             transform: translateY(-5px);
             border-color: rgba(255, 150, 113, 0.4);
             box-shadow: 0 10px 30px -10px rgba(255, 150, 113, 0.2);
@@ -101,7 +124,7 @@
         }
 
         .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: #86c232; /* zoo-primary */
+            background: #86c232;
         }
 
         .scroll-content {
@@ -110,23 +133,6 @@
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
             height: 100%;
-        }
-
-        .scrollable-area {
-            overflow-y: auto !important;
-            overscroll-behavior: contain;
-        }
-
-        .horizontal-tabs {
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-            touch-action: pan-x !important;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-
-        .horizontal-tabs::-webkit-scrollbar {
-            display: none;
         }
 
         /* Animations */
@@ -258,16 +264,12 @@
 
         // --- COMPONENTS ---
 
-        // 1. Base Image Component
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, objectFit }) => {
             const [loaded, setLoaded] = useState(false);
             const fitClass = objectFit || "object-contain";
-
             useEffect(() => { setLoaded(false); }, [src]);
-
             const handleLoad = () => setLoaded(true);
             const handleError = () => { console.warn("Image error:", src); setLoaded(true); };
-
             return (
                 <div className={`relative overflow-hidden ${containerClassName || 'w-full h-full'}`}>
                     {!loaded && <div className="absolute inset-0 skeleton z-10 flex items-center justify-center"><i className="fas fa-image text-white/10 text-3xl"></i></div>}
@@ -276,10 +278,9 @@
             );
         };
 
-        // 2. Web Frame (Desktop Style)
         const WebFrame = ({ src }) => (
             <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
+                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
                     <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
                         <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
                     </div>
@@ -290,10 +291,9 @@
             </div>
         );
 
-        // 3. Simple Rounded Frame
         const SimpleRoundedFrame = ({ src }) => (
             <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
+                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
                     <div className="w-full h-full bg-white/5 flex items-center justify-center overflow-hidden relative group">
                         <ImageWithSkeleton src={src} alt="Context View" objectFit="object-contain" />
                     </div>
@@ -301,7 +301,6 @@
             </div>
         );
 
-        // 4. App Raw Frame
         const AppRawFrame = ({ src }) => (
             <div className="flex items-center justify-center w-full h-full p-4 lg:p-8 pointer-events-none">
                 <div className="relative h-full w-auto max-w-full bg-transparent animate-fadeIn shrink-0 pointer-events-auto">
@@ -503,6 +502,7 @@
                 setActiveFeatureId(null);
                 setActiveGalleryId(null);
 
+                // Safe access Logic
                 if (activeTab === 'context') {
                     setCurrentImage('./img/project_05/display.jpg');
                     setImageType('context');
@@ -607,53 +607,43 @@
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        {/* [修改] bg-dark-lighter -> bg-zoo-dark-lighter, border-primary -> border-zoo-primary */}
-                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-zoo-primary/50 hover:bg-zoo-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
-                            {/* [修改] text-primary -> text-zoo-primary, group-hover:text-secondary -> group-hover:text-zoo-secondary */}
-                            <i className="fas fa-arrow-left text-zoo-primary group-hover:text-zoo-secondary flex-shrink-0"></i>
+                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
+                            <i className="fas fa-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
                             <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
                         </button>
                     </nav>
 
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-zoo-primary hover:border-zoo-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="fas fa-arrow-up"></i></button>
+                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="fas fa-arrow-up"></i></button>
 
                     <div id="main-scroller" ref={mainContainerRef}>
-                        {/* [修改] bg-dark -> bg-zoo-dark */}
-                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-zoo-dark relative hero-bg-custom">
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
-                                    {/* [修改] border-accent -> border-zoo-accent, text-accent -> text-zoo-accent, bg-accent -> bg-zoo-accent */}
-                                    <div className={`inline-block px-4 py-1 rounded-full border border-zoo-accent/50 bg-zoo-accent/20 text-zoo-accent text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART ZOO MANAGEMENT</div>
-                                    <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-zoo-primary to-zoo-secondary font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-accent/50 bg-accent/20 text-accent text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART ZOO MANAGEMENT</div>
+                                    <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
-                                    {/* [修改] bg-primary -> bg-zoo-primary, text-primary -> text-zoo-primary */}
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-zoo-primary border border-zoo-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-zoo-primary transition-all shadow-[0_10px_30px_rgba(134,194,50,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
+                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(134,194,50,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
                                 </div>
                             </div>
                         </section>
 
-                        {/* [修改] bg-dark -> bg-zoo-dark */}
-                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-zoo-dark h-screen overflow-hidden relative">
-                            {/* [修改] bg-black -> bg-black (原檔設定) */}
+                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
                             <div ref={imageScrollRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-black flex items-center justify-center border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizingRef.current ? 'none' : 'height 0.3s ease' }}>
                                 {renderPreview()}
                                 <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
-                                    {/* [修改] bg-dark-light -> bg-zoo-dark-light, group-hover:text-primary -> group-hover:text-zoo-primary */}
-                                    <div className="w-10 h-10 bg-zoo-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group"><i className="fas fa-chevron-up text-[8px] text-gray-400 group-hover:text-zoo-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="fas fa-chevron-down text-[8px] text-gray-400 group-hover:text-zoo-primary mt-0.5"></i></div>
+                                    <div className="w-10 h-10 bg-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group"><i className="fas fa-chevron-up text-[8px] text-gray-400 group-hover:text-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="fas fa-chevron-down text-[8px] text-gray-400 group-hover:text-primary mt-0.5"></i></div>
                                 </div>
                             </div>
 
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
-                                    {/* [修改] bg-dark/95 -> bg-zoo-dark/95 */}
-                                    <div className="sticky top-0 bg-zoo-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                    <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
                                         <div className="p-6 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-4">Internal Management & Mobile Response</p>
                                             <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full touch-pan-x">
-                                                {/* [修改] text-primary -> text-zoo-primary, border-primary -> border-zoo-primary */}
                                                 {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_web') }, { id: 'solution', label: t('tab_app') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? 'text-zoo-primary border-b-2 border-zoo-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
+                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
                                                 ))}
                                             </div>
                                         </div>
@@ -662,27 +652,39 @@
                                     <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zoo-primary/20 text-zoo-primary border border-zoo-primary/30"><Icons.Figma /> <span className="ml-1">Figma</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zoo-secondary/20 text-zoo-secondary border border-zoo-secondary/30"><Icons.Illustrator /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><Icons.Figma /> <span className="ml-1">Figma</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30"><Icons.Illustrator /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                {/* [修改] bg-secondary -> bg-zoo-secondary, text-secondary -> text-zoo-secondary */}
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><div className="feature-card p-5 border-l-4 border-l-zoo-secondary"><h4 className="text-zoo-secondary font-bold text-sm mb-3">{t('pain_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><div className="feature-card feature-card-secondary p-5"><h4 className="text-secondary font-bold text-sm mb-3">{t('pain_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="fas fa-times"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
                                             <div className="space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-6">{t('web_title')}</h3>
-                                                {/* [修改] border-l-primary -> border-l-zoo-primary, text-primary -> text-zoo-primary */}
-                                                <div className="feature-card p-5 border-l-4 border-l-zoo-primary mb-8"><h4 className="text-zoo-primary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">♜</span> {t('web_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p3')}</span></li></ul></div>
+                                                <div className="feature-card feature-card-primary p-5 mb-8"><h4 className="text-primary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">♜</span> {t('web_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-primary mr-2">•</span><span>{t('web_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-primary mr-2">•</span><span>{t('web_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-primary mr-2">•</span><span>{t('web_p3')}</span></li></ul></div>
                                                 <div className="w-full h-px bg-white/10 mb-8"></div>
-                                                {/* [修改] bg-primary -> bg-zoo-primary */}
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-primary rounded-full mr-3"></span>{t('web_core')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-primary rounded-full mr-3"></span>{t('web_core')}</h3>
                                                 <div className="space-y-4">{webFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
-                                                    // [修改] 手動替換變數邏輯
                                                     let benefitColor, bgClass, bgGradient, borderColor, shadowClass;
-                                                    if (feat.benefit === 'primary') { benefitColor = 'text-zoo-primary'; bgClass = 'bg-zoo-primary'; bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; borderColor = '!border-zoo-primary'; shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]'; }
-                                                    else if (feat.benefit === 'blue-400') { benefitColor = 'text-blue-400'; bgClass = 'bg-blue-400'; bgGradient = 'bg-gradient-to-br from-blue-400/20 to-blue-400/5'; borderColor = '!border-blue-400'; shadowClass = 'shadow-[0_0_15px_rgba(96,165,250,0.2)]'; }
-                                                    else { benefitColor = 'text-purple-400'; bgClass = 'bg-purple-400'; bgGradient = 'bg-gradient-to-br from-purple-400/20 to-purple-400/5'; borderColor = '!border-purple-400'; shadowClass = 'shadow-[0_0_15px_rgba(192,132,252,0.2)]'; }
+                                                    if (feat.benefit === 'primary') { 
+                                                        benefitColor = 'text-primary'; 
+                                                        bgClass = 'bg-primary'; 
+                                                        bgGradient = 'bg-gradient-to-br from-primary/20 to-primary/5'; 
+                                                        borderColor = '!border-primary';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]';
+                                                    } else if (feat.benefit === 'blue-400') { 
+                                                        benefitColor = 'text-blue-400'; 
+                                                        bgClass = 'bg-blue-400'; 
+                                                        bgGradient = 'bg-gradient-to-br from-blue-400/20 to-blue-400/5'; 
+                                                        borderColor = '!border-blue-400';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(96,165,250,0.2)]';
+                                                    } else { 
+                                                        benefitColor = 'text-purple-400'; 
+                                                        bgClass = 'bg-purple-400'; 
+                                                        bgGradient = 'bg-gradient-to-br from-purple-400/20 to-purple-400/5'; 
+                                                        borderColor = '!border-purple-400';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(192,132,252,0.2)]';
+                                                    }
 
                                                     return (<button key={feat.id} onClick={() => handleFeatureClick(feat.image, feat.id, 'web')} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? `${borderColor} bg-white/10 ${shadowClass}` : 'border-white/10 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? `${bgClass} text-dark` : `${bgGradient} ${benefitColor}`}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? benefitColor : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p></div></button>);
                                                 })}</div>
@@ -691,26 +693,45 @@
                                         {activeTab === 'solution' && (
                                             <div className="space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-6">{t('app_title')}</h3>
-                                                {/* [修改] border-l-secondary -> border-l-zoo-secondary, text-secondary -> text-zoo-secondary */}
-                                                <div className="feature-card p-5 border-l-4 border-l-zoo-secondary mb-8"><h4 className="text-zoo-secondary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">⚡</span> {t('app_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p3')}</span></li></ul></div>
+                                                <div className="feature-card feature-card-secondary p-5 mb-8"><h4 className="text-secondary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">⚡</span> {t('app_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-secondary mr-2">•</span><span>{t('app_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-secondary mr-2">•</span><span>{t('app_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-secondary mr-2">•</span><span>{t('app_p3')}</span></li></ul></div>
                                                 <div className="w-full h-px bg-white/10 mb-8"></div>
-                                                {/* [修改] bg-secondary -> bg-zoo-secondary */}
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('app_core')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>{t('app_core')}</h3>
                                                 <div className="space-y-4">{appFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
-                                                    // [修改] 手動替換變數邏輯 - 加入 !border 和動態 shadowClass
                                                     let benefitColor, bgClass, bgGradient, borderColor, shadowClass;
-                                                    if (feat.benefit === 'primary') { benefitColor = 'text-zoo-primary'; bgClass = 'bg-zoo-primary'; bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; borderColor = '!border-zoo-primary'; shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]'; }
-                                                    else if (feat.benefit === 'secondary') { benefitColor = 'text-zoo-secondary'; bgClass = 'bg-zoo-secondary'; bgGradient = 'bg-gradient-to-br from-zoo-secondary/20 to-zoo-secondary/5'; borderColor = '!border-zoo-secondary'; shadowClass = 'shadow-[0_0_15px_rgba(255,150,113,0.2)]'; }
-                                                    else if (feat.benefit === 'yellow') { benefitColor = 'text-yellow-400'; bgClass = 'bg-yellow-400'; bgGradient = 'bg-gradient-to-br from-yellow-400/20 to-yellow-400/5'; borderColor = '!border-yellow-400'; shadowClass = 'shadow-[0_0_15px_rgba(250,204,21,0.2)]'; }
-                                                    else { benefitColor = 'text-zoo-accent'; bgClass = 'bg-zoo-accent'; bgGradient = 'bg-gradient-to-br from-zoo-accent/20 to-zoo-accent/5'; borderColor = '!border-zoo-accent'; shadowClass = 'shadow-[0_0_15px_rgba(255,199,95,0.2)]'; }
+                                                    if (feat.benefit === 'primary') { 
+                                                        benefitColor = 'text-primary'; 
+                                                        bgClass = 'bg-primary'; 
+                                                        bgGradient = 'bg-gradient-to-br from-primary/20 to-primary/5'; 
+                                                        borderColor = '!border-primary';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]';
+                                                    } else if (feat.benefit === 'secondary') { 
+                                                        benefitColor = 'text-secondary'; 
+                                                        bgClass = 'bg-secondary'; 
+                                                        bgGradient = 'bg-gradient-to-br from-secondary/20 to-secondary/5'; 
+                                                        borderColor = '!border-secondary';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(255,150,113,0.2)]';
+                                                    } else if (feat.benefit === 'yellow') { 
+                                                        // Corrected logic for 'yellow' to use accent/specific yellow color
+                                                        benefitColor = 'text-yellow-400'; 
+                                                        bgClass = 'bg-yellow-400'; 
+                                                        bgGradient = 'bg-gradient-to-br from-yellow-400/20 to-yellow-400/5'; 
+                                                        borderColor = '!border-yellow-400';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(250,204,21,0.2)]';
+                                                    } else { 
+                                                        benefitColor = 'text-accent'; 
+                                                        bgClass = 'bg-accent'; 
+                                                        bgGradient = 'bg-gradient-to-br from-accent/20 to-accent/5'; 
+                                                        borderColor = '!border-accent';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(255,199,95,0.2)]';
+                                                    }
 
                                                     return (<button key={feat.id} onClick={() => handleFeatureClick(feat.image, feat.id, 'app')} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? `${borderColor} bg-white/10 ${shadowClass}` : 'border-white/10 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? `${bgClass} text-dark` : `${bgGradient} ${benefitColor}`}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? benefitColor : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p></div></button>);
                                                 })}</div>
                                             </div>
                                         )}
                                         {activeTab === 'climax' && (
-                                            <div className="space-y-8 animate-fadeIn pb-12"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p><div className="space-y-6">{galleryCategories.map(category => (<div key={category.id} className="space-y-3"><h4 className={`font-bold text-md flex items-center ${category.type === 'web' ? 'text-zoo-primary' : 'text-zoo-secondary'}`}><span className={`w-2 h-2 rounded-full mr-2 ${category.type === 'web' ? 'bg-zoo-primary' : 'bg-zoo-secondary'}`}></span>{category.title}</h4><div className="grid gap-3 pl-4 border-l border-white/10">{category.images.map(img => (<button key={img.id} onClick={() => handleGallerySwitch(img, category.type)} className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-zoo-primary bg-white/5 shadow-[0_0_15px_rgba(134,194,50,0.1)]' : 'border-white/5'}`}><div className="flex justify-between items-center"><h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}><span className={`${category.type === 'web' ? 'text-zoo-primary/70' : 'text-zoo-secondary/70'} mr-2 text-xs font-mono`}>{img.id}</span>{img.name}</h4><i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? (category.type === 'web' ? 'text-zoo-primary' : 'text-zoo-secondary') + ' translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i></div></button>))}</div></div>))}</div></div>
+                                            <div className="space-y-8 animate-fadeIn pb-12"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p><div className="space-y-6">{galleryCategories.map(category => (<div key={category.id} className="space-y-3"><h4 className={`font-bold text-md flex items-center ${category.type === 'web' ? 'text-primary' : 'text-secondary'}`}><span className={`w-2 h-2 rounded-full mr-2 ${category.type === 'web' ? 'bg-primary' : 'bg-secondary'}`}></span>{category.title}</h4><div className="grid gap-3 pl-4 border-l border-white/10">{category.images.map(img => (<button key={img.id} onClick={() => handleGallerySwitch(img, category.type)} className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(134,194,50,0.1)]' : 'border-white/5'}`}><div className="flex justify-between items-center"><h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}><span className={`${category.type === 'web' ? 'text-primary/70' : 'text-secondary/70'} mr-2 text-xs font-mono`}>{img.id}</span>{img.name}</h4><i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? (category.type === 'web' ? 'text-primary' : 'text-secondary') + ' translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i></div></button>))}</div></div>))}</div></div>
                                         )}
                                         <div className="h-8"></div>
                                     </div>
