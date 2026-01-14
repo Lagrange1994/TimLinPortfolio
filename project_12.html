@@ -412,6 +412,20 @@
                 Promise.all([heroImagePromise, timerPromise]).then(() => setLoading(false));
             }, []);
 
+            // [新增] 響應式字體大小邏輯
+            useEffect(() => {
+                const setResponsiveFontSize = () => {
+                    if (window.innerWidth >= 1024) {
+                        document.documentElement.style.fontSize = (window.innerWidth / 1920) * 16 + "px";
+                    } else {
+                        document.documentElement.style.fontSize = '';
+                    }
+                };
+                window.addEventListener('resize', setResponsiveFontSize);
+                setResponsiveFontSize(); // Initial call
+                return () => window.removeEventListener('resize', setResponsiveFontSize);
+            }, []);
+
             // Tab / Lang Update
             useEffect(() => {
                 if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
@@ -543,7 +557,7 @@
                                             <React.Fragment>
                                                 {t('title_main')}<br className="md:hidden" />
                                                 <span className="font-heading text-gh-primary"> Golden House</span>
-                                                <br className="md:hidden" />
+                                                <br />
                                                 {t('title_sub')}
                                             </React.Fragment>
                                         ) : (

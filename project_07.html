@@ -7,6 +7,7 @@
     <title>石門水庫觀光服務網 | UX Design Case Study</title>
 
     <link rel="shortcut icon" href="./img/favicon/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
 
     <link href="./style.css" rel="stylesheet">
 
@@ -38,21 +39,6 @@
             overscroll-behavior: none;
         }
 
-        /* === Skeleton Shimmer Effect === */
-        .skeleton {
-            background: #1e293b;
-            background: linear-gradient(to right, #1e293b 8%, #334155 18%, #1e293b 33%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite linear;
-        }
-
-        @keyframes shimmer {
-            to {
-                background-position-x: -200%;
-            }
-        }
-
-        /* === 主捲動容器 === */
         #main-scroller {
             width: 100vw;
             height: 100vh;
@@ -68,7 +54,7 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 1s ease-in-out;
-            /* [重要修正] 移除了 display: flex 和 flex-direction: column，解決右側內容被壓扁的問題 */
+            /* [重要修正] 移除了 display: flex 和 flex-direction: column，確保右側不被壓扁 */
         }
 
         .snap-section.active-section {
@@ -76,25 +62,21 @@
             visibility: visible;
         }
 
-        /* === Hero 區塊設定 (支援 WebP) === */
-        .hero-bg-custom {
-            background-image: url('./img/project_07/hero_img.jpg');
-            background-image: -webkit-image-set(url('./img/project_07/hero_img.webp') 1x, url('./img/project_07/hero_img.jpg') 1x);
-            background-image: image-set(url('./img/project_07/hero_img.webp') 1x, url('./img/project_07/hero_img.jpg') 1x);
-            background-size: cover;
-            background-position: center;
-            position: relative;
+        /* === 內容滾動區域 === */
+        .scroll-content {
+            overflow-y: auto !important;
+            touch-action: pan-y !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            height: 100%;
         }
 
-        .hero-bg-custom::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0.6) 100%);
-            z-index: 1;
+        .scrollable-area {
+            overflow-y: auto !important;
+            overscroll-behavior: contain;
         }
 
-        /* === 玻璃擬態與卡片 === */
+        /* UI Elements */
         .glass-panel {
             background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98));
             backdrop-filter: blur(20px);
@@ -111,9 +93,9 @@
 
         .feature-card:hover {
             transform: translateY(-5px);
-            /* [修改] 手動匹配 sm-primary */
-            border-color: rgba(34, 211, 238, 0.4);
-            box-shadow: 0 10px 30px -10px rgba(34, 211, 238, 0.2);
+            /* [修改] 手動匹配 sm-primary (#00A0E9) */
+            border-color: rgba(0, 160, 233, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(0, 160, 233, 0.2);
         }
 
         /* Scrollbars */
@@ -135,34 +117,6 @@
             background: #00A0E9; /* sm-primary */
         }
 
-        /* === 內容滾動區域 === */
-        .scroll-content {
-            overflow-y: auto !important;
-            touch-action: pan-y !important;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-            height: 100%;
-        }
-
-        .scrollable-area {
-            overflow-y: auto !important;
-            overscroll-behavior: contain;
-        }
-
-        /* === 右側 Tab 橫向滾動修正 === */
-        .horizontal-tabs {
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-            touch-action: pan-x !important;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-
-        .horizontal-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-
         /* Animations */
         .fade-in-up {
             animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -182,20 +136,22 @@
             }
         }
 
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
+        /* Hero Background */
+        .hero-bg-custom {
+            background-image: url('./img/project_07/hero_img.jpg');
+            background-image: -webkit-image-set(url('./img/project_07/hero_img.webp') 1x, url('./img/project_07/hero_img.jpg') 1x);
+            background-image: image-set(url('./img/project_07/hero_img.webp') 1x, url('./img/project_07/hero_img.jpg') 1x);
+            background-size: cover;
+            background-position: center;
+            position: relative;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .hero-bg-custom::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.3) 0%, rgba(15, 23, 42, 0.6) 100%);
+            z-index: 1;
         }
 
         /* Loader */
@@ -249,6 +205,20 @@
             100% { inset: 0 35px 35px 0; }
         }
 
+        /* Skeleton */
+        .skeleton {
+            background: #1e293b;
+            background: linear-gradient(to right, #1e293b 8%, #334155 18%, #1e293b 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position-x: -200%;
+            }
+        }
+
         .back-btn i {
             transition: transform 0.3s ease;
         }
@@ -265,7 +235,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- HELPER COMPONENT: Responsive Image (WebP Support) ---
+        // --- COMPONENTS ---
         const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
@@ -277,26 +247,20 @@
             );
         };
 
-        // --- IMAGE WITH SKELETON (Safe Mode) ---
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
             const [loaded, setLoaded] = useState(false);
             useEffect(() => { setLoaded(false); }, [src]);
             const handleLoad = () => setLoaded(true);
             const handleError = () => { console.warn("Image error:", src); setLoaded(true); };
-
             return (
-                <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {!loaded && (
-                        <div className="absolute inset-0 skeleton rounded-lg z-10 flex items-center justify-center pointer-events-none">
-                            <i className="fas fa-image text-white/10 text-3xl"></i>
-                        </div>
-                    )}
+                <div className={`relative overflow-hidden ${containerClassName || 'w-full h-full'}`}>
+                    {!loaded && <div className="absolute inset-0 skeleton rounded-lg z-10 flex items-center justify-center"><i className="fas fa-image text-white/10 text-3xl"></i></div>}
                     <ResponsiveImage src={src} alt={alt} className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={handleLoad} onError={handleError} {...props} />
                 </div>
             );
         };
 
-        // Icons
+        // --- ICONS ---
         const Icons = {
             XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
             AI: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l-9 18h18L12 3z" /><circle cx="12" cy="13" r="2" /></svg>,
@@ -386,7 +350,7 @@
             const [activeFeatureId, setActiveFeatureId] = useState(null);
             const [showBackToHero, setShowBackToHero] = useState(false);
 
-            // GSAP State
+            // Refs
             const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
             const isScrollingRef = useRef(false);
             const mainContainerRef = useRef(null);
@@ -418,6 +382,20 @@
                 });
                 const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
                 Promise.all([heroImagePromise, timerPromise]).then(() => setLoading(false));
+            }, []);
+
+            // [新增] 響應式字體大小邏輯
+            useEffect(() => {
+                const setResponsiveFontSize = () => {
+                    if (window.innerWidth >= 1024) {
+                        document.documentElement.style.fontSize = (window.innerWidth / 1920) * 16 + "px";
+                    } else {
+                        document.documentElement.style.fontSize = '';
+                    }
+                };
+                window.addEventListener('resize', setResponsiveFontSize);
+                setResponsiveFontSize(); // Initial call
+                return () => window.removeEventListener('resize', setResponsiveFontSize);
             }, []);
 
             // Tab / Lang Update

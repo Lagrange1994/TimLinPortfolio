@@ -69,7 +69,7 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 1s ease-in-out;
-            /* [重要修正] 移除了 display: flex 和 flex-direction: column，解決右側內容被壓扁的問題 */
+            /* [重要] 移除 display: flex 以避免內容變形 */
         }
 
         .snap-section.active-section {
@@ -112,7 +112,7 @@
 
         .feature-card:hover {
             transform: translateY(-5px);
-            /* [修改] 手動匹配 tmu-primary (#2B6CB0) */
+            /* [保留] tmu-primary (#2B6CB0) */
             border-color: rgba(43, 108, 176, 0.4);
             box-shadow: 0 10px 30px -10px rgba(43, 108, 176, 0.2);
             background: rgba(255, 255, 255, 0.08);
@@ -416,6 +416,20 @@
                 Promise.all([heroImagePromise, timerPromise]).then(() => setLoading(false));
             }, []);
 
+            // [新增] 響應式字體大小邏輯
+            useEffect(() => {
+                const setResponsiveFontSize = () => {
+                    if (window.innerWidth >= 1024) {
+                        document.documentElement.style.fontSize = (window.innerWidth / 1920) * 16 + "px";
+                    } else {
+                        document.documentElement.style.fontSize = '';
+                    }
+                };
+                window.addEventListener('resize', setResponsiveFontSize);
+                setResponsiveFontSize(); // Initial call
+                return () => window.removeEventListener('resize', setResponsiveFontSize);
+            }, []);
+
             // Tab / Lang Update
             useEffect(() => {
                 if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
@@ -429,8 +443,9 @@
                         setActiveSolutionId(null);
                         break;
                     case 'solution':
-                        setCurrentImage(solutionFeatures[1].image); // Default to Radar
-                        setActiveSolutionId(solutionFeatures[1].id);
+                        // [保留修正] 預設選中第一個解決方案
+                        setCurrentImage(solutionFeatures[0].image);
+                        setActiveSolutionId(solutionFeatures[0].id);
                         setActiveGalleryId(null);
                         break;
                     case 'climax':
@@ -546,9 +561,10 @@
                         <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-tmu-dark hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
-                                    {/* [修改] border-white -> border-tmu-primary, text-white -> text-tmu-primary */}
-                                    <div className={`inline-block px-4 py-1 rounded-full border border-tmu-primary text-tmu-primary text-xs font-bold tracking-widest mb-6 font-sans ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART EDUCATION SYSTEM</div>
-                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-tmu-primary to-white font-heading">{t('title_sub')}</span></h1>
+                                    {/* [修正] 標籤改為白色 (border-white text-white) */}
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-white text-white text-xs font-bold tracking-widest mb-6 font-sans ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART EDUCATION SYSTEM</div>
+                                    {/* [修正] 標題文字改為 text-white，不使用漸層色 */}
+                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br />{t('title_sub')}</h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
                                     {/* [修改] bg-primary -> bg-tmu-primary */}
                                     <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-tmu-primary border border-tmu-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-tmu-primary transition-all shadow-[0_10px_30px_rgba(43,108,176,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="fas fa-arrow-down ml-2 animate-bounce"></i></button>
@@ -581,7 +597,7 @@
                                     <div className="sticky top-0 bg-tmu-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
                                         <div className="p-6 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">UI/UX Design Audit Report</p>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">Clinical Education E-Portfolio System</p>
                                             <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full touch-pan-x">
                                                 {/* [修改] text-primary -> text-tmu-primary, border-primary -> border-tmu-primary */}
                                                 {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }].map(tab => (

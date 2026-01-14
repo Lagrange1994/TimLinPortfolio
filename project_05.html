@@ -50,8 +50,6 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 1s ease-in-out;
-            /* [重要修正] 移除了 display: flex 和 flex-direction: column */
-            /* 讓 React 元件上的 class="flex flex-col lg:flex-row" 生效，解決版面壓扁問題 */
         }
 
         .snap-section.active-section {
@@ -75,14 +73,12 @@
             transition: all 0.3s ease;
         }
 
-        /* [修改] 手動匹配 zoo-primary (#86c232) */
         .feature-card.border-l-zoo-primary:hover {
             transform: translateY(-5px);
             border-color: rgba(134, 194, 50, 0.4);
             box-shadow: 0 10px 30px -10px rgba(134, 194, 50, 0.2);
         }
 
-        /* [修改] 手動匹配 zoo-secondary (#FF9671) */
         .feature-card.border-l-zoo-secondary:hover {
             transform: translateY(-5px);
             border-color: rgba(255, 150, 113, 0.4);
@@ -114,6 +110,23 @@
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
             height: 100%;
+        }
+
+        .scrollable-area {
+            overflow-y: auto !important;
+            overscroll-behavior: contain;
+        }
+
+        .horizontal-tabs {
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            touch-action: pan-x !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .horizontal-tabs::-webkit-scrollbar {
+            display: none;
         }
 
         /* Animations */
@@ -266,7 +279,6 @@
         // 2. Web Frame (Desktop Style)
         const WebFrame = ({ src }) => (
             <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                {/* [修改] bg-dark-light -> bg-zoo-dark-light */}
                 <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
                     <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
                         <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
@@ -281,7 +293,6 @@
         // 3. Simple Rounded Frame
         const SimpleRoundedFrame = ({ src }) => (
             <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                {/* [修改] bg-dark-light -> bg-zoo-dark-light */}
                 <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
                     <div className="w-full h-full bg-white/5 flex items-center justify-center overflow-hidden relative group">
                         <ImageWithSkeleton src={src} alt="Context View" objectFit="object-contain" />
@@ -299,7 +310,7 @@
             </div>
         );
 
-        // --- DATA (完全保留原翻譯內容) ---
+        // --- DATA ---
         const TRANSLATIONS = {
             zh: {
                 title_main: "新竹市動物園", title_sub: "內部管理與行動應變系統",
@@ -492,7 +503,6 @@
                 setActiveFeatureId(null);
                 setActiveGalleryId(null);
 
-                // Safe access Logic
                 if (activeTab === 'context') {
                     setCurrentImage('./img/project_05/display.jpg');
                     setImageType('context');
@@ -669,12 +679,12 @@
                                                 <div className="space-y-4">{webFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
                                                     // [修改] 手動替換變數邏輯
-                                                    let benefitColor, bgClass, bgGradient, borderColor;
-                                                    if (feat.benefit === 'primary') { benefitColor = 'text-zoo-primary'; bgClass = 'bg-zoo-primary'; bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; borderColor = 'border-zoo-primary'; }
-                                                    else if (feat.benefit === 'blue-400') { benefitColor = 'text-blue-400'; bgClass = 'bg-blue-400'; bgGradient = 'bg-gradient-to-br from-blue-400/20 to-blue-400/5'; borderColor = 'border-blue-400'; }
-                                                    else { benefitColor = 'text-purple-400'; bgClass = 'bg-purple-400'; bgGradient = 'bg-gradient-to-br from-purple-400/20 to-purple-400/5'; borderColor = 'border-purple-400'; }
+                                                    let benefitColor, bgClass, bgGradient, borderColor, shadowClass;
+                                                    if (feat.benefit === 'primary') { benefitColor = 'text-zoo-primary'; bgClass = 'bg-zoo-primary'; bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; borderColor = '!border-zoo-primary'; shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]'; }
+                                                    else if (feat.benefit === 'blue-400') { benefitColor = 'text-blue-400'; bgClass = 'bg-blue-400'; bgGradient = 'bg-gradient-to-br from-blue-400/20 to-blue-400/5'; borderColor = '!border-blue-400'; shadowClass = 'shadow-[0_0_15px_rgba(96,165,250,0.2)]'; }
+                                                    else { benefitColor = 'text-purple-400'; bgClass = 'bg-purple-400'; bgGradient = 'bg-gradient-to-br from-purple-400/20 to-purple-400/5'; borderColor = '!border-purple-400'; shadowClass = 'shadow-[0_0_15px_rgba(192,132,252,0.2)]'; }
 
-                                                    return (<button key={feat.id} onClick={() => handleFeatureClick(feat.image, feat.id, 'web')} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? `${borderColor} bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]` : 'border-white/10 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? `${bgClass} text-dark` : `${bgGradient} ${benefitColor}`}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? benefitColor : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p></div></button>);
+                                                    return (<button key={feat.id} onClick={() => handleFeatureClick(feat.image, feat.id, 'web')} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? `${borderColor} bg-white/10 ${shadowClass}` : 'border-white/10 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? `${bgClass} text-dark` : `${bgGradient} ${benefitColor}`}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? benefitColor : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p></div></button>);
                                                 })}</div>
                                             </div>
                                         )}
@@ -688,14 +698,14 @@
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('app_core')}</h3>
                                                 <div className="space-y-4">{appFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
-                                                    // [修改] 手動替換變數邏輯
-                                                    let benefitColor, bgClass, bgGradient, borderColor;
-                                                    if (feat.benefit === 'primary') { benefitColor = 'text-zoo-primary'; bgClass = 'bg-zoo-primary'; bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; borderColor = 'border-zoo-primary'; }
-                                                    else if (feat.benefit === 'secondary') { benefitColor = 'text-zoo-secondary'; bgClass = 'bg-zoo-secondary'; bgGradient = 'bg-gradient-to-br from-zoo-secondary/20 to-zoo-secondary/5'; borderColor = 'border-zoo-secondary'; }
-                                                    else if (feat.benefit === 'yellow') { benefitColor = 'text-yellow-400'; bgClass = 'bg-yellow-400'; bgGradient = 'bg-gradient-to-br from-yellow-400/20 to-yellow-400/5'; borderColor = 'border-yellow-400'; }
-                                                    else { benefitColor = 'text-zoo-accent'; bgClass = 'bg-zoo-accent'; bgGradient = 'bg-gradient-to-br from-zoo-accent/20 to-zoo-accent/5'; borderColor = 'border-zoo-accent'; }
+                                                    // [修改] 手動替換變數邏輯 - 加入 !border 和動態 shadowClass
+                                                    let benefitColor, bgClass, bgGradient, borderColor, shadowClass;
+                                                    if (feat.benefit === 'primary') { benefitColor = 'text-zoo-primary'; bgClass = 'bg-zoo-primary'; bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; borderColor = '!border-zoo-primary'; shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]'; }
+                                                    else if (feat.benefit === 'secondary') { benefitColor = 'text-zoo-secondary'; bgClass = 'bg-zoo-secondary'; bgGradient = 'bg-gradient-to-br from-zoo-secondary/20 to-zoo-secondary/5'; borderColor = '!border-zoo-secondary'; shadowClass = 'shadow-[0_0_15px_rgba(255,150,113,0.2)]'; }
+                                                    else if (feat.benefit === 'yellow') { benefitColor = 'text-yellow-400'; bgClass = 'bg-yellow-400'; bgGradient = 'bg-gradient-to-br from-yellow-400/20 to-yellow-400/5'; borderColor = '!border-yellow-400'; shadowClass = 'shadow-[0_0_15px_rgba(250,204,21,0.2)]'; }
+                                                    else { benefitColor = 'text-zoo-accent'; bgClass = 'bg-zoo-accent'; bgGradient = 'bg-gradient-to-br from-zoo-accent/20 to-zoo-accent/5'; borderColor = '!border-zoo-accent'; shadowClass = 'shadow-[0_0_15px_rgba(255,199,95,0.2)]'; }
 
-                                                    return (<button key={feat.id} onClick={() => handleFeatureClick(feat.image, feat.id, 'app')} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? `${borderColor} bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]` : 'border-white/10 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? `${bgClass} text-dark` : `${bgGradient} ${benefitColor}`}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? benefitColor : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p></div></button>);
+                                                    return (<button key={feat.id} onClick={() => handleFeatureClick(feat.image, feat.id, 'app')} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? `${borderColor} bg-white/10 ${shadowClass}` : 'border-white/10 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? `${bgClass} text-dark` : `${bgGradient} ${benefitColor}`}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? benefitColor : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p></div></button>);
                                                 })}</div>
                                             </div>
                                         )}
