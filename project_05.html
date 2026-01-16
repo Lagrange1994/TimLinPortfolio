@@ -303,8 +303,8 @@
 
         const AppRawFrame = ({ src }) => (
             <div className="flex items-center justify-center w-full h-full p-4 lg:p-8 pointer-events-none">
-                <div className="relative h-full w-auto max-w-full bg-transparent animate-fadeIn shrink-0 pointer-events-auto">
-                    <ImageWithSkeleton src={src} alt="App View" objectFit="object-cover" />
+                <div className="relative h-full w-auto max-w-full bg-transparent animate-fadeIn shrink-0 pointer-events-auto flex justify-center">
+                    <ImageWithSkeleton src={src} alt="App View" objectFit="object-contain" />
                 </div>
             </div>
         );
@@ -731,7 +731,41 @@
                                             </div>
                                         )}
                                         {activeTab === 'climax' && (
-                                            <div className="space-y-8 animate-fadeIn pb-12"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p><div className="space-y-6">{galleryCategories.map(category => (<div key={category.id} className="space-y-3"><h4 className={`font-bold text-md flex items-center ${category.type === 'web' ? 'text-primary' : 'text-secondary'}`}><span className={`w-2 h-2 rounded-full mr-2 ${category.type === 'web' ? 'bg-primary' : 'bg-secondary'}`}></span>{category.title}</h4><div className="grid gap-3 pl-4 border-l border-white/10">{category.images.map(img => (<button key={img.id} onClick={() => handleGallerySwitch(img, category.type)} className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-primary bg-white/5 shadow-[0_0_15px_rgba(134,194,50,0.1)]' : 'border-white/5'}`}><div className="flex justify-between items-center"><h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}><span className={`${category.type === 'web' ? 'text-primary/70' : 'text-secondary/70'} mr-2 text-xs font-mono`}>{img.id}</span>{img.name}</h4><i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? (category.type === 'web' ? 'text-primary' : 'text-secondary') + ' translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i></div></button>))}</div></div>))}</div></div>
+                                            <div className="space-y-8 animate-fadeIn pb-12">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('gallery_title')}</h3>
+                                                <p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p>
+                                                <div className="space-y-6">
+                                                    {galleryCategories.map(category => (
+                                                        <div key={category.id} className="space-y-3">
+                                                            <h4 className={`font-bold text-md flex items-center ${category.type === 'web' ? 'text-primary' : 'text-secondary'}`}>
+                                                                <span className={`w-2 h-2 rounded-full mr-2 ${category.type === 'web' ? 'bg-primary' : 'bg-secondary'}`}></span>
+                                                                {category.title}
+                                                            </h4>
+                                                            <div className="grid gap-3 pl-4 border-l border-white/10">
+                                                                {category.images.map(img => {
+                                                                    const isWeb = category.type === 'web';
+                                                                    const activeClass = isWeb 
+                                                                        ? 'border-primary shadow-[0_0_15px_rgba(134,194,50,0.1)]' 
+                                                                        : 'border-secondary shadow-[0_0_15px_rgba(255,150,113,0.1)]';
+                                                                    
+                                                                    return (
+                                                                        <button key={img.id} onClick={() => handleGallerySwitch(img, category.type)} 
+                                                                            className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? `${activeClass} bg-white/5` : 'border-white/5'}`}>
+                                                                            <div className="flex justify-between items-center">
+                                                                                <h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}>
+                                                                                    <span className={`${category.type === 'web' ? 'text-primary/70' : 'text-secondary/70'} mr-2 text-xs font-mono`}>{img.id}</span>
+                                                                                    {img.name}
+                                                                                </h4>
+                                                                                <i className={`fas fa-chevron-right transform transition-all text-xs ${activeGalleryId === img.id ? (category.type === 'web' ? 'text-primary' : 'text-secondary') + ' translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
+                                                                            </div>
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         )}
                                         <div className="h-8"></div>
                                     </div>
