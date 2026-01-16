@@ -868,8 +868,8 @@
                                                 <p className="text-gray-300 leading-relaxed text-sm">{t('context_desc')}</p>
                                                 <div className="grid grid-cols-2 gap-4 mt-6">
                                                     {/* [修改] text-primary -> text-app-primary, text-secondary -> text-app-secondary */}
-                                                    <div className="p-4 bg-white/5 rounded-xl border border-white/10"><i className="fas fa-mobile-alt text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-gray-400 mt-1">{t('mobile_first_sub')}</p></div>
-                                                    <div className="p-4 bg-white/5 rounded-xl border border-white/10"><i className="fas fa-feather-alt text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-gray-400 mt-1">{t('soft_ui_sub')}</p></div>
+                                                    <div className="p-4 bg-white/10 rounded-xl border border-white/10"><i className="fas fa-mobile-alt text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-gray-400 mt-1">{t('mobile_first_sub')}</p></div>
+                                                    <div className="p-4 bg-white/10 rounded-xl border border-white/10"><i className="fas fa-feather-alt text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-gray-400 mt-1">{t('soft_ui_sub')}</p></div>
                                                 </div>
                                             </div>
                                         )}
@@ -883,7 +883,7 @@
                                                         <div key={point.id} className="feature-card border border-white/10 p-5 border-l-4 border-l-app-primary hover:translate-x-1 transition-all duration-300 group">
                                                             {/* [修改] bg-secondary/20 -> bg-app-secondary/20, text-secondary -> text-app-secondary */}
                                                             <div className="flex items-center mb-3"><div className="w-8 h-8 rounded-full bg-app-secondary/20 flex items-center justify-center text-app-secondary mr-3"><i className={`fas ${point.icon}`}></i></div><h4 className="font-bold text-white">{point.title}</h4></div>
-                                                            <div className="flex items-center justify-between text-xs mb-3 bg-black/20 p-2 rounded-lg border border-white/5">
+                                                            <div className="flex items-center justify-between text-xs mb-3 bg-black/20 p-2 rounded-lg border border-white/10">
                                                                 <div className="text-gray-500 w-1/2 pr-2 border-r border-gray-700"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('web_complex')}</span>{point.web.desc}</div>
                                                                 {/* [修改] text-secondary -> text-app-secondary */}
                                                                 <div className="text-app-secondary w-1/2 pl-2"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('app_simple')}</span>{point.app.desc}</div>
@@ -902,7 +902,7 @@
                                                 <div className="space-y-3">
                                                     {appFeatures.map((feat) => (
                                                         /* [修改] bg-primary/10 -> bg-app-primary/10, border-primary -> border-app-primary */
-                                                        <button key={feat.id} onClick={() => setActiveFeatureId(feat.id)} className={`w-full text-left p-4 rounded-xl border transition-all ${activeFeatureId === feat.id ? 'bg-app-primary/10 border-app-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-white/5 border-white/5 hover:bg-white/10'}`}>
+                                                        <button key={feat.id} onClick={() => setActiveFeatureId(feat.id)} className={`w-full text-left p-4 rounded-xl border transition-all ${activeFeatureId === feat.id ? 'bg-app-primary/10 border-app-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-white/10 border-white/10 hover:bg-white/10'}`}>
                                                             {/* [修改] text-primary -> text-app-primary */}
                                                             <h4 className={`font-bold text-sm mb-1 ${activeFeatureId === feat.id ? 'text-app-primary' : 'text-white'}`}>{feat.title}</h4>
                                                             <p className="text-xs text-gray-400 mb-2">{feat.desc}</p>
@@ -920,7 +920,7 @@
                                                 <div className="space-y-3">
                                                     {appGallery.map((img) => (
                                                         /* [修改] border-primary -> border-app-primary */
-                                                        <button key={img.id} onClick={() => setActiveGalleryId(img.id)} className={`w-full text-left feature-card border p-4 transition-all group flex items-center justify-between ${activeGalleryId === img.id ? 'border-app-primary bg-white/5 shadow-[0_0_15px_rgba(255,74,0,0.1)]' : 'border-white/5 hover:bg-white/5'}`}>
+                                                        <button key={img.id} onClick={() => setActiveGalleryId(img.id)} className={`w-full text-left feature-card border p-4 transition-all group flex items-center justify-between ${activeGalleryId === img.id ? 'border-app-primary bg-white/10 shadow-[0_0_15px_rgba(255,74,0,0.1)]' : 'border-white/10 hover:bg-white/10'}`}>
                                                             <div className="flex-1 min-w-0 pr-4"><div className="flex items-center mb-1"><span className={`font-bold text-sm truncate transition-colors ${activeGalleryId === img.id ? 'text-app-primary' : 'text-gray-300 group-hover:text-white'}`}>{img.title}</span></div><p className={`text-xs truncate transition-colors ${activeGalleryId === img.id ? 'text-gray-400' : 'text-gray-600 group-hover:text-gray-500'}`}>{img.desc}</p></div>
                                                             {/* [修改] text-primary -> text-app-primary */}
                                                             <i className={`fas fa-chevron-right ml-4 transform transition-all text-xs ${activeGalleryId === img.id ? 'text-app-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
@@ -942,5 +942,6 @@
         root.render(<App />);
     </script>
 </body>
+
 
 </html>
