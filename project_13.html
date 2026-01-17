@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super High Tech | CNC 3D Simulator</title>
+
+    <link href="./img/favicon/favicon.ico" rel="shortcut icon" type="image/ico">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'tech-primary': '#1890FF',
+                        'tech-dark': '#0B0C10',
+                        'tech-panel': '#1F2833',
+                        'tech-accent': '#66FCF1',
+                        'tech-grey': '#C5C6C7'
+                    },
+                    fontFamily: {
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                        display: ['"Orbitron"', 'sans-serif'],
+                        body: ['"Inter"', 'sans-serif']
+                    },
+                    backgroundImage: {
+                        'hex-pattern': "url(\"data:image/svg+xml,%3Csvg width='24' height='40' viewBox='0 0 24 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40c5.523 0 10-4.477 10-10V10C10 4.477 5.523 0 0 0h24c-5.523 0-10 4.477-10 10v20c0 5.523 5.523 10 10 10H0z' fill='%231890FF' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E\")"
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Base Styles */
+        body { background-color: #0B0C10; color: #C5C6C7; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        
+        /* Chamfered Edges (The Core Visual Identity) */
+        .chamfer-btn {
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+            transition: all 0.2s ease;
+        }
+        .chamfer-card {
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(31, 40, 51, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Animations */
+        .glitch-hover:hover {
+            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+            color: #66FCF1;
+        }
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+
+        /* Loader */
+        .loader-overlay { position: fixed; inset: 0; background: #0B0C10; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s; }
+        .loader-hidden { opacity: 0; pointer-events: none; }
+        
+        /* Modal Transition */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 300ms, transform 300ms; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 300ms, transform 300ms; }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // === CONFIGURATION ===
+        const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/"; // 您的模擬器網址
+
+        // === CONTENT DATA ===
+        const CONTENT = {
+            zh: {
+                hero_title: "SUPER HIGH TECH",
+                hero_sub: "CNC 3D SIMULATOR v4.2",
+                hero_desc: "Tech Coordinate — 定義未來的精密加工體驗。結合六邊形結構美學與數位孿生技術，打造工程師最可靠的虛擬指揮中心。",
+                btn_launch: "INITIALIZE SIMULATION",
+                btn_launch_sub: "啟動即時模擬系統",
+                section_features: "核心模組 SYSTEM MODULES",
+                section_process: "設計流程 DESIGN PROCESS",
+                back_home: "Back to Portfolio",
+                features: [
+                    { title: "Titanium Vault", desc: "全螢幕檔案管理中樞，沉浸式專案切換。", icon: "fa-folder-open" },
+                    { title: "Smart G-Code", desc: "語法高亮與斷點除錯，將編碼轉化為直觀互動。", icon: "fa-code" },
+                    { title: "Digital Twin", desc: "六邊形網格舞台，即時切削預覽 (Ghosting)。", icon: "fa-cube" },
+                    { title: "Live DRO", desc: "駕駛艙級儀表板，監控主軸轉速與負載。", icon: "fa-tachometer-alt" },
+                    { title: "Visual Console", desc: "X-Ray 透視與熱圖分析，視覺化加工效率。", icon: "fa-eye" },
+                    { title: "BIOS Config", desc: "全螢幕硬體設定，直觀調整機台物理極限。", icon: "fa-cog" }
+                ]
+            }
+        };
+
+        const t = CONTENT.zh; // Default to Chinese for now
+
+        // === COMPONENTS ===
+
+        // 1. Navigation Bar
+        const Navbar = () => (
+            <nav className="fixed top-0 left-0 w-full z-40 px-6 py-4 flex justify-between items-center bg-tech-dark/80 backdrop-blur-md border-b border-white/5">
+                <a href="index.html#portfolio" className="flex items-center group">
+                    <div className="w-8 h-8 bg-tech-primary/20 border border-tech-primary flex items-center justify-center chamfer-btn mr-3 group-hover:bg-tech-primary transition-colors">
+                        <i className="fas fa-arrow-left text-tech-primary group-hover:text-white text-xs"></i>
+                    </div>
+                    <span className="font-mono text-xs text-tech-grey tracking-widest group-hover:text-white transition-colors">{t.back_home}</span>
+                </a>
+                <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="font-mono text-[10px] text-tech-primary tracking-widest">SYSTEM ONLINE</span>
+                </div>
+            </nav>
+        );
+
+        // 2. Fullscreen Simulator Modal
+        const SimulatorModal = ({ isOpen, onClose }) => {
+            if (!isOpen) return null;
+
+            return (
+                <div className="fixed inset-0 z-50 bg-black flex flex-col animate-fadeIn">
+                    {/* Top Control Bar */}
+                    <div className="h-10 bg-tech-panel border-b border-white/10 flex justify-between items-center px-4 shrink-0">
+                        <div className="flex items-center space-x-4">
+                            <span className="font-display text-tech-primary font-bold tracking-widest text-sm">SIMULATOR_LIVE</span>
+                            <span className="font-mono text-[10px] text-gray-500">1920x1080 NATIVE RES</span>
+                        </div>
+                        <button onClick={onClose} className="bg-red-500/20 hover:bg-red-500 border border-red-500/50 text-red-500 hover:text-white px-4 py-1 text-xs font-mono font-bold tracking-widest chamfer-btn transition-all flex items-center">
+                            <i className="fas fa-power-off mr-2"></i> DISCONNECT
+                        </button>
+                    </div>
+
+                    {/* Iframe Container - CLEAN NO SCANLINES */}
+                    <div className="flex-1 relative w-full h-full bg-black overflow-hidden">
+                        <iframe 
+                            src={SIMULATOR_URL} 
+                            className="w-full h-full border-0"
+                            allowFullScreen
+                            title="CNC Simulator"
+                        ></iframe>
+                    </div>
+                </div>
+            );
+        };
+
+        // 3. Hero Section
+        const Hero = ({ onLaunch }) => {
+            const containerRef = useRef(null);
+
+            useEffect(() => {
+                gsap.fromTo(containerRef.current.children, 
+                    { y: 50, opacity: 0 },
+                    { y: 0, opacity: 1, stagger: 0.2, duration: 1, ease: "power3.out" }
+                );
+            }, []);
+
+            return (
+                <header className="relative min-h-screen flex items-center justify-center bg-hex-pattern bg-fixed overflow-hidden">
+                    {/* Dark Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-tech-dark via-tech-dark/90 to-tech-dark z-0"></div>
+                    
+                    {/* Background Graphic (Abstract Machine) */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none z-0">
+                        <div className="w-[800px] h-[800px] border border-tech-primary/30 rounded-full animate-spin-slow" style={{animationDuration: '60s'}}></div>
+                        <div className="absolute w-[600px] h-[600px] border border-white/10 rounded-full animate-spin-slow" style={{animationDuration: '40s', animationDirection: 'reverse'}}></div>
+                    </div>
+
+                    <div ref={containerRef} className="relative z-10 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
+                        <div className="inline-block px-4 py-1 mb-6 border border-tech-primary/50 bg-tech-primary/10 text-tech-primary text-xs font-mono tracking-[0.2em] chamfer-btn">
+                            {t.hero_sub}
+                        </div>
+                        
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-black text-white mb-8 tracking-tighter leading-tight">
+                            {t.hero_title}
+                        </h1>
+                        
+                        <p className="text-tech-grey text-lg md:text-xl font-light mb-12 max-w-2xl leading-relaxed">
+                            {t.hero_desc}
+                        </p>
+
+                        {/* THE LAUNCH BUTTON */}
+                        <button 
+                            onClick={onLaunch}
+                            className="group relative inline-flex flex-col items-center justify-center px-12 py-6 bg-tech-primary hover:bg-white text-white hover:text-tech-dark border-2 border-transparent hover:border-tech-primary transition-all duration-300 transform hover:scale-105 chamfer-btn shadow-[0_0_40px_rgba(24,144,255,0.3)]"
+                        >
+                            <span className="font-display font-bold text-xl tracking-widest mb-1 flex items-center">
+                                <i className="fas fa-play-circle mr-3"></i>
+                                {t.btn_launch}
+                            </span>
+                            <span className="font-mono text-xs opacity-70 tracking-widest group-hover:opacity-100">
+                                {t.btn_launch_sub}
+                            </span>
+                        </button>
+
+                        <div className="mt-16 flex space-x-8 text-xs font-mono text-gray-600 tracking-widest">
+                            <span>REACT.JS</span>
+                            <span>•</span>
+                            <span>WEBGL</span>
+                            <span>•</span>
+                            <span>THREE.JS</span>
+                        </div>
+                    </div>
+                </header>
+            );
+        };
+
+        // 4. Feature Grid Section
+        const Features = () => {
+            const scrollRef = useRef(null);
+
+            useEffect(() => {
+                gsap.registerPlugin(ScrollTrigger);
+                const cards = scrollRef.current.children;
+                gsap.fromTo(cards, 
+                    { y: 100, opacity: 0 },
+                    { 
+                        y: 0, opacity: 1, stagger: 0.1, duration: 0.8,
+                        scrollTrigger: { trigger: scrollRef.current, start: "top 80%" }
+                    }
+                );
+            }, []);
+
+            return (
+                <section className="py-24 px-6 bg-tech-dark relative border-t border-white/5">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="mb-16 flex items-end justify-between border-b border-white/10 pb-4">
+                            <h2 className="text-3xl font-display font-bold text-white flex items-center">
+                                <span className="w-2 h-8 bg-tech-primary mr-4 block"></span>
+                                {t.section_features}
+                            </h2>
+                            <span className="font-mono text-tech-primary text-xs hidden md:block">01 // CORE_MODULES</span>
+                        </div>
+
+                        <div ref={scrollRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {t.features.map((item, idx) => (
+                                <div key={idx} className="group glass-panel p-8 chamfer-card hover:bg-tech-panel/80 transition-colors relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                        <i className={`fas ${item.icon} text-6xl text-white`}></i>
+                                    </div>
+                                    <div className="w-12 h-12 bg-tech-primary/10 border border-tech-primary/30 flex items-center justify-center text-tech-primary mb-6 chamfer-btn group-hover:bg-tech-primary group-hover:text-white transition-colors">
+                                        <i className={`fas ${item.icon}`}></i>
+                                    </div>
+                                    <h3 className="text-xl font-display font-bold text-white mb-2">{item.title}</h3>
+                                    <p className="text-sm text-tech-grey leading-relaxed font-light">{item.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        // 5. Image Showcase (Design Process)
+        const Showcase = () => (
+            <section className="py-24 px-6 bg-[#0F1014] relative">
+                <div className="max-w-7xl mx-auto">
+                    <div className="mb-16 flex items-end justify-between border-b border-white/10 pb-4">
+                        <h2 className="text-3xl font-display font-bold text-white flex items-center">
+                            <span className="w-2 h-8 bg-purple-500 mr-4 block"></span>
+                            DESIGN GALLERY
+                        </h2>
+                        <span className="font-mono text-purple-500 text-xs hidden md:block">02 // UI_COMPONENTS</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-8">
+                            <img src="./img/project_02/screen_main.jpg" alt="Main UI" className="w-full h-auto border border-white/10 opacity-80 hover:opacity-100 transition-opacity" />
+                            <div className="p-6 border-l-2 border-tech-primary">
+                                <h4 className="text-white font-bold mb-2">流體佈局 (Fluid Layout)</h4>
+                                <p className="text-sm text-gray-400">採用左側編輯、中央模擬、右側數據的三欄式設計，符合工程師操作視線流動。</p>
+                            </div>
+                        </div>
+                        <div className="space-y-8 mt-0 md:mt-12">
+                            <img src="./img/project_02/screen_edit.jpg" alt="Edit Panel" className="w-full h-auto border border-white/10 opacity-80 hover:opacity-100 transition-opacity" />
+                            <div className="p-6 border-l-2 border-purple-500">
+                                <h4 className="text-white font-bold mb-2">鈦金屬深色模式</h4>
+                                <p className="text-sm text-gray-400">專為工廠低光源環境設計的配色系統，降低長期操作的視覺疲勞。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+
+        // 6. Footer
+        const Footer = () => (
+            <footer className="py-12 bg-black border-t border-white/10 text-center">
+                <p className="text-tech-grey text-xs font-mono tracking-widest mb-4">DESIGNED BY TIM LIN</p>
+                <div className="text-[10px] text-gray-700 font-mono">
+                    SUPER HIGH TECH © 2025 <br/> ALL SYSTEMS OPERATIONAL
+                </div>
+            </footer>
+        );
+
+        // === MAIN APP ===
+        const App = () => {
+            const [isLoading, setIsLoading] = useState(true);
+            const [isSimOpen, setIsSimOpen] = useState(false);
+
+            useEffect(() => {
+                // Fake loading for effect
+                setTimeout(() => setIsLoading(false), 1500);
+            }, []);
+
+            return (
+                <React.Fragment>
+                    {/* Initial Loading Screen */}
+                    <div className={`loader-overlay ${!isLoading ? 'loader-hidden' : ''}`}>
+                        <div className="flex flex-col items-center">
+                            <div className="w-16 h-16 border-4 border-tech-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                            <div className="font-mono text-tech-primary text-xs tracking-[0.3em] animate-pulse">INITIALIZING...</div>
+                        </div>
+                    </div>
+
+                    <Navbar />
+                    
+                    <main>
+                        <Hero onLaunch={() => setIsSimOpen(true)} />
+                        <Features />
+                        <Showcase />
+                    </main>
+
+                    <Footer />
+
+                    {/* The Simulator Modal */}
+                    <SimulatorModal isOpen={isSimOpen} onClose={() => setIsSimOpen(false)} />
+
+                </React.Fragment>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
