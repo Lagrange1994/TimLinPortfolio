@@ -389,6 +389,19 @@
         /* 手機版動畫優化 (CSS Transition) */
         @media (max-width: 767px) {
 
+            #hero-img-container {
+                height: 40dvh !important;
+                /* 使用 !important 確保覆蓋任何 Tailwind 設定 */
+                min-height: auto !important;
+                /* 防止被其他 min-height 設定干擾 */
+            }
+
+            /* 同時確保圖片不會因為容器變矮而變形或跑掉 */
+            #hero-img-container img {
+                object-position: bottom center !important;
+                /* 確保靠底對齊 */
+            }
+
             .stagger-item,
             .fade-in {
                 transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -1072,10 +1085,11 @@
             <div class="container max-w-8xl mx-auto">
                 <div class="flex flex-col md:flex-row items-center">
 
-                    <div
-                        class="w-full md:w-1/2 flex justify-center px-0 h-[38dvh] md:h-[45rem] md:aspect-auto stagger-item relative overflow-hidden">
+                    <div id="hero-img-container"
+                        class="w-full md:w-1/2 flex justify-center items-end px-0 md:h-[45rem] md:aspect-auto stagger-item relative overflow-hidden">
+
                         <img src="./img/figure.png" alt="Hero Figure"
-                            class="h-full w-auto object-contain md:hidden block pointer-events-none" />
+                            class="h-full w-auto object-contain object-bottom md:hidden block pointer-events-none" />
 
                         <spline-viewer url="./models/hero_figure.splinecode"
                             class="w-full h-full overflow-hidden hidden md:block"></spline-viewer>
