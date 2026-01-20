@@ -7,7 +7,7 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Tim Lin - Web Designer Portfolio</title>
 
     <link href="./img/favicon/favicon.ico" rel="shortcut icon" type="image/ico">
@@ -298,12 +298,17 @@
         .snap-section {
             height: auto;
             min-height: 100vh;
+            /* 舊瀏覽器備用 */
+            min-height: 100dvh;
+            /* iOS Safari 完美適配 */
+
             width: 100%;
             position: relative;
             opacity: 1;
             visibility: visible;
             padding-top: 5rem;
-            padding-bottom: 2.5rem;
+            padding-bottom: calc(2.5rem + env(safe-area-inset-bottom));
+
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -408,11 +413,14 @@
 
             #main-scroller {
                 height: 100vh;
+                height: 100dvh;
                 overflow: hidden;
             }
 
             .snap-section {
                 height: 100vh;
+                height: 100dvh;
+
                 padding-top: 0;
                 padding-bottom: 0;
                 opacity: 0;
