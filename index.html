@@ -9,6 +9,22 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Tim Lin - Web Designer Portfolio</title>
+    <meta name="description"
+        content="Tim Lin 的個人作品集。資深 UI/UX 設計師與前端開發者，專精於 Figma 介面設計、React/Vue 網頁開發，以及 Spline 3D 互動網頁體驗。">
+    <meta name="keywords"
+        content="UI/UX Design, Web Development, Tim Lin, Portfolio, 網頁設計, 前端開發, 台灣設計師, React, Figma, Spline 3D">
+    <meta name="author" content="Tim Lin">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://timlin-design.vercel.app/">
+    <meta property="og:title" content="Tim Lin | UI/UX Designer & Web Developer">
+    <meta property="og:description" content="結合嚴謹邏輯與前瞻技術的資深產品設計師。查看我的 UI/UX 設計與 3D 網頁開發作品。">
+    <meta property="og:image" content="https://timlin-design.vercel.app/img/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Tim Lin | UI/UX Designer & Web Developer">
+    <meta name="twitter:description" content="致力於打造兼具美學與功能的數位體驗。">
+    <meta name="twitter:image" content="https://timlin-design.vercel.app/img/og-image.jpg">
+    <link rel="canonical" href="https://timlin-design.vercel.app/" />
 
     <link href="./img/favicon/favicon.ico" rel="shortcut icon" type="image/ico">
 
@@ -149,6 +165,8 @@
         ];
 
     </script>
+
+
 
     <style>
         /* =========================================
@@ -970,6 +988,28 @@
             opacity: 1 !important;
         }
     </style>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Tim Lin",
+      "url": "https://timlin-design.vercel.app/",
+      "jobTitle": "UI/UX Designer & Web Developer",
+      "image": "https://timlin-design.vercel.app/img/about_me.jpg",
+      "sameAs": [
+        "https://github.com/Lagrange1994",
+        "https://www.linkedin.com/in/您的linkedin帳號/" 
+      ],
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Taipei",
+        "addressCountry": "Taiwan"
+      },
+      "knowsAbout": ["UI/UX Design", "Web Development", "React", "Spline 3D", "Figma"]
+    }
+    </script>
+
 </head>
 
 <body class="dark">
@@ -986,12 +1026,21 @@
 
             <nav class="hidden md:flex space-x-2 relative">
                 <span id="nav-hover-bg"></span>
-                <a href="javascript:void(0)" onclick="scrollToSection(0)" class="nav-link active"
+
+                <a href="#home" onclick="event.preventDefault(); scrollToSection(0)" class="nav-link active"
                     data-index="0">Home</a>
-                <a href="javascript:void(0)" onclick="scrollToSection(1)" class="nav-link" data-index="1">About</a>
-                <a href="javascript:void(0)" onclick="scrollToSection(2)" class="nav-link" data-index="2">Skills</a>
-                <a href="javascript:void(0)" onclick="scrollToSection(3)" class="nav-link" data-index="3">Portfolio</a>
-                <a href="javascript:void(0)" onclick="scrollToSection(4)" class="nav-link" data-index="4">Contact Me</a>
+
+                <a href="#about" onclick="event.preventDefault(); scrollToSection(1)" class="nav-link"
+                    data-index="1">About</a>
+
+                <a href="#my-skills" onclick="event.preventDefault(); scrollToSection(2)" class="nav-link"
+                    data-index="2">Skills</a>
+
+                <a href="#portfolio" onclick="event.preventDefault(); scrollToSection(3)" class="nav-link"
+                    data-index="3">Portfolio</a>
+
+                <a href="#contact" onclick="event.preventDefault(); scrollToSection(4)" class="nav-link"
+                    data-index="4">Contact Me</a>
             </nav>
 
             <div class="hidden md:block relative ml-4">
@@ -1037,11 +1086,20 @@
                 </button>
             </div>
             <nav class="flex flex-col space-y-6">
-                <a onclick="scrollToSection(0)" class="mobile-nav-link text-lg">Home</a>
-                <a onclick="scrollToSection(1)" class="mobile-nav-link text-lg">About</a>
-                <a onclick="scrollToSection(2)" class="mobile-nav-link text-lg">Skills</a>
-                <a onclick="scrollToSection(3)" class="mobile-nav-link text-lg">Portfolio</a>
-                <a onclick="scrollToSection(4)" class="mobile-nav-link text-lg">Contact Me</a>
+                <a href="#home" onclick="event.preventDefault(); scrollToSection(0)"
+                    class="mobile-nav-link text-lg">Home</a>
+
+                <a href="#about" onclick="event.preventDefault(); scrollToSection(1)"
+                    class="mobile-nav-link text-lg">About</a>
+
+                <a href="#my-skills" onclick="event.preventDefault(); scrollToSection(2)"
+                    class="mobile-nav-link text-lg">Skills</a>
+
+                <a href="#portfolio" onclick="event.preventDefault(); scrollToSection(3)"
+                    class="mobile-nav-link text-lg">Portfolio</a>
+
+                <a href="#contact" onclick="event.preventDefault(); scrollToSection(4)"
+                    class="mobile-nav-link text-lg">Contact Me</a>
             </nav>
             <div class="mt-6 flex flex-col gap-3">
 
