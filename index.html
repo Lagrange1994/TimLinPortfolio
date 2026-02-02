@@ -987,6 +987,49 @@
             box-shadow: 0 0 10px rgba(108, 99, 255, 0.2) !important;
             opacity: 1 !important;
         }
+
+        /* =========================================
+           [新增] 膠囊標籤樣式 (Capsule Tags)
+           ========================================= */
+        .tag-capsule {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1.5rem;
+            /* Hero區塊稍微縮小一點內距，比較精緻 */
+            border-radius: 9999px;
+
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            /* 字體不用太大，當作裝飾 */
+            color: rgba(255, 255, 255, 0.7);
+            white-space: nowrap;
+
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+
+            transition: all 0.3s ease;
+            cursor: default;
+            user-select: none;
+        }
+
+        .tag-capsule:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(108, 99, 255, 0.5);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .tag-capsule {
+                padding: 0.35rem 1rem;
+                font-size: 0.75rem;
+            }
+        }
     </style>
 
     <script type="application/ld+json">
@@ -1138,9 +1181,9 @@
 
     <main id="main-scroller">
 
-        <section id="home" class="snap-section active-section md:flex md:items-center overflow-hidden">
+        <section id="home" class="snap-section active-section md:flex md:items-center overflow-hidden relative">
 
-            <div class="container max-w-8xl mx-auto">
+            <div class="container max-w-8xl mx-auto pb-20 md:pb-0">
                 <div class="flex flex-col md:flex-row items-center">
 
                     <div id="hero-img-container"
@@ -1177,6 +1220,86 @@
                             </a>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div class="absolute bottom-6 md:bottom-8 left-0 right-0 mx-auto w-[calc(100%-2rem)] max-w-8xl z-20 overflow-hidden rounded-full opacity-0 fade-in visible"
+                style="animation-delay: 1.2s; pointer-events: none;">
+
+                <div class="scroller" data-direction="left" data-speed="slow" style="pointer-events: auto;">
+                    <ul class="scroller-inner tag-list flex flex-wrap gap-3 md:gap-4 list-none py-2 px-0 m-0 w-max">
+
+                        <li class="tag-capsule border-primary/40 text-primary/90 bg-primary/10">
+                            <i class="fas fa-rocket mr-2 text-sm animate-pulse"></i>Open for Opportunities
+                        </li>
+
+                        <li class="tag-capsule group">
+                            <i
+                                class="fas fa-layer-group mr-2 text-blue-400 group-hover:text-white transition-colors"></i>UI/UX
+                            Strategy
+                        </li>
+                        <li class="tag-capsule group">
+                            <i
+                                class="fas fa-code mr-2 text-green-400 group-hover:text-white transition-colors"></i>Frontend
+                            Dev
+                        </li>
+                        <li class="tag-capsule group">
+                            <i
+                                class="fas fa-sitemap mr-2 text-purple-400 group-hover:text-white transition-colors"></i>System
+                            Architecture
+                        </li>
+
+                        <li class="tag-capsule group">
+                            <i
+                                class="fab fa-react mr-2 text-[#61DAFB] group-hover:text-white transition-colors"></i>React.js
+                        </li>
+                        <li class="tag-capsule group">
+                            <i
+                                class="fab fa-vuejs mr-2 text-[#4FC08D] group-hover:text-white transition-colors"></i>Vue.js
+                        </li>
+                        <li class="tag-capsule group">
+                            <i
+                                class="fas fa-wind mr-2 text-[#38B2AC] group-hover:text-white transition-colors"></i>Tailwind
+                            CSS
+                        </li>
+
+                        <li class="tag-capsule group">
+                            <i
+                                class="fab fa-figma mr-2 text-[#F24E1E] group-hover:text-white transition-colors"></i>Figma
+                        </li>
+                        <li class="tag-capsule group">
+                            <i
+                                class="fas fa-pen-nib mr-2 text-[#FF61F6] group-hover:text-white transition-colors"></i>Adobe
+                            XD
+                        </li>
+                        <li class="tag-capsule group">
+                            <i
+                                class="fas fa-cube mr-2 text-pink-500 group-hover:text-white transition-colors"></i>Spline
+                            3D
+                        </li>
+
+                        <li class="tag-capsule group">
+                            <i
+                                class="fas fa-users mr-2 text-yellow-400 group-hover:text-white transition-colors"></i>User
+                            Centric
+                        </li>
+                        <li class="tag-capsule group">
+                            <i
+                                class="fas fa-bullseye mr-2 text-red-400 group-hover:text-white transition-colors"></i>Pixel
+                            Perfect
+                        </li>
+                        <li class="tag-capsule group">
+                            <i
+                                class="fas fa-puzzle-piece mr-2 text-orange-400 group-hover:text-white transition-colors"></i>Problem
+                            Solver
+                        </li>
+
+                        <li class="tag-capsule group">
+                            <i
+                                class="fas fa-map-marker-alt mr-2 text-red-500 group-hover:text-white transition-colors"></i>Taipei,
+                            Taiwan
+                        </li>
+                    </ul>
                 </div>
             </div>
         </section>
