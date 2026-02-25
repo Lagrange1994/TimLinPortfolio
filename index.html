@@ -1004,13 +1004,12 @@
             align-items: center;
             justify-content: center;
             padding: 0.5rem 1.5rem;
-            /* Hero區塊稍微縮小一點內距，比較精緻 */
             border-radius: 9999px;
 
             font-family: 'Quicksand', sans-serif;
             font-weight: 600;
             font-size: 0.9rem;
-            /* 字體不用太大，當作裝飾 */
+            /* 電腦版文字大小 */
             color: rgba(255, 255, 255, 0.7);
             white-space: nowrap;
 
@@ -1032,10 +1031,48 @@
             box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
         }
 
+        /* 電腦版：預設圖標大小，確保網頁版不會跑掉 */
+        .tag-capsule i {
+            font-size: 1rem;
+        }
+
+        .tag-capsule img {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        /* =========================================
+           手機版專用：Hero 輪播與膠囊縮小微調
+           ========================================= */
         @media (max-width: 768px) {
+
+            /* 1. 縮短整個輪播與螢幕底部的距離 */
+            #home .absolute.bottom-6 {
+                bottom: 0.75rem !important;
+            }
+
+            /* 2. 縮短膠囊標籤之間的間距 */
+            #home .scroller-inner {
+                gap: 0.5rem !important;
+            }
+
+            /* 3. 縮小膠囊本身的尺寸與字體 */
             .tag-capsule {
-                padding: 0.35rem 1rem;
-                font-size: 0.75rem;
+                padding: 0.25rem 0.75rem !important;
+                font-size: 0.65rem !important;
+            }
+
+            /* 4. 縮小膠囊內的 FontAwesome 圖標 */
+            .tag-capsule i {
+                font-size: 0.7rem !important;
+                margin-right: 0.35rem !important;
+            }
+
+            /* 5. 縮小膠囊內的圖片圖標 (如 Figma) */
+            .tag-capsule img {
+                width: 0.85rem !important;
+                height: 0.85rem !important;
+                margin-right: 0.35rem !important;
             }
         }
     </style>
@@ -1233,7 +1270,6 @@
 
             <div class="absolute bottom-6 md:bottom-8 left-0 right-0 mx-auto w-[calc(100%-2rem)] max-w-8xl z-20 overflow-hidden rounded-full opacity-0 fade-in visible"
                 style="animation-delay: 1.2s; pointer-events: none;">
-
                 <div class="scroller" data-direction="left" data-speed="slow" style="pointer-events: auto;">
                     <ul class="scroller-inner tag-list flex flex-wrap gap-3 md:gap-4 list-none py-2 px-0 m-0 w-max">
 
