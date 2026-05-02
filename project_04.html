@@ -37,29 +37,6 @@
             overscroll-behavior: none;
         }
 
-        #main-scroller {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Sections */
-        .snap-section {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 1s ease-in-out;
-        }
-
-        .snap-section.active-section {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* Glassmorphism */
         .glass-panel {
             background: linear-gradient(135deg, rgba(26, 29, 36, 0.95), rgba(15, 17, 21, 0.98));
             backdrop-filter: blur(20px);
@@ -67,93 +44,16 @@
             border-left: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .feature-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
-            backdrop-filter: blur(12px);
-            /* [修正] 移除 CSS 中的 border 屬性，改由 Tailwind Utility Class 控制，避免權重衝突 */
-            border-radius: 16px;
-            transition: all 0.3s ease;
-        }
-
         .feature-card:hover {
             transform: translateY(-5px);
-            /* [保留] 預設 hover 效果 */
             border-color: rgba(45, 212, 191, 0.4);
             box-shadow: 0 10px 30px -10px rgba(45, 212, 191, 0.2);
         }
 
-        /* Scrollbars */
-        .custom-scroll::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .custom-scroll::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #3D3D3D;
-            border-radius: 10px;
-        }
-
         .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: #2dd4bf; /* tn-primary */
+            background: #2dd4bf;
         }
 
-        .scroll-content {
-            overflow-y: auto !important;
-            touch-action: pan-y !important;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-            height: 100%;
-        }
-
-        /* Animations */
-        .fade-in-up {
-            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Skeleton */
-        .skeleton {
-            background: #1e293b;
-            background: linear-gradient(to right, #1e293b 8%, #334155 18%, #1e293b 33%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite linear;
-        }
-
-        @keyframes shimmer {
-            to {
-                background-position-x: -200%;
-            }
-        }
-
-        /* Hero */
         .hero-bg-custom {
             background-image: url('./img/project_04/hero_img.jpg');
             background-image: -webkit-image-set(url('./img/project_04/hero_img.webp') 1x, url('./img/project_04/hero_img.jpg') 1x);
@@ -171,64 +71,7 @@
             z-index: 1;
         }
 
-        /* Loader */
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0F1115;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
-        }
-
-        .loader.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .loader-animation {
-            width: 65px;
-            aspect-ratio: 1;
-            position: relative;
-        }
-
-        .loader-animation:before,
-        .loader-animation:after {
-            content: "";
-            position: absolute;
-            border-radius: 50px;
-            box-shadow: 0 0 0 3px inset #ffffff;
-            animation: l4 2.5s infinite;
-        }
-
-        .loader-animation:after {
-            animation-delay: -1.25s;
-        }
-
-        @keyframes l4 {
-            0% { inset: 0 35px 35px 0; }
-            12.5% { inset: 0 35px 0 0; }
-            25% { inset: 35px 35px 0 0; }
-            37.5% { inset: 35px 0 0 0; }
-            50% { inset: 35px 0 0 35px; }
-            62.5% { inset: 0 0 0 35px; }
-            75% { inset: 0 0 35px 35px; }
-            87.5% { inset: 0 0 35px 0; }
-            100% { inset: 0 35px 35px 0; }
-        }
-
-        .back-btn i {
-            transition: transform 0.3s ease;
-        }
-
-        .back-btn:hover i {
-            transform: translateX(-4px);
-        }
+        .loader { background: #0F1115; }
     </style>
 </head>
 

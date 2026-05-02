@@ -24,7 +24,6 @@
         rel="stylesheet">
 
     <style>
-        /* === 基礎設定 === */
         body,
         html {
             margin: 0;
@@ -38,57 +37,14 @@
             overscroll-behavior: none;
         }
 
-        /* === 主捲動容器 === */
-        #main-scroller {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* === 全頁滾動區塊 === */
-        .snap-section {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 1s ease-in-out;
-            /* 這裡留空，讓 HTML 標籤上的 class="flex flex-col lg:flex-row" 發揮作用 */
-        }
-
-        .snap-section.active-section {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* === 內容滾動區域 === */
-        .scroll-content {
-            overflow-y: auto !important;
-            touch-action: pan-y !important;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-            height: 100%;
-        }
-
-        /* UI Elements */
         .glass-panel {
             background: linear-gradient(135deg, rgba(20, 5, 2, 0.95), rgba(8, 2, 1, 0.98));
             backdrop-filter: blur(20px);
             border-left: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        /* Feature Card Styles */
-        .feature-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
-            backdrop-filter: blur(12px);
-            border-radius: 16px;
-            transition: all 0.3s ease;
-        }
-
         .feature-card:hover {
             transform: translateY(-2px);
-            /* [修改] 手動匹配 app-primary */
             border-color: rgba(255, 74, 0, 0.4);
             box-shadow: 0 10px 30px -10px rgba(255, 74, 0, 0.2);
         }
@@ -97,16 +53,6 @@
             border-color: #ff4a00;
             background: rgba(255, 255, 255, 0.05);
             box-shadow: 0 0 15px rgba(255, 74, 0, 0.1);
-        }
-
-        /* Scrollbars */
-        .custom-scroll::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .custom-scroll::-webkit-scrollbar-track {
-            background: transparent;
         }
 
         .custom-scroll::-webkit-scrollbar-thumb {
@@ -118,44 +64,6 @@
             background: #ff4a00;
         }
 
-        /* Animations */
-        .fade-in-up {
-            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Skeleton Loading Animation */
-        @keyframes pulse-bg {
-            0%, 100% { background-color: rgba(255, 255, 255, 0.05); }
-            50% { background-color: rgba(255, 255, 255, 0.15); }
-        }
-
-        .skeleton-loader {
-            animation: pulse-bg 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 10;
-        }
-
-        /* Comparison Slider Styles */
         .comparison-container {
             position: relative;
             width: 100%;
@@ -197,7 +105,6 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
         }
 
-        /* Hero Background Custom */
         .hero-bg-custom {
             background-image: url('./img/project_02/hero_img.jpg');
             background-image: -webkit-image-set(url('./img/project_02/hero_img.webp') 1x, url('./img/project_02/hero_img.jpg') 1x);
@@ -214,64 +121,7 @@
             z-index: 1;
         }
 
-        .back-btn i {
-            transition: transform 0.3s ease;
-        }
-
-        .back-btn:hover i {
-            transform: translateX(-4px);
-        }
-
-        /* Loader */
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0F1115;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
-        }
-
-        .loader.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .loader-animation {
-            width: 65px;
-            aspect-ratio: 1;
-            position: relative;
-        }
-
-        .loader-animation:before,
-        .loader-animation:after {
-            content: "";
-            position: absolute;
-            border-radius: 50px;
-            box-shadow: 0 0 0 3px inset #fff;
-            animation: l4 2.5s infinite;
-        }
-
-        .loader-animation:after {
-            animation-delay: -1.25s;
-        }
-
-        @keyframes l4 {
-            0% { inset: 0 35px 35px 0; }
-            12.5% { inset: 0 35px 0 0; }
-            25% { inset: 35px 35px 0 0; }
-            37.5% { inset: 35px 0 0 0; }
-            50% { inset: 35px 0 0 35px; }
-            62.5% { inset: 0 0 0 35px; }
-            75% { inset: 0 0 35px 35px; }
-            87.5% { inset: 0 0 35px 0; }
-            100% { inset: 0 35px 35px 0; }
-        }
+        .loader { background: #0F1115; }
     </style>
 </head>
 

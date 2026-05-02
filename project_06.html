@@ -25,7 +25,6 @@
         rel="stylesheet">
 
     <style>
-        /* === 基礎設定 === */
         body,
         html {
             margin: 0;
@@ -39,38 +38,6 @@
             overscroll-behavior: none;
         }
 
-        #main-scroller {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* === 全頁滾動區塊 === */
-        .snap-section {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 1s ease-in-out;
-        }
-
-        .snap-section.active-section {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* === 內容滾動區域 === */
-        .scroll-content {
-            overflow-y: auto !important;
-            touch-action: pan-y !important;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-            height: 100%;
-        }
-
-        /* === 右側 Tab 橫向滾動修正 === */
         .horizontal-tabs {
             overflow-x: auto !important;
             overflow-y: hidden !important;
@@ -83,14 +50,12 @@
             display: none;
         }
 
-        /* UI Elements */
         .glass-panel {
             background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(18, 18, 18, 0.98));
             backdrop-filter: blur(20px);
             border-left: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* [修正] 移除 CSS border 設定，完全交由 Tailwind 控制 */
         .feature-card-standard {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
             backdrop-filter: blur(12px);
@@ -104,7 +69,6 @@
             box-shadow: 0 10px 30px -10px rgba(127, 63, 152, 0.2);
         }
 
-        /* [修正] 移除 CSS border 設定 */
         .feature-card-minimal {
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
             backdrop-filter: blur(12px);
@@ -116,47 +80,10 @@
             transform: translateY(-2px);
         }
 
-        /* Scrollbars */
-        .custom-scroll::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .custom-scroll::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #3D3D3D;
-            border-radius: 10px;
-        }
-
         .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: #7F3F98; /* 桃捷紫 */
+            background: #7F3F98;
         }
 
-        /* Animations */
-        .fade-in-up {
-            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Hero Background */
         .hero-bg-metro {
             background-image: url('./img/project_06/hero_img.jpg');
             background-image: -webkit-image-set(url('./img/project_06/hero_img.webp') 1x, url('./img/project_06/hero_img.jpg') 1x);
@@ -173,76 +100,7 @@
             z-index: 1;
         }
 
-        /* Loader */
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0F1115;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
-        }
-
-        .loader.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .loader-animation {
-            width: 65px;
-            aspect-ratio: 1;
-            position: relative;
-        }
-
-        .loader-animation:before,
-        .loader-animation:after {
-            content: "";
-            position: absolute;
-            border-radius: 50px;
-            box-shadow: 0 0 0 3px inset #ffffff;
-            animation: l4 2.5s infinite;
-        }
-
-        .loader-animation:after {
-            animation-delay: -1.25s;
-        }
-
-        @keyframes l4 {
-            0% { inset: 0 35px 35px 0; }
-            12.5% { inset: 0 35px 0 0; }
-            25% { inset: 35px 35px 0 0; }
-            37.5% { inset: 35px 0 0 0; }
-            50% { inset: 35px 0 0 35px; }
-            62.5% { inset: 0 0 0 35px; }
-            75% { inset: 0 0 35px 35px; }
-            87.5% { inset: 0 0 35px 0; }
-            100% { inset: 0 35px 35px 0; }
-        }
-
-        /* Skeleton */
-        .skeleton {
-            background: #1a1a1a;
-            background: linear-gradient(to right, #1a1a1a 8%, #2a2a2a 18%, #1a1a1a 33%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite linear;
-        }
-
-        @keyframes shimmer {
-            to { background-position-x: -200%; }
-        }
-
-        .back-btn i {
-            transition: transform 0.3s ease;
-        }
-
-        .back-btn:hover i {
-            transform: translateX(-4px);
-        }
+        .loader { background: #0F1115; }
     </style>
 </head>
 

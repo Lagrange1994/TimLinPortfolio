@@ -25,7 +25,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* === 基礎設定 === */
         body,
         html {
             margin: 0;
@@ -39,44 +38,6 @@
             overscroll-behavior: none;
         }
 
-        /* === Skeleton Shimmer Effect === */
-        .skeleton {
-            background: #1e293b;
-            background: linear-gradient(to right, #1e293b 8%, #334155 18%, #1e293b 33%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite linear;
-        }
-
-        @keyframes shimmer {
-            to {
-                background-position-x: -200%;
-            }
-        }
-
-        /* === 主捲動容器 === */
-        #main-scroller {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* === 全頁滾動區塊 === */
-        .snap-section {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 1s ease-in-out;
-        }
-
-        .snap-section.active-section {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* === Hero 區塊設定 (支援 WebP) === */
         .hero-bg-custom {
             background-image: url('./img/project_10/hero_img.jpg');
             background-image: -webkit-image-set(url('./img/project_10/hero_img.webp') 1x, url('./img/project_10/hero_img.jpg') 1x);
@@ -94,7 +55,6 @@
             z-index: 1;
         }
 
-        /* === Content Panel & Cards === */
         .content-panel {
             background: #000000;
             border-left: 1px solid rgba(255, 255, 255, 0.1);
@@ -102,27 +62,15 @@
 
         .feature-card {
             background: #111111;
-            /* [修正] 移除 CSS border 屬性，改由 Tailwind Utility Class 控制 */
             border-radius: 16px;
             transition: all 0.3s ease;
         }
 
         .feature-card:hover {
             transform: translateY(-5px);
-            /* [保留] Hover 效果 */
             border-color: rgba(0, 212, 255, 0.4);
             box-shadow: 0 10px 30px -10px rgba(0, 212, 255, 0.2);
             background: #161616;
-        }
-
-        /* Scrollbars */
-        .custom-scroll::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .custom-scroll::-webkit-scrollbar-track {
-            background: transparent;
         }
 
         .custom-scroll::-webkit-scrollbar-thumb {
@@ -131,16 +79,7 @@
         }
 
         .custom-scroll::-webkit-scrollbar-thumb:hover {
-            background: #00D4FF; /* hc-primary */
-        }
-
-        /* === 內容滾動區域 === */
-        .scroll-content {
-            overflow-y: auto !important;
-            touch-action: pan-y !important;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-            height: 100%;
+            background: #00D4FF;
         }
 
         .scrollable-area {
@@ -148,7 +87,6 @@
             overscroll-behavior: contain;
         }
 
-        /* === 右側 Tab 橫向滾動修正 === */
         .horizontal-tabs {
             overflow-x: auto !important;
             overflow-y: hidden !important;
@@ -161,94 +99,7 @@
             display: none;
         }
 
-        /* Animations */
-        .fade-in-up {
-            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        @keyframes fadeInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Loader */
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
-        }
-
-        .loader.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .loader-animation {
-            width: 65px;
-            aspect-ratio: 1;
-            position: relative;
-        }
-
-        .loader-animation:before,
-        .loader-animation:after {
-            content: "";
-            position: absolute;
-            border-radius: 50px;
-            box-shadow: 0 0 0 3px inset #fff;
-            animation: l4 2.5s infinite;
-        }
-
-        .loader-animation:after {
-            animation-delay: -1.25s;
-        }
-
-        @keyframes l4 {
-            0% { inset: 0 35px 35px 0; }
-            12.5% { inset: 0 35px 0 0; }
-            25% { inset: 35px 35px 0 0; }
-            37.5% { inset: 35px 0 0 0; }
-            50% { inset: 35px 0 0 35px; }
-            62.5% { inset: 0 0 0 35px; }
-            75% { inset: 0 0 35px 35px; }
-            87.5% { inset: 0 0 35px 0; }
-            100% { inset: 0 35px 35px 0; }
-        }
-
-        .back-btn i {
-            transition: transform 0.3s ease;
-        }
-
-        .back-btn:hover i {
-            transform: translateX(-4px);
-        }
+        .loader { background: #000000; }
     </style>
 </head>
 
