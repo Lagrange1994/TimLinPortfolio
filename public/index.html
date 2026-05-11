@@ -326,8 +326,8 @@
     .about-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 36px; align-items: start; }
     .about-left  { display: flex; flex-direction: column; }
     .about-right { display: flex; flex-direction: column; gap: 20px; }
-    .about-right > .stat-row,
-    .about-right > .sidebar-block { width: fit-content; }
+    .about-widgets { display: flex; flex-direction: column; gap: 14px; width: fit-content; }
+    .about-widgets > * { width: 100%; }
     .about-h2 { font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 700; line-height: 1.2; margin-bottom: 20px; letter-spacing: -.02em; }
     .about-body p { color: rgba(255,255,255,0.65); margin-bottom: 14px; font-size: 14px; line-height: 1.8; }
     .about-body strong { color: var(--text); font-weight: 600; }
@@ -851,7 +851,7 @@
         calc(var(--pointer-from-top)*-6px + 3px), 0.1px);
       z-index: 5; mix-blend-mode: luminosity;
     }
-    .pc-details { width: 100%; position: absolute; top: 3em; display: flex; flex-direction: column; }
+    .pc-details { width: 100%; position: absolute; top: 1.8em; display: flex; flex-direction: column; }
     .pc-details h3 {
       font-weight: 700; margin: 0; font-size: min(5svh, 2.6em);
       font-family: var(--font-heading);
@@ -1612,6 +1612,7 @@
           <p data-i18n="about_p3">我將 <strong>AI 工具</strong>深度整合進設計流程，而非只是輔助使用。運用 <span class="text-purple">Gemini</span> 進行邏輯發想與快速原型驗證，搭配 <span class="text-purple">Stitch</span> 生成多元視覺提案，以及 <span class="text-purple">Rodin</span> 快速轉化 3D 資產——這套流程讓我的設計交付速度明顯快於傳統方式。技術層面，我具備 <strong>React</strong> 與 <strong>Vue.js</strong> 基礎，能直接與開發者溝通實作細節，減少反覆來回。</p>
         </div>
       </div>
+      <div class="about-widgets">
       <div class="stat-row">
         <div class="stat-cell"><p class="stat-num">5+</p><p class="stat-lbl">Years</p></div>
         <div class="stat-cell"><p class="stat-num">10+</p><p class="stat-lbl">Projects</p></div>
@@ -1631,6 +1632,7 @@
           <span class="domain-chip">Entertainment</span>
         </div>
       </div>
+      </div><!-- /.about-widgets -->
     </div>
 
   </div>
