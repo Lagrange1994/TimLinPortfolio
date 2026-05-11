@@ -828,28 +828,6 @@
     #back-to-top.visible { opacity: 1; visibility: visible; }
     #back-to-top:hover { transform: translateY(-3px); }
 
-    /* ── SECTION WATERMARK ── */
-    .section-wrapper {
-      position: relative;
-      overflow-x: visible;
-      overflow-y: hidden;
-    }
-    .section-wm {
-      position: absolute;
-      bottom: -0.08em;
-      right: 0;
-      height: clamp(120px, 20vw, 260px);
-      width: auto;
-      opacity: 0.12;
-      pointer-events: none;
-      user-select: none;
-      z-index: 0;
-      display: block;
-    }
-    .section-wrapper > .section {
-      position: relative;
-      z-index: 1;
-    }
 
     /* ── TABLET (768px – 1024px only) ── */
     @media (min-width: 768px) and (max-width: 1024px) {
@@ -967,8 +945,6 @@
       /* Back to top */
       #back-to-top { bottom: 1rem; right: 1rem; width: 2.5rem; height: 2.5rem; }
 
-      /* Watermark — hide on very small screens to avoid overflow */
-      .section-wm { opacity: 0.07; height: clamp(80px, 14vw, 160px); }
     }
   </style>
   <style>
@@ -1431,15 +1407,6 @@
 
 <!-- ABOUT ME -->
 <div class="section-wrapper">
-  <svg class="section-wm" viewBox="0 0 560 175" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMaxYMax meet">
-    <defs>
-      <linearGradient id="g-about" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#6C63FF"/>
-        <stop offset="100%" stop-color="#FF6584"/>
-      </linearGradient>
-    </defs>
-    <text x="560" y="168" text-anchor="end" font-family="'Momo Trust Display', sans-serif" font-size="168" font-weight="900" letter-spacing="-6" fill="none" stroke="url(#g-about)" stroke-width="2.5">ABOUT</text>
-  </svg>
 <section id="about" class="section">
   <div class="section-label fade-in">About Me</div>
   <div class="about-grid stagger-item">
@@ -1641,15 +1608,6 @@
 
 <!-- MY PORTFOLIO -->
 <div class="section-wrapper">
-  <svg class="section-wm" viewBox="0 0 560 175" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMaxYMax meet">
-    <defs>
-      <linearGradient id="g-works" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#6C63FF"/>
-        <stop offset="100%" stop-color="#FF6584"/>
-      </linearGradient>
-    </defs>
-    <text x="560" y="168" text-anchor="end" font-family="'Momo Trust Display', sans-serif" font-size="168" font-weight="900" letter-spacing="-6" fill="none" stroke="url(#g-works)" stroke-width="2.5">WORKS</text>
-  </svg>
 <section id="portfolio" class="section">
   <div class="portfolio-header">
     <div class="section-label fade-in" style="margin-bottom:0">My Portfolio</div>
@@ -1683,15 +1641,6 @@
 
 <!-- CONTACT -->
 <div class="section-wrapper">
-  <svg class="section-wm" viewBox="0 0 776 175" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMaxYMax meet">
-    <defs>
-      <linearGradient id="g-contact" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#6C63FF"/>
-        <stop offset="100%" stop-color="#FF6584"/>
-      </linearGradient>
-    </defs>
-    <text x="776" y="168" text-anchor="end" font-family="'Momo Trust Display', sans-serif" font-size="168" font-weight="900" letter-spacing="-6" fill="none" stroke="url(#g-contact)" stroke-width="2.5">CONTACT</text>
-  </svg>
 <section id="contact" class="section">
   <div class="section-label fade-in">Contact Me</div>
   <h2 class="contact-headline stagger-item">Let's build something <span class="gradient-text">worth using.</span></h2>
