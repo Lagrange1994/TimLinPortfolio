@@ -660,6 +660,27 @@
     .cta-txt { font-size: 13px; color: var(--text-70); line-height: 1.55; }
     .cta-txt strong { color: var(--text); font-weight: 600; }
 
+    /* SPOTLIGHT CARD */
+    .sc-card { position: relative; overflow: hidden; }
+    .sc-overlay {
+      position: absolute; inset: 0; border-radius: inherit;
+      pointer-events: none; z-index: 0;
+      opacity: 0; transition: opacity 0.35s ease;
+      background: radial-gradient(600px circle at var(--sc-x, -500px) var(--sc-y, -500px),
+        rgba(255,255,255,0.08) 0%, transparent 65%);
+    }
+    .sc-card:hover .sc-overlay { opacity: 1; }
+    .sc-card::after {
+      content: ''; position: absolute; inset: 0; padding: 1px; border-radius: inherit;
+      background: radial-gradient(280px circle at var(--sc-x, -500px) var(--sc-y, -500px),
+        rgba(255,255,255,0.32) 0%, transparent 70%);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude;
+      pointer-events: none; z-index: 4;
+      opacity: 0; transition: opacity 0.35s ease;
+    }
+    .sc-card:hover::after { opacity: 1; }
+
     /* FONT HEADING */
     .logo, .hero-h1, .hero-h2, .about-h2, .section-h2, .tech-headline,
     .contact-headline, .ai-tool-name, .tech-name, .process-name,
@@ -1656,7 +1677,7 @@
   <h2 class="contact-headline stagger-item">Let's build something <span class="gradient-text">worth using.</span></h2>
   <p class="contact-sub stagger-item" data-i18n="contact_sub">有專案合作需求？歡迎隨時與我聯繫</p>
 
-  <a class="line-banner stagger-item" href="https://line.me/R/ti/p/@072fubpj" target="_blank">
+  <a class="line-banner stagger-item sc-card" href="https://line.me/R/ti/p/@072fubpj" target="_blank">
     <div class="line-icon-box">
       <svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0"/></svg>
     </div>
@@ -1675,7 +1696,7 @@
   </a>
 
   <div class="contact-two-col stagger-item">
-    <div class="contact-card">
+    <div class="contact-card sc-card">
       <div class="card-title">Contact Info</div>
       <div class="crow">
         <div class="icon-circle"><i class="ph-fill ph-map-pin" style="font-size:18px"></i></div>
@@ -1692,7 +1713,7 @@
     </div>
 
     <div style="display:flex;flex-direction:column;gap:12px;">
-      <div class="contact-card" style="flex:1">
+      <div class="contact-card sc-card" style="flex:1">
         <div class="card-title">Follow Me</div>
         <div class="social-links">
           <a class="slink" href="https://github.com/Lagrange1994" target="_blank">
@@ -1705,7 +1726,7 @@
           </a>
         </div>
       </div>
-      <div class="cta-strip">
+      <div class="cta-strip sc-card">
         <div class="cta-txt"><strong data-i18n="open_for_work">Open for work</strong><br><span data-i18n="open_for_work_sub">接受全職 / 兼職 / 專案合作洽談</span></div>
         <button class="btn-glass btn-grad" style="padding:9px 20px;border-radius:9999px;font-size:12px" onclick="location.href='mailto:lyfun0202@gmail.com'">Send Email ↗</button>
       </div>
@@ -2137,6 +2158,26 @@
     document.addEventListener('mousemove',  _mbMoveHandler);
     document.addEventListener('mouseleave', _mbLeaveHandler);
     grid.addEventListener('mouseleave', _mbGridLeaveHandler);
+  }
+
+  function initSpotlightCards() {
+    document.querySelectorAll('.sc-card').forEach(function(card) {
+      // Inject spotlight fill overlay (only once)
+      if (!card.querySelector(':scope > .sc-overlay')) {
+        var ov = document.createElement('div');
+        ov.className = 'sc-overlay';
+        card.insertBefore(ov, card.firstChild);
+      }
+      card.addEventListener('mousemove', function(e) {
+        var r = this.getBoundingClientRect();
+        this.style.setProperty('--sc-x', (e.clientX - r.left) + 'px');
+        this.style.setProperty('--sc-y', (e.clientY - r.top) + 'px');
+      });
+      card.addEventListener('mouseleave', function() {
+        this.style.setProperty('--sc-x', '-500px');
+        this.style.setProperty('--sc-y', '-500px');
+      });
+    });
   }
 
   function initPortfolioToggle() {
@@ -2592,6 +2633,7 @@
   initPortfolioToggle();
   initPortfolioFilter();
   initBorderGlowCards();
+  initSpotlightCards();
   initScrollAnimations();
   // init marquees after fonts/icons load so offsetWidth is accurate
   if (document.fonts) {
