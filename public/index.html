@@ -323,8 +323,9 @@
     .tag-capsule i { margin-right: 0.5rem; font-size: 0.875rem; }
 
     /* ABOUT */
-    .about-grid { display: grid; grid-template-columns: 1fr 3fr; gap: 48px; align-items: start; }
-    .about-left { display: flex; flex-direction: column; gap: 14px; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 32px; align-items: start; }
+    .about-left  { display: flex; flex-direction: column; }
+    .about-stats-col { display: flex; flex-direction: column; gap: 14px; }
     .about-h2 { font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 700; line-height: 1.2; margin-bottom: 20px; letter-spacing: -.02em; }
     .about-body p { color: rgba(255,255,255,0.65); margin-bottom: 14px; font-size: 14px; line-height: 1.8; }
     .about-body strong { color: var(--text); font-weight: 600; }
@@ -777,9 +778,7 @@
       content: ''; background-position: center; background-size: cover;
       grid-area: 1/1; opacity: 0; transition: opacity 0.8s ease;
     }
-    .pc-card.active .pc-shine { filter: brightness(0.85) contrast(1.5) saturate(0.5); animation-play-state: paused; }
-    .pc-card.active .pc-shine::before,
-    .pc-card.active .pc-shine::after { opacity: 1; }
+    .pc-card.active .pc-shine { animation-play-state: paused; }
     .pc-shine::before {
       background-image:
         linear-gradient(45deg,var(--sunpillar-4),var(--sunpillar-5),var(--sunpillar-6),
@@ -800,12 +799,6 @@
         calc(var(--background-x)*0.4) calc(var(--background-y)*0.5), center;
       background-size: 200% 300%, 700% 700%, 100% 100%;
       mix-blend-mode: difference; filter: brightness(0.8) contrast(1.5);
-    }
-    .pc-glare {
-      transform: translate3d(0,0,1.1px); overflow: hidden;
-      background-image: radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y),
-        hsl(248,25%,80%) 12%, hsla(207,40%,30%,0.8) 90%);
-      mix-blend-mode: overlay; filter: brightness(0.8) contrast(1.2); z-index: 4;
     }
     .pc-avatar-content { mix-blend-mode: luminosity; overflow: visible; transform: translateZ(2); backface-visibility: hidden; }
     .pc-avatar-content .avatar {
@@ -1009,8 +1002,8 @@
       .hero-h2 { font-size: clamp(1rem, 2.5vw, 1.5rem); }
 
       /* About Me — stack to single column */
-      .about-grid { grid-template-columns: 1fr; gap: 32px; }
-      .about-left { width: 100%; }
+      .about-grid { grid-template-columns: 1fr; gap: 24px; }
+      .about-left, .about-stats-col { width: 100%; }
       .stat-row { max-width: 100%; }
 
       /* Process grid — 3 col */
@@ -1073,8 +1066,8 @@
       .hero-tags { bottom: 1rem; width: calc(100% - 1rem); }
 
       /* About — single column */
-      .about-grid { grid-template-columns: 1fr; gap: 24px; }
-      .about-left { width: 100%; }
+      .about-grid { grid-template-columns: 1fr; gap: 20px; }
+      .about-left, .about-stats-col { width: 100%; }
       .stat-row { max-width: 100%; }
       .about-h2 { font-size: clamp(1.2rem, 5vw, 1.6rem); }
 
@@ -1576,10 +1569,8 @@
   <div class="section-label fade-in">About Me</div>
   <div class="about-grid stagger-item">
 
-    <!-- LEFT: ProfileCard + stats + sidebar info -->
+    <!-- COL 1: ProfileCard only -->
     <div class="about-left">
-
-      <!-- ProfileCard -->
       <div class="pc-card-wrapper" id="profile-card-wrap"
         style="--inner-gradient:linear-gradient(145deg,#60496e8c 0%,#71C4FF44 100%);--behind-glow-color:rgba(108,99,255,0.55);--behind-glow-size:50%;">
         <div class="pc-behind"></div>
@@ -1587,24 +1578,8 @@
           <section class="pc-card" id="profile-card-el">
             <div class="pc-inside"></div>
             <div class="pc-shine"></div>
-            <div class="pc-glare"></div>
             <div class="pc-content pc-avatar-content">
-              <img class="avatar" src="https://github.com/Lagrange1994.png" alt="Tim Lin" loading="lazy">
-              <div class="pc-user-info">
-                <div class="pc-user-details">
-                  <div class="pc-mini-avatar">
-                    <img src="https://github.com/Lagrange1994.png" alt="Tim Lin" loading="lazy">
-                  </div>
-                  <div class="pc-user-text">
-                    <div class="pc-handle">@timlin</div>
-                    <div class="pc-status">Open for Work</div>
-                  </div>
-                </div>
-                <button class="pc-contact-btn" type="button"
-                  onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">
-                  Contact Me
-                </button>
-              </div>
+              <img class="avatar" src="./img/about_me.jpg" alt="Tim Lin" loading="lazy">
             </div>
             <div class="pc-content">
               <div class="pc-details">
@@ -1615,15 +1590,15 @@
           </section>
         </div>
       </div>
+    </div>
 
-      <!-- Stats row -->
+    <!-- COL 2: Stats + sidebar info -->
+    <div class="about-stats-col">
       <div class="stat-row">
         <div class="stat-cell"><p class="stat-num">5+</p><p class="stat-lbl">Years</p></div>
         <div class="stat-cell"><p class="stat-num">10+</p><p class="stat-lbl">Projects</p></div>
         <div class="stat-cell"><p class="stat-num">4</p><p class="stat-lbl">Domains</p></div>
       </div>
-
-      <!-- Quick Facts -->
       <div class="sidebar-block">
         <div class="block-title">Quick Facts</div>
         <div class="fact-row"><span class="fact-key">Name</span><span class="fact-val">Tim Lin</span></div>
@@ -1634,8 +1609,6 @@
           <span class="status-badge"><span class="status-dot"></span>Open for work</span>
         </div>
       </div>
-
-      <!-- AI Workflow -->
       <div class="sidebar-block">
         <div class="block-title">AI Workflow</div>
         <div class="ai-chips">
@@ -1643,10 +1616,9 @@
           <span class="ai-chip">Stitch</span><span class="ai-chip">Rodin</span>
         </div>
       </div>
-
     </div>
 
-    <!-- RIGHT: bio text -->
+    <!-- COL 3: bio text -->
     <div>
       <h2 class="about-h2 stagger-item" data-i18n="about_headline">A product designer who speaks<br><span class="gradient-text">both design and engineering.</span></h2>
       <div class="about-body">
