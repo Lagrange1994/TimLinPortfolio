@@ -1047,6 +1047,144 @@
       .tech-items      { grid-template-columns: 1fr; }
       .ai-usage-grid   { grid-template-columns: 1fr; }
     }
+
+    /* ── BORDER GLOW (My Design Process cards) ── */
+    .border-glow-card {
+      --edge-proximity: 0;
+      --cursor-angle: 45deg;
+      --edge-sensitivity: 30;
+      --color-sensitivity: calc(var(--edge-sensitivity) + 20);
+      --border-radius: 14px;
+      --glow-padding: 28px;
+      --cone-spread: 25;
+      --fill-opacity: 0.4;
+
+      position: relative;
+      isolation: isolate;
+      transform: translate3d(0, 0, 0.01px);
+      display: grid;
+      overflow: visible !important;
+      border: 1px solid rgb(255 255 255 / 14%) !important;
+      background: var(--card-bg, #13101c) !important;
+      transition: none !important;
+      box-shadow:
+        rgba(0,0,0,.12) 0 1px 2px,
+        rgba(0,0,0,.10) 0 4px 8px,
+        rgba(0,0,0,.08) 0 16px 32px !important;
+    }
+    .border-glow-card:hover {
+      border-color: transparent !important;
+      background: var(--card-bg, #13101c) !important;
+      transform: none !important;
+    }
+
+    .border-glow-card::before,
+    .border-glow-card::after,
+    .border-glow-card > .edge-light {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      transition: opacity 0.25s ease-out;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .border-glow-card:not(:hover)::before,
+    .border-glow-card:not(:hover)::after,
+    .border-glow-card:not(:hover) > .edge-light {
+      opacity: 0;
+      transition: opacity 0.75s ease-in-out;
+    }
+
+    /* mesh-gradient coloured border */
+    .border-glow-card::before {
+      border: 1px solid transparent;
+      background:
+        linear-gradient(var(--card-bg, #13101c) 0 100%) padding-box,
+        linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
+        var(--gradient-one,   radial-gradient(at 80% 55%, #6C63FF 0px, transparent 50%)) border-box,
+        var(--gradient-two,   radial-gradient(at 69% 34%, #f472b6 0px, transparent 50%)) border-box,
+        var(--gradient-three, radial-gradient(at  8%  6%, #38bdf8 0px, transparent 50%)) border-box,
+        var(--gradient-four,  radial-gradient(at 41% 38%, #6C63FF 0px, transparent 50%)) border-box,
+        var(--gradient-five,  radial-gradient(at 86% 85%, #f472b6 0px, transparent 50%)) border-box,
+        var(--gradient-six,   radial-gradient(at 82% 18%, #38bdf8 0px, transparent 50%)) border-box,
+        var(--gradient-seven, radial-gradient(at 51%  4%, #f472b6 0px, transparent 50%)) border-box,
+        var(--gradient-base,  linear-gradient(#6C63FF 0 100%)) border-box;
+      opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+      mask-image: conic-gradient(
+        from var(--cursor-angle) at center,
+        black calc(var(--cone-spread) * 1%),
+        transparent calc((var(--cone-spread) + 15) * 1%),
+        transparent calc((100 - var(--cone-spread) - 15) * 1%),
+        black calc((100 - var(--cone-spread)) * 1%)
+      );
+    }
+
+    /* mesh-gradient soft fill near edges */
+    .border-glow-card::after {
+      border: 1px solid transparent;
+      background:
+        var(--gradient-one,   radial-gradient(at 80% 55%, #6C63FF 0px, transparent 50%)) padding-box,
+        var(--gradient-two,   radial-gradient(at 69% 34%, #f472b6 0px, transparent 50%)) padding-box,
+        var(--gradient-three, radial-gradient(at  8%  6%, #38bdf8 0px, transparent 50%)) padding-box,
+        var(--gradient-four,  radial-gradient(at 41% 38%, #6C63FF 0px, transparent 50%)) padding-box,
+        var(--gradient-five,  radial-gradient(at 86% 85%, #f472b6 0px, transparent 50%)) padding-box,
+        var(--gradient-six,   radial-gradient(at 82% 18%, #38bdf8 0px, transparent 50%)) padding-box,
+        var(--gradient-seven, radial-gradient(at 51%  4%, #f472b6 0px, transparent 50%)) padding-box,
+        var(--gradient-base,  linear-gradient(#6C63FF 0 100%)) padding-box;
+      mask-image:
+        linear-gradient(to bottom, black, black),
+        radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
+        radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
+        radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
+        radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
+        radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
+        conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
+      mask-composite: subtract, add, add, add, add, add;
+      opacity: calc(var(--fill-opacity) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
+      mix-blend-mode: soft-light;
+    }
+
+    /* outer glow ring */
+    .border-glow-card > .edge-light {
+      inset: calc(var(--glow-padding) * -1);
+      z-index: 1;
+      mask-image: conic-gradient(
+        from var(--cursor-angle) at center,
+        black 2.5%, transparent 10%, transparent 90%, black 97.5%
+      );
+      opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+      mix-blend-mode: plus-lighter;
+    }
+    .border-glow-card > .edge-light::before {
+      content: "";
+      position: absolute;
+      inset: var(--glow-padding);
+      border-radius: inherit;
+      box-shadow:
+        inset 0 0 0 1px var(--glow-color, hsl(264deg 70% 75% / 100%)),
+        inset 0 0 1px 0   var(--glow-color-60, hsl(264deg 70% 75% / 60%)),
+        inset 0 0 3px 0   var(--glow-color-50, hsl(264deg 70% 75% / 50%)),
+        inset 0 0 6px 0   var(--glow-color-40, hsl(264deg 70% 75% / 40%)),
+        inset 0 0 15px 0  var(--glow-color-30, hsl(264deg 70% 75% / 30%)),
+        inset 0 0 25px 2px var(--glow-color-20, hsl(264deg 70% 75% / 20%)),
+        inset 0 0 50px 2px var(--glow-color-10, hsl(264deg 70% 75% / 10%)),
+              0 0 1px 0   var(--glow-color-60, hsl(264deg 70% 75% / 60%)),
+              0 0 3px 0   var(--glow-color-50, hsl(264deg 70% 75% / 50%)),
+              0 0 6px 0   var(--glow-color-40, hsl(264deg 70% 75% / 40%)),
+              0 0 15px 0  var(--glow-color-30, hsl(264deg 70% 75% / 30%)),
+              0 0 25px 2px var(--glow-color-20, hsl(264deg 70% 75% / 20%)),
+              0 0 50px 2px var(--glow-color-10, hsl(264deg 70% 75% / 10%));
+    }
+
+    /* inner content wrapper */
+    .border-glow-inner {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: visible;
+      z-index: 1;
+    }
     </style>
 </head>
 <body>
@@ -2064,6 +2202,86 @@
     initInfiniteScroll();
   }
 
+  // ── BORDER GLOW — My Design Process cards ──
+  function initBorderGlowCards() {
+    const GLOW_COLOR  = '264 70 75';           // HSL: purple matching --primary
+    const BG          = '#13101c';
+    const COLORS      = ['#6C63FF', '#f472b6', '#38bdf8'];
+    const INTENSITY   = 1.1;
+    const GRAD_POS    = ['80% 55%','69% 34%','8% 6%','41% 38%','86% 85%','82% 18%','51% 4%'];
+    const GRAD_KEYS   = ['--gradient-one','--gradient-two','--gradient-three','--gradient-four','--gradient-five','--gradient-six','--gradient-seven'];
+    const COLOR_MAP   = [0, 1, 2, 0, 1, 2, 1];
+
+    function parseHSL(s) {
+      const m = s.match(/([\d.]+)\s*([\d.]+)%?\s*([\d.]+)%?/);
+      return m ? { h: +m[1], s: +m[2], l: +m[3] } : { h:264, s:70, l:75 };
+    }
+    function setGlowVars(el, hslStr, intensity) {
+      const { h, s, l } = parseHSL(hslStr);
+      const base = `${h}deg ${s}% ${l}%`;
+      [100,60,50,40,30,20,10].forEach((op, i) => {
+        const suffix = i === 0 ? '' : `-${op}`;
+        el.style.setProperty(`--glow-color${suffix}`, `hsl(${base} / ${Math.min(op * intensity, 100)}%)`);
+      });
+    }
+    function setGradientVars(el, colors) {
+      GRAD_KEYS.forEach((key, i) => {
+        const c = colors[Math.min(COLOR_MAP[i], colors.length - 1)];
+        el.style.setProperty(key, `radial-gradient(at ${GRAD_POS[i]}, ${c} 0px, transparent 50%)`);
+      });
+      el.style.setProperty('--gradient-base', `linear-gradient(${colors[0]} 0 100%)`);
+    }
+    function getCenter(el) {
+      const r = el.getBoundingClientRect();
+      return [r.width / 2, r.height / 2];
+    }
+    function edgeProximity(el, x, y) {
+      const [cx, cy] = getCenter(el);
+      const dx = x - cx, dy = y - cy;
+      let kx = Infinity, ky = Infinity;
+      if (dx !== 0) kx = cx / Math.abs(dx);
+      if (dy !== 0) ky = cy / Math.abs(dy);
+      return Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
+    }
+    function cursorAngle(el, x, y) {
+      const [cx, cy] = getCenter(el);
+      const dx = x - cx, dy = y - cy;
+      if (!dx && !dy) return 0;
+      let deg = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+      return deg < 0 ? deg + 360 : deg;
+    }
+
+    document.querySelectorAll('.process-card').forEach(card => {
+      // Inject edge-light span
+      const el = document.createElement('span');
+      el.className = 'edge-light';
+      card.insertBefore(el, card.firstChild);
+
+      // Wrap existing content in border-glow-inner
+      const inner = document.createElement('div');
+      inner.className = 'border-glow-inner';
+      Array.from(card.children)
+        .filter(c => !c.classList.contains('edge-light'))
+        .forEach(c => inner.appendChild(c));
+      card.appendChild(inner);
+
+      // Apply class + CSS vars
+      card.classList.add('border-glow-card');
+      card.style.setProperty('--card-bg', BG);
+      setGlowVars(card, GLOW_COLOR, INTENSITY);
+      setGradientVars(card, COLORS);
+
+      // Pointer tracking
+      card.addEventListener('pointermove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--edge-proximity', (edgeProximity(card, x, y) * 100).toFixed(3));
+        card.style.setProperty('--cursor-angle',   `${cursorAngle(card, x, y).toFixed(3)}deg`);
+      });
+    });
+  }
+
   // ── SCROLL ANIMATIONS — IntersectionObserver (index.html pattern) ──
   function initScrollAnimations() {
     // Hero: trigger immediately on load, top-to-bottom order
@@ -2150,6 +2368,7 @@
   renderPortfolio();
   initPortfolioToggle();
   initPortfolioFilter();
+  initBorderGlowCards();
   initScrollAnimations();
   // init marquees after fonts/icons load so offsetWidth is accurate
   if (document.fonts) {
