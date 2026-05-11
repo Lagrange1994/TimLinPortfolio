@@ -414,7 +414,7 @@
 
             const handleGallerySwitch = (imgObj) => { setCurrentImage(imgObj.src); setActiveGalleryId(imgObj.id); };
             const handleSolutionSwitch = (solObj) => { setCurrentImage(solObj.image); setActiveSolutionId(solObj.id); };
-            const goBack = () => window.location.href = "index.html#portfolio";
+            const goBack = () => { history.length > 1 ? history.back() : (location.href = '/'); };
 
             return (
                 <React.Fragment>

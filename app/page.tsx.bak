@@ -221,7 +221,7 @@ function Portfolio() {
       {/* @ts-ignore */}
       <spline-viewer id="spline-bg" url="/models/bg_scene.splinecode" />
 
-      <Navbar currentSection={currentSection} onScrollTo={scrollToSection} onMenuOpen={() => setMenuOpen(true)} />
+      <Navbar currentSection={currentSection} onScrollTo={scrollToSection} onMenuOpen={() => setMenuOpen(v => !v)} isMenuOpen={menuOpen} />
       <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} onScrollTo={scrollToSection} />
 
       <main id="main-scroller">

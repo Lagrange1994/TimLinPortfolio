@@ -623,7 +623,7 @@
                 };
             }, [currentSectionIndex]);
 
-            const goBack = () => window.location.href = "index.html#portfolio";
+            const goBack = () => { history.length > 1 ? history.back() : (location.href = '/'); };
 
             const renderLeftPanel = () => {
                 switch (activeTab) {

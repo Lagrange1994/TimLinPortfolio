@@ -47,7 +47,7 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
               alt="Hero Figure"
               width={600}
               height={720}
-              className="h-full w-auto object-contain object-bottom md:hidden block pointer-events-none"
+              className="w-full h-auto object-contain object-bottom md:hidden block pointer-events-none"
               priority
             />
             {/* Desktop: Spline 3D */}

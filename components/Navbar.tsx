@@ -7,11 +7,12 @@ interface NavbarProps {
   currentSection: number;
   onScrollTo: (index: number) => void;
   onMenuOpen: () => void;
+  isMenuOpen?: boolean;
 }
 
 const NAV_ITEMS = ['Home', 'About', 'Skills', 'Portfolio', 'Contact Me'];
 
-export default function Navbar({ currentSection, onScrollTo, onMenuOpen }: NavbarProps) {
+export default function Navbar({ currentSection, onScrollTo, onMenuOpen, isMenuOpen = false }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const { lang, setLang } = useLang();
@@ -103,9 +104,22 @@ export default function Navbar({ currentSection, onScrollTo, onMenuOpen }: Navba
           )}
         </div>
 
-        {/* Mobile hamburger */}
-        <button className="md:hidden text-white focus:outline-none ml-4" onClick={onMenuOpen}>
-          <i className="fas fa-bars text-xl" />
+        {/* Mobile StaggeredMenu toggle */}
+        <button
+          id="sm-toggle-btn"
+          aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={isMenuOpen}
+          onClick={onMenuOpen}
+        >
+          <span className="sm-toggle-textWrap" aria-hidden="true">
+            <span className="sm-toggle-textInner">
+              <span className="sm-toggle-line">{isMenuOpen ? 'Close' : 'Menu'}</span>
+            </span>
+          </span>
+          <span className="sm-icon" style={{ transform: isMenuOpen ? 'rotate(225deg)' : 'rotate(0deg)', transition: 'transform 0.35s ease' }} aria-hidden="true">
+            <span className="sm-icon-line" />
+            <span className="sm-icon-line" style={{ transform: 'translate(-50%,-50%) rotate(90deg)' }} />
+          </span>
         </button>
       </div>
     </header>

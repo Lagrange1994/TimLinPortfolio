@@ -405,7 +405,7 @@
     .scroller.hero-scroller .scroller-inner { gap: 12px; }
 
     /* portfolio — CSS animation */
-    .scroller.portfolio-scroller { margin-bottom: 14px; }
+    .scroller.portfolio-scroller { margin-bottom: 14px; padding-top: 14px; margin-top: -14px; }
     .scroller.portfolio-scroller[data-animated="true"] .scroller-inner {
       animation: portfolio-scroll 40s linear infinite;
     }
@@ -802,11 +802,12 @@
         padding: 0 1rem;
       }
       .hero-fig {
-        width: 100%;
-        height: 14rem;   /* shorter figure on mobile */
+        width: 100vw;
+        height: auto;
         flex-shrink: 0;
         overflow: hidden;
       }
+      .hero-fig img { width: 100%; height: auto; }
       .hero-text {
         width: 100%;
         padding: 1.5rem 1rem 0;
@@ -954,7 +955,14 @@
     .sm-icon { position: relative; width: 14px; height: 14px; flex: 0 0 14px; display: inline-flex; align-items: center; justify-content: center; will-change: transform; }
     .sm-icon-line { position: absolute; left: 50%; top: 50%; width: 100%; height: 2px; background: currentColor; border-radius: 2px; transform: translate(-50%,-50%); will-change: transform; }
 
-    .sm-wrapper { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 150; pointer-events: none; overflow: hidden; }
+    .sm-wrapper { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 500; pointer-events: none; overflow: hidden; }
+    .sm-wrapper::before {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(0,0,0,0.88);
+      opacity: 0; transition: opacity 0.4s ease;
+      pointer-events: none; z-index: 1;
+    }
+    .sm-wrapper.sm-open::before { opacity: 1; }
     .sm-prelayers { position: absolute; top: 0; right: 0; bottom: 0; width: clamp(280px, 85vw, 460px); pointer-events: none; z-index: 5; }
     .sm-prelayer { position: absolute; top: 0; right: 0; height: 100%; width: 100%; }
     .sm-panel {
@@ -991,17 +999,53 @@
       font-family: var(--mono);
     }
     .sm-panel-itemLabel { display: inline-block; will-change: transform; transform-origin: 50% 100%; }
-    .sm-socials { margin-top: auto; padding-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem; }
-    .sm-socials-title { margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sm-accent, #6C63FF); font-family: var(--mono); }
-    .sm-socials-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: row; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
-    .sm-socials-link { font-size: 1rem; font-weight: 600; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.25s, opacity 0.3s; }
-    .sm-socials-link:hover { color: var(--sm-accent, #6C63FF); opacity: 1 !important; }
-    .sm-socials-list:hover .sm-socials-link { opacity: 0.35; }
+    .sm-socials { display: none; }
 
     @media (max-width: 1024px) {
       nav, #lang-menu-btn, #lang-menu-btn + div { display: none !important; }
       #sm-toggle-btn { display: inline-flex !important; }
       .sm-wrapper { display: block; }
+      body.sm-menu-open #main-header {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+      }
+    }
+    #main-header { transition: opacity 0.25s ease; }
+    .sm-panel-close {
+      position: absolute; top: 1.25rem; right: 1.5rem;
+      display: flex; align-items: center; gap: 0.45rem;
+      background: transparent; border: none; cursor: pointer;
+      color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 600;
+      font-family: var(--font); letter-spacing: 0.04em; padding: 0.35rem 0.55rem;
+      z-index: 20; transition: color 0.2s;
+    }
+    .sm-panel-close:hover { color: #ffffff; }
+    .sm-panel-close-icon { position: relative; width: 14px; height: 14px; flex: 0 0 14px; display: inline-flex; align-items: center; justify-content: center; }
+    .sm-panel-close-icon span { position: absolute; left: 50%; top: 50%; width: 100%; height: 2px; background: currentColor; border-radius: 2px; }
+    .sm-panel-close-icon span:first-child  { transform: translate(-50%,-50%) rotate(45deg); }
+    .sm-panel-close-icon span:last-child   { transform: translate(-50%,-50%) rotate(-45deg); }
+    .sm-lang { margin-top: auto; padding-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; border-top: 1px solid rgba(255,255,255,0.08); }
+    .sm-lang-title { margin: 0; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sm-accent, #6C63FF); font-family: var(--mono); }
+    .sm-lang-btns { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .sm-lang-btn {
+      padding: 0.4rem 1.1rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 600;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s;
+    }
+    .sm-lang-btn:hover, .sm-lang-btn.active {
+      background: rgba(108,99,255,0.2); border-color: rgba(108,99,255,0.5);
+      color: #ffffff;
+    }
+
+    /* ── Responsive overrides (must be AFTER the base rules above) ── */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      .tech-items      { grid-template-columns: 1fr; }
+      .ai-usage-grid   { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 767px) {
+      .tech-items      { grid-template-columns: 1fr; }
+      .ai-usage-grid   { grid-template-columns: 1fr; }
     }
     </style>
 </head>
@@ -1062,6 +1106,10 @@
     <div class="sm-prelayer" style="background:#6C63FF"></div>
   </div>
   <aside id="sm-panel" class="sm-panel" aria-hidden="true">
+    <button class="sm-panel-close" id="sm-panel-close-btn" aria-label="Close menu">
+      Close
+      <span class="sm-panel-close-icon"><span></span><span></span></span>
+    </button>
     <div class="sm-panel-inner">
       <ul class="sm-panel-list" id="sm-panel-list" data-numbering="true">
         <li class="sm-panel-itemWrap">
@@ -1080,12 +1128,12 @@
           <button class="sm-panel-item" data-scroll-to="contact"><span class="sm-panel-itemLabel">Contact</span></button>
         </li>
       </ul>
-      <div class="sm-socials">
-        <h3 class="sm-socials-title">Socials</h3>
-        <ul class="sm-socials-list">
-          <li><a href="https://github.com/Lagrange1994" target="_blank" rel="noopener noreferrer" class="sm-socials-link">GitHub</a></li>
-          <li><a href="mailto:lyfun0202@gmail.com" class="sm-socials-link">Email</a></li>
-        </ul>
+      <div class="sm-lang">
+        <h3 class="sm-lang-title">Language</h3>
+        <div class="sm-lang-btns">
+          <button class="sm-lang-btn active" id="sm-lang-zh" onclick="setLang('zh'); updateSmLangBtns();">繁體中文</button>
+          <button class="sm-lang-btn" id="sm-lang-en" onclick="setLang('en'); updateSmLangBtns();">English</button>
+        </div>
       </div>
     </div>
   </aside>
@@ -1614,6 +1662,14 @@
     renderPortfolio(); // re-render cards with new lang
   }
 
+  function updateSmLangBtns() {
+    const zh = document.getElementById('sm-lang-zh');
+    const en = document.getElementById('sm-lang-en');
+    if (!zh || !en) return;
+    zh.classList.toggle('active', currentLang === 'zh');
+    en.classList.toggle('active', currentLang === 'en');
+  }
+
   function toggleLangDropdown(e) {
     if (e) e.stopPropagation();
     const dd = document.getElementById('lang-dropdown');
@@ -1784,7 +1840,27 @@
       if (expanded) {
         doFold();
       } else {
+        const portfolioSec = document.getElementById('portfolio');
+        const header = document.getElementById('main-header');
+        const headerOffset = header ? header.offsetHeight + 20 : 80;
+        const targetScrollY = portfolioSec
+          ? portfolioSec.getBoundingClientRect().top + window.pageYOffset - headerOffset
+          : 0;
+
+        // Disable scroll anchoring so the browser doesn't auto-scroll when the
+        // grid is inserted (scroll anchoring would push the viewport down by the
+        // height of the newly inserted content, fighting our intended scroll).
+        document.documentElement.style.overflowAnchor = 'none';
+
         doExpand(null);
+
+        // After layout settles, jump instantly to portfolio top then re-enable anchoring
+        setTimeout(() => {
+          window.scrollTo({ top: targetScrollY, behavior: 'instant' });
+          setTimeout(() => {
+            document.documentElement.style.overflowAnchor = '';
+          }, 100);
+        }, 50);
       }
     });
 
@@ -2070,6 +2146,7 @@
   }
 
   applyTranslations();
+  updateSmLangBtns();
   renderPortfolio();
   initPortfolioToggle();
   initPortfolioFilter();
@@ -2103,17 +2180,17 @@
 
     function itemEls()    { return Array.from(panel.querySelectorAll('.sm-panel-itemLabel')); }
     function numEls()     { return Array.from(panel.querySelectorAll('.sm-panel-list[data-numbering] .sm-panel-item')); }
-    function socTitle()   { return panel.querySelector('.sm-socials-title'); }
-    function socLinks()   { return Array.from(panel.querySelectorAll('.sm-socials-link')); }
+    function langTitle()  { return panel.querySelector('.sm-lang-title'); }
+    function langBtns()   { return Array.from(panel.querySelectorAll('.sm-lang-btn')); }
 
     function buildOpen() {
       if (openTl) openTl.kill();
       if (closeTw) { closeTw.kill(); closeTw = null; }
-      const its = itemEls(), nums = numEls(), st = socTitle(), sls = socLinks();
+      const its = itemEls(), nums = numEls(), lt = langTitle(), lbs = langBtns();
       if (its.length)  gsap.set(its,  { yPercent: 140, rotate: 10 });
       if (nums.length) gsap.set(nums, { '--sm-num-opacity': 0 });
-      if (st)          gsap.set(st,   { opacity: 0 });
-      if (sls.length)  gsap.set(sls,  { y: 25, opacity: 0 });
+      if (lt)          gsap.set(lt,   { opacity: 0 });
+      if (lbs.length)  gsap.set(lbs,  { y: 20, opacity: 0 });
 
       const tl = gsap.timeline({ paused: true });
       prelayers.forEach((el, i) =>
@@ -2127,9 +2204,9 @@
         tl.to(its,  { yPercent: 0, rotate: 0, duration: 1, ease: 'power4.out', stagger: 0.1 }, iStart);
         if (nums.length) tl.to(nums, { '--sm-num-opacity': 1, duration: 0.6, ease: 'power2.out', stagger: 0.08 }, iStart + 0.1);
       }
-      const sStart = pStart + 0.65 * 0.4;
-      if (st)         tl.to(st,  { opacity: 1, duration: 0.5, ease: 'power2.out' }, sStart);
-      if (sls.length) tl.to(sls, { y: 0, opacity: 1, duration: 0.55, ease: 'power3.out', stagger: 0.08 }, sStart + 0.04);
+      const lStart = pStart + 0.65 * 0.4;
+      if (lt)          tl.to(lt,  { opacity: 1, duration: 0.5, ease: 'power2.out' }, lStart);
+      if (lbs.length)  tl.to(lbs, { y: 0, opacity: 1, duration: 0.55, ease: 'power3.out', stagger: 0.08 }, lStart + 0.04);
       openTl = tl;
       return tl;
     }
@@ -2148,11 +2225,11 @@
       closeTw = gsap.to(ALL, {
         xPercent: 100, duration: 0.32, ease: 'power3.in', overwrite: 'auto',
         onComplete() {
-          const its = itemEls(), nums = numEls(), st = socTitle(), sls = socLinks();
+          const its = itemEls(), nums = numEls(), lt = langTitle(), lbs = langBtns();
           if (its.length)  gsap.set(its,  { yPercent: 140, rotate: 10 });
           if (nums.length) gsap.set(nums, { '--sm-num-opacity': 0 });
-          if (st)          gsap.set(st,   { opacity: 0 });
-          if (sls.length)  gsap.set(sls,  { y: 25, opacity: 0 });
+          if (lt)          gsap.set(lt,   { opacity: 0 });
+          if (lbs.length)  gsap.set(lbs,  { y: 20, opacity: 0 });
           busy = false;
         }
       });
@@ -2185,6 +2262,8 @@
       isOpen = true;
       toggleBtn.setAttribute('aria-expanded', 'true');
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('sm-menu-open');
+      wrapper.classList.add('sm-open');
       playOpen(); animateIcon(true); animateText(true);
     }
 
@@ -2192,10 +2271,15 @@
       isOpen = false;
       toggleBtn.setAttribute('aria-expanded', 'false');
       document.body.style.overflow = '';
+      document.body.classList.remove('sm-menu-open');
+      wrapper.classList.remove('sm-open');
       playClose(); animateIcon(false); animateText(false);
     }
 
     toggleBtn.addEventListener('click', () => isOpen ? close() : open());
+
+    const panelCloseBtn = document.getElementById('sm-panel-close-btn');
+    if (panelCloseBtn) panelCloseBtn.addEventListener('click', () => { if (isOpen) close(); });
 
     document.addEventListener('mousedown', e => {
       if (!isOpen) return;
