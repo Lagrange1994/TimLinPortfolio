@@ -323,9 +323,9 @@
     .tag-capsule i { margin-right: 0.5rem; font-size: 0.875rem; }
 
     /* ABOUT */
-    .about-grid { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 32px; align-items: start; }
+    .about-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 36px; align-items: start; }
     .about-left  { display: flex; flex-direction: column; }
-    .about-stats-col { display: flex; flex-direction: column; gap: 14px; }
+    .about-right { display: flex; flex-direction: column; gap: 20px; }
     .about-h2 { font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 700; line-height: 1.2; margin-bottom: 20px; letter-spacing: -.02em; }
     .about-body p { color: rgba(255,255,255,0.65); margin-bottom: 14px; font-size: 14px; line-height: 1.8; }
     .about-body strong { color: var(--text); font-weight: 600; }
@@ -1003,7 +1003,7 @@
 
       /* About Me — stack to single column */
       .about-grid { grid-template-columns: 1fr; gap: 24px; }
-      .about-left, .about-stats-col { width: 100%; }
+      .about-left, .about-right { width: 100%; }
       .stat-row { max-width: 100%; }
 
       /* Process grid — 3 col */
@@ -1067,7 +1067,7 @@
 
       /* About — single column */
       .about-grid { grid-template-columns: 1fr; gap: 20px; }
-      .about-left, .about-stats-col { width: 100%; }
+      .about-left, .about-right { width: 100%; }
       .stat-row { max-width: 100%; }
       .about-h2 { font-size: clamp(1.2rem, 5vw, 1.6rem); }
 
@@ -1592,22 +1592,26 @@
       </div>
     </div>
 
-    <!-- COL 2: Stats + sidebar info -->
-    <div class="about-stats-col">
+    <!-- COL 2: bio text + stats + AI Workflow -->
+    <div class="about-right">
+      <div>
+        <h2 class="about-h2 stagger-item" data-i18n="about_headline">A product designer who speaks<br><span class="gradient-text">both design and engineering.</span></h2>
+        <div class="about-body">
+          <p data-i18n="about_p1">我的設計核心是<strong>讓高複雜度的系統變得可以被人掌控</strong>。過去五年，我為政府與企業客戶主導後台系統設計，交付成果橫跨 <strong>警政雲端智慧影像分析系統</strong>、<strong>環保局數據管理平台</strong> 與 <strong>醫院醫療管理後台</strong>。面對龐雜的業務邏輯，我慣用 <span class="text-primary">Figma</span> 與 <span class="text-primary">Adobe XD</span> 從零梳理資訊架構，最終轉化為直觀、精準的數位工作環境。</p>
+          <p data-i18n="about_p2">除了嚴謹的系統思維，我擅長將<strong>沉浸式視覺</strong>注入介面設計。熟練運用 <span class="text-secondary">Blender</span> 與 <span class="text-secondary">Spline</span> 打造 3D 互動網頁體驗，也具備多媒體娛樂產業與商業專案的完整執行經驗——這讓我的設計能在邏輯嚴密的同時，保有視覺上的驚喜感。</p>
+          <p data-i18n="about_p3">我將 <strong>AI 工具</strong>深度整合進設計流程，而非只是輔助使用。運用 <span class="text-purple">Gemini</span> 進行邏輯發想與快速原型驗證，搭配 <span class="text-purple">Stitch</span> 生成多元視覺提案，以及 <span class="text-purple">Rodin</span> 快速轉化 3D 資產——這套流程讓我的設計交付速度明顯快於傳統方式。技術層面，我具備 <strong>React</strong> 與 <strong>Vue.js</strong> 基礎，能直接與開發者溝通實作細節，減少反覆來回。</p>
+        </div>
+        <div class="domain-pills">
+          <span class="pill">Law Enforcement</span>
+          <span class="pill">Healthcare</span>
+          <span class="pill">Environmental Monitoring</span>
+          <span class="pill">Entertainment</span>
+        </div>
+      </div>
       <div class="stat-row">
         <div class="stat-cell"><p class="stat-num">5+</p><p class="stat-lbl">Years</p></div>
         <div class="stat-cell"><p class="stat-num">10+</p><p class="stat-lbl">Projects</p></div>
         <div class="stat-cell"><p class="stat-num">4</p><p class="stat-lbl">Domains</p></div>
-      </div>
-      <div class="sidebar-block">
-        <div class="block-title">Quick Facts</div>
-        <div class="fact-row"><span class="fact-key">Name</span><span class="fact-val">Tim Lin</span></div>
-        <div class="fact-row"><span class="fact-key">Location</span><span class="fact-val">Taipei, Taiwan</span></div>
-        <div class="fact-row"><span class="fact-key">Focus</span><span class="fact-val">Enterprise UI/UX</span></div>
-        <div class="fact-row"><span class="fact-key">Email</span><span class="fact-val" style="font-size:11px">lyfun0202@gmail.com</span></div>
-        <div class="fact-row"><span class="fact-key">Status</span>
-          <span class="status-badge"><span class="status-dot"></span>Open for work</span>
-        </div>
       </div>
       <div class="sidebar-block">
         <div class="block-title">AI Workflow</div>
@@ -1615,22 +1619,6 @@
           <span class="ai-chip">Gemini</span><span class="ai-chip">Claude</span>
           <span class="ai-chip">Stitch</span><span class="ai-chip">Rodin</span>
         </div>
-      </div>
-    </div>
-
-    <!-- COL 3: bio text -->
-    <div>
-      <h2 class="about-h2 stagger-item" data-i18n="about_headline">A product designer who speaks<br><span class="gradient-text">both design and engineering.</span></h2>
-      <div class="about-body">
-        <p data-i18n="about_p1">我的設計核心是<strong>讓高複雜度的系統變得可以被人掌控</strong>。過去五年，我為政府與企業客戶主導後台系統設計，交付成果橫跨 <strong>警政雲端智慧影像分析系統</strong>、<strong>環保局數據管理平台</strong> 與 <strong>醫院醫療管理後台</strong>。面對龐雜的業務邏輯，我慣用 <span class="text-primary">Figma</span> 與 <span class="text-primary">Adobe XD</span> 從零梳理資訊架構，最終轉化為直觀、精準的數位工作環境。</p>
-        <p data-i18n="about_p2">除了嚴謹的系統思維，我擅長將<strong>沉浸式視覺</strong>注入介面設計。熟練運用 <span class="text-secondary">Blender</span> 與 <span class="text-secondary">Spline</span> 打造 3D 互動網頁體驗，也具備多媒體娛樂產業與商業專案的完整執行經驗——這讓我的設計能在邏輯嚴密的同時，保有視覺上的驚喜感。</p>
-        <p data-i18n="about_p3">我將 <strong>AI 工具</strong>深度整合進設計流程，而非只是輔助使用。運用 <span class="text-purple">Gemini</span> 進行邏輯發想與快速原型驗證，搭配 <span class="text-purple">Stitch</span> 生成多元視覺提案，以及 <span class="text-purple">Rodin</span> 快速轉化 3D 資產——這套流程讓我的設計交付速度明顯快於傳統方式。技術層面，我具備 <strong>React</strong> 與 <strong>Vue.js</strong> 基礎，能直接與開發者溝通實作細節，減少反覆來回。</p>
-      </div>
-      <div class="domain-pills">
-        <span class="pill">Law Enforcement</span>
-        <span class="pill">Healthcare</span>
-        <span class="pill">Environmental Monitoring</span>
-        <span class="pill">Entertainment</span>
       </div>
     </div>
 
