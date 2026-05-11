@@ -326,6 +326,8 @@
     .about-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 36px; align-items: start; }
     .about-left  { display: flex; flex-direction: column; }
     .about-right { display: flex; flex-direction: column; gap: 20px; }
+    .about-right > .stat-row,
+    .about-right > .sidebar-block { width: fit-content; }
     .about-h2 { font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 700; line-height: 1.2; margin-bottom: 20px; letter-spacing: -.02em; }
     .about-body p { color: rgba(255,255,255,0.65); margin-bottom: 14px; font-size: 14px; line-height: 1.8; }
     .about-body strong { color: var(--text); font-weight: 600; }
@@ -1616,7 +1618,6 @@
         <div class="stat-cell"><p class="stat-num">4</p><p class="stat-lbl">Domains</p></div>
       </div>
       <div class="sidebar-block">
-        <div class="block-title">AI & Domains</div>
         <div class="sb-sub-title">AI Tools</div>
         <div class="ai-chips">
           <span class="ai-chip">Gemini</span><span class="ai-chip">Claude</span>
