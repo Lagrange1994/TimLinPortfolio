@@ -681,6 +681,26 @@
     }
     .sc-card:hover::after { opacity: 1; }
 
+    /* REACT BITS SPOTLIGHT CARD */
+    .card-spotlight {
+      position: relative; overflow: hidden;
+      --mouse-x: 50%; --mouse-y: 50%;
+      --spotlight-color: rgba(255,255,255,0.15);
+    }
+    .card-spotlight::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent 80%);
+      opacity: 0; transition: opacity 0.5s ease; pointer-events: none; z-index: 1;
+    }
+    .card-spotlight:hover::before,
+    .card-spotlight:focus-within::before { opacity: 0.6; }
+    /* Per-family spotlight tints matching each card's accent */
+    .tech-item.html-item  { --spotlight-color: rgba(96,165,250,0.22); }
+    .tech-item.js-item    { --spotlight-color: rgba(251,146,60,0.22); }
+    .tech-item.react-item { --spotlight-color: rgba(108,99,255,0.22); }
+    .ai-usage-card        { --spotlight-color: rgba(34,211,238,0.18); }
+    .philosophy-card      { --spotlight-color: rgba(108,99,255,0.22); }
+
     /* FONT HEADING */
     .logo, .hero-h1, .hero-h2, .about-h2, .section-h2, .tech-headline,
     .contact-headline, .ai-tool-name, .tech-name, .process-name,
@@ -1514,21 +1534,21 @@
   <h2 class="tech-headline stagger-item">Web development <span class="gradient-text">literacy</span></h2>
   <p class="tech-sub stagger-item" data-i18n="tech_sub">我不是工程師，但我能讀懂程式、修改邏輯、有效縮短設計與開發之間的溝通距離。</p>
   <div class="tech-items stagger-item">
-    <div class="tech-item html-item">
+    <div class="tech-item html-item card-spotlight">
       <div class="tech-item-header">
         <span class="tech-name"><i class="fab fa-html5" style="color:#60a5fa;margin-right:8px"></i>HTML / CSS / Tailwind</span>
         <span class="tech-level-badge">DESIGN-READY</span>
       </div>
       <div class="tech-desc" data-i18n="skill_html">熟悉網頁基礎標籤結構與語意化寫法，能獨立閱讀、修改程式碼，有效銜接設計稿與開發實作。</div>
     </div>
-    <div class="tech-item js-item">
+    <div class="tech-item js-item card-spotlight">
       <div class="tech-item-header">
         <span class="tech-name"><i class="fab fa-js" style="color:#fb923c;margin-right:8px"></i>JavaScript</span>
         <span class="tech-level-badge">AI-ASSISTED</span>
       </div>
       <div class="tech-desc" data-i18n="skill_js">能讀懂程式邏輯並精準描述問題情境，搭配 AI 工具實現互動功能、動畫效果與資料串接——這個作品集網站的互動邏輯即為實際成果。</div>
     </div>
-    <div class="tech-item react-item">
+    <div class="tech-item react-item card-spotlight">
       <div class="tech-item-header">
         <span class="tech-name"><i class="fab fa-react" style="color:#a5b4fc;margin-right:8px"></i>React.js / Vue.js</span>
         <span class="tech-level-badge">RESPONSIVE</span>
@@ -1581,7 +1601,7 @@
   <h2 class="stagger-item" style="font-size:clamp(1.6rem,2.5vw,2rem);font-weight:700;letter-spacing:-.02em;margin-bottom:8px;font-family:var(--font-heading);">AI as a <span class="gradient-text">design multiplier</span></h2>
   <p class="stagger-item" style="color:rgba(255,255,255,0.55);font-size:14px;margin-bottom:24px;" data-i18n="ai_sub">我不把 AI 當捷徑，而是當作讓設計決策更快、更紮實的協作工具。</p>
   <div class="ai-usage-grid stagger-item">
-    <div class="ai-usage-card">
+    <div class="ai-usage-card card-spotlight">
       <div class="ai-card-header">
         <span class="ai-tool-name">Gemini / Claude</span>
         <span class="level-badge level-advanced"><i class="ph ph-circle-fill" style="font-size:10px"></i>Advanced</span>
@@ -1592,7 +1612,7 @@
         <li data-i18n="ai_gemini_3">協助撰寫 UX 文案初稿，快速進入評審流程。</li>
       </ul>
     </div>
-    <div class="ai-usage-card">
+    <div class="ai-usage-card card-spotlight">
       <div class="ai-card-header">
         <span class="ai-tool-name">Stitch</span>
         <span class="level-badge level-advanced"><i class="ph ph-circle-fill" style="font-size:10px"></i>Advanced</span>
@@ -1603,7 +1623,7 @@
         <li data-i18n="ai_stitch_3">縮短從概念到可評審稿件的時間 60%+。</li>
       </ul>
     </div>
-    <div class="ai-usage-card">
+    <div class="ai-usage-card card-spotlight">
       <div class="ai-card-header">
         <span class="ai-tool-name">Rodin</span>
         <span class="level-badge level-proficient">Proficient</span>
@@ -1613,7 +1633,7 @@
         <li data-i18n="ai_rodin_3">搭配 Spline 匯入，為 Web UI 注入 3D 視覺元素。</li>
       </ul>
     </div>
-    <div class="philosophy-card">
+    <div class="philosophy-card card-spotlight">
       <div class="philosophy-quote" data-i18n="ai_philosophy">"AI 處理重複性工作，<br>讓我把注意力放在<br>只有設計師能做的決策上。"</div>
     </div>
   </div>
@@ -2180,6 +2200,16 @@
     });
   }
 
+  function initSpotlightCardEffect() {
+    document.querySelectorAll('.card-spotlight').forEach(function(card) {
+      card.addEventListener('mousemove', function(e) {
+        var rect = this.getBoundingClientRect();
+        this.style.setProperty('--mouse-x', (e.clientX - rect.left) + 'px');
+        this.style.setProperty('--mouse-y', (e.clientY - rect.top) + 'px');
+      });
+    });
+  }
+
   function initPortfolioToggle() {
     const btn        = document.getElementById('toggle-portfolio-view');
     if (!btn) return;
@@ -2634,6 +2664,7 @@
   initPortfolioFilter();
   initBorderGlowCards();
   initSpotlightCards();
+  initSpotlightCardEffect();
   initScrollAnimations();
   // init marquees after fonts/icons load so offsetWidth is accurate
   if (document.fonts) {
