@@ -539,6 +539,52 @@
     .grid-card img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s; }
     .grid-card:hover img { transform: scale(1.05); }
     .grid-card .project-overlay { opacity: 0; }
+
+    /* ── MAGIC BENTO: portfolio grid card effects ── */
+    .grid-card.mb-glow {
+      --glow-x: 50%; --glow-y: 50%; --glow-intensity: 0; --glow-radius: 170px;
+      will-change: transform;
+    }
+    /* GSAP handles all transforms; disable CSS hover-transform */
+    .grid-card.mb-glow:hover { transform: none; }
+    /* border-glow ::after — mask reveals only the border ring */
+    .grid-card.mb-glow::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      padding: 5px;
+      background: radial-gradient(
+        var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+        rgba(74, 0, 224, calc(var(--glow-intensity) * 0.9)) 0%,
+        rgba(74, 0, 224, calc(var(--glow-intensity) * 0.45)) 28%,
+        transparent 58%
+      );
+      border-radius: inherit;
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      pointer-events: none;
+      z-index: 3;
+    }
+    /* global cursor-spotlight */
+    .mb-spotlight {
+      position: fixed;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      pointer-events: none;
+      background: radial-gradient(circle,
+        rgba(74, 0, 224, 0.14) 0%,
+        rgba(74, 0, 224, 0.07) 18%,
+        rgba(74, 0, 224, 0.03) 35%,
+        transparent 65%
+      );
+      z-index: 150;
+      opacity: 0;
+      transform: translate(-50%, -50%);
+      mix-blend-mode: screen;
+      will-change: left, top, opacity;
+    }
     .grid-card:hover .project-overlay { opacity: 1; }
 
     /* CONTACT */
@@ -1898,7 +1944,11 @@
     if (t2) t2.innerHTML = desk2HTML;
 
     const grid = document.getElementById('portfolio-grid');
-    if (grid) grid.innerHTML = gridHTML;
+    if (grid) {
+      grid.innerHTML = gridHTML;
+      /* re-apply MagicBento if the grid is currently expanded */
+      if (grid.style.display !== 'none') initMagicBento();
+    }
 
     // reset & re-init portfolio scrollers (CSS animation)
     document.querySelectorAll('.portfolio-scroller').forEach(s => {
@@ -1919,6 +1969,134 @@
       });
       s.setAttribute('data-animated', 'true');
     });
+  }
+
+  /* ── MAGIC BENTO: spotlight + border-glow + tilt + magnetism ── */
+  let _mbSpotlight = null;
+  let _mbMoveHandler = null;
+  let _mbLeaveHandler = null;
+  let _mbGridLeaveHandler = null;
+  let _mbCurrentCard = null;
+
+  const MB_GLOW   = '74, 0, 224';
+  const MB_RADIUS = 170;
+
+  function destroyMagicBento() {
+    if (_mbSpotlight)       { _mbSpotlight.remove(); _mbSpotlight = null; }
+    if (_mbMoveHandler)     { document.removeEventListener('mousemove',  _mbMoveHandler); _mbMoveHandler = null; }
+    if (_mbLeaveHandler)    { document.removeEventListener('mouseleave', _mbLeaveHandler); _mbLeaveHandler = null; }
+    const g = document.getElementById('portfolio-grid');
+    if (g && _mbGridLeaveHandler) g.removeEventListener('mouseleave', _mbGridLeaveHandler);
+    _mbGridLeaveHandler = null;
+    _mbCurrentCard = null;
+  }
+
+  function initMagicBento() {
+    destroyMagicBento();
+    const grid = document.getElementById('portfolio-grid');
+    if (!grid || grid.style.display === 'none') return;
+
+    /* add glow class + transform-origin to each card */
+    grid.querySelectorAll('.grid-card').forEach(c => {
+      c.classList.add('mb-glow');
+      c.style.transformOrigin = '50% 50%';
+    });
+
+    /* spotlight element */
+    const sl = document.createElement('div');
+    sl.className = 'mb-spotlight';
+    document.body.appendChild(sl);
+    _mbSpotlight = sl;
+
+    const proximity    = MB_RADIUS * 0.5;
+    const fadeDistance = MB_RADIUS * 0.75;
+
+    function updateGlow(card, mx, my, intensity) {
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--glow-x',         `${((mx - r.left) / r.width  * 100).toFixed(1)}%`);
+      card.style.setProperty('--glow-y',         `${((my - r.top)  / r.height * 100).toFixed(1)}%`);
+      card.style.setProperty('--glow-intensity', intensity.toFixed(3));
+      card.style.setProperty('--glow-radius',    `${MB_RADIUS}px`);
+    }
+
+    function resetCard(card) {
+      gsap.to(card, { rotateX: 0, rotateY: 0, x: 0, y: 0, duration: 0.4, ease: 'power3.out', overwrite: 'auto' });
+      card.style.setProperty('--glow-intensity', '0');
+    }
+
+    _mbMoveHandler = e => {
+      const section = document.getElementById('portfolio');
+      if (!section) return;
+      const sr = section.getBoundingClientRect();
+      const inSection = e.clientX >= sr.left && e.clientX <= sr.right &&
+                        e.clientY >= sr.top  && e.clientY <= sr.bottom;
+
+      const cards = grid.querySelectorAll('.grid-card.mb-glow');
+
+      if (!inSection || grid.style.display === 'none') {
+        gsap.to(sl, { opacity: 0, duration: 0.3, ease: 'power2.out' });
+        cards.forEach(c => c.style.setProperty('--glow-intensity', '0'));
+        return;
+      }
+
+      /* move spotlight */
+      gsap.to(sl, { left: e.clientX, top: e.clientY, duration: 0.12, ease: 'power2.out' });
+
+      /* per-card border-glow + spotlight opacity */
+      let minDist = Infinity;
+      cards.forEach(card => {
+        const r  = card.getBoundingClientRect();
+        const cx = r.left + r.width  / 2;
+        const cy = r.top  + r.height / 2;
+        const d  = Math.max(0, Math.hypot(e.clientX - cx, e.clientY - cy) - Math.max(r.width, r.height) / 2);
+        minDist  = Math.min(minDist, d);
+        const gi = d <= proximity    ? 1 :
+                   d <= fadeDistance ? (fadeDistance - d) / (fadeDistance - proximity) : 0;
+        updateGlow(card, e.clientX, e.clientY, gi);
+      });
+
+      const targetOp = minDist <= proximity    ? 0.8 :
+                       minDist <= fadeDistance ? ((fadeDistance - minDist) / (fadeDistance - proximity)) * 0.8 : 0;
+      gsap.to(sl, { opacity: targetOp, duration: targetOp > 0 ? 0.2 : 0.5, ease: 'power2.out' });
+
+      /* tilt + magnetism on hovered card */
+      const hovered = e.target.closest?.('.grid-card.mb-glow');
+      if (_mbCurrentCard && _mbCurrentCard !== hovered) resetCard(_mbCurrentCard);
+      if (hovered) {
+        _mbCurrentCard = hovered;
+        const r  = hovered.getBoundingClientRect();
+        const lx = e.clientX - r.left;
+        const ly = e.clientY - r.top;
+        const cx = r.width  / 2;
+        const cy = r.height / 2;
+        gsap.to(hovered, {
+          rotateX:          ((ly - cy) / cy) * -9,
+          rotateY:          ((lx - cx) / cx) *  9,
+          x:                (lx - cx) * 0.04,
+          y:                (ly - cy) * 0.04,
+          transformPerspective: 900,
+          duration: 0.15,
+          ease: 'power2.out',
+          overwrite: 'auto',
+        });
+      }
+    };
+
+    _mbLeaveHandler = () => {
+      gsap.to(sl, { opacity: 0, duration: 0.35, ease: 'power2.out' });
+      grid.querySelectorAll('.grid-card.mb-glow').forEach(resetCard);
+      _mbCurrentCard = null;
+    };
+
+    _mbGridLeaveHandler = e => {
+      if (!e.relatedTarget || !grid.contains(e.relatedTarget)) {
+        if (_mbCurrentCard) { resetCard(_mbCurrentCard); _mbCurrentCard = null; }
+      }
+    };
+
+    document.addEventListener('mousemove',  _mbMoveHandler);
+    document.addEventListener('mouseleave', _mbLeaveHandler);
+    grid.addEventListener('mouseleave', _mbGridLeaveHandler);
   }
 
   function initPortfolioToggle() {
@@ -1943,6 +2121,7 @@
       scrollDesk.style.display = 'none';
       grid.style.display       = 'grid';
       filters.style.display    = 'flex';
+      initMagicBento();
       btnText.innerText        = 'Fold';
       btnIcon.className        = 'fas fa-chevron-up';
       sessionStorage.setItem('portfolioExpanded', 'true');
@@ -1960,6 +2139,7 @@
 
     function doFold() {
       expanded = false;
+      destroyMagicBento();
       scrollDesk.style.display = '';
       grid.style.display       = 'none';
       filters.style.display    = 'none';
