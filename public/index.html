@@ -4247,6 +4247,9 @@
   </button>
 
   <script>
+    // Prevent browser from auto-restoring scroll on back navigation (we do it manually)
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
     // ── TRANSLATIONS ──
     const translations = {
       zh: {
@@ -4857,14 +4860,17 @@
 
       if (savedExpanded === 'true') {
         doExpand(savedFilter);
-        // restore scroll position after layout settles
-        if (savedScrollY) {
+      }
+
+      // Always restore scroll when returning from a project page,
+      // regardless of expanded state. Clear after use so reload stays at top.
+      if (savedScrollY !== null) {
+        sessionStorage.removeItem('portfolioScrollY');
+        requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              window.scrollTo({ top: parseFloat(savedScrollY), behavior: 'auto' });
-            });
+            window.scrollTo({ top: parseFloat(savedScrollY), behavior: 'instant' });
           });
-        }
+        });
       }
     }
 
