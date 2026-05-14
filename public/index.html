@@ -4769,11 +4769,15 @@
 
     function animateGridIn(cards) {
       if (!cards || !cards.length) return;
-      gsap.fromTo(cards,
+      const arr = Array.from(cards);
+      arr.forEach(c => { c.style.transition = 'none'; });
+      gsap.fromTo(arr,
         { y: 60, opacity: 0, filter: 'blur(8px)', scale: 0.95 },
         { y: 0, opacity: 1, filter: 'blur(0px)', scale: 1,
           duration: 0.65, ease: 'power3.out', stagger: 0.045,
-          clearProps: 'filter,scale' }
+          clearProps: 'all',
+          onComplete() { arr.forEach(c => { c.style.transition = ''; }); }
+        }
       );
     }
 
@@ -4817,8 +4821,8 @@
         });
         sessionStorage.setItem('portfolioActiveFilter', f);
 
-        // animate only on fresh expand, not on page-restore
-        if (savedFilter === null) animateGridIn(visibleCards);
+        // animate only on fresh expand, not on page-restore (delay past the 50ms scroll jump)
+        if (savedFilter === null) setTimeout(() => animateGridIn(visibleCards), 120);
       }
 
       function doFold() {
@@ -4918,7 +4922,7 @@
           c.style.display = show ? '' : 'none';
           if (show) visibleCards.push(c);
         });
-        animateGridIn(visibleCards);
+        requestAnimationFrame(() => requestAnimationFrame(() => animateGridIn(visibleCards)));
       });
     }
 
