@@ -802,9 +802,9 @@
                                         <span className="font-display text-white text-sm tracking-widest">{stage.label}</span>
                                         <div className="flex-1 h-px bg-white/10"></div>
                                     </div>
-                                    <div className={`grid gap-6 ${stage.features.length > 1 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {stage.features.map((item, idx) => (
-                                            <FeatureCard key={idx} item={item} large={stage.step === '03'} />
+                                            <FeatureCard key={idx} item={item} />
                                         ))}
                                     </div>
                                     {si < workflowGroups.length - 1 && (
@@ -1023,8 +1023,9 @@
                             </div>
                         </div>
 
-                        {/* Full-width mockup */}
-                        <div className="lang-mockup relative">
+                        {/* Half-width mockup */}
+                        <div className="lang-mockup grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="relative">
                             <div className="font-mono text-[10px] text-gray-600 tracking-widest mb-4">{"// DESIGN_LANGUAGE IN ACTION"}</div>
                             <div className="relative group">
                                 <div className="absolute -inset-4 bg-tech-primary/5 blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
@@ -1042,6 +1043,7 @@
                                     <div className="font-display font-bold text-white text-sm tracking-wider">DESIGN LANGUAGE v1.0</div>
                                 </div>
                             </div>
+                        </div>
                         </div>
 
                     </div>
