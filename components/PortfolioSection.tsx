@@ -5,8 +5,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useLang } from '@/context/LanguageContext';
 import { PROJECTS, Project } from '@/data/projects';
+import Masonry from './Masonry';
 
 type Filter = 'all' | 'mobile' | 'web';
+
+const HEIGHTS = [500, 400, 550, 380, 600, 450, 480, 360, 520, 420, 580, 400, 460];
 
 function ProjectCard({ project, isGrid }: { project: Project; isGrid: boolean }) {
   const { t } = useLang();
@@ -124,14 +127,24 @@ export default function PortfolioSection() {
           </div>
         )}
 
-        {/* Grid (only in expanded) */}
+        {/* Masonry grid (only in expanded) */}
         {expanded && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 stagger-item">
-            {filtered.map(p => (
-              <div key={p.id} className="relative aspect-[3/2]">
-                <ProjectCard project={p} isGrid />
-              </div>
-            ))}
+          <div className="stagger-item">
+            <Masonry
+              key={filter}
+              items={filtered.map((p, i) => ({
+                id: p.id,
+                img: p.img,
+                url: p.link,
+                height: HEIGHTS[i % HEIGHTS.length],
+              }))}
+              animateFrom="bottom"
+              stagger={0.04}
+              duration={0.6}
+              blurToFocus={true}
+              scaleOnHover={true}
+              hoverScale={0.97}
+            />
           </div>
         )}
 
