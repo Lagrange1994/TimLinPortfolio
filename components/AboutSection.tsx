@@ -18,7 +18,7 @@ export default function AboutSection() {
 
         <div className="flex flex-col md:flex-row items-start gap-8 md:gap-16" id="about-cols">
           {/* LEFT: photo + info */}
-          <div className="flex flex-col gap-4 stagger-item" id="about-left" style={{ width: '100%' }}>
+          <div className="flex flex-col gap-4 stagger-item md:[flex:1]" id="about-left">
 
             {/* Photo + Quick Facts row */}
             <div id="photo-qf-row" style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '1rem' }}>
@@ -26,7 +26,7 @@ export default function AboutSection() {
               <div style={{ position: 'relative', width: 160, height: 185, flexShrink: 0 }}>
                 <div style={{ position: 'absolute', inset: -4, borderRadius: 999, background: 'linear-gradient(135deg,rgba(108,99,255,0.5),rgba(255,101,132,0.3))', filter: 'blur(18px)', zIndex: 0 }} />
                 <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: 999, overflow: 'hidden', zIndex: 1, boxShadow: '0 8px 32px rgba(0,0,0,0.4)', background: '#0a0a0f' }}>
-                  <Image src="/img/about_me.jpg" alt="Tim Lin" fill style={{ objectFit: 'cover', objectPosition: 'top center' }} />
+                  <Image src="/img/about_me.png" alt="Tim Lin" fill style={{ objectFit: 'cover', objectPosition: 'top center' }} />
                 </div>
                 <div style={{ position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', zIndex: 2 }}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#0f1a12', border: '1px solid rgba(74,222,128,0.4)', color: '#4ade80', fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 99, boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}>
@@ -87,7 +87,7 @@ export default function AboutSection() {
           </div>
 
           {/* RIGHT: text */}
-          <div className="flex flex-col gap-5 stagger-item" id="about-right" style={{ width: '100%' }}>
+          <div className="flex flex-col gap-5 stagger-item md:[flex:2]" id="about-right">
             <h3
               className="font-bold font-heading text-white leading-tight stagger-item"
               style={{ fontSize: 'clamp(1.25rem,2.5vw,1.75rem)' }}
