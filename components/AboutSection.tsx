@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useLang } from '@/context/LanguageContext';
+import ProfileCard from './ProfileCard';
 
 const DOMAIN_TAGS = ['Law Enforcement', 'Healthcare', 'Environmental Monitoring', 'Entertainment'];
 const AI_TOOLS = ['Gemini', 'Claude', 'Stitch', 'Rodin'];
@@ -17,52 +18,26 @@ export default function AboutSection() {
         </div>
 
         <div className="flex flex-col md:flex-row items-start gap-8 md:gap-16" id="about-cols">
-          {/* LEFT: photo + info */}
+          {/* LEFT: ProfileCard */}
           <div className="flex flex-col gap-4 stagger-item md:[flex:1]" id="about-left">
 
-            {/* Photo + Quick Facts row */}
-            <div id="photo-qf-row" style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '1rem' }}>
-              {/* Photo */}
-              <div style={{ position: 'relative', width: 160, height: 185, flexShrink: 0 }}>
-                <div style={{ position: 'absolute', inset: -4, borderRadius: 999, background: 'linear-gradient(135deg,rgba(108,99,255,0.5),rgba(255,101,132,0.3))', filter: 'blur(18px)', zIndex: 0 }} />
-                <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: 999, overflow: 'hidden', zIndex: 1, boxShadow: '0 8px 32px rgba(0,0,0,0.4)', background: '#0a0a0f' }}>
-                  <Image src="/img/about_me.png" alt="Tim Lin" fill style={{ objectFit: 'cover', objectPosition: 'top center' }} />
-                </div>
-                <div style={{ position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', zIndex: 2 }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#0f1a12', border: '1px solid rgba(74,222,128,0.4)', color: '#4ade80', fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 99, boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}>
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#4ade80', display: 'inline-block', flexShrink: 0 }} />
-                    Open for Opportunities
-                  </span>
-                </div>
-              </div>
-
-              {/* Quick Facts */}
-              <div style={{ flex: 1, minWidth: 0, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.875rem', padding: '1rem 1.25rem' }}>
-                <p style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(150,150,170,0.6)', fontWeight: 600, margin: '0 0 0.75rem 0' }}>Quick Facts</p>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <tbody>
-                    {[
-                      ['Name', 'Tim Lin'],
-                      ['Location', 'Taipei, Taiwan'],
-                      ['Focus', 'Enterprise UI/UX'],
-                      ['Email', 'lyfun0202@gmail.com'],
-                    ].map(([label, value]) => (
-                      <tr key={label}>
-                        <td style={{ padding: '4px 0', fontSize: 12, color: 'rgba(150,150,170,0.7)', width: 72, verticalAlign: 'top' }}>{label}</td>
-                        <td style={{ padding: '4px 0', fontSize: 12, color: label === 'Name' ? '#fff' : 'rgba(220,220,230,0.8)', fontWeight: label === 'Name' ? 600 : undefined }}>{value}</td>
-                      </tr>
-                    ))}
-                    <tr>
-                      <td style={{ padding: '4px 0', fontSize: 12, color: 'rgba(150,150,170,0.7)', verticalAlign: 'top' }}>Status</td>
-                      <td style={{ padding: '4px 0' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: '#4ade80', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 99 }}>
-                          Open for work
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+            {/* ProfileCard replaces static photo */}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <ProfileCard
+                avatarUrl="/img/about_me.png"
+                name="Tim Lin"
+                title="UI/UX Designer & Web Dev"
+                handle="timlin"
+                status="Open for work"
+                contactText="Contact Me"
+                showUserInfo={true}
+                enableTilt={true}
+                enableMobileTilt={false}
+                behindGlowEnabled={true}
+                behindGlowColor="rgba(108, 99, 255, 0.6)"
+                innerGradient="linear-gradient(145deg,#3d3580aa 0%,#6C63FF44 50%,#FF658433 100%)"
+                onContactClick={() => { window.location.href = 'mailto:lyfun0202@gmail.com'; }}
+              />
             </div>
 
             {/* Stats */}
