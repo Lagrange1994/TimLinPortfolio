@@ -4607,24 +4607,24 @@ video {
    =================================== */
 
 #main-scroller {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: hidden !important;
     position: relative;
 }
 
 .snap-section {
-    width: 100vw;
-    height: 100vh;
+    width: 100vw !important;
+    height: 100vh !important;
     position: relative;
-    opacity: 0;
-    visibility: hidden;
+    opacity: 0 !important;
+    visibility: hidden !important;
     transition: opacity 1s ease-in-out;
 }
 
 .snap-section.active-section {
-    opacity: 1;
-    visibility: visible;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .scroll-content {

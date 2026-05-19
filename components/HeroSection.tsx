@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useLang } from '@/context/LanguageContext';
+import TextType from './TextType';
 
 interface HeroSectionProps {
   onScrollTo: (index: number) => void;
@@ -63,14 +64,27 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
             <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold mb-4 font-heading stagger-item">
               Hi, I&apos;m <span>Tim Lin</span>
             </h1>
-            <h2 className="text-xl sm:text-2xl md:text-4xl font-medium mb-6 text-gray-200 font-heading stagger-item">
-              UI/UX Designer &amp; Web Developer
+            <h2 className="text-xl sm:text-2xl md:text-4xl font-medium mb-6 text-gray-200 font-heading">
+              <TextType
+                text={['UI/UX Designer', 'Web Developer', 'Problem Solver']}
+                typingSpeed={75}
+                deletingSpeed={40}
+                pauseDuration={1500}
+                showCursor={true}
+                cursorCharacter="|"
+              />
             </h2>
-            <p
-              className="text-xs md:text-base text-gray-200 mb-8 max-w-6xl stagger-item"
-              dangerouslySetInnerHTML={{ __html: t.hero_desc }}
-            />
-            <div className="flex space-x-4 stagger-item justify-center md:justify-start">
+            <div className="text-xs md:text-base text-gray-200 mb-8 max-w-6xl min-h-[2.5em] stagger-item">
+              <TextType
+                text={t.hero_desc.split('<br />')}
+                typingSpeed={60}
+                deletingSpeed={35}
+                pauseDuration={2000}
+                showCursor={true}
+                cursorCharacter="|"
+              />
+            </div>
+            <div className="flex space-x-4 justify-center md:justify-start hero-btn-float-in">
               <button
                 onClick={() => onScrollTo(3)}
                 className="liquid-glass-btn liquid-glass-gradient px-5 py-2 md:px-8 md:py-3 text-xs md:text-lg rounded-full font-medium"

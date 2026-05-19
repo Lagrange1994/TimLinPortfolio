@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   // (Vercel serves public/ via CDN separately from the Lambda environment.)
   outputFileTracingIncludes: {
     "/": ["./public/index.html"],
+    "/api/chat": ["./public/index.html", "./data/tim-faq.md"],
   },
 };
 

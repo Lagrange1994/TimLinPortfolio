@@ -7,13 +7,18 @@
   <title>Tim Lin - Product Designer</title>
   <link rel="icon" type="image/x-icon" href="./img/favicon/favicon.ico">
   <meta name="description" content="Tim Lin 的個人作品集。資深 UI/UX 設計師，專精企業後台系統設計、3D 互動體驗與 AI 工作流整合。">
+  <link rel="dns-prefetch" href="https://unpkg.com">
+  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="image" href="./img/figure.png">
   <link
     href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@100..900&family=Quicksand:wght@300..700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+  <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.96/build/spline-viewer.js"></script>
 
@@ -2105,23 +2110,7 @@
     }
 
     .pc-card.active .pc-shine {
-      filter: brightness(0.85) contrast(1.5) saturate(0.5);
       animation-play-state: paused;
-    }
-
-    .pc-card.active .pc-shine::before,
-    .pc-card.active .pc-shine::after {
-      opacity: 1;
-    }
-
-    .pc-glare {
-      transform: translate3d(0, 0, 1.1px);
-      overflow: hidden;
-      background-image: radial-gradient(farthest-corner circle at var(--pointer-x) var(--pointer-y),
-          hsl(248, 25%, 80%) 12%, hsla(207, 40%, 30%, 0.8) 90%);
-      mix-blend-mode: overlay;
-      filter: brightness(0.8) contrast(1.2);
-      z-index: 4;
     }
 
     .pc-shine::before {
@@ -3749,8 +3738,9 @@
   <section id="home">
     <div class="hero-inner">
       <div class="hero-fig">
-        <img src="./img/figure.png" alt="Tim Lin" class="hero-fig-mobile">
-        <spline-viewer url="./models/hero_figure.splinecode" class="hero-fig-desktop"></spline-viewer>
+        <img src="./img/figure.png" alt="Tim Lin" class="hero-fig-mobile" fetchpriority="high">
+        <spline-viewer id="hero-spline" class="hero-fig-desktop"></spline-viewer>
+        <script>if(window.innerWidth>=1025){document.getElementById('hero-spline').setAttribute('url','./models/hero_figure.splinecode');}</script>
       </div>
       <div class="hero-text">
         <h1 class="hero-h1 stagger-item">Hi, I'm <span class="">Tim Lin</span></h1>
@@ -3811,21 +3801,8 @@
               <section class="pc-card" id="profile-card-el">
                 <div class="pc-inside"></div>
                 <div class="pc-shine"></div>
-                <div class="pc-glare"></div>
                 <div class="pc-content pc-avatar-content">
                   <img class="avatar" src="./img/about_me.png" alt="Tim Lin" loading="lazy">
-                  <div class="pc-user-info">
-                    <div class="pc-user-details">
-                      <div class="pc-mini-avatar">
-                        <img src="./img/about_me.png" alt="Tim Lin" loading="lazy">
-                      </div>
-                      <div class="pc-user-text">
-                        <div class="pc-handle">@timlin</div>
-                        <div class="pc-status">Open for work</div>
-                      </div>
-                    </div>
-                    <button class="pc-contact-btn" onclick="window.location.href='mailto:lyfun0202@gmail.com'" type="button">Contact Me</button>
-                  </div>
                 </div>
                 <div class="pc-content">
                   <div class="pc-details">
@@ -4052,21 +4029,21 @@
     <div class="section-label fade-in">My Skills</div>
     <div class="skills-outer scroller skills-scroller" data-direction="left">
       <div class="scroller-inner">
-        <span class="skill-pill"><img src="./img/others/Figma_logo.png" class="skill-icon-img" alt="Figma">Figma</span>
-        <span class="skill-pill"><img src="./img/others/Adobe_XD_logo.png" class="skill-icon-img" alt="Adobe XD">Adobe
+        <span class="skill-pill"><img src="./img/others/Figma_logo.png" class="skill-icon-img" alt="Figma" loading="lazy">Figma</span>
+        <span class="skill-pill"><img src="./img/others/Adobe_XD_logo.png" class="skill-icon-img" alt="Adobe XD" loading="lazy">Adobe
           XD</span>
         <span class="skill-pill"><img src="./img/others/Blender_logo.png" class="skill-icon-img"
-            alt="Blender">Blender</span>
+            alt="Blender" loading="lazy">Blender</span>
         <span class="skill-pill"><img src="./img/others/Spline_logo.webp" class="skill-icon-img"
-            alt="Spline">Spline</span>
+            alt="Spline" loading="lazy">Spline</span>
         <span class="skill-pill"><img src="./img/others/Lightroom_logo.png" class="skill-icon-img"
-            alt="Lightroom">Lightroom</span>
-        <span class="skill-pill"><img src="./img/others/Krita_logo.png" class="skill-icon-img" alt="Krita">Krita</span>
+            alt="Lightroom" loading="lazy">Lightroom</span>
+        <span class="skill-pill"><img src="./img/others/Krita_logo.png" class="skill-icon-img" alt="Krita" loading="lazy">Krita</span>
         <span class="skill-pill"><img src="./img/others/Photoshop_logo.png" class="skill-icon-img"
-            alt="Photoshop">Photoshop</span>
+            alt="Photoshop" loading="lazy">Photoshop</span>
         <span class="skill-pill"><img src="./img/others/Illustrator_logo.png" class="skill-icon-img"
-            alt="Illustrator">Illustrator</span>
-        <span class="skill-pill"><img src="./img/others/Dora_logo.png" class="skill-icon-img" alt="Dora">Dora</span>
+            alt="Illustrator" loading="lazy">Illustrator</span>
+        <span class="skill-pill"><img src="./img/others/Dora_logo.png" class="skill-icon-img" alt="Dora" loading="lazy">Dora</span>
       </div>
     </div>
     <div class="skills-outer scroller skills-scroller" data-direction="right">
@@ -5610,13 +5587,13 @@
       else { window.addEventListener('load', animate, { once: true }); }
     }
 
-    // ── LOADER: hide after page fully loaded ──
-    window.addEventListener('load', function () {
-      setTimeout(function () {
-        const loader = document.getElementById('page-loader');
-        if (loader) loader.classList.add('hidden');
-      }, 300);
-    });
+    // ── LOADER: hide after page fully loaded (4s max fallback for slow CDN/Spline) ──
+    function hideLoader() {
+      var loader = document.getElementById('page-loader');
+      if (loader && !loader.classList.contains('hidden')) loader.classList.add('hidden');
+    }
+    window.addEventListener('load', function () { setTimeout(hideLoader, 300); });
+    setTimeout(hideLoader, 4000);
   </script>
 
   <!-- ── BEAMS BACKGROUND (vanilla Three.js port of React Bits <Beams />) ── -->
@@ -5948,6 +5925,234 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
         setTimeout(function () {
           window._heroDescTyper = new TextTyper(descTextEl, descCursorEl, heroDescTexts[currentLang] || heroDescTexts.zh, { typingSpeed: 60, deletingSpeed: 35, pauseDuration: 2000 });
         }, 2200);
+      }
+    })();
+  </script>
+
+  <!-- ── AI CHAT WIDGET ── -->
+  <style>
+    #chat-fab {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--grad);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 20px rgba(108,99,255,0.5);
+      z-index: 9000;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #chat-fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(108,99,255,0.7); }
+
+    #chat-panel {
+      position: fixed;
+      bottom: 90px;
+      right: 28px;
+      width: 320px;
+      max-height: 440px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-hi);
+      border-radius: 16px;
+      display: none;
+      flex-direction: column;
+      z-index: 9000;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+      overflow: hidden;
+    }
+    #chat-panel.open { display: flex; }
+
+    #chat-header {
+      padding: 14px 16px;
+      background: linear-gradient(135deg, rgba(108,99,255,0.2), rgba(255,101,132,0.1));
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #chat-header-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--grad);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    #chat-header-info { flex: 1; }
+    #chat-header-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    #chat-header-status { font-size: 11px; color: var(--text-50); }
+
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      scroll-behavior: smooth;
+    }
+    .chat-msg {
+      max-width: 86%;
+      padding: 9px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .chat-msg.bot {
+      background: rgba(108,99,255,0.15);
+      border: 1px solid rgba(108,99,255,0.25);
+      color: var(--text);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    .chat-msg.user {
+      background: var(--grad);
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    .chat-msg.loading { color: var(--text-50); font-style: italic; }
+
+    #chat-quick { padding: 8px 12px; display: flex; gap: 6px; flex-wrap: wrap; border-top: 1px solid var(--border); }
+    .chat-quick-btn {
+      padding: 4px 10px;
+      border-radius: 99px;
+      border: 1px solid var(--border-hi);
+      background: transparent;
+      color: var(--text-70);
+      font-size: 11px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .chat-quick-btn:hover { background: rgba(108,99,255,0.2); color: var(--text); }
+
+    #chat-input-row {
+      padding: 10px 12px;
+      display: flex;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+    }
+    #chat-input {
+      flex: 1;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: var(--font);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #chat-input:focus { border-color: var(--primary); }
+    #chat-input::placeholder { color: var(--text-30); }
+    #chat-send {
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      background: var(--grad);
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      transition: opacity 0.2s;
+      flex-shrink: 0;
+    }
+    #chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+  </style>
+
+  <button id="chat-fab" aria-label="Ask Tim anything">💬</button>
+
+  <div id="chat-panel" role="dialog" aria-label="Ask Tim AI">
+    <div id="chat-header">
+      <div id="chat-header-avatar">🤖</div>
+      <div id="chat-header-info">
+        <div id="chat-header-name">Ask Tim Anything</div>
+        <div id="chat-header-status">AI 助理 · 即時回覆</div>
+      </div>
+    </div>
+
+    <div id="chat-messages">
+      <div class="chat-msg bot">Hi！我是 Tim 的 AI 助理。想了解 Tim 的設計背景、作品集或合作意願，直接問我吧 👋</div>
+    </div>
+
+    <div id="chat-quick">
+      <button class="chat-quick-btn" data-q="Tim 有沒有 B2B 後台系統的設計經驗？">後台系統</button>
+      <button class="chat-quick-btn" data-q="Tim 目前開放工作機會嗎？">開放機會？</button>
+      <button class="chat-quick-btn" data-q="Tim 可以遠端工作嗎？">可遠端？</button>
+    </div>
+
+    <div id="chat-input-row">
+      <input id="chat-input" type="text" placeholder="問任何關於 Tim 的問題…" maxlength="200" autocomplete="off" />
+      <button id="chat-send" aria-label="送出">➤</button>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var fab = document.getElementById('chat-fab');
+      var panel = document.getElementById('chat-panel');
+      var messages = document.getElementById('chat-messages');
+      var input = document.getElementById('chat-input');
+      var sendBtn = document.getElementById('chat-send');
+
+      fab.addEventListener('click', function () {
+        panel.classList.toggle('open');
+        if (panel.classList.contains('open')) input.focus();
+      });
+
+      document.querySelectorAll('.chat-quick-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          sendQuestion(btn.getAttribute('data-q'));
+        });
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuestion(input.value); }
+      });
+      sendBtn.addEventListener('click', function () { sendQuestion(input.value); });
+
+      function addMsg(text, role) {
+        var el = document.createElement('div');
+        el.className = 'chat-msg ' + role;
+        el.textContent = text;
+        messages.appendChild(el);
+        messages.scrollTop = messages.scrollHeight;
+        return el;
+      }
+
+      function sendQuestion(q) {
+        q = (q || '').trim();
+        if (!q) return;
+        input.value = '';
+        sendBtn.disabled = true;
+
+        addMsg(q, 'user');
+        var loading = addMsg('…', 'bot loading');
+
+        fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q }),
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            loading.textContent = data.reply || data.error || '無法取得回覆，請直接聯繫 Tim。';
+            loading.classList.remove('loading');
+          })
+          .catch(function () {
+            loading.textContent = '連線失敗，請直接透過聯絡表單聯繫 Tim。';
+            loading.classList.remove('loading');
+          })
+          .finally(function () {
+            sendBtn.disabled = false;
+            input.focus();
+          });
       }
     })();
   </script>

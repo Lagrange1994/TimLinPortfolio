@@ -1,10 +1,6 @@
 {
-  "permissions": {
-    "allow": [
-      "Bash(python _refactor_styles.py)",
-      "Bash(python3 _refactor_styles.py)",
-      "WebFetch(domain:timlin-design.vercel.app)",
-      "mcp__Claude_Preview__preview_start"
-    ]
-  }
+  "enabledMcpjsonServers": [
+    "shadcn"
+  ],
+  "enableAllProjectMcpServers": true
 }
