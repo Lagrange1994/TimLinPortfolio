@@ -2,6 +2,13 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "Next.js Dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "autoPort": true
+    },
+    {
       "name": "Tailwind CSS Watch",
       "runtimeExecutable": "./tailwindcss.exe",
       "runtimeArgs": ["-i", "./input.css", "-o", "./style.css", "--watch"],
