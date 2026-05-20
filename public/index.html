@@ -2554,7 +2554,7 @@
     /* ── BACK TO TOP ── */
     #back-to-top {
       position: fixed;
-      bottom: 2rem;
+      bottom: 5.75rem;
       right: 2rem;
       z-index: 9999;
       width: 3rem;
@@ -2845,7 +2845,7 @@
 
       /* Back to top */
       #back-to-top {
-        bottom: 1rem;
+        bottom: 4.75rem;
         right: 1rem;
         width: 2.5rem;
         height: 2.5rem;
@@ -4775,13 +4775,16 @@
 
     function animateGridIn(cards) {
       if (!cards || !cards.length) return;
+      // Kill any in-flight tweens so their clearProps won't remove display:none
+      // set by the filter on hidden cards.
+      gsap.killTweensOf('#portfolio-grid .grid-card');
       const arr = Array.from(cards);
       arr.forEach(c => { c.style.transition = 'none'; });
       gsap.fromTo(arr,
         { y: 60, opacity: 0, filter: 'blur(8px)', scale: 0.95 },
         { y: 0, opacity: 1, filter: 'blur(0px)', scale: 1,
           duration: 0.65, ease: 'power3.out', stagger: 0.045,
-          clearProps: 'all',
+          clearProps: 'transform,opacity,filter',
           onComplete() { arr.forEach(c => { c.style.transition = ''; }); }
         }
       );
@@ -5933,28 +5936,30 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
   <style>
     #chat-fab {
       position: fixed;
-      bottom: 28px;
-      right: 28px;
-      width: 52px;
-      height: 52px;
+      bottom: 2rem;
+      right: 2rem;
+      width: 3rem;
+      height: 3rem;
       border-radius: 50%;
-      background: var(--grad);
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      box-shadow: 0 4px 20px rgba(108,99,255,0.5);
       z-index: 9000;
-      transition: transform 0.2s, box-shadow 0.2s;
+      font-size: 1rem;
+      overflow: hidden;
+      background: var(--grad-logo);
     }
-    #chat-fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(108,99,255,0.7); }
+
+    @media (max-width: 767px) {
+      #chat-fab {
+        bottom: 1rem;
+        right: 1rem;
+        width: 2.5rem;
+        height: 2.5rem;
+      }
+    }
 
     #chat-panel {
       position: fixed;
-      bottom: 90px;
-      right: 28px;
+      bottom: calc(2rem + 3rem + 0.5rem);
+      right: 2rem;
       width: 320px;
       max-height: 440px;
       background: var(--bg-card);
@@ -5962,7 +5967,7 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
       border-radius: 16px;
       display: none;
       flex-direction: column;
-      z-index: 9000;
+      z-index: 10000;
       box-shadow: 0 8px 40px rgba(0,0,0,0.6);
       overflow: hidden;
     }
@@ -6066,7 +6071,9 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
     #chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
   </style>
 
-  <button id="chat-fab" aria-label="Ask Tim anything">💬</button>
+  <button id="chat-fab" class="btn-glass btn-grad" aria-label="Ask Tim anything">
+    <i class="fas fa-comment"></i>
+  </button>
 
   <div id="chat-panel" role="dialog" aria-label="Ask Tim AI">
     <div id="chat-header">
