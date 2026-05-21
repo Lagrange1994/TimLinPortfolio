@@ -580,14 +580,22 @@
     }
 
     /* Desc + buttons appear after h2 finishes (~2.2s). Buttons stagger slightly after desc. */
+    /* Desc + buttons: paused until loader hides (body.hero-ready) */
     .hero-desc-wrap {
       opacity: 0;
       animation: hero-btns-float-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards 2.2s;
+      animation-play-state: paused;
     }
 
     .hero-btns-seq {
       opacity: 0;
       animation: hero-btns-float-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards 2.6s;
+      animation-play-state: paused;
+    }
+
+    body.hero-ready .hero-desc-wrap,
+    body.hero-ready .hero-btns-seq {
+      animation-play-state: running;
     }
 
     /* Tag carousel — absolute bottom-8, w-[calc(100%-2rem)] max-w-8xl */
@@ -5365,7 +5373,6 @@
     initPortfolioToggle();
     initPortfolioFilter();
     initProfileCard();
-    var _heroAnimate = null; // 由 initHeroSplitText 設定，由 hideLoader 呼叫
     initBorderGlowCards();
     initSpotlightCards();
     initSpotlightCardEffect();
@@ -5586,8 +5593,7 @@
       if (h1Words.length) gsap.set(h1Words, { opacity: 0, y: 40, rotation: 5 });
       if (h2Chars.length) gsap.set(h2Chars, { opacity: 0, y: 28 });
 
-      // 不自動觸發——由 hideLoader() 在 loader 消失後呼叫
-      _heroAnimate = function () {
+      function animate() {
         setTimeout(function () {
           if (heroFig)
             gsap.to(heroFig, { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out' });
@@ -5596,31 +5602,45 @@
           if (h2Chars.length)
             gsap.to(h2Chars, { opacity: 1, y: 0, duration: 0.7, ease: EASE, stagger: 0.035, delay: 0.6 });
         }, 350);
-      };
+      }
+
+      // 等 loader 消失後才執行（由 hero-ready event 觸發）
+      window.addEventListener('hero-ready', function () { animate(); }, { once: true });
     }
 
-    // ── LOADER: wait for Spline hero model (desktop) or window.load (mobile), 4s max ──
-    function hideLoader() {
-      var loader = document.getElementById('page-loader');
-      if (loader && !loader.classList.contains('hidden')) {
+    // ── LOADER: hide after Spline model loads, or 4s max ──
+    (function () {
+      const loader = document.getElementById('page-loader');
+      if (!loader) return;
+
+      let dismissed = false;
+      function hideLoader() {
+        if (dismissed) return;
+        dismissed = true;
         loader.classList.add('hidden');
-        // loader CSS transition 是 0.5s，等它跑完才啟動 hero 動畫
-        setTimeout(function () { if (_heroAnimate) _heroAnimate(); }, 500);
+        document.body.classList.add('hero-ready');
+        window.dispatchEvent(new Event('hero-ready'));
       }
-    }
-    var _loaderTimer = setTimeout(hideLoader, 4000);
-    var _heroSpline = document.getElementById('hero-spline');
-    if (window.innerWidth >= 1025 && _heroSpline) {
-      // Desktop: wait for Spline 3D scene ready event
-      _heroSpline.addEventListener('load', function () {
-        clearTimeout(_loaderTimer);
-        _loaderTimer = setTimeout(hideLoader, 4000); // reset 4s from now if somehow still needed
-        setTimeout(hideLoader, 200);
-      }, { once: true });
-    } else {
-      // Mobile/tablet: static PNG, just wait for window.load
-      window.addEventListener('load', function () { setTimeout(hideLoader, 300); }, { once: true });
-    }
+
+      // Force-show after 4s regardless of Spline status
+      const forceTimer = setTimeout(hideLoader, 4000);
+
+      // Wait for hero Spline to load (desktop only; mobile uses static PNG)
+      function waitForSpline() {
+        const splineEl = document.querySelector('.hero-fig-desktop');
+        if (!splineEl) { hideLoader(); return; }
+        splineEl.addEventListener('load', function () {
+          clearTimeout(forceTimer);
+          hideLoader();
+        }, { once: true });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', waitForSpline, { once: true });
+      } else {
+        waitForSpline();
+      }
+    })();
   </script>
 
   <!-- ── BEAMS BACKGROUND (vanilla Three.js port of React Bits <Beams />) ── -->
