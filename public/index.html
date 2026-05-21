@@ -5600,13 +5600,24 @@
       else { window.addEventListener('load', animate, { once: true }); }
     }
 
-    // ── LOADER: hide after page fully loaded (4s max fallback for slow CDN/Spline) ──
+    // ── LOADER: wait for Spline hero model (desktop) or window.load (mobile), 4s max ──
     function hideLoader() {
       var loader = document.getElementById('page-loader');
       if (loader && !loader.classList.contains('hidden')) loader.classList.add('hidden');
     }
-    window.addEventListener('load', function () { setTimeout(hideLoader, 300); });
-    setTimeout(hideLoader, 4000);
+    var _loaderTimer = setTimeout(hideLoader, 4000);
+    var _heroSpline = document.getElementById('hero-spline');
+    if (window.innerWidth >= 1025 && _heroSpline) {
+      // Desktop: wait for Spline 3D scene ready event
+      _heroSpline.addEventListener('load', function () {
+        clearTimeout(_loaderTimer);
+        _loaderTimer = setTimeout(hideLoader, 4000); // reset 4s from now if somehow still needed
+        setTimeout(hideLoader, 200);
+      }, { once: true });
+    } else {
+      // Mobile/tablet: static PNG, just wait for window.load
+      window.addEventListener('load', function () { setTimeout(hideLoader, 300); }, { once: true });
+    }
   </script>
 
   <!-- ── BEAMS BACKGROUND (vanilla Three.js port of React Bits <Beams />) ── -->
