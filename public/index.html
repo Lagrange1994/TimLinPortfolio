@@ -5365,6 +5365,7 @@
     initPortfolioToggle();
     initPortfolioFilter();
     initProfileCard();
+    var _heroAnimate = null; // 由 initHeroSplitText 設定，由 hideLoader 呼叫
     initBorderGlowCards();
     initSpotlightCards();
     initSpotlightCardEffect();
@@ -5585,7 +5586,8 @@
       if (h1Words.length) gsap.set(h1Words, { opacity: 0, y: 40, rotation: 5 });
       if (h2Chars.length) gsap.set(h2Chars, { opacity: 0, y: 28 });
 
-      function animate() {
+      // 不自動觸發——由 hideLoader() 在 loader 消失後呼叫
+      _heroAnimate = function () {
         setTimeout(function () {
           if (heroFig)
             gsap.to(heroFig, { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out' });
@@ -5594,16 +5596,17 @@
           if (h2Chars.length)
             gsap.to(h2Chars, { opacity: 1, y: 0, duration: 0.7, ease: EASE, stagger: 0.035, delay: 0.6 });
         }, 350);
-      }
-
-      if (document.readyState === 'complete') { animate(); }
-      else { window.addEventListener('load', animate, { once: true }); }
+      };
     }
 
     // ── LOADER: wait for Spline hero model (desktop) or window.load (mobile), 4s max ──
     function hideLoader() {
       var loader = document.getElementById('page-loader');
-      if (loader && !loader.classList.contains('hidden')) loader.classList.add('hidden');
+      if (loader && !loader.classList.contains('hidden')) {
+        loader.classList.add('hidden');
+        // loader CSS transition 是 0.5s，等它跑完才啟動 hero 動畫
+        setTimeout(function () { if (_heroAnimate) _heroAnimate(); }, 500);
+      }
     }
     var _loaderTimer = setTimeout(hideLoader, 4000);
     var _heroSpline = document.getElementById('hero-spline');
