@@ -441,10 +441,20 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 100%;
+      height: 100dvh;
       z-index: -1;
       pointer-events: none;
       transition: opacity 0.7s ease;
+    }
+
+    /* 直向（portrait）視口比 16:9 更窄時，橫向拉寬 spline-viewer
+       確保景象填滿全螢幕高度，不出現上下黑邊 */
+    @media (max-aspect-ratio: 16/9) {
+      #spline-bg {
+        width: calc(100dvh * 16 / 9);
+        left: 50%;
+        transform: translateX(-50%);
+      }
     }
 
     #beams-bg {
