@@ -1,0 +1,420 @@
+import React, { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom/client";
+import gsap from "gsap";
+import ScrollToPlugin from "gsap/ScrollToPlugin";
+
+gsap.registerPlugin(ScrollToPlugin);
+
+const { Fragment } = React;
+
+        }
+
+        .loader { background: #0F1115; }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- COMPONENTS ---
+        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
+            if (!src) return null;
+            const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+            return (
+                <picture style={{ display: 'contents' }}>
+                    <source srcSet={webpSrc} type="image/webp" />
+                    <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} />
+                </picture>
+            );
+        };
+
+        const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
+            const [loaded, setLoaded] = useState(false);
+            useEffect(() => { setLoaded(false); }, [src]);
+            const handleLoad = () => setLoaded(true);
+            const handleError = () => { console.warn("Image error:", src); setLoaded(true); };
+            return (
+                <div className={`relative ${containerClassName || 'w-full h-full'}`}>
+                    {!loaded && <div className="absolute inset-0 skeleton rounded-lg z-10 flex items-center justify-center"><i className="ph ph-image text-white/10 text-3xl"></i></div>}
+                    <ResponsiveImage src={src} alt={alt} className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={handleLoad} onError={handleError} {...props} />
+                </div>
+            );
+        };
+
+        // --- FRAMES ---
+        const PhoneFrame = ({ src, alt }) => (
+            <div className="flex items-center justify-center w-full h-full pointer-events-none">
+                <div className="relative h-full w-auto max-w-full aspect-[9/19] border-[6px] md:border-[8px] border-[#2d2d2d] rounded-[1.5rem] lg:rounded-[2.5rem] overflow-hidden shadow-2xl bg-black animate-fadeIn shrink-0 pointer-events-auto">
+                    <ImageWithSkeleton src={src} alt={alt} className="w-full h-full object-cover" />
+                </div>
+            </div>
+        );
+
+        const SimpleFrame = ({ src, alt }) => (
+            <div className="w-full h-full flex items-center justify-center pointer-events-none">
+                <div className="w-full max-w-full max-h-full h-auto bg-transparent flex items-center justify-center pointer-events-auto">
+                    <ImageWithSkeleton src={src} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" alt={alt} />
+                </div>
+            </div>
+        );
+
+        // --- ICONS ---
+        const Icons = {
+            XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
+            AI: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l-9 18h18L12 3z" /><circle cx="12" cy="13" r="2" /></svg>,
+            Train: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2zM16 3v18M8 3v18M3 12h18" /></svg>,
+            Shop: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>,
+            User: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
+            Question: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            Loop: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>,
+            Check: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+            Popup: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+        };
+
+        // --- TRANSLATIONS & DATA ---
+        const TRANSLATIONS = {
+            zh: {
+                title_main: "桃園捷運 APP", title_sub: "體驗升級改版計畫",
+                hero_desc: "優化通勤族的乘車體驗，整合點數經濟的商業生態。從時刻查詢到商城兌換，打造無縫接軌的數位旅程。",
+                btn_explore: "探索設計旅程", back_home: "Back to Portfolio",
+                tab_context: "01. 概覽與挑戰", tab_ux: "02. 資訊可讀性", tab_biz: "03. 商業整合", tab_loop: "04. 活動閉環", tab_gallery: "05. 所有畫面",
+                overview_title: "專案背景 Project Overview",
+                overview_desc: "桃園捷運 App 承載著通勤查詢與會員經濟的雙重任務。然而舊版介面在資訊呈現上過於擁擠，且商業功能（商城、兌換）散落在外部網頁，導致使用者體驗斷裂。本次改版旨在透過資訊重整，達成「好查、好買、好用」的目標。",
+                role_title: "My Role", role_name: "UI 設計師", tools: "Tools",
+                challenge_title: "雙重挑戰 The Challenge",
+                pain_user_title: "轉乘資訊迷航，求助無門",
+                pain_user_desc: ["票價時刻表未對齊，難以一眼辨識出發/抵達時間。", "高鐵與捷運班次缺乏視覺連動，轉乘規劃困難。", "App 內缺乏即時的常見問答入口。"],
+                pain_biz_title: "商業轉換率低，流量流失",
+                pain_biz_desc: ["缺乏原生商城，跳轉網頁導致使用者流失。", "兌換專區分類混亂，降低會員消耗點數意願。", "活動訊息與領取流程斷裂。"],
+                strat_1_title: "策略 I：資訊可讀性優化", strat_1_sub: "Enhancing Information Accessibility",
+                strat_1_desc: "針對「時刻表難讀」的痛點，捨棄傳統表格，改採資訊層級分明的卡片式設計，聚焦「時間」與「銜接」。",
+                feat_1_title: "卡片式時刻表 (Card-based UI)", feat_1_desc: "以'北上'與'南下'區分，對齊時刻表，自動媒合銜接高鐵車次。",
+                feat_2_title: "即時自助服務 (Self-Service)", feat_2_desc: "新增「常見問答」入口，提供第一線自助解決方案。",
+                strat_2_title: "策略 II：商業生態整合", strat_2_sub: "Native Commerce & Redemption",
+                strat_2_desc: "將原本外連的網頁體驗「原生化」，消除跳轉摩擦感，並透過清晰分類提升轉換率。",
+                feat_3_title: "桃捷商城原生化", feat_3_desc: "新增獨立商城內頁，完整呈現商品圖文，提升購買意願。",
+                feat_4_title: "兌換專區架構重整", feat_4_desc: "採用兩層式架構，明確區分虛擬/實體商品。",
+                strat_3_title: "策略 III：活動閉環設計", strat_3_sub: "Closing the Loop",
+                strat_3_desc: "優化從瀏覽訊息到領取獎勵的路徑，打造完整的 Engagement Loop。",
+                feat_5_title: "明確的行動呼籲 (CTA)", feat_5_desc: "內頁底部置入顯眼「我要領取」按鈕，引導下一步。",
+                feat_6_title: "彈出式領取機制 (Popup)", feat_6_desc: "點擊後即時彈出條碼或優惠碼，減少跳轉等待。",
+                gallery_title: "所有介面總覽 Gallery",
+                gallery_desc: "透過改版，不僅解決操作痛點，更構建可持續的會員商業模式。",
+                btn_before: "Before (原版)", btn_after: "After (改版)"
+            },
+            en: {
+                title_main: "Taoyuan Metro App", title_sub: "Redesign Project",
+                hero_desc: "Optimizing commuter experience and integrating the point economy ecosystem. From schedule checks to redemption, creating a seamless digital journey.",
+                btn_explore: "Explore the Journey", back_home: "Back to Portfolio",
+                tab_context: "01. Overview", tab_ux: "02. Readability", tab_biz: "03. Commerce", tab_loop: "04. Engagement", tab_gallery: "05. Gallery",
+                overview_title: "Project Overview",
+                overview_desc: "The Taoyuan Metro App handles both commuting and membership economy. The old interface was cluttered, and commerce features were external links, breaking UX. This redesign aims to make it easy to check, buy, and use.",
+                role_title: "My Role", role_name: "UI Designer", tools: "Tools",
+                challenge_title: "The Challenge",
+                pain_user_title: "Information Maze",
+                pain_user_desc: ["Timetables misaligned, hard to read.", "Lack of visual connection between HSR and Metro schedules.", "No instant FAQ access inside the App."],
+                pain_biz_title: "Low Conversion",
+                pain_biz_desc: ["Lack of native mall, external links cause drop-off.", "Confusing redemption categories.", "Disconnected event redemption flow."],
+                strat_1_title: "Strategy I: Readability", strat_1_sub: "Enhancing Information Accessibility",
+                strat_1_desc: "Addressing the 'hard-to-read' timetable by switching to a card-based design, focusing on 'Time' and 'Connection'.",
+                feat_1_title: "Card-based Timetable", feat_1_desc: "Aligned schedules for North/South bound, auto-matching HSR connections.",
+                feat_2_title: "Self-Service Support", feat_2_desc: "Added FAQ entry for instant self-help solutions.",
+                strat_2_title: "Strategy II: Commerce Integration", strat_2_sub: "Native Commerce & Redemption",
+                strat_2_desc: "Nativizing external web experiences to remove friction and improve conversion via clear categorization.",
+                feat_3_title: "Native Mall", feat_3_desc: "Dedicated mall pages with full details to boost purchase intent.",
+                feat_4_title: "Redemption Restructure", feat_4_desc: "Two-tier structure separating virtual and physical goods.",
+                strat_3_title: "Strategy III: Closing the Loop", strat_3_sub: "Engagement Loop",
+                strat_3_desc: "Optimizing the path from viewing messages to claiming rewards.",
+                feat_5_title: "Clear CTA", feat_5_desc: "Prominent 'Claim Now' buttons to guide user action.",
+                feat_6_title: "Popup Redemption", feat_6_desc: "Instant popups for barcodes/coupons, reducing wait time.",
+                gallery_title: "Interface Gallery",
+                gallery_desc: "Solving pain points while building a sustainable membership model.",
+                btn_before: "Before", btn_after: "After"
+            }
+        };
+
+        const getGalleryItems = (lang) => {
+            const isZh = lang === 'zh';
+            return [
+                { id: 'home', name: isZh ? '首頁概覽' : 'Home Overview', desc: isZh ? '整合快捷入口與即時資訊' : 'Shortcuts & Real-time Info', src: './img/project_06/home.jpg' },
+                { id: 'timetable', name: isZh ? '時刻表查詢' : 'Timetable', desc: isZh ? '優化後的卡片式介面' : 'Optimized Card UI', src: './img/project_06/time_table_a.jpg' },
+                { id: 'shop_home', name: isZh ? '商城首頁' : 'Shop Home', desc: isZh ? '原生化的商品瀏覽體驗' : 'Native Browsing', src: './img/project_06/shop.jpg' },
+                { id: 'shop_detail', name: isZh ? '商品內頁' : 'Product Detail', desc: isZh ? '完整的商品資訊與庫存' : 'Full Info & Stock', src: './img/project_06/shop_detail.jpg' },
+                { id: 'redemption', name: isZh ? '兌換專區' : 'Redemption', desc: isZh ? '虛實整合的分類列表' : 'O2O Categories', src: './img/project_06/shop_a.jpg' },
+                { id: 'event_list', name: isZh ? '最新消息' : 'News', desc: isZh ? '最新消息顯示' : 'Latest News', src: './img/project_06/news.jpg' },
+                { id: 'popup', name: isZh ? '領取彈窗' : 'Popup', desc: isZh ? '多樣化的領取機制' : 'Various Mechanisms', src: './img/project_06/event_a.jpg' }
+            ];
+        };
+
+        const getScenarios = (lang) => {
+            const isZh = lang === 'zh';
+            return {
+                context: { title: 'Overview', content: './img/project_06/display.jpg' },
+                ux_strategy: { title: isZh ? '時刻表查詢' : 'Timetable', before: './img/project_06/time_table_b.jpg', after: './img/project_06/time_table_a.jpg' },
+                biz_value: { title: isZh ? '商城與兌換' : 'Commerce', before: './img/project_06/shop_b.jpg', after: './img/project_06/shop_a.jpg' },
+                engagement: { title: isZh ? '活動閉環' : 'Engagement', before: './img/project_06/event_b.jpg', after: './img/project_06/event_a.jpg' }
+            };
+        };
+
+        const App = () => {
+            const [lang, setLang] = useState('zh');
+            const [loading, setLoading] = useState(true);
+            const [activeTab, setActiveTab] = useState('context');
+            const [comparisonMode, setComparisonMode] = useState('after');
+            const [activeGalleryItem, setActiveGalleryItem] = useState(null);
+            const [showBackToHero, setShowBackToHero] = useState(false);
+
+            const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+            const isScrollingRef = useRef(false);
+            const mainContainerRef = useRef(null);
+            const sectionsRef = useRef([]);
+            const heroRef = useRef(null);
+            const splitRef = useRef(null);
+            const contentScrollRef = useRef(null);
+            const overscrollAccumulator = useRef(0);
+            const touchStartY = useRef(0);
+            const isResizingRef = useRef(false);
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(40);
+
+            const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
+
+            useEffect(() => {
+                const savedLang = localStorage.getItem('preferredLang');
+                const initialLang = savedLang === 'en' ? 'en' : 'zh';
+                setLang(initialLang);
+                const items = getGalleryItems(initialLang);
+                setActiveGalleryItem(items[0]);
+                const setResponsiveFontSize = () => {
+                    if (window.innerWidth >= 1024) document.documentElement.style.fontSize = (window.innerWidth / 1920) * 16 + "px";
+                    else document.documentElement.style.fontSize = '';
+                };
+                window.addEventListener('resize', setResponsiveFontSize);
+                setResponsiveFontSize();
+                const heroImagePromise = new Promise((resolve) => {
+                    const img = new Image(); img.src = './img/project_06/hero_img.jpg';
+                    img.onload = () => resolve(); img.onerror = () => resolve();
+                });
+                const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
+                Promise.all([heroImagePromise, timerPromise]).then(() => setLoading(false));
+                return () => window.removeEventListener('resize', setResponsiveFontSize);
+            }, []);
+
+            const handleResizeStart = (e) => { if (window.innerWidth >= 1024) return; isResizingRef.current = true; document.body.style.userSelect = 'none'; };
+            useEffect(() => {
+                const handleResizeMove = (e) => {
+                    if (!isResizingRef.current) return;
+                    let clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+                    let newHeightVh = (clientY / window.innerHeight) * 100;
+                    if (newHeightVh < 35) newHeightVh = 35; if (newHeightVh > 80) newHeightVh = 80;
+                    setMobileVisualHeight(newHeightVh);
+                };
+                const handleResizeEnd = () => { isResizingRef.current = false; document.body.style.userSelect = ''; };
+                window.addEventListener('mousemove', handleResizeMove); window.addEventListener('touchmove', handleResizeMove, { passive: false });
+                window.addEventListener('mouseup', handleResizeEnd); window.addEventListener('touchend', handleResizeEnd);
+                return () => { window.removeEventListener('mousemove', handleResizeMove); window.removeEventListener('touchmove', handleResizeMove); window.removeEventListener('mouseup', handleResizeEnd); window.removeEventListener('touchend', handleResizeEnd); };
+            }, []);
+
+            useEffect(() => {
+                if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
+                setComparisonMode('after');
+                if (activeGalleryItem) {
+                    const items = getGalleryItems(lang);
+                    const current = items.find(i => i.id === activeGalleryItem.id) || items[0];
+                    setActiveGalleryItem(current);
+                }
+            }, [activeTab, lang]);
+
+            useEffect(() => {
+                sectionsRef.current = [heroRef.current, splitRef.current];
+                if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
+            }, [loading]);
+
+            const scrollToSection = (index) => {
+                if (index < 0 || index >= sectionsRef.current.length || isScrollingRef.current) return;
+                isScrollingRef.current = true;
+                const targetSection = sectionsRef.current[index];
+                const currentSection = sectionsRef.current[currentSectionIndex];
+                setShowBackToHero(index > 0);
+                const tl = gsap.timeline({ onComplete: () => { isScrollingRef.current = false; setCurrentSectionIndex(index); if (currentSection !== targetSection) currentSection.classList.remove('active-section'); targetSection.classList.add('active-section'); } });
+                if (currentSectionIndex !== index) tl.to(currentSection, { opacity: 0, duration: 0.8, ease: "power2.out" });
+                tl.to(mainContainerRef.current, { scrollTo: { y: targetSection.offsetTop, autoKill: false }, duration: 1.2, ease: "power2.inOut" }, "<");
+                tl.to(targetSection, { opacity: 1, duration: 1, onStart: () => { targetSection.classList.add('active-section'); targetSection.style.visibility = 'visible'; } }, "-=0.8");
+            };
+
+            const handleWheel = (e) => {
+                if (isScrollingRef.current) return;
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                if (isSplitView && contentEl) {
+                    const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                    if (e.deltaY < 0 && scrollTop <= 0) return;
+                    if (scrollHeight > clientHeight && e.deltaY > 0 && scrollTop + clientHeight < scrollHeight) return;
+                }
+                if (e.deltaY > 0 && currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
+            };
+
+            const handleTouchEnd = (e) => {
+                if (isScrollingRef.current || isResizingRef.current) return;
+                const diff = touchStartY.current - e.changedTouches[0].clientY;
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                if (Math.abs(diff) > 50 && diff > 0) {
+                    if (isSplitView && contentEl) {
+                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                        if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
+                    }
+                    if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
+                }
+            };
+
+            useEffect(() => {
+                const container = mainContainerRef.current;
+                if (container) {
+                    window.addEventListener('wheel', handleWheel, { passive: false });
+                    window.addEventListener('touchstart', (e) => touchStartY.current = e.touches[0].clientY, { passive: true });
+                    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+                }
+                return () => { window.removeEventListener('wheel', handleWheel); };
+            }, [currentSectionIndex]);
+
+            const goBack = () => { history.length > 1 ? history.back() : (location.href = '/'); };
+            const scenarios = getScenarios(lang);
+            const galleryItems = getGalleryItems(lang);
+
+            const renderVisual = () => {
+                if (activeTab === 'gallery') {
+                    if (!activeGalleryItem) return null;
+                    return <PhoneFrame src={activeGalleryItem.src} alt={activeGalleryItem.name} />;
+                }
+                if (activeTab === 'context') {
+                    return <SimpleFrame src={scenarios.context.content} alt="Overview" />;
+                }
+                const currentScenario = scenarios[activeTab];
+                if (!currentScenario) return null;
+                const imgSrc = comparisonMode === 'before' ? currentScenario.before : currentScenario.after;
+                return <PhoneFrame src={imgSrc} alt="Comparison View" />;
+            };
+
+            return (
+                <Fragment>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
+
+                    <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
+                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-tym-primary/50 hover:bg-tym-dark-light transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
+                            <i className="ph ph-arrow-left text-tym-primary group-hover:text-tym-secondary flex-shrink-0"></i>
+                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
+                        </button>
+                    </nav>
+
+                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-tym-primary hover:border-tym-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="ph ph-arrow-up"></i></button>
+
+                    <div id="main-scroller" ref={mainContainerRef}>
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-tym-dark relative hero-bg-metro">
+                            <div className="container max-w-7xl mx-auto px-8 z-20">
+                                <div className="max-w-5xl text-left">
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-white bg-black/20 text-white text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>APP REDESIGN</div>
+                                    <h1 className={`text-5xl lg:text-7xl font-bold font-heading mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /> <span className="text-white">{t('title_sub')}</span></h1>
+                                    <h2 className={`text-xl md:text-2xl text-gray-200 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
+                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-tym-primary border border-tym-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-tym-primary transition-all shadow-lg transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="ph ph-arrow-down ml-2 animate-bounce"></i></button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-tym-dark overflow-hidden">
+                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizingRef.current ? 'none' : 'height 0.3s ease' }}>
+                                <div className="absolute top-10 left-10 w-32 h-32 bg-tym-primary/20 blur-[60px] rounded-full"></div>
+                                <div className="absolute bottom-10 right-10 w-40 h-40 bg-tym-secondary/20 blur-[60px] rounded-full"></div>
+                                <div className="w-full h-full max-w-full flex flex-col items-center justify-center relative">
+                                    <div className="relative z-10 transform transition-all duration-500 flex items-center justify-center flex-1 min-h-0 w-full">
+                                        <div className="transition-all duration-500 overflow-hidden flex items-center justify-center w-full h-full">
+                                            <div className="w-full h-full flex items-center justify-center overflow-hidden relative">
+                                                {renderVisual()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {activeTab !== 'context' && activeTab !== 'gallery' && (
+                                        <div className="mt-3 z-30 flex items-center justify-center pointer-events-auto shrink-0 relative">
+                                            <div className="flex bg-black/60 backdrop-blur-md rounded-full p-1 border border-white/20 shadow-xl">
+                                                <button onClick={() => setComparisonMode('before')} className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 ${comparisonMode === 'before' ? 'bg-red-500 text-white shadow-lg transform scale-105' : 'text-gray-400 hover:text-white'}`}>{t('btn_before')}</button>
+                                                <button onClick={() => setComparisonMode('after')} className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 ${comparisonMode === 'after' ? 'bg-tym-primary text-white shadow-lg transform scale-105' : 'text-gray-400 hover:text-white'}`}>{t('btn_after')}</button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
+                                    <div className="w-10 h-10 bg-[#1E1E1E]/90 backdrop-blur-md rounded-full shadow border border-white/20 flex flex-col items-center justify-center"><i className="ph ph-caret-up text-[8px] text-gray-400 mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="ph ph-caret-down text-[8px] text-gray-400 mt-0.5"></i></div>
+                                </div>
+                            </div>
+
+                            <div className="w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col min-h-0">
+                                <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
+                                    <div className="sticky top-0 bg-tym-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
+                                            <h2 className="text-xl lg:text-3xl font-bold font-heading text-white mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">Revamp Plan & Design Strategy</p>
+                                            <div className="flex space-x-6 horizontal-tabs mt-4 pb-1 border-b border-white/5">
+                                                {[{ id: 'context', label: t('tab_context') }, { id: 'ux_strategy', label: t('tab_ux') }, { id: 'biz_value', label: t('tab_biz') }, { id: 'engagement', label: t('tab_loop') }, { id: 'gallery', label: t('tab_gallery') }].map(tab => (
+                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-all pb-3 relative flex-shrink-0 ${activeTab === tab.id ? 'text-tym-primary' : 'text-gray-500 hover:text-white'}`}>{tab.label}{activeTab === tab.id && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-tym-primary rounded-t-full"></span>}</button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-10 pb-24 overflow-y-auto custom-scroll scroll-content">
+                                        {activeTab === 'context' && (
+                                            <div className="space-y-10 animate-fadeIn">
+                                                <div><h3 className="text-lg md:text-2xl font-bold text-white mb-3">{t('overview_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('overview_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tym-primary/20 text-tym-primary border border-tym-primary/30"><Icons.XD /><span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tym-secondary/20 text-tym-secondary border border-tym-secondary/30"><Icons.AI /><span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div className="w-full h-px bg-white/10"></div>
+                                                <div>
+                                                    {/* [修正] 標題加上了 flex 和 span 裝飾桿 */}
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-tym-secondary rounded-full mr-3"></span>{t('challenge_title')}</h3>
+                                                    <div className="grid gap-5">
+                                                        {/* [修正] 移除了 border-l-4 等設定，僅保留 border border-white/10 */}
+                                                        <div className="feature-card-standard border border-white/10 p-6"><div className="flex items-center mb-3 text-tym-secondary"><Icons.User /><span className="ml-2 font-bold text-sm uppercase tracking-wider">User Pain Points</span></div><h4 className="text-white font-bold text-lg mb-2">{t('pain_user_title')}</h4><ul className="list-disc list-inside text-sm text-gray-400 space-y-1">{t('pain_user_desc').map((item, i) => <li key={i}>{item}</li>)}</ul></div>
+                                                        <div className="feature-card-standard border border-white/10 p-6"><div className="flex items-center mb-3 text-tym-primary"><Icons.Shop /><span className="ml-2 font-bold text-sm uppercase tracking-wider">Business Pain Points</span></div><h4 className="text-white font-bold text-lg mb-2">{t('pain_biz_title')}</h4><ul className="list-disc list-inside text-sm text-gray-400 space-y-1">{t('pain_biz_desc').map((item, i) => <li key={i}>{item}</li>)}</ul></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {activeTab === 'ux_strategy' && (
+                                            <div className="space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('strat_1_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_1_sub')}</p><p className="text-gray-300 text-sm leading-relaxed mb-6">{t('strat_1_desc')}</p></div><div className="space-y-4">
+                                                {/* [修正] 移除了 border-l-4 */}
+                                                <div className="feature-card-minimal border border-white/10 p-6 hover:border-tym-secondary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Train /></div><div className="ml-5"><h4 className="text-white font-bold text-lg">{t('feat_1_title')}</h4><p className="text-sm text-gray-400 mt-2 leading-relaxed">{t('feat_1_desc')}</p></div></div></div>
+                                                <div className="feature-card-minimal border border-white/10 p-6 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0 mt-1"><Icons.Question /></div><div className="ml-5"><h4 className="text-white font-bold text-lg">{t('feat_2_title')}</h4><p className="text-sm text-gray-400 mt-2 leading-relaxed">{t('feat_2_desc')}</p></div></div></div>
+                                            </div></div>
+                                        )}
+                                        {activeTab === 'biz_value' && (
+                                            <div className="space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('strat_2_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_2_sub')}</p><p className="text-gray-300 text-sm leading-relaxed mb-6">{t('strat_2_desc')}</p></div>
+                                                {/* [修正] 移除了 border-l-4 */}
+                                                <div className="feature-card-minimal border border-white/10 p-6 hover:border-tym-secondary "><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Shop /></div><div className="ml-5"><h4 className="text-white font-bold text-lg">{t('feat_3_title')}</h4><p className="text-sm text-gray-300 leading-relaxed mt-2">{t('feat_3_desc')}</p></div></div></div>
+                                                <div className="feature-card-minimal border border-white/10 p-6 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0 mt-1"><Icons.Shop /></div><div className="ml-5"><h4 className="text-white font-bold text-lg">{t('feat_4_title')}</h4><p className="text-sm text-gray-400 mt-2 space-y-1">{t('feat_4_desc')}</p></div></div></div>
+                                            </div>
+                                        )}
+                                        {activeTab === 'engagement' && (
+                                            <div className="space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-3">{t('strat_3_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_3_sub')}</p><p className="text-gray-300 text-sm leading-relaxed mb-6">{t('strat_3_desc')}</p></div><div className="space-y-4">
+                                                {/* [修正] 移除了 border-l-4 */}
+                                                <div className="feature-card-minimal border border-white/10 p-6 hover:border-tym-secondary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Loop /></div><div className="ml-5"><h4 className="text-white font-bold text-lg">{t('feat_5_title')}</h4><p className="text-sm text-gray-400 mt-2 leading-relaxed">{t('feat_5_desc')}</p></div></div></div>
+                                                <div className="feature-card-minimal border border-white/10 p-6 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0 mt-1"><Icons.Popup /></div><div className="ml-5"><h4 className="text-white font-bold text-lg">{t('feat_6_title')}</h4><p className="text-sm text-gray-400 mt-2 leading-relaxed">{t('feat_6_desc')}</p></div></div></div>
+                                            </div></div>
+                                        )}
+                                        {activeTab === 'gallery' && (
+                                            /* [修正] 按鈕加上了 border (width) */
+                                            <div className="space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-3">{t('gallery_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-6"><span className="text-tym-primary font-bold">Value Delivered:</span><br />{t('gallery_desc')}</p></div><div className="grid grid-cols-1 gap-3"><div className="text-xs font-bold text-gray-500 uppercase mb-1">Interface Gallery</div>{galleryItems.map((item) => (<button key={item.id} onClick={() => setActiveGalleryItem(item)} className={`text-left feature-card-standard border p-4 hover:border-tym-primary transition-colors group flex items-center ${activeGalleryItem && activeGalleryItem.id === item.id ? '!border-tym-primary bg-white/5' : 'border-white/10'}`}><div className="flex-1"><h4 className={`font-bold transition-colors text-sm mb-1 ${activeGalleryItem && activeGalleryItem.id === item.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>{item.name}</h4><p className="text-xs text-gray-500 group-hover:text-gray-400">{item.desc}</p></div><i className={`ph ph-caret-left transform transition-all ml-4 ${activeGalleryItem && activeGalleryItem.id === item.id ? 'text-tym-primary -translate-x-1' : 'text-gray-600 group-hover:text-tym-primary group-hover:-translate-x-1'}`}></i></button>))}</div></div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </Fragment>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
