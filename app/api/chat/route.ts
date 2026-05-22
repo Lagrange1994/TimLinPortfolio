@@ -4,6 +4,20 @@ import { GoogleGenAI } from '@google/genai';
 
 export const dynamic = 'force-dynamic';
 
+// ── Daily request limit (in-memory, resets on function cold start) ──────────
+const DAILY_LIMIT = Number(process.env.CHAT_DAILY_LIMIT ?? 50);
+let dailyCount = 0;
+let dailyDate = new Date().toDateString();
+
+function checkDailyLimit(): boolean {
+  const today = new Date().toDateString();
+  if (today !== dailyDate) { dailyDate = today; dailyCount = 0; } // new day → reset
+  if (dailyCount >= DAILY_LIMIT) return false;
+  dailyCount++;
+  return true;
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 function getApiKey(): string {
   if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
   // Fallback: read .env.local directly (workaround for Next.js 16 + Node 24)
@@ -69,6 +83,13 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Question is required' }, { status: 400 });
   }
 
+  if (!checkDailyLimit()) {
+    return Response.json(
+      { error: '今日詢問次數已達上限，請明天再試或直接聯繫 Tim。' },
+      { status: 429 }
+    );
+  }
+
 
   const apiKey = getApiKey();
   const context = getContext();
@@ -80,7 +101,7 @@ export async function POST(req: Request) {
       contents: [{ role: 'user', parts: [{ text: question }] }],
       config: {
         systemInstruction: `${SYSTEM_PROMPT}\n\n以下是 Tim 的完整作品集資料：\n\n${context}`,
-        maxOutputTokens: 800,
+        maxOutputTokens: 400,
         thinkingConfig: { thinkingBudget: 0 },
       },
     });
