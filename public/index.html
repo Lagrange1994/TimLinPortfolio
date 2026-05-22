@@ -6030,6 +6030,10 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
       background: var(--grad);
       display: flex; align-items: center; justify-content: center;
       font-size: 14px; flex-shrink: 0;
+      overflow: hidden;
+    }
+    #chat-header-avatar img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
     }
     #chat-header-info { flex: 1; }
     #chat-header-name { font-size: 13px; font-weight: 600; color: var(--text); }
@@ -6121,7 +6125,7 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
 
   <div id="chat-panel" role="dialog" aria-label="Ask Tim AI">
     <div id="chat-header">
-      <div id="chat-header-avatar">🤖</div>
+      <div id="chat-header-avatar"><img src="/img/timbot.png" alt="Tim AI" /></div>
       <div id="chat-header-info">
         <div id="chat-header-name">Ask Tim Anything</div>
         <div id="chat-header-status">AI 助理 · 即時回覆</div>
