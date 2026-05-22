@@ -1,10 +1,27 @@
 import { readFileSync } from 'fs';
 import path from 'path';
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenAI } from '@google/genai';
 
 export const dynamic = 'force-dynamic';
 
-const client = new Anthropic();
+function getApiKey(): string {
+  if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
+  // Fallback: read .env.local directly (workaround for Next.js 16 + Node 24)
+  try {
+    const envPath = path.join(process.cwd(), '.env.local');
+    const content = readFileSync(envPath, 'utf8');
+    for (const line of content.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx === -1) continue;
+      const key = trimmed.slice(0, idx).trim();
+      const value = trimmed.slice(idx + 1).trim();
+      if (key === 'GEMINI_API_KEY') return value;
+    }
+  } catch { /* file not found in production, rely on env */ }
+  return '';
+}
 
 function stripHtml(html: string): string {
   return html
@@ -33,6 +50,12 @@ function getContext(): string {
   return cachedContext;
 }
 
+const SYSTEM_PROMPT = `你是 Tim Lin 的作品集助理，幫助招募者快速了解 Tim 的背景、作品和能力。
+
+用繁體中文回答，語氣專業但友善。回答要精簡，重點是讓招募者在 30 秒內得到他們想要的資訊。
+
+如果問題的答案不在以下資料中，請誠實說「這個問題需要直接聯繫 Tim 才能回答」，不要捏造資訊。`;
+
 export async function POST(req: Request) {
   let question: string;
   try {
@@ -46,34 +69,27 @@ export async function POST(req: Request) {
     return Response.json({ error: 'Question is required' }, { status: 400 });
   }
 
+
+  const apiKey = getApiKey();
   const context = getContext();
+  const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 400,
-      system: [
-        {
-          type: 'text',
-          text: `你是 Tim Lin 的作品集助理，幫助招募者快速了解 Tim 的背景、作品和能力。
-
-用繁體中文回答，語氣專業但友善。回答要精簡，重點是讓招募者在 30 秒內得到他們想要的資訊。
-
-如果問題的答案不在以下資料中，請誠實說「這個問題需要直接聯繫 Tim 才能回答」，不要捏造資訊。
-
-以下是 Tim 的完整作品集資料：
-
-${context}`,
-          cache_control: { type: 'ephemeral' },
-        },
-      ],
-      messages: [{ role: 'user', content: question }],
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [{ role: 'user', parts: [{ text: question }] }],
+      config: {
+        systemInstruction: `${SYSTEM_PROMPT}\n\n以下是 Tim 的完整作品集資料：\n\n${context}`,
+        maxOutputTokens: 800,
+        thinkingConfig: { thinkingBudget: 0 },
+      },
     });
 
-    const reply = message.content[0].type === 'text' ? message.content[0].text : '';
+
+    const reply = result.text ?? '';
     return Response.json({ reply });
   } catch (err) {
-    console.error('Claude API error:', err);
+    console.error('Gemini API error:', err);
     return Response.json(
       { error: '服務暫時無法使用，請直接透過聯絡表單聯繫 Tim。' },
       { status: 500 }
