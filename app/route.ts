@@ -2,9 +2,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { NextResponse } from 'next/server';
 
-// Force dynamic rendering so Vercel does not attempt to statically generate
-// this route at build time (the file read would fail in that context).
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-static';
 
 export async function GET() {
   const html = readFileSync(
@@ -12,6 +10,9 @@ export async function GET() {
     'utf8'
   );
   return new NextResponse(html, {
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=0, s-maxage=31536000, stale-while-revalidate=86400',
+    },
   });
 }

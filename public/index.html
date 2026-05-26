@@ -10,9 +10,12 @@
   <link rel="dns-prefetch" href="https://unpkg.com">
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" as="image" href="./img/figure.png">
+  <link rel="preload" as="image" href="./img/figure.png" type="image/png" fetchpriority="high">
   <link
     href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@100..900&family=Quicksand:wght@300..700&display=swap"
     rel="stylesheet">
@@ -2094,7 +2097,7 @@
       mix-blend-mode: color-dodge;
       z-index: 3;
       --space: 5%;
-      --angle: -45deg;
+      --angle: -60deg;
       transform: translate3d(0, 0, 1px);
       overflow: hidden;
       background: transparent;
@@ -3756,7 +3759,7 @@
   <section id="home">
     <div class="hero-inner">
       <div class="hero-fig">
-        <img src="./img/figure.png" alt="Tim Lin" class="hero-fig-mobile" fetchpriority="high">
+        <img src="./img/figure.png" alt="Tim Lin" class="hero-fig-mobile" fetchpriority="high" decoding="async">
         <spline-viewer id="hero-spline" class="hero-fig-desktop"></spline-viewer>
         <script>if(window.innerWidth>=1025){document.getElementById('hero-spline').setAttribute('url','./models/hero_figure.splinecode');}</script>
       </div>
@@ -4012,7 +4015,7 @@
     <h2 class="tech-headline stagger-item">Web development <span class="gradient-text">literacy</span></h2>
     <p class="tech-sub stagger-item" data-i18n="tech_sub">我不是工程師，但我能讀懂程式、修改邏輯、有效縮短設計與開發之間的溝通距離。</p>
     <div class="tech-items stagger-item">
-      <div class="tech-item html-item card-spotlight">
+      <div class="tech-item html-item card-spotlight sc-card">
         <div class="tech-item-header">
           <span class="tech-name"><i class="fab fa-html5" style="color:#60a5fa;margin-right:8px"></i>HTML / CSS /
             Tailwind</span>
@@ -4020,14 +4023,14 @@
         </div>
         <div class="tech-desc" data-i18n="skill_html">熟悉網頁基礎標籤結構與語意化寫法，能獨立閱讀、修改程式碼，有效銜接設計稿與開發實作。</div>
       </div>
-      <div class="tech-item js-item card-spotlight">
+      <div class="tech-item js-item card-spotlight sc-card">
         <div class="tech-item-header">
           <span class="tech-name"><i class="fab fa-js" style="color:#fb923c;margin-right:8px"></i>JavaScript</span>
           <span class="tech-level-badge">AI-ASSISTED</span>
         </div>
         <div class="tech-desc" data-i18n="skill_js">能讀懂程式邏輯並精準描述問題情境，搭配 AI 工具實現互動功能、動畫效果與資料串接——這個作品集網站的互動邏輯即為實際成果。</div>
       </div>
-      <div class="tech-item react-item card-spotlight">
+      <div class="tech-item react-item card-spotlight sc-card">
         <div class="tech-item-header">
           <span class="tech-name"><i class="fab fa-react" style="color:#a5b4fc;margin-right:8px"></i>React.js /
             Vue.js</span>
@@ -4091,7 +4094,7 @@
     <p class="stagger-item" style="color:rgba(255,255,255,0.55);font-size:14px;margin-bottom:24px;" data-i18n="ai_sub">
       我不把 AI 當捷徑，而是當作讓設計決策更快、更紮實的協作工具。</p>
     <div class="ai-usage-grid stagger-item">
-      <div class="ai-usage-card card-spotlight">
+      <div class="ai-usage-card card-spotlight sc-card">
         <div class="ai-card-header">
           <span class="ai-tool-name">Gemini / Claude</span>
           <span class="level-badge level-advanced"><i class="ph ph-circle-fill"
@@ -4103,7 +4106,7 @@
           <li data-i18n="ai_gemini_3">協助撰寫 UX 文案初稿，快速進入評審流程。</li>
         </ul>
       </div>
-      <div class="ai-usage-card card-spotlight">
+      <div class="ai-usage-card card-spotlight sc-card">
         <div class="ai-card-header">
           <span class="ai-tool-name">Stitch</span>
           <span class="level-badge level-advanced"><i class="ph ph-circle-fill"
@@ -4115,7 +4118,7 @@
           <li data-i18n="ai_stitch_3">縮短從概念到可評審稿件的時間 60%+。</li>
         </ul>
       </div>
-      <div class="ai-usage-card card-spotlight">
+      <div class="ai-usage-card card-spotlight sc-card">
         <div class="ai-card-header">
           <span class="ai-tool-name">Rodin</span>
           <span class="level-badge level-proficient">Proficient</span>
@@ -4125,7 +4128,7 @@
           <li data-i18n="ai_rodin_3">搭配 Spline 匯入，為 Web UI 注入 3D 視覺元素。</li>
         </ul>
       </div>
-      <div class="philosophy-card card-spotlight">
+      <div class="philosophy-card card-spotlight sc-card">
         <div class="philosophy-quote" data-i18n="ai_philosophy">"AI 處理重複性工作，<br>讓我把注意力放在<br>只有設計師能做的決策上。"</div>
       </div>
     </div>
@@ -5645,8 +5648,13 @@
 
   <!-- ── BEAMS BACKGROUND (vanilla Three.js port of React Bits <Beams />) ── -->
   <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+    const scheduleBeamsInit = function (callback) {
+      if ('requestIdleCallback' in window) requestIdleCallback(callback, { timeout: 2500 });
+      else window.addEventListener('load', function () { setTimeout(callback, 800); }, { once: true });
+    };
 
+    scheduleBeamsInit(async function () {
+      const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
     (function initBeamsBackground() {
       const canvas = document.getElementById('beams-bg');
       if (!canvas) return;
@@ -5897,6 +5905,7 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
       /* Run once after layout is ready */
       requestAnimationFrame(updateBg);
     })();
+    });
 
     // ── TEXT TYPER ──
     const heroDescTexts = {
