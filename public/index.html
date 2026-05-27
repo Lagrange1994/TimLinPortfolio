@@ -3898,10 +3898,10 @@
               </div>
             </div>
             <div class="sidebar-block">
-              <div class="sb-sub-title">AI Tools</div>
+              <div class="sb-sub-title">AI Workflow</div>
               <div class="ai-chips">
-                <span class="ai-chip">Gemini</span><span class="ai-chip">Claude</span>
-                <span class="ai-chip">Stitch</span><span class="ai-chip">Rodin</span>
+                <span class="ai-chip">Make</span><span class="ai-chip">LINE Bot</span>
+                <span class="ai-chip">Gemini</span><span class="ai-chip">Google Sheets</span>
               </div>
               <div class="sb-sub-title" style="margin-top:14px">Industry Focus</div>
               <div class="ai-chips">
@@ -4410,6 +4410,42 @@
         p13_title: 'Super High Tech CNC Simulator', p13_desc: '3D machine tool simulation interface using React & WebGL',
       }
     };
+
+    Object.assign(translations.zh, {
+      about_p3: `我把 <strong>AI 與自動化</strong>嵌進實際接案流程：當客戶從 LINE 官方帳號或表單送出需求後，Make 會先整理欄位、交由 <span class="text-purple">Gemini</span> 摘要需求與判斷類型，再寫入 <span class="text-purple">Google Sheets</span> 作為追蹤資料庫，最後分流發送 LINE 回覆與 Email 通知。這讓我在正式溝通前就能掌握需求背景、預算、時程與風險，回覆更快，也更精準。`,
+      fl_name_01: 'Intake',
+      fl_desc_01: '客戶透過 LINE 官方帳號或表單送出需求，系統自動收集專案類型、目標、預算、時程與聯絡資訊',
+      fl_name_02: 'AI Brief',
+      fl_desc_02: 'Make 將需求整理成結構化摘要，交由 Gemini 協助判斷重點、缺口與初步提問方向',
+      fl_name_03: 'Triage',
+      fl_desc_03: '依需求類型自動分流：企業系統、作品集優化、網站製作或其他合作，並建立 Google Sheets 追蹤紀錄',
+      fl_name_04: 'Discovery',
+      fl_desc_04: '帶著已整理好的需求摘要進行初談，快速釐清目標使用者、核心功能、限制條件與成功標準',
+      fl_name_05: 'Proposal',
+      fl_desc_05: '提出設計方向、工作項目、時程與報價，讓客戶清楚知道每一階段會收到什麼成果',
+      fl_name_06: 'Delivery',
+      fl_desc_06: '依里程碑交付 wireframe、高保真設計、互動說明與開發標註，並保留後續追蹤與回覆紀錄',
+      line_title: '有設計需求？LINE Bot 會先幫我整理重點',
+      line_desc: '留下專案目標、時程與預算後，系統會建立追蹤紀錄並通知我回覆',
+    });
+
+    Object.assign(translations.en, {
+      about_p3: `I embed <strong>AI and automation</strong> directly into my freelance workflow. When a client submits a request through LINE or a form, Make structures the fields, asks <span class="text-purple">Gemini</span> to summarize the need and classify the request, saves it to <span class="text-purple">Google Sheets</span>, then routes LINE replies and email notifications. Before the first conversation, I already understand the context, budget, timeline, and risks, so my response is faster and more precise.`,
+      fl_name_01: 'Intake',
+      fl_desc_01: 'Clients submit requests through LINE or a form, while the system collects project type, goals, budget, timeline, and contact details',
+      fl_name_02: 'AI Brief',
+      fl_desc_02: 'Make turns the request into a structured brief, then Gemini helps identify key points, missing context, and follow-up questions',
+      fl_name_03: 'Triage',
+      fl_desc_03: 'Requests are routed by type, such as enterprise UI, portfolio improvement, website production, or other collaboration, with a Google Sheets record created',
+      fl_name_04: 'Discovery',
+      fl_desc_04: 'I start the first conversation with an organized brief, then clarify users, core features, constraints, and success criteria',
+      fl_name_05: 'Proposal',
+      fl_desc_05: 'I propose direction, scope, timeline, and pricing so clients know exactly what each milestone will deliver',
+      fl_name_06: 'Delivery',
+      fl_desc_06: 'I deliver wireframes, high-fidelity designs, interaction notes, and dev annotations by milestone, with follow-up records kept in the workflow',
+      line_title: 'Have a design need? My LINE Bot helps structure it first.',
+      line_desc: 'Share your goal, timeline, and budget; the workflow records it and notifies me to reply.',
+    });
 
     let currentLang = localStorage.getItem('lang') || 'zh';
 
