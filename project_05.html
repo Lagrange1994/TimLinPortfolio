@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新竹市動物園 | 內部管理與行動應變系統 - UX Case Study</title>
+  <link rel="shortcut icon" type="image/ico" href="/img/favicon/favicon.ico" />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet" />
+  <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0F1115;
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            color: #fff;
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
+
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(26, 29, 36, 0.95), rgba(15, 17, 21, 0.98));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .feature-card-primary {
+            border-color: rgba(134, 194, 50, 0.2);
+        }
+
+        .feature-card-primary:hover {
+            transform: translateY(-5px);
+            border-color: rgba(134, 194, 50, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(134, 194, 50, 0.2);
+        }
+
+        .feature-card-secondary {
+            border-color: rgba(255, 150, 113, 0.2);
+        }
+
+        .feature-card-secondary:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 150, 113, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(255, 150, 113, 0.2);
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #86c232;
+        }
+
+        .hero-bg-custom {
+            background-image: url('./img/project_05/hero_img.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .hero-bg-custom::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(15, 17, 21, 0.2) 0%, rgba(15, 17, 21, 0.6) 100%);
+            z-index: 1;
+        }
+
+        /* ===== Shared Project Page Styles ===== */
+        #main-scroller {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .snap-section {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .snap-section.active-section {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-content {
+            overflow-y: auto !important;
+            touch-action: pan-y !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            height: 100%;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            border-width: 1px;
+            border-style: solid;
+            transition: all 0.3s ease;
+        }
+
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #3D3D3D;
+            border-radius: 10px;
+        }
+
+        .loader {
+            background: #0F1115;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-animation {
+            width: 65px;
+            aspect-ratio: 1;
+            position: relative;
+        }
+
+        .loader-animation:before,
+        .loader-animation:after {
+            content: "";
+            position: absolute;
+            border-radius: 50px;
+            box-shadow: 0 0 0 3px inset #fff;
+            animation: l4 2.5s infinite;
+        }
+
+        .loader-animation:after {
+            animation-delay: -1.25s;
+        }
+
+        @keyframes l4 {
+            0%    { inset: 0 35px 35px 0; }
+            12.5% { inset: 0 35px 0 0; }
+            25%   { inset: 35px 35px 0 0; }
+            37.5% { inset: 35px 0 0 0; }
+            50%   { inset: 35px 0 0 35px; }
+            62.5% { inset: 0 0 0 35px; }
+            75%   { inset: 0 0 35px 35px; }
+            87.5% { inset: 0 0 35px 0; }
+            100%  { inset: 0 35px 35px 0; }
+        }
+
+        .skeleton {
+            background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+
+        @keyframes shimmer {
+            to { background-position-x: -200%; }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .back-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn:hover i {
+            transform: translateX(-4px);
+        }
+    </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/projects/project_05.jsx"></script>
+</body>
+</html>

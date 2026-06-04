@@ -1,166 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import ReactDOM from "react-dom/client";
-import gsap from "gsap";
-import ScrollToPlugin from "gsap/ScrollToPlugin";
+import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import ReactDOM from 'react-dom/client';
+import gsap from 'gsap';
+import ScrollToPlugin from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollToPlugin);
 
-const { Fragment } = React;
-
-            background: linear-gradient(to bottom, rgba(15, 17, 21, 0.2) 0%, rgba(15, 17, 21, 0.6) 100%);
-            z-index: 1;
-        }
-
-        /* ===== Shared Project Page Styles ===== */
-        #main-scroller {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .snap-section {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 1s ease-in-out;
-        }
-
-        .snap-section.active-section {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .scroll-content {
-            overflow-y: auto !important;
-            touch-action: pan-y !important;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-            height: 100%;
-        }
-
-        .feature-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
-            backdrop-filter: blur(12px);
-            border-radius: 16px;
-            border-width: 1px;
-            border-style: solid;
-            transition: all 0.3s ease;
-        }
-
-        .custom-scroll::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .custom-scroll::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #3D3D3D;
-            border-radius: 10px;
-        }
-
-        .loader {
-            background: #0F1115;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
-        }
-
-        .loader.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .loader-animation {
-            width: 65px;
-            aspect-ratio: 1;
-            position: relative;
-        }
-
-        .loader-animation:before,
-        .loader-animation:after {
-            content: "";
-            position: absolute;
-            border-radius: 50px;
-            box-shadow: 0 0 0 3px inset #fff;
-            animation: l4 2.5s infinite;
-        }
-
-        .loader-animation:after {
-            animation-delay: -1.25s;
-        }
-
-        @keyframes l4 {
-            0%    { inset: 0 35px 35px 0; }
-            12.5% { inset: 0 35px 0 0; }
-            25%   { inset: 35px 35px 0 0; }
-            37.5% { inset: 35px 0 0 0; }
-            50%   { inset: 35px 0 0 35px; }
-            62.5% { inset: 0 0 0 35px; }
-            75%   { inset: 0 0 35px 35px; }
-            87.5% { inset: 0 0 35px 0; }
-            100%  { inset: 0 35px 35px 0; }
-        }
-
-        .skeleton {
-            background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite linear;
-        }
-
-        @keyframes shimmer {
-            to { background-position-x: -200%; }
-        }
-
-        .fade-in-up {
-            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-            transform: translateY(40px);
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .back-btn i {
-            transition: transform 0.3s ease;
-        }
-
-        .back-btn:hover i {
-            transform: translateX(-4px);
-        }
-    </style>
-</head>
-
-<body>
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-
-        // --- COMPONENTS ---
+// --- COMPONENTS ---
 
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, objectFit }) => {
             const [loaded, setLoaded] = useState(false);
@@ -501,7 +346,7 @@ const { Fragment } = React;
             };
 
             return (
-                <Fragment>
+                <React.Fragment>
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
@@ -671,12 +516,9 @@ const { Fragment } = React;
                             </div>
                         </section>
                     </div>
-                </Fragment>
+                </React.Fragment>
             );
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-    </script>
-</body>
-

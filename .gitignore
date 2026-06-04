@@ -19,6 +19,10 @@
 
 # production
 /build
+/dist
+
+# temp
+/tmp-claude-design
 
 # misc
 .DS_Store

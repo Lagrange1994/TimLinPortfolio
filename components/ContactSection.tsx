@@ -1,5 +1,3 @@
-'use client';
-
 import { useLang } from '@/context/LanguageContext';
 
 const CONTACT_ITEMS = [

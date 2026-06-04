@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import ReactDOM from "react-dom/client";
-import gsap from "gsap";
-import ScrollToPlugin from "gsap/ScrollToPlugin";
+import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import ReactDOM from 'react-dom/client';
+import gsap from 'gsap';
+import ScrollToPlugin from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollToPlugin);
 
-const { Fragment } = React;
-
-
-        // --- COMPONENTS ---
+// --- COMPONENTS ---
         const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
@@ -286,7 +283,7 @@ const { Fragment } = React;
             const goBack = () => { history.length > 1 ? history.back() : (location.href = '/'); };
 
             return (
-                <Fragment>
+                <React.Fragment>
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
@@ -376,12 +373,9 @@ const { Fragment } = React;
 
                         </section>
                     </div>
-                </Fragment>
+                </React.Fragment>
             );
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-    </script>
-</body>
-

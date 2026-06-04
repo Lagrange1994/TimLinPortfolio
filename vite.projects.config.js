@@ -5,22 +5,21 @@ import path from 'path';
 const projectEntries = {};
 for (let i = 1; i <= 13; i++) {
   const num = String(i).padStart(2, '0');
-  projectEntries[`project_${num}`] = path.resolve(__dirname, `project_${num}.html`);
+  projectEntries[`project_${num}`] = path.resolve(__dirname, `src/projects/project_${num}.jsx`);
 }
 
 export default defineConfig({
   plugins: [react()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, '.'),
-    },
-  },
-  publicDir: 'public',
   build: {
+    lib: {
+      entry: projectEntries,
+      formats: ['es'],
+    },
+    outDir: 'public/dist',
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, 'index.html'),
-        ...projectEntries,
+      output: {
+        entryFileNames: '[name].bundle.js',
+        dir: 'public/dist',
       },
     },
   },

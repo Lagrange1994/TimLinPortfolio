@@ -1,7 +1,4 @@
-'use client';
-
 import { useEffect, useRef } from 'react';
-import Image from 'next/image';
 import { useLang } from '@/context/LanguageContext';
 import TextType from './TextType';
 
@@ -43,13 +40,13 @@ export default function HeroSection({ onScrollTo }: HeroSectionProps) {
             className="w-full md:w-1/2 flex justify-center items-end px-0 md:h-[45rem] md:aspect-auto stagger-item relative overflow-hidden"
           >
             {/* Mobile: static image */}
-            <Image
+            <img
               src="/img/figure.png"
               alt="Hero Figure"
               width={600}
               height={720}
               className="w-full h-auto object-contain object-bottom md:hidden block pointer-events-none"
-              priority
+              fetchPriority="high"
             />
             {/* Desktop: Spline 3D */}
             {/* @ts-ignore */}

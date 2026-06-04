@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollToPlugin);
 
-const { Fragment } = React;
-
-        // === 1. 多語言資料庫 ===
+// === 1. 多語言資料庫 ===
         const TRANSLATIONS = {
             zh: {
                 title_main: "新竹縣警察局",
@@ -300,7 +298,7 @@ const { Fragment } = React;
             const goBack = () => { history.length > 1 ? history.back() : (location.href = '/'); };
 
             return (
-                <Fragment>
+                <React.Fragment>
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
@@ -459,11 +457,9 @@ const { Fragment } = React;
                         </section>
 
                     </div>
-                </Fragment>
+                </React.Fragment>
             );
         };
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
-    </script>
-</body>
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);

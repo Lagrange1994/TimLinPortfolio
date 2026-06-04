@@ -1,8 +1,5 @@
-'use client';
-
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import { useRouter } from 'next/navigation';
 
 interface MasonryItem {
   id: string;
@@ -80,8 +77,6 @@ export default function Masonry({
   blurToFocus = true,
   colorShiftOnHover = false,
 }: MasonryProps) {
-  const router = useRouter();
-
   const columns = useMedia(
     ['(min-width:1500px)', '(min-width:1000px)', '(min-width:600px)', '(min-width:400px)'],
     [4, 3, 2, 2],
@@ -176,7 +171,7 @@ export default function Masonry({
           key={item.id}
           data-key={item.id}
           className="masonry-item-wrapper"
-          onClick={() => router.push(item.url)}
+          onClick={() => { window.location.href = item.url; }}
           onMouseEnter={() => handleMouseEnter(item)}
           onMouseLeave={() => handleMouseLeave(item)}
         >

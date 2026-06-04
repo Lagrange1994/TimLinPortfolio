@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>桃園捷運 App 改版 | UX/UI Case Study</title>
+  <link rel="shortcut icon" type="image/ico" href="/img/favicon/favicon.ico" />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet" />
+  <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #121212;
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            color: #fff;
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
+
+        .horizontal-tabs {
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            touch-action: pan-x !important;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .horizontal-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95), rgba(18, 18, 18, 0.98));
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .feature-card-standard {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card-standard:hover {
+            transform: translateY(-2px);
+            border-color: rgba(127, 63, 152, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(127, 63, 152, 0.2);
+        }
+
+        .feature-card-minimal {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card-minimal:hover {
+            transform: translateY(-2px);
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #7F3F98;
+        }
+
+        .hero-bg-metro {
+            background-image: url('./img/project_06/hero_img.jpg');
+            background-image: -webkit-image-set(url('./img/project_06/hero_img.webp') 1x, url('./img/project_06/hero_img.jpg') 1x);
+            background-image: image-set(url('./img/project_06/hero_img.webp') 1x, url('./img/project_06/hero_img.jpg') 1x);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .hero-bg-metro::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(18, 18, 18, 0.2) 0%, rgba(18, 18, 18, 0.5) 100%);
+            z-index: 1;
+        }
+
+        .loader { background: #0F1115; }
+    </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/projects/project_06.jsx"></script>
+</body>
+</html>

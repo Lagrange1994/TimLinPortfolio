@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新竹縣警察局 | 雲端智慧影像分析系統 (APP Ver.) - UI/UX Case Study</title>
+  <link rel="shortcut icon" type="image/ico" href="/img/favicon/favicon.ico" />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet" />
+  <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #080201;
+            font-family: 'Quicksand', 'Noto Sans TC', sans-serif;
+            color: #fff;
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
+
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(20, 5, 2, 0.95), rgba(8, 2, 1, 0.98));
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 74, 0, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(255, 74, 0, 0.2);
+        }
+
+        .feature-card.active {
+            border-color: #ff4a00;
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 15px rgba(255, 74, 0, 0.1);
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #240a05;
+            border-radius: 4px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #ff4a00;
+        }
+
+        .comparison-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .comparison-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .comparison-slider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ff4a00;
+            cursor: ew-resize;
+            z-index: 20;
+        }
+
+        .comparison-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 32px;
+            height: 32px;
+            background: #ff4a00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-bg-custom {
+            background-image: url('./img/project_02/hero_img.jpg');
+            background-image: -webkit-image-set(url('./img/project_02/hero_img.webp') 1x, url('./img/project_02/hero_img.jpg') 1x);
+            background-image: image-set(url('./img/project_02/hero_img.webp') 1x, url('./img/project_02/hero_img.jpg') 1x);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .hero-bg-custom::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(8, 2, 1, 0.2) 0%, rgba(8, 2, 1, 0.5) 100%);
+            z-index: 1;
+        }
+
+        .loader { background: #0F1115; }
+    </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/projects/project_02.jsx"></script>
+</body>
+</html>

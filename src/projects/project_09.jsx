@@ -1,22 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import ReactDOM from "react-dom/client";
-import gsap from "gsap";
-import ScrollToPlugin from "gsap/ScrollToPlugin";
+import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import ReactDOM from 'react-dom/client';
+import gsap from 'gsap';
+import ScrollToPlugin from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollToPlugin);
 
-const { Fragment } = React;
-
-    </style>
-</head>
-
-<body>
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-
-        // --- COMPONENTS ---
+// --- COMPONENTS ---
         const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
@@ -279,7 +268,7 @@ const { Fragment } = React;
             const showBrowserHeader = !['context', 'process'].includes(activeTab);
 
             return (
-                <Fragment>
+                <React.Fragment>
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
@@ -383,12 +372,9 @@ const { Fragment } = React;
                             </div>
                         </section>
                     </div>
-                </Fragment>
+                </React.Fragment>
             );
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-    </script>
-</body>
-

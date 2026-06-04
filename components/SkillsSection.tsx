@@ -1,6 +1,3 @@
-'use client';
-
-import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import { useLang } from '@/context/LanguageContext';
 
@@ -68,7 +65,7 @@ export default function SkillsSection() {
             {DESIGN_TOOLS.map(tool => (
               <div key={tool.name} className="card p-3 md:p-4 rounded-2xl skill-card flex flex-row items-center transition-all duration-300 hover:-translate-y-1 hover:shadow-lg relative">
                 <div className="skill-icon mr-1.5 mb-0 w-12 h-12 md:w-16 md:h-16 p-2 bg-white/5 rounded-full flex items-center justify-center shrink-0">
-                  <Image src={tool.src} alt={tool.name} width={48} height={48} className="w-full h-full object-contain" />
+                  <img src={tool.src} alt={tool.name} width={48} height={48} className="w-full h-full object-contain" />
                 </div>
                 <div className="flex flex-col items-start">
                   <strong className="text-white text-base md:text-lg">{tool.name}</strong>

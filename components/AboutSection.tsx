@@ -1,10 +1,7 @@
-'use client';
-
-import Image from 'next/image';
 import { useLang } from '@/context/LanguageContext';
 
 const DOMAIN_TAGS = ['Law Enforcement', 'Healthcare', 'Environmental Monitoring', 'Entertainment'];
-const AI_TOOLS = ['Gemini', 'Claude', 'Stitch', 'Rodin'];
+const AI_TOOLS = ['Make', 'LINE Bot', 'Gemini', 'Google Sheets'];
 
 export default function AboutSection() {
   const { t } = useLang();
@@ -26,7 +23,7 @@ export default function AboutSection() {
               <div style={{ position: 'relative', width: 160, height: 185, flexShrink: 0 }}>
                 <div style={{ position: 'absolute', inset: -4, borderRadius: 999, background: 'linear-gradient(135deg,rgba(108,99,255,0.5),rgba(255,101,132,0.3))', filter: 'blur(18px)', zIndex: 0 }} />
                 <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: 999, overflow: 'hidden', zIndex: 1, boxShadow: '0 8px 32px rgba(0,0,0,0.4)', background: '#0a0a0f' }}>
-                  <Image src="/img/about_me.png" alt="Tim Lin" fill style={{ objectFit: 'cover', objectPosition: 'top center' }} />
+                  <img src="/img/about_me.png" alt="Tim Lin" style={{ objectFit: 'cover', objectPosition: 'top center', position: 'absolute', inset: 0, width: '100%', height: '100%' }} />
                 </div>
                 <div style={{ position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap', zIndex: 2 }}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#0f1a12', border: '1px solid rgba(74,222,128,0.4)', color: '#4ade80', fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 99, boxShadow: '0 4px 12px rgba(0,0,0,0.4)' }}>

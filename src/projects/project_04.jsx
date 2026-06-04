@@ -1,12 +1,27 @@
-import React, { useState, useEffect, useRef } from "react";
-import ReactDOM from "react-dom/client";
-import gsap from "gsap";
-import ScrollToPlugin from "gsap/ScrollToPlugin";
+import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import ReactDOM from 'react-dom/client';
+import gsap from 'gsap';
+import ScrollToPlugin from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollToPlugin);
 
-const { Fragment } = React;
+// --- COMPONENTS ---
+        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
+            if (!src) return null;
+            const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+            return (
+                <picture style={{ display: 'contents' }}>
+                    <source srcSet={webpSrc} type="image/webp" />
+                    <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} />
+                </picture>
+            );
+        };
 
+        const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
+            const [loaded, setLoaded] = useState(false);
+            useEffect(() => { setLoaded(false); }, [src]);
+
+            return (
                 <div className={`relative overflow-hidden ${containerClassName || 'w-full h-full'}`}>
                     {!loaded && <div className="absolute inset-0 skeleton z-10 flex items-center justify-center"><i className="ph ph-image text-white/10 text-3xl"></i></div>}
                     <ResponsiveImage
@@ -362,7 +377,7 @@ const { Fragment } = React;
             };
 
             return (
-                <Fragment>
+                <React.Fragment>
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
@@ -464,12 +479,9 @@ const { Fragment } = React;
                             </div>
                         </section>
                     </div>
-                </Fragment>
+                </React.Fragment>
             );
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-    </script>
-</body>
-

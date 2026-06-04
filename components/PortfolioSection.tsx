@@ -1,8 +1,4 @@
-'use client';
-
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
 import { useLang } from '@/context/LanguageContext';
 import { PROJECTS, Project } from '@/data/projects';
 import Masonry from './Masonry';
@@ -17,19 +13,16 @@ function ProjectCard({ project, isGrid }: { project: Project; isGrid: boolean })
   const desc = t[project.descKey as keyof typeof t] as string;
 
   return (
-    <Link
+    <a
       href={project.link}
       className={`project-card fade-in${isGrid ? ' aspect-[3/2]' : ''}`}
       data-category={project.category}
-      style={isGrid ? undefined : { width: '15.5rem', flexShrink: 0, margin: '0.5rem' }}
+      style={isGrid ? { position: 'relative' } : { width: '15.5rem', flexShrink: 0, margin: '0.5rem', position: 'relative' }}
     >
-      <Image
+      <img
         src={project.img}
         alt={title}
-        fill={isGrid}
-        width={isGrid ? undefined : 248}
-        height={isGrid ? undefined : 165}
-        className={isGrid ? 'object-cover' : 'w-full h-full object-cover'}
+        style={isGrid ? { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' } : { width: '100%', height: '100%', objectFit: 'cover' }}
         loading="lazy"
       />
       <div className="project-overlay">
@@ -41,7 +34,7 @@ function ProjectCard({ project, isGrid }: { project: Project; isGrid: boolean })
           ))}
         </div>
       </div>
-    </Link>
+    </a>
   );
 }
 

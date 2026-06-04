@@ -1,46 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import ReactDOM from "react-dom/client";
-import gsap from "gsap";
-import ScrollToPlugin from "gsap/ScrollToPlugin";
+import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import ReactDOM from 'react-dom/client';
+import gsap from 'gsap';
+import ScrollToPlugin from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollToPlugin);
 
-const { Fragment } = React;
-
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .hero-bg-custom {
-            background-image: url('./img/project_02/hero_img.jpg');
-            background-image: -webkit-image-set(url('./img/project_02/hero_img.webp') 1x, url('./img/project_02/hero_img.jpg') 1x);
-            background-image: image-set(url('./img/project_02/hero_img.webp') 1x, url('./img/project_02/hero_img.jpg') 1x);
-            background-size: cover;
-            background-position: center;
-        }
-
-        .hero-bg-custom::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to bottom, rgba(8, 2, 1, 0.2) 0%, rgba(8, 2, 1, 0.5) 100%);
-            z-index: 1;
-        }
-
-        .loader { background: #0F1115; }
-    </style>
-</head>
-
-<body>
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-
-        // --- HELPER COMPONENTS ---
+// --- HELPER COMPONENTS ---
 
         const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
@@ -554,7 +519,7 @@ const { Fragment } = React;
             };
 
             return (
-                <Fragment>
+                <React.Fragment>
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
@@ -693,13 +658,9 @@ const { Fragment } = React;
                             </div>
                         </section>
                     </div>
-                </Fragment>
+                </React.Fragment>
             );
         };
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-    </script>
-</body>
-
-

@@ -1,5 +1,7 @@
 {
-  "framework": "nextjs",
+  "outputDirectory": "dist",
+  "buildCommand": "npm run build",
+  "framework": null,
   "build": {
     "env": {
       "NODE_VERSION": "20"
