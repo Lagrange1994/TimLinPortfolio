@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AI-Assisted Design Intake System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* Logo gradient: #8A2BE2 → #4A00E0 → #00D4FF */
+    --a1: #8A2BE2; --a2: #4A00E0; --a3: #00D4FF; --a4: #7BE3B5; --a5: #FFC97B;
+    --bg: #050409; --ink: #ECE9F5; --ink-dim: #9A93B0;
+    --ink-mute: #6A6580; --ink-faint: #4A4660;
+    --line: rgba(255,255,255,0.07); --line-strong: rgba(255,255,255,0.14);
+    --glow-focal: 0.4; --glow-human: 0.3;
+  }
+  body.conn-solid  .conns path.flow { stroke-dasharray: none; }
+  body.conn-dashed .conns path.flow { stroke-dasharray: 4 9; }
+  body.conn-dotted .conns path.flow { stroke-dasharray: 1 9; stroke-linecap: round; }
+  body.no-particles .particle { display: none; }
+  body.no-labels    .conn-label { display: none; }
+  body.no-plaque    .plaque { display: none; }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: transparent; color: var(--ink);
+    overflow: hidden; height: 100%;
+    font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01","cv11";
+  }
+
+  /* ─── Viewport ─── */
+  .viewport {
+    position: fixed; inset: 0; overflow: hidden;
+    background:
+      radial-gradient(1200px 800px at 30% 20%, color-mix(in oklab, var(--a1) 28%, transparent), transparent 60%),
+      radial-gradient(1100px 700px at 75% 80%, color-mix(in oklab, var(--a2) 35%, transparent), transparent 65%),
+      radial-gradient(1000px 700px at 92% 15%, color-mix(in oklab, var(--a3) 22%, transparent), transparent 60%),
+      radial-gradient(900px 700px at 12% 90%, color-mix(in oklab, var(--a1) 18%, transparent), transparent 65%);
+  }
+  .grid-bg {
+    position: absolute; inset: -20%;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 80px 80px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 30%, transparent 80%);
+    pointer-events: none;
+  }
+  .grain {
+    position: absolute; inset: 0; opacity: 0.07; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+  }
+  .vignette {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 80% 65% at 50% 50%, transparent 50%, rgba(0,0,0,0.55) 100%);
+  }
+
+  /* ─── Canvas ─── */
+  .canvas {
+    position: absolute; width: 1600px; height: 1100px;
+    top: 0; left: 0; transform-origin: 0 0;
+    transition: transform 900ms cubic-bezier(.65,.0,.15,1);
+    will-change: transform;
+  }
+  .conns {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    overflow: visible; pointer-events: none; transition: opacity .5s;
+  }
+  .chip-row { transition: opacity .5s; }
+
+  /* ─── NODE ─── */
+  .node {
+    position: absolute; transform: translate(-50%, -50%);
+    padding: 20px 24px; border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.016));
+    border: 1px solid var(--line-strong);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    width: min(280px, 78vw); cursor: pointer; z-index: 1;
+    transition: width .6s cubic-bezier(.2,.7,.2,1), border-color .3s, box-shadow .4s, background .3s, opacity .4s;
+    box-shadow: 0 28px 70px -18px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .node::before {
+    content: ""; position: absolute; top: 0; left: 12%; right: 12%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.32), transparent);
+  }
+  .node:hover {
+    border-color: rgba(255,255,255,0.22);
+    box-shadow: 0 38px 90px -18px rgba(0,0,0,0.7), 0 0 55px -10px color-mix(in oklab, var(--a1) 35%, transparent), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .node .step-num {
+    position: absolute; top: -7px; left: 16px;
+    padding: 2px 7px; font-family: "Geist Mono", monospace; font-size: 9.5px;
+    letter-spacing: 0.14em; color: var(--ink-mute);
+    background: rgba(12,9,18,0.85); border: 1px solid var(--line); border-radius: 4px;
+    backdrop-filter: blur(8px); opacity: 0.85;
+  }
+  .node .step-num em { font-style: normal; color: var(--ink-dim); font-weight: 500; }
+  .node-head { display: flex; align-items: center; gap: 11px; margin-bottom: 9px; }
+  .node .glyph {
+    width: 36px; height: 36px; border-radius: 9px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--line-strong);
+    display: grid; place-items: center; color: var(--ink); flex-shrink: 0;
+  }
+  .node h3 {
+    margin: 0; font-size: 24px; font-weight: 500;
+    letter-spacing: -0.018em; color: var(--ink); line-height: 1.1;
+  }
+
+  /* Two-level */
+  .node-compact, .node-detail { transition: opacity .35s ease, max-height .6s cubic-bezier(.4,0,.2,1); overflow: hidden; }
+  .node-compact { opacity: 1; max-height: 200px; }
+  .node-detail  { opacity: 0; max-height: 0; pointer-events: none; }
+  .node.active .node-compact { opacity: 0; max-height: 0; }
+  .node.active .node-detail  { opacity: 1; max-height: 1400px; pointer-events: auto; }
+  .node-compact .subtitle { margin: 2px 0 0; font-size: 14px; line-height: 1.5; color: var(--ink-dim); letter-spacing: -0.005em; }
+
+  /* Active sizes — responsive with min() so nodes don't overflow narrow screens */
+  .node.active { width: min(480px, 88vw); z-index: 10; border-color: rgba(255,255,255,0.28); }
+  .node.focal  { width: min(340px, 80vw); }
+  .node.focal.active { width: min(560px, 92vw); }
+  .node.workflow { width: min(420px, 84vw); }
+  .node.workflow.active { width: min(520px, 90vw); }
+  .node.human.active { width: min(480px, 88vw); }
+
+  /* Detail mode fade */
+  body.detail-mode .node:not(.active) { opacity: 0.3; filter: saturate(0.6); }
+  body.detail-mode .node:not(.active):hover { opacity: 0.7; filter: none; }
+  body.detail-mode .chip-row { opacity: 0.15; }
+  body.detail-mode .plaque { opacity: 0.15; }
+  body.detail-mode .conns { opacity: 0.3; }
+
+  /* AI Brief focal */
+  .node.focal {
+    padding: 28px 28px 24px;
+    background:
+      radial-gradient(700px 420px at 60% 0%, color-mix(in oklab, var(--a1) 24%, transparent), transparent 65%),
+      linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border-color: color-mix(in oklab, var(--a1) 32%, transparent);
+    box-shadow: 0 55px 130px -18px rgba(0,0,0,0.7), 0 0 0 1px color-mix(in oklab, var(--a1) 10%, transparent), 0 0 200px -18px color-mix(in oklab, var(--a1) calc(100% * var(--glow-focal)), transparent), 0 0 330px -38px color-mix(in oklab, var(--a2) calc(100% * var(--glow-focal) * 0.75), transparent), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .node.focal::before { background: linear-gradient(90deg, transparent, var(--a2), var(--a1), transparent); opacity: 0.5; }
+  .node.focal .glyph { background: linear-gradient(135deg, color-mix(in oklab, var(--a1) 32%, transparent), color-mix(in oklab, var(--a2) 22%, transparent)); border-color: color-mix(in oklab, var(--a1) 42%, transparent); color: #FFF; width: 42px; height: 42px; }
+  .node.focal h3 { font-size: 28px; }
+  .node.focal .focal-badge {
+    position: absolute; top: -13px; right: 20px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px; border-radius: 999px;
+    background: linear-gradient(135deg, var(--a1), var(--a2));
+    color: #1a0a20; font-family: "Geist Mono", monospace;
+    font-size: 9.5px; letter-spacing: 0.14em; font-weight: 600;
+    box-shadow: 0 8px 26px -5px color-mix(in oklab, var(--a2) 50%, transparent); white-space: nowrap;
+  }
+  .node.focal .focal-badge::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: #1a0a20; }
+
+  /* Human Review */
+  .node.human {
+    background: radial-gradient(460px 280px at 70% 0%, color-mix(in oklab, var(--a4) 20%, transparent), transparent 65%), radial-gradient(280px 200px at 30% 100%, rgba(255,255,255,0.06), transparent 65%), linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015));
+    border-color: color-mix(in oklab, var(--a4) 30%, transparent);
+    box-shadow: 0 38px 90px -18px rgba(0,0,0,0.7), 0 0 130px -18px color-mix(in oklab, var(--a4) calc(100% * var(--glow-human)), transparent), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.14);
+  }
+  .node.human::before { background: linear-gradient(90deg, transparent, var(--a4), transparent); opacity: 0.5; }
+  .node.human .glyph { background: color-mix(in oklab, var(--a4) 14%, transparent); border-color: color-mix(in oklab, var(--a4) 38%, transparent); color: var(--a4); }
+
+  /* Detail atoms */
+  .node-detail { display: flex; flex-direction: column; gap: 10px; }
+  .detail-section { display: flex; flex-direction: column; gap: 7px; }
+  .d-label { font-family: "Geist Mono", monospace; font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-mute); display: inline-flex; align-items: center; gap: 8px; }
+  .d-label .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--a1); box-shadow: 0 0 8px color-mix(in oklab, var(--a1) 60%, transparent); }
+  .d-label.amber .dot { background: var(--a5); box-shadow: 0 0 8px color-mix(in oklab, var(--a5) 60%, transparent); }
+  .d-label.blue .dot  { background: var(--a3); box-shadow: 0 0 8px color-mix(in oklab, var(--a3) 60%, transparent); }
+  .d-label.green .dot { background: var(--a4); box-shadow: 0 0 8px color-mix(in oklab, var(--a4) 60%, transparent); }
+
+  /* Channel list */
+  .channel-list { display: flex; flex-direction: column; gap: 6px; }
+  .channel { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 9px 12px; border-radius: 9px; background: rgba(255,255,255,0.025); border: 1px solid var(--line); }
+  .channel .ch-icon { width: 28px; height: 28px; border-radius: 7px; background: color-mix(in oklab, var(--a1) 14%, transparent); border: 1px solid color-mix(in oklab, var(--a1) 26%, transparent); display: grid; place-items: center; font-family: "Geist Mono", monospace; font-size: 11px; color: var(--a1); font-weight: 500; }
+  .channel .ch-body { min-width: 0; }
+  .channel .ch-name { font-size: 13px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .channel .ch-snippet { font-size: 11.5px; color: var(--ink-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .channel .ch-time { font-family: "Geist Mono", monospace; font-size: 10.5px; color: var(--ink-mute); }
+
+  /* Mini form */
+  .form-mini { display: flex; flex-direction: column; gap: 8px; }
+  .form-mini .field { display: flex; flex-direction: column; gap: 3px; }
+  .form-mini .field label { font-family: "Geist Mono", monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-mute); }
+  .form-mini .field .val { padding: 8px 11px; border-radius: 7px; background: color-mix(in oklab, var(--a1) 6%, transparent); border: 1px solid color-mix(in oklab, var(--a1) 20%, transparent); font-size: 12.5px; color: var(--ink); display: flex; align-items: center; justify-content: space-between; white-space: nowrap; overflow: hidden; }
+  .form-mini .field .val > span:first-child { overflow: hidden; text-overflow: ellipsis; }
+  .form-mini .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .form-status { margin-top: 4px; padding: 8px 11px; border-radius: 8px; background: color-mix(in oklab, var(--a4) 8%, transparent); border: 1px solid color-mix(in oklab, var(--a4) 26%, transparent); display: flex; justify-content: space-between; align-items: center; font-family: "Geist Mono", monospace; font-size: 10.5px; color: var(--a4); letter-spacing: 0.05em; }
+  .form-status .bar { display: flex; gap: 3px; }
+  .form-status .pdot { width: 10px; height: 3px; border-radius: 2px; background: color-mix(in oklab, var(--a4) 70%, transparent); }
+  .priority-pill { padding: 2px 7px; border-radius: 4px; background: color-mix(in oklab, var(--a5) 14%, transparent); border: 1px solid color-mix(in oklab, var(--a5) 30%, transparent); color: var(--a5); font-family: "Geist Mono", monospace; font-size: 9.5px; letter-spacing: 0.05em; }
+
+  /* AI Brief */
+  .ai-summary { padding: 12px 13px; border-radius: 10px; background: color-mix(in oklab, var(--a1) 6%, transparent); border: 1px solid color-mix(in oklab, var(--a1) 22%, transparent); }
+  .ai-summary p { margin: 6px 0 0; font-size: 13px; line-height: 1.5; color: var(--ink); }
+  .ai-summary p .hl { background: linear-gradient(180deg, transparent 60%, color-mix(in oklab, var(--a2) 25%, transparent) 60%); }
+  .ai-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .ai-cell { padding: 9px 11px; border-radius: 9px; background: rgba(255,255,255,0.025); border: 1px solid var(--line); }
+  .ai-cell .vv { margin-top: 6px; display: flex; align-items: center; gap: 7px; }
+  .ai-cell .conf { margin-left: auto; font-family: "Geist Mono", monospace; font-size: 9px; color: var(--ink-mute); }
+  .badge { padding: 3px 7px; border-radius: 5px; font-family: "Geist Mono", monospace; font-size: 10.5px; letter-spacing: 0.05em; }
+  .badge.violet { background: color-mix(in oklab, var(--a1) 16%, transparent); border: 1px solid color-mix(in oklab, var(--a1) 32%, transparent); color: var(--a1); }
+  .badge.amber  { background: color-mix(in oklab, var(--a5) 14%, transparent); border: 1px solid color-mix(in oklab, var(--a5) 30%, transparent); color: var(--a5); }
+  .ai-block { padding: 10px 12px; border-radius: 9px; }
+  .ai-block.missing   { background: color-mix(in oklab, var(--a5) 6%, transparent); border: 1px solid color-mix(in oklab, var(--a5) 22%, transparent); }
+  .ai-block.questions { background: color-mix(in oklab, var(--a3) 5%, transparent); border: 1px solid color-mix(in oklab, var(--a3) 22%, transparent); }
+  .ai-block.direction { background: color-mix(in oklab, var(--a1) 5%, transparent); border: 1px solid color-mix(in oklab, var(--a1) 22%, transparent); }
+  .ai-block ul, .ai-block ol { margin: 7px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 5px; counter-reset: q; }
+  .ai-block ul li, .ai-block ol li { font-size: 12.5px; color: var(--ink-dim); line-height: 1.4; display: flex; gap: 9px; }
+  .ai-block ul li::before { content: ""; width: 10px; height: 1px; margin-top: 9px; background: var(--ink-faint); flex-shrink: 0; }
+  .ai-block ol li { counter-increment: q; color: var(--ink); }
+  .ai-block ol li::before { content: counter(q, decimal-leading-zero); font-family: "Geist Mono", monospace; font-size: 9.5px; color: var(--a3); letter-spacing: 0.04em; flex-shrink: 0; padding-top: 2px; }
+  .ai-block.direction p { margin: 7px 0 0; font-size: 12.5px; color: var(--ink); line-height: 1.5; }
+
+  /* Tracking sheet */
+  .sheet { border-radius: 9px; background: rgba(255,255,255,0.02); border: 1px solid var(--line); overflow: hidden; }
+  .sheet-tabs { display: flex; padding: 4px; background: rgba(255,255,255,0.025); border-bottom: 1px solid var(--line); }
+  .sheet-tabs .tab { padding: 4px 9px; font-family: "Geist Mono", monospace; font-size: 10px; letter-spacing: 0.06em; color: var(--ink-mute); border-radius: 5px; cursor: default; }
+  .sheet-tabs .tab.active { color: var(--ink); background: rgba(255,255,255,0.05); }
+  .sheet table { width: 100%; border-collapse: collapse; font-family: "Geist Mono", monospace; font-size: 11px; }
+  .sheet th { text-align: left; padding: 7px 9px; color: var(--ink-mute); font-weight: 500; letter-spacing: 0.06em; border-bottom: 1px solid var(--line); background: rgba(255,255,255,0.012); }
+  .sheet td { padding: 7px 9px; color: var(--ink-dim); border-bottom: 1px solid var(--line); }
+  .sheet tr:last-child td { border-bottom: none; }
+  .sheet tr.current td { background: color-mix(in oklab, var(--a1) 8%, transparent); color: var(--ink); }
+  .sheet tr.current td:first-child { color: var(--a1); font-weight: 500; box-shadow: inset 2px 0 0 var(--a1); }
+  .st { padding: 2px 5px; border-radius: 4px; font-size: 10px; letter-spacing: 0.04em; }
+  .st.active { background: color-mix(in oklab, var(--a3) 14%, transparent); color: var(--a3); }
+  .st.review { background: color-mix(in oklab, var(--a5) 12%, transparent); color: var(--a5); }
+  .st.done   { background: color-mix(in oklab, var(--a4) 12%, transparent); color: var(--a4); }
+  .st.queue  { background: rgba(255,255,255,0.05); color: var(--ink-mute); }
+  .sheet-foot { padding: 6px 9px; background: rgba(255,255,255,0.012); border-top: 1px solid var(--line); font-family: "Geist Mono", monospace; font-size: 9.5px; color: var(--ink-mute); letter-spacing: 0.06em; display: flex; justify-content: space-between; }
+
+  /* Human Review detail */
+  .review-grid { display: flex; flex-direction: column; gap: 5px; }
+  .rrow { display: grid; grid-template-columns: 85px 1fr; gap: 12px; padding: 9px 11px; border-radius: 8px; background: rgba(255,255,255,0.025); border: 1px solid var(--line); }
+  .rrow .rl { font-family: "Geist Mono", monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-mute); padding-top: 2px; }
+  .rrow .rv { font-size: 12.5px; color: var(--ink); line-height: 1.45; }
+  .review-quote { padding: 14px 16px; border-radius: 10px; background: radial-gradient(ellipse 80% 100% at 50% 50%, color-mix(in oklab, var(--a4) 8%, transparent), transparent 70%), rgba(255,255,255,0.025); border: 1px solid color-mix(in oklab, var(--a4) 24%, transparent); text-align: center; }
+  .review-quote .ql { font-family: "Geist Mono", monospace; font-size: 9px; color: var(--ink-mute); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 7px; }
+  .review-quote .qq { font-size: 18px; line-height: 1.2; letter-spacing: -0.018em; color: var(--ink); }
+  .review-quote .qq .pivot { background: linear-gradient(135deg, var(--a1), var(--a2)); -webkit-background-clip: text; background-clip: text; color: transparent; font-style: italic; }
+
+  /* Workflow phases */
+  .phases { display: flex; flex-direction: column; gap: 5px; }
+  .phase { display: grid; grid-template-columns: 32px 1fr auto; gap: 11px; align-items: center; padding: 9px 11px; border-radius: 9px; background: rgba(255,255,255,0.025); border: 1px solid var(--line); }
+  .phase .pn { font-family: "Geist Mono", monospace; font-size: 10.5px; color: var(--a3); letter-spacing: 0.04em; }
+  .phase .pt { font-size: 13px; color: var(--ink); letter-spacing: -0.012em; }
+  .phase .pd { font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; line-height: 1.4; }
+  .phase .ps { font-family: "Geist Mono", monospace; font-size: 9.5px; color: var(--ink-mute); letter-spacing: 0.06em; padding: 3px 7px; border-radius: 5px; background: rgba(255,255,255,0.03); border: 1px solid var(--line); }
+  .phase.next .ps { color: var(--a3); background: color-mix(in oklab, var(--a3) 12%, transparent); border-color: color-mix(in oklab, var(--a3) 28%, transparent); }
+
+  /* Task chips */
+  .chip-row { position: absolute; transform: translate(-50%, -50%); z-index: 3; display: flex; align-items: center; gap: 9px; flex-direction: column; }
+  .chip-row .clabel { font-family: "Geist Mono", monospace; font-size: 11px; color: var(--ink-mute); letter-spacing: 0.14em; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+  .chip-row .clabel::before, .chip-row .clabel::after { content: ""; width: 36px; height: 1px; background: linear-gradient(90deg, transparent, var(--line-strong), transparent); }
+  .chip-row .chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .orbit-chip { display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px 8px 11px; border-radius: 999px; background: rgba(20,15,30,0.6); border: 1px solid var(--line-strong); backdrop-filter: blur(14px); font-size: 13px; color: var(--ink); white-space: nowrap; box-shadow: 0 8px 25px -8px rgba(0,0,0,0.6); }
+  .orbit-chip.primary { background: linear-gradient(180deg, color-mix(in oklab, var(--a1) 18%, transparent), color-mix(in oklab, var(--a1) 8%, transparent)); border-color: color-mix(in oklab, var(--a1) 36%, transparent); box-shadow: 0 8px 25px -8px color-mix(in oklab, var(--a1) 40%, transparent), inset 0 1px 0 rgba(255,255,255,0.06); }
+  .orbit-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: linear-gradient(135deg, var(--a1), var(--a2)); box-shadow: 0 0 8px color-mix(in oklab, var(--a2) 60%, transparent); }
+  .orbit-chip .mn { font-family: "Geist Mono", monospace; font-size: 9.5px; color: var(--ink-mute); letter-spacing: 0.08em; padding-left: 7px; margin-left: 2px; border-left: 1px solid var(--line-strong); }
+  .orbit-chip.primary .mn { color: var(--ink-dim); }
+
+  /* Plaque */
+  .plaque { position: absolute; transform: translate(-50%, -50%); padding: 20px 28px; border-radius: 14px; background: rgba(20,15,30,0.65); border: 1px solid var(--line-strong); backdrop-filter: blur(20px); text-align: center; max-width: 400px; z-index: 2; transition: opacity .5s; }
+  .plaque .lbl { font-family: "Geist Mono", monospace; font-size: 9.5px; color: var(--ink-mute); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 8px; }
+  .plaque .q { font-size: 20px; line-height: 1.2; letter-spacing: -0.02em; color: var(--ink); }
+  .plaque .q .pivot { background: linear-gradient(135deg, var(--a1), var(--a2)); -webkit-background-clip: text; background-clip: text; color: transparent; font-style: italic; }
+  .plaque .q .ddot { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: linear-gradient(135deg, var(--a1), var(--a2)); vertical-align: middle; margin: 0 7px 4px; }
+
+  /* Connectors & particles */
+  .conns path { transition: stroke-dasharray .3s, opacity .3s; }
+  .particle { fill: var(--a1); filter: drop-shadow(0 0 5px color-mix(in oklab, var(--a1) 75%, transparent)); }
+  .particle.pink  { fill: var(--a2); filter: drop-shadow(0 0 5px color-mix(in oklab, var(--a2) 75%, transparent)); }
+  .particle.blue  { fill: var(--a3); filter: drop-shadow(0 0 5px color-mix(in oklab, var(--a3) 75%, transparent)); }
+  .particle.green { fill: var(--a4); filter: drop-shadow(0 0 5px color-mix(in oklab, var(--a4) 75%, transparent)); }
+  .conn-label { fill: var(--ink-mute); font-family: "Geist Mono", monospace; font-size: 12px; letter-spacing: 0.18em; text-transform: lowercase; }
+
+  /* Active ring */
+  body.detail-mode .node.active::after { content: ""; position: absolute; inset: -10px; border-radius: inherit; border: 1px solid rgba(255,255,255,0.14); pointer-events: none; animation: ringP 3s ease-out infinite; }
+  @keyframes ringP { 0% { transform: scale(0.99); opacity: 0.6; } 100% { transform: scale(1.04); opacity: 0; } }
+
+  /* Corner ticks */
+  .corner-tick { position: absolute; width: 20px; height: 20px; border: 1px solid var(--line-strong); pointer-events: none; }
+  .corner-tick.tl { border-right: none; border-bottom: none; }
+  .corner-tick.tr { border-left: none; border-bottom: none; }
+  .corner-tick.bl { border-right: none; border-top: none; }
+  .corner-tick.br { border-left: none; border-top: none; }
+</style>
+</head>
+<body class="conn-dotted">
+
+<div class="viewport" id="viewport">
+  <div class="grid-bg"></div>
+  <div class="grain"></div>
+
+  <div class="canvas" id="canvas">
+
+    <div class="corner-tick tl" style="top:44px;left:44px;"></div>
+    <div class="corner-tick tr" style="top:44px;right:44px;"></div>
+    <div class="corner-tick bl" style="bottom:44px;left:44px;"></div>
+    <div class="corner-tick br" style="bottom:44px;right:44px;"></div>
+
+    <!-- SVG Connections -->
+    <svg class="conns" viewBox="0 0 1600 1100" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="g-down" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="var(--a3)" stop-opacity="0"/>
+          <stop offset="40%" stop-color="var(--a3)" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="var(--a1)" stop-opacity="0.5"/>
+        </linearGradient>
+        <linearGradient id="g-up-right" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%"  stop-color="var(--a3)" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="var(--a1)" stop-opacity="0.6"/>
+        </linearGradient>
+        <linearGradient id="g-vert-vp" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="var(--a1)" stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="var(--a2)" stop-opacity="0.5"/>
+        </linearGradient>
+        <linearGradient id="g-up-pg" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%"  stop-color="var(--a2)" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="var(--a4)" stop-opacity="0.55"/>
+        </linearGradient>
+        <linearGradient id="g-sweep" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="var(--a4)" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="var(--a3)" stop-opacity="0.45"/>
+        </linearGradient>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="8" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Sources → Intake -->
+      <path id="p12" class="flow" d="M 450 545 C 395 595, 395 678, 450 708"
+            stroke="url(#g-down)" stroke-width="1" fill="none" opacity="0.7" filter="url(#glow)"/>
+      <!-- Intake → AI Brief -->
+      <path id="p23" class="flow" d="M 592 755 C 672 700, 705 576, 680 520"
+            stroke="url(#g-up-right)" stroke-width="1.2" fill="none" opacity="0.78" filter="url(#glow)"/>
+      <!-- AI Brief → Tracking -->
+      <path id="p34" class="flow" d="M 800 558 C 855 600, 855 680, 800 708"
+            stroke="url(#g-vert-vp)" stroke-width="1.2" fill="none" opacity="0.78" filter="url(#glow)"/>
+      <!-- Tracking → Human Review -->
+      <path id="p45" class="flow" d="M 942 755 C 1030 700, 1090 576, 1095 520"
+            stroke="url(#g-up-pg)" stroke-width="1.1" fill="none" opacity="0.7" filter="url(#glow)"/>
+      <!-- Human Review → Design Workflow -->
+      <path id="p56" class="flow" d="M 1200 548 C 1240 762, 1100 930, 930 962"
+            stroke="url(#g-sweep)" stroke-width="1.1" fill="none" opacity="0.7" filter="url(#glow)"/>
+
+      <!-- Chip trails (AI Brief top → chip row) -->
+      <path d="M 762 405 C 748 372, 738 350, 732 338" stroke="var(--a1)" stroke-width="0.8" fill="none" opacity="0.12" stroke-dasharray="1 6" stroke-linecap="round"/>
+      <path d="M 800 404 C 793 371, 789 349, 787 338" stroke="var(--a1)" stroke-width="0.8" fill="none" opacity="0.12" stroke-dasharray="1 6" stroke-linecap="round"/>
+      <path d="M 840 405 C 848 372, 853 350, 854 338" stroke="var(--a1)" stroke-width="0.8" fill="none" opacity="0.12" stroke-dasharray="1 6" stroke-linecap="round"/>
+      <path d="M 878 405 C 892 372, 903 350, 905 338" stroke="var(--a1)" stroke-width="0.8" fill="none" opacity="0.12" stroke-dasharray="1 6" stroke-linecap="round"/>
+
+      <text class="conn-label" x="392" y="615" fill-opacity="0.5">capture</text>
+      <text class="conn-label" x="622" y="678" fill-opacity="0.55">structure</text>
+      <text class="conn-label" x="862" y="640" fill-opacity="0.55">persist</text>
+      <text class="conn-label" x="998" y="660" fill-opacity="0.55">escalate</text>
+      <text class="conn-label" x="1108" y="840" fill-opacity="0.5" transform="rotate(26,1108,840)">route</text>
+
+      <!-- Particles -->
+      <g>
+        <circle class="particle blue" r="4"><animateMotion dur="4s" repeatCount="indefinite" rotate="auto"><mpath href="#p12"/></animateMotion></circle>
+        <circle class="particle" r="4.5"><animateMotion dur="3.6s" repeatCount="indefinite" rotate="auto" begin="0.5s"><mpath href="#p23"/></animateMotion></circle>
+        <circle class="particle pink" r="4.5"><animateMotion dur="3.4s" repeatCount="indefinite" rotate="auto" begin="1.4s"><mpath href="#p34"/></animateMotion></circle>
+        <circle class="particle green" r="4"><animateMotion dur="3.6s" repeatCount="indefinite" rotate="auto" begin="0.2s"><mpath href="#p45"/></animateMotion></circle>
+        <circle class="particle" r="3.5"><animateMotion dur="6s" repeatCount="indefinite" rotate="auto" begin="0.9s"><mpath href="#p56"/></animateMotion></circle>
+      </g>
+    </svg>
+
+    <!-- Task chips above AI Brief -->
+    <div class="chip-row" style="left:800px;top:328px;">
+      <div class="clabel"><span>Classifies as · Task Type</span></div>
+      <div class="chips">
+        <span class="orbit-chip primary"><span class="dot"></span>Product UI <span class="mn">42%</span></span>
+        <span class="orbit-chip"><span class="dot"></span>Graphic Design <span class="mn">21%</span></span>
+        <span class="orbit-chip"><span class="dot"></span>UX Review <span class="mn">19%</span></span>
+        <span class="orbit-chip"><span class="dot"></span>Research Planning <span class="mn">18%</span></span>
+      </div>
+    </div>
+
+    <!-- ─── 01 Request Sources ─── -->
+    <article class="node" data-node="sources" style="left:450px;top:478px;">
+      <span class="step-num"><em>01</em></span>
+      <div class="node-head">
+        <span class="glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="18" r="2.2"/><path d="M8.2 6h7.6M6 8.2v7.6M18 8.2v7.6M8.2 18h7.6"/></svg></span>
+        <h3>Request Sources</h3>
+      </div>
+      <div class="node-compact"><p class="subtitle">PMs, clients, channels — all into one inbox.</p></div>
+      <div class="node-detail">
+        <div class="detail-section">
+          <div class="d-label"><span class="dot"></span>Recent inbound</div>
+          <div class="channel-list">
+            <div class="channel"><span class="ch-icon">L</span><div class="ch-body"><div class="ch-name">LINE · @pm.celine</div><div class="ch-snippet">Onboarding redesign for new tier — Jun 17?</div></div><span class="ch-time">2m</span></div>
+            <div class="channel"><span class="ch-icon">E</span><div class="ch-body"><div class="ch-name">Email · celine.h@firm.co</div><div class="ch-snippet">Quick question on tier-2 pricing visuals</div></div><span class="ch-time">28m</span></div>
+            <div class="channel"><span class="ch-icon">F</span><div class="ch-body"><div class="ch-name">Form · Brief intake</div><div class="ch-snippet">Tier-2 pricing experiment — marketing</div></div><span class="ch-time">1h</span></div>
+            <div class="channel"><span class="ch-icon">S</span><div class="ch-body"><div class="ch-name">Slack · #design-requests</div><div class="ch-snippet">Mobile sign-up flow — usability review</div></div><span class="ch-time">3h</span></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ─── 02 Intake ─── -->
+    <article class="node" data-node="intake" style="left:450px;top:755px;">
+      <span class="step-num"><em>02</em></span>
+      <div class="node-head">
+        <span class="glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></span>
+        <h3>Intake</h3>
+      </div>
+      <div class="node-compact"><p class="subtitle">Make collects and structures every field — goals, timeline, priority, contact.</p></div>
+      <div class="node-detail">
+        <div class="detail-section">
+          <div class="d-label"><span class="dot"></span>Request Form · DR-248</div>
+          <div class="form-mini">
+            <div class="field"><label>Source</label><div class="val"><span>LINE — @pm.celine</span></div></div>
+            <div class="field"><label>Project Type</label><div class="val"><span>Product UI · Mobile</span></div></div>
+            <div class="field"><label>Goal</label><div class="val"><span>Redesign onboarding for new pricing tier</span></div></div>
+            <div class="field-row">
+              <div class="field"><label>Timeline</label><div class="val"><span>Jun 03 — Jun 17</span></div></div>
+              <div class="field"><label>Budget</label><div class="val"><span>Internal</span></div></div>
+            </div>
+            <div class="field"><label>Priority</label><div class="val"><span>P1 — Quarterly OKR</span><span class="priority-pill">HIGH</span></div></div>
+            <div class="form-status"><span>Form complete</span><div class="bar"><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ─── 03 AI Brief (FOCAL) ─── -->
+    <article class="node focal" data-node="ai" style="left:800px;top:478px;">
+      <span class="focal-badge">GEMINI · DRAFT</span>
+      <span class="step-num"><em>03</em></span>
+      <div class="node-head">
+        <span class="glyph"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 13.6 8.4 19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z"/><path d="M19 17l.7 2.3L22 20l-2.3.7L19 23l-.7-2.3L16 20l2.3-.7z"/></svg></span>
+        <h3>AI Brief</h3>
+      </div>
+      <div class="node-compact"><p class="subtitle">Gemini summarizes the request, classifies the task type, and flags missing context.</p></div>
+      <div class="node-detail">
+        <div class="ai-summary">
+          <div class="d-label"><span class="dot"></span>Summary</div>
+          <p>Redesign the <span class="hl">first-run onboarding</span> to introduce a new pricing tier without disrupting the free-to-paid funnel. PM signals a Q3 dependency — ship before <span class="hl">Jun 17</span>.</p>
+        </div>
+        <div class="ai-row">
+          <div class="ai-cell"><div class="d-label"><span class="dot"></span>Task Type</div><div class="vv"><span class="badge violet">Product UI</span><span class="conf">conf · 0.92</span></div></div>
+          <div class="ai-cell"><div class="d-label amber"><span class="dot"></span>Priority</div><div class="vv"><span class="badge amber">P1 · HIGH</span><span class="conf">conf · 0.87</span></div></div>
+        </div>
+        <div class="ai-block missing">
+          <div class="d-label amber"><span class="dot"></span>Missing Context</div>
+          <ul><li>No success metric defined (activation? conversion?)</li><li>Pricing tier copy not yet finalized by marketing</li><li>Analytics access for the current funnel</li></ul>
+        </div>
+        <div class="ai-block questions">
+          <div class="d-label blue"><span class="dot"></span>Suggested Questions</div>
+          <ol><li>What's the target lift on tier-2 conversion?</li><li>Are existing free users grandfathered in?</li><li>Is the iOS / Android rollout simultaneous?</li></ol>
+        </div>
+        <div class="ai-block direction">
+          <div class="d-label"><span class="dot"></span>Initial Direction</div>
+          <p>Augment the existing onboarding with a single tier-intro screen at activation, rather than forking the flow. Lower risk, faster ship.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ─── 04 Tracking ─── -->
+    <article class="node" data-node="tracking" style="left:800px;top:755px;">
+      <span class="step-num"><em>04</em></span>
+      <div class="node-head">
+        <span class="glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1.8"/><path d="M3.5 9.5h17M9 4.5v15M14.5 4.5v15"/></svg></span>
+        <h3>Tracking</h3>
+      </div>
+      <div class="node-compact"><p class="subtitle">Each structured brief is logged with a stable record ID.</p></div>
+      <div class="node-detail">
+        <div class="detail-section">
+          <div class="d-label"><span class="dot"></span>Sheets · Design Requests</div>
+          <div class="sheet">
+            <div class="sheet-tabs"><span class="tab active">Tracker</span><span class="tab">Backlog</span><span class="tab">Archive</span></div>
+            <table>
+              <thead><tr><th>ID</th><th>Src</th><th>Type</th><th>Pri</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr class="current"><td>DR-248</td><td>LINE</td><td>Product UI</td><td>P1</td><td><span class="st active">Active</span></td></tr>
+                <tr><td>DR-247</td><td>Form</td><td>Graphic</td><td>P2</td><td><span class="st review">Review</span></td></tr>
+                <tr><td>DR-246</td><td>Email</td><td>UX Review</td><td>P2</td><td><span class="st done">Done</span></td></tr>
+                <tr><td>DR-245</td><td>LINE</td><td>Research</td><td>P3</td><td><span class="st queue">Backlog</span></td></tr>
+              </tbody>
+            </table>
+            <div class="sheet-foot"><span>4 of 142 records</span><span>Updated · 2m ago</span></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ─── 05 Human Review ─── -->
+    <article class="node human" data-node="human" style="left:1200px;top:478px;">
+      <span class="step-num"><em>05</em></span>
+      <div class="node-head">
+        <span class="glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5"/></svg></span>
+        <h3>Human Review</h3>
+      </div>
+      <div class="node-compact"><p class="subtitle">I judge priority, strategy, risks, and next step.</p></div>
+      <div class="node-detail">
+        <div class="detail-section">
+          <div class="d-label green"><span class="dot"></span>Assessment · DR-248</div>
+          <div class="review-grid">
+            <div class="rrow"><div class="rl">Priority</div><div class="rv">P1 — ship before Jun 17 to unblock pricing launch.</div></div>
+            <div class="rrow"><div class="rl">Strategy</div><div class="rv">Augment the existing onboarding rather than fork; smaller surface, faster ship.</div></div>
+            <div class="rrow"><div class="rl">Risks</div><div class="rv">Pricing copy unfinalized; analytics ungated; mixed cohort behaviour.</div></div>
+            <div class="rrow"><div class="rl">Next step</div><div class="rv">30-min kickoff w/ PM; analytics access; baseline funnel screenshot.</div></div>
+          </div>
+        </div>
+        <div class="review-quote"><div class="ql">Operating Principle</div><div class="qq">AI handles <span class="pivot">structure</span>. I handle <span class="pivot">judgment</span>.</div></div>
+      </div>
+    </article>
+
+    <!-- Plaque -->
+    <div class="plaque" style="left:1150px;top:755px;">
+      <div class="lbl">Operating Principle</div>
+      <div class="q">AI handles <span class="pivot">structure</span>.<span class="ddot"></span>I handle <span class="pivot">judgment</span>.</div>
+    </div>
+
+    <!-- ─── 06 Design Workflow ─── -->
+    <article class="node workflow" data-node="workflow" style="left:800px;top:962px;">
+      <span class="step-num"><em>06</em></span>
+      <div class="node-head">
+        <span class="glyph"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h4l2-6 4 12 2-6h4"/></svg></span>
+        <h3>Design Workflow</h3>
+      </div>
+      <div class="node-compact"><p class="subtitle">Research → Structure → Design → Validate → Delivery.</p></div>
+      <div class="node-detail">
+        <div class="detail-section">
+          <div class="d-label blue"><span class="dot"></span>Phases · DR-248</div>
+          <div class="phases">
+            <div class="phase next"><div class="pn">01</div><div><div class="pt">Research</div><div class="pd">Context, stakeholder interviews, baseline funnel data.</div></div><span class="ps">Up next</span></div>
+            <div class="phase"><div class="pn">02</div><div><div class="pt">Structure</div><div class="pd">IA, primary flows, decision points.</div></div><span class="ps">Queued</span></div>
+            <div class="phase"><div class="pn">03</div><div><div class="pt">Design</div><div class="pd">Wireframes → hi-fi mocks → polish.</div></div><span class="ps">Queued</span></div>
+            <div class="phase"><div class="pn">04</div><div><div class="pt">Validate</div><div class="pd">Usability test, internal review, PM signoff.</div></div><span class="ps">Queued</span></div>
+            <div class="phase"><div class="pn">05</div><div><div class="pt">Delivery</div><div class="pd">Specs, asset export, dev handoff.</div></div><span class="ps">Queued</span></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </div><!-- /.canvas -->
+  <div class="vignette"></div>
+</div><!-- /.viewport -->
+
+<script>
+  const canvas = document.getElementById('canvas');
+
+  // Build targets with viewport-responsive zoom scale
+  function buildTargets() {
+    const vw = window.innerWidth;
+    // Ensure zoomed node fits within viewport: max scale so 280px node ≤ 88vw
+    const zoom = Math.min(1.55, (vw * 0.88) / 280);
+    const zoomFocal = Math.min(1.35, (vw * 0.88) / 340);
+    return {
+      overview: { cx: 800,  cy: 640, scale: null },
+      sources:  { cx: 450,  cy: 478, scale: zoom },
+      intake:   { cx: 450,  cy: 755, scale: zoom },
+      ai:       { cx: 800,  cy: 478, scale: zoomFocal },
+      tracking: { cx: 800,  cy: 755, scale: zoom },
+      human:    { cx: 1200, cy: 478, scale: zoom },
+      workflow: { cx: 800,  cy: 962, scale: zoom },
+    };
+  }
+
+  let TARGETS = buildTargets();
+  let current = 'overview';
+
+  function applyTransform() {
+    const t = TARGETS[current];
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    if (!vw || !vh) return;
+    // On small screens use a smaller effective canvas so overview scale is larger → text readable
+    const effW = vw < 640 ? 800 : 1600;
+    const effH = vh < 500 ? 560 : 1100;
+    const fit = Math.min(vw / effW, vh / effH) * 0.92;
+    const s = t.scale ?? fit;
+    const tx = vw / 2 - t.cx * s;
+    const ty = vh / 2 - t.cy * s;
+    canvas.style.transform = `translate(${tx}px,${ty}px) scale(${s})`;
+  }
+
+  function setFocus(id) {
+    if (!TARGETS[id]) id = 'overview';
+    current = id;
+    document.body.classList.toggle('detail-mode', id !== 'overview');
+    applyTransform();
+    document.querySelectorAll('.node').forEach(n => n.classList.toggle('active', n.dataset.node === id));
+  }
+
+  // Click to zoom in
+  document.querySelectorAll('.node').forEach(n => {
+    n.addEventListener('click', e => { e.stopPropagation(); if (current !== n.dataset.node) setFocus(n.dataset.node); });
+  });
+  document.querySelector('.viewport').addEventListener('click', e => {
+    if (e.target.closest('.node,.chip-row,.plaque')) return;
+    setFocus('overview');
+  });
+  window.addEventListener('keydown', e => {
+    const ORDER = ['overview','sources','intake','ai','tracking','human','workflow'];
+    if (e.key === 'Escape') { setFocus('overview'); return; }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { const i = ORDER.indexOf(current); setFocus(ORDER[(i+1)%ORDER.length]); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { const i = ORDER.indexOf(current); setFocus(ORDER[(i-1+ORDER.length)%ORDER.length]); }
+  });
+
+  // Scroll-driven: receive postMessage from parent
+  window.addEventListener('message', e => {
+    if (e.data?.type === 'setFocus') setFocus(e.data.id);
+  });
+
+  // Forward wheel events to parent so parent scroll stays in control
+  window.addEventListener('wheel', function(e) {
+    try { window.parent.postMessage({ type: 'wheel', dy: e.deltaY }, '*'); } catch (_) {}
+  }, { passive: true });
+
+  window.addEventListener('resize', function() { TARGETS = buildTargets(); applyTransform(); });
+  window.addEventListener('load', applyTransform);
+  if ('ResizeObserver' in window) new ResizeObserver(applyTransform).observe(document.documentElement);
+  let tries = 0;
+  const iv = setInterval(() => { applyTransform(); if ((window.innerWidth && window.innerHeight) || ++tries > 30) clearInterval(iv); }, 50);
+  applyTransform();
+</script>
+</body>
+</html>

@@ -1,0 +1,1805 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AI-Assisted Design Intake System — Concept Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --a1: #B58BFF; --a2: #FF7BC8; --a3: #7DB8FF; --a4: #7BE3B5; --a5: #FFC97B;
+    --bg: #050409;
+    --ink: #ECE9F5;
+    --ink-dim: #9A93B0;
+    --ink-mute: #6A6580;
+    --ink-faint: #4A4660;
+    --line: rgba(255,255,255,0.07);
+    --line-strong: rgba(255,255,255,0.14);
+    --glow-focal: 0.4;
+    --glow-human: 0.3;
+    --glow-conn: 1.0;
+  }
+  body.palette-violet  { --a1:#B58BFF; --a2:#FF7BC8; --a3:#7DB8FF; }
+  body.palette-aurora  { --a1:#6EE8E8; --a2:#7BE3B5; --a3:#B58BFF; }
+  body.palette-sunset  { --a1:#FFC97B; --a2:#FF7BC8; --a3:#B58BFF; }
+  body.palette-mono    { --a1:#D9D4E8; --a2:#A8A2BD; --a3:#7B7691; --a4:#A8A2BD; }
+  body.glow-subtle    { --glow-focal: 0.18; --glow-human: 0.14; --glow-conn: 0.5; }
+  body.glow-balanced  { --glow-focal: 0.40; --glow-human: 0.30; --glow-conn: 1.0; }
+  body.glow-dramatic  { --glow-focal: 0.65; --glow-human: 0.50; --glow-conn: 1.4; }
+  body.conn-solid  .conns path.flow { stroke-dasharray: none; }
+  body.conn-dashed .conns path.flow { stroke-dasharray: 4 9; }
+  body.conn-dotted .conns path.flow { stroke-dasharray: 1 9; stroke-linecap: round; }
+  body.no-particles .particle { display: none; }
+  body.no-labels    .conn-label { display: none; }
+  body.no-plaque    .plaque { display: none; }
+  body.no-ghosts    .ghost-type { display: none; }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #000; color: var(--ink);
+    overflow: hidden;
+    height: 100%;
+    font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01","cv11";
+  }
+
+  .viewport {
+    position: fixed; inset: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(1200px 800px at 30% 20%, color-mix(in oklab, var(--a1) 22%, transparent), transparent 60%),
+      radial-gradient(1100px 700px at 75% 80%, color-mix(in oklab, var(--a2) 18%, transparent), transparent 65%),
+      radial-gradient(1000px 700px at 92% 15%, color-mix(in oklab, var(--a3) 16%, transparent), transparent 60%),
+      radial-gradient(900px 700px at 12% 90%, color-mix(in oklab, var(--a4) 10%, transparent), transparent 65%),
+      var(--bg);
+  }
+  .grid-bg {
+    position: absolute; inset: -20%;
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 96px 96px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 30%, transparent 80%);
+    pointer-events: none;
+  }
+  .grain {
+    position: absolute; inset: 0;
+    opacity: 0.07; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+  }
+  .vignette {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 80% 65% at 50% 50%, transparent 50%, rgba(0,0,0,0.6) 100%);
+  }
+
+  /* Canvas */
+  .canvas {
+    position: absolute;
+    width: 3200px; height: 2000px;
+    top: 0; left: 0;
+    transform-origin: 0 0;
+    transition: transform 1100ms cubic-bezier(.65,.0,.15,1);
+    will-change: transform;
+  }
+  .conns {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    transition: opacity .5s;
+  }
+  .canvas-title, .ghost-type, .chip-row, .plaque { transition: opacity .5s; }
+
+  /* ─── NODE base ─── */
+  .node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    padding: 22px 26px 22px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
+    border: 1px solid var(--line-strong);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    width: 320px;
+    cursor: pointer;
+    z-index: 1;
+    transition:
+      width .6s cubic-bezier(.2,.7,.2,1),
+      border-color .3s, box-shadow .4s, background .3s, opacity .4s;
+    box-shadow:
+      0 30px 80px -20px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .node::before {
+    content: ""; position: absolute; top: 0; left: 12%; right: 12%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.32), transparent);
+  }
+  .node:hover {
+    border-color: rgba(255,255,255,0.22);
+    box-shadow:
+      0 40px 100px -20px rgba(0,0,0,0.7),
+      0 0 60px -10px color-mix(in oklab, var(--a1) 35%, transparent),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  .node .step-num {
+    position: absolute;
+    top: -7px; left: 18px;
+    padding: 2px 7px;
+    font-family: "Geist Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    color: var(--ink-mute);
+    background: rgba(12, 9, 18, 0.85);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    backdrop-filter: blur(8px);
+    opacity: 0.85;
+  }
+  .node .step-num em { font-style: normal; color: var(--ink-dim); font-weight: 500; }
+
+  .node-head {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 10px;
+  }
+  .node .glyph {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--line-strong);
+    display: grid; place-items: center;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  .node h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.018em;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+
+  /* ─── TWO-LEVEL: compact vs detail ─── */
+  .node-compact, .node-detail {
+    transition: opacity .35s ease, max-height .6s cubic-bezier(.4,0,.2,1);
+    overflow: hidden;
+  }
+  .node-compact { opacity: 1; max-height: 200px; }
+  .node-detail  { opacity: 0; max-height: 0; pointer-events: none; }
+  .node.active .node-compact { opacity: 0; max-height: 0; }
+  .node.active .node-detail  { opacity: 1; max-height: 1400px; pointer-events: auto; }
+
+  .node-compact .subtitle {
+    margin: 2px 0 0;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink-dim);
+    letter-spacing: -0.005em;
+  }
+
+  /* Active node sizes */
+  .node.active {
+    width: 540px;
+    z-index: 10;
+    border-color: rgba(255,255,255,0.28);
+  }
+  .node.focal { width: 380px; }
+  .node.focal.active { width: 620px; }
+  .node.workflow { width: 460px; }
+  .node.workflow.active { width: 560px; }
+  .node.human.active { width: 540px; }
+
+  /* Detail mode: fade everything else */
+  body.detail-mode .node:not(.active) {
+    opacity: 0.35;
+    filter: saturate(0.7);
+  }
+  body.detail-mode .node:not(.active):hover {
+    opacity: 0.75; filter: none;
+  }
+  body.detail-mode .chip-row,
+  body.detail-mode .plaque { opacity: 0.18; }
+  body.detail-mode .canvas-title { opacity: 0.25; }
+  body.detail-mode .ghost-type { opacity: 0.5; }
+  body.detail-mode .conns { opacity: 0.35; }
+
+  /* AI Brief — FOCAL */
+  .node.focal {
+    padding: 32px 32px 28px;
+    background:
+      radial-gradient(700px 420px at 60% 0%, color-mix(in oklab, var(--a1) 24%, transparent), transparent 65%),
+      linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    border-color: color-mix(in oklab, var(--a1) 32%, transparent);
+    box-shadow:
+      0 60px 140px -20px rgba(0,0,0,0.7),
+      0 0 0 1px color-mix(in oklab, var(--a1) 10%, transparent),
+      0 0 220px -20px color-mix(in oklab, var(--a1) calc(100% * var(--glow-focal)), transparent),
+      0 0 360px -40px color-mix(in oklab, var(--a2) calc(100% * var(--glow-focal) * 0.75), transparent),
+      inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .node.focal::before {
+    background: linear-gradient(90deg, transparent, var(--a2), var(--a1), transparent);
+    opacity: 0.5;
+  }
+  .node.focal .glyph {
+    background: linear-gradient(135deg,
+      color-mix(in oklab, var(--a1) 32%, transparent),
+      color-mix(in oklab, var(--a2) 22%, transparent));
+    border-color: color-mix(in oklab, var(--a1) 42%, transparent);
+    color: #FFF;
+    width: 42px; height: 42px;
+  }
+  .node.focal h3 { font-size: 26px; }
+  .node.focal .focal-badge {
+    position: absolute;
+    top: -13px; right: 22px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--a1), var(--a2));
+    color: #1a0a20;
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+    box-shadow: 0 10px 30px -6px color-mix(in oklab, var(--a2) 50%, transparent);
+    white-space: nowrap;
+  }
+  .node.focal .focal-badge::before {
+    content: ""; width: 5px; height: 5px; border-radius: 50%;
+    background: #1a0a20;
+  }
+
+  /* Human Review */
+  .node.human {
+    background:
+      radial-gradient(460px 280px at 70% 0%, color-mix(in oklab, var(--a4) 20%, transparent), transparent 65%),
+      radial-gradient(280px 200px at 30% 100%, rgba(255,255,255,0.06), transparent 65%),
+      linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015));
+    border-color: color-mix(in oklab, var(--a4) 30%, transparent);
+    box-shadow:
+      0 40px 100px -20px rgba(0,0,0,0.7),
+      0 0 140px -20px color-mix(in oklab, var(--a4) calc(100% * var(--glow-human)), transparent),
+      0 0 80px -10px rgba(255,255,255, calc(0.12 * var(--glow-human) / 0.3)),
+      inset 0 0 0 1px rgba(255,255,255,0.06),
+      inset 0 1px 0 rgba(255,255,255,0.14);
+  }
+  .node.human::before {
+    background: linear-gradient(90deg, transparent, var(--a4), transparent);
+    opacity: 0.5;
+  }
+  .node.human .glyph {
+    background: color-mix(in oklab, var(--a4) 14%, transparent);
+    border-color: color-mix(in oklab, var(--a4) 38%, transparent);
+    color: var(--a4);
+  }
+
+  /* ─── DETAIL PANELS (shared atoms) ─── */
+  .node-detail { display: flex; flex-direction: column; gap: 10px; }
+  .detail-section { display: flex; flex-direction: column; gap: 7px; }
+  .d-label {
+    font-family: "Geist Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .d-label .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--a1);
+    box-shadow: 0 0 8px color-mix(in oklab, var(--a1) 60%, transparent);
+  }
+  .d-label.amber .dot { background: var(--a5); box-shadow: 0 0 8px color-mix(in oklab, var(--a5) 60%, transparent); }
+  .d-label.blue .dot  { background: var(--a3); box-shadow: 0 0 8px color-mix(in oklab, var(--a3) 60%, transparent); }
+  .d-label.green .dot { background: var(--a4); box-shadow: 0 0 8px color-mix(in oklab, var(--a4) 60%, transparent); }
+
+  /* Sources detail — channel rows */
+  .channel-list { display: flex; flex-direction: column; gap: 6px; }
+  .channel {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 12px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--line);
+  }
+  .channel .ch-icon {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    background: color-mix(in oklab, var(--a1) 14%, transparent);
+    border: 1px solid color-mix(in oklab, var(--a1) 26%, transparent);
+    display: grid; place-items: center;
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    color: var(--a1);
+    font-weight: 500;
+  }
+  .channel .ch-body {
+    min-width: 0;
+  }
+  .channel .ch-name {
+    font-size: 12.5px; color: var(--ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .channel .ch-snippet {
+    font-size: 11.5px; color: var(--ink-dim);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+  .channel .ch-time {
+    font-family: "Geist Mono", monospace;
+    font-size: 10.5px;
+    color: var(--ink-mute);
+  }
+
+  /* Intake detail — mini form */
+  .form-mini { display: flex; flex-direction: column; gap: 9px; }
+  .form-mini .field { display: flex; flex-direction: column; gap: 4px; }
+  .form-mini .field label {
+    font-family: "Geist Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .form-mini .field .val {
+    padding: 9px 12px;
+    border-radius: 7px;
+    background: color-mix(in oklab, var(--a1) 6%, transparent);
+    border: 1px solid color-mix(in oklab, var(--a1) 20%, transparent);
+    font-size: 12.5px;
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: space-between;
+    white-space: nowrap; overflow: hidden;
+  }
+  .form-mini .field .val > span:first-child {
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .form-mini .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .form-status {
+    margin-top: 4px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--a4) 8%, transparent);
+    border: 1px solid color-mix(in oklab, var(--a4) 26%, transparent);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    color: var(--a4);
+    letter-spacing: 0.05em;
+  }
+  .form-status .bar { display: flex; gap: 3px; }
+  .form-status .pdot {
+    width: 12px; height: 3px; border-radius: 2px;
+    background: color-mix(in oklab, var(--a4) 70%, transparent);
+  }
+  .priority-pill {
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: color-mix(in oklab, var(--a5) 14%, transparent);
+    border: 1px solid color-mix(in oklab, var(--a5) 30%, transparent);
+    color: var(--a5);
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+  }
+
+  /* AI Brief detail */
+  .ai-summary {
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--a1) 6%, transparent);
+    border: 1px solid color-mix(in oklab, var(--a1) 22%, transparent);
+  }
+  .ai-summary p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .ai-summary p .hl {
+    background: linear-gradient(180deg, transparent 60%, color-mix(in oklab, var(--a2) 25%, transparent) 60%);
+  }
+  .ai-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ai-cell {
+    padding: 10px 12px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--line);
+  }
+  .ai-cell .vv {
+    margin-top: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ai-cell .conf {
+    margin-left: auto;
+    font-family: "Geist Mono", monospace;
+    font-size: 9.5px;
+    color: var(--ink-mute);
+  }
+  .badge {
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-family: "Geist Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+  }
+  .badge.violet {
+    background: color-mix(in oklab, var(--a1) 16%, transparent);
+    border: 1px solid color-mix(in oklab, var(--a1) 32%, transparent);
+    color: var(--a1);
+  }
+  .badge.amber {
+    background: color-mix(in oklab, var(--a5) 14%, transparent);
+    border: 1px solid color-mix(in oklab, var(--a5) 30%, transparent);
+    color: var(--a5);
+  }
+  .ai-block {
+    padding: 11px 13px;
+    border-radius: 9px;
+  }
+  .ai-block.missing {
+    background: color-mix(in oklab, var(--a5) 6%, transparent);
+    border: 1px solid color-mix(in oklab, var(--a5) 22%, transparent);
+  }
+  .ai-block.questions {
+    background: color-mix(in oklab, var(--a3) 5%, transparent);
+    border: 1px solid color-mix(in oklab, var(--a3) 22%, transparent);
+  }
+  .ai-block.direction {
+    background: color-mix(in oklab, var(--a1) 5%, transparent);
+    border: 1px solid color-mix(in oklab, var(--a1) 22%, transparent);
+  }
+  .ai-block ul, .ai-block ol {
+    margin: 8px 0 0; padding: 0;
+    list-style: none;
+    display: flex; flex-direction: column; gap: 5px;
+    counter-reset: q;
+  }
+  .ai-block ul li, .ai-block ol li {
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    line-height: 1.4;
+    display: flex; gap: 9px;
+  }
+  .ai-block ul li::before {
+    content: ""; width: 12px; height: 1px;
+    margin-top: 9px;
+    background: var(--ink-faint);
+    flex-shrink: 0;
+  }
+  .ai-block ol li {
+    counter-increment: q;
+    color: var(--ink);
+  }
+  .ai-block ol li::before {
+    content: counter(q, decimal-leading-zero);
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    color: var(--a3);
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+  .ai-block.direction p {
+    margin: 8px 0 0;
+    font-size: 12.5px; color: var(--ink);
+    line-height: 1.5;
+  }
+
+  /* Tracking detail — mini Sheets */
+  .sheet {
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .sheet-tabs {
+    display: flex; gap: 0;
+    padding: 4px;
+    background: rgba(255,255,255,0.025);
+    border-bottom: 1px solid var(--line);
+  }
+  .sheet-tabs .tab {
+    padding: 5px 10px;
+    font-family: "Geist Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    color: var(--ink-mute);
+    border-radius: 5px;
+    cursor: default;
+  }
+  .sheet-tabs .tab.active {
+    color: var(--ink);
+    background: rgba(255,255,255,0.05);
+  }
+  .sheet table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+  }
+  .sheet th {
+    text-align: left;
+    padding: 8px 10px;
+    color: var(--ink-mute);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255,255,255,0.012);
+  }
+  .sheet td {
+    padding: 8px 10px;
+    color: var(--ink-dim);
+    border-bottom: 1px solid var(--line);
+  }
+  .sheet tr:last-child td { border-bottom: none; }
+  .sheet tr.current td {
+    background: color-mix(in oklab, var(--a1) 8%, transparent);
+    color: var(--ink);
+  }
+  .sheet tr.current td:first-child {
+    color: var(--a1);
+    font-weight: 500;
+    box-shadow: inset 2px 0 0 var(--a1);
+  }
+  .st {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+  .st.active { background: color-mix(in oklab, var(--a3) 14%, transparent); color: var(--a3); }
+  .st.review { background: color-mix(in oklab, var(--a5) 12%, transparent); color: var(--a5); }
+  .st.done   { background: color-mix(in oklab, var(--a4) 12%, transparent); color: var(--a4); }
+  .st.queue  { background: rgba(255,255,255,0.05); color: var(--ink-mute); }
+  .sheet-foot {
+    padding: 7px 10px;
+    background: rgba(255,255,255,0.012);
+    border-top: 1px solid var(--line);
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    letter-spacing: 0.06em;
+    display: flex; justify-content: space-between;
+  }
+
+  /* Human Review detail */
+  .review-grid { display: flex; flex-direction: column; gap: 6px; }
+  .rrow {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--line);
+  }
+  .rrow .rl {
+    font-family: "Geist Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    padding-top: 2px;
+  }
+  .rrow .rv {
+    font-size: 12.5px;
+    color: var(--ink);
+    line-height: 1.45;
+  }
+  .review-quote {
+    padding: 16px 18px;
+    border-radius: 10px;
+    background:
+      radial-gradient(ellipse 80% 100% at 50% 50%, color-mix(in oklab, var(--a4) 8%, transparent), transparent 70%),
+      rgba(255,255,255,0.025);
+    border: 1px solid color-mix(in oklab, var(--a4) 24%, transparent);
+    text-align: center;
+  }
+  .review-quote .ql {
+    font-family: "Geist Mono", monospace;
+    font-size: 9.5px;
+    color: var(--ink-mute);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .review-quote .qq {
+    font-size: 18px;
+    line-height: 1.2;
+    letter-spacing: -0.018em;
+    color: var(--ink);
+  }
+  .review-quote .qq .pivot {
+    background: linear-gradient(135deg, var(--a1), var(--a2));
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+    font-style: italic;
+  }
+
+  /* Workflow detail — phases */
+  .phases { display: flex; flex-direction: column; gap: 6px; }
+  .phase {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--line);
+  }
+  .phase .pn {
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    color: var(--a3);
+    letter-spacing: 0.04em;
+  }
+  .phase .pt {
+    font-size: 13px; color: var(--ink);
+    letter-spacing: -0.012em;
+  }
+  .phase .pd {
+    font-size: 11.5px; color: var(--ink-dim);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .phase .ps {
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    border-radius: 5px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--line);
+  }
+  .phase.next .ps {
+    color: var(--a3);
+    background: color-mix(in oklab, var(--a3) 12%, transparent);
+    border-color: color-mix(in oklab, var(--a3) 28%, transparent);
+  }
+
+  /* ─── Task chips above AI Brief ─── */
+  .chip-row {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    display: flex; align-items: center; gap: 10px;
+    flex-direction: column;
+  }
+  .chip-row .clabel {
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-mute);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .chip-row .clabel::before, .chip-row .clabel::after {
+    content: ""; width: 40px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--line-strong), transparent);
+  }
+  .chip-row .chips { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .orbit-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 14px 9px 12px;
+    border-radius: 999px;
+    background: rgba(20, 15, 30, 0.6);
+    border: 1px solid var(--line-strong);
+    backdrop-filter: blur(14px);
+    font-size: 13px;
+    color: var(--ink);
+    white-space: nowrap;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.6);
+  }
+  .orbit-chip.primary {
+    background: linear-gradient(180deg,
+      color-mix(in oklab, var(--a1) 18%, transparent),
+      color-mix(in oklab, var(--a1) 8%, transparent));
+    border-color: color-mix(in oklab, var(--a1) 36%, transparent);
+    box-shadow:
+      0 10px 30px -10px color-mix(in oklab, var(--a1) 40%, transparent),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .orbit-chip .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--a1), var(--a2));
+    box-shadow: 0 0 8px color-mix(in oklab, var(--a2) 60%, transparent);
+  }
+  .orbit-chip .mn {
+    font-family: "Geist Mono", monospace;
+    font-size: 9.5px;
+    color: var(--ink-mute);
+    letter-spacing: 0.08em;
+    padding-left: 8px;
+    margin-left: 2px;
+    border-left: 1px solid var(--line-strong);
+  }
+  .orbit-chip.primary .mn { color: var(--ink-dim); }
+
+  /* Title */
+  .canvas-title {
+    position: absolute;
+    top: 90px; left: 140px;
+    max-width: 660px;
+    z-index: 4;
+  }
+  .canvas-title .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 5px 12px 5px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: rgba(20, 15, 30, 0.6);
+    backdrop-filter: blur(12px);
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .canvas-title .eyebrow .d {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--a1), var(--a2));
+    box-shadow: 0 0 10px color-mix(in oklab, var(--a2) 60%, transparent);
+  }
+  .canvas-title h1 {
+    margin: 22px 0 14px;
+    font-size: 52px;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .canvas-title h1 .accent {
+    background: linear-gradient(135deg, var(--a1), var(--a2));
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+    font-style: italic;
+    font-weight: 400;
+  }
+  .canvas-title p {
+    margin: 0;
+    color: var(--ink-dim);
+    font-size: 17px;
+    max-width: 540px;
+    line-height: 1.5;
+  }
+
+  /* Ambient mono labels */
+  .ghost-type {
+    position: absolute;
+    font-family: "Geist Mono", monospace;
+    color: var(--ink-faint);
+    font-size: 22px;
+    line-height: 1.7;
+    letter-spacing: 0.08em;
+    user-select: none;
+    pointer-events: none;
+  }
+  .ghost-corner-tl { bottom: 120px; left: 140px; }
+  .ghost-corner-br { top: 110px; right: 160px; text-align: right; }
+
+  /* Operating principle plaque */
+  .plaque {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    padding: 22px 32px;
+    border-radius: 16px;
+    background: rgba(20, 15, 30, 0.65);
+    border: 1px solid var(--line-strong);
+    backdrop-filter: blur(20px);
+    text-align: center;
+    max-width: 520px;
+    z-index: 2;
+  }
+  .plaque .lbl {
+    font-family: "Geist Mono", monospace;
+    font-size: 10.5px;
+    color: var(--ink-mute);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .plaque .q {
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .plaque .q .pivot {
+    background: linear-gradient(135deg, var(--a1), var(--a2));
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+    font-style: italic;
+  }
+  .plaque .q .ddot {
+    display: inline-block;
+    width: 4px; height: 4px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--a1), var(--a2));
+    vertical-align: middle;
+    margin: 0 8px 4px;
+  }
+
+  /* ─── HUD ─── */
+  .hud { position: fixed; z-index: 100; pointer-events: none; }
+  .hud > * { pointer-events: auto; }
+  .hud-top {
+    top: 24px; left: 24px; right: 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: "Geist Mono", monospace;
+    font-size: 12px; color: var(--ink-mute);
+    letter-spacing: 0.06em;
+  }
+  .hud-top .brand {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--ink-dim);
+  }
+  .hud-top .brand .b {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    background: linear-gradient(135deg, var(--a1), var(--a2));
+    display: grid; place-items: center;
+    color: #1a0a20;
+    font-weight: 700;
+    font-size: 11px;
+  }
+  .hud-top .brand .n { color: var(--ink); }
+  .hud-top .status { display: inline-flex; align-items: center; gap: 8px; }
+  .hud-top .status::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--a4); box-shadow: 0 0 10px var(--a4);
+  }
+  .zoom-indicator {
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-mute);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(20, 15, 30, 0.6);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(12px);
+    margin-right: 16px;
+  }
+  .zoom-indicator .lv {
+    color: var(--a1);
+  }
+
+  .hud-bottom {
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; align-items: center; gap: 4px;
+    padding: 8px;
+    border-radius: 14px;
+    background: rgba(15, 12, 22, 0.78);
+    border: 1px solid var(--line-strong);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px -10px rgba(0,0,0,0.5);
+  }
+  .step-btn {
+    appearance: none; background: transparent; border: 0;
+    color: var(--ink-dim);
+    font-family: "Geist Mono", monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    padding: 9px 13px;
+    border-radius: 9px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all .25s;
+    white-space: nowrap;
+  }
+  .step-btn:hover { background: rgba(255,255,255,0.04); color: var(--ink); }
+  .step-btn.active {
+    background: linear-gradient(180deg,
+      color-mix(in oklab, var(--a1) 22%, transparent),
+      color-mix(in oklab, var(--a1) 10%, transparent));
+    border: 1px solid color-mix(in oklab, var(--a1) 36%, transparent);
+    color: var(--ink);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .step-btn .n { font-size: 9.5px; color: var(--ink-mute); }
+  .step-btn.active .n { color: var(--a1); }
+  .step-btn.overview {
+    border-right: 1px solid var(--line);
+    border-radius: 9px 0 0 9px;
+    margin-right: 4px;
+  }
+  .step-btn .dot-c {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+  }
+  .step-btn.active .dot-c {
+    background: linear-gradient(135deg, var(--a1), var(--a2));
+    box-shadow: 0 0 8px color-mix(in oklab, var(--a2) 60%, transparent);
+  }
+
+  .hud-hint {
+    position: fixed;
+    bottom: 92px; left: 50%;
+    transform: translateX(-50%);
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    color: var(--ink-mute);
+    letter-spacing: 0.06em;
+    text-align: center;
+    z-index: 99;
+    opacity: 0.7;
+  }
+  .hud-hint kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 10px;
+  }
+
+  /* Active node ring (only in detail mode for subtle emphasis) */
+  body.detail-mode .node.active::after {
+    content: "";
+    position: absolute; inset: -10px;
+    border-radius: inherit;
+    border: 1px solid rgba(255,255,255,0.14);
+    pointer-events: none;
+    animation: ringP 3s ease-out infinite;
+  }
+  @keyframes ringP {
+    0% { transform: scale(0.99); opacity: 0.6; }
+    100% { transform: scale(1.04); opacity: 0; }
+  }
+
+  /* Connectors and particles */
+  .conns path { transition: stroke-dasharray .3s, opacity .3s; }
+  .particle {
+    fill: var(--a1);
+    filter: drop-shadow(0 0 6px color-mix(in oklab, var(--a1) 75%, transparent));
+  }
+  .particle.pink  { fill: var(--a2); filter: drop-shadow(0 0 6px color-mix(in oklab, var(--a2) 75%, transparent)); }
+  .particle.blue  { fill: var(--a3); filter: drop-shadow(0 0 6px color-mix(in oklab, var(--a3) 75%, transparent)); }
+  .particle.green { fill: var(--a4); filter: drop-shadow(0 0 6px color-mix(in oklab, var(--a4) 75%, transparent)); }
+  .conn-label {
+    fill: var(--ink-mute);
+    font-family: "Geist Mono", monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: lowercase;
+    font-weight: 400;
+  }
+
+  /* Corner ticks */
+  .corner-tick {
+    position: absolute;
+    width: 28px; height: 28px;
+    border: 1px solid var(--line-strong);
+    pointer-events: none;
+  }
+  .corner-tick.tl { border-right: none; border-bottom: none; }
+  .corner-tick.tr { border-left: none; border-bottom: none; }
+  .corner-tick.bl { border-right: none; border-top: none; }
+  .corner-tick.br { border-left: none; border-top: none; }
+
+  /* ─── TWEAKS PANEL ─── */
+  .tweaks {
+    position: fixed;
+    z-index: 200;
+    bottom: 96px; right: 24px;
+    width: 280px;
+    background: rgba(12, 10, 18, 0.92);
+    border: 1px solid var(--line-strong);
+    border-radius: 16px;
+    backdrop-filter: blur(24px) saturate(140%);
+    box-shadow: 0 30px 80px -10px rgba(0,0,0,0.7);
+    color: var(--ink);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: 12.5px;
+  }
+  .tweaks.open { display: flex; }
+  .tweaks-head {
+    padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--line);
+  }
+  .tweaks-head .t {
+    font-family: "Geist Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tweaks-head .t::before {
+    content: ""; width: 6px; height: 6px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--a1), var(--a2));
+    box-shadow: 0 0 8px color-mix(in oklab, var(--a2) 60%, transparent);
+  }
+  .tweaks-close {
+    appearance: none; background: transparent; border: 0;
+    color: var(--ink-dim); cursor: pointer;
+    width: 22px; height: 22px;
+    display: grid; place-items: center;
+    border-radius: 5px;
+    font-size: 16px; line-height: 1;
+  }
+  .tweaks-close:hover { background: rgba(255,255,255,0.06); color: var(--ink); }
+  .tweaks-body {
+    padding: 14px 16px 16px;
+    display: flex; flex-direction: column; gap: 14px;
+    max-height: 60vh; overflow: auto;
+  }
+  .t-section { display: flex; flex-direction: column; gap: 7px; }
+  .t-label {
+    font-family: "Geist Mono", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .t-row { display: flex; gap: 4px; }
+  .t-row .t-opt {
+    flex: 1;
+    appearance: none;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    border-radius: 7px;
+    padding: 7px 8px;
+    font-size: 11px;
+    font-family: "Geist", sans-serif;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .t-row .t-opt:hover { background: rgba(255,255,255,0.05); color: var(--ink); }
+  .t-row .t-opt.on {
+    background: linear-gradient(180deg,
+      color-mix(in oklab, var(--a1) 20%, transparent),
+      color-mix(in oklab, var(--a1) 8%, transparent));
+    border-color: color-mix(in oklab, var(--a1) 36%, transparent);
+    color: var(--ink);
+  }
+  .t-row .t-opt.swatch {
+    padding: 0; height: 32px; position: relative; overflow: hidden;
+  }
+  .t-row .t-opt.swatch::before {
+    content: "";
+    position: absolute; inset: 4px;
+    border-radius: 4px;
+    background: var(--sw, linear-gradient(135deg, #B58BFF, #FF7BC8));
+  }
+  .t-row .t-opt.swatch.on { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18); }
+  .t-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .t-toggle:hover { background: rgba(255,255,255,0.04); }
+  .t-toggle .label { color: var(--ink); font-size: 12px; }
+  .t-toggle .switch {
+    width: 30px; height: 17px; border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    position: relative;
+    transition: background .25s;
+  }
+  .t-toggle .switch::after {
+    content: ""; position: absolute;
+    top: 2px; left: 2px;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: var(--ink-dim);
+    transition: all .25s;
+  }
+  .t-toggle.on .switch { background: linear-gradient(90deg, var(--a1), var(--a2)); }
+  .t-toggle.on .switch::after { left: 15px; background: #fff; }
+  .t-foot {
+    padding: 10px 16px;
+    border-top: 1px solid var(--line);
+    font-family: "Geist Mono", monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    letter-spacing: 0.06em;
+    display: flex; justify-content: space-between;
+  }
+  .t-foot a { color: var(--ink-dim); text-decoration: none; cursor: pointer; }
+  .t-foot a:hover { color: var(--ink); }
+</style>
+</head>
+<body class="palette-violet glow-subtle conn-dotted">
+
+<div class="viewport" id="viewport">
+  <div class="grid-bg"></div>
+  <div class="grain"></div>
+
+  <div class="canvas" id="canvas" data-screen-label="01 Intake Concept Map">
+
+    <div class="corner-tick tl" style="top: 60px; left: 60px;"></div>
+    <div class="corner-tick tr" style="top: 60px; right: 60px;"></div>
+    <div class="corner-tick bl" style="bottom: 60px; left: 60px;"></div>
+    <div class="corner-tick br" style="bottom: 60px; right: 60px;"></div>
+
+    <div class="ghost-type ghost-corner-tl">
+      SYS · 02<br>
+      v2.4 · LIVE<br>
+      STACK · MAKE · GEMINI · SHEETS
+    </div>
+    <div class="ghost-type ghost-corner-br">
+      § 03 — SYSTEMS<br>
+      TIM LIN · 2026<br>
+      CONCEPT MAP
+    </div>
+
+    <div class="canvas-title">
+      <span class="eyebrow"><span class="d"></span>How it works · /03</span>
+      <h1>AI-Assisted Design <span class="accent">Intake System</span></h1>
+      <p>Scattered requests from PMs, clients, and chats become structured, prioritized design briefs — before they reach my queue.</p>
+    </div>
+
+    <!-- Connection SVG -->
+    <svg class="conns" viewBox="0 0 3200 2000" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="g-down" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="var(--a3)" stop-opacity="0"/>
+          <stop offset="40%" stop-color="var(--a3)" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="var(--a1)" stop-opacity="0.5"/>
+        </linearGradient>
+        <linearGradient id="g-up-right" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%"  stop-color="var(--a3)" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="var(--a1)" stop-opacity="0.6"/>
+        </linearGradient>
+        <linearGradient id="g-vert-vp" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="var(--a1)" stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="var(--a2)" stop-opacity="0.5"/>
+        </linearGradient>
+        <linearGradient id="g-up-pink-green" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%"  stop-color="var(--a2)" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="var(--a4)" stop-opacity="0.55"/>
+        </linearGradient>
+        <linearGradient id="g-sweep" x1="1" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="var(--a4)" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="var(--a3)" stop-opacity="0.45"/>
+        </linearGradient>
+
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="10" result="b"/>
+          <feMerge>
+            <feMergeNode in="b"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!-- Flow connections -->
+      <path id="p12" class="flow" d="M 700 945 C 620 1100, 620 1190, 700 1280"
+            stroke="url(#g-down)" stroke-width="1" fill="none"
+            opacity="0.7" filter="url(#glow)"/>
+      <path id="p23" class="flow" d="M 860 1335 C 1080 1240, 1220 1020, 1380 890"
+            stroke="url(#g-up-right)" stroke-width="1.2" fill="none"
+            opacity="0.78" filter="url(#glow)"/>
+      <path id="p34" class="flow" d="M 1600 970 C 1680 1100, 1680 1210, 1600 1290"
+            stroke="url(#g-vert-vp)" stroke-width="1.2" fill="none"
+            opacity="0.78" filter="url(#glow)"/>
+      <path id="p45" class="flow" d="M 1760 1335 C 2000 1240, 2160 1020, 2340 890"
+            stroke="url(#g-up-pink-green)" stroke-width="1.1" fill="none"
+            opacity="0.7" filter="url(#glow)"/>
+      <path id="p56" class="flow" d="M 2500 945 C 2560 1380, 2280 1650, 1830 1760"
+            stroke="url(#g-sweep)" stroke-width="1.1" fill="none"
+            opacity="0.7" filter="url(#glow)"/>
+
+      <!-- Soft chip output trails (very subtle) -->
+      <path d="M 1480 760 C 1440 620, 1400 500, 1340 420" stroke="var(--a1)" stroke-width="0.8" fill="none" opacity="0.12" stroke-dasharray="1 6" stroke-linecap="round"/>
+      <path d="M 1560 760 C 1540 620, 1530 500, 1510 420" stroke="var(--a1)" stroke-width="0.8" fill="none" opacity="0.12" stroke-dasharray="1 6" stroke-linecap="round"/>
+      <path d="M 1640 760 C 1660 620, 1670 500, 1690 420" stroke="var(--a1)" stroke-width="0.8" fill="none" opacity="0.12" stroke-dasharray="1 6" stroke-linecap="round"/>
+      <path d="M 1720 760 C 1760 620, 1810 500, 1860 420" stroke="var(--a1)" stroke-width="0.8" fill="none" opacity="0.12" stroke-dasharray="1 6" stroke-linecap="round"/>
+
+      <text class="conn-label" x="580" y="1110" fill-opacity="0.5">capture</text>
+      <text class="conn-label" x="1130" y="1170" fill-opacity="0.55">structure</text>
+      <text class="conn-label" x="1640" y="1140" fill-opacity="0.55">persist</text>
+      <text class="conn-label" x="2000" y="1170" fill-opacity="0.55">escalate</text>
+      <text class="conn-label" x="2180" y="1560" fill-opacity="0.5" transform="rotate(22, 2180, 1560)">route</text>
+
+      <!-- Flowing particles -->
+      <g>
+        <circle class="particle blue" r="4.5"><animateMotion dur="4s" repeatCount="indefinite" rotate="auto"><mpath href="#p12"/></animateMotion></circle>
+        <circle class="particle" r="5"><animateMotion dur="3.6s" repeatCount="indefinite" rotate="auto" begin="0.5s"><mpath href="#p23"/></animateMotion></circle>
+        <circle class="particle pink" r="5"><animateMotion dur="3.4s" repeatCount="indefinite" rotate="auto" begin="1.4s"><mpath href="#p34"/></animateMotion></circle>
+        <circle class="particle green" r="4.5"><animateMotion dur="3.6s" repeatCount="indefinite" rotate="auto" begin="0.2s"><mpath href="#p45"/></animateMotion></circle>
+        <circle class="particle" r="4"><animateMotion dur="6s" repeatCount="indefinite" rotate="auto" begin="0.9s"><mpath href="#p56"/></animateMotion></circle>
+      </g>
+    </svg>
+
+    <!-- Task chips above AI Brief -->
+    <div class="chip-row" style="left: 1600px; top: 400px;">
+      <div class="clabel"><span>Classifies as · Task Type</span></div>
+      <div class="chips">
+        <span class="orbit-chip primary"><span class="dot"></span>Product UI <span class="mn">42%</span></span>
+        <span class="orbit-chip"><span class="dot"></span>Graphic Design <span class="mn">21%</span></span>
+        <span class="orbit-chip"><span class="dot"></span>UX Review <span class="mn">19%</span></span>
+        <span class="orbit-chip"><span class="dot"></span>Research Planning <span class="mn">18%</span></span>
+      </div>
+    </div>
+
+    <!-- ─── 01 · Request Sources ─── -->
+    <article class="node" data-node="sources" style="left: 700px; top: 870px;">
+      <span class="step-num"><em>01</em></span>
+      <div class="node-head">
+        <span class="glyph">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="18" r="2.2"/>
+            <path d="M8.2 6h7.6M6 8.2v7.6M18 8.2v7.6M8.2 18h7.6"/>
+          </svg>
+        </span>
+        <h3>Request Sources</h3>
+      </div>
+      <div class="node-compact">
+        <p class="subtitle">PMs, clients, channels — all into one inbox.</p>
+      </div>
+      <div class="node-detail">
+        <div class="detail-section">
+          <div class="d-label"><span class="dot"></span>Recent inbound</div>
+          <div class="channel-list">
+            <div class="channel">
+              <span class="ch-icon">L</span>
+              <div class="ch-body">
+                <div class="ch-name">LINE · @pm.celine</div>
+                <div class="ch-snippet">Onboarding redesign for the new tier — Jun 17?</div>
+              </div>
+              <span class="ch-time">2m</span>
+            </div>
+            <div class="channel">
+              <span class="ch-icon">E</span>
+              <div class="ch-body">
+                <div class="ch-name">Email · celine.h@firm.co</div>
+                <div class="ch-snippet">Quick question on tier-2 pricing visuals</div>
+              </div>
+              <span class="ch-time">28m</span>
+            </div>
+            <div class="channel">
+              <span class="ch-icon">F</span>
+              <div class="ch-body">
+                <div class="ch-name">Form · Brief intake</div>
+                <div class="ch-snippet">Tier-2 pricing experiment — marketing</div>
+              </div>
+              <span class="ch-time">1h</span>
+            </div>
+            <div class="channel">
+              <span class="ch-icon">S</span>
+              <div class="ch-body">
+                <div class="ch-name">Slack · #design-requests</div>
+                <div class="ch-snippet">Mobile sign-up flow — usability review</div>
+              </div>
+              <span class="ch-time">3h</span>
+            </div>
+            <div class="channel">
+              <span class="ch-icon">M</span>
+              <div class="ch-body">
+                <div class="ch-name">Manual · Kickoff notes</div>
+                <div class="ch-snippet">In-person — Q3 roadmap dependencies</div>
+              </div>
+              <span class="ch-time">1d</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ─── 02 · Intake ─── -->
+    <article class="node" data-node="intake" style="left: 700px; top: 1340px;">
+      <span class="step-num"><em>02</em></span>
+      <div class="node-head">
+        <span class="glyph">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M8 9h8M8 13h8M8 17h5"/>
+          </svg>
+        </span>
+        <h3>Intake</h3>
+      </div>
+      <div class="node-compact">
+        <p class="subtitle">Make collects and structures every field — goals, timeline, priority, contact.</p>
+      </div>
+      <div class="node-detail">
+        <div class="detail-section">
+          <div class="d-label"><span class="dot"></span>Request Form · DR-248</div>
+          <div class="form-mini">
+            <div class="field"><label>Source</label><div class="val"><span>LINE — @pm.celine</span><span style="color:var(--ink-mute);">▾</span></div></div>
+            <div class="field"><label>Project Type</label><div class="val"><span>Product UI · Mobile</span></div></div>
+            <div class="field"><label>Goal</label><div class="val"><span>Redesign onboarding for new pricing tier</span></div></div>
+            <div class="field-row">
+              <div class="field"><label>Timeline</label><div class="val"><span>Jun 03 — Jun 17</span></div></div>
+              <div class="field"><label>Budget</label><div class="val"><span>Internal</span></div></div>
+            </div>
+            <div class="field"><label>Priority</label><div class="val"><span>P1 — Quarterly OKR</span><span class="priority-pill">HIGH</span></div></div>
+            <div class="field"><label>Contact</label><div class="val"><span>celine.h@firm.co</span></div></div>
+            <div class="form-status">
+              <span>Form complete</span>
+              <div class="bar">
+                <div class="pdot"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div><div class="pdot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ─── 03 · AI Brief (CENTER · FOCAL) ─── -->
+    <article class="node focal" data-node="ai" style="left: 1600px; top: 870px;">
+      <span class="focal-badge">GEMINI · DRAFT</span>
+      <span class="step-num"><em>03</em></span>
+      <div class="node-head">
+        <span class="glyph">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3 13.6 8.4 19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z"/>
+            <path d="M19 17l.7 2.3L22 20l-2.3.7L19 23l-.7-2.3L16 20l2.3-.7z"/>
+          </svg>
+        </span>
+        <h3>AI Brief</h3>
+      </div>
+      <div class="node-compact">
+        <p class="subtitle">Gemini summarizes the request, classifies the task type, and flags missing context I'd otherwise chase down.</p>
+      </div>
+      <div class="node-detail">
+        <div class="ai-summary">
+          <div class="d-label"><span class="dot"></span>Summary</div>
+          <p>Redesign the <span class="hl">first-run onboarding</span> to introduce a new pricing tier without disrupting the existing free-to-paid funnel. PM signals a Q3 dependency — ship before <span class="hl">Jun 17</span>.</p>
+        </div>
+        <div class="ai-row">
+          <div class="ai-cell">
+            <div class="d-label"><span class="dot"></span>Task Type</div>
+            <div class="vv">
+              <span class="badge violet">Product UI</span>
+              <span class="conf">conf · 0.92</span>
+            </div>
+          </div>
+          <div class="ai-cell">
+            <div class="d-label amber"><span class="dot"></span>Priority</div>
+            <div class="vv">
+              <span class="badge amber">P1 · HIGH</span>
+              <span class="conf">conf · 0.87</span>
+            </div>
+          </div>
+        </div>
+        <div class="ai-block missing">
+          <div class="d-label amber"><span class="dot"></span>Missing Context</div>
+          <ul>
+            <li>No success metric defined (activation? conversion?)</li>
+            <li>Pricing tier copy not yet finalized by marketing</li>
+            <li>Analytics access for the current funnel</li>
+          </ul>
+        </div>
+        <div class="ai-block questions">
+          <div class="d-label blue"><span class="dot"></span>Suggested Questions</div>
+          <ol>
+            <li>What's the target lift on tier-2 conversion?</li>
+            <li>Are existing free users grandfathered in?</li>
+            <li>Is the iOS / Android rollout simultaneous?</li>
+          </ol>
+        </div>
+        <div class="ai-block direction">
+          <div class="d-label"><span class="dot"></span>Initial Direction</div>
+          <p>Augment the existing onboarding with a single tier-intro screen and a light upsell at activation, rather than forking the flow. Lower risk, faster ship.</p>
+        </div>
+      </div>
+    </article>
+
+    <!-- ─── 04 · Tracking ─── -->
+    <article class="node" data-node="tracking" style="left: 1600px; top: 1340px;">
+      <span class="step-num"><em>04</em></span>
+      <div class="node-head">
+        <span class="glyph">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="4.5" width="17" height="15" rx="1.8"/><path d="M3.5 9.5h17M9 4.5v15M14.5 4.5v15"/>
+          </svg>
+        </span>
+        <h3>Tracking</h3>
+      </div>
+      <div class="node-compact">
+        <p class="subtitle">Each structured brief is logged with a stable record ID.</p>
+      </div>
+      <div class="node-detail">
+        <div class="detail-section">
+          <div class="d-label"><span class="dot"></span>Sheets · Design Requests</div>
+          <div class="sheet">
+            <div class="sheet-tabs">
+              <span class="tab active">Tracker</span>
+              <span class="tab">Backlog</span>
+              <span class="tab">Archive</span>
+            </div>
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Src</th><th>Type</th><th>Pri</th><th>Status</th><th>Owner</th></tr>
+              </thead>
+              <tbody>
+                <tr class="current">
+                  <td>DR-248</td><td>LINE</td><td>Product UI</td><td>P1</td><td><span class="st active">Active</span></td><td>TL</td>
+                </tr>
+                <tr>
+                  <td>DR-247</td><td>Form</td><td>Graphic</td><td>P2</td><td><span class="st review">Review</span></td><td>TL</td>
+                </tr>
+                <tr>
+                  <td>DR-246</td><td>Email</td><td>UX Review</td><td>P2</td><td><span class="st done">Done</span></td><td>TL</td>
+                </tr>
+                <tr>
+                  <td>DR-245</td><td>LINE</td><td>Research</td><td>P3</td><td><span class="st queue">Backlog</span></td><td>TL</td>
+                </tr>
+                <tr>
+                  <td>DR-244</td><td>Slack</td><td>Product UI</td><td>P1</td><td><span class="st done">Done</span></td><td>TL</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="sheet-foot">
+              <span>5 of 142 records</span>
+              <span>Updated · 2m ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ─── 05 · Human Review ─── -->
+    <article class="node human" data-node="human" style="left: 2500px; top: 870px;">
+      <span class="step-num"><em>05</em></span>
+      <div class="node-head">
+        <span class="glyph">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5"/>
+          </svg>
+        </span>
+        <h3>Human Review</h3>
+      </div>
+      <div class="node-compact">
+        <p class="subtitle">I judge priority, strategy, risks, and next step.</p>
+      </div>
+      <div class="node-detail">
+        <div class="detail-section">
+          <div class="d-label green"><span class="dot"></span>Assessment · DR-248</div>
+          <div class="review-grid">
+            <div class="rrow">
+              <div class="rl">Priority</div>
+              <div class="rv">P1 — ship before Jun 17 to unblock pricing launch.</div>
+            </div>
+            <div class="rrow">
+              <div class="rl">Strategy</div>
+              <div class="rv">Augment the existing onboarding rather than fork; smaller surface, faster ship.</div>
+            </div>
+            <div class="rrow">
+              <div class="rl">Risks</div>
+              <div class="rv">Pricing copy unfinalized; analytics ungated; mixed cohort behaviour.</div>
+            </div>
+            <div class="rrow">
+              <div class="rl">Next step</div>
+              <div class="rv">30-min kickoff w/ PM; analytics access; baseline funnel screenshot.</div>
+            </div>
+          </div>
+        </div>
+        <div class="review-quote">
+          <div class="ql">Operating Principle</div>
+          <div class="qq">AI handles <span class="pivot">structure</span>. I handle <span class="pivot">judgment</span>.</div>
+        </div>
+      </div>
+    </article>
+
+    <!-- Operating principle plaque (overview only) -->
+    <div class="plaque" style="left: 2380px; top: 1340px;">
+      <div class="lbl">Operating Principle</div>
+      <div class="q">AI handles <span class="pivot">structure</span>.<span class="ddot"></span>I handle <span class="pivot">judgment</span>.</div>
+    </div>
+
+    <!-- ─── 06 · Design Workflow ─── -->
+    <article class="node workflow" data-node="workflow" style="left: 1600px; top: 1760px;">
+      <span class="step-num"><em>06</em></span>
+      <div class="node-head">
+        <span class="glyph">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12h4l2-6 4 12 2-6h4"/>
+          </svg>
+        </span>
+        <h3>Design Workflow</h3>
+      </div>
+      <div class="node-compact">
+        <p class="subtitle">Research → Structure → Design → Validate → Delivery.</p>
+      </div>
+      <div class="node-detail">
+        <div class="detail-section">
+          <div class="d-label blue"><span class="dot"></span>Phases · DR-248</div>
+          <div class="phases">
+            <div class="phase next">
+              <div class="pn">01</div>
+              <div>
+                <div class="pt">Research</div>
+                <div class="pd">Context, stakeholder interviews, baseline funnel data.</div>
+              </div>
+              <span class="ps">Up next</span>
+            </div>
+            <div class="phase">
+              <div class="pn">02</div>
+              <div>
+                <div class="pt">Structure</div>
+                <div class="pd">IA, primary flows, decision points.</div>
+              </div>
+              <span class="ps">Queued</span>
+            </div>
+            <div class="phase">
+              <div class="pn">03</div>
+              <div>
+                <div class="pt">Design</div>
+                <div class="pd">Wireframes → hi-fi mocks → polish.</div>
+              </div>
+              <span class="ps">Queued</span>
+            </div>
+            <div class="phase">
+              <div class="pn">04</div>
+              <div>
+                <div class="pt">Validate</div>
+                <div class="pd">Usability test, internal review, PM signoff.</div>
+              </div>
+              <span class="ps">Queued</span>
+            </div>
+            <div class="phase">
+              <div class="pn">05</div>
+              <div>
+                <div class="pt">Delivery</div>
+                <div class="pd">Specs, asset export, dev handoff.</div>
+              </div>
+              <span class="ps">Queued</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </div><!-- /.canvas -->
+
+  <div class="vignette"></div>
+</div><!-- /.viewport -->
+
+<!-- HUD top -->
+<div class="hud hud-top">
+  <div class="brand">
+    <span class="b">T</span>
+    <span class="n">TimLin · Design</span>
+    <span style="color: var(--ink-faint);">/</span>
+    <span>systems</span>
+    <span style="color: var(--ink-faint);">/</span>
+    <span>intake</span>
+  </div>
+  <div>
+    <span class="zoom-indicator" id="zoom-ind">ZOOM · <span class="lv" id="zoom-lv">L1 OVERVIEW</span></span>
+    <span class="status">SYSTEM · LIVE · v2.4</span>
+  </div>
+</div>
+
+<!-- HUD step nav -->
+<div class="hud hud-bottom" id="nav">
+  <button class="step-btn overview active" data-target="overview">
+    <span class="dot-c"></span>Overview
+  </button>
+  <button class="step-btn" data-target="sources"><span class="n">01</span>Sources</button>
+  <button class="step-btn" data-target="intake"><span class="n">02</span>Intake</button>
+  <button class="step-btn" data-target="ai"><span class="n">03</span>AI Brief</button>
+  <button class="step-btn" data-target="tracking"><span class="n">04</span>Tracking</button>
+  <button class="step-btn" data-target="human"><span class="n">05</span>Human Review</button>
+  <button class="step-btn" data-target="workflow"><span class="n">06</span>Workflow</button>
+</div>
+
+<div class="hud-hint">
+  <kbd>←</kbd> <kbd>→</kbd> step · <kbd>Esc</kbd> overview · click any node to open detail
+</div>
+
+<!-- TWEAKS PANEL -->
+<aside class="tweaks" id="tweaks">
+  <div class="tweaks-head">
+    <div class="t">Tweaks</div>
+    <button class="tweaks-close" id="tweaks-close" aria-label="Close">×</button>
+  </div>
+  <div class="tweaks-body">
+    <div class="t-section">
+      <div class="t-label">Palette</div>
+      <div class="t-row" data-key="palette">
+        <button class="t-opt swatch" data-value="violet" style="--sw: linear-gradient(135deg, #B58BFF, #FF7BC8);" title="Violet"></button>
+        <button class="t-opt swatch" data-value="aurora" style="--sw: linear-gradient(135deg, #6EE8E8, #7BE3B5, #B58BFF);" title="Aurora"></button>
+        <button class="t-opt swatch" data-value="sunset" style="--sw: linear-gradient(135deg, #FFC97B, #FF7BC8, #B58BFF);" title="Sunset"></button>
+        <button class="t-opt swatch" data-value="mono"   style="--sw: linear-gradient(135deg, #D9D4E8, #7B7691);" title="Mono"></button>
+      </div>
+    </div>
+    <div class="t-section">
+      <div class="t-label">Glow</div>
+      <div class="t-row" data-key="glow">
+        <button class="t-opt" data-value="subtle">Subtle</button>
+        <button class="t-opt" data-value="balanced">Balanced</button>
+        <button class="t-opt" data-value="dramatic">Dramatic</button>
+      </div>
+    </div>
+    <div class="t-section">
+      <div class="t-label">Connectors</div>
+      <div class="t-row" data-key="connectors">
+        <button class="t-opt" data-value="dashed">Dashed</button>
+        <button class="t-opt" data-value="solid">Solid</button>
+        <button class="t-opt" data-value="dotted">Dotted</button>
+      </div>
+    </div>
+    <div class="t-section">
+      <div class="t-label">Display</div>
+      <div class="t-toggle" data-key="particles"><span class="label">Flow particles</span><span class="switch"></span></div>
+      <div class="t-toggle" data-key="labels"><span class="label">Connector labels</span><span class="switch"></span></div>
+      <div class="t-toggle" data-key="plaque"><span class="label">Operating principle</span><span class="switch"></span></div>
+      <div class="t-toggle" data-key="ghosts"><span class="label">Ambient marks</span><span class="switch"></span></div>
+    </div>
+  </div>
+  <div class="t-foot">
+    <span>LIVE</span>
+    <a id="tweaks-reset">Reset</a>
+  </div>
+</aside>
+
+<script>
+  // ─── Tweak defaults (persisted by host between EDITMODE markers) ───
+  const TWEAKS_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "palette": "violet",
+  "glow": "subtle",
+  "connectors": "dotted",
+  "particles": true,
+  "labels": true,
+  "plaque": true,
+  "ghosts": true
+}/*EDITMODE-END*/;
+  const TWEAKS_INITIAL = Object.assign({}, TWEAKS_DEFAULTS);
+  let TWEAKS = Object.assign({}, TWEAKS_DEFAULTS);
+
+  function applyTweaks(t) {
+    const body = document.body;
+    ['violet','aurora','sunset','mono'].forEach(p => body.classList.toggle('palette-' + p, t.palette === p));
+    ['subtle','balanced','dramatic'].forEach(g => body.classList.toggle('glow-' + g, t.glow === g));
+    ['dashed','solid','dotted'].forEach(c => body.classList.toggle('conn-' + c, t.connectors === c));
+    body.classList.toggle('no-particles', !t.particles);
+    body.classList.toggle('no-labels', !t.labels);
+    body.classList.toggle('no-plaque', !t.plaque);
+    body.classList.toggle('no-ghosts', !t.ghosts);
+    document.querySelectorAll('.t-row').forEach(row => {
+      const key = row.dataset.key;
+      row.querySelectorAll('.t-opt').forEach(b => b.classList.toggle('on', b.dataset.value === t[key]));
+    });
+    document.querySelectorAll('.t-toggle').forEach(tog => {
+      const key = tog.dataset.key;
+      tog.classList.toggle('on', !!t[key]);
+    });
+  }
+  function setTweak(patch) {
+    Object.assign(TWEAKS, patch);
+    applyTweaks(TWEAKS);
+    try { window.parent.postMessage({ type: '__edit_mode_set_keys', edits: patch }, '*'); } catch (e) {}
+  }
+  applyTweaks(TWEAKS);
+
+  document.querySelectorAll('.t-row').forEach(row => {
+    const key = row.dataset.key;
+    row.addEventListener('click', e => {
+      const btn = e.target.closest('.t-opt');
+      if (!btn) return;
+      setTweak({ [key]: btn.dataset.value });
+    });
+  });
+  document.querySelectorAll('.t-toggle').forEach(tog => {
+    const key = tog.dataset.key;
+    tog.addEventListener('click', () => setTweak({ [key]: !TWEAKS[key] }));
+  });
+  document.getElementById('tweaks-reset').addEventListener('click', () => setTweak(TWEAKS_INITIAL));
+
+  // Edit-mode protocol
+  const panel = document.getElementById('tweaks');
+  const closeBtn = document.getElementById('tweaks-close');
+  window.addEventListener('message', (e) => {
+    const d = e.data;
+    if (!d || typeof d !== 'object') return;
+    if (d.type === '__activate_edit_mode') panel.classList.add('open');
+    else if (d.type === '__deactivate_edit_mode') panel.classList.remove('open');
+  });
+  closeBtn.addEventListener('click', () => {
+    panel.classList.remove('open');
+    try { window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*'); } catch (e) {}
+  });
+  try { window.parent.postMessage({ type: '__edit_mode_available' }, '*'); } catch (e) {}
+
+
+  // ─── Two-level zoom controller ───
+  const canvas = document.getElementById('canvas');
+  const nav = document.getElementById('nav');
+  const zoomLvEl = document.getElementById('zoom-lv');
+
+  const TARGETS = {
+    overview:  { cx: 1600, cy: 1100, scale: null, label: 'L1 OVERVIEW' },
+    sources:   { cx: 760,  cy: 870,  scale: 1.2,  label: 'L2 · 01 SOURCES' },
+    intake:    { cx: 760,  cy: 1340, scale: 1.1,  label: 'L2 · 02 INTAKE' },
+    ai:        { cx: 1610, cy: 880,  scale: 0.95, label: 'L2 · 03 AI BRIEF' },
+    tracking:  { cx: 1610, cy: 1340, scale: 1.2,  label: 'L2 · 04 TRACKING' },
+    human:     { cx: 2500, cy: 870,  scale: 1.25, label: 'L2 · 05 HUMAN REVIEW' },
+    workflow:  { cx: 1610, cy: 1760, scale: 1.2,  label: 'L2 · 06 WORKFLOW' },
+  };
+  const ORDER = ['overview','sources','intake','ai','tracking','human','workflow'];
+  let current = 'overview';
+
+  function applyTransform() {
+    const t = TARGETS[current];
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    if (!vw || !vh) return;
+    const fit = Math.min(vw / 3200, vh / 2000) * 0.94;
+    const s = t.scale ?? fit;
+    const tx = vw / 2 - t.cx * s;
+    const ty = vh / 2 - t.cy * s;
+    canvas.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
+  }
+
+  function setFocus(id) {
+    if (!TARGETS[id]) id = 'overview';
+    current = id;
+    document.body.classList.toggle('detail-mode', id !== 'overview');
+    applyTransform();
+    nav.querySelectorAll('.step-btn').forEach(b => b.classList.toggle('active', b.dataset.target === id));
+    document.querySelectorAll('.node').forEach(n => n.classList.toggle('active', n.dataset.node === id));
+    zoomLvEl.textContent = TARGETS[id].label;
+  }
+
+  nav.addEventListener('click', e => {
+    const btn = e.target.closest('.step-btn');
+    if (!btn) return;
+    setFocus(btn.dataset.target);
+  });
+
+  document.querySelectorAll('.node').forEach(n => {
+    n.addEventListener('click', e => {
+      e.stopPropagation();
+      // If already active, do nothing; if not, focus it
+      if (current !== n.dataset.node) setFocus(n.dataset.node);
+    });
+  });
+
+  document.querySelector('.viewport').addEventListener('click', e => {
+    if (e.target.closest('.node, .chip-row, .plaque, .hud, .tweaks')) return;
+    setFocus('overview');
+  });
+
+  window.addEventListener('keydown', e => {
+    if (e.target.closest('.tweaks')) return;
+    if (e.key === 'Escape') { setFocus('overview'); return; }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      const i = ORDER.indexOf(current);
+      setFocus(ORDER[(i + 1) % ORDER.length]);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      const i = ORDER.indexOf(current);
+      setFocus(ORDER[(i - 1 + ORDER.length) % ORDER.length]);
+    }
+  });
+
+  window.addEventListener('resize', applyTransform);
+  window.addEventListener('load', applyTransform);
+  if ('ResizeObserver' in window) new ResizeObserver(applyTransform).observe(document.documentElement);
+
+  let tries = 0;
+  const iv = setInterval(() => {
+    applyTransform();
+    if ((window.innerWidth && window.innerHeight) || ++tries > 30) clearInterval(iv);
+  }, 50);
+  applyTransform();
+</script>
+
+</body>
+</html>
