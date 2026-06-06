@@ -1,6 +1,12 @@
 {
+  "permissions": {
+    "allow": [
+      "Skill(gstack)",
+      "Skill(gstack:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "shadcn"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

@@ -1,0 +1,233 @@
+export const translations = {
+  zh: {
+    // nav
+    nav_home: 'Home',
+    nav_about: 'About',
+    nav_portfolio: 'Portfolio',
+    nav_contact: 'Contact',
+    // hero
+    hero_role: 'UI/UX Designer & Web Developer',
+    hero_desc: '致力於打造兼具美學與功能的數位體驗<br>協助企業推動業務成長並深化用戶互動',
+    // about
+    about_headline:
+      '讓複雜系統變得可被掌控的產品設計師，<br><span class="gradient-text">兼具 3D 互動開發與 AI 工作流整合能力</span>',
+    about_p1: `我的設計核心是<strong>讓高複雜度的系統變得可以被人掌控</strong>。過去五年，我為政府與企業客戶主導後台系統設計，交付成果橫跨 <strong>警政雲端智慧影像分析系統</strong>、<strong>環保局數據管理平台</strong> 與 <strong>醫院醫療管理後台</strong>。面對龐雜的業務邏輯，我慣用 <span class="text-primary">Figma</span> 與 <span class="text-primary">Adobe XD</span> 從零梳理資訊架構，最終轉化為直觀、精準的數位工作環境。`,
+    about_p2: `除了嚴謹的系統思維，我擅長將<strong>沉浸式視覺</strong>注入介面設計。熟練運用 <span class="text-secondary">Blender</span> 與 <span class="text-secondary">Spline</span> 打造 3D 互動網頁體驗，也具備多媒體娛樂產業與商業專案的完整執行經驗——這讓我的設計能在邏輯嚴密的同時，保有視覺上的驚喜感。`,
+    about_p3: `我把 <strong>AI 與自動化</strong>嵌進實際接案流程：當客戶從 LINE 官方帳號或表單送出需求後，Make 會先整理欄位、交由 <span class="text-purple">Gemini</span> 摘要需求與判斷類型，再寫入 <span class="text-purple">Google Sheets</span> 作為追蹤資料庫，最後分流發送 LINE 回覆與 Email 通知。這讓我在正式溝通前就能掌握需求背景、預算、時程與風險，回覆更快，也更精準。`,
+    // tech stack
+    tech_sub: '我不是工程師，但我能讀懂程式、修改邏輯、有效縮短設計與開發之間的溝通距離。',
+    figma_mcp:
+      '<strong>Figma MCP</strong> — 透過 MCP 讓 AI 直接讀取 Figma 設計稿的元件、Token 與標註規格，無需截圖或手動複製。設計稿即時轉為程式碼，一次對齊，省去反覆溝通。',
+    skill_html:
+      '熟悉網頁基礎標籤結構與語意化寫法，能獨立閱讀、修改程式碼，有效銜接設計稿與開發實作。',
+    skill_js:
+      '能讀懂程式邏輯並精準描述問題情境，搭配 AI 工具實現互動功能、動畫效果與資料串接——這個作品集網站的互動邏輯即為實際成果。',
+    skill_css:
+      '具備 Flexbox 與 Tailwind 排版實作能力，能獨立處理 RWD 樣式調整，並理解設計決策對前端渲染的影響。',
+    // design process tabs
+    tab_inhouse: 'In-house',
+    tab_freelance: 'Freelance',
+    ih_name_01: 'Align',
+    ih_desc_01: '與 PM、工程、業務對齊目標與 OKR，確認設計介入的時機與範疇',
+    ih_name_02: 'Research',
+    ih_desc_02: '內部使用者訪談、log 分析、競品研究，找出系統瓶頸與痛點',
+    ih_name_03: 'Structure',
+    ih_desc_03: '梳理資訊架構與操作流程，定義資料層級與頁面邏輯',
+    ih_name_04: 'Design',
+    ih_desc_04: '基於設計系統產出高保真稿，確保元件一致性與開發可行性',
+    ih_name_05: 'Validate',
+    ih_desc_05: '與工程師同步規格、排查邊界情況，上線後追蹤指標回饋設計',
+    ih_name_06: 'Iterate',
+    ih_desc_06: '根據數據與用戶回饋持續優化，推動設計系統演進',
+    fl_name_01: 'Intake',
+    fl_desc_01: '客戶透過 LINE 官方帳號或表單送出需求，系統自動收集專案類型、目標、預算、時程與聯絡資訊',
+    fl_name_02: 'AI Brief',
+    fl_desc_02: 'Make 將需求整理成結構化摘要，交由 Gemini 協助判斷重點、缺口與初步提問方向',
+    fl_name_03: 'Triage',
+    fl_desc_03: '依需求類型自動分流：企業系統、作品集優化、網站製作或其他合作，並建立 Google Sheets 追蹤紀錄',
+    fl_name_04: 'Discovery',
+    fl_desc_04: '帶著已整理好的需求摘要進行初談，快速釐清目標使用者、核心功能、限制條件與成功標準',
+    fl_name_05: 'Proposal',
+    fl_desc_05: '提出設計方向、工作項目、時程與報價，讓客戶清楚知道每一階段會收到什麼成果',
+    fl_name_06: 'Delivery',
+    fl_desc_06: '依里程碑交付 wireframe、高保真設計、互動說明與開發標註，並保留後續追蹤與回覆紀錄',
+    // AI
+    ai_sub: '我不把 AI 當捷徑，而是當作讓設計決策更快、更紮實的協作工具。',
+    ai_gemini_1: '<strong>邏輯生成與轉譯：</strong> 將設計需求轉化為精準的 Prompt，讓 AI 產出初始程式碼架構。',
+    ai_gemini_2: '<strong>智慧除錯：</strong> 遇到程式錯誤時，擅長描述情境引導 AI 快速定位問題。',
+    ai_gemini_3: '<strong>文案撰寫：</strong> 協助撰寫 UX 文案初稿，快速進入評審流程。',
+    ai_rodin_1: '<strong>快速 3D 原型：</strong> 使用 Rodin 將文字概念直接轉化為 3D 模型，數分鐘內完成建模。',
+    ai_rodin_2: '<strong>快速製作 UI 設計：</strong> 運用 Stitch 快速生成多種 UI 設計，低成本進行視覺提案。',
+    ai_rodin_3: '搭配 Spline 匯入，為 Web UI 注入 3D 視覺元素。',
+    ai_stitch_2: '從圖或描述直接產出 Figma 可用的初稿。',
+    ai_stitch_3: '縮短從概念到可評審稿件的時間 60%+。',
+    ai_philosophy:
+      '"AI 處理重複性工作，<br>讓我把注意力放在<br>只有設計師能做的決策上。"',
+    // contact
+    contact_sub: '有專案合作需求？歡迎隨時與我聯繫',
+    line_eyebrow: 'Design Consultation · 免費初次諮詢',
+    line_title: '有設計需求？LINE Bot 會先幫我整理重點',
+    line_desc: '留下專案目標、時程與預算後，系統會建立追蹤紀錄並通知我回覆',
+    line_btn: '加入 LINE 聯繫我',
+    open_for_work: '接案中',
+    open_for_work_sub: '接受全職 / 兼職 / 專案合作洽談',
+    // portfolio
+    p1_title: '新竹縣警察局雲端智慧影像分析系統',
+    p1_desc: '警用街頭監視器影像辨識與監測系統介面設計',
+    p2_title: '新竹縣警察局雲端智慧影像分析系統 App',
+    p2_desc: '以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計',
+    p3_title: '高雄市警察局新世代智慧科技辦案系統',
+    p3_desc: '警用街頭監視器影像辨識與監測系統介面設計',
+    p4_title: '台南市政府警察局智慧簽巡系統',
+    p4_desc: '巡邏員警專用簽到與巡邏紀錄 App 介面設計',
+    p5_title: '新竹市立動物園管理後台',
+    p5_desc: '人流分析與網站管理介面',
+    p6_title: '桃園捷運 App',
+    p6_desc: '桃園捷運 App 最新消息欄位的介面修改',
+    p7_title: '石門水庫網站',
+    p7_desc: '石門水庫網站新增頁面與介面修改',
+    p8_title: 'Love-Two Live App UI',
+    p8_desc: '直播 App 提案與設計',
+    p9_title: '新竹縣環保局網站後台',
+    p9_desc: '環保局網站後台新增頁面與改版',
+    p10_title: '恆春航空站',
+    p10_desc: '航空站網站改版提案',
+    p11_title: '台北醫學大學臨床醫學教學系統',
+    p11_desc: '醫學院學生用學習歷程資訊管理系統改版與介面設計',
+    p12_title: '中央存保 Golden House – 購得好房',
+    p12_desc: '中央存保房貸理財宣傳活動網頁小遊戲',
+    p13_title: 'Super High Tech CNC 模擬器',
+    p13_desc: '結合 React 與 WebGL 的 3D 工具機模擬系統介面',
+  },
+  en: {
+    // nav
+    nav_home: 'Home',
+    nav_about: 'About',
+    nav_portfolio: 'Portfolio',
+    nav_contact: 'Contact',
+    // hero
+    hero_role: 'UI/UX Designer & Web Developer',
+    hero_desc:
+      'Dedicated to creating digital experiences that combine aesthetics and function.<br>Helping businesses drive growth and deepen user engagement.',
+    // about
+    about_headline:
+      'Product designer who tames complex systems —<br><span class="gradient-text">with 3D interactive development and AI workflow integration built in</span>',
+    about_p1: `My design focus is <strong>making high-complexity systems feel in control</strong>. Over the past five years, I've led backend system design for government and enterprise clients — delivering across <strong>Police Cloud Video Analysis Systems</strong>, <strong>Environmental Bureau Data Platforms</strong>, and <strong>Hospital Management Dashboards</strong>. Faced with dense business logic, I use <span class="text-primary">Figma</span> and <span class="text-primary">Adobe XD</span> to untangle information architecture from the ground up — turning it into intuitive, precise digital workspaces.`,
+    about_p2: `Beyond systems thinking, I bring <strong>immersive visuals</strong> into interface design. Proficient in <span class="text-secondary">Blender</span> and <span class="text-secondary">Spline</span> for building 3D interactive web experiences, with a solid background in multimedia entertainment and commercial projects. This combination lets me deliver designs that are both logically rigorous and visually memorable.`,
+    about_p3: `I embed <strong>AI and automation</strong> directly into my freelance workflow. When a client submits a request through LINE or a form, Make structures the fields, asks <span class="text-purple">Gemini</span> to summarize the need and classify the request, saves it to <span class="text-purple">Google Sheets</span>, then routes LINE replies and email notifications. Before the first conversation, I already understand the context, budget, timeline, and risks, so my response is faster and more precise.`,
+    // tech stack
+    tech_sub:
+      "I'm not an engineer — but I can read code, modify logic, and effectively close the communication gap between design and development.",
+    figma_mcp:
+      '<strong>Figma MCP</strong> — I connect AI directly to Figma via MCP, letting it read components, tokens, and specs in real time. No screenshots, no manual handoff — design-to-code in one pass.',
+    skill_html:
+      'Comfortable reading and editing HTML structure; able to bridge design specs and development implementation without relying on a handoff middleman.',
+    skill_js:
+      'Able to read logic, precisely describe problems, and implement interactions and animations with AI assistance — the interactive logic of this portfolio site is a live example of this workflow.',
+    skill_css:
+      'Able to implement responsive layouts with Flexbox and Tailwind, adjust styles independently, and understand how design decisions translate to rendered output.',
+    // design process tabs
+    tab_inhouse: 'In-house',
+    tab_freelance: 'Freelance',
+    ih_name_01: 'Align',
+    ih_desc_01:
+      'Sync with PM, engineering, and business stakeholders to align on OKRs and define the scope and timing of design involvement',
+    ih_name_02: 'Research',
+    ih_desc_02:
+      'Conduct internal user interviews, log analysis, and competitive research to identify system bottlenecks and pain points',
+    ih_name_03: 'Structure',
+    ih_desc_03:
+      'Map information architecture and user flows, define data hierarchy and page logic across the system',
+    ih_name_04: 'Design',
+    ih_desc_04:
+      'Produce high-fidelity designs within the design system, ensuring component consistency and development feasibility',
+    ih_name_05: 'Validate',
+    ih_desc_05:
+      'Sync specs with engineers, resolve edge cases, and track post-launch metrics to feed back into the design process',
+    ih_name_06: 'Iterate',
+    ih_desc_06:
+      'Continuously refine based on data and user feedback, driving design system evolution and long-term quality',
+    fl_name_01: 'Intake',
+    fl_desc_01:
+      'Clients submit requests through LINE or a form, while the system collects project type, goals, budget, timeline, and contact details',
+    fl_name_02: 'AI Brief',
+    fl_desc_02:
+      'Make turns the request into a structured brief, then Gemini helps identify key points, missing context, and follow-up questions',
+    fl_name_03: 'Triage',
+    fl_desc_03:
+      'Requests are routed by type, such as enterprise UI, portfolio improvement, website production, or other collaboration, with a Google Sheets record created',
+    fl_name_04: 'Discovery',
+    fl_desc_04:
+      'I start the first conversation with an organized brief, then clarify users, core features, constraints, and success criteria',
+    fl_name_05: 'Proposal',
+    fl_desc_05:
+      'I propose direction, scope, timeline, and pricing so clients know exactly what each milestone will deliver',
+    fl_name_06: 'Delivery',
+    fl_desc_06:
+      'I deliver wireframes, high-fidelity designs, interaction notes, and dev annotations by milestone, with follow-up records kept in the workflow',
+    // AI
+    ai_sub:
+      "I don't use AI as a shortcut — I use it as a collaborator that makes design decisions faster and more grounded.",
+    ai_gemini_1:
+      '<strong>Logic & Code Generation:</strong> Translating design requirements into precise prompts to generate initial code structures.',
+    ai_gemini_2:
+      '<strong>Intelligent Debugging:</strong> Guiding AI with specific scenarios to quickly identify and fix code issues.',
+    ai_gemini_3:
+      '<strong>UX Copywriting:</strong> Drafting UX copy with AI assistance to accelerate review cycles.',
+    ai_rodin_1:
+      '<strong>Rapid 3D Prototyping:</strong> Utilizing Rodin to transform text-to-3D models in minutes.',
+    ai_rodin_2:
+      '<strong>Rapid UI Iteration:</strong> Using Stitch to generate multiple design variations for efficient visual proposals.',
+    ai_rodin_3: 'Importing into Spline to inject 3D visual elements into Web UI.',
+    ai_stitch_2: 'Generating Figma-ready drafts directly from sketches or descriptions.',
+    ai_stitch_3: 'Shortening concept-to-reviewable draft time by 60%+.',
+    ai_philosophy:
+      '"AI handles repetitive work,<br>so I can focus on<br>the decisions only a designer can make."',
+    // contact
+    contact_sub: 'Have a project in mind? Feel free to contact me.',
+    line_eyebrow: 'Design Consultation · Free first chat',
+    line_title: 'Have a design need? My LINE Bot helps structure it first.',
+    line_desc: 'Share your goal, timeline, and budget; the workflow records it and notifies me to reply.',
+    line_btn: 'Add me on LINE',
+    open_for_work: 'Open for work',
+    open_for_work_sub: 'Available for full-time, part-time, or freelance projects',
+    // portfolio
+    p1_title: 'Hsinchu County Police Cloud Video Analysis System',
+    p1_desc: 'UI design for police street surveillance image recognition and monitoring system',
+    p2_title: 'Hsinchu County Police Video Analysis App',
+    p2_desc: 'Mobile-optimized UI design for police surveillance monitoring system',
+    p3_title: 'Kaohsiung Police Smart Investigation System',
+    p3_desc: 'Next-gen smart technology investigation system interface design',
+    p4_title: 'Tainan Police Smart Patrol System',
+    p4_desc: "App interface design for patrol officers' check-ins and records",
+    p5_title: 'Hsinchu Zoo Management Dashboard',
+    p5_desc: 'Visitor flow analysis and website management interface',
+    p6_title: 'Taoyuan Metro App',
+    p6_desc: 'UI modification for the Latest News section of the MRT App',
+    p7_title: 'Shihmen Reservoir Website',
+    p7_desc: 'New page creation and interface modification for the reservoir website',
+    p8_title: 'Love-Two Live Streaming App UI',
+    p8_desc: 'Proposal and design for a live streaming application',
+    p9_title: 'Hsinchu Environmental Bureau Backend',
+    p9_desc: "New page additions and redesign for the bureau's backend system",
+    p10_title: 'Hengchun Airport Website',
+    p10_desc: 'Website redesign proposal for the airport',
+    p11_title: 'TMU Clinical Teaching System',
+    p11_desc: 'Redesign of the learning portfolio management system for medical students',
+    p12_title: "CDIC Golden House – Good Home Purchase",
+    p12_desc: "Web mini-game for Central Deposit Insurance Corp's mortgage education campaign",
+    p13_title: 'Super High Tech CNC Simulator',
+    p13_desc: '3D machine tool simulation interface using React & WebGL',
+  },
+} as const;
+
+export type Lang = keyof typeof translations;
+export type TranslationKeys = keyof typeof translations['zh'];
+
+export const heroDescTexts: Record<Lang, string[]> = {
+  zh: ['致力於打造兼具美學與功能的數位體驗', '協助企業推動業務成長並深化用戶互動'],
+  en: [
+    'Dedicated to creating digital experiences that combine aesthetics and function.',
+    'Helping businesses drive growth and deepen user engagement.',
+  ],
+};

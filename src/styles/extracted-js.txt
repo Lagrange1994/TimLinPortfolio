@@ -1,0 +1,1818 @@
+// ========== BLOCK 1: Main Script (translations, PROJECTS data, init functions) ==========
+
+  <script>
+    // Prevent browser from auto-restoring scroll on back navigation (we do it manually)
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+    // ── TRANSLATIONS ──
+    const translations = {
+      zh: {
+        // nav
+        nav_home: 'Home', nav_about: 'About', nav_portfolio: 'Portfolio', nav_contact: 'Contact',
+        // hero
+        hero_role: 'UI/UX Designer & Web Developer',
+        hero_desc: '致力於打造兼具美學與功能的數位體驗<br>協助企業推動業務成長並深化用戶互動',
+        // about
+        about_headline: '讓複雜系統變得可被掌控的產品設計師，<br><span class="gradient-text">兼具 3D 互動開發與 AI 工作流整合能力</span>',
+        about_p1: `我的設計核心是<strong>讓高複雜度的系統變得可以被人掌控</strong>。過去五年，我為政府與企業客戶主導後台系統設計，交付成果橫跨 <strong>警政雲端智慧影像分析系統</strong>、<strong>環保局數據管理平台</strong> 與 <strong>醫院醫療管理後台</strong>。面對龐雜的業務邏輯，我慣用 <span class="text-primary">Figma</span> 與 <span class="text-primary">Adobe XD</span> 從零梳理資訊架構，最終轉化為直觀、精準的數位工作環境。`,
+        about_p2: `除了嚴謹的系統思維，我擅長將<strong>沉浸式視覺</strong>注入介面設計。熟練運用 <span class="text-secondary">Blender</span> 與 <span class="text-secondary">Spline</span> 打造 3D 互動網頁體驗，也具備多媒體娛樂產業與商業專案的完整執行經驗——這讓我的設計能在邏輯嚴密的同時，保有視覺上的驚喜感。`,
+        about_p3: `我將 <strong>AI 工具</strong>深度整合進設計流程，而非只是輔助使用。運用 <span class="text-purple">Gemini</span> 進行邏輯發想與快速原型驗證，搭配 <span class="text-purple">Stitch</span> 生成多元視覺提案，以及 <span class="text-purple">Rodin</span> 快速轉化 3D 資產——這套流程讓我的設計交付速度明顯快於傳統方式。技術層面，我具備 <strong>React</strong> 與 <strong>Vue.js</strong> 基礎，能直接與開發者溝通實作細節，減少反覆來回。`,
+        // tech stack
+        tech_sub: '我不是工程師，但我能讀懂程式、修改邏輯、有效縮短設計與開發之間的溝通距離。',
+        figma_mcp: '<strong>Figma MCP</strong> — 透過 MCP 讓 AI 直接讀取 Figma 設計稿的元件、Token 與標註規格，無需截圖或手動複製。設計稿即時轉為程式碼，一次對齊，省去反覆溝通。',
+        // design process tabs
+        tab_inhouse: 'In-house', tab_freelance: 'Freelance',
+        ih_name_01: 'Align', ih_desc_01: '與 PM、工程、業務對齊目標與 OKR，確認設計介入的時機與範疇',
+        ih_name_02: 'Research', ih_desc_02: '內部使用者訪談、log 分析、競品研究，找出系統瓶頸與痛點',
+        ih_name_03: 'Structure', ih_desc_03: '梳理資訊架構與操作流程，定義資料層級與頁面邏輯',
+        ih_name_04: 'Design', ih_desc_04: '基於設計系統產出高保真稿，確保元件一致性與開發可行性',
+        ih_name_05: 'Validate', ih_desc_05: '與工程師同步規格、排查邊界情況，上線後追蹤指標回饋設計',
+        ih_name_06: 'Iterate', ih_desc_06: '根據數據與用戶回饋持續優化，推動設計系統演進',
+        fl_name_01: 'Discovery', fl_desc_01: '深入了解客戶業務目標、目標受眾與現有問題，確認專案範疇與交付物',
+        fl_name_02: 'Proposal', fl_desc_02: '提供設計方向提案與時程規劃，確認報價與里程碑後簽訂合約',
+        fl_name_03: 'Wireframe', fl_desc_03: '低保真線框快速驗證架構與流程邏輯，減少後期高保真的修改成本',
+        fl_name_04: 'Design', fl_desc_04: '高保真視覺設計稿，含品牌色彩、字型與元件規範，分批提交審核',
+        fl_name_05: 'Handoff', fl_desc_05: '輸出 Dev 規格標注、切圖資源與互動說明文件，降低工程溝通成本',
+        fl_name_06: 'Support', fl_desc_06: '上線後提供設計支援與小幅修改，確保交付品質符合預期',
+        // tech stack
+        skill_html: '熟悉網頁基礎標籤結構與語意化寫法，能獨立閱讀、修改程式碼，有效銜接設計稿與開發實作。',
+        skill_js: '能讀懂程式邏輯並精準描述問題情境，搭配 AI 工具實現互動功能、動畫效果與資料串接——這個作品集網站的互動邏輯即為實際成果。',
+        skill_css: '具備 Flexbox 與 Tailwind 排版實作能力，能獨立處理 RWD 樣式調整，並理解設計決策對前端渲染的影響。',
+        // AI
+        ai_sub: '我不把 AI 當捷徑，而是當作讓設計決策更快、更紮實的協作工具。',
+        ai_gemini_1: '<strong>邏輯生成與轉譯：</strong> 將設計需求轉化為精準的 Prompt，讓 AI 產出初始程式碼架構。',
+        ai_gemini_2: '<strong>智慧除錯：</strong> 遇到程式錯誤時，擅長描述情境引導 AI 快速定位問題。',
+        ai_gemini_3: '<strong>文案撰寫：</strong> 協助撰寫 UX 文案初稿，快速進入評審流程。',
+        ai_rodin_2: '<strong>快速製作 UI 設計：</strong> 運用 Stitch 快速生成多種 UI 設計，低成本進行視覺提案。',
+        ai_stitch_2: '從圖或描述直接產出 Figma 可用的初稿。',
+        ai_stitch_3: '縮短從概念到可評審稿件的時間 60%+。',
+        ai_rodin_1: '<strong>快速 3D 原型：</strong> 使用 Rodin 將文字概念直接轉化為 3D 模型，數分鐘內完成建模。',
+        ai_rodin_3: '搭配 Spline 匯入，為 Web UI 注入 3D 視覺元素。',
+        ai_philosophy: '"AI 處理重複性工作，<br>讓我把注意力放在<br>只有設計師能做的決策上。"',
+        // contact
+        contact_sub: '有專案合作需求？歡迎隨時與我聯繫',
+        line_eyebrow: 'Design Consultation · 免費初次諮詢',
+        line_title: '有設計需求？直接找我聊',
+        line_desc: '企業系統 UI、作品集 review、專案報價 — 歡迎透過 LINE 直接聯繫',
+        line_btn: '加入 LINE 聯繫我',
+        open_for_work: '接案中',
+        open_for_work_sub: '接受全職 / 兼職 / 專案合作洽談',
+        // portfolio
+        p1_title: '新竹縣警察局雲端智慧影像分析系統', p1_desc: '警用街頭監視器影像辨識與監測系統介面設計',
+        p2_title: '新竹縣警察局雲端智慧影像分析系統 App', p2_desc: '以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計',
+        p3_title: '高雄市警察局新世代智慧科技辦案系統', p3_desc: '警用街頭監視器影像辨識與監測系統介面設計',
+        p4_title: '台南市政府警察局智慧簽巡系統', p4_desc: '巡邏員警專用簽到與巡邏紀錄 App 介面設計',
+        p5_title: '新竹市立動物園管理後台', p5_desc: '人流分析與網站管理介面',
+        p6_title: '桃園捷運 App', p6_desc: '桃園捷運 App 最新消息欄位的介面修改',
+        p7_title: '石門水庫網站', p7_desc: '石門水庫網站新增頁面與介面修改',
+        p8_title: 'Love-Two Live App UI', p8_desc: '直播 App 提案與設計',
+        p9_title: '新竹縣環保局網站後台', p9_desc: '環保局網站後台新增頁面與改版',
+        p10_title: '恆春航空站', p10_desc: '航空站網站改版提案',
+        p11_title: '台北醫學大學臨床醫學教學系統', p11_desc: '醫學院學生用學習歷程資訊管理系統改版與介面設計',
+        p12_title: '中央存保 Golden House – 購得好房', p12_desc: '中央存保房貸理財宣傳活動網頁小遊戲',
+        p13_title: 'Super High Tech CNC 模擬器', p13_desc: '結合 React 與 WebGL 的 3D 工具機模擬系統介面',
+      },
+      en: {
+        nav_home: 'Home', nav_about: 'About', nav_portfolio: 'Portfolio', nav_contact: 'Contact',
+        hero_role: 'UI/UX Designer & Web Developer',
+        hero_desc: 'Dedicated to creating digital experiences that combine aesthetics and function.<br>Helping businesses drive growth and deepen user engagement.',
+        about_headline: 'Product designer who tames complex systems —<br><span class="gradient-text">with 3D interactive development and AI workflow integration built in</span>',
+        about_p1: `My design focus is <strong>making high-complexity systems feel in control</strong>. Over the past five years, I've led backend system design for government and enterprise clients — delivering across <strong>Police Cloud Video Analysis Systems</strong>, <strong>Environmental Bureau Data Platforms</strong>, and <strong>Hospital Management Dashboards</strong>. Faced with dense business logic, I use <span class="text-primary">Figma</span> and <span class="text-primary">Adobe XD</span> to untangle information architecture from the ground up — turning it into intuitive, precise digital workspaces.`,
+        about_p2: `Beyond systems thinking, I bring <strong>immersive visuals</strong> into interface design. Proficient in <span class="text-secondary">Blender</span> and <span class="text-secondary">Spline</span> for building 3D interactive web experiences, with a solid background in multimedia entertainment and commercial projects. This combination lets me deliver designs that are both logically rigorous and visually memorable.`,
+        about_p3: `I treat <strong>AI tools</strong> as a core part of my design process, not just an add-on. I use <span class="text-purple">Gemini</span> for logic generation and rapid prototyping, <span class="text-purple">Stitch</span> for visual exploration, and <span class="text-purple">Rodin</span> to accelerate 3D asset creation — a workflow that significantly shortens delivery cycles. On the technical side, foundational knowledge of <strong>React</strong> and <strong>Vue.js</strong> lets me communicate implementation details directly with developers and cut down on back-and-forth.`,
+        skill_html: 'Comfortable reading and editing HTML structure; able to bridge design specs and development implementation without relying on a handoff middleman.',
+        skill_js: 'Able to read logic, precisely describe problems, and implement interactions and animations with AI assistance — the interactive logic of this portfolio site is a live example of this workflow.',
+        skill_css: 'Able to implement responsive layouts with Flexbox and Tailwind, adjust styles independently, and understand how design decisions translate to rendered output.',
+        tech_sub: 'I\'m not an engineer — but I can read code, modify logic, and effectively close the communication gap between design and development.',
+        figma_mcp: '<strong>Figma MCP</strong> — I connect AI directly to Figma via MCP, letting it read components, tokens, and specs in real time. No screenshots, no manual handoff — design-to-code in one pass.',
+        // design process tabs
+        tab_inhouse: 'In-house', tab_freelance: 'Freelance',
+        ih_name_01: 'Align', ih_desc_01: 'Sync with PM, engineering, and business stakeholders to align on OKRs and define the scope and timing of design involvement',
+        ih_name_02: 'Research', ih_desc_02: 'Conduct internal user interviews, log analysis, and competitive research to identify system bottlenecks and pain points',
+        ih_name_03: 'Structure', ih_desc_03: 'Map information architecture and user flows, define data hierarchy and page logic across the system',
+        ih_name_04: 'Design', ih_desc_04: 'Produce high-fidelity designs within the design system, ensuring component consistency and development feasibility',
+        ih_name_05: 'Validate', ih_desc_05: 'Sync specs with engineers, resolve edge cases, and track post-launch metrics to feed back into the design process',
+        ih_name_06: 'Iterate', ih_desc_06: 'Continuously refine based on data and user feedback, driving design system evolution and long-term quality',
+        fl_name_01: 'Discovery', fl_desc_01: 'Deep-dive into client business goals, target users, and existing pain points — confirm project scope and deliverables',
+        fl_name_02: 'Proposal', fl_desc_02: 'Present design direction and timeline plan, confirm pricing and milestones before signing the contract',
+        fl_name_03: 'Wireframe', fl_desc_03: 'Low-fidelity wireframes to rapidly validate structure and flow logic, minimizing costly revisions at the high-fidelity stage',
+        fl_name_04: 'Design', fl_desc_04: 'High-fidelity visual designs including brand colors, typography, and component specs — submitted in batches for review',
+        fl_name_05: 'Handoff', fl_desc_05: 'Export annotated dev specs, assets, and interaction documentation to reduce engineering communication overhead',
+        fl_name_06: 'Support', fl_desc_06: 'Provide post-launch design support and minor revisions to ensure delivered quality meets expectations',
+        process_01: 'Interview stakeholders to map business logic and pain points',
+        process_02: 'Plan IA and define data flows and user paths',
+        process_03: 'Low-fidelity wireframes to rapidly validate functional logic',
+        process_04: 'High-fidelity Figma designs with design system setup',
+        process_05: 'Interactive prototypes to verify end-to-end flow completeness',
+        process_06: 'Dev-ready spec handoff to reduce communication overhead',
+        ai_sub: 'I don\'t use AI as a shortcut — I use it as a collaborator that makes design decisions faster and more grounded.',
+        ai_gemini_1: '<strong>Logic & Code Generation:</strong> Translating design requirements into precise prompts to generate initial code structures.',
+        ai_gemini_2: '<strong>Intelligent Debugging:</strong> Guiding AI with specific scenarios to quickly identify and fix code issues.',
+        ai_gemini_3: '<strong>UX Copywriting:</strong> Drafting UX copy with AI assistance to accelerate review cycles.',
+        ai_rodin_2: '<strong>Rapid UI Iteration:</strong> Using Stitch to generate multiple design variations for efficient visual proposals.',
+        ai_stitch_2: 'Generating Figma-ready drafts directly from sketches or descriptions.',
+        ai_stitch_3: 'Shortening concept-to-reviewable draft time by 60%+.',
+        ai_rodin_1: '<strong>Rapid 3D Prototyping:</strong> Utilizing Rodin to transform text-to-3D models in minutes.',
+        ai_rodin_3: 'Importing into Spline to inject 3D visual elements into Web UI.',
+        ai_philosophy: '"AI handles repetitive work,<br>so I can focus on<br>the decisions only a designer can make."',
+        contact_sub: 'Have a project in mind? Feel free to contact me.',
+        line_eyebrow: 'Design Consultation · Free first chat',
+        line_title: 'Have a design need? Let\'s talk.',
+        line_desc: 'Enterprise UI, portfolio reviews, project quotes — reach me directly via LINE.',
+        line_btn: 'Add me on LINE',
+        open_for_work: 'Open for work',
+        open_for_work_sub: 'Available for full-time, part-time, or freelance projects',
+        p1_title: 'Hsinchu County Police Cloud Video Analysis System', p1_desc: 'UI design for police street surveillance image recognition and monitoring system',
+        p2_title: 'Hsinchu County Police Video Analysis App', p2_desc: 'Mobile-optimized UI design for police surveillance monitoring system',
+        p3_title: 'Kaohsiung Police Smart Investigation System', p3_desc: 'Next-gen smart technology investigation system interface design',
+        p4_title: 'Tainan Police Smart Patrol System', p4_desc: 'App interface design for patrol officers\' check-ins and records',
+        p5_title: 'Hsinchu Zoo Management Dashboard', p5_desc: 'Visitor flow analysis and website management interface',
+        p6_title: 'Taoyuan Metro App', p6_desc: 'UI modification for the Latest News section of the MRT App',
+        p7_title: 'Shihmen Reservoir Website', p7_desc: 'New page creation and interface modification for the reservoir website',
+        p8_title: 'Love-Two Live Streaming App UI', p8_desc: 'Proposal and design for a live streaming application',
+        p9_title: 'Hsinchu Environmental Bureau Backend', p9_desc: 'New page additions and redesign for the bureau\'s backend system',
+        p10_title: 'Hengchun Airport Website', p10_desc: 'Website redesign proposal for the airport',
+        p11_title: 'TMU Clinical Teaching System', p11_desc: 'Redesign of the learning portfolio management system for medical students',
+        p12_title: 'CDIC Golden House – Good Home Purchase', p12_desc: 'Web mini-game for Central Deposit Insurance Corp\'s mortgage education campaign',
+        p13_title: 'Super High Tech CNC Simulator', p13_desc: '3D machine tool simulation interface using React & WebGL',
+      }
+    };
+
+    Object.assign(translations.zh, {
+      about_p3: `我把 <strong>AI 與自動化</strong>嵌進實際接案流程：當客戶從 LINE 官方帳號或表單送出需求後，Make 會先整理欄位、交由 <span class="text-purple">Gemini</span> 摘要需求與判斷類型，再寫入 <span class="text-purple">Google Sheets</span> 作為追蹤資料庫，最後分流發送 LINE 回覆與 Email 通知。這讓我在正式溝通前就能掌握需求背景、預算、時程與風險，回覆更快，也更精準。`,
+      fl_name_01: 'Intake',
+      fl_desc_01: '客戶透過 LINE 官方帳號或表單送出需求，系統自動收集專案類型、目標、預算、時程與聯絡資訊',
+      fl_name_02: 'AI Brief',
+      fl_desc_02: 'Make 將需求整理成結構化摘要，交由 Gemini 協助判斷重點、缺口與初步提問方向',
+      fl_name_03: 'Triage',
+      fl_desc_03: '依需求類型自動分流：企業系統、作品集優化、網站製作或其他合作，並建立 Google Sheets 追蹤紀錄',
+      fl_name_04: 'Discovery',
+      fl_desc_04: '帶著已整理好的需求摘要進行初談，快速釐清目標使用者、核心功能、限制條件與成功標準',
+      fl_name_05: 'Proposal',
+      fl_desc_05: '提出設計方向、工作項目、時程與報價，讓客戶清楚知道每一階段會收到什麼成果',
+      fl_name_06: 'Delivery',
+      fl_desc_06: '依里程碑交付 wireframe、高保真設計、互動說明與開發標註，並保留後續追蹤與回覆紀錄',
+      line_title: '有設計需求？LINE Bot 會先幫我整理重點',
+      line_desc: '留下專案目標、時程與預算後，系統會建立追蹤紀錄並通知我回覆',
+    });
+
+    Object.assign(translations.en, {
+      about_p3: `I embed <strong>AI and automation</strong> directly into my freelance workflow. When a client submits a request through LINE or a form, Make structures the fields, asks <span class="text-purple">Gemini</span> to summarize the need and classify the request, saves it to <span class="text-purple">Google Sheets</span>, then routes LINE replies and email notifications. Before the first conversation, I already understand the context, budget, timeline, and risks, so my response is faster and more precise.`,
+      fl_name_01: 'Intake',
+      fl_desc_01: 'Clients submit requests through LINE or a form, while the system collects project type, goals, budget, timeline, and contact details',
+      fl_name_02: 'AI Brief',
+      fl_desc_02: 'Make turns the request into a structured brief, then Gemini helps identify key points, missing context, and follow-up questions',
+      fl_name_03: 'Triage',
+      fl_desc_03: 'Requests are routed by type, such as enterprise UI, portfolio improvement, website production, or other collaboration, with a Google Sheets record created',
+      fl_name_04: 'Discovery',
+      fl_desc_04: 'I start the first conversation with an organized brief, then clarify users, core features, constraints, and success criteria',
+      fl_name_05: 'Proposal',
+      fl_desc_05: 'I propose direction, scope, timeline, and pricing so clients know exactly what each milestone will deliver',
+      fl_name_06: 'Delivery',
+      fl_desc_06: 'I deliver wireframes, high-fidelity designs, interaction notes, and dev annotations by milestone, with follow-up records kept in the workflow',
+      line_title: 'Have a design need? My LINE Bot helps structure it first.',
+      line_desc: 'Share your goal, timeline, and budget; the workflow records it and notifies me to reply.',
+    });
+
+    let currentLang = localStorage.getItem('lang') || 'zh';
+
+    function setLang(lang) {
+      currentLang = lang;
+      localStorage.setItem('lang', lang);
+      applyTranslations();
+      renderPortfolio(); // re-render cards with new lang
+      if (window._heroDescTyper && window.heroDescTexts) window._heroDescTyper.restart(window.heroDescTexts[lang]);
+    }
+
+    function updateSmLangBtns() {
+      const zh = document.getElementById('sm-lang-zh');
+      const en = document.getElementById('sm-lang-en');
+      if (!zh || !en) return;
+      zh.classList.toggle('active', currentLang === 'zh');
+      en.classList.toggle('active', currentLang === 'en');
+    }
+
+    function toggleLangDropdown(e) {
+      if (e) e.stopPropagation();
+      const dd = document.getElementById('lang-dropdown');
+      const chevron = document.getElementById('lang-chevron');
+      const isOpen = dd.classList.contains('open');
+      dd.classList.toggle('open');
+      if (chevron) chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+    }
+    function closeLangDropdown() {
+      const dd = document.getElementById('lang-dropdown');
+      const chevron = document.getElementById('lang-chevron');
+      dd.classList.remove('open');
+      if (chevron) chevron.style.transform = '';
+    }
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('#lang-menu-btn') && !e.target.closest('#lang-dropdown')) {
+        closeLangDropdown();
+      }
+    });
+
+    function applyTranslations() {
+      const t = translations[currentLang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key] !== undefined) el.innerHTML = t[key];
+      });
+      // update globe button label
+      const langLabel = document.getElementById('lang-label');
+      if (langLabel) langLabel.textContent = currentLang === 'zh' ? '繁體中文' : 'English';
+      // update checkmarks
+      document.querySelectorAll('.lang-opt').forEach(btn => btn.classList.remove('active'));
+      const activeOpt = document.querySelector(`.lang-opt[onclick*="'${currentLang}'"]`);
+      if (activeOpt) activeOpt.classList.add('active');
+    }
+
+    // ── PROJECTS DATA ──
+    const PROJECTS = [
+      { id: 'p13', category: 'web', link: 'project_13.html', img: './img/my_portfolio/CNC.webp', tags: ['Web Dev', 'React', 'WebGL'] },
+      { id: 'p1', category: 'web', link: 'project_01.html', img: './img/my_portfolio/video_analyzation.webp', tags: ['Web Dev', 'Figma', 'React'] },
+      { id: 'p2', category: 'mobile', link: 'project_02.html', img: './img/my_portfolio/video_analyzation_app.webp', tags: ['UI/UX', 'Figma'] },
+      { id: 'p3', category: 'web', link: 'project_03.html', img: './img/my_portfolio/police.webp', tags: ['Web Dev', 'Figma', 'React'] },
+      { id: 'p4', category: 'mobile', link: 'project_04.html', img: './img/my_portfolio/Tainan Police.webp', tags: ['UI/UX', 'Figma'] },
+      { id: 'p5', category: 'web', link: 'project_05.html', img: './img/my_portfolio/zoo.webp', tags: ['Web Dev', 'Adobe XD', 'Vue'] },
+      { id: 'p6', category: 'mobile', link: 'project_06.html', img: './img/my_portfolio/Taoyuan_MRT.webp', tags: ['UI/UX', 'Adobe XD'] },
+      { id: 'p7', category: 'web', link: 'project_07.html', img: './img/my_portfolio/dam.webp', tags: ['Web Dev', 'HTML/CSS'] },
+      { id: 'p8', category: 'mobile', link: 'project_08.html', img: './img/my_portfolio/stream.webp', tags: ['UI/UX', 'Adobe XD'] },
+      { id: 'p9', category: 'web', link: 'project_09.html', img: './img/my_portfolio/enviroment.webp', tags: ['Web Dev', 'HTML/CSS'] },
+      { id: 'p10', category: 'web', link: 'project_10.html', img: './img/my_portfolio/aviation.webp', tags: ['UI/UX', 'Adobe XD'] },
+      { id: 'p11', category: 'web', link: 'project_11.html', img: './img/my_portfolio/student.webp', tags: ['Web Dev', 'HTML/CSS'] },
+      { id: 'p12', category: 'web', link: 'project_12.html', img: './img/my_portfolio/coin.webp', tags: ['UI/UX', 'Adobe XD'] },
+    ];
+
+    function makeCard(p, mode) {
+      const t = translations[currentLang];
+      const title = t[p.id + '_title'] || p.id;
+      const desc = t[p.id + '_desc'] || '';
+      const tags = p.tags.map(tag => `<span class="project-tag">${tag}</span>`).join('');
+      const cls = mode === 'grid' ? 'grid-card' : 'project-card';
+      return `<a class="${cls}" href="${p.link}" data-category="${p.category}">
+      <img src="${p.img}" alt="${title}" loading="lazy">
+      <div class="project-overlay">
+        <div class="project-title">${title}</div>
+        <div class="project-desc">${desc}</div>
+        <div class="project-tags">${tags}</div>
+      </div>
+    </a>`;
+    }
+
+    function renderPortfolio() {
+      let desk1HTML = '', desk2HTML = '', gridHTML = '';
+
+      PROJECTS.forEach((p, i) => {
+        const scrollCard = makeCard(p, 'scroll');
+        const gridCard = makeCard(p, 'grid');
+
+        if (i < 7) desk1HTML += scrollCard;
+        else desk2HTML += scrollCard;
+
+        gridHTML += gridCard;
+      });
+
+      const t1 = document.getElementById('track-desk-1');
+      const t2 = document.getElementById('track-desk-2');
+      if (t1) t1.innerHTML = desk1HTML;
+      if (t2) t2.innerHTML = desk2HTML;
+
+      const grid = document.getElementById('portfolio-grid');
+      if (grid) {
+        grid.innerHTML = gridHTML;
+        /* apply bento big-card spans */
+        const bigIdx = getBentoBigIndices(PROJECTS.length);
+        grid.querySelectorAll('.grid-card').forEach((c, i) => {
+          if (bigIdx.includes(i)) c.classList.add('mb-big');
+        });
+        /* re-apply MagicBento if the grid is currently expanded */
+        if (grid.style.display !== 'none') initMagicBento();
+      }
+
+      // reset & re-init portfolio scrollers (CSS animation)
+      document.querySelectorAll('.portfolio-scroller').forEach(s => {
+        // remove old clones
+        s.querySelectorAll('[aria-hidden="true"]').forEach(el => el.remove());
+        s.removeAttribute('data-animated');
+        s.removeAttribute('data-raf-init');
+
+        const inner = s.querySelector('.scroller-inner');
+        if (!inner) return;
+
+        // clone items so total = 2× (CSS translate(-50%) needs this)
+        const origItems = Array.from(inner.children);
+        origItems.forEach(item => {
+          const clone = item.cloneNode(true);
+          clone.setAttribute('aria-hidden', 'true');
+          inner.appendChild(clone);
+        });
+        s.setAttribute('data-animated', 'true');
+      });
+    }
+
+    /* ── BENTO GRID: random big-card indices (stable per session) ── */
+    let _bentoBigIndices = null;
+    function getBentoBigIndices(total) {
+      if (!_bentoBigIndices) {
+        // Pick one from each half so big cards are distributed across the grid
+        const a = Math.floor(Math.random() * Math.floor(total / 2));
+        const b = Math.floor(total / 2) + Math.floor(Math.random() * Math.ceil(total / 2));
+        _bentoBigIndices = [a, b];
+      }
+      return _bentoBigIndices;
+    }
+
+    /* ── MAGIC BENTO: spotlight + border-glow + tilt + magnetism ── */
+    let _mbSpotlight = null;
+    let _mbMoveHandler = null;
+    let _mbLeaveHandler = null;
+    let _mbGridLeaveHandler = null;
+    let _mbCurrentCard = null;
+
+    const MB_GLOW = '74, 0, 224';
+    const MB_RADIUS = 170;
+
+    function destroyMagicBento() {
+      if (_mbSpotlight) { _mbSpotlight.remove(); _mbSpotlight = null; }
+      if (_mbMoveHandler) { document.removeEventListener('mousemove', _mbMoveHandler); _mbMoveHandler = null; }
+      if (_mbLeaveHandler) { document.removeEventListener('mouseleave', _mbLeaveHandler); _mbLeaveHandler = null; }
+      const g = document.getElementById('portfolio-grid');
+      if (g && _mbGridLeaveHandler) g.removeEventListener('mouseleave', _mbGridLeaveHandler);
+      _mbGridLeaveHandler = null;
+      _mbCurrentCard = null;
+    }
+
+    function initMagicBento() {
+      destroyMagicBento();
+      const grid = document.getElementById('portfolio-grid');
+      if (!grid || grid.style.display === 'none') return;
+
+      /* add glow class + transform-origin to each card */
+      grid.querySelectorAll('.grid-card').forEach(c => {
+        c.classList.add('mb-glow');
+        c.style.transformOrigin = '50% 50%';
+      });
+
+      /* spotlight element */
+      const sl = document.createElement('div');
+      sl.className = 'mb-spotlight';
+      document.body.appendChild(sl);
+      _mbSpotlight = sl;
+
+      const proximity = MB_RADIUS * 0.5;
+      const fadeDistance = MB_RADIUS * 0.75;
+
+      function updateGlow(card, mx, my, intensity) {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--glow-x', `${((mx - r.left) / r.width * 100).toFixed(1)}%`);
+        card.style.setProperty('--glow-y', `${((my - r.top) / r.height * 100).toFixed(1)}%`);
+        card.style.setProperty('--glow-intensity', intensity.toFixed(3));
+        card.style.setProperty('--glow-radius', `${MB_RADIUS}px`);
+      }
+
+      function resetCard(card) {
+        gsap.to(card, { rotateX: 0, rotateY: 0, x: 0, y: 0, duration: 0.4, ease: 'power3.out', overwrite: 'auto' });
+        card.style.setProperty('--glow-intensity', '0');
+      }
+
+      _mbMoveHandler = e => {
+        const section = document.getElementById('portfolio');
+        if (!section) return;
+        const sr = section.getBoundingClientRect();
+        const inSection = e.clientX >= sr.left && e.clientX <= sr.right &&
+          e.clientY >= sr.top && e.clientY <= sr.bottom;
+
+        const cards = grid.querySelectorAll('.grid-card.mb-glow');
+
+        if (!inSection || grid.style.display === 'none') {
+          gsap.to(sl, { opacity: 0, duration: 0.3, ease: 'power2.out' });
+          cards.forEach(c => c.style.setProperty('--glow-intensity', '0'));
+          return;
+        }
+
+        /* move spotlight */
+        gsap.to(sl, { left: e.clientX, top: e.clientY, duration: 0.12, ease: 'power2.out' });
+
+        /* per-card border-glow + spotlight opacity */
+        let minDist = Infinity;
+        cards.forEach(card => {
+          const r = card.getBoundingClientRect();
+          const cx = r.left + r.width / 2;
+          const cy = r.top + r.height / 2;
+          const d = Math.max(0, Math.hypot(e.clientX - cx, e.clientY - cy) - Math.max(r.width, r.height) / 2);
+          minDist = Math.min(minDist, d);
+          const gi = d <= proximity ? 1 :
+            d <= fadeDistance ? (fadeDistance - d) / (fadeDistance - proximity) : 0;
+          updateGlow(card, e.clientX, e.clientY, gi);
+        });
+
+        const targetOp = minDist <= proximity ? 0.8 :
+          minDist <= fadeDistance ? ((fadeDistance - minDist) / (fadeDistance - proximity)) * 0.8 : 0;
+        gsap.to(sl, { opacity: targetOp, duration: targetOp > 0 ? 0.2 : 0.5, ease: 'power2.out' });
+
+        /* tilt + magnetism on hovered card */
+        const hovered = e.target.closest?.('.grid-card.mb-glow');
+        if (_mbCurrentCard && _mbCurrentCard !== hovered) resetCard(_mbCurrentCard);
+        if (hovered) {
+          _mbCurrentCard = hovered;
+          const r = hovered.getBoundingClientRect();
+          const lx = e.clientX - r.left;
+          const ly = e.clientY - r.top;
+          const cx = r.width / 2;
+          const cy = r.height / 2;
+          gsap.to(hovered, {
+            rotateX: ((ly - cy) / cy) * -9,
+            rotateY: ((lx - cx) / cx) * 9,
+            x: (lx - cx) * 0.04,
+            y: (ly - cy) * 0.04,
+            transformPerspective: 900,
+            duration: 0.15,
+            ease: 'power2.out',
+            overwrite: 'auto',
+          });
+        }
+      };
+
+      _mbLeaveHandler = () => {
+        gsap.to(sl, { opacity: 0, duration: 0.35, ease: 'power2.out' });
+        grid.querySelectorAll('.grid-card.mb-glow').forEach(resetCard);
+        _mbCurrentCard = null;
+      };
+
+      _mbGridLeaveHandler = e => {
+        if (!e.relatedTarget || !grid.contains(e.relatedTarget)) {
+          if (_mbCurrentCard) { resetCard(_mbCurrentCard); _mbCurrentCard = null; }
+        }
+      };
+
+      document.addEventListener('mousemove', _mbMoveHandler);
+      document.addEventListener('mouseleave', _mbLeaveHandler);
+      grid.addEventListener('mouseleave', _mbGridLeaveHandler);
+    }
+
+    function initSpotlightCards() {
+      document.querySelectorAll('.sc-card').forEach(function (card) {
+        // Inject spotlight fill overlay (only once)
+        if (!card.querySelector(':scope > .sc-overlay')) {
+          var ov = document.createElement('div');
+          ov.className = 'sc-overlay';
+          card.insertBefore(ov, card.firstChild);
+        }
+        card.addEventListener('mousemove', function (e) {
+          var r = this.getBoundingClientRect();
+          this.style.setProperty('--sc-x', (e.clientX - r.left) + 'px');
+          this.style.setProperty('--sc-y', (e.clientY - r.top) + 'px');
+        });
+        card.addEventListener('mouseleave', function () {
+          this.style.setProperty('--sc-x', '-500px');
+          this.style.setProperty('--sc-y', '-500px');
+        });
+      });
+    }
+
+    function initProfileCard() {
+      var wrap = document.getElementById('profile-card-wrap');
+      var shell = document.getElementById('profile-card-shell');
+      var card = document.getElementById('profile-card-el');
+      if (!wrap || !shell || !card) return;
+
+      // ── spring tilt engine ──
+      var rafId = null, running = false, lastTs = 0;
+      var curX = 0, curY = 0, tgtX = 0, tgtY = 0;
+      var DEFAULT_TAU = 0.14, INITIAL_TAU = 0.6, initialUntil = 0;
+      var leaveRaf = null, enterTimer = null;
+
+      function clampN(v, lo, hi) { return Math.min(Math.max(v, lo), hi); }
+      function adj(v, f0, f1, t0, t1) { return parseFloat((t0 + (t1 - t0) * (v - f0) / (f1 - f0)).toFixed(3)); }
+
+      function applyXY(x, y) {
+        var w = shell.clientWidth || 1;
+        var h = shell.clientHeight || 1;
+        var px = clampN((100 / w) * x, 0, 100);
+        var py = clampN((100 / h) * y, 0, 100);
+        var cx = px - 50, cy = py - 50;
+        wrap.style.setProperty('--pointer-x', px + '%');
+        wrap.style.setProperty('--pointer-y', py + '%');
+        wrap.style.setProperty('--background-x', adj(px, 0, 100, 35, 65) + '%');
+        wrap.style.setProperty('--background-y', adj(py, 0, 100, 35, 65) + '%');
+        wrap.style.setProperty('--pointer-from-center', clampN(Math.hypot(py - 50, px - 50) / 50, 0, 1));
+        wrap.style.setProperty('--pointer-from-top', py / 100);
+        wrap.style.setProperty('--pointer-from-left', px / 100);
+        wrap.style.setProperty('--rotate-x', parseFloat((-(cx / 5)).toFixed(3)) + 'deg');
+        wrap.style.setProperty('--rotate-y', parseFloat((cy / 4).toFixed(3)) + 'deg');
+      }
+
+      function step(ts) {
+        if (!running) return;
+        if (!lastTs) lastTs = ts;
+        var dt = (ts - lastTs) / 1000; lastTs = ts;
+        var tau = ts < initialUntil ? INITIAL_TAU : DEFAULT_TAU;
+        var k = 1 - Math.exp(-dt / tau);
+        curX += (tgtX - curX) * k; curY += (tgtY - curY) * k;
+        applyXY(curX, curY);
+        if (Math.abs(tgtX - curX) > 0.05 || Math.abs(tgtY - curY) > 0.05 || document.hasFocus()) {
+          rafId = requestAnimationFrame(step);
+        } else { running = false; lastTs = 0; if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
+      }
+
+      function startRaf() { if (running) return; running = true; lastTs = 0; rafId = requestAnimationFrame(step); }
+      function setTarget(x, y) { tgtX = x; tgtY = y; startRaf(); }
+      function toCenter() { setTarget(shell.clientWidth / 2, shell.clientHeight / 2); }
+      function getOff(e) { var r = shell.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+
+      shell.addEventListener('pointerenter', function (e) {
+        card.classList.add('active');
+        shell.classList.add('entering');
+        if (enterTimer) clearTimeout(enterTimer);
+        enterTimer = setTimeout(function () { shell.classList.remove('entering'); }, 180);
+        var o = getOff(e); setTarget(o.x, o.y);
+      });
+      shell.addEventListener('pointermove', function (e) { var o = getOff(e); setTarget(o.x, o.y); });
+      shell.addEventListener('pointerleave', function () {
+        toCenter();
+        function checkSettle() {
+          if (Math.hypot(tgtX - curX, tgtY - curY) < 0.6) { card.classList.remove('active'); leaveRaf = null; }
+          else { leaveRaf = requestAnimationFrame(checkSettle); }
+        }
+        if (leaveRaf) cancelAnimationFrame(leaveRaf);
+        leaveRaf = requestAnimationFrame(checkSettle);
+      });
+
+      // Initial entrance animation: start from top-right, ease to center
+      curX = (shell.clientWidth || 0) - 70; curY = 60;
+      applyXY(curX, curY);
+      toCenter();
+      initialUntil = performance.now() + 1200;
+      startRaf();
+    }
+
+    function initSpotlightCardEffect() {
+      document.querySelectorAll('.card-spotlight, .sidebar-block').forEach(function (card) {
+        card.addEventListener('mousemove', function (e) {
+          var rect = this.getBoundingClientRect();
+          this.style.setProperty('--mouse-x', (e.clientX - rect.left) + 'px');
+          this.style.setProperty('--mouse-y', (e.clientY - rect.top) + 'px');
+        });
+      });
+    }
+
+    function animateGridIn(cards) {
+      if (!cards || !cards.length) return;
+      // Kill any in-flight tweens so their clearProps won't remove display:none
+      // set by the filter on hidden cards.
+      gsap.killTweensOf('#portfolio-grid .grid-card');
+      const arr = Array.from(cards);
+      arr.forEach(c => { c.style.transition = 'none'; });
+      gsap.fromTo(arr,
+        { y: 60, opacity: 0, filter: 'blur(8px)', scale: 0.95 },
+        { y: 0, opacity: 1, filter: 'blur(0px)', scale: 1,
+          duration: 0.65, ease: 'power3.out', stagger: 0.045,
+          clearProps: 'transform,opacity,filter',
+          onComplete() { arr.forEach(c => { c.style.transition = ''; }); }
+        }
+      );
+    }
+
+    function initPortfolioToggle() {
+      const btn = document.getElementById('toggle-portfolio-view');
+      if (!btn) return;
+      const btnText = document.getElementById('toggle-portfolio-text');
+      const btnIcon = document.getElementById('toggle-portfolio-icon');
+      const scrollDesk = document.getElementById('portfolio-scroller-desktop');
+      const grid = document.getElementById('portfolio-grid');
+      const filters = document.getElementById('portfolio-filters');
+
+      // inject filter buttons
+      filters.innerHTML = `
+      <button class="btn-glass filter-btn active" data-filter="all">All</button>
+      <button class="btn-glass filter-btn" data-filter="mobile">Apps Design</button>
+      <button class="btn-glass filter-btn" data-filter="web">Web Design</button>`;
+
+      let expanded = false;
+
+      function doExpand(savedFilter) {
+        expanded = true;
+        scrollDesk.style.display = 'none';
+
+        // Pre-hide all cards before making the grid visible so there is no
+        // flash of un-animated content during the scroll-settle delay.
+        if (savedFilter === null) {
+          document.querySelectorAll('#portfolio-grid .grid-card').forEach(c => {
+            c.style.opacity = '0';
+          });
+        }
+
+        grid.style.display = 'grid';
+        filters.style.display = 'flex';
+        initMagicBento();
+        btnText.innerText = 'Fold';
+        btnIcon.className = 'fas fa-chevron-up';
+        sessionStorage.setItem('portfolioExpanded', 'true');
+
+        // restore or reset filter
+        const f = savedFilter || 'all';
+        filters.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        const target = filters.querySelector(`[data-filter="${f}"]`);
+        if (target) target.classList.add('active');
+        const visibleCards = [];
+        document.querySelectorAll('#portfolio-grid .grid-card').forEach(c => {
+          const show = (f === 'all' || c.dataset.category === f);
+          c.style.display = show ? '' : 'none';
+          if (show) visibleCards.push(c);
+        });
+        sessionStorage.setItem('portfolioActiveFilter', f);
+
+        // animate only on fresh expand, not on page-restore (delay past the 50ms scroll jump)
+        if (savedFilter === null) setTimeout(() => animateGridIn(visibleCards), 120);
+      }
+
+      function doFold() {
+        expanded = false;
+        destroyMagicBento();
+        scrollDesk.style.display = '';
+        grid.style.display = 'none';
+        filters.style.display = 'none';
+        btnText.innerText = 'View All Projects';
+        btnIcon.className = 'fas fa-arrow-right';
+        sessionStorage.setItem('portfolioExpanded', 'false');
+
+        // scroll back to portfolio top
+        const portfolioSec = document.getElementById('portfolio');
+        if (portfolioSec) {
+          const header = document.getElementById('main-header');
+          const headerOffset = header ? header.offsetHeight + 20 : 80;
+          const top = portfolioSec.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+          window.scrollTo({ top, behavior: 'smooth' });
+        }
+      }
+
+      btn.addEventListener('click', function () {
+        if (expanded) {
+          doFold();
+        } else {
+          const portfolioSec = document.getElementById('portfolio');
+          const header = document.getElementById('main-header');
+          const headerOffset = header ? header.offsetHeight + 20 : 80;
+          const targetScrollY = portfolioSec
+            ? portfolioSec.getBoundingClientRect().top + window.pageYOffset - headerOffset
+            : 0;
+
+          // Disable scroll anchoring so the browser doesn't auto-scroll when the
+          // grid is inserted (scroll anchoring would push the viewport down by the
+          // height of the newly inserted content, fighting our intended scroll).
+          document.documentElement.style.overflowAnchor = 'none';
+
+          doExpand(null);
+
+          // After layout settles, jump instantly to portfolio top then re-enable anchoring
+          setTimeout(() => {
+            window.scrollTo({ top: targetScrollY, behavior: 'instant' });
+            setTimeout(() => {
+              document.documentElement.style.overflowAnchor = '';
+            }, 100);
+          }, 50);
+        }
+      });
+
+      // ── RESTORE STATE on page load ──
+      const savedExpanded = sessionStorage.getItem('portfolioExpanded');
+      const savedFilter = sessionStorage.getItem('portfolioActiveFilter');
+      const savedScrollY = sessionStorage.getItem('portfolioScrollY');
+
+      if (savedExpanded === 'true') {
+        doExpand(savedFilter);
+      }
+
+      // Always restore scroll when returning from a project page,
+      // regardless of expanded state. Clear after use so reload stays at top.
+      if (savedScrollY !== null) {
+        sessionStorage.removeItem('portfolioScrollY');
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: parseFloat(savedScrollY), behavior: 'instant' });
+          });
+        });
+      }
+    }
+
+    // ── SAVE STATE when clicking a project card ──
+    document.addEventListener('click', function (e) {
+      const card = e.target.closest('.project-card, .grid-card');
+      if (!card) return;
+      // save expanded state
+      const grid = document.getElementById('portfolio-grid');
+      const isExpanded = grid && grid.style.display === 'grid';
+      sessionStorage.setItem('portfolioExpanded', isExpanded ? 'true' : 'false');
+      // save current filter
+      const activeFilter = document.querySelector('.filter-btn.active');
+      if (activeFilter) sessionStorage.setItem('portfolioActiveFilter', activeFilter.dataset.filter);
+      // save scroll position
+      sessionStorage.setItem('portfolioScrollY', window.scrollY);
+    });
+
+    function initPortfolioFilter() {
+      document.getElementById('portfolio-filters').addEventListener('click', function (e) {
+        const btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const f = btn.dataset.filter;
+        const visibleCards = [];
+        document.querySelectorAll('#portfolio-grid .grid-card').forEach(c => {
+          const show = (f === 'all' || c.dataset.category === f);
+          c.style.display = show ? '' : 'none';
+          if (show) visibleCards.push(c);
+        });
+        requestAnimationFrame(() => requestAnimationFrame(() => animateGridIn(visibleCards)));
+      });
+    }
+
+
+    // ── NAVBAR: scroll shrink + hover-bg slider ──
+    const mainHeader = document.getElementById('main-header');
+    window.addEventListener('scroll', () => {
+      mainHeader.classList.toggle('scrolled', window.scrollY > 40);
+    });
+
+    (function initNavCircles() {
+      var navLinks = document.querySelectorAll('.nav-link');
+      var tlMap = new Map();
+      var tweenMap = new Map();
+
+      navLinks.forEach(function (link) {
+        var circle = link.querySelector('.nav-circle');
+        var label = link.querySelector('.nav-label');
+        var labelHover = link.querySelector('.nav-label-hover');
+        if (!circle || !label || !labelHover) return;
+
+        function layout() {
+          var rect = link.getBoundingClientRect();
+          var w = rect.width, h = rect.height;
+          if (!w || !h) return;
+          var R = ((w * w) / 4 + h * h) / (2 * h);
+          var D = Math.ceil(2 * R) + 2;
+          var delta = Math.ceil(R - Math.sqrt(Math.max(0, R * R - (w * w) / 4))) + 1;
+          var originY = D - delta;
+          circle.style.width = D + 'px';
+          circle.style.height = D + 'px';
+          circle.style.bottom = -delta + 'px';
+          gsap.set(circle, { xPercent: -50, scale: 0, transformOrigin: '50% ' + originY + 'px' });
+          gsap.set(label, { y: 0 });
+          gsap.set(labelHover, { y: Math.ceil(h + 12), opacity: 0 });
+          var old = tlMap.get(link);
+          if (old) old.kill();
+          var tl = gsap.timeline({ paused: true });
+          tl.to(circle, { scale: 1.2, xPercent: -50, duration: 2, ease: 'power3.out' }, 0);
+          tl.to(label, { y: -(h + 8), duration: 2, ease: 'power3.out' }, 0);
+          tl.to(labelHover, { y: 0, opacity: 1, duration: 2, ease: 'power3.out' }, 0);
+          tlMap.set(link, tl);
+        }
+
+        layout();
+        window.addEventListener('resize', layout);
+        window.addEventListener('load', layout, { once: true });
+
+        link.addEventListener('mouseenter', function () {
+          var tl = tlMap.get(link);
+          if (!tl) return;
+          tweenMap.get(link) && tweenMap.get(link).kill();
+          tweenMap.set(link, gsap.to(tl, { time: tl.duration(), duration: 0.3, ease: 'power3.out', overwrite: 'auto' }));
+        });
+
+        link.addEventListener('mouseleave', function () {
+          var tl = tlMap.get(link);
+          if (!tl) return;
+          tweenMap.get(link) && tweenMap.get(link).kill();
+          tweenMap.set(link, gsap.to(tl, { time: 0, duration: 0.2, ease: 'power3.out', overwrite: 'auto' }));
+        });
+      });
+    })();
+
+    // ── NAV HIGHLIGHT ON SCROLL ──
+    const sections = document.querySelectorAll('section[id]');
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(l => l.classList.remove('active'));
+          const l = document.querySelector(`.nav-link[data-scroll-to="${e.target.id}"]`);
+          if (l) { l.classList.add('active'); }
+        }
+      });
+    }, { threshold: 0.35 });
+    sections.forEach(s => io.observe(s));
+
+    // ── RAF SCROLLER ENGINE (LogoLoop-inspired) ──
+    // No CSS animation — position driven by requestAnimationFrame.
+    // Smooth lerp on hover: velocity eases to hoverSpeed, zero jump.
+
+    const SMOOTH_TAU = 0.18; // lerp time constant (seconds)
+
+    function createScroller(scroller, normalSpeed, hoverSpeed) {
+      const inner = scroller.querySelector('.scroller-inner');
+      if (!inner) return;
+      const isReverse = scroller.getAttribute('data-direction') === 'right';
+
+      if (scroller.getAttribute('data-raf-init') === 'true') return;
+
+      // Snapshot original items BEFORE cloning (HTMLCollection is live)
+      const origItems = Array.from(inner.children);
+      origItems.forEach(item => {
+        const clone = item.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        inner.appendChild(clone);
+      });
+      scroller.setAttribute('data-raf-init', 'true');
+
+      // Measure one-set width — wait for images to load first
+      const gap = parseFloat(getComputedStyle(inner).gap) || 10;
+
+      function startRAF() {
+        const oneSetWidth = origItems.reduce((sum, el) => sum + el.offsetWidth + gap, 0);
+        if (oneSetWidth <= 0) return;
+
+        let offset = 0;
+        let velocity = normalSpeed;
+        let targetVelocity = normalSpeed;
+        let lastTs = null;
+
+        const direction = isReverse ? -1 : 1;
+
+        function tick(ts) {
+          if (!lastTs) lastTs = ts;
+          const dt = Math.min((ts - lastTs) / 1000, 0.05);
+          lastTs = ts;
+          const factor = 1 - Math.exp(-dt / SMOOTH_TAU);
+          velocity += (targetVelocity - velocity) * factor;
+          offset += velocity * dt * direction;
+          offset = ((offset % oneSetWidth) + oneSetWidth) % oneSetWidth;
+          inner.style.transform = `translateX(${-offset}px)`;
+          requestAnimationFrame(tick);
+        }
+
+        requestAnimationFrame(tick);
+
+        scroller.addEventListener('mouseenter', () => { targetVelocity = hoverSpeed; });
+        scroller.addEventListener('mouseleave', () => { targetVelocity = normalSpeed; });
+      }
+
+      // Wait for images (skills row 1 has img logos)
+      const images = inner.querySelectorAll('img');
+      if (images.length === 0) {
+        startRAF();
+      } else {
+        let loaded = 0;
+        const onLoad = () => { if (++loaded >= images.length) startRAF(); };
+        images.forEach(img => {
+          if (img.complete) onLoad();
+          else { img.addEventListener('load', onLoad, { once: true }); img.addEventListener('error', onLoad, { once: true }); }
+        });
+      }
+    }
+
+    function initInfiniteScroll() {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      // Hero tags — items already pre-cloned in HTML (2 sets)
+      // Just start RAF directly, don't clone again
+      document.querySelectorAll('.hero-scroller').forEach(scroller => {
+        const inner = scroller.querySelector('.scroller-inner');
+        if (!inner || scroller.getAttribute('data-raf-init') === 'true') return;
+        scroller.setAttribute('data-raf-init', 'true');
+
+        // oneSetWidth = half of total (since HTML has 2 sets)
+        const gap = parseFloat(getComputedStyle(inner).gap) || 12;
+        const allItems = Array.from(inner.children);
+        const halfCount = allItems.length / 2;
+        const oneSetWidth = allItems.slice(0, halfCount).reduce((sum, el) => sum + el.offsetWidth + gap, 0);
+        if (oneSetWidth <= 0) return;
+
+        let offset = 0, velocity = 80, targetVelocity = 80, lastTs = null;
+
+        function tick(ts) {
+          if (!lastTs) lastTs = ts;
+          const dt = Math.min((ts - lastTs) / 1000, 0.05);
+          lastTs = ts;
+          velocity += (targetVelocity - velocity) * (1 - Math.exp(-dt / SMOOTH_TAU));
+          offset = ((offset + velocity * dt) % oneSetWidth + oneSetWidth) % oneSetWidth;
+          inner.style.transform = `translateX(${-offset}px)`;
+          requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+        scroller.addEventListener('mouseenter', () => { targetVelocity = 25; });
+        scroller.addEventListener('mouseleave', () => { targetVelocity = 80; });
+      });
+
+      // Skills scrollers — createScroller handles cloning
+      document.querySelectorAll('.skills-scroller').forEach(s => createScroller(s, 80, 25));
+    }
+
+    function initAllMarquees() {
+      initInfiniteScroll();
+    }
+
+    // ── BORDER GLOW — My Design Process cards ──
+    function initBorderGlowCards() {
+      const GLOW_COLOR = '264 70 75';           // HSL: purple matching --primary
+      const BG = '#13101c';
+      const COLORS = ['#6C63FF', '#f472b6', '#38bdf8'];
+      const INTENSITY = 1.1;
+      const GRAD_POS = ['80% 55%', '69% 34%', '8% 6%', '41% 38%', '86% 85%', '82% 18%', '51% 4%'];
+      const GRAD_KEYS = ['--gradient-one', '--gradient-two', '--gradient-three', '--gradient-four', '--gradient-five', '--gradient-six', '--gradient-seven'];
+      const COLOR_MAP = [0, 1, 2, 0, 1, 2, 1];
+
+      function parseHSL(s) {
+        const m = s.match(/([\d.]+)\s*([\d.]+)%?\s*([\d.]+)%?/);
+        return m ? { h: +m[1], s: +m[2], l: +m[3] } : { h: 264, s: 70, l: 75 };
+      }
+      function setGlowVars(el, hslStr, intensity) {
+        const { h, s, l } = parseHSL(hslStr);
+        const base = `${h}deg ${s}% ${l}%`;
+        [100, 60, 50, 40, 30, 20, 10].forEach((op, i) => {
+          const suffix = i === 0 ? '' : `-${op}`;
+          el.style.setProperty(`--glow-color${suffix}`, `hsl(${base} / ${Math.min(op * intensity, 100)}%)`);
+        });
+      }
+      function setGradientVars(el, colors) {
+        GRAD_KEYS.forEach((key, i) => {
+          const c = colors[Math.min(COLOR_MAP[i], colors.length - 1)];
+          el.style.setProperty(key, `radial-gradient(at ${GRAD_POS[i]}, ${c} 0px, transparent 50%)`);
+        });
+        el.style.setProperty('--gradient-base', `linear-gradient(${colors[0]} 0 100%)`);
+      }
+      function getCenter(el) {
+        const r = el.getBoundingClientRect();
+        return [r.width / 2, r.height / 2];
+      }
+      function edgeProximity(el, x, y) {
+        const [cx, cy] = getCenter(el);
+        const dx = x - cx, dy = y - cy;
+        let kx = Infinity, ky = Infinity;
+        if (dx !== 0) kx = cx / Math.abs(dx);
+        if (dy !== 0) ky = cy / Math.abs(dy);
+        return Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
+      }
+      function cursorAngle(el, x, y) {
+        const [cx, cy] = getCenter(el);
+        const dx = x - cx, dy = y - cy;
+        if (!dx && !dy) return 0;
+        let deg = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+        return deg < 0 ? deg + 360 : deg;
+      }
+
+      document.querySelectorAll('.process-card').forEach(card => {
+        // Inject edge-light span
+        const el = document.createElement('span');
+        el.className = 'edge-light';
+        card.insertBefore(el, card.firstChild);
+
+        // Wrap existing content in border-glow-inner
+        const inner = document.createElement('div');
+        inner.className = 'border-glow-inner';
+        Array.from(card.children)
+          .filter(c => !c.classList.contains('edge-light'))
+          .forEach(c => inner.appendChild(c));
+        card.appendChild(inner);
+
+        // Apply class + CSS vars
+        card.classList.add('border-glow-card');
+        card.style.setProperty('--card-bg', BG);
+        setGlowVars(card, GLOW_COLOR, INTENSITY);
+        setGradientVars(card, COLORS);
+
+        // Pointer tracking
+        card.addEventListener('pointermove', e => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.setProperty('--edge-proximity', (edgeProximity(card, x, y) * 100).toFixed(3));
+          card.style.setProperty('--cursor-angle', `${cursorAngle(card, x, y).toFixed(3)}deg`);
+        });
+      });
+    }
+
+    // ── STAT COUNTERS — digit-wheel rolling animation ──
+    function initStatCounters() {
+      var statRow = document.getElementById('stat-row');
+      if (!statRow) return;
+      var triggered = false;
+
+      function rollDigits() {
+        if (triggered) return;
+        triggered = true;
+        var wraps = statRow.querySelectorAll('.stat-num-wrap');
+        wraps.forEach(function (wrap) {
+          var value = parseInt(wrap.dataset.value, 10);
+          var digits = String(value).split('').map(Number);
+          var cols = wrap.querySelectorAll('.digit-col');
+          cols.forEach(function (col, i) {
+            var target = digits[i];
+            var inner = col.querySelector('.digit-col-inner');
+            var cellH = col.offsetHeight || 35;
+            setTimeout(function () {
+              inner.style.transform = 'translateY(-' + (target * cellH) + 'px)';
+            }, i * 120);
+          });
+        });
+      }
+
+      function checkInView() {
+        var rect = statRow.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.9 && rect.bottom > 0) rollDigits();
+      }
+
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) rollDigits(); });
+      }, { threshold: 0.1 });
+      obs.observe(statRow);
+
+      window.addEventListener('scroll', checkInView, { passive: true });
+      checkInView();
+    }
+
+    // ── SCROLL ANIMATIONS — section-aware top-to-bottom cascade ──
+    function initScrollAnimations() {
+      const ROW_BAND = 80;   // px — elements within this vertical band are treated as the same row
+      const ROW_DELAY = 230;  // ms between each row
+      const COL_DELAY = 110;  // ms between sibling elements within the same row
+
+      function revealSection(section) {
+        const items = Array.from(section.querySelectorAll('.stagger-item, .fade-in'))
+          .filter(el => !el.classList.contains('visible'));
+        if (!items.length) return;
+
+        // Positions relative to section top so row keys start at 0
+        const secTop = section.getBoundingClientRect().top;
+        const measured = items.map(el => {
+          const r = el.getBoundingClientRect();
+          return { el, relTop: r.top - secTop, left: r.left };
+        }).sort((a, b) => {
+          const ra = Math.round(a.relTop / ROW_BAND);
+          const rb = Math.round(b.relTop / ROW_BAND);
+          return ra !== rb ? ra - rb : a.left - b.left;
+        });
+
+        let baseRowKey = -1, rowIdx = -1, colIdx = 0;
+        measured.forEach(({ el, relTop }) => {
+          const key = Math.round(relTop / ROW_BAND);
+          if (key !== baseRowKey) { baseRowKey = key; rowIdx++; colIdx = 0; }
+          else colIdx++;
+          const delay = rowIdx * ROW_DELAY + colIdx * COL_DELAY;
+          setTimeout(() => el.classList.add('visible'), delay);
+        });
+      }
+
+      // Hero: reveal immediately on load (GSAP handles h1/h2 via bypass)
+      revealSection(document.getElementById('home'));
+
+      // All other sections: reveal when they enter the viewport
+      const seen = new Set();
+      const sections = Array.from(document.querySelectorAll('section.section'));
+
+      function checkSections() {
+        sections.forEach(sec => {
+          if (seen.has(sec)) return;
+          const r = sec.getBoundingClientRect();
+          if (r.top < window.innerHeight * 0.92 && r.bottom > 0) {
+            seen.add(sec);
+            revealSection(sec);
+          }
+        });
+      }
+
+      // IntersectionObserver as primary trigger
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const sec = entry.target;
+          if (seen.has(sec)) return;
+          seen.add(sec);
+          observer.unobserve(sec);
+          revealSection(sec);
+        });
+      }, { threshold: 0.05 });
+      sections.forEach(sec => observer.observe(sec));
+
+      // Scroll listener as reliable fallback
+      window.addEventListener('scroll', checkSections, { passive: true });
+      checkSections();
+    }
+
+    // ── SMOOTH SCROLL for data-scroll-to buttons ──
+    document.addEventListener('click', e => {
+      const btn = e.target.closest('[data-scroll-to]');
+      if (!btn) return;
+      const id = btn.dataset.scrollTo;
+      if (id === 'home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      const target = document.getElementById(id);
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    // ── BACK TO TOP ──
+    window.addEventListener('scroll', () => {
+      const btn = document.getElementById('back-to-top');
+      if (btn) btn.classList.toggle('visible', window.scrollY > 400);
+    });
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#back-to-top')) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+
+    // ── INIT ──
+    // Clear session on page reload (same as index.html)
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    const navEntry = performance.getEntriesByType('navigation')[0];
+    if (navEntry && navEntry.type === 'reload') {
+      sessionStorage.removeItem('portfolioExpanded');
+      sessionStorage.removeItem('portfolioScrollY');
+      sessionStorage.removeItem('portfolioActiveFilter');
+    }
+
+    applyTranslations();
+    updateSmLangBtns();
+    renderPortfolio();
+    initPortfolioToggle();
+    initPortfolioFilter();
+    initProfileCard();
+    initBorderGlowCards();
+    initSpotlightCards();
+    initSpotlightCardEffect();
+    initScrollAnimations();
+    initStatCounters();
+    initHeroSplitText();
+    // init marquees after fonts/icons load so offsetWidth is accurate
+    if (document.fonts) {
+      document.fonts.ready.then(initAllMarquees);
+    } else {
+      window.addEventListener('load', initAllMarquees);
+    }
+
+    // ── STAGGERED MENU ──
+    (function () {
+      const wrapper = document.getElementById('staggered-menu');
+      const panel = document.getElementById('sm-panel');
+      const prelayers = Array.from(document.querySelectorAll('#sm-prelayers .sm-prelayer'));
+      const toggleBtn = document.getElementById('sm-toggle-btn');
+      const icon = document.getElementById('sm-icon');
+      const plusH = document.getElementById('sm-plusH');
+      const plusV = document.getElementById('sm-plusV');
+      const textInner = document.getElementById('sm-toggle-textInner');
+      if (!wrapper || !panel || !toggleBtn) return;
+
+      const ALL = [...prelayers, panel];
+      let isOpen = false, busy = false, openTl = null, closeTw = null, spinTw = null, textAnim = null;
+
+      gsap.set(ALL, { xPercent: 100 });
+      gsap.set(plusH, { transformOrigin: '50% 50%', rotate: 0 });
+      gsap.set(plusV, { transformOrigin: '50% 50%', rotate: 90 });
+      gsap.set(icon, { rotate: 0, transformOrigin: '50% 50%' });
+
+      function itemEls() { return Array.from(panel.querySelectorAll('.sm-panel-itemLabel')); }
+      function numEls() { return Array.from(panel.querySelectorAll('.sm-panel-list[data-numbering] .sm-panel-item')); }
+      function langTitle() { return panel.querySelector('.sm-lang-title'); }
+      function langBtns() { return Array.from(panel.querySelectorAll('.sm-lang-btn')); }
+
+      function buildOpen() {
+        if (openTl) openTl.kill();
+        if (closeTw) { closeTw.kill(); closeTw = null; }
+        const its = itemEls(), nums = numEls(), lt = langTitle(), lbs = langBtns();
+        if (its.length) gsap.set(its, { yPercent: 140, rotate: 10 });
+        if (nums.length) gsap.set(nums, { '--sm-num-opacity': 0 });
+        if (lt) gsap.set(lt, { opacity: 0 });
+        if (lbs.length) gsap.set(lbs, { y: 20, opacity: 0 });
+
+        const tl = gsap.timeline({ paused: true });
+        prelayers.forEach((el, i) =>
+          tl.fromTo(el, { xPercent: 100 }, { xPercent: 0, duration: 0.5, ease: 'power4.out' }, i * 0.07)
+        );
+        const pStart = (prelayers.length - 1) * 0.07 + 0.08;
+        tl.fromTo(panel, { xPercent: 100 }, { xPercent: 0, duration: 0.65, ease: 'power4.out' }, pStart);
+
+        if (its.length) {
+          const iStart = pStart + 0.65 * 0.15;
+          tl.to(its, { yPercent: 0, rotate: 0, duration: 1, ease: 'power4.out', stagger: 0.1 }, iStart);
+          if (nums.length) tl.to(nums, { '--sm-num-opacity': 1, duration: 0.6, ease: 'power2.out', stagger: 0.08 }, iStart + 0.1);
+        }
+        const lStart = pStart + 0.65 * 0.4;
+        if (lt) tl.to(lt, { opacity: 1, duration: 0.5, ease: 'power2.out' }, lStart);
+        if (lbs.length) tl.to(lbs, { y: 0, opacity: 1, duration: 0.55, ease: 'power3.out', stagger: 0.08 }, lStart + 0.04);
+        openTl = tl;
+        return tl;
+      }
+
+      function playOpen() {
+        if (busy) return;
+        busy = true;
+        wrapper.style.pointerEvents = 'auto';
+        buildOpen().eventCallback('onComplete', () => { busy = false; }).play(0);
+      }
+
+      function playClose() {
+        if (openTl) { openTl.kill(); openTl = null; }
+        if (closeTw) closeTw.kill();
+        wrapper.style.pointerEvents = 'none';
+        closeTw = gsap.to(ALL, {
+          xPercent: 100, duration: 0.32, ease: 'power3.in', overwrite: 'auto',
+          onComplete() {
+            const its = itemEls(), nums = numEls(), lt = langTitle(), lbs = langBtns();
+            if (its.length) gsap.set(its, { yPercent: 140, rotate: 10 });
+            if (nums.length) gsap.set(nums, { '--sm-num-opacity': 0 });
+            if (lt) gsap.set(lt, { opacity: 0 });
+            if (lbs.length) gsap.set(lbs, { y: 20, opacity: 0 });
+            busy = false;
+          }
+        });
+      }
+
+      function animateIcon(opening) {
+        if (spinTw) spinTw.kill();
+        spinTw = gsap.to(icon, opening
+          ? { rotate: 225, duration: 0.8, ease: 'power4.out', overwrite: 'auto' }
+          : { rotate: 0, duration: 0.35, ease: 'power3.inOut', overwrite: 'auto' });
+      }
+
+      function animateText(opening) {
+        if (textAnim) textAnim.kill();
+        const cur = opening ? 'Menu' : 'Close', tgt = opening ? 'Close' : 'Menu';
+        const seq = [cur];
+        let last = cur;
+        for (let i = 0; i < 3; i++) { last = last === 'Menu' ? 'Close' : 'Menu'; seq.push(last); }
+        if (last !== tgt) seq.push(tgt);
+        seq.push(tgt);
+        textInner.innerHTML = seq.map(l => `<span class="sm-toggle-line">${l}</span>`).join('');
+        gsap.set(textInner, { yPercent: 0 });
+        textAnim = gsap.to(textInner, {
+          yPercent: -((seq.length - 1) / seq.length) * 100,
+          duration: 0.5 + seq.length * 0.07, ease: 'power4.out'
+        });
+      }
+
+      function open() {
+        isOpen = true;
+        toggleBtn.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+        document.body.classList.add('sm-menu-open');
+        wrapper.classList.add('sm-open');
+        playOpen(); animateIcon(true); animateText(true);
+      }
+
+      function close() {
+        isOpen = false;
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+        document.body.classList.remove('sm-menu-open');
+        wrapper.classList.remove('sm-open');
+        playClose(); animateIcon(false); animateText(false);
+      }
+
+      toggleBtn.addEventListener('click', () => isOpen ? close() : open());
+
+      const panelCloseBtn = document.getElementById('sm-panel-close-btn');
+      if (panelCloseBtn) panelCloseBtn.addEventListener('click', () => { if (isOpen) close(); });
+
+      document.addEventListener('mousedown', e => {
+        if (!isOpen) return;
+        if (!panel.contains(e.target) && !toggleBtn.contains(e.target)) close();
+      });
+
+      panel.querySelectorAll('.sm-panel-item').forEach(btn => {
+        btn.addEventListener('click', () => { setTimeout(close, 80); });
+      });
+    })();
+
+    // ── HERO SPLIT TEXT ──
+    function initHeroSplitText() {
+      var EASE = 'power3.out';
+
+      // Split a single element's child nodes into word spans, preserving inner elements
+      function splitWords(el) {
+        var result = [];
+        var nodes = Array.from(el.childNodes);
+        while (el.firstChild) el.removeChild(el.firstChild);
+        nodes.forEach(function (n) {
+          if (n.nodeType === 3) {
+            n.textContent.split(/(\s+)/).forEach(function (part) {
+              if (/^\s+$/.test(part)) { el.appendChild(document.createTextNode(part)); }
+              else if (part) {
+                var s = document.createElement('span');
+                s.style.cssText = 'display:inline-block;will-change:transform,opacity';
+                s.textContent = part;
+                el.appendChild(s); result.push(s);
+              }
+            });
+          } else if (n.nodeType === 1) {
+            if (n.nodeName === 'BR') { el.appendChild(n); return; }
+            var s = document.createElement('span');
+            s.style.cssText = 'display:inline-block;will-change:transform,opacity';
+            s.appendChild(n); el.appendChild(s); result.push(s);
+          }
+        });
+        return result;
+      }
+
+      // Split text chars, preserving <br> tags
+      function splitChars(el) {
+        var result = [];
+        var nodes = Array.from(el.childNodes);
+        while (el.firstChild) el.removeChild(el.firstChild);
+        nodes.forEach(function (n) {
+          if (n.nodeType === 3) {
+            Array.from(n.textContent).forEach(function (c) {
+              if (c === ' ') { el.appendChild(document.createTextNode(' ')); return; }
+              var s = document.createElement('span');
+              s.style.cssText = 'display:inline-block;will-change:transform,opacity';
+              s.textContent = c; el.appendChild(s); result.push(s);
+            });
+          } else if (n.nodeType === 1 && n.nodeName === 'BR') {
+            el.appendChild(n);
+          }
+        });
+        return result;
+      }
+
+      // Bypass CSS stagger on an element
+      function bypass(el) {
+        if (!el) return;
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+        el.style.transition = 'none';
+      }
+
+      var heroFig = document.querySelector('#home .hero-fig');
+      var h1 = document.querySelector('#home .hero-h1');
+      var h2 = document.querySelector('#home .hero-h2');
+
+      // Bypass CSS stagger on h1 and h2 — desc and btns have their own CSS/TextTyper animations
+      bypass(h1); bypass(h2);
+
+      // Hero figure: start hidden below
+      if (heroFig) gsap.set(heroFig, { opacity: 0, y: 70 });
+
+      // Split h1 and h2
+      var h1Words = h1 ? splitWords(h1) : [];
+      var h2Chars = h2 ? splitChars(h2) : [];
+      if (h1Words.length) gsap.set(h1Words, { opacity: 0, y: 40, rotation: 5 });
+      if (h2Chars.length) gsap.set(h2Chars, { opacity: 0, y: 28 });
+
+      function animate() {
+        setTimeout(function () {
+          if (heroFig)
+            gsap.to(heroFig, { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out' });
+          if (h1Words.length)
+            gsap.to(h1Words, { opacity: 1, y: 0, rotation: 0, duration: 1.0, ease: EASE, stagger: 0.11, delay: 0.15 });
+          if (h2Chars.length)
+            gsap.to(h2Chars, { opacity: 1, y: 0, duration: 0.7, ease: EASE, stagger: 0.035, delay: 0.6 });
+        }, 350);
+      }
+
+      // 等 loader 消失後才執行（由 hero-ready event 觸發）
+      window.addEventListener('hero-ready', function () { animate(); }, { once: true });
+    }
+
+    // ── LOADER: hide after Spline model loads, or 4s max ──
+    (function () {
+      const loader = document.getElementById('page-loader');
+      if (!loader) return;
+
+      let dismissed = false;
+      function hideLoader() {
+        if (dismissed) return;
+        dismissed = true;
+        loader.classList.add('hidden');
+        document.body.classList.add('hero-ready');
+        window.dispatchEvent(new Event('hero-ready'));
+      }
+
+      // Force-show after 4s regardless of Spline status
+      const forceTimer = setTimeout(hideLoader, 4000);
+
+      // Wait for hero Spline to load (desktop only; mobile uses static PNG)
+      function waitForSpline() {
+        const splineEl = document.querySelector('.hero-fig-desktop');
+        if (!splineEl) { hideLoader(); return; }
+        splineEl.addEventListener('load', function () {
+          clearTimeout(forceTimer);
+          hideLoader();
+        }, { once: true });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', waitForSpline, { once: true });
+      } else {
+        waitForSpline();
+      }
+    })();
+  </script>
+
+// ========== BLOCK 2: Module Script (Beams background, TextTyper, initHeroTypers) ==========
+
+  <script type="module">
+    const scheduleBeamsInit = function (callback) {
+      if ('requestIdleCallback' in window) requestIdleCallback(callback, { timeout: 2500 });
+      else window.addEventListener('load', function () { setTimeout(callback, 800); }, { once: true });
+    };
+
+    scheduleBeamsInit(async function () {
+      const THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+    (function initBeamsBackground() {
+      const canvas = document.getElementById('beams-bg');
+      if (!canvas) return;
+
+      /* ── Props (matches usage example) ── */
+      const BEAM_WIDTH = 2.6;
+      const BEAM_HEIGHT = 15;
+      const BEAM_NUMBER = 14;
+      const LIGHT_COLOR = '#4A00E0';
+      const SPEED = 2;
+      const NOISE_INTENSITY = 1.35;
+      const SCALE = 0.18;
+      const ROTATION = 150;
+
+      /* ── Helper ── */
+      function hexToRGB01(hex) {
+        const c = hex.replace('#', '');
+        return [parseInt(c.slice(0, 2), 16) / 255, parseInt(c.slice(2, 4), 16) / 255, parseInt(c.slice(4, 6), 16) / 255];
+      }
+
+      /* ── GLSL noise (Classic Perlin 3D + value noise 2D) ── */
+      const NOISE_GLSL = `
+float random(in vec2 st){return fract(sin(dot(st.xy,vec2(12.9898,78.233)))*43758.5453123);}
+float noise(in vec2 st){
+  vec2 i=floor(st),f=fract(st);
+  float a=random(i),b=random(i+vec2(1.,0.)),c=random(i+vec2(0.,1.)),d=random(i+vec2(1.,1.));
+  vec2 u=f*f*(3.-2.*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.-u.x)+(d-b)*u.x*u.y;
+}
+vec4 permute(vec4 x){return mod(((x*34.)+1.)*x,289.);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+vec3 fade(vec3 t){return t*t*t*(t*(t*6.-15.)+10.);}
+float cnoise(vec3 P){
+  vec3 Pi0=floor(P),Pi1=Pi0+vec3(1.);
+  Pi0=mod(Pi0,289.);Pi1=mod(Pi1,289.);
+  vec3 Pf0=fract(P),Pf1=Pf0-vec3(1.);
+  vec4 ix=vec4(Pi0.x,Pi1.x,Pi0.x,Pi1.x),iy=vec4(Pi0.yy,Pi1.yy);
+  vec4 iz0=Pi0.zzzz,iz1=Pi1.zzzz;
+  vec4 ixy=permute(permute(ix)+iy);
+  vec4 ixy0=permute(ixy+iz0),ixy1=permute(ixy+iz1);
+  vec4 gx0=ixy0/7.,gy0=fract(floor(gx0)/7.)-.5;gx0=fract(gx0);
+  vec4 gz0=vec4(.5)-abs(gx0)-abs(gy0),sz0=step(gz0,vec4(0.));
+  gx0-=sz0*(step(0.,gx0)-.5);gy0-=sz0*(step(0.,gy0)-.5);
+  vec4 gx1=ixy1/7.,gy1=fract(floor(gx1)/7.)-.5;gx1=fract(gx1);
+  vec4 gz1=vec4(.5)-abs(gx1)-abs(gy1),sz1=step(gz1,vec4(0.));
+  gx1-=sz1*(step(0.,gx1)-.5);gy1-=sz1*(step(0.,gy1)-.5);
+  vec3 g000=vec3(gx0.x,gy0.x,gz0.x),g100=vec3(gx0.y,gy0.y,gz0.y);
+  vec3 g010=vec3(gx0.z,gy0.z,gz0.z),g110=vec3(gx0.w,gy0.w,gz0.w);
+  vec3 g001=vec3(gx1.x,gy1.x,gz1.x),g101=vec3(gx1.y,gy1.y,gz1.y);
+  vec3 g011=vec3(gx1.z,gy1.z,gz1.z),g111=vec3(gx1.w,gy1.w,gz1.w);
+  vec4 norm0=taylorInvSqrt(vec4(dot(g000,g000),dot(g010,g010),dot(g100,g100),dot(g110,g110)));
+  g000*=norm0.x;g010*=norm0.y;g100*=norm0.z;g110*=norm0.w;
+  vec4 norm1=taylorInvSqrt(vec4(dot(g001,g001),dot(g011,g011),dot(g101,g101),dot(g111,g111)));
+  g001*=norm1.x;g011*=norm1.y;g101*=norm1.z;g111*=norm1.w;
+  float n000=dot(g000,Pf0),n100=dot(g100,vec3(Pf1.x,Pf0.yz));
+  float n010=dot(g010,vec3(Pf0.x,Pf1.y,Pf0.z)),n110=dot(g110,vec3(Pf1.xy,Pf0.z));
+  float n001=dot(g001,vec3(Pf0.xy,Pf1.z)),n101=dot(g101,vec3(Pf1.x,Pf0.y,Pf1.z));
+  float n011=dot(g011,vec3(Pf0.x,Pf1.yz)),n111=dot(g111,Pf1);
+  vec3 fade_xyz=fade(Pf0);
+  vec4 n_z=mix(vec4(n000,n100,n010,n110),vec4(n001,n101,n011,n111),fade_xyz.z);
+  vec2 n_yz=mix(n_z.xy,n_z.zw,fade_xyz.y);
+  return 2.2*mix(n_yz.x,n_yz.y,fade_xyz.x);
+}`;
+
+      /* ── extendMaterial: ShaderMaterial inheriting from physical PBR ── */
+      function extendMaterial(BaseMaterial, cfg) {
+        const physical = THREE.ShaderLib.physical;
+        const uniforms = THREE.UniformsUtils.clone(physical.uniforms);
+        const defaults = new BaseMaterial(cfg.material || {});
+        if (defaults.color) uniforms.diffuse.value = defaults.color.clone();
+        if ('roughness' in defaults) uniforms.roughness.value = defaults.roughness;
+        if ('metalness' in defaults) uniforms.metalness.value = defaults.metalness;
+        if ('envMapIntensity' in defaults) uniforms.envMapIntensity.value = defaults.envMapIntensity;
+        Object.entries(cfg.uniforms ?? {}).forEach(([k, u]) => {
+          uniforms[k] = (u !== null && typeof u === 'object' && 'value' in u) ? u : { value: u };
+        });
+        let vert = `${cfg.header}\n${cfg.vertexHeader ?? ''}\n${physical.vertexShader}`;
+        let frag = `${cfg.header}\n${cfg.fragmentHeader ?? ''}\n${physical.fragmentShader}`;
+        for (const [inc, code] of Object.entries(cfg.vertex ?? {})) vert = vert.replace(inc, `${inc}\n${code}`);
+        for (const [inc, code] of Object.entries(cfg.fragment ?? {})) frag = frag.replace(inc, `${inc}\n${code}`);
+        return new THREE.ShaderMaterial({
+          defines: { ...(physical.defines ?? {}) },
+          uniforms, vertexShader: vert, fragmentShader: frag,
+          lights: true, fog: !!cfg.material?.fog,
+        });
+      }
+
+      /* ── Stacked planes geometry (n vertical planes centred at origin) ── */
+      function createBeamGeometry(n, width, height, heightSegments) {
+        const geo = new THREE.BufferGeometry();
+        const spacing = 0;
+        const nV = n * (heightSegments + 1) * 2;
+        const nF = n * heightSegments * 2;
+        const pos = new Float32Array(nV * 3);
+        const idx = new Uint32Array(nF * 3);
+        const uvs = new Float32Array(nV * 2);
+        let vi = 0, ii = 0, ui = 0;
+        const totalW = n * width + (n - 1) * spacing;
+        const xBase = -totalW / 2;
+        for (let i = 0; i < n; i++) {
+          const xOff = xBase + i * (width + spacing);
+          const uvXOff = Math.random() * 300;
+          const uvYOff = Math.random() * 300;
+          for (let j = 0; j <= heightSegments; j++) {
+            const y = height * (j / heightSegments - 0.5);
+            pos.set([xOff, y, 0, xOff + width, y, 0], vi * 3);
+            const uvY = j / heightSegments;
+            uvs.set([uvXOff, uvY + uvYOff, uvXOff + 1, uvY + uvYOff], ui);
+            if (j < heightSegments) {
+              const a = vi, b = vi + 1, c = vi + 2, d = vi + 3;
+              idx.set([a, b, c, c, b, d], ii); ii += 6;
+            }
+            vi += 2; ui += 4;
+          }
+        }
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+        geo.setIndex(new THREE.BufferAttribute(idx, 1));
+        geo.computeVertexNormals();
+        return geo;
+      }
+
+      /* ── Renderer ── */
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.shadowMap.enabled = true;
+
+      /* ── Scene ── */
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color('#000000');
+
+      /* ── Camera ── */
+      const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 0, 20);
+
+      /* ── Material ── */
+      const beamMaterial = extendMaterial(THREE.MeshStandardMaterial, {
+        header: `
+varying vec3  vEye;
+varying float vNoise;
+varying vec2  vUv;
+varying vec3  vPosition;
+uniform float time;
+uniform float uSpeed;
+uniform float uNoiseIntensity;
+uniform float uScale;
+${NOISE_GLSL}`,
+        vertexHeader: `
+float getPos(vec3 pos) {
+  vec3 noisePos = vec3(pos.x * 0., pos.y - uv.y, pos.z + time * uSpeed * 3.) * uScale;
+  return cnoise(noisePos);
+}
+vec3 getCurrentPos(vec3 pos) { vec3 np = pos; np.z += getPos(pos); return np; }
+vec3 getNormal(vec3 pos) {
+  vec3 curpos   = getCurrentPos(pos);
+  vec3 nextposX = getCurrentPos(pos + vec3(0.01, 0.0,  0.0));
+  vec3 nextposZ = getCurrentPos(pos + vec3(0.0,  -0.01, 0.0));
+  vec3 tangentX = normalize(nextposX - curpos);
+  vec3 tangentZ = normalize(nextposZ - curpos);
+  return normalize(cross(tangentZ, tangentX));
+}`,
+        fragmentHeader: '',
+        vertex: {
+          '#include <begin_vertex>': `transformed.z += getPos(transformed.xyz);`,
+          '#include <beginnormal_vertex>': `objectNormal = getNormal(position.xyz);`,
+        },
+        fragment: {
+          '#include <dithering_fragment>': `
+float randomNoise = noise(gl_FragCoord.xy);
+gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
+        },
+        material: { fog: false },
+        uniforms: {
+          diffuse: { value: new THREE.Color(...hexToRGB01('#000000')) },
+          time: { value: 0 },
+          roughness: { value: 0.3 },
+          metalness: { value: 0.3 },
+          uSpeed: { value: SPEED },
+          envMapIntensity: { value: 10 },
+          uNoiseIntensity: { value: NOISE_INTENSITY },
+          uScale: { value: SCALE },
+        },
+      });
+
+      /* ── Mesh ── */
+      const beamMesh = new THREE.Mesh(createBeamGeometry(BEAM_NUMBER, BEAM_WIDTH, BEAM_HEIGHT, 100), beamMaterial);
+
+      /* ── Group (rotation) ── */
+      const group = new THREE.Group();
+      group.rotation.z = THREE.MathUtils.degToRad(ROTATION);
+      group.add(beamMesh);
+
+      /* ── Directional light (inside group so it rotates with beams) ── */
+      const dirLight = new THREE.DirectionalLight(LIGHT_COLOR, 1);
+      dirLight.position.set(0, 3, 10);
+      dirLight.castShadow = true;
+      dirLight.shadow.camera.top = 24;
+      dirLight.shadow.camera.bottom = -24;
+      dirLight.shadow.camera.left = -24;
+      dirLight.shadow.camera.right = 24;
+      dirLight.shadow.camera.far = 64;
+      dirLight.shadow.bias = -0.004;
+      group.add(dirLight);
+
+      scene.add(group);
+      scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+      /* ── Animation loop ── */
+      const clock = new THREE.Clock();
+      let beamsActive = false;
+
+      (function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta(); // always consume to prevent stale accumulation
+        if (!beamsActive) return;
+        beamMaterial.uniforms.time.value += 0.1 * delta;
+        renderer.render(scene, camera);
+      })();
+
+      /* ── Resize ── */
+      window.addEventListener('resize', () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+      }, { passive: true });
+
+      /* ── Scroll crossfade: hero → spline fades out, beams fades in ── */
+      const splineEl = document.getElementById('spline-bg');
+      let ticking = false;
+
+      function updateBg() {
+        const heroEl = document.getElementById('home');
+        if (!heroEl) return;
+        const heroH = heroEl.offsetHeight || window.innerHeight;
+        const fadeStart = heroH * 0.45;
+        const fadeEnd = heroH * 0.85;
+        const p = Math.max(0, Math.min(1, (window.scrollY - fadeStart) / (fadeEnd - fadeStart)));
+        if (splineEl) splineEl.style.opacity = (1 - p).toFixed(3);
+        canvas.style.opacity = p.toFixed(3);
+        beamsActive = p > 0.02;
+      }
+
+      window.addEventListener('scroll', () => {
+        if (!ticking) { requestAnimationFrame(() => { updateBg(); ticking = false; }); ticking = true; }
+      }, { passive: true });
+
+      /* Run once after layout is ready */
+      requestAnimationFrame(updateBg);
+    })();
+    });
+
+    // ── TEXT TYPER ──
+    const heroDescTexts = {
+      zh: ['致力於打造兼具美學與功能的數位體驗', '協助企業推動業務成長並深化用戶互動'],
+      en: ['Dedicated to creating digital experiences that combine aesthetics and function.', 'Helping businesses drive growth and deepen user engagement.'],
+    };
+    // Expose to the classic-script setLang() (module-scoped const is otherwise invisible to it)
+    window.heroDescTexts = heroDescTexts;
+
+    class TextTyper {
+      constructor(textEl, cursorEl, texts, opts = {}) {
+        this.textEl = textEl;
+        this.cursorEl = cursorEl;
+        this.texts = texts;
+        this.typingSpeed = opts.typingSpeed || 75;
+        this.deletingSpeed = opts.deletingSpeed || 40;
+        this.pauseDuration = opts.pauseDuration || 1500;
+        this.idx = 0;
+        this.charIdx = 0;
+        this.deleting = false;
+        this.current = '';
+        this.timer = null;
+        this._startCursor();
+        this._tick();
+      }
+      _startCursor() {
+        if (this.cursorEl && window.gsap) {
+          gsap.killTweensOf(this.cursorEl);
+          gsap.set(this.cursorEl, { opacity: 1 });
+          gsap.to(this.cursorEl, { opacity: 0, duration: 0.5, repeat: -1, yoyo: true, ease: 'power2.inOut' });
+        }
+      }
+      _tick() {
+        const word = this.texts[this.idx];
+        if (this.deleting) {
+          if (this.current === '') {
+            this.deleting = false;
+            this.idx = (this.idx + 1) % this.texts.length;
+            this.charIdx = 0;
+            this.timer = setTimeout(() => this._tick(), 300);
+          } else {
+            this.current = this.current.slice(0, -1);
+            this.textEl.textContent = this.current;
+            this.timer = setTimeout(() => this._tick(), this.deletingSpeed);
+          }
+        } else {
+          if (this.charIdx < word.length) {
+            this.current += word[this.charIdx++];
+            this.textEl.textContent = this.current;
+            this.timer = setTimeout(() => this._tick(), this.typingSpeed);
+          } else {
+            this.timer = setTimeout(() => { this.deleting = true; this._tick(); }, this.pauseDuration);
+          }
+        }
+      }
+      stop() {
+        clearTimeout(this.timer);
+        if (this.cursorEl && window.gsap) gsap.killTweensOf(this.cursorEl);
+      }
+      restart(newTexts) {
+        this.stop();
+        this.texts = newTexts;
+        this.idx = 0; this.charIdx = 0; this.deleting = false; this.current = '';
+        this.textEl.textContent = '';
+        this._startCursor();
+        this._tick();
+      }
+    }
+
+    (function initHeroTypers() {
+      const descTextEl = document.getElementById('hero-desc-text');
+      const descCursorEl = document.getElementById('hero-desc-cursor');
+      if (descTextEl) {
+        // Start TextTyper in sync with the CSS fade-in on hero-desc-wrap (2.2s delay)
+        setTimeout(function () {
+          window._heroDescTyper = new TextTyper(descTextEl, descCursorEl, heroDescTexts[currentLang] || heroDescTexts.zh, { typingSpeed: 60, deletingSpeed: 35, pauseDuration: 2000 });
+        }, 2200);
+      }
+    })();
+  </script>
+
+// ========== BLOCK 3: Chat Widget Script ==========
+
+  <script>
+    (function () {
+      var fab = document.getElementById('chat-fab');
+      var panel = document.getElementById('chat-panel');
+      var messages = document.getElementById('chat-messages');
+      var input = document.getElementById('chat-input');
+      var sendBtn = document.getElementById('chat-send');
+
+      fab.addEventListener('click', function () {
+        panel.classList.toggle('open');
+        if (panel.classList.contains('open')) input.focus();
+      });
+
+      document.querySelectorAll('.chat-quick-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          sendQuestion(btn.getAttribute('data-q'));
+        });
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuestion(input.value); }
+      });
+      sendBtn.addEventListener('click', function () { sendQuestion(input.value); });
+
+      function addMsg(text, role) {
+        var el = document.createElement('div');
+        el.className = 'chat-msg ' + role;
+        el.textContent = text;
+        messages.appendChild(el);
+        messages.scrollTop = messages.scrollHeight;
+        return el;
+      }
+
+      function sendQuestion(q) {
+        q = (q || '').trim();
+        if (!q) return;
+        input.value = '';
+        sendBtn.disabled = true;
+
+        addMsg(q, 'user');
+        var loading = addMsg('…', 'bot loading');
+
+        fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q }),
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            loading.textContent = data.reply || data.error || '無法取得回覆，請直接聯繫 Tim。';
+            loading.classList.remove('loading');
+          })
+          .catch(function () {
+            loading.textContent = '連線失敗，請直接透過聯絡表單聯繫 Tim。';
+            loading.classList.remove('loading');
+          })
+          .finally(function () {
+            sendBtn.disabled = false;
+            input.focus();
+          });
+      }
+    })();
+  </script>
