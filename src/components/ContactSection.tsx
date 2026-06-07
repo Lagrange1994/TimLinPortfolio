@@ -4,6 +4,17 @@ import { useLang } from '../context/LangContext';
 export default function ContactSection() {
   const { t } = useLang();
 
+  // Back-to-top: toggle .visible class based on scroll position
+  useEffect(() => {
+    const onScroll = () => {
+      const btn = document.getElementById('back-to-top');
+      if (btn) btn.classList.toggle('visible', window.scrollY > 400);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   // Spotlight card effect
   useEffect(() => {
     document.querySelectorAll<HTMLElement>('.sc-card').forEach(card => {
