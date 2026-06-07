@@ -11,6 +11,12 @@ function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: 
   if (scroller.getAttribute('data-raf-init') === 'true') return;
 
   const origItems = Array.from(inner.children) as HTMLElement[];
+  // Snapshot images BEFORE cloning — querying after cloning would count both
+  // originals and clones (e.g. 18 instead of 9), and cached clones often don't
+  // re-fire load/error events, so the `loaded >= images.length` tally never
+  // completes and startRAF() never runs (silent, permanent failure).
+  const images = Array.from(origItems.flatMap(el => Array.from(el.querySelectorAll('img'))));
+
   origItems.forEach(item => {
     const clone = item.cloneNode(true) as HTMLElement;
     clone.setAttribute('aria-hidden', 'true');
@@ -47,12 +53,13 @@ function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: 
     scroller.addEventListener('mouseleave', () => { targetVelocity = normalSpeed; });
   }
 
-  const images = inner.querySelectorAll('img');
   if (images.length === 0) {
     startRAF();
   } else {
+    let started = false;
+    const start = () => { if (!started) { started = true; startRAF(); } };
     let loaded = 0;
-    const onLoad = () => { if (++loaded >= images.length) startRAF(); };
+    const onLoad = () => { if (++loaded >= images.length) start(); };
     images.forEach(img => {
       if (img.complete) onLoad();
       else {
@@ -60,6 +67,10 @@ function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: 
         img.addEventListener('error', onLoad, { once: true });
       }
     });
+    // Safety net: in case a load/error event is missed (e.g. fires between
+    // the `.complete` check and listener attachment), don't leave the
+    // scroller permanently frozen — start once layout has settled regardless.
+    setTimeout(start, 1500);
   }
 }
 
