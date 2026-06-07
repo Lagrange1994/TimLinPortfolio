@@ -73,6 +73,12 @@ export default function HeroSection() {
   // Hero split text + typer
   useEffect(() => {
     function splitWords(el: HTMLElement) {
+      // Idempotent guard: React StrictMode runs effects twice in dev, which
+      // would otherwise re-wrap already-split spans (nested opacity:0 → invisible)
+      if (el.dataset.split === 'words') {
+        return Array.from(el.children).filter(c => c.tagName === 'SPAN') as HTMLElement[];
+      }
+      el.dataset.split = 'words';
       const result: HTMLElement[] = [];
       const nodes = Array.from(el.childNodes);
       while (el.firstChild) el.removeChild(el.firstChild);
@@ -99,6 +105,10 @@ export default function HeroSection() {
     }
 
     function splitChars(el: HTMLElement) {
+      if (el.dataset.split === 'chars') {
+        return Array.from(el.children).filter(c => c.tagName === 'SPAN') as HTMLElement[];
+      }
+      el.dataset.split = 'chars';
       const result: HTMLElement[] = [];
       const nodes = Array.from(el.childNodes);
       while (el.firstChild) el.removeChild(el.firstChild);
@@ -144,7 +154,13 @@ export default function HeroSection() {
       }, 350);
     }
 
-    window.addEventListener('hero-ready', animate, { once: true });
+    // Guard against StrictMode double-invoke racing with the one-shot event:
+    // Loader sets a persistent class marker when it dispatches 'hero-ready'.
+    if (document.body.classList.contains('hero-ready')) {
+      animate();
+    } else {
+      window.addEventListener('hero-ready', animate, { once: true });
+    }
     return () => window.removeEventListener('hero-ready', animate);
   }, []);
 
