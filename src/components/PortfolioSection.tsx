@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
 import gsap from 'gsap';
@@ -234,6 +234,18 @@ export default function PortfolioSection() {
     }
     return () => destroyMagicBento();
   }, [expanded, initMagicBento]);
+
+  // Hide cards SYNCHRONOUSLY before paint — matches original's
+  // `c.style.opacity = '0'` set immediately before `grid.style.display = 'grid'`,
+  // preventing a flash of fully-visible content before the entrance animation.
+  useLayoutEffect(() => {
+    if (!expanded) return;
+    const grid = document.getElementById('portfolio-grid');
+    if (!grid) return;
+    grid.querySelectorAll<HTMLElement>('.grid-card').forEach(c => {
+      c.style.opacity = '0';
+    });
+  }, [expanded]);
 
   // Animate grid cards in
   useEffect(() => {

@@ -66,6 +66,23 @@ function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: 
 export default function SkillsSection() {
   const { t } = useLang();
 
+  // Restart SVG SMIL animations (<animateMotion>/<mpath>) injected via
+  // dangerouslySetInnerHTML — browsers only auto-start SMIL on document
+  // parse, not on dynamic innerHTML insertion, so the flow-particle
+  // animation in the AI workflow diagram never begins on its own.
+  useEffect(() => {
+    const svg = document.querySelector('.ai-flow-grid svg');
+    if (!svg) return;
+    const restart = () => {
+      svg.querySelectorAll('animateMotion, animate, animateTransform').forEach(anim => {
+        try { (anim as any).beginElement(); } catch { /* unsupported in some engines */ }
+      });
+    };
+    // Defer to next frame so the injected markup is fully parsed/laid out
+    const raf = requestAnimationFrame(restart);
+    return () => cancelAnimationFrame(raf);
+  }, [t]);
+
   // Border glow cards
   useEffect(() => {
     const GLOW_COLOR = '264 70 75';
