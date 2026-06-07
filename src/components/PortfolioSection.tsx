@@ -326,10 +326,11 @@ export default function PortfolioSection() {
   }
 
   // Render project card
-  function ProjectCard({ p, mode }: { p: typeof PROJECTS[0]; mode: 'scroll' | 'grid' }) {
+  function ProjectCard({ p, mode, index }: { p: typeof PROJECTS[0]; mode: 'scroll' | 'grid'; index?: number }) {
     const title = (t as Record<string, string>)[p.id + '_title'] || p.id;
     const desc = (t as Record<string, string>)[p.id + '_desc'] || '';
-    const cls = mode === 'grid' ? 'grid-card' : 'project-card';
+    const isBig = mode === 'grid' && index !== undefined && bentoBigIndices.includes(index);
+    const cls = mode === 'grid' ? `grid-card${isBig ? ' mb-big' : ''}` : 'project-card';
     return (
       <a
         className={cls}
@@ -399,16 +400,14 @@ export default function PortfolioSection() {
           id="portfolio-grid"
           style={{ display: expanded ? 'grid' : 'none' }}
         >
-          {PROJECTS.map((p, i) => {
-            const show = activeFilter === 'all' || p.category === activeFilter;
-            return (
-              <ProjectCard
-                key={p.id}
-                p={p}
-                mode="grid"
-              />
-            );
-          })}
+          {PROJECTS.map((p, i) => (
+            <ProjectCard
+              key={p.id}
+              p={p}
+              mode="grid"
+              index={i}
+            />
+          ))}
         </div>
 
         <div className="view-all-row fade-in">
