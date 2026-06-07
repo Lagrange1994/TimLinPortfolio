@@ -48,6 +48,8 @@ export default function Navbar() {
     const navLinks = document.querySelectorAll<HTMLElement>('.nav-link');
     const tlMap = new Map<HTMLElement, gsap.core.Timeline>();
     const tweenMap = new Map<HTMLElement, gsap.core.Tween>();
+    // Track listeners/timelines for cleanup (StrictMode double-invoke safety)
+    const cleanups: Array<() => void> = [];
 
     navLinks.forEach(link => {
       const circle = link.querySelector<HTMLElement>('.nav-circle')!;
@@ -96,6 +98,18 @@ export default function Navbar() {
 
       link.addEventListener('mouseenter', onEnter);
       link.addEventListener('mouseleave', onLeave);
+
+      cleanups.push(() => {
+        window.removeEventListener('resize', layout);
+        link.removeEventListener('mouseenter', onEnter);
+        link.removeEventListener('mouseleave', onLeave);
+        tlMap.get(link)?.kill();
+        tweenMap.get(link)?.kill();
+        // Reset circle to hidden state so a re-mount starts clean
+        gsap.set(circle, { scale: 0 });
+        gsap.set(label, { y: 0 });
+        gsap.set(labelHover, { y: 0, opacity: 0 });
+      });
     });
 
     // Nav highlight on scroll
@@ -113,6 +127,7 @@ export default function Navbar() {
 
     return () => {
       io.disconnect();
+      cleanups.forEach(fn => fn());
     };
   }, []);
 
