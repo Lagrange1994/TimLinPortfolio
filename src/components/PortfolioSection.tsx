@@ -238,14 +238,19 @@ export default function PortfolioSection() {
   // Hide cards SYNCHRONOUSLY before paint — matches original's
   // `c.style.opacity = '0'` set immediately before `grid.style.display = 'grid'`,
   // preventing a flash of fully-visible content before the entrance animation.
+  // Also re-runs on `activeFilter` change: switching filters reveals
+  // previously `display:none` cards, which would otherwise flash at full
+  // opacity (inherited from the prior animation's `clearProps`) before the
+  // 120ms-delayed gsap.fromTo() in the effect below hides and re-animates them.
   useLayoutEffect(() => {
     if (!expanded) return;
     const grid = document.getElementById('portfolio-grid');
     if (!grid) return;
     grid.querySelectorAll<HTMLElement>('.grid-card').forEach(c => {
-      c.style.opacity = '0';
+      const show = activeFilter === 'all' || c.dataset.category === activeFilter;
+      if (show) c.style.opacity = '0';
     });
-  }, [expanded]);
+  }, [expanded, activeFilter]);
 
   // Animate grid cards in
   useEffect(() => {

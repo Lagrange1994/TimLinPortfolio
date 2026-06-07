@@ -342,15 +342,15 @@ export default function SkillsSection() {
         <div className="section-label fade-in">My Skills</div>
         <div className="skills-outer scroller skills-scroller" data-direction="left">
           <div className="scroller-inner">
-            <span className="skill-pill"><img src="./img/others/Figma_logo.png" className="skill-icon-img" alt="Figma" loading="lazy" />Figma</span>
-            <span className="skill-pill"><img src="./img/others/Adobe_XD_logo.png" className="skill-icon-img" alt="Adobe XD" loading="lazy" />Adobe XD</span>
-            <span className="skill-pill"><img src="./img/others/Blender_logo.png" className="skill-icon-img" alt="Blender" loading="lazy" />Blender</span>
-            <span className="skill-pill"><img src="./img/others/Spline_logo.webp" className="skill-icon-img" alt="Spline" loading="lazy" />Spline</span>
-            <span className="skill-pill"><img src="./img/others/Lightroom_logo.png" className="skill-icon-img" alt="Lightroom" loading="lazy" />Lightroom</span>
-            <span className="skill-pill"><img src="./img/others/Krita_logo.png" className="skill-icon-img" alt="Krita" loading="lazy" />Krita</span>
-            <span className="skill-pill"><img src="./img/others/Photoshop_logo.png" className="skill-icon-img" alt="Photoshop" loading="lazy" />Photoshop</span>
-            <span className="skill-pill"><img src="./img/others/Illustrator_logo.png" className="skill-icon-img" alt="Illustrator" loading="lazy" />Illustrator</span>
-            <span className="skill-pill"><img src="./img/others/Dora_logo.png" className="skill-icon-img" alt="Dora" loading="lazy" />Dora</span>
+            <span className="skill-pill"><img src="./img/others/Figma_logo.png" className="skill-icon-img" alt="Figma" />Figma</span>
+            <span className="skill-pill"><img src="./img/others/Adobe_XD_logo.png" className="skill-icon-img" alt="Adobe XD" />Adobe XD</span>
+            <span className="skill-pill"><img src="./img/others/Blender_logo.png" className="skill-icon-img" alt="Blender" />Blender</span>
+            <span className="skill-pill"><img src="./img/others/Spline_logo.webp" className="skill-icon-img" alt="Spline" />Spline</span>
+            <span className="skill-pill"><img src="./img/others/Lightroom_logo.png" className="skill-icon-img" alt="Lightroom" />Lightroom</span>
+            <span className="skill-pill"><img src="./img/others/Krita_logo.png" className="skill-icon-img" alt="Krita" />Krita</span>
+            <span className="skill-pill"><img src="./img/others/Photoshop_logo.png" className="skill-icon-img" alt="Photoshop" />Photoshop</span>
+            <span className="skill-pill"><img src="./img/others/Illustrator_logo.png" className="skill-icon-img" alt="Illustrator" />Illustrator</span>
+            <span className="skill-pill"><img src="./img/others/Dora_logo.png" className="skill-icon-img" alt="Dora" />Dora</span>
           </div>
         </div>
         <div className="skills-outer scroller skills-scroller" data-direction="right">
