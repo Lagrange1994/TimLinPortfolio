@@ -1,9 +1,56 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Fragment } from 'react';
+import type { ReactNode } from 'react';
 
 interface Message {
   role: 'user' | 'bot';
   text: string;
   loading?: boolean;
+}
+
+const BULLET_RE = /^[*\-•]\s+(.*)$/;
+
+// Renders **bold** spans within a single line of text.
+function renderInline(text: string, keyPrefix: string): ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map((part, i) => {
+    const m = part.match(/^\*\*([^*]+)\*\*$/);
+    return m
+      ? <strong key={`${keyPrefix}-${i}`}>{m[1]}</strong>
+      : <Fragment key={`${keyPrefix}-${i}`}>{part}</Fragment>;
+  });
+}
+
+// Bot replies come back as loose markdown (bullet lists, **bold**, blank-line
+// paragraphs). Rendering them as one plain-text node crams everything onto a
+// single line, so split into paragraph/list blocks for proper spacing.
+function FormattedReply({ text }: { text: string }) {
+  const blocks = text.trim().split(/\n{2,}/);
+  return (
+    <>
+      {blocks.map((block, bi) => {
+        const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length && lines.every(l => BULLET_RE.test(l))) {
+          return (
+            <ul key={bi} className="chat-msg-list">
+              {lines.map((line, li) => {
+                const m = line.match(BULLET_RE)!;
+                return <li key={li}>{renderInline(m[1], `${bi}-${li}`)}</li>;
+              })}
+            </ul>
+          );
+        }
+        return (
+          <p key={bi} className="chat-msg-p">
+            {lines.map((line, li) => (
+              <Fragment key={li}>
+                {li > 0 && <br />}
+                {renderInline(line, `${bi}-${li}`)}
+              </Fragment>
+            ))}
+          </p>
+        );
+      })}
+    </>
+  );
 }
 
 const QUICK_QUESTIONS = [
@@ -113,7 +160,7 @@ export default function ChatPanel() {
               key={i}
               className={`chat-msg ${msg.role}${msg.loading ? ' loading' : ''}`}
             >
-              {msg.text}
+              {msg.role === 'bot' && !msg.loading ? <FormattedReply text={msg.text} /> : msg.text}
             </div>
           ))}
         </div>

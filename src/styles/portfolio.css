@@ -3768,6 +3768,19 @@
     }
     .chat-msg.loading { color: var(--text-50); font-style: italic; }
 
+    .chat-msg-p, .chat-msg-list { margin: 0; }
+    .chat-msg-p + .chat-msg-p,
+    .chat-msg-p + .chat-msg-list,
+    .chat-msg-list + .chat-msg-p,
+    .chat-msg-list + .chat-msg-list { margin-top: 8px; }
+    .chat-msg-list {
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      list-style: disc;
+    }
+
     #chat-quick { padding: 8px 12px; display: flex; gap: 6px; flex-wrap: wrap; border-top: 1px solid var(--border); }
     .chat-quick-btn {
       padding: 4px 10px;
