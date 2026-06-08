@@ -23,11 +23,16 @@ function devChatApi() {
           res.setHeader('Content-Type', 'application/json');
           return res.end(JSON.stringify({ error: 'Method not allowed' }));
         }
-        let raw = '';
-        req.on('data', (c) => { raw += c; });
+        // Accumulate raw Buffer chunks and decode once at the end — decoding
+        // each chunk individually (`raw += chunk`) corrupts multi-byte UTF-8
+        // characters (e.g. Chinese) that straddle a chunk boundary, which in
+        // turn made injection-pattern matching unreliable on CJK input.
+        const chunks = [];
+        req.on('data', (c) => { chunks.push(c); });
         req.on('end', async () => {
           res.setHeader('Content-Type', 'application/json');
           try {
+            const raw = Buffer.concat(chunks).toString('utf8');
             const { generateReply } = await server.ssrLoadModule('/api/_chat-core.ts');
             let question = '';
             try { question = JSON.parse(raw || '{}').question; } catch { /* ignore */ }
