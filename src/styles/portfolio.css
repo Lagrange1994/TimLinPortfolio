@@ -935,13 +935,15 @@
       gap: 10px;
     }
 
+    /* ── FREELANCE process cards (border-glow-card 包覆) ── */
     .process-card {
       background: rgba(30, 30, 30, 0.5);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: 14px;
-      padding: 20px 16px;
+      padding: 0;
+      position: relative;
       box-shadow: none;
       transition: border-color .25s, transform .25s, background .25s;
     }
@@ -950,6 +952,11 @@
       border-color: rgba(108, 99, 255, 0.55);
       background: rgba(42, 42, 42, 0.65);
       transform: translateY(-3px);
+    }
+
+    /* JS wraps freelance card children in .border-glow-inner */
+    .border-glow-inner {
+      padding: 20px 16px;
     }
 
     .process-num {
@@ -970,6 +977,114 @@
       font-size: 12px;
       color: rgba(255, 255, 255, 0.5);
       line-height: 1.55;
+    }
+
+    /* ── IN-HOUSE process cards (background illustration) ── */
+    /* ── IN-HOUSE 圖片卡片：與 Freelance 相同的 border-glow-card 特效 ── */
+
+    /* 卡片比例：正方形，靜止邊框與 freelance 一致 */
+    .process-card--has-img.border-glow-card {
+      aspect-ratio: 1 / 1;
+    }
+
+
+    /* 移除方向陰影，邊框沿用 border-glow-card 預設（與 freelance 相同） */
+    .process-card--has-img.border-glow-card {
+      box-shadow: none !important;
+    }
+
+    /* hover：border 透明，讓 ::before 漸層環自然接管 */
+    .process-card--has-img.border-glow-card:hover {
+      border-color: transparent !important;
+    }
+
+    /* 背景插圖層（border-glow-bg-slot 內，slot 已定位） */
+    .process-card-bg-img {
+      width: 100%;
+      height: 100%;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center top;
+    }
+
+    /* border-glow-inner 填滿卡片，flex 底部對齊文字 */
+    .process-card--has-img .border-glow-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0;
+    }
+
+    /* 底部漸層遮罩 — 只覆蓋文字區，起始點後移避免上下光暈不均 */
+    .process-card--has-img .border-glow-inner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 13px;
+      pointer-events: none;
+      background: linear-gradient(
+        to bottom,
+        transparent 72%,
+        rgba(13, 10, 28, 0.88) 84%,
+        rgba(13, 10, 28, 0.98) 100%
+      );
+      transition: background 0.35s ease;
+      z-index: 0;
+    }
+
+    .process-card--has-img:hover .border-glow-inner::before {
+      background: linear-gradient(
+        to bottom,
+        transparent 68%,
+        rgba(13, 10, 28, 0.9) 82%,
+        rgba(13, 10, 28, 0.98) 100%
+      );
+    }
+
+    /* 編號 — 絕對定位至左上角 */
+    .process-card--has-img .process-num {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      margin-bottom: 0;
+      color: rgba(255, 255, 255, 0.55);
+      z-index: 1;
+    }
+
+    /* 標題 */
+    .process-card--has-img .process-name {
+      position: relative;
+      z-index: 1;
+      font-size: 1.25rem;
+      font-weight: 700;
+      font-family: var(--font-heading);
+      padding: 0 20px 12px;
+      margin-bottom: 0;
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
+      line-height: 1.3;
+    }
+
+    /* 說明文字 — 預設隱藏，hover 時滑入 */
+    .process-card--has-img .process-desc {
+      position: relative;
+      z-index: 1;
+      padding: 0 20px;
+      padding-bottom: 0;
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(5px);
+      transition: max-height 0.35s ease, opacity 0.28s ease,
+                  transform 0.28s ease, padding-bottom 0.28s;
+    }
+
+    .process-card--has-img:hover .process-desc {
+      max-height: 160px;
+      opacity: 1;
+      transform: translateY(0);
+      padding-bottom: 20px;
     }
 
     .process-dual {
@@ -2763,7 +2878,7 @@
         gap: 16px;
       }
 
-      .process-card {
+      .border-glow-inner {
         padding: 14px 12px;
       }
 
@@ -3659,6 +3774,56 @@
     .ai-card>p{margin:10px 0 14px;font-size:13.5px;line-height:1.55;color:#9A93B0;flex:1;font-family:"Quicksand",sans-serif}
     .ai-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
     .ai-tag{font-family:"Geist Mono",monospace;font-size:10.5px;padding:3px 8px;border-radius:6px;color:#9A93B0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);letter-spacing:.02em}
+
+    /* ── My Design Process 邊框光暈 — 套用到 ai-card（僅 edge-light 外圈，
+       避免與 ai-card 既有 ::before/::after 衝突） ── */
+    .ai-card-glow {
+      isolation: isolate;
+      --edge-proximity: 0;
+      --cursor-angle: 45deg;
+      --edge-sensitivity: 30;
+      --glow-padding: 24px;
+    }
+
+    .ai-card-glow > .edge-light {
+      content: "";
+      position: absolute;
+      inset: calc(var(--glow-padding) * -1);
+      border-radius: inherit;
+      z-index: 2;
+      pointer-events: none;
+      transition: opacity 0.25s ease-out;
+      mask-image: conic-gradient(from var(--cursor-angle) at center,
+          black 2.5%, transparent 10%, transparent 90%, black 97.5%);
+      opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
+      mix-blend-mode: plus-lighter;
+    }
+
+    .ai-card-glow:not(:hover) > .edge-light {
+      opacity: 0;
+      transition: opacity 0.75s ease-in-out;
+    }
+
+    .ai-card-glow > .edge-light::before {
+      content: "";
+      position: absolute;
+      inset: var(--glow-padding);
+      border-radius: inherit;
+      box-shadow:
+        inset 0 0 0 1px var(--glow-color, hsl(264deg 70% 75% / 100%)),
+        inset 0 0 1px 0 var(--glow-color-60, hsl(264deg 70% 75% / 60%)),
+        inset 0 0 3px 0 var(--glow-color-50, hsl(264deg 70% 75% / 50%)),
+        inset 0 0 6px 0 var(--glow-color-40, hsl(264deg 70% 75% / 40%)),
+        inset 0 0 15px 0 var(--glow-color-30, hsl(264deg 70% 75% / 30%)),
+        inset 0 0 25px 2px var(--glow-color-20, hsl(264deg 70% 75% / 20%)),
+        inset 0 0 50px 2px var(--glow-color-10, hsl(264deg 70% 75% / 10%)),
+        0 0 1px 0 var(--glow-color-60, hsl(264deg 70% 75% / 60%)),
+        0 0 3px 0 var(--glow-color-50, hsl(264deg 70% 75% / 50%)),
+        0 0 6px 0 var(--glow-color-40, hsl(264deg 70% 75% / 40%)),
+        0 0 15px 0 var(--glow-color-30, hsl(264deg 70% 75% / 30%)),
+        0 0 25px 2px var(--glow-color-20, hsl(264deg 70% 75% / 20%)),
+        0 0 50px 2px var(--glow-color-10, hsl(264deg 70% 75% / 10%));
+    }
     .ai-pipeline{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto}
     .ai-pstep{font-family:"Geist Mono",monospace;font-size:10px;color:rgba(138,43,226,.9);padding:4px 7px;border-radius:5px;background:rgba(138,43,226,.08);border:1px solid rgba(138,43,226,.18)}
     .ai-psep{color:rgba(255,255,255,.2);font-size:10px;align-self:center;font-family:"Geist Mono",monospace}

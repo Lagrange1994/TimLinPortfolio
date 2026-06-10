@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLang } from '../context/LangContext';
 import gsap from 'gsap';
+import BorderGlow from './BorderGlow';
 
 const SMOOTH_TAU = 0.18;
 
@@ -143,8 +144,12 @@ export default function SkillsSection() {
       return deg < 0 ? deg + 360 : deg;
     }
 
+    const handlers = new Map<HTMLElement, (e: PointerEvent) => void>();
+
+    // Freelance cards — full border-glow-card treatment
     document.querySelectorAll<HTMLElement>('.process-card').forEach(card => {
-      if (card.querySelector('.edge-light')) return; // already initialized
+      if (card.querySelector('.edge-light')) return;
+
       const el = document.createElement('span');
       el.className = 'edge-light';
       card.insertBefore(el, card.firstChild);
@@ -161,14 +166,58 @@ export default function SkillsSection() {
       setGlowVars(card, GLOW_COLOR, INTENSITY);
       setGradientVars(card, COLORS);
 
-      card.addEventListener('pointermove', e => {
+      const handler = (e: PointerEvent) => {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         card.style.setProperty('--edge-proximity', (edgeProximity(card, x, y) * 100).toFixed(3));
         card.style.setProperty('--cursor-angle', `${cursorAngle(card, x, y).toFixed(3)}deg`);
-      });
+      };
+
+      card.addEventListener('pointermove', handler);
+      handlers.set(card, handler);
     });
+
+    // How I Use AI cards — outer edge-light glow only
+    // (ai-card already uses ::before/::after for its own line/radar effects,
+    // so we only add the cursor-following edge-light ring, not the full
+    // border-glow-card treatment)
+    document.querySelectorAll<HTMLElement>('.ai-card').forEach(card => {
+      if (card.querySelector(':scope > .edge-light')) return;
+
+      const el = document.createElement('span');
+      el.className = 'edge-light';
+      card.insertBefore(el, card.firstChild);
+
+      card.classList.add('ai-card-glow');
+      setGlowVars(card, GLOW_COLOR, INTENSITY);
+
+      const handler = (e: PointerEvent) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--edge-proximity', (edgeProximity(card, x, y) * 100).toFixed(3));
+        card.style.setProperty('--cursor-angle', `${cursorAngle(card, x, y).toFixed(3)}deg`);
+      };
+
+      card.addEventListener('pointermove', handler);
+      handlers.set(card, handler);
+    });
+
+    return () => {
+      // Remove listeners AND fully undo DOM changes so Strict Mode's second
+      // invocation finds clean cards and can re-initialize with fresh listeners.
+      handlers.forEach((handler, card) => {
+        card.removeEventListener('pointermove', handler);
+        card.classList.remove('border-glow-card', 'ai-card-glow');
+        card.querySelector('.edge-light')?.remove();
+        const inner = card.querySelector<HTMLElement>('.border-glow-inner');
+        if (inner) {
+          Array.from(inner.children).forEach(c => card.insertBefore(c, inner));
+          inner.remove();
+        }
+      });
+    };
   }, [t]);
 
   // Spotlight cards
@@ -269,16 +318,35 @@ export default function SkillsSection() {
               <span>{t.tab_inhouse}</span>
             </div>
             <div className="process-column-grid">
-              {(['01','02','03','04','05','06'] as const).map((num, i) => {
+              {(['Align','Research','Structure','Design','Validate','Iterate'] as const).map((slug, i) => {
                 const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
                 const nameKey = `ih_name_${idx}` as keyof typeof t;
                 const descKey = `ih_desc_${idx}` as keyof typeof t;
                 return (
-                  <div className="process-card" key={num}>
-                    <div className="process-num">{num}</div>
+                  <BorderGlow
+                    key={slug}
+                    className="process-card process-card--has-img"
+                    backgroundColor="#13101c"
+                    borderRadius={14}
+                    colors={['#6C63FF', '#FF6584', '#38bdf8']}
+                    glowColor="264 70 75"
+                    edgeSensitivity={25}
+                    glowRadius={24}
+                    glowIntensity={1.1}
+                    coneSpread={25}
+                    fillOpacity={0.4}
+                    spotlightColor="rgba(108, 99, 255, 0.12)"
+                    backgroundSlot={
+                      <div
+                        className="process-card-bg-img"
+                        style={{ backgroundImage: `url(./img/process/${slug}.png)` }}
+                      />
+                    }
+                  >
+                    <div className="process-num">{String(i + 1).padStart(2, '0')}</div>
                     <div className="process-name">{t[nameKey] as string}</div>
                     <div className="process-desc">{t[descKey] as string}</div>
-                  </div>
+                  </BorderGlow>
                 );
               })}
             </div>
