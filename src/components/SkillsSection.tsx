@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useLang } from '../context/LangContext';
-import gsap from 'gsap';
 import BorderGlow from './BorderGlow';
 
 const SMOOTH_TAU = 0.18;
@@ -242,6 +241,37 @@ export default function SkillsSection() {
     });
   }, [t]);
 
+  // In-house process cards: horizontal scroll independent of page scroll.
+  // The row is a native horizontal scroll container (drag/trackpad/wheel);
+  // vertical wheel input over the cards scrolls the row sideways instead of
+  // scrolling the page, until the row reaches its start/end, at which point
+  // the page takes over again.
+  useEffect(() => {
+    const wraps = Array.from(document.querySelectorAll<HTMLElement>('.process-scroll-wrap'));
+    if (!wraps.length) return;
+
+    const cleanups = wraps.map(wrap => {
+      const onWheel = (e: WheelEvent) => {
+        if (window.matchMedia('(max-width: 767px)').matches) return;
+        const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        if (delta === 0) return;
+
+        const { scrollLeft, scrollWidth, clientWidth } = wrap;
+        const atStart = scrollLeft <= 0;
+        const atEnd = scrollLeft + clientWidth >= scrollWidth - 1;
+        if ((delta < 0 && atStart) || (delta > 0 && atEnd)) return;
+
+        e.preventDefault();
+        wrap.scrollBy({ left: delta, behavior: 'auto' });
+      };
+
+      wrap.addEventListener('wheel', onWheel, { passive: false });
+      return () => wrap.removeEventListener('wheel', onWheel);
+    });
+
+    return () => cleanups.forEach(fn => fn());
+  }, [t]);
+
   // Skills scrollers
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -311,17 +341,59 @@ export default function SkillsSection() {
       {/* DESIGN PROCESS */}
       <section className="section">
         <div className="section-label fade-in">My Design Process</div>
-        <div className="process-dual stagger-item">
+        <div className="process-dual">
           <div className="process-column">
-            <div className="process-column-header">
+            <div className="process-column-header stagger-item">
               <i className="ph-bold ph-buildings"></i>
               <span>{t.tab_inhouse}</span>
             </div>
-            <div className="process-column-grid">
-              {(['Align','Research','Structure','Design','Validate','Iterate'] as const).map((slug, i) => {
+            <div className="process-scroll-wrap">
+              <div className="process-column-grid process-column-grid--inhouse">
+                {(['Align','Research','Structure','Design','Validate','Iterate'] as const).map((slug, i) => {
+                  const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
+                  const nameKey = `ih_name_${idx}` as keyof typeof t;
+                  const descKey = `ih_desc_${idx}` as keyof typeof t;
+                  return (
+                    <BorderGlow
+                      key={slug}
+                      className="process-card process-card--has-img"
+                      backgroundColor="#13101c"
+                      borderRadius={14}
+                      colors={['#6C63FF', '#FF6584', '#38bdf8']}
+                      glowColor="264 70 75"
+                      edgeSensitivity={25}
+                      glowRadius={24}
+                      glowIntensity={1.1}
+                      coneSpread={25}
+                      fillOpacity={0.4}
+                      spotlightColor="rgba(108, 99, 255, 0.12)"
+                      backgroundSlot={
+                        <div
+                          className="process-card-bg-img"
+                          style={{ backgroundImage: `url(./img/process/${slug}.png)` }}
+                        />
+                      }
+                    >
+                      <div className="process-num">{String(i + 1).padStart(2, '0')}</div>
+                      <div className="process-name">{t[nameKey] as string}</div>
+                      <div className="process-desc">{t[descKey] as string}</div>
+                    </BorderGlow>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <div className="process-column stagger-item">
+            <div className="process-column-header">
+              <i className="ph-bold ph-handshake"></i>
+              <span>{t.tab_freelance}</span>
+            </div>
+            <div className="process-scroll-wrap">
+            <div className="process-column-grid process-column-grid--inhouse">
+              {(['Intake','AI Brief','Triage','Discovery','Proposal','Delivery'] as const).map((slug, i) => {
                 const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
-                const nameKey = `ih_name_${idx}` as keyof typeof t;
-                const descKey = `ih_desc_${idx}` as keyof typeof t;
+                const nameKey = `fl_name_${idx}` as keyof typeof t;
+                const descKey = `fl_desc_${idx}` as keyof typeof t;
                 return (
                   <BorderGlow
                     key={slug}
@@ -339,36 +411,17 @@ export default function SkillsSection() {
                     backgroundSlot={
                       <div
                         className="process-card-bg-img"
-                        style={{ backgroundImage: `url(./img/process/${slug}.png)` }}
+                        style={{ backgroundImage: `url("./img/process/${slug}.png")` }}
                       />
                     }
                   >
-                    <div className="process-num">{String(i + 1).padStart(2, '0')}</div>
+                    <div className="process-num">{idx}</div>
                     <div className="process-name">{t[nameKey] as string}</div>
                     <div className="process-desc">{t[descKey] as string}</div>
                   </BorderGlow>
                 );
               })}
             </div>
-          </div>
-          <div className="process-column">
-            <div className="process-column-header">
-              <i className="ph-bold ph-handshake"></i>
-              <span>{t.tab_freelance}</span>
-            </div>
-            <div className="process-column-grid">
-              {(['01','02','03','04','05','06'] as const).map((num, i) => {
-                const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
-                const nameKey = `fl_name_${idx}` as keyof typeof t;
-                const descKey = `fl_desc_${idx}` as keyof typeof t;
-                return (
-                  <div className="process-card" key={num}>
-                    <div className="process-num">{num}</div>
-                    <div className="process-name">{t[nameKey] as string}</div>
-                    <div className="process-desc">{t[descKey] as string}</div>
-                  </div>
-                );
-              })}
             </div>
           </div>
         </div>
