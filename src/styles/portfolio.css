@@ -15,7 +15,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 9999;
+      z-index: 10001;
       transition: opacity 0.5s ease, visibility 0.5s ease;
     }
 
@@ -1115,6 +1115,32 @@
       display: grid;
       grid-template-columns: repeat(6, 1fr);
       gap: 10px;
+    }
+
+    /* In-house cards: independent horizontal scroll, 4.5 cards visible at once
+       (the half card hints that there's more to scroll) */
+    @media (min-width: 768px) {
+      .process-scroll-wrap {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+
+      .process-scroll-wrap::-webkit-scrollbar {
+        display: none;
+      }
+
+      .process-column-grid--inhouse {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 10px;
+      }
+
+      .process-column-grid--inhouse .process-card--has-img {
+        flex: 0 0 calc((100% - 40px) / 4.5);
+        width: calc((100% - 40px) / 4.5);
+      }
     }
 
     /* MY SKILLS MARQUEE — uses .scroller.skills-scroller */

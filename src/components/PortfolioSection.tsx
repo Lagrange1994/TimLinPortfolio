@@ -8,8 +8,11 @@ const SMOOTH_TAU = 0.18;
 function createPortfolioScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: number) {
   const inner = scroller.querySelector<HTMLElement>('.scroller-inner');
   if (!inner) return;
-  const isReverse = scroller.getAttribute('data-direction') === 'right';
   if (scroller.getAttribute('data-raf-init') === 'true') return;
+  // Scroller is hidden (e.g. portfolio restored to "expanded" view on mount) —
+  // offsetWidth would be 0, breaking the wrap-around math. Retry once visible.
+  if (scroller.offsetWidth === 0) return;
+  const isReverse = scroller.getAttribute('data-direction') === 'right';
 
   const origItems = Array.from(inner.children) as HTMLElement[];
   origItems.forEach(item => {
@@ -224,6 +227,15 @@ export default function PortfolioSection() {
       setActiveFilter('all');
     }
   }, []);
+
+  // Retry scroller init once it becomes visible (e.g. after folding back from
+  // a restored "expanded" state, where init was skipped while hidden)
+  useEffect(() => {
+    if (expanded) return;
+    document.querySelectorAll<HTMLElement>('.portfolio-scroller').forEach(s => {
+      createPortfolioScroller(s, 100, 30);
+    });
+  }, [expanded]);
 
   // Init MagicBento when expanded
   useEffect(() => {
