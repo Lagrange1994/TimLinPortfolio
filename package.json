@@ -9,7 +9,6 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "build:projects": "vite build --config vite.projects.config.js",
     "lint": "eslint"
   },
   "dependencies": {
