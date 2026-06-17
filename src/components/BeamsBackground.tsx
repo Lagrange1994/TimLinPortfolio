@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import * as THREE from 'three';
 
 // ── Constants (matches the original <Beams /> usage example) ────────────────
 const BEAM_WIDTH = 2.6;
@@ -59,18 +60,6 @@ float cnoise(vec3 P){
   return 2.2*mix(n_yz.x,n_yz.y,fade_xyz.x);
 }`;
 
-// Module-scoped cache: load the exact same Three.js build the original site used
-// (CDN ES-module URL import — a distinct module identity from the npm package
-// and from Spline's internally-bundled copy, exactly matching pre-React behaviour)
-let threePromise: Promise<typeof import('three')> | null = null;
-function loadThree() {
-  if (!threePromise) {
-    threePromise = import(
-      /* @vite-ignore */ 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js'
-    ) as Promise<typeof import('three')>;
-  }
-  return threePromise;
-}
 
 export default function BeamsBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -84,9 +73,7 @@ export default function BeamsBackground() {
       else window.addEventListener('load', () => setTimeout(cb, 800), { once: true });
     }
 
-    scheduleInit(async () => {
-      if (cancelled) return;
-      const THREE: any = await loadThree();
+    scheduleInit(() => {
       if (cancelled) return;
 
       const canvas = canvasRef.current;

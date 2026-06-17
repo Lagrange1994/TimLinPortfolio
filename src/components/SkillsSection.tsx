@@ -1,8 +1,325 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useRef, Fragment } from 'react';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
 
 const SMOOTH_TAU = 0.18;
+
+const AI_CARDS = [
+  {
+    id: 'sources',
+    step: '01',
+    variant: '',
+    badge: null as string | null,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="6" cy="6" r="2.2" /><circle cx="18" cy="6" r="2.2" /><circle cx="6" cy="18" r="2.2" /><circle cx="18" cy="18" r="2.2" />
+        <path d="M8.2 6h7.6M6 8.2v7.6M18 8.2v7.6M8.2 18h7.6" />
+      </svg>
+    ),
+    title: 'Request Sources',
+    summary: 'PMs, stakeholders, clients — anything from a LINE message to a Tally form lands in one inbox.',
+    tags: ['LINE', 'Email', 'Form', 'Slack'],
+    pipeline: null as string[] | null,
+    detail: (
+      <div className="detail-section">
+        <div className="d-label"><span className="dot" />Recent inbound</div>
+        <div className="channel-list">
+          <div className="channel">
+            <span className="ch-icon">L</span>
+            <div className="ch-body">
+              <div className="ch-name">LINE · @pm.celine</div>
+              <div className="ch-snippet">Onboarding redesign for the new tier — Jun 17?</div>
+            </div>
+            <span className="ch-time">2m</span>
+          </div>
+          <div className="channel">
+            <span className="ch-icon">E</span>
+            <div className="ch-body">
+              <div className="ch-name">Email · celine.h@firm.co</div>
+              <div className="ch-snippet">Quick question on tier-2 pricing visuals</div>
+            </div>
+            <span className="ch-time">28m</span>
+          </div>
+          <div className="channel">
+            <span className="ch-icon">F</span>
+            <div className="ch-body">
+              <div className="ch-name">Form · Brief intake</div>
+              <div className="ch-snippet">Tier-2 pricing experiment — marketing</div>
+            </div>
+            <span className="ch-time">1h</span>
+          </div>
+          <div className="channel">
+            <span className="ch-icon">S</span>
+            <div className="ch-body">
+              <div className="ch-name">Slack · #design-requests</div>
+              <div className="ch-snippet">Mobile sign-up flow — usability review</div>
+            </div>
+            <span className="ch-time">3h</span>
+          </div>
+          <div className="channel">
+            <span className="ch-icon">M</span>
+            <div className="ch-body">
+              <div className="ch-name">Manual · Kickoff notes</div>
+              <div className="ch-snippet">In-person — Q3 roadmap dependencies</div>
+            </div>
+            <span className="ch-time">1d</span>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'ai',
+    step: '03',
+    variant: 'ai-focal',
+    badge: 'GEMINI · DRAFT',
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 3 13.6 8.4 19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z" />
+        <path d="M19 17l.7 2.3L22 20l-2.3.7L19 23l-.7-2.3L16 20l2.3-.7z" />
+      </svg>
+    ),
+    title: 'AI Brief',
+    summary: 'Gemini summarizes the request, classifies the task type, identifies missing context, and suggests the first questions — before I read a single message.',
+    tags: ['Gemini', 'Classify', 'Summarize', 'Gap-find'],
+    pipeline: null as string[] | null,
+    detail: (
+      <>
+        <div className="ai-summary">
+          <div className="d-label"><span className="dot" />Summary</div>
+          <p>Redesign the <span className="hl">first-run onboarding</span> to introduce a new pricing tier without disrupting the existing free-to-paid funnel. PM signals a Q3 dependency — ship before <span className="hl">Jun 17</span>.</p>
+        </div>
+        <div className="ai-row">
+          <div className="ai-cell">
+            <div className="d-label"><span className="dot" />Task Type</div>
+            <div className="vv">
+              <span className="badge violet">Product UI</span>
+              <span className="conf">conf · 0.92</span>
+            </div>
+          </div>
+          <div className="ai-cell">
+            <div className="d-label amber"><span className="dot" />Priority</div>
+            <div className="vv">
+              <span className="badge amber">P1 · HIGH</span>
+              <span className="conf">conf · 0.87</span>
+            </div>
+          </div>
+        </div>
+        <div className="ai-block missing">
+          <div className="d-label amber"><span className="dot" />Missing Context</div>
+          <ul>
+            <li>No success metric defined (activation? conversion?)</li>
+            <li>Pricing tier copy not yet finalized by marketing</li>
+            <li>Analytics access for the current funnel</li>
+          </ul>
+        </div>
+        <div className="ai-block questions">
+          <div className="d-label blue"><span className="dot" />Suggested Questions</div>
+          <ol>
+            <li>What's the target lift on tier-2 conversion?</li>
+            <li>Are existing free users grandfathered in?</li>
+            <li>Is the iOS / Android rollout simultaneous?</li>
+          </ol>
+        </div>
+        <div className="ai-block direction">
+          <div className="d-label"><span className="dot" />Initial Direction</div>
+          <p>Augment the existing onboarding with a single tier-intro screen and a light upsell at activation, rather than forking the flow. Lower risk, faster ship.</p>
+        </div>
+      </>
+    ),
+  },
+  {
+    id: 'human',
+    step: '05',
+    variant: 'ai-human',
+    badge: null as string | null,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="8" r="3.5" /><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" />
+      </svg>
+    ),
+    title: 'Human Review',
+    summary: 'I read the brief, judge priority, confirm strategy, spot risks, and decide the first action — the part that requires design judgment.',
+    tags: ['Priority', 'Strategy', 'Risk', 'Next step'],
+    pipeline: null as string[] | null,
+    detail: (
+      <div className="detail-section">
+        <div className="d-label green"><span className="dot" />Assessment · DR-248</div>
+        <div className="review-grid">
+          <div className="rrow">
+            <div className="rl">Priority</div>
+            <div className="rv">P1 — ship before Jun 17 to unblock pricing launch.</div>
+          </div>
+          <div className="rrow">
+            <div className="rl">Strategy</div>
+            <div className="rv">Augment the existing onboarding rather than fork; smaller surface, faster ship.</div>
+          </div>
+          <div className="rrow">
+            <div className="rl">Risks</div>
+            <div className="rv">Pricing copy unfinalized; analytics access not yet granted; mixed cohort behaviour.</div>
+          </div>
+          <div className="rrow">
+            <div className="rl">Next step</div>
+            <div className="rv">30-min kickoff w/ PM; request analytics access; capture baseline funnel.</div>
+          </div>
+        </div>
+        <div className="review-quote">
+          <div className="ql">Operating Principle</div>
+          <div className="qq">AI handles <span className="pivot">structure</span>. I handle <span className="pivot">judgment</span>.</div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'intake',
+    step: '02',
+    variant: '',
+    badge: null as string | null,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="4" width="16" height="16" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" />
+      </svg>
+    ),
+    title: 'Intake',
+    summary: 'Make receives each request and normalizes it — source, project type, goal, timeline, priority, and contact all captured in structured fields.',
+    tags: ['Make', 'Webhooks', 'Fields'],
+    pipeline: null as string[] | null,
+    detail: (
+      <div className="detail-section">
+        <div className="d-label"><span className="dot" />Request Form · DR-248</div>
+        <div className="form-mini">
+          <div className="field"><label>Source</label><div className="val"><span>LINE — @pm.celine</span></div></div>
+          <div className="field"><label>Project Type</label><div className="val"><span>Product UI · Mobile</span></div></div>
+          <div className="field"><label>Goal</label><div className="val"><span>Redesign onboarding for new pricing tier</span></div></div>
+          <div className="field-row">
+            <div className="field"><label>Timeline</label><div className="val"><span>Jun 03 — Jun 17</span></div></div>
+            <div className="field"><label>Budget</label><div className="val"><span>Internal</span></div></div>
+          </div>
+          <div className="field"><label>Priority</label><div className="val"><span>P1 — Quarterly OKR</span><span className="priority-pill">HIGH</span></div></div>
+          <div className="field"><label>Contact</label><div className="val"><span>celine.h@firm.co</span></div></div>
+          <div className="form-status">
+            <span>Form complete</span>
+            <div className="bar">
+              {Array.from({ length: 7 }).map((_, i) => <div key={i} className="pdot" />)}
+            </div>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'tracking',
+    step: '04',
+    variant: '',
+    badge: null as string | null,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3.5" y="4.5" width="17" height="15" rx="1.8" /><path d="M3.5 9.5h17M9 4.5v15M14.5 4.5v15" />
+      </svg>
+    ),
+    title: 'Tracking',
+    summary: 'Every structured brief is written to Google Sheets with a stable record ID — a searchable, always-up-to-date intake log.',
+    tags: ['Sheets', 'Record ID', 'History'],
+    pipeline: null as string[] | null,
+    detail: (
+      <div className="detail-section">
+        <div className="d-label"><span className="dot" />Sheets · Design Requests</div>
+        <div className="sheet">
+          <div className="sheet-tabs">
+            <span className="tab active">Tracker</span>
+            <span className="tab">Backlog</span>
+            <span className="tab">Archive</span>
+          </div>
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Src</th><th>Type</th><th>Pri</th><th>Status</th><th>Owner</th></tr>
+            </thead>
+            <tbody>
+              <tr className="current">
+                <td>DR-248</td><td>LINE</td><td>Product UI</td><td>P1</td><td><span className="st active">Active</span></td><td>TL</td>
+              </tr>
+              <tr>
+                <td>DR-247</td><td>Form</td><td>Graphic</td><td>P2</td><td><span className="st review">Review</span></td><td>TL</td>
+              </tr>
+              <tr>
+                <td>DR-246</td><td>Email</td><td>UX Review</td><td>P2</td><td><span className="st done">Done</span></td><td>TL</td>
+              </tr>
+              <tr>
+                <td>DR-245</td><td>LINE</td><td>Research</td><td>P3</td><td><span className="st queue">Backlog</span></td><td>TL</td>
+              </tr>
+            </tbody>
+          </table>
+          <div className="sheet-foot">
+            <span>4 of 142 records</span>
+            <span>Updated · 2m ago</span>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 'workflow',
+    step: '06',
+    variant: '',
+    badge: null as string | null,
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 12h4l2-6 4 12 2-6h4" />
+      </svg>
+    ),
+    title: 'Design Workflow',
+    summary: 'The brief enters the design pipeline — already structured, prioritized, and contextualized.',
+    tags: null as string[] | null,
+    pipeline: ['Research', 'Structure', 'Design', 'Validate', 'Delivery'],
+    detail: (
+      <div className="detail-section">
+        <div className="d-label blue"><span className="dot" />Phases · DR-248</div>
+        <div className="phases">
+          <div className="phase next">
+            <div className="pn">01</div>
+            <div>
+              <div className="pt">Research</div>
+              <div className="pd">Context, stakeholder interviews, baseline funnel data.</div>
+            </div>
+            <span className="ps">Up next</span>
+          </div>
+          <div className="phase">
+            <div className="pn">02</div>
+            <div>
+              <div className="pt">Structure</div>
+              <div className="pd">IA, primary flows, decision points.</div>
+            </div>
+            <span className="ps">Queued</span>
+          </div>
+          <div className="phase">
+            <div className="pn">03</div>
+            <div>
+              <div className="pt">Design</div>
+              <div className="pd">Wireframes → hi-fi mocks → polish.</div>
+            </div>
+            <span className="ps">Queued</span>
+          </div>
+          <div className="phase">
+            <div className="pn">04</div>
+            <div>
+              <div className="pt">Validate</div>
+              <div className="pd">Usability test, internal review, PM signoff.</div>
+            </div>
+            <span className="ps">Queued</span>
+          </div>
+          <div className="phase">
+            <div className="pn">05</div>
+            <div>
+              <div className="pt">Delivery</div>
+              <div className="pd">Specs, asset export, dev handoff.</div>
+            </div>
+            <span className="ps">Queued</span>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+];
 
 function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: number) {
   const inner = scroller.querySelector<HTMLElement>('.scroller-inner');
@@ -76,6 +393,16 @@ function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: 
 
 export default function SkillsSection() {
   const { t } = useLang();
+  const [expandedAiCard, setExpandedAiCard] = useState<string | null>(null);
+  const aiFlowGridRef = useRef<HTMLDivElement>(null);
+
+  // Toggle the bento "has-expanded" class imperatively (not via React's className prop) —
+  // .ai-flow-grid is a .stagger-item whose .visible class is added by the scroll-reveal
+  // effect outside React. If className were recomputed on state change, React's diff
+  // would overwrite the attribute and strip .visible, hiding the whole grid.
+  useEffect(() => {
+    aiFlowGridRef.current?.classList.toggle('has-expanded', !!expandedAiCard);
+  }, [expandedAiCard]);
 
   // Restart SVG SMIL animations (<animateMotion>/<mpath>) injected via
   // dangerouslySetInnerHTML — browsers only auto-start SMIL on document
@@ -145,6 +472,14 @@ export default function SkillsSection() {
 
     const handlers = new Map<HTMLElement, (e: PointerEvent) => void>();
 
+    // Radar ring — inject into ALL process cards (inhouse + freelance)
+    document.querySelectorAll<HTMLElement>('.process-card').forEach(card => {
+      if (card.querySelector('.process-radar')) return;
+      const radar = document.createElement('span');
+      radar.className = 'process-radar';
+      card.insertBefore(radar, card.firstChild);
+    });
+
     // Freelance cards — full border-glow-card treatment
     document.querySelectorAll<HTMLElement>('.process-card').forEach(card => {
       if (card.querySelector('.edge-light')) return;
@@ -156,7 +491,7 @@ export default function SkillsSection() {
       const inner = document.createElement('div');
       inner.className = 'border-glow-inner';
       Array.from(card.children)
-        .filter(c => !c.classList.contains('edge-light'))
+        .filter(c => !c.classList.contains('edge-light') && !c.classList.contains('process-radar'))
         .forEach(c => inner.appendChild(c));
       card.appendChild(inner);
 
@@ -204,6 +539,8 @@ export default function SkillsSection() {
     });
 
     return () => {
+      // Remove radar from ALL process cards (inhouse cards aren't in handlers)
+      document.querySelectorAll<HTMLElement>('.process-card .process-radar').forEach(el => el.remove());
       // Remove listeners AND fully undo DOM changes so Strict Mode's second
       // invocation finds clean cards and can re-initialize with fresh listeners.
       handlers.forEach((handler, card) => {
@@ -501,8 +838,8 @@ export default function SkillsSection() {
           {t.ai_sub}
         </p>
 
-        <div className="ai-flow-grid stagger-item" dangerouslySetInnerHTML={{ __html: `
-          <div class="ai-connectors" aria-hidden="true">
+        <div className="ai-flow-grid stagger-item" ref={aiFlowGridRef}>
+          <div className="ai-connectors" aria-hidden="true" dangerouslySetInnerHTML={{ __html: `
             <svg viewBox="0 0 230 100" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="ag-down" x1="0" y1="0" x2="0" y2="1">
@@ -539,75 +876,49 @@ export default function SkillsSection() {
               <circle fill="#7BE3B5" r="0.58"><animateMotion dur="3.6s" repeatCount="indefinite" rotate="auto" begin="0.2s"><mpath href="#agp4"/></animateMotion></circle>
               <circle fill="#8A2BE2" r="0.50"><animateMotion dur="6s" repeatCount="indefinite" rotate="auto" begin="0.9s"><mpath href="#agp5"/></animateMotion></circle>
             </svg>
-          </div>
+          ` }} />
 
-          <article class="ai-card">
-            <span class="ai-step-badge"><em>01</em></span>
-            <div class="ai-card-head">
-              <div class="ai-glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="18" r="2.2"/><path d="M8.2 6h7.6M6 8.2v7.6M18 8.2v7.6M8.2 18h7.6"/></svg></div>
-              <h3>Request Sources</h3>
-            </div>
-            <p>PMs, stakeholders, clients — anything from a LINE message to a Tally form lands in one inbox.</p>
-            <div class="ai-tags"><span class="ai-tag">LINE</span><span class="ai-tag">Email</span><span class="ai-tag">Form</span><span class="ai-tag">Slack</span></div>
-          </article>
-
-          <article class="ai-card ai-focal">
-            <span class="ai-step-badge"><em>03</em></span>
-            <span class="ai-focal-badge">GEMINI · DRAFT</span>
-            <div class="ai-card-head">
-              <div class="ai-glyph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 13.6 8.4 19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z"/><path d="M19 17l.7 2.3L22 20l-2.3.7L19 23l-.7-2.3L16 20l2.3-.7z"/></svg></div>
-              <h3>AI Brief</h3>
-            </div>
-            <p>Gemini summarizes the request, classifies the task type, identifies missing context, and suggests the first questions — before I read a single message.</p>
-            <div class="ai-tags"><span class="ai-tag">Gemini</span><span class="ai-tag">Classify</span><span class="ai-tag">Summarize</span><span class="ai-tag">Gap-find</span></div>
-          </article>
-
-          <article class="ai-card ai-human">
-            <span class="ai-step-badge"><em>05</em></span>
-            <div class="ai-card-head">
-              <div class="ai-glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5"/></svg></div>
-              <h3>Human Review</h3>
-            </div>
-            <p>I read the brief, judge priority, confirm strategy, spot risks, and decide the first action — the part that requires design judgment.</p>
-            <div class="ai-tags"><span class="ai-tag">Priority</span><span class="ai-tag">Strategy</span><span class="ai-tag">Risk</span><span class="ai-tag">Next step</span></div>
-          </article>
-
-          <article class="ai-card">
-            <span class="ai-step-badge"><em>02</em></span>
-            <div class="ai-card-head">
-              <div class="ai-glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></div>
-              <h3>Intake</h3>
-            </div>
-            <p>Make receives each request and normalizes it — source, project type, goal, timeline, priority, and contact all captured in structured fields.</p>
-            <div class="ai-tags"><span class="ai-tag">Make</span><span class="ai-tag">Webhooks</span><span class="ai-tag">Fields</span></div>
-          </article>
-
-          <article class="ai-card">
-            <span class="ai-step-badge"><em>04</em></span>
-            <div class="ai-card-head">
-              <div class="ai-glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="1.8"/><path d="M3.5 9.5h17M9 4.5v15M14.5 4.5v15"/></svg></div>
-              <h3>Tracking</h3>
-            </div>
-            <p>Every structured brief is written to Google Sheets with a stable record ID — a searchable, always-up-to-date intake log.</p>
-            <div class="ai-tags"><span class="ai-tag">Sheets</span><span class="ai-tag">Record ID</span><span class="ai-tag">History</span></div>
-          </article>
-
-          <article class="ai-card">
-            <span class="ai-step-badge"><em>06</em></span>
-            <div class="ai-card-head">
-              <div class="ai-glyph"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h4l2-6 4 12 2-6h4"/></svg></div>
-              <h3>Design Workflow</h3>
-            </div>
-            <p>The brief enters the design pipeline — already structured, prioritized, and contextualized.</p>
-            <div class="ai-pipeline">
-              <span class="ai-pstep">Research</span><span class="ai-psep">→</span>
-              <span class="ai-pstep">Structure</span><span class="ai-psep">→</span>
-              <span class="ai-pstep">Design</span><span class="ai-psep">→</span>
-              <span class="ai-pstep">Validate</span><span class="ai-psep">→</span>
-              <span class="ai-pstep">Delivery</span>
-            </div>
-          </article>
-        ` }} />
+          {AI_CARDS.map(card => {
+            const isOpen = expandedAiCard === card.id;
+            const toggle = () => setExpandedAiCard(isOpen ? null : card.id);
+            return (
+              <article
+                key={card.id}
+                className={`ai-card${card.variant ? ' ' + card.variant : ''}${isOpen ? ' is-open' : ''}`}
+                onClick={toggle}
+                role="button"
+                tabIndex={0}
+                aria-expanded={isOpen}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}
+              >
+                <span className="ai-step-badge"><em>{card.step}</em></span>
+                {card.badge && <span className="ai-focal-badge">{card.badge}</span>}
+                <div className="ai-card-head">
+                  <div className="ai-glyph">{card.icon}</div>
+                  <h3>{card.title}</h3>
+                  <span className="ai-card-toggle" aria-hidden="true" />
+                </div>
+                <p>{card.summary}</p>
+                {card.tags && (
+                  <div className="ai-tags">
+                    {card.tags.map(tag => <span key={tag} className="ai-tag">{tag}</span>)}
+                  </div>
+                )}
+                {card.pipeline && (
+                  <div className="ai-pipeline">
+                    {card.pipeline.map((step, i) => (
+                      <Fragment key={step}>
+                        {i > 0 && <span className="ai-psep">→</span>}
+                        <span className="ai-pstep">{step}</span>
+                      </Fragment>
+                    ))}
+                  </div>
+                )}
+                <div className="ai-card-detail">{card.detail}</div>
+              </article>
+            );
+          })}
+        </div>
 
         <div className="ai-chips-row stagger-item">
           <div className="ai-chips-label"><span>AI classifies requests as</span></div>
