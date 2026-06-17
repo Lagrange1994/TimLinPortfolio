@@ -1,325 +1,328 @@
-import { useEffect, useState, useRef, Fragment } from 'react';
+import { useEffect, useState, useRef, Fragment, useMemo } from 'react';
+import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
 
 const SMOOTH_TAU = 0.18;
 
-const AI_CARDS = [
-  {
-    id: 'sources',
-    step: '01',
-    variant: '',
-    badge: null as string | null,
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="6" cy="6" r="2.2" /><circle cx="18" cy="6" r="2.2" /><circle cx="6" cy="18" r="2.2" /><circle cx="18" cy="18" r="2.2" />
-        <path d="M8.2 6h7.6M6 8.2v7.6M18 8.2v7.6M8.2 18h7.6" />
-      </svg>
-    ),
-    title: 'Request Sources',
-    summary: 'PMs, stakeholders, clients — anything from a LINE message to a Tally form lands in one inbox.',
-    tags: ['LINE', 'Email', 'Form', 'Slack'],
-    pipeline: null as string[] | null,
-    detail: (
-      <div className="detail-section">
-        <div className="d-label"><span className="dot" />Recent inbound</div>
-        <div className="channel-list">
-          <div className="channel">
-            <span className="ch-icon">L</span>
-            <div className="ch-body">
-              <div className="ch-name">LINE · @pm.celine</div>
-              <div className="ch-snippet">Onboarding redesign for the new tier — Jun 17?</div>
+function makeAiCards(t: Record<string, string>) {
+  return [
+    {
+      id: 'sources',
+      step: '01',
+      variant: '',
+      badge: null as string | null,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="6" cy="6" r="2.2" /><circle cx="18" cy="6" r="2.2" /><circle cx="6" cy="18" r="2.2" /><circle cx="18" cy="18" r="2.2" />
+          <path d="M8.2 6h7.6M6 8.2v7.6M18 8.2v7.6M8.2 18h7.6" />
+        </svg>
+      ),
+      title: 'Request Sources',
+      summary: t.ai_sources_sum,
+      tags: ['LINE', 'Email', 'Form', 'Slack'],
+      pipeline: null as string[] | null,
+      detail: (
+        <div className="detail-section">
+          <div className="d-label"><span className="dot" />{t.ai_d_recent}</div>
+          <div className="channel-list">
+            <div className="channel">
+              <span className="ch-icon">L</span>
+              <div className="ch-body">
+                <div className="ch-name">LINE · @pm.celine</div>
+                <div className="ch-snippet">Onboarding redesign for the new tier — Jun 17?</div>
+              </div>
+              <span className="ch-time">2m</span>
             </div>
-            <span className="ch-time">2m</span>
-          </div>
-          <div className="channel">
-            <span className="ch-icon">E</span>
-            <div className="ch-body">
-              <div className="ch-name">Email · celine.h@firm.co</div>
-              <div className="ch-snippet">Quick question on tier-2 pricing visuals</div>
+            <div className="channel">
+              <span className="ch-icon">E</span>
+              <div className="ch-body">
+                <div className="ch-name">Email · celine.h@firm.co</div>
+                <div className="ch-snippet">Quick question on tier-2 pricing visuals</div>
+              </div>
+              <span className="ch-time">28m</span>
             </div>
-            <span className="ch-time">28m</span>
-          </div>
-          <div className="channel">
-            <span className="ch-icon">F</span>
-            <div className="ch-body">
-              <div className="ch-name">Form · Brief intake</div>
-              <div className="ch-snippet">Tier-2 pricing experiment — marketing</div>
+            <div className="channel">
+              <span className="ch-icon">F</span>
+              <div className="ch-body">
+                <div className="ch-name">Form · Brief intake</div>
+                <div className="ch-snippet">Tier-2 pricing experiment — marketing</div>
+              </div>
+              <span className="ch-time">1h</span>
             </div>
-            <span className="ch-time">1h</span>
-          </div>
-          <div className="channel">
-            <span className="ch-icon">S</span>
-            <div className="ch-body">
-              <div className="ch-name">Slack · #design-requests</div>
-              <div className="ch-snippet">Mobile sign-up flow — usability review</div>
+            <div className="channel">
+              <span className="ch-icon">S</span>
+              <div className="ch-body">
+                <div className="ch-name">Slack · #design-requests</div>
+                <div className="ch-snippet">Mobile sign-up flow — usability review</div>
+              </div>
+              <span className="ch-time">3h</span>
             </div>
-            <span className="ch-time">3h</span>
-          </div>
-          <div className="channel">
-            <span className="ch-icon">M</span>
-            <div className="ch-body">
-              <div className="ch-name">Manual · Kickoff notes</div>
-              <div className="ch-snippet">In-person — Q3 roadmap dependencies</div>
-            </div>
-            <span className="ch-time">1d</span>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: 'ai',
-    step: '03',
-    variant: 'ai-focal',
-    badge: 'GEMINI · DRAFT',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 3 13.6 8.4 19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z" />
-        <path d="M19 17l.7 2.3L22 20l-2.3.7L19 23l-.7-2.3L16 20l2.3-.7z" />
-      </svg>
-    ),
-    title: 'AI Brief',
-    summary: 'Gemini summarizes the request, classifies the task type, identifies missing context, and suggests the first questions — before I read a single message.',
-    tags: ['Gemini', 'Classify', 'Summarize', 'Gap-find'],
-    pipeline: null as string[] | null,
-    detail: (
-      <>
-        <div className="ai-summary">
-          <div className="d-label"><span className="dot" />Summary</div>
-          <p>Redesign the <span className="hl">first-run onboarding</span> to introduce a new pricing tier without disrupting the existing free-to-paid funnel. PM signals a Q3 dependency — ship before <span className="hl">Jun 17</span>.</p>
-        </div>
-        <div className="ai-row">
-          <div className="ai-cell">
-            <div className="d-label"><span className="dot" />Task Type</div>
-            <div className="vv">
-              <span className="badge violet">Product UI</span>
-              <span className="conf">conf · 0.92</span>
-            </div>
-          </div>
-          <div className="ai-cell">
-            <div className="d-label amber"><span className="dot" />Priority</div>
-            <div className="vv">
-              <span className="badge amber">P1 · HIGH</span>
-              <span className="conf">conf · 0.87</span>
+            <div className="channel">
+              <span className="ch-icon">M</span>
+              <div className="ch-body">
+                <div className="ch-name">Manual · Kickoff notes</div>
+                <div className="ch-snippet">In-person — Q3 roadmap dependencies</div>
+              </div>
+              <span className="ch-time">1d</span>
             </div>
           </div>
         </div>
-        <div className="ai-block missing">
-          <div className="d-label amber"><span className="dot" />Missing Context</div>
-          <ul>
-            <li>No success metric defined (activation? conversion?)</li>
-            <li>Pricing tier copy not yet finalized by marketing</li>
-            <li>Analytics access for the current funnel</li>
-          </ul>
-        </div>
-        <div className="ai-block questions">
-          <div className="d-label blue"><span className="dot" />Suggested Questions</div>
-          <ol>
-            <li>What's the target lift on tier-2 conversion?</li>
-            <li>Are existing free users grandfathered in?</li>
-            <li>Is the iOS / Android rollout simultaneous?</li>
-          </ol>
-        </div>
-        <div className="ai-block direction">
-          <div className="d-label"><span className="dot" />Initial Direction</div>
-          <p>Augment the existing onboarding with a single tier-intro screen and a light upsell at activation, rather than forking the flow. Lower risk, faster ship.</p>
-        </div>
-      </>
-    ),
-  },
-  {
-    id: 'human',
-    step: '05',
-    variant: 'ai-human',
-    badge: null as string | null,
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="8" r="3.5" /><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" />
-      </svg>
-    ),
-    title: 'Human Review',
-    summary: 'I read the brief, judge priority, confirm strategy, spot risks, and decide the first action — the part that requires design judgment.',
-    tags: ['Priority', 'Strategy', 'Risk', 'Next step'],
-    pipeline: null as string[] | null,
-    detail: (
-      <div className="detail-section">
-        <div className="d-label green"><span className="dot" />Assessment · DR-248</div>
-        <div className="review-grid">
-          <div className="rrow">
-            <div className="rl">Priority</div>
-            <div className="rv">P1 — ship before Jun 17 to unblock pricing launch.</div>
+      ),
+    },
+    {
+      id: 'ai',
+      step: '03',
+      variant: 'ai-focal',
+      badge: 'GEMINI · DRAFT',
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3 13.6 8.4 19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z" />
+          <path d="M19 17l.7 2.3L22 20l-2.3.7L19 23l-.7-2.3L16 20l2.3-.7z" />
+        </svg>
+      ),
+      title: 'AI Brief',
+      summary: t.ai_ai_sum,
+      tags: ['Gemini', 'Classify', 'Summarize', 'Gap-find'],
+      pipeline: null as string[] | null,
+      detail: (
+        <>
+          <div className="ai-summary">
+            <div className="d-label"><span className="dot" />{t.ai_d_summary_lbl}</div>
+            <p dangerouslySetInnerHTML={{ __html: t.ai_d_summary_text }} />
           </div>
-          <div className="rrow">
-            <div className="rl">Strategy</div>
-            <div className="rv">Augment the existing onboarding rather than fork; smaller surface, faster ship.</div>
+          <div className="ai-row">
+            <div className="ai-cell">
+              <div className="d-label"><span className="dot" />{t.ai_d_tasktype_lbl}</div>
+              <div className="vv">
+                <span className="badge violet">Product UI</span>
+                <span className="conf">conf · 0.92</span>
+              </div>
+            </div>
+            <div className="ai-cell">
+              <div className="d-label amber"><span className="dot" />{t.ai_d_priority_lbl}</div>
+              <div className="vv">
+                <span className="badge amber">P1 · HIGH</span>
+                <span className="conf">conf · 0.87</span>
+              </div>
+            </div>
           </div>
-          <div className="rrow">
-            <div className="rl">Risks</div>
-            <div className="rv">Pricing copy unfinalized; analytics access not yet granted; mixed cohort behaviour.</div>
+          <div className="ai-block missing">
+            <div className="d-label amber"><span className="dot" />{t.ai_d_missing_lbl}</div>
+            <ul>
+              <li>{t.ai_d_m1}</li>
+              <li>{t.ai_d_m2}</li>
+              <li>{t.ai_d_m3}</li>
+            </ul>
           </div>
-          <div className="rrow">
-            <div className="rl">Next step</div>
-            <div className="rv">30-min kickoff w/ PM; request analytics access; capture baseline funnel.</div>
+          <div className="ai-block questions">
+            <div className="d-label blue"><span className="dot" />{t.ai_d_questions_lbl}</div>
+            <ol>
+              <li>{t.ai_d_q1}</li>
+              <li>{t.ai_d_q2}</li>
+              <li>{t.ai_d_q3}</li>
+            </ol>
+          </div>
+          <div className="ai-block direction">
+            <div className="d-label"><span className="dot" />{t.ai_d_direction_lbl}</div>
+            <p>{t.ai_d_direction_text}</p>
+          </div>
+        </>
+      ),
+    },
+    {
+      id: 'human',
+      step: '05',
+      variant: 'ai-human',
+      badge: null as string | null,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="3.5" /><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" />
+        </svg>
+      ),
+      title: 'Human Review',
+      summary: t.ai_human_sum,
+      tags: ['Priority', 'Strategy', 'Risk', 'Next step'],
+      pipeline: null as string[] | null,
+      detail: (
+        <div className="detail-section">
+          <div className="d-label green"><span className="dot" />{t.ai_d_assessment_lbl}</div>
+          <div className="review-grid">
+            <div className="rrow">
+              <div className="rl">{t.ai_hr_priority_row}</div>
+              <div className="rv">{t.ai_hr_priority_val}</div>
+            </div>
+            <div className="rrow">
+              <div className="rl">{t.ai_hr_strategy_row}</div>
+              <div className="rv">{t.ai_hr_strategy_val}</div>
+            </div>
+            <div className="rrow">
+              <div className="rl">{t.ai_hr_risks_row}</div>
+              <div className="rv">{t.ai_hr_risks_val}</div>
+            </div>
+            <div className="rrow">
+              <div className="rl">{t.ai_hr_nextstep_row}</div>
+              <div className="rv">{t.ai_hr_nextstep_val}</div>
+            </div>
+          </div>
+          <div className="review-quote">
+            <div className="ql">{t.ai_hr_op_lbl}</div>
+            <div className="qq" dangerouslySetInnerHTML={{ __html: t.ai_hr_op_quote }} />
           </div>
         </div>
-        <div className="review-quote">
-          <div className="ql">Operating Principle</div>
-          <div className="qq">AI handles <span className="pivot">structure</span>. I handle <span className="pivot">judgment</span>.</div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: 'intake',
-    step: '02',
-    variant: '',
-    badge: null as string | null,
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="4" y="4" width="16" height="16" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" />
-      </svg>
-    ),
-    title: 'Intake',
-    summary: 'Make receives each request and normalizes it — source, project type, goal, timeline, priority, and contact all captured in structured fields.',
-    tags: ['Make', 'Webhooks', 'Fields'],
-    pipeline: null as string[] | null,
-    detail: (
-      <div className="detail-section">
-        <div className="d-label"><span className="dot" />Request Form · DR-248</div>
-        <div className="form-mini">
-          <div className="field"><label>Source</label><div className="val"><span>LINE — @pm.celine</span></div></div>
-          <div className="field"><label>Project Type</label><div className="val"><span>Product UI · Mobile</span></div></div>
-          <div className="field"><label>Goal</label><div className="val"><span>Redesign onboarding for new pricing tier</span></div></div>
-          <div className="field-row">
-            <div className="field"><label>Timeline</label><div className="val"><span>Jun 03 — Jun 17</span></div></div>
-            <div className="field"><label>Budget</label><div className="val"><span>Internal</span></div></div>
-          </div>
-          <div className="field"><label>Priority</label><div className="val"><span>P1 — Quarterly OKR</span><span className="priority-pill">HIGH</span></div></div>
-          <div className="field"><label>Contact</label><div className="val"><span>celine.h@firm.co</span></div></div>
-          <div className="form-status">
-            <span>Form complete</span>
-            <div className="bar">
-              {Array.from({ length: 7 }).map((_, i) => <div key={i} className="pdot" />)}
+      ),
+    },
+    {
+      id: 'intake',
+      step: '02',
+      variant: '',
+      badge: null as string | null,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="4" y="4" width="16" height="16" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" />
+        </svg>
+      ),
+      title: 'Intake',
+      summary: t.ai_intake_sum,
+      tags: ['Make', 'Webhooks', 'Fields'],
+      pipeline: null as string[] | null,
+      detail: (
+        <div className="detail-section">
+          <div className="d-label"><span className="dot" />{t.ai_d_req_form}</div>
+          <div className="form-mini">
+            <div className="field"><label>{t.ai_f_source}</label><div className="val"><span>LINE — @pm.celine</span></div></div>
+            <div className="field"><label>{t.ai_f_projtype}</label><div className="val"><span>Product UI · Mobile</span></div></div>
+            <div className="field"><label>{t.ai_f_goal}</label><div className="val"><span>Redesign onboarding for new pricing tier</span></div></div>
+            <div className="field-row">
+              <div className="field"><label>{t.ai_f_timeline}</label><div className="val"><span>Jun 03 — Jun 17</span></div></div>
+              <div className="field"><label>{t.ai_f_budget}</label><div className="val"><span>Internal</span></div></div>
+            </div>
+            <div className="field"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><span className="priority-pill">HIGH</span></div></div>
+            <div className="field"><label>{t.ai_f_contact}</label><div className="val"><span>celine.h@firm.co</span></div></div>
+            <div className="form-status">
+              <span>{t.ai_f_complete}</span>
+              <div className="bar">
+                {Array.from({ length: 7 }).map((_, i) => <div key={i} className="pdot" />)}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    ),
-  },
-  {
-    id: 'tracking',
-    step: '04',
-    variant: '',
-    badge: null as string | null,
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3.5" y="4.5" width="17" height="15" rx="1.8" /><path d="M3.5 9.5h17M9 4.5v15M14.5 4.5v15" />
-      </svg>
-    ),
-    title: 'Tracking',
-    summary: 'Every structured brief is written to Google Sheets with a stable record ID — a searchable, always-up-to-date intake log.',
-    tags: ['Sheets', 'Record ID', 'History'],
-    pipeline: null as string[] | null,
-    detail: (
-      <div className="detail-section">
-        <div className="d-label"><span className="dot" />Sheets · Design Requests</div>
-        <div className="sheet">
-          <div className="sheet-tabs">
-            <span className="tab active">Tracker</span>
-            <span className="tab">Backlog</span>
-            <span className="tab">Archive</span>
-          </div>
-          <table>
-            <thead>
-              <tr><th>ID</th><th>Src</th><th>Type</th><th>Pri</th><th>Status</th><th>Owner</th></tr>
-            </thead>
-            <tbody>
-              <tr className="current">
-                <td>DR-248</td><td>LINE</td><td>Product UI</td><td>P1</td><td><span className="st active">Active</span></td><td>TL</td>
-              </tr>
-              <tr>
-                <td>DR-247</td><td>Form</td><td>Graphic</td><td>P2</td><td><span className="st review">Review</span></td><td>TL</td>
-              </tr>
-              <tr>
-                <td>DR-246</td><td>Email</td><td>UX Review</td><td>P2</td><td><span className="st done">Done</span></td><td>TL</td>
-              </tr>
-              <tr>
-                <td>DR-245</td><td>LINE</td><td>Research</td><td>P3</td><td><span className="st queue">Backlog</span></td><td>TL</td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="sheet-foot">
-            <span>4 of 142 records</span>
-            <span>Updated · 2m ago</span>
+      ),
+    },
+    {
+      id: 'tracking',
+      step: '04',
+      variant: '',
+      badge: null as string | null,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3.5" y="4.5" width="17" height="15" rx="1.8" /><path d="M3.5 9.5h17M9 4.5v15M14.5 4.5v15" />
+        </svg>
+      ),
+      title: 'Tracking',
+      summary: t.ai_tracking_sum,
+      tags: ['Sheets', 'Record ID', 'History'],
+      pipeline: null as string[] | null,
+      detail: (
+        <div className="detail-section">
+          <div className="d-label"><span className="dot" />{t.ai_d_sheets_lbl}</div>
+          <div className="sheet">
+            <div className="sheet-tabs">
+              <span className="tab active">Tracker</span>
+              <span className="tab">Backlog</span>
+              <span className="tab">Archive</span>
+            </div>
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Src</th><th>Type</th><th>Pri</th><th>Status</th><th>Owner</th></tr>
+              </thead>
+              <tbody>
+                <tr className="current">
+                  <td>DR-248</td><td>LINE</td><td>Product UI</td><td>P1</td><td><span className="st active">Active</span></td><td>TL</td>
+                </tr>
+                <tr>
+                  <td>DR-247</td><td>Form</td><td>Graphic</td><td>P2</td><td><span className="st review">Review</span></td><td>TL</td>
+                </tr>
+                <tr>
+                  <td>DR-246</td><td>Email</td><td>UX Review</td><td>P2</td><td><span className="st done">Done</span></td><td>TL</td>
+                </tr>
+                <tr>
+                  <td>DR-245</td><td>LINE</td><td>Research</td><td>P3</td><td><span className="st queue">Backlog</span></td><td>TL</td>
+                </tr>
+              </tbody>
+            </table>
+            <div className="sheet-foot">
+              <span>4 of 142 records</span>
+              <span>Updated · 2m ago</span>
+            </div>
           </div>
         </div>
-      </div>
-    ),
-  },
-  {
-    id: 'workflow',
-    step: '06',
-    variant: '',
-    badge: null as string | null,
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 12h4l2-6 4 12 2-6h4" />
-      </svg>
-    ),
-    title: 'Design Workflow',
-    summary: 'The brief enters the design pipeline — already structured, prioritized, and contextualized.',
-    tags: null as string[] | null,
-    pipeline: ['Research', 'Structure', 'Design', 'Validate', 'Delivery'],
-    detail: (
-      <div className="detail-section">
-        <div className="d-label blue"><span className="dot" />Phases · DR-248</div>
-        <div className="phases">
-          <div className="phase next">
-            <div className="pn">01</div>
-            <div>
-              <div className="pt">Research</div>
-              <div className="pd">Context, stakeholder interviews, baseline funnel data.</div>
+      ),
+    },
+    {
+      id: 'workflow',
+      step: '06',
+      variant: '',
+      badge: null as string | null,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 12h4l2-6 4 12 2-6h4" />
+        </svg>
+      ),
+      title: 'Design Workflow',
+      summary: t.ai_workflow_sum,
+      tags: null as string[] | null,
+      pipeline: [t.ai_ph_research, t.ai_ph_structure, t.ai_ph_design, t.ai_ph_validate, t.ai_ph_delivery],
+      detail: (
+        <div className="detail-section">
+          <div className="d-label blue"><span className="dot" />{t.ai_d_phases_lbl}</div>
+          <div className="phases">
+            <div className="phase next">
+              <div className="pn">01</div>
+              <div>
+                <div className="pt">{t.ai_ph_research}</div>
+                <div className="pd">{t.ai_ph_research_d}</div>
+              </div>
+              <span className="ps">{t.ai_ph_upnext}</span>
             </div>
-            <span className="ps">Up next</span>
-          </div>
-          <div className="phase">
-            <div className="pn">02</div>
-            <div>
-              <div className="pt">Structure</div>
-              <div className="pd">IA, primary flows, decision points.</div>
+            <div className="phase">
+              <div className="pn">02</div>
+              <div>
+                <div className="pt">{t.ai_ph_structure}</div>
+                <div className="pd">{t.ai_ph_structure_d}</div>
+              </div>
+              <span className="ps">{t.ai_ph_queued}</span>
             </div>
-            <span className="ps">Queued</span>
-          </div>
-          <div className="phase">
-            <div className="pn">03</div>
-            <div>
-              <div className="pt">Design</div>
-              <div className="pd">Wireframes → hi-fi mocks → polish.</div>
+            <div className="phase">
+              <div className="pn">03</div>
+              <div>
+                <div className="pt">{t.ai_ph_design}</div>
+                <div className="pd">{t.ai_ph_design_d}</div>
+              </div>
+              <span className="ps">{t.ai_ph_queued}</span>
             </div>
-            <span className="ps">Queued</span>
-          </div>
-          <div className="phase">
-            <div className="pn">04</div>
-            <div>
-              <div className="pt">Validate</div>
-              <div className="pd">Usability test, internal review, PM signoff.</div>
+            <div className="phase">
+              <div className="pn">04</div>
+              <div>
+                <div className="pt">{t.ai_ph_validate}</div>
+                <div className="pd">{t.ai_ph_validate_d}</div>
+              </div>
+              <span className="ps">{t.ai_ph_queued}</span>
             </div>
-            <span className="ps">Queued</span>
-          </div>
-          <div className="phase">
-            <div className="pn">05</div>
-            <div>
-              <div className="pt">Delivery</div>
-              <div className="pd">Specs, asset export, dev handoff.</div>
+            <div className="phase">
+              <div className="pn">05</div>
+              <div>
+                <div className="pt">{t.ai_ph_delivery}</div>
+                <div className="pd">{t.ai_ph_delivery_d}</div>
+              </div>
+              <span className="ps">{t.ai_ph_queued}</span>
             </div>
-            <span className="ps">Queued</span>
           </div>
         </div>
-      </div>
-    ),
-  },
-];
+      ),
+    },
+  ];
+}
 
 function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: number) {
   const inner = scroller.querySelector<HTMLElement>('.scroller-inner');
@@ -393,8 +396,10 @@ function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: 
 
 export default function SkillsSection() {
   const { t } = useLang();
+  const aiCards = useMemo(() => makeAiCards(t), [t]);
   const [expandedAiCard, setExpandedAiCard] = useState<string | null>(null);
   const aiFlowGridRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
 
   // Toggle the bento "has-expanded" class imperatively (not via React's className prop) —
   // .ai-flow-grid is a .stagger-item whose .visible class is added by the scroll-reveal
@@ -545,7 +550,7 @@ export default function SkillsSection() {
       // invocation finds clean cards and can re-initialize with fresh listeners.
       handlers.forEach((handler, card) => {
         card.removeEventListener('pointermove', handler);
-        card.classList.remove('border-glow-card', 'ai-card-glow');
+        card.classList.remove('border-glow-card');
         card.querySelector('.edge-light')?.remove();
         const inner = card.querySelector<HTMLElement>('.border-glow-inner');
         if (inner) {
@@ -705,10 +710,10 @@ export default function SkillsSection() {
                       fillOpacity={0.4}
                       spotlightColor="rgba(108, 99, 255, 0.12)"
                       backgroundSlot={
-                        <div
-                          className="process-card-bg-img"
-                          style={{ backgroundImage: `url(./img/process/${slug}.png)` }}
-                        />
+                        <>
+                          <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: `url("./img/process/${slug}_w.png")` }} />
+                          <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: `url("./img/process/${slug}.png")` }} />
+                        </>
                       }
                     >
                       <div className="process-num">{String(i + 1).padStart(2, '0')}</div>
@@ -746,10 +751,10 @@ export default function SkillsSection() {
                     fillOpacity={0.4}
                     spotlightColor="rgba(108, 99, 255, 0.12)"
                     backgroundSlot={
-                      <div
-                        className="process-card-bg-img"
-                        style={{ backgroundImage: `url("./img/process/${slug}.png")` }}
-                      />
+                      <>
+                        <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: `url("./img/process/${slug}_w.png")` }} />
+                        <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: `url("./img/process/${slug}.png")` }} />
+                      </>
                     }
                   >
                     <div className="process-num">{idx}</div>
@@ -878,13 +883,37 @@ export default function SkillsSection() {
             </svg>
           ` }} />
 
-          {AI_CARDS.map(card => {
+          {aiCards.map(card => {
             const isOpen = expandedAiCard === card.id;
-            const toggle = () => setExpandedAiCard(isOpen ? null : card.id);
+            const toggle = () => {
+              const opening = !isOpen;
+              setExpandedAiCard(opening ? card.id : null);
+              const el = cardRefs.current.get(card.id);
+              if (!el) return;
+              if (opening) {
+                gsap.fromTo(el,
+                  { scale: 0.972, y: 6 },
+                  { scale: 1, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.55)', clearProps: 'transform' }
+                );
+                const detail = el.querySelector('.ai-card-detail');
+                if (detail) {
+                  gsap.fromTo(Array.from(detail.children),
+                    { opacity: 0, y: 14 },
+                    { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', stagger: 0.07, delay: 0.22, clearProps: 'all' }
+                  );
+                }
+              } else {
+                gsap.fromTo(el,
+                  { scale: 1 },
+                  { scale: 0.988, duration: 0.16, ease: 'power2.in', yoyo: true, repeat: 1, clearProps: 'transform' }
+                );
+              }
+            };
             return (
               <article
                 key={card.id}
-                className={`ai-card${card.variant ? ' ' + card.variant : ''}${isOpen ? ' is-open' : ''}`}
+                ref={(el: HTMLElement | null) => { if (el) cardRefs.current.set(card.id, el); else cardRefs.current.delete(card.id); }}
+                className={`ai-card ai-card-glow${card.variant ? ' ' + card.variant : ''}${isOpen ? ' is-open' : ''}`}
                 onClick={toggle}
                 role="button"
                 tabIndex={0}
@@ -921,7 +950,7 @@ export default function SkillsSection() {
         </div>
 
         <div className="ai-chips-row stagger-item">
-          <div className="ai-chips-label"><span>AI classifies requests as</span></div>
+          <div className="ai-chips-label"><span>{t.ai_chips_label}</span></div>
           <div className="ai-chips">
             <span className="ai-chip"><span className="ai-chip-dot"></span>Product UI<span className="ai-chip-count">42%</span></span>
             <span className="ai-chip"><span className="ai-chip-dot"></span>Graphic Design<span className="ai-chip-count">21%</span></span>
