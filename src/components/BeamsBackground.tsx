@@ -275,6 +275,8 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
       <canvas
         ref={canvasRef}
         id="beams-bg"
+        aria-hidden="true"
+        role="presentation"
         style={{ position: 'fixed', inset: 0, width: '100%', height: '100dvh', zIndex: -1, opacity: 0, pointerEvents: 'none' }}
       />
       <spline-viewer id="spline-bg" url="./models/bg_scene.splinecode" />

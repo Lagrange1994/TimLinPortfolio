@@ -146,11 +146,18 @@ export default function HeroSection() {
     if (h1Words.length) gsap.set(h1Words, { opacity: 0, y: 40, rotation: 5 });
     if (h2Chars.length) gsap.set(h2Chars, { opacity: 0, y: 28 });
 
+    const scrollIndicator = document.querySelector<HTMLElement>('.hero-scroll-indicator');
+    if (scrollIndicator) gsap.set(scrollIndicator, { opacity: 0, y: 20 });
+
     function animate() {
       setTimeout(() => {
         if (heroFig) gsap.to(heroFig, { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out' });
         if (h1Words.length) gsap.to(h1Words, { opacity: 1, y: 0, rotation: 0, duration: 1.0, ease: 'power3.out', stagger: 0.11, delay: 0.15 });
         if (h2Chars.length) gsap.to(h2Chars, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.035, delay: 0.6 });
+        if (scrollIndicator) gsap.to(scrollIndicator, {
+          opacity: 0.65, y: 0, duration: 0.8, ease: 'power3.out', delay: 4.25,
+          onComplete: () => gsap.set(scrollIndicator, { clearProps: 'opacity,transform' }),
+        });
       }, 350);
     }
 
@@ -370,6 +377,20 @@ export default function HeroSection() {
           <span className="tag-capsule" aria-hidden="true"><i className="ph-fill ph-map-pin" style={{ color: '#f87171' }}></i>Taipei, Taiwan</span>
         </div>
       </div>
+      <button
+        className="hero-scroll-indicator"
+        aria-label="Scroll to next section"
+        onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+      >
+        <div className="mouse">
+          <div className="wheel"></div>
+        </div>
+        <div>
+          <span className="m_scroll_arrows unu"></span>
+          <span className="m_scroll_arrows doi"></span>
+          <span className="m_scroll_arrows trei"></span>
+        </div>
+      </button>
     </section>
   );
 }

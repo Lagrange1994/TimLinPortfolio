@@ -152,12 +152,9 @@ export default function PortfolioSection() {
         const lx = e.clientX - r.left, ly = e.clientY - r.top;
         const cx = r.width / 2, cy = r.height / 2;
         gsap.to(hovered, {
-          rotateX: ((ly - cy) / cy) * -9,
-          rotateY: ((lx - cx) / cx) * 9,
-          x: (lx - cx) * 0.04,
-          y: (ly - cy) * 0.04,
-          transformPerspective: 900,
-          duration: 0.15,
+          x: (lx - cx) * 0.05,
+          y: (ly - cy) * 0.05,
+          duration: 0.3,
           ease: 'power2.out',
           overwrite: 'auto',
         });
