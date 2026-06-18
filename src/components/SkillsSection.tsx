@@ -781,6 +781,20 @@ export default function SkillsSection() {
               <span className="tech-level-badge">DESIGN-READY</span>
             </div>
             <div className="tech-desc">{t.skill_html}</div>
+            <div className="tech-code-preview">
+              <div className="tcp-bar">
+                <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
+                <span className="tcp-filename">portfolio.css</span>
+              </div>
+              <pre className="tcp-code" dangerouslySetInnerHTML={{ __html:
+`<span class="tok-sel">:root</span> <span class="tok-muted">{</span>
+  <span class="tok-prop">--primary</span><span class="tok-muted">:</span>   <span class="tok-val">#6C63FF</span><span class="tok-muted">;</span>
+  <span class="tok-prop">--secondary</span><span class="tok-muted">:</span> <span class="tok-val">#FF6584</span><span class="tok-muted">;</span>
+  <span class="tok-prop">--bg</span><span class="tok-muted">:</span>        <span class="tok-val">#121212</span><span class="tok-muted">;</span>
+  <span class="tok-prop">--border</span><span class="tok-muted">:</span>    <span class="tok-fn">rgba</span><span class="tok-muted">(255,255,255,</span><span class="tok-num">0.1</span><span class="tok-muted">);</span>
+<span class="tok-muted">}</span>`
+              }} />
+            </div>
           </div>
           <div className="tech-item js-item card-spotlight sc-card">
             <div className="tech-item-header">
@@ -788,6 +802,20 @@ export default function SkillsSection() {
               <span className="tech-level-badge">AI-ASSISTED</span>
             </div>
             <div className="tech-desc">{t.skill_js}</div>
+            <div className="tech-code-preview">
+              <div className="tcp-bar">
+                <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
+                <span className="tcp-filename">HeroSection.tsx</span>
+              </div>
+              <pre className="tcp-code" dangerouslySetInnerHTML={{ __html:
+`<span class="tok-kw">gsap</span><span class="tok-muted">.</span><span class="tok-fn">to</span><span class="tok-muted">(</span>h1Words<span class="tok-muted">, {</span>
+  <span class="tok-pink">opacity</span><span class="tok-muted">:</span> <span class="tok-num">1</span><span class="tok-muted">,</span> <span class="tok-pink">y</span><span class="tok-muted">:</span> <span class="tok-num">0</span><span class="tok-muted">,</span>
+  <span class="tok-pink">duration</span><span class="tok-muted">:</span> <span class="tok-num">1.0</span><span class="tok-muted">,</span>
+  <span class="tok-pink">ease</span><span class="tok-muted">:</span>     <span class="tok-val">'power3.out'</span><span class="tok-muted">,</span>
+  <span class="tok-pink">stagger</span><span class="tok-muted">:</span>  <span class="tok-num">0.11</span>
+<span class="tok-muted">})</span>`
+              }} />
+            </div>
           </div>
           <div className="tech-item react-item card-spotlight sc-card">
             <div className="tech-item-header">
@@ -795,6 +823,21 @@ export default function SkillsSection() {
               <span className="tech-level-badge">RESPONSIVE</span>
             </div>
             <div className="tech-desc">{t.skill_css}</div>
+            <div className="tech-code-preview">
+              <div className="tcp-bar">
+                <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
+                <span className="tcp-filename">SkillsSection.tsx</span>
+              </div>
+              <pre className="tcp-code" dangerouslySetInnerHTML={{ __html:
+`<span class="tok-muted">&lt;</span><span class="tok-sel">BorderGlow</span>
+  <span class="tok-pink">className</span><span class="tok-muted">=</span><span class="tok-val">"process-card"</span>
+  <span class="tok-pink">colors</span><span class="tok-muted">={[</span><span class="tok-val">'#6C63FF'</span><span class="tok-muted">,</span> <span class="tok-val">'#FF6584'</span><span class="tok-muted">]}</span>
+  <span class="tok-pink">glowIntensity</span><span class="tok-muted">={</span><span class="tok-num">1.1</span><span class="tok-muted">}</span>
+<span class="tok-muted">&gt;</span>
+  <span class="tok-fn">{t[nameKey]}</span>
+<span class="tok-muted">&lt;/</span><span class="tok-sel">BorderGlow</span><span class="tok-muted">&gt;</span>`
+              }} />
+            </div>
           </div>
         </div>
         <div className="tech-note fade-in" dangerouslySetInnerHTML={{ __html: t.figma_mcp }} />

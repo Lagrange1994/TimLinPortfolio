@@ -1,4 +1,4 @@
-
+﻿
     *,
     *::before,
     *::after {
@@ -1586,6 +1586,63 @@
     .fill-purple {
       background: linear-gradient(to right, var(--primary), var(--secondary));
     }
+
+    /* Mini code-editor preview */
+    .tech-code-preview {
+      margin-top: auto;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      overflow: hidden;
+      position: relative;
+    }
+    .tech-code-preview::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 28px;
+      background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.55));
+      pointer-events: none;
+    }
+    .tcp-bar {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .tcp-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .tcp-filename {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.28);
+      letter-spacing: .03em;
+    }
+    .tcp-code {
+      margin: 0;
+      padding: 10px 12px 18px;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      line-height: 1.65;
+      color: rgba(255, 255, 255, 0.7);
+      white-space: pre;
+      overflow: hidden;
+    }
+    .tok-sel   { color: #93c5fd; }
+    .tok-prop  { color: #7dd3fc; }
+    .tok-val   { color: #86efac; }
+    .tok-num   { color: #c4b5fd; }
+    .tok-kw    { color: #fb923c; }
+    .tok-fn    { color: #fde68a; }
+    .tok-pink  { color: #f9a8d4; }
+    .tok-muted { color: rgba(255, 255, 255, 0.25); }
 
     .tech-note {
       margin-top: 24px;
