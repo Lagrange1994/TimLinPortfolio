@@ -110,7 +110,7 @@ const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
 
         const Navbar = () => (
             <nav className="fixed top-0 left-0 w-full z-40 px-6 py-4 flex justify-between items-center bg-tech-dark/80 backdrop-blur-md border-b border-white/5">
-                <a href="javascript:history.length>1?history.back():void(location.href='/')" className="flex items-center group">
+                <a href="/#portfolio" className="flex items-center group">
                     {/* Double Layer Button for Border Visibility */}
                     <div className="w-8 h-8 chamfer-btn p-[1px] bg-tech-primary mr-3 group-hover:bg-white transition-colors">
                         <div className="w-full h-full chamfer-btn bg-tech-dark flex items-center justify-center group-hover:bg-tech-primary transition-colors">

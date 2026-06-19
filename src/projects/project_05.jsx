@@ -337,7 +337,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 return () => { window.removeEventListener('wheel', handleWheel); };
             }, [currentSectionIndex]);
 
-            const goBack = () => { history.length > 1 ? history.back() : (location.href = '/'); };
+            const goBack = () => { location.href = '/#portfolio'; };
 
             const renderPreview = () => {
                 if (imageType === 'context') return <SimpleRoundedFrame src={currentImage} />;

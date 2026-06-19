@@ -266,7 +266,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 return () => { window.removeEventListener('wheel', handleWheel); };
             }, [currentSectionIndex]);
 
-            const goBack = () => { history.length > 1 ? history.back() : (location.href = '/'); };
+            const goBack = () => { location.href = '/#portfolio'; };
             const scenarios = getScenarios(lang);
             const galleryItems = getGalleryItems(lang);
 

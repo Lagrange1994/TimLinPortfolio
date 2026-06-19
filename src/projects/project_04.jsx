@@ -350,7 +350,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 };
             }, [currentSectionIndex]);
 
-            const goBack = () => { history.length > 1 ? history.back() : (location.href = '/'); };
+            const goBack = () => { location.href = '/#portfolio'; };
 
             // Conditional Rendering for Left Panel
             const renderPreview = () => {

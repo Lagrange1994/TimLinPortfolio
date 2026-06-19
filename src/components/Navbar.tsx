@@ -43,6 +43,22 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Deep-link support: a fresh page load with a #section hash (e.g. a project
+  // sub-page's "Back to Portfolio" link) needs a manual scroll once content is
+  // ready — the browser's one-shot native hash-scroll fires before React has
+  // mounted the target section, so it silently does nothing.
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    const goToHash = () => scrollToSection(hash);
+    if (document.body.classList.contains('hero-ready')) {
+      goToHash();
+    } else {
+      window.addEventListener('hero-ready', goToHash, { once: true });
+    }
+    return () => window.removeEventListener('hero-ready', goToHash);
+  }, []);
+
   // Nav circles hover effect
   useEffect(() => {
     const navLinks = document.querySelectorAll<HTMLElement>('.nav-link');

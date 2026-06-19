@@ -295,7 +295,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
             const handleGallerySwitch = (imgObj) => { setCurrentImage(imgObj.src); setActiveGalleryId(imgObj.id); };
             const handleSolutionSwitch = (solObj) => { setCurrentImage(solObj.image); setActiveSolutionId(solObj.id); };
-            const goBack = () => { history.length > 1 ? history.back() : (location.href = '/'); };
+            const goBack = () => { location.href = '/#portfolio'; };
 
             return (
                 <React.Fragment>
