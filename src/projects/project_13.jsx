@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
+import ScrollTrigger from 'gsap/ScrollTrigger';
 
-gsap.registerPlugin(ScrollToPlugin);
+gsap.registerPlugin(ScrollToPlugin, ScrollTrigger);
 
 const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
 
@@ -243,7 +244,6 @@ const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
             const labelRef  = useRef(null);
 
             useEffect(() => {
-                gsap.registerPlugin(ScrollTrigger);
                 gsap.fromTo(labelRef.current, { color: "#4B5563" }, {
                     color: "#1890FF", duration: 0.5,
                     scrollTrigger: { trigger: sectionRef.current, start: "top 80%", toggleActions: "play none none reverse" }
@@ -352,7 +352,6 @@ const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
             const labelRef = useRef(null);
 
             useEffect(() => {
-                gsap.registerPlugin(ScrollTrigger);
                 gsap.fromTo(labelRef.current,
                     { color: "#6B7280" },
                     { color: "#66FCF1", duration: 0.5, scrollTrigger: { trigger: sectionRef.current, start: "top 80%", toggleActions: "play none none reverse" } }
