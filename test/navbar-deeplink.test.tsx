@@ -7,6 +7,17 @@ import Navbar from '../src/components/Navbar';
 // to location.href = '/#portfolio', but the homepage never scrolled to the
 // #portfolio section because React mounts it after the browser's one-shot
 // native hash-scroll already fired (and found nothing there).
+//
+// Follow-up fix: PortfolioSection.tsx already owns a richer restore (browsing
+// mode — carousel vs. expanded bento grid — plus exact scroll position and
+// active filter, via sessionStorage keys written on project-card click).
+// Navbar's #portfolio handling must defer to it entirely instead of also
+// scrolling, or the two race. The defer check uses 'portfolioExpanded' (only
+// ever read, never removed) rather than 'portfolioScrollY' (one-shot
+// removeItem()'d by PortfolioSection's restore) — React StrictMode
+// double-invokes effects in dev, and checking the consumed key would read
+// back null on the second pass even mid-restore, wrongly arming the fallback.
+//
 // Found by /qa-only on 2026-06-20, fixed via /qa on 2026-06-20.
 describe('Navbar hash-on-load deep link', () => {
   beforeEach(() => {
@@ -17,7 +28,7 @@ describe('Navbar hash-on-load deep link', () => {
     document.body.innerHTML = '<section id="portfolio"></section>';
     window.location.hash = '';
     document.body.classList.remove('hero-ready');
-    sessionStorage.removeItem('home-scroll-y');
+    sessionStorage.clear();
   });
 
   it('scrolls to the hash target immediately if the page is already hero-ready', () => {
@@ -47,25 +58,40 @@ describe('Navbar hash-on-load deep link', () => {
     expect(scrollIntoView).toHaveBeenCalled();
   });
 
-  it('restores the exact saved scroll position for #portfolio instead of jumping to the section top', () => {
-    // The user asked: returning to the portfolio should restore the homepage's
-    // exact prior scroll position, not just scroll the #portfolio section into view.
-    sessionStorage.setItem('home-scroll-y', '2750');
+  it('defers to PortfolioSection and never scrolls when portfolioExpanded is saved (carousel mode)', () => {
+    sessionStorage.setItem('portfolioExpanded', 'false');
+    sessionStorage.setItem('portfolioScrollY', '3000');
     window.location.hash = '#portfolio';
     document.body.classList.add('hero-ready');
     const target = document.getElementById('portfolio')!;
     const scrollIntoView = vi.fn();
     target.scrollIntoView = scrollIntoView;
-    const scrollTo = vi.fn();
-    window.scrollTo = scrollTo;
 
     render(<LangProvider><Navbar /></LangProvider>);
+    window.dispatchEvent(new Event('hero-ready'));
 
-    expect(scrollTo).toHaveBeenCalledWith({ top: 2750, behavior: 'auto' });
     expect(scrollIntoView).not.toHaveBeenCalled();
   });
 
-  it('falls back to scrolling the #portfolio section into view when no scroll position was saved', () => {
+  it('defers to PortfolioSection when portfolioExpanded is saved even if portfolioScrollY was already consumed', () => {
+    // Simulates the StrictMode double-invoke race: PortfolioSection's restore
+    // effect removeItem()s portfolioScrollY as a one-shot consume, so by a
+    // second effect pass it reads back null — portfolioExpanded must still
+    // gate the defer correctly since it is never removed.
+    sessionStorage.setItem('portfolioExpanded', 'true');
+    window.location.hash = '#portfolio';
+    document.body.classList.add('hero-ready');
+    const target = document.getElementById('portfolio')!;
+    const scrollIntoView = vi.fn();
+    target.scrollIntoView = scrollIntoView;
+
+    render(<LangProvider><Navbar /></LangProvider>);
+    window.dispatchEvent(new Event('hero-ready'));
+
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it('falls back to scrolling the #portfolio section into view when there is nothing to restore', () => {
     window.location.hash = '#portfolio';
     document.body.classList.add('hero-ready');
     const target = document.getElementById('portfolio')!;

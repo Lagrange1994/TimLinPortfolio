@@ -32,45 +32,42 @@ export default function Navbar() {
   const isOpenRef = useRef(false);
   const busyRef = useRef(false);
 
-  // Nav shrink on scroll + persist scroll position. The persisted value lets
-  // a project sub-page's "Back to Portfolio" link restore the exact spot the
-  // user left (not just jump to the top of a section) — sessionStorage is
-  // tab-scoped, so it never leaks into a genuinely fresh visit.
+  // Nav shrink on scroll
   useEffect(() => {
     const header = headerRef.current;
     if (!header) return;
-    let raf = 0;
     const onScroll = () => {
       header.classList.toggle('scrolled', window.scrollY > 40);
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        sessionStorage.setItem('home-scroll-y', String(window.scrollY));
-      });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      cancelAnimationFrame(raf);
-    };
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   // Deep-link support: a fresh page load with a #section hash (e.g. a project
   // sub-page's "Back to Portfolio" link) needs a manual scroll once content is
   // ready — the browser's one-shot native hash-scroll fires before React has
-  // mounted the target section, so it silently does nothing. For #portfolio
-  // specifically, prefer the exact saved scroll position over the section top.
+  // mounted the target section, so it silently does nothing.
+  //
+  // #portfolio is special-cased: PortfolioSection owns a richer restore (which
+  // browsing mode — carousel or the expanded bento grid — plus the exact
+  // scroll position and active filter, keyed off sessionStorage written when a
+  // project card was clicked). If that state exists, defer entirely so the two
+  // don't race each other on mount; only fall back to a plain section-top
+  // scroll when there's nothing for PortfolioSection to restore (e.g. a direct
+  // link to /#portfolio with no prior in-session navigation).
+  //
+  // Check 'portfolioExpanded', not 'portfolioScrollY': PortfolioSection's
+  // restore effect removeItem()s portfolioScrollY as a one-shot consume, and
+  // React StrictMode double-invokes effects in dev — by this effect's second
+  // pass, portfolioScrollY would already read back null even though a restore
+  // is in flight, wrongly arming this fallback. portfolioExpanded is only
+  // ever read (never removed) during a normal navigation, so it stays stable
+  // across both passes.
   useEffect(() => {
     const hash = window.location.hash.slice(1);
     if (!hash) return;
-    const goToHash = () => {
-      const savedY = hash === 'portfolio' ? sessionStorage.getItem('home-scroll-y') : null;
-      if (savedY !== null) {
-        window.scrollTo({ top: Number(savedY), behavior: 'auto' });
-        return;
-      }
-      scrollToSection(hash);
-    };
+    if (hash === 'portfolio' && sessionStorage.getItem('portfolioExpanded') !== null) return;
+    const goToHash = () => scrollToSection(hash);
     if (document.body.classList.contains('hero-ready')) {
       goToHash();
     } else {
