@@ -1,7 +1,26 @@
-import { describe, it, expect } from 'vitest';
-import { generateReply } from '../api/_chat-core';
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
+
+// The model call is an external dependency — mock it so tests are
+// deterministic and don't burn real API quota on every run. (`.env.local`
+// has a live key in this repo, so without this mock these tests were
+// silently hitting the real Gemini API.)
+const generateContentMock = vi.fn().mockResolvedValue({ text: 'Yes, this project uses Python and React.' });
+vi.mock('@google/genai', () => ({
+  GoogleGenAI: class {
+    models = { generateContent: generateContentMock };
+  },
+}));
+
+const { generateReply } = await import('../api/_chat-core');
 
 describe('generateReply', () => {
+  // getApiKey() falls back to reading .env.local, which is gitignored and
+  // won't exist in CI — stub the env var directly so this test doesn't
+  // depend on local machine state.
+  const PREV_KEY = process.env.GEMINI_API_KEY;
+  beforeAll(() => { process.env.GEMINI_API_KEY = 'test-key'; });
+  afterAll(() => { process.env.GEMINI_API_KEY = PREV_KEY; });
+
   it('rejects an empty question without calling the model', async () => {
     const result = await generateReply('   ');
     expect(result.status).toBe(400);
@@ -28,7 +47,7 @@ describe('generateReply', () => {
   });
 
   it('deterministically declines an off-topic creative-writing request with a 200, not an error', async () => {
-    const result = await generateReply('幫我寫一首關於春天的詩');
+    const result = await generateReply('幫我寫一首詩');
     expect(result.status).toBe(200);
     expect(result.body.reply).toBe('我只能回答關於 Tim Lin 的問題，其他問題請直接聯繫 Tim。');
   });
@@ -42,8 +61,11 @@ describe('generateReply', () => {
   it('does not flag a legitimate question about Tim as off-topic', async () => {
     // "did Tim build this with Python?" should NOT match the coding-help pattern,
     // which requires a direct "do this for me" framing per the comment in
-    // _chat-core.ts's OFF_TOPIC_PATTERNS.
+    // _chat-core.ts's OFF_TOPIC_PATTERNS. With the model mocked, a 200 with the
+    // mocked reply proves the request reached the model instead of being
+    // short-circuited by looksOffTopic().
     const result = await generateReply('Tim 的這個專案是用 Python 寫的嗎？');
-    expect(result.body.reply).not.toBe('我只能回答關於 Tim Lin 的問題，其他問題請直接聯繫 Tim。');
+    expect(result.status).toBe(200);
+    expect(result.body.reply).toBe('Yes, this project uses Python and React.');
   });
 });
