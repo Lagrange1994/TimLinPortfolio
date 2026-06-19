@@ -37,4 +37,15 @@ export default tseslint.config(
       react: { version: 'detect' },
     },
   },
+  {
+    // .jsx files aren't covered by tsconfig.json's type-checking (only
+    // **/*.ts/.tsx are included), so typescript-eslint's recommended config
+    // disabling no-undef in favor of tsc leaves them with zero check for
+    // undefined-identifier bugs (e.g. a used-but-unimported global). Re-enable
+    // it for .jsx only — .ts/.tsx keep relying on tsc.
+    files: ['**/*.jsx'],
+    rules: {
+      'no-undef': 'error',
+    },
+  },
 );
