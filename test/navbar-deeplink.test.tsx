@@ -17,6 +17,7 @@ describe('Navbar hash-on-load deep link', () => {
     document.body.innerHTML = '<section id="portfolio"></section>';
     window.location.hash = '';
     document.body.classList.remove('hero-ready');
+    sessionStorage.removeItem('home-scroll-y');
   });
 
   it('scrolls to the hash target immediately if the page is already hero-ready', () => {
@@ -42,6 +43,36 @@ describe('Navbar hash-on-load deep link', () => {
 
     document.body.classList.add('hero-ready');
     window.dispatchEvent(new Event('hero-ready'));
+
+    expect(scrollIntoView).toHaveBeenCalled();
+  });
+
+  it('restores the exact saved scroll position for #portfolio instead of jumping to the section top', () => {
+    // The user asked: returning to the portfolio should restore the homepage's
+    // exact prior scroll position, not just scroll the #portfolio section into view.
+    sessionStorage.setItem('home-scroll-y', '2750');
+    window.location.hash = '#portfolio';
+    document.body.classList.add('hero-ready');
+    const target = document.getElementById('portfolio')!;
+    const scrollIntoView = vi.fn();
+    target.scrollIntoView = scrollIntoView;
+    const scrollTo = vi.fn();
+    window.scrollTo = scrollTo;
+
+    render(<LangProvider><Navbar /></LangProvider>);
+
+    expect(scrollTo).toHaveBeenCalledWith({ top: 2750, behavior: 'auto' });
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it('falls back to scrolling the #portfolio section into view when no scroll position was saved', () => {
+    window.location.hash = '#portfolio';
+    document.body.classList.add('hero-ready');
+    const target = document.getElementById('portfolio')!;
+    const scrollIntoView = vi.fn();
+    target.scrollIntoView = scrollIntoView;
+
+    render(<LangProvider><Navbar /></LangProvider>);
 
     expect(scrollIntoView).toHaveBeenCalled();
   });

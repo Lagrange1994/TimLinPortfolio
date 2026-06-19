@@ -32,25 +32,45 @@ export default function Navbar() {
   const isOpenRef = useRef(false);
   const busyRef = useRef(false);
 
-  // Nav shrink on scroll
+  // Nav shrink on scroll + persist scroll position. The persisted value lets
+  // a project sub-page's "Back to Portfolio" link restore the exact spot the
+  // user left (not just jump to the top of a section) — sessionStorage is
+  // tab-scoped, so it never leaks into a genuinely fresh visit.
   useEffect(() => {
     const header = headerRef.current;
     if (!header) return;
+    let raf = 0;
     const onScroll = () => {
       header.classList.toggle('scrolled', window.scrollY > 40);
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        sessionStorage.setItem('home-scroll-y', String(window.scrollY));
+      });
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   // Deep-link support: a fresh page load with a #section hash (e.g. a project
   // sub-page's "Back to Portfolio" link) needs a manual scroll once content is
   // ready — the browser's one-shot native hash-scroll fires before React has
-  // mounted the target section, so it silently does nothing.
+  // mounted the target section, so it silently does nothing. For #portfolio
+  // specifically, prefer the exact saved scroll position over the section top.
   useEffect(() => {
     const hash = window.location.hash.slice(1);
     if (!hash) return;
-    const goToHash = () => scrollToSection(hash);
+    const goToHash = () => {
+      const savedY = hash === 'portfolio' ? sessionStorage.getItem('home-scroll-y') : null;
+      if (savedY !== null) {
+        window.scrollTo({ top: Number(savedY), behavior: 'auto' });
+        return;
+      }
+      scrollToSection(hash);
+    };
     if (document.body.classList.contains('hero-ready')) {
       goToHash();
     } else {
