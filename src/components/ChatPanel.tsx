@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, Fragment } from 'react';
 import type { ReactNode } from 'react';
+import { useLang } from '../context/LangContext';
 
 interface Message {
   role: 'user' | 'bot';
@@ -53,24 +54,24 @@ function FormattedReply({ text }: { text: string }) {
   );
 }
 
-const QUICK_QUESTIONS = [
-  { label: '後台系統', q: 'Tim 有沒有 B2B 後台系統的設計經驗？' },
-  { label: '開放機會？', q: 'Tim 目前開放工作機會嗎？' },
-  { label: '可遠端？', q: 'Tim 可以遠端工作嗎？' },
-  { label: '設計流程？', q: 'Tim 的設計流程是什麼？' },
-  { label: '英文能力？', q: 'Tim 的英文溝通能力如何？' },
-  { label: '如何聯繫？', q: '如何聯繫 Tim？' },
-];
-
 export default function ChatPanel() {
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'bot', text: 'Hi！我是 Tim 的 AI 助理。想了解 Tim 的設計背景、作品集或合作意願，直接問我吧 👋' }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const messagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const quickQuestions = [
+    { label: t.chat_q1_label, q: t.chat_q1 },
+    { label: t.chat_q2_label, q: t.chat_q2 },
+    { label: t.chat_q3_label, q: t.chat_q3 },
+    { label: t.chat_q4_label, q: t.chat_q4 },
+    { label: t.chat_q5_label, q: t.chat_q5 },
+    { label: t.chat_q6_label, q: t.chat_q6 },
+  ];
+  const displayMessages: Message[] = [{ role: 'bot', text: t.chat_greeting }, ...messages];
 
   useEffect(() => {
     if (messagesRef.current) {
@@ -106,7 +107,7 @@ export default function ChatPanel() {
         const next = [...prev];
         const last = next[next.length - 1];
         if (last.loading) {
-          next[next.length - 1] = { role: 'bot', text: data.reply || data.error || '無法取得回覆，請直接聯繫 Tim。' };
+          next[next.length - 1] = { role: 'bot', text: data.reply || data.error || t.chat_fallback_error };
         }
         return next;
       });
@@ -115,7 +116,7 @@ export default function ChatPanel() {
         const next = [...prev];
         const last = next[next.length - 1];
         if (last.loading) {
-          next[next.length - 1] = { role: 'bot', text: '連線失敗，請直接透過聯絡表單聯繫 Tim。' };
+          next[next.length - 1] = { role: 'bot', text: t.chat_network_error };
         }
         return next;
       });
@@ -150,12 +151,12 @@ export default function ChatPanel() {
           </div>
           <div id="chat-header-info">
             <div id="chat-header-name">Ask Tim Anything</div>
-            <div id="chat-header-status">AI 助理 · 即時回覆</div>
+            <div id="chat-header-status">{t.chat_status}</div>
           </div>
         </div>
 
         <div id="chat-messages" ref={messagesRef}>
-          {messages.map((msg, i) => (
+          {displayMessages.map((msg, i) => (
             <div
               key={i}
               className={`chat-msg ${msg.role}${msg.loading ? ' loading' : ''}`}
@@ -166,7 +167,7 @@ export default function ChatPanel() {
         </div>
 
         <div id="chat-quick">
-          {QUICK_QUESTIONS.map(({ label, q }) => (
+          {quickQuestions.map(({ label, q }) => (
             <button
               key={label}
               className="chat-quick-btn"
@@ -182,7 +183,7 @@ export default function ChatPanel() {
           <input
             id="chat-input"
             type="text"
-            placeholder="問任何關於 Tim 的問題…"
+            placeholder={t.chat_placeholder}
             maxLength={200}
             autoComplete="off"
             value={input}
@@ -192,7 +193,7 @@ export default function ChatPanel() {
           />
           <button
             id="chat-send"
-            aria-label="送出"
+            aria-label={t.chat_send_aria}
             disabled={sending}
             onClick={() => sendQuestion(input)}
           >
