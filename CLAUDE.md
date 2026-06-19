@@ -53,3 +53,14 @@ Key routing rules:
 - Ship/deploy/PR → invoke /ship or /land-and-deploy
 - Save progress → invoke /context-save
 - Resume context → invoke /context-restore
+
+## Testing
+
+Run tests: `npm test` (Vitest, `jsdom` environment). Tests live under `test/`. See `TESTING.md` for conventions.
+
+- 100% test coverage is the goal — tests make vibe coding safe.
+- New function → write a corresponding test.
+- Bug fix → write a regression test.
+- New error handling → write a test that triggers the error.
+- New conditional (if/else, switch) → test both paths.
+- Never commit code that makes existing tests fail.
