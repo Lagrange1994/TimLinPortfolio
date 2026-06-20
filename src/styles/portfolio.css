@@ -674,6 +674,12 @@
       animation-direction: alternate;
     }
 
+    @media (max-width: 1024px) {
+      .hero-scroll-indicator {
+        display: none;
+      }
+    }
+
     /* Tag capsule — same size as .skill-pill */
     .tag-capsule {
       display: inline-flex;
