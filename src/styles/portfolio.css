@@ -1236,6 +1236,7 @@
       letter-spacing: .12em;
       text-transform: uppercase;
       color: var(--text-50);
+      margin-top: 24px;
       margin-bottom: 14px;
     }
 
@@ -1250,31 +1251,132 @@
       gap: 16px;
     }
 
-    /* In-house cards: independent horizontal scroll, 4.5 cards visible at once
-       (the half card hints that there's more to scroll) */
+    /* In-house / Freelance cards: JS-driven swipe carousel, exactly 3 cards
+       visible per page (see PROCESS_VISIBLE in SkillsSection.tsx),
+       transform-translated (not native scroll) so drag and the "Swipe"
+       button both just move .offset state. The left-low/right-high stagger
+       is computed per-slot in JS (inline margin-top on .process-swipe-slot,
+       see ProcessCarousel) and transitions whenever offset changes, so cards
+       visibly step down as they slide left instead of carrying a fixed
+       height sideways. */
     @media (min-width: 768px) {
-      .process-scroll-wrap {
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
+      .process-column {
+        position: relative;
       }
 
-      .process-scroll-wrap::-webkit-scrollbar {
-        display: none;
+      /* The Freelance column's padding-top (divider gap from the In-house
+         column above) only pushes IN-FLOW content down — an absolutely
+         positioned child measures `top` from the border edge regardless of
+         padding, so it would ignore that gap and desync from the cards.
+         Move the same total gap into margin-top instead, which shifts the
+         whole column (and everything inside it, abs or not) together. */
+      .process-column + .process-column {
+        padding-top: 0;
+        margin-top: 64px;
+      }
+
+      /* Pin the column label to the same Y as the rightmost (highest) card's
+         top edge — 12px matches the track's own padding-top — so the label
+         and the staircase share one top edge instead of stacking with a gap. */
+      .process-column-header {
+        position: absolute;
+        top: 12px;
+        left: 0;
+        margin: 0;
+      }
+
+      .process-scroll-wrap {
+        position: relative;
+        overflow: hidden;
       }
 
       .process-column-grid--inhouse {
         display: flex;
         flex-wrap: nowrap;
+        align-items: flex-start;
         gap: 16px;
         padding: 12px;
+        touch-action: pan-y;
+        cursor: grab;
+        will-change: transform;
       }
 
-      .process-column-grid--inhouse .process-card--has-img {
-        flex: 0 0 calc((100% - 64px) / 4.5);
-        width: calc((100% - 64px) / 4.5);
+      .process-column-grid--inhouse.is-dragging {
+        cursor: grabbing;
       }
+
+      .process-column-grid--inhouse .process-swipe-slot {
+        flex: 0 0 calc((100% - 32px) / 3);
+        width: calc((100% - 32px) / 3);
+      }
+
+      /* Anchor the dots to the same bottom edge as the swipe button (12px
+         matches the track's own padding-bottom) — that's the leftmost
+         (lowest) card's bottom edge, so the whole label+cards+controls
+         group reads as one rectangle instead of the controls trailing off
+         below it. */
+      .process-swipe-controls {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 12px;
+        margin-top: 0;
+      }
+    }
+
+    .process-swipe-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .process-swipe-dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .process-swipe-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.25);
+      transition: all .25s;
+    }
+
+    .process-swipe-dot.active {
+      width: 18px;
+      background: var(--primary);
+    }
+
+    .process-swipe-btn {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 9999px;
+      border: 1px solid var(--glass-border);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-100, #fff);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .process-swipe-btn:hover {
+      border-color: rgba(108, 99, 255, 0.4);
+      background: rgba(108, 99, 255, 0.12);
+    }
+
+    .process-swipe-btn i {
+      font-size: 11px;
     }
 
     /* MY SKILLS MARQUEE — uses .scroller.skills-scroller */
@@ -1491,7 +1593,15 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 16px;
+      align-items: start;
     }
+
+    /* Left-low -> right-high stagger: the right card rises closer to the
+       headline above, while the left card stays low, freeing the gap under
+       the headline's left side instead of running all three cards flush. */
+    .tech-items .tech-item:nth-child(1) { margin-top: 48px; }
+    .tech-items .tech-item:nth-child(2) { margin-top: 24px; }
+    .tech-items .tech-item:nth-child(3) { margin-top: 0; }
 
     .tech-item {
       border-radius: 14px;
@@ -2959,11 +3069,20 @@
         display: grid !important;
         flex-wrap: unset;
         grid-template-columns: repeat(3, 1fr) !important;
+        transform: none !important;
+        touch-action: auto;
+        cursor: auto;
       }
 
-      .process-column-grid--inhouse .process-card--has-img {
+      .process-column-grid--inhouse .process-swipe-slot {
         flex: unset !important;
         width: auto !important;
+        margin-top: 0 !important;
+      }
+
+      .process-swipe-controls,
+      .process-swipe-btn {
+        display: none !important;
       }
 
       /* AI flow grid — 3 col on tablet; minmax(0,1fr) prevents min-content overflow */
@@ -3125,6 +3244,12 @@
       /* Design Process — 2 col */
       .process-column-grid {
         grid-template-columns: repeat(2, 1fr);
+        transform: none !important;
+      }
+
+      .process-swipe-controls,
+      .process-swipe-btn {
+        display: none !important;
       }
 
       .process-dual {
@@ -3735,6 +3860,14 @@
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.25s ease;
+      }
+
+      /* Tech Stack collapses to 1 column and Design Process loses its
+         horizontal scroll row below 1024px — the left-low/right-high
+         stagger only makes sense as a horizontal arrangement. */
+      .tech-items .tech-item,
+      .process-column-grid--inhouse .process-swipe-slot {
+        margin-top: 0 !important;
       }
     }
 

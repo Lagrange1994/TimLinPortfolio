@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, Fragment, useMemo } from 'react';
+import { useEffect, useState, useRef, Fragment, useMemo, type ReactNode, type PointerEvent as ReactPointerEvent } from 'react';
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
@@ -394,6 +394,132 @@ function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: 
   }
 }
 
+const PROCESS_VISIBLE = 3;
+
+const STAIR_STEP = 32;
+
+// Swipe carousel for the Design Process rows. Always shows PROCESS_VISIBLE
+// cards; offset is clamped to [0, cards.length - PROCESS_VISIBLE] so the last
+// page borrows back cards instead of showing a short, unbalanced page.
+//
+// The left-low/right-high stagger is computed per SLOT (index - offset), not
+// per card, and transitions whenever offset changes. A card's margin-top is
+// pinned to 0 until it scrolls into the visible window, then grows as it
+// crosses toward the left edge — so cards visibly step DOWN as they slide
+// left, instead of the whole staircase just translating sideways with each
+// card's height already fixed.
+function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
+  const maxOffset = Math.max(0, cards.length - PROCESS_VISIBLE);
+  const [offset, setOffset] = useState(0);
+  const [dragPx, setDragPx] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragStartRef = useRef(0);
+
+  function cardStep() {
+    const track = trackRef.current;
+    const card = track?.children[0] as HTMLElement | undefined;
+    if (!track || !card) return 0;
+    const gap = parseFloat(getComputedStyle(track).gap) || 0;
+    return card.getBoundingClientRect().width + gap;
+  }
+
+  function goTo(next: number) {
+    setOffset(Math.min(maxOffset, Math.max(0, next)));
+  }
+
+  function onPointerDown(e: ReactPointerEvent) {
+    if (maxOffset === 0) return;
+    dragStartRef.current = e.clientX;
+    setDragging(true);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  }
+
+  function onPointerMove(e: ReactPointerEvent) {
+    if (!dragging) return;
+    setDragPx(e.clientX - dragStartRef.current);
+  }
+
+  function endDrag() {
+    if (!dragging) return;
+    setDragging(false);
+    const step = cardStep();
+    if (step > 0 && Math.abs(dragPx) > step * 0.2) {
+      goTo(offset + (dragPx < 0 ? 1 : -1));
+    }
+    setDragPx(0);
+  }
+
+  // Autoplay: advance one card every 8s, looping back to the start. Paused
+  // while the user is dragging so it doesn't fight a manual swipe.
+  useEffect(() => {
+    if (maxOffset === 0 || dragging) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const id = setInterval(() => {
+      setOffset(o => (o >= maxOffset ? 0 : o + 1));
+    }, 8000);
+    return () => clearInterval(id);
+  }, [maxOffset, dragging]);
+
+  const step = cardStep();
+  const translatePx = -(offset * step) + dragPx;
+  const dotCount = maxOffset + 1;
+
+  return (
+    <div className="process-scroll-wrap">
+      <div
+        className={`process-column-grid process-column-grid--inhouse${dragging ? ' is-dragging' : ''}`}
+        ref={trackRef}
+        style={{ transform: `translateX(${translatePx}px)`, transition: dragging ? 'none' : 'transform .45s cubic-bezier(.22,.61,.36,1)' }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+      >
+        {cards.map((card, i) => {
+          const slot = i - offset;
+          // Clamp both ends to the visible range's max — cards waiting
+          // off-screen don't need to keep climbing/sinking past what the
+          // tallest visible card already uses, since that's invisible
+          // anyway (clipped by .process-scroll-wrap). Without this clamp,
+          // off-screen cards on the left grow taller than any visible step
+          // and inflate the track's height, which pushes the gap to the
+          // title above and the swipe controls below out of place.
+          const maxMargin = (PROCESS_VISIBLE - 1) * STAIR_STEP;
+          const marginTop = Math.min(maxMargin, Math.max(0, (PROCESS_VISIBLE - 1 - slot) * STAIR_STEP));
+          return (
+            <div
+              key={i}
+              className="process-swipe-slot"
+              style={{ marginTop, transition: dragging ? 'none' : 'margin-top .45s cubic-bezier(.22,.61,.36,1)' }}
+            >
+              {card}
+            </div>
+          );
+        })}
+      </div>
+      {maxOffset > 0 && (
+        <>
+          <div className="process-swipe-controls">
+            <div className="process-swipe-dots">
+              {Array.from({ length: dotCount }).map((_, i) => (
+                <span key={i} className={`process-swipe-dot${i === offset ? ' active' : ''}`} />
+              ))}
+            </div>
+          </div>
+          <button
+            type="button"
+            className="process-swipe-btn"
+            onClick={() => goTo(offset >= maxOffset ? 0 : offset + 1)}
+          >
+            Swipe <i className="ph-bold ph-arrow-right" />
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function SkillsSection() {
   const { t } = useLang();
   const aiCards = useMemo(() => makeAiCards(t), [t]);
@@ -583,37 +709,6 @@ export default function SkillsSection() {
     });
   }, [t]);
 
-  // In-house process cards: horizontal scroll independent of page scroll.
-  // The row is a native horizontal scroll container (drag/trackpad/wheel);
-  // vertical wheel input over the cards scrolls the row sideways instead of
-  // scrolling the page, until the row reaches its start/end, at which point
-  // the page takes over again.
-  useEffect(() => {
-    const wraps = Array.from(document.querySelectorAll<HTMLElement>('.process-scroll-wrap'));
-    if (!wraps.length) return;
-
-    const cleanups = wraps.map(wrap => {
-      const onWheel = (e: WheelEvent) => {
-        if (window.matchMedia('(max-width: 767px)').matches) return;
-        const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-        if (delta === 0) return;
-
-        const { scrollLeft, scrollWidth, clientWidth } = wrap;
-        const atStart = scrollLeft <= 0;
-        const atEnd = scrollLeft + clientWidth >= scrollWidth - 1;
-        if ((delta < 0 && atStart) || (delta > 0 && atEnd)) return;
-
-        e.preventDefault();
-        wrap.scrollBy({ left: delta, behavior: 'auto' });
-      };
-
-      wrap.addEventListener('wheel', onWheel, { passive: false });
-      return () => wrap.removeEventListener('wheel', onWheel);
-    });
-
-    return () => cleanups.forEach(fn => fn());
-  }, [t]);
-
   // Skills scrollers
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -684,55 +779,52 @@ export default function SkillsSection() {
       <section className="section">
         <div className="section-label fade-in">My Design Process</div>
         <div className="process-dual">
-          <div className="process-column">
-            <div className="process-column-header stagger-item">
+          <div className="process-column stagger-item">
+            <div className="process-column-header">
               <i className="ph-bold ph-buildings"></i>
               <span>{t.tab_inhouse}</span>
             </div>
-            <div className="process-scroll-wrap">
-              <div className="process-column-grid process-column-grid--inhouse">
-                {(['Align','Research','Structure','Design','Validate','Iterate'] as const).map((slug, i) => {
-                  const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
-                  const nameKey = `ih_name_${idx}` as keyof typeof t;
-                  const descKey = `ih_desc_${idx}` as keyof typeof t;
-                  return (
-                    <BorderGlow
-                      key={slug}
-                      className="process-card process-card--has-img"
-                      backgroundColor="#13101c"
-                      borderRadius={14}
-                      colors={['#6C63FF', '#FF6584', '#38bdf8']}
-                      glowColor="264 70 75"
-                      edgeSensitivity={25}
-                      glowRadius={24}
-                      glowIntensity={1.1}
-                      coneSpread={25}
-                      fillOpacity={0.4}
-                      spotlightColor="rgba(108, 99, 255, 0.12)"
-                      backgroundSlot={
-                        <>
-                          <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: `url("./img/process/${slug}_w.png")` }} />
-                          <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: `url("./img/process/${slug}.png")` }} />
-                        </>
-                      }
-                    >
-                      <div className="process-num">{String(i + 1).padStart(2, '0')}</div>
-                      <div className="process-name">{t[nameKey] as string}</div>
-                      <div className="process-desc">{t[descKey] as string}</div>
-                    </BorderGlow>
-                  );
-                })}
-              </div>
-            </div>
+            <ProcessCarousel
+              cards={(['Align','Research','Structure','Design','Validate','Iterate'] as const).map((slug, i) => {
+                const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
+                const nameKey = `ih_name_${idx}` as keyof typeof t;
+                const descKey = `ih_desc_${idx}` as keyof typeof t;
+                return (
+                  <BorderGlow
+                    key={slug}
+                    className="process-card process-card--has-img"
+                    backgroundColor="#13101c"
+                    borderRadius={14}
+                    colors={['#6C63FF', '#FF6584', '#38bdf8']}
+                    glowColor="264 70 75"
+                    edgeSensitivity={25}
+                    glowRadius={24}
+                    glowIntensity={1.1}
+                    coneSpread={25}
+                    fillOpacity={0.4}
+                    spotlightColor="rgba(108, 99, 255, 0.12)"
+                    backgroundSlot={
+                      <>
+                        <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: `url("./img/process/${slug}_w.png")` }} />
+                        <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: `url("./img/process/${slug}.png")` }} />
+                      </>
+                    }
+                  >
+                    <div className="process-num">{String(i + 1).padStart(2, '0')}</div>
+                    <div className="process-name">{t[nameKey] as string}</div>
+                    <div className="process-desc">{t[descKey] as string}</div>
+                  </BorderGlow>
+                );
+              })}
+            />
           </div>
           <div className="process-column stagger-item">
             <div className="process-column-header">
               <i className="ph-bold ph-handshake"></i>
               <span>{t.tab_freelance}</span>
             </div>
-            <div className="process-scroll-wrap">
-            <div className="process-column-grid process-column-grid--inhouse">
-              {(['Intake','AI Brief','Triage','Discovery','Proposal','Delivery'] as const).map((slug, i) => {
+            <ProcessCarousel
+              cards={(['Intake','AI Brief','Triage','Discovery','Proposal','Delivery'] as const).map((slug, i) => {
                 const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
                 const nameKey = `fl_name_${idx}` as keyof typeof t;
                 const descKey = `fl_desc_${idx}` as keyof typeof t;
@@ -763,8 +855,7 @@ export default function SkillsSection() {
                   </BorderGlow>
                 );
               })}
-            </div>
-            </div>
+            />
           </div>
         </div>
       </section>
