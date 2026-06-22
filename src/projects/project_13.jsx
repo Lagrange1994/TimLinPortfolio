@@ -407,7 +407,7 @@ const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
 
                         {/* Carbon DS Banner */}
                         <div className="mb-16 chamfer-card p-[1px] bg-gradient-to-r from-tech-primary/40 via-white/5 to-transparent">
-                            <div className="chamfer-card bg-tech-dark/90 backdrop-blur-sm px-8 py-7 flex flex-col md:flex-row md:items-center gap-6">
+                            <div className="chamfer-card bg-tech-dark/90 backdrop-blur-sm px-8 py-7 flex flex-col lg:flex-row lg:flex-wrap lg:items-center gap-6">
                                 <div className="flex items-center space-x-4 flex-shrink-0">
                                     <div className="chamfer-btn p-[1.5px] bg-tech-primary">
                                         <div className="chamfer-btn bg-tech-dark px-4 py-3">
@@ -419,9 +419,9 @@ const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
                                         <div className="font-mono text-[10px] text-tech-primary tracking-widest mt-0.5">DESIGN_FOUNDATION</div>
                                     </div>
                                 </div>
-                                <div className="hidden md:block w-px h-12 bg-white/10 flex-shrink-0"></div>
-                                <p className="text-gray-400 text-sm leading-relaxed flex-1">{t.dl.carbon_desc}</p>
-                                <div className="flex flex-wrap gap-2 flex-shrink-0">
+                                <div className="hidden lg:block w-px h-12 bg-white/10 flex-shrink-0"></div>
+                                <p className="text-gray-400 text-sm leading-relaxed lg:flex-1 lg:basis-64 min-w-0">{t.dl.carbon_desc}</p>
+                                <div className="flex flex-wrap gap-2 flex-shrink-0 -mt-3 lg:mt-0">
                                     {['Grid System','g100 Theme','BX Components','8px Scale'].map(tag => (
                                         <span key={tag} className="chamfer-btn px-3 py-1 border border-tech-primary/30 bg-tech-primary/10 font-mono text-[9px] text-tech-primary tracking-widest">{tag}</span>
                                     ))}

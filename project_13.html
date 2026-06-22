@@ -5,10 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Super High Tech | CNC 3D Simulator</title>
   <link rel="shortcut icon" type="image/ico" href="/img/favicon/favicon.ico" />
-  <link rel="stylesheet" href="/style.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'tech-primary': '#1890FF',
+            'tech-dark': '#0B0C10',
+            'tech-panel': '#1F2833',
+            'tech-accent': '#66FCF1',
+            'tech-grey': '#C5C6C7'
+          },
+          fontFamily: {
+            mono: ['"JetBrains Mono"', 'monospace'],
+            display: ['"Orbitron"', 'sans-serif'],
+            body: ['"Inter"', 'sans-serif']
+          },
+          backgroundImage: {
+            'hex-pattern': "url(\"data:image/svg+xml,%3Csvg width='24' height='40' viewBox='0 0 24 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40c5.523 0 10-4.477 10-10V10C10 4.477 5.523 0 0 0h24c-5.523 0-10 4.477-10 10v20c0 5.523 5.523 10 10 10H0z' fill='%231890FF' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E\")"
+          }
+        }
+      }
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
   <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
   <style>
         body {
@@ -445,6 +469,34 @@
             100% {
                 opacity: 0;
                 transform: translate3d(0, 0, 0);
+            }
+        }
+
+        /* Narrow viewports (phone/tablet) reuse the main site's scrollbar
+           shape (4px, rounded thumb, transparent track — see portfolio.css)
+           but recolored to this page's tech-primary blue instead of the
+           main site's purple, to match the CNC palette. */
+        @media (max-width: 768px) {
+            html {
+                scrollbar-width: thin;
+                scrollbar-color: #1890FF transparent;
+            }
+
+            ::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: #1890FF;
+                border-radius: 4px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #66FCF1;
             }
         }
     </style>
