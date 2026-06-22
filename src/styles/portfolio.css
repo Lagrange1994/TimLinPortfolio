@@ -1264,15 +1264,15 @@
         position: relative;
       }
 
-      /* The Freelance column's padding-top (divider gap from the In-house
-         column above) only pushes IN-FLOW content down — an absolutely
-         positioned child measures `top` from the border edge regardless of
-         padding, so it would ignore that gap and desync from the cards.
-         Move the same total gap into margin-top instead, which shifts the
-         whole column (and everything inside it, abs or not) together. */
+      /* Freelance's padding-top is the breathing room between the divider
+         line and its label/cards. An absolutely positioned child measures
+         `top` from the border edge regardless of padding, so the label's
+         `top` below is bumped by the same 32px (see the override further
+         down) to stay in sync with the cards, which DO get pushed down by
+         the padding since they're in normal flow. */
       .process-column + .process-column {
-        padding-top: 0;
-        margin-top: 64px;
+        padding-top: 32px;
+        margin-top: 32px;
       }
 
       /* Pin the column label to the same Y as the rightmost (highest) card's
@@ -1283,6 +1283,10 @@
         top: 12px;
         left: 0;
         margin: 0;
+      }
+
+      .process-column + .process-column .process-column-header {
+        top: 44px;
       }
 
       .process-scroll-wrap {
@@ -3085,23 +3089,28 @@
         display: none !important;
       }
 
-      /* AI flow grid — 3 col on tablet; minmax(0,1fr) prevents min-content overflow */
+      /* The desktop staircase pins the label over the freed space above the
+         leftmost (pushed-down) card. Tablet's static grid has no such gap —
+         every card sits flush at the top — so the absolutely positioned
+         label would float on top of the first card. Put it back in normal
+         flow above the grid, like mobile already does. */
+      .process-column-header {
+        position: static;
+        margin: 0 0 14px;
+      }
+
+      /* AI flow grid — 2 col on tablet (was 3); minmax(0,1fr) prevents min-content overflow */
       .ai-flow-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       }
 
-      /* Bento expand on tablet: grow taller only (span 1 col) to avoid col-3 overflow reflow */
-      .ai-flow-grid.has-expanded .ai-card.is-open {
-        grid-column: span 1 !important;
-        grid-row: span 2;
-      }
-
-      .ai-flow-grid.has-expanded .ai-card.is-open .channel-list,
-      .ai-flow-grid.has-expanded .ai-card.is-open .phases,
-      .ai-flow-grid.has-expanded .ai-card.is-open .review-grid,
-      .ai-flow-grid.has-expanded .ai-card.is-open .ai-block ul,
-      .ai-flow-grid.has-expanded .ai-card.is-open .ai-block ol {
-        grid-template-columns: 1fr !important;
+      /* 2 cols = the desktop bento default (span 2/span 2) already means
+         "full width, 2 rows tall" here, so no tablet-specific override
+         needed for the expand behavior. The desktop 48/24/0 stagger,
+         however, assumes 3 columns — with only 2, nth-of-type cycles
+         through unrelated offsets per row and looks jumbled, so flatten it. */
+      .ai-flow-grid .ai-card {
+        top: 0 !important;
       }
 
       /* Tech stack — single column */
@@ -3769,6 +3778,16 @@
       border-left: 1px solid rgba(108, 99, 255, 0.2);
     }
 
+    /* Narrow phones: PORTFOLIO already nearly fills the panel's full text
+       width at the base 2.5rem side padding — shave it down so the
+       left-side number gutter doesn't push that label past the right edge. */
+    @media (max-width: 480px) {
+      .sm-panel {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+    }
+
     .sm-panel-inner {
       flex: 1;
       display: flex;
@@ -3796,15 +3815,29 @@
       position: relative;
       color: #ffffff;
       font-weight: 700;
-      font-size: clamp(2.6rem, 9vw, 3.5rem);
+      font-size: clamp(2.1rem, 8vw, 3rem);
       cursor: pointer;
       line-height: 1.05;
       letter-spacing: -2px;
       text-transform: uppercase;
       font-family: var(--font-heading);
-      display: inline-block;
+      /* Block + full width (not inline-block's shrink-to-fit) so the box's
+         own edges are the panel's edges, not wherever the text happens to
+         end — with shrink-to-fit, a long label (PORTFOLIO) made the box
+         just barely wider than the text, so the ::after number landed past
+         the panel's edge and got clipped by .sm-panel-itemWrap's
+         overflow:hidden instead of sitting in the reserved gutter. */
+      display: block;
+      width: 100%;
+      text-align: left;
       text-decoration: none;
-      padding-right: 1.6em;
+      /* rem-based clamp, not em: em would scale with this element's own
+         huge responsive font-size, reserving way more gutter than the
+         ::after number (fixed 16px) actually needs. Kept tight so the
+         number sits close to the label, with enough margin on narrow
+         phones that the longest label (PORTFOLIO) doesn't get pushed past
+         the right edge and clipped by .sm-panel-itemWrap's overflow:hidden. */
+      padding-left: clamp(1.3rem, 4.5vw, 2rem);
       background: none;
       border: none;
       transition: color 0.25s;
@@ -3819,7 +3852,7 @@
       content: counter(smItem, decimal-leading-zero);
       position: absolute;
       top: 0.15em;
-      right: 2.4em;
+      left: 0;
       font-size: 16px;
       font-weight: 400;
       color: var(--sm-accent, #6C63FF);
@@ -3990,6 +4023,12 @@
       .ai-usage-grid {
         grid-template-columns: 1fr;
       }
+
+      /* AI flow grid drops to 2/1 columns here — the 3-column stagger no
+         longer maps to the right cards, so flatten it like Tech Stack. */
+      .ai-flow-grid .ai-card {
+        top: 0 !important;
+      }
     }
 
     /* ── BORDER GLOW (My Design Process cards) ── */
@@ -4130,9 +4169,29 @@
     }
 
     /* consolidated from former in-body style blocks */
-    .ai-flow-grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+    .ai-flow-grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;padding-bottom:48px}
     @media(max-width:960px){.ai-flow-grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:640px){.ai-flow-grid{grid-template-columns:1fr;gap:14px}}
+    @media(max-width:640px){.ai-flow-grid{grid-template-columns:1fr;gap:14px;padding-bottom:0}}
+
+    /* Left-low -> right-high stagger, same 48/24/0 spec as Tech Stack.
+       Uses `top` (the card is already position:relative) instead of
+       margin-top: margin would inflate that row's auto track height by the
+       largest offset in the row, which then shows up as extra dead space
+       above row 2 for every column (not just the offset column) — `top`
+       shifts the box purely visually after layout, so it doesn't touch grid
+       track sizing and the row-to-row gap stays exactly `gap`. It also
+       can't collide with .ai-card's own `transform` (hover lift, GSAP
+       open/close), since `top` and `transform` compose independently.
+       padding-bottom above reserves room for the lowest column's overflow. */
+    .ai-flow-grid .ai-card:nth-of-type(1),
+    .ai-flow-grid .ai-card:nth-of-type(4) { top: 48px; }
+    .ai-flow-grid .ai-card:nth-of-type(2),
+    .ai-flow-grid .ai-card:nth-of-type(5) { top: 24px; }
+    .ai-flow-grid .ai-card:nth-of-type(3),
+    .ai-flow-grid .ai-card:nth-of-type(6) { top: 0; }
+    /* Dense packing on expand can reflow cards into different columns —
+       the nth-of-type offsets above no longer match, so drop them. */
+    .ai-flow-grid.has-expanded .ai-card { top: 0; }
     /* Bento rearrange — expanded card grows to a 2x2 block, others pack densely around it */
     @media(min-width:641px){
       .ai-flow-grid.has-expanded{grid-auto-flow:dense}
