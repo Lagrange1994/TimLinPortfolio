@@ -1764,6 +1764,23 @@
     .tok-pink  { color: #f9a8d4; }
     .tok-muted { color: rgba(255, 255, 255, 0.25); }
 
+    .tcp-cursor {
+      display: inline-block;
+      width: 6px;
+      height: 1.1em;
+      margin-left: 1px;
+      background: rgba(255, 255, 255, 0.55);
+      vertical-align: text-bottom;
+      animation: tcp-blink 1s step-end infinite;
+    }
+    @keyframes tcp-blink {
+      0%, 50%   { opacity: 1; }
+      50.01%, 100% { opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tcp-cursor { animation: none; opacity: 0; }
+    }
+
     .tech-note {
       margin-top: 24px;
       border-left: 3px solid var(--primary);

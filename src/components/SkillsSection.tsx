@@ -2,8 +2,67 @@ import { useEffect, useState, useRef, Fragment, useMemo, type ReactNode, type Po
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
+import TypingCode, { type CodeVersion } from './TypingCode';
 
 const SMOOTH_TAU = 0.18;
+
+// Two "drafts" per tech-stack code preview — TypingCode loops between them,
+// backspacing to wherever the next draft diverges and typing the rest
+// forward, so the snippet reads as code actively being revised.
+const CSS_CODE_A: CodeVersion = [
+  [{ text: ':root', cls: 'tok-sel' }, { text: ' ' }, { text: '{', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: '--primary', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '   ' }, { text: '#6C63FF', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: '--secondary', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: ' ' }, { text: '#FF6584', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: '--bg', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '        ' }, { text: '#121212', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: '--border', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '    ' }, { text: 'rgba', cls: 'tok-fn' }, { text: '(255,255,255,', cls: 'tok-muted' }, { text: '0.1', cls: 'tok-num' }, { text: ');', cls: 'tok-muted' }],
+  [{ text: '}', cls: 'tok-muted' }],
+];
+const CSS_CODE_B: CodeVersion = [
+  CSS_CODE_A[0],
+  CSS_CODE_A[1],
+  CSS_CODE_A[2],
+  [{ text: '  ' }, { text: '--bg', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '        ' }, { text: '#0f0f10', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: '--border', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '    ' }, { text: 'rgba', cls: 'tok-fn' }, { text: '(255,255,255,', cls: 'tok-muted' }, { text: '0.12', cls: 'tok-num' }, { text: ');', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: '--radius', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '    ' }, { text: '14px', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
+  [{ text: '}', cls: 'tok-muted' }],
+];
+
+const JS_CODE_A: CodeVersion = [
+  [{ text: 'gsap', cls: 'tok-kw' }, { text: '.', cls: 'tok-muted' }, { text: 'to', cls: 'tok-fn' }, { text: '(', cls: 'tok-muted' }, { text: 'h1Words' }, { text: ', {', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: 'opacity', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: ' ' }, { text: '1', cls: 'tok-num' }, { text: ',', cls: 'tok-muted' }, { text: ' ' }, { text: 'y', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: ' ' }, { text: '0', cls: 'tok-num' }, { text: ',', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: 'duration', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: ' ' }, { text: '1.0', cls: 'tok-num' }, { text: ',', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: 'ease', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: '     ' }, { text: "'power3.out'", cls: 'tok-val' }, { text: ',', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: 'stagger', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: '  ' }, { text: '0.11', cls: 'tok-num' }],
+  [{ text: '})', cls: 'tok-muted' }],
+];
+const JS_CODE_B: CodeVersion = [
+  JS_CODE_A[0],
+  JS_CODE_A[1],
+  [{ text: '  ' }, { text: 'duration', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: ' ' }, { text: '0.8', cls: 'tok-num' }, { text: ',', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: 'ease', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: '     ' }, { text: "'expo.out'", cls: 'tok-val' }, { text: ',', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: 'stagger', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: '  ' }, { text: '0.08', cls: 'tok-num' }],
+  JS_CODE_A[5],
+];
+
+const JSX_CODE_A: CodeVersion = [
+  [{ text: '<', cls: 'tok-muted' }, { text: 'BorderGlow', cls: 'tok-sel' }],
+  [{ text: '  ' }, { text: 'className', cls: 'tok-pink' }, { text: '=', cls: 'tok-muted' }, { text: '"process-card"', cls: 'tok-val' }],
+  [{ text: '  ' }, { text: 'colors', cls: 'tok-pink' }, { text: '={[', cls: 'tok-muted' }, { text: "'#6C63FF'", cls: 'tok-val' }, { text: ',', cls: 'tok-muted' }, { text: ' ' }, { text: "'#FF6584'", cls: 'tok-val' }, { text: ']}', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: 'glowIntensity', cls: 'tok-pink' }, { text: '={', cls: 'tok-muted' }, { text: '1.1', cls: 'tok-num' }, { text: '}', cls: 'tok-muted' }],
+  [{ text: '>', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: '{t[nameKey]}', cls: 'tok-fn' }],
+  [{ text: '<', cls: 'tok-muted' }, { text: '/', cls: 'tok-muted' }, { text: 'BorderGlow', cls: 'tok-sel' }, { text: '>', cls: 'tok-muted' }],
+];
+const JSX_CODE_B: CodeVersion = [
+  JSX_CODE_A[0],
+  JSX_CODE_A[1],
+  JSX_CODE_A[2],
+  [{ text: '  ' }, { text: 'glowIntensity', cls: 'tok-pink' }, { text: '={', cls: 'tok-muted' }, { text: '1.3', cls: 'tok-num' }, { text: '}', cls: 'tok-muted' }],
+  [{ text: '  ' }, { text: 'edgeSensitivity', cls: 'tok-pink' }, { text: '={', cls: 'tok-muted' }, { text: '20', cls: 'tok-num' }, { text: '}', cls: 'tok-muted' }],
+  JSX_CODE_A[4],
+  JSX_CODE_A[5],
+  JSX_CODE_A[6],
+];
 
 function makeAiCards(t: Record<string, string>) {
   return [
@@ -877,14 +936,7 @@ export default function SkillsSection() {
                 <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
                 <span className="tcp-filename">portfolio.css</span>
               </div>
-              <pre className="tcp-code" dangerouslySetInnerHTML={{ __html:
-`<span class="tok-sel">:root</span> <span class="tok-muted">{</span>
-  <span class="tok-prop">--primary</span><span class="tok-muted">:</span>   <span class="tok-val">#6C63FF</span><span class="tok-muted">;</span>
-  <span class="tok-prop">--secondary</span><span class="tok-muted">:</span> <span class="tok-val">#FF6584</span><span class="tok-muted">;</span>
-  <span class="tok-prop">--bg</span><span class="tok-muted">:</span>        <span class="tok-val">#121212</span><span class="tok-muted">;</span>
-  <span class="tok-prop">--border</span><span class="tok-muted">:</span>    <span class="tok-fn">rgba</span><span class="tok-muted">(255,255,255,</span><span class="tok-num">0.1</span><span class="tok-muted">);</span>
-<span class="tok-muted">}</span>`
-              }} />
+              <TypingCode versions={[CSS_CODE_A, CSS_CODE_B]} />
             </div>
           </div>
           <div className="tech-item js-item card-spotlight sc-card">
@@ -898,14 +950,7 @@ export default function SkillsSection() {
                 <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
                 <span className="tcp-filename">HeroSection.tsx</span>
               </div>
-              <pre className="tcp-code" dangerouslySetInnerHTML={{ __html:
-`<span class="tok-kw">gsap</span><span class="tok-muted">.</span><span class="tok-fn">to</span><span class="tok-muted">(</span>h1Words<span class="tok-muted">, {</span>
-  <span class="tok-pink">opacity</span><span class="tok-muted">:</span> <span class="tok-num">1</span><span class="tok-muted">,</span> <span class="tok-pink">y</span><span class="tok-muted">:</span> <span class="tok-num">0</span><span class="tok-muted">,</span>
-  <span class="tok-pink">duration</span><span class="tok-muted">:</span> <span class="tok-num">1.0</span><span class="tok-muted">,</span>
-  <span class="tok-pink">ease</span><span class="tok-muted">:</span>     <span class="tok-val">'power3.out'</span><span class="tok-muted">,</span>
-  <span class="tok-pink">stagger</span><span class="tok-muted">:</span>  <span class="tok-num">0.11</span>
-<span class="tok-muted">})</span>`
-              }} />
+              <TypingCode versions={[JS_CODE_A, JS_CODE_B]} />
             </div>
           </div>
           <div className="tech-item react-item card-spotlight sc-card">
@@ -919,15 +964,7 @@ export default function SkillsSection() {
                 <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
                 <span className="tcp-filename">SkillsSection.tsx</span>
               </div>
-              <pre className="tcp-code" dangerouslySetInnerHTML={{ __html:
-`<span class="tok-muted">&lt;</span><span class="tok-sel">BorderGlow</span>
-  <span class="tok-pink">className</span><span class="tok-muted">=</span><span class="tok-val">"process-card"</span>
-  <span class="tok-pink">colors</span><span class="tok-muted">={[</span><span class="tok-val">'#6C63FF'</span><span class="tok-muted">,</span> <span class="tok-val">'#FF6584'</span><span class="tok-muted">]}</span>
-  <span class="tok-pink">glowIntensity</span><span class="tok-muted">={</span><span class="tok-num">1.1</span><span class="tok-muted">}</span>
-<span class="tok-muted">&gt;</span>
-  <span class="tok-fn">{t[nameKey]}</span>
-<span class="tok-muted">&lt;/</span><span class="tok-sel">BorderGlow</span><span class="tok-muted">&gt;</span>`
-              }} />
+              <TypingCode versions={[JSX_CODE_A, JSX_CODE_B]} />
             </div>
           </div>
         </div>
