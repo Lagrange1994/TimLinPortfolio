@@ -24,7 +24,10 @@ Config: `vitest.config.js`. Setup file: `test/setup.js`.
   detection, helper functions, data transforms. No network, no DOM.
 - **Integration tests** — React components rendered with `@testing-library/react`,
   asserting on user-visible behavior (not implementation details).
-- **Smoke tests** — none yet; add if a deploy-time sanity check is needed.
+- **Smoke tests** (`test/*.smoke.test.ts`) — deploy-time sanity checks, e.g.
+  `chat-deploy.smoke.test.ts` pins the ESM/CJS module-loading assumptions that
+  only break in the production Vercel build, not in `vite dev` or Vitest's
+  own resolver.
 - **E2E tests** — covered by `/qa` (gstack browser QA), not by this framework.
 
 ## Conventions

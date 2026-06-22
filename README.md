@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tim Lin Portfolio
+
+UI/UX 設計師作品集網站。Vite + React，部署在 Vercel。
+
+## 架構
+
+- **主頁** (`index.html`) — React SPA。`<div id="root">` 由 `src/main.tsx` 掛載 `src/App.tsx`，元件在 `src/components/`，i18n 在 `src/context/LangContext`。
+- **專案頁** (`project_01.html` ~ `project_13.html`) — 13 個獨立的 Vite MPA entry，各自對應 `src/projects/project_XX.jsx`（React + GSAP）。
+- **AI 聊天 API** (`api/chat.ts`) — Vercel serverless function，邏輯共用在 `api/_chat-core.ts`；本機 `vite dev` 透過 `vite.config.js` 的 middleware 模擬同一套邏輯。
+
+詳細規則見 `CLAUDE.md`（不要把主頁當靜態 HTML 改，也不要套用 Next.js 慣例——這兩者都已確認不適用於此專案）。
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+開 [http://localhost:5173](http://localhost:5173)（被佔用時 Vite 會自動換下一個 port，終端機會顯示實際網址）。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev       # Vite dev server
+npm run build     # 輸出到 dist/（vercel.json 的 outputDirectory）
+npm run preview   # 本機預覽 production build
+npm run lint       # ESLint
+npm test          # Vitest（jsdom），見 TESTING.md
+```
 
-## Learn More
+## Deploy
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Push 到連接 Vercel 的分支即自動部署。`vercel.json` 設定 `outputDirectory: dist`。
