@@ -17,8 +17,13 @@ export default function Loader() {
     const forceTimer = setTimeout(hideLoader, 4000);
 
     function waitForSpline() {
+      // The desktop hero figure only gets a Spline `url` (and thus only ever
+      // fires `load`) when window.innerWidth >= 1025 — see HeroSection's
+      // "Hero spline desktop conditional" effect. Below that breakpoint the
+      // element exists but never loads anything, so waiting for its `load`
+      // event would just burn the full 4s forceTimer on every mobile visit.
       const splineEl = document.querySelector('.hero-fig-desktop');
-      if (!splineEl) {
+      if (!splineEl || window.innerWidth < 1025) {
         hideLoader();
         return;
       }

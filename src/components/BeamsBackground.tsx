@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 // ── Constants (matches the original <Beams /> usage example) ────────────────
@@ -63,6 +63,16 @@ float cnoise(vec3 P){
 
 export default function BeamsBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // The decorative background Spline scene is desktop-only and gets fully
+  // unmounted (not just faded to opacity 0) once scrolled past the hero —
+  // see updateBg() below. Running it continuously for the rest of the page,
+  // on top of the hero's own Spline figure and this canvas's Three.js
+  // renderer, was sustained concurrent WebGL load that correlated with
+  // intermittent tab crashes and (on mobile, where it isn't needed at all)
+  // a flood of zero-size-framebuffer WebGL errors on viewport resize.
+  const [splineBgMounted, setSplineBgMounted] = useState(() => window.innerWidth >= 1025);
+  const splineBgMountedRef = useRef(splineBgMounted);
+  splineBgMountedRef.current = splineBgMounted;
 
   useEffect(() => {
     let cancelled = false;
@@ -227,13 +237,15 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
       })();
 
       const onResize = () => {
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        camera.aspect = window.innerWidth / window.innerHeight;
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        if (!w || !h) return; // guard against a transient zero-size viewport during resize
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
         camera.updateProjectionMatrix();
       };
       window.addEventListener('resize', onResize, { passive: true });
 
-      const splineEl = document.getElementById('spline-bg');
       let ticking = false;
 
       function updateBg() {
@@ -243,9 +255,20 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
         const fadeStart = heroH * 0.45;
         const fadeEnd = heroH * 0.85;
         const p = Math.max(0, Math.min(1, (window.scrollY - fadeStart) / (fadeEnd - fadeStart)));
+        // Looked up fresh each call (rather than cached once) since the
+        // element gets unmounted/remounted by the splineBgMounted toggle below.
+        const splineEl = document.getElementById('spline-bg');
         if (splineEl) (splineEl as HTMLElement).style.opacity = (1 - p).toFixed(3);
         canvas.style.opacity = p.toFixed(3);
         beamsActive = p > 0.02;
+
+        if (window.innerWidth >= 1025) {
+          const shouldMount = p < 1;
+          if (shouldMount !== splineBgMountedRef.current) {
+            splineBgMountedRef.current = shouldMount;
+            setSplineBgMounted(shouldMount);
+          }
+        }
       }
 
       const onScroll = () => {
@@ -279,7 +302,7 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
         role="presentation"
         style={{ position: 'fixed', inset: 0, width: '100%', height: '100dvh', zIndex: -1, opacity: 0, pointerEvents: 'none' }}
       />
-      <spline-viewer id="spline-bg" url="./models/bg_scene.splinecode" />
+      {splineBgMounted && <spline-viewer id="spline-bg" url="./models/bg_scene.splinecode" />}
     </>
   );
 }

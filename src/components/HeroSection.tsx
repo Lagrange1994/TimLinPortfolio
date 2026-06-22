@@ -106,7 +106,7 @@ export default function HeroSection() {
 
     function splitChars(el: HTMLElement) {
       if (el.dataset.split === 'chars') {
-        return Array.from(el.children).filter(c => c.tagName === 'SPAN') as HTMLElement[];
+        return Array.from(el.querySelectorAll('span > span')) as HTMLElement[];
       }
       el.dataset.split = 'chars';
       const result: HTMLElement[] = [];
@@ -114,11 +114,21 @@ export default function HeroSection() {
       while (el.firstChild) el.removeChild(el.firstChild);
       nodes.forEach(n => {
         if (n.nodeType === 3) {
-          Array.from((n as Text).textContent!).forEach(c => {
-            if (c === ' ') { el.appendChild(document.createTextNode(' ')); return; }
-            const s = document.createElement('span');
-            s.style.cssText = 'display:inline-block;will-change:transform,opacity';
-            s.textContent = c; el.appendChild(s); result.push(s);
+          // Split into words first and wrap each word's char-spans in an
+          // inline-block container. Without this, every character is its
+          // own independently-breakable inline-block box, so the browser
+          // can (and does) wrap mid-word, e.g. "Develope" / "r".
+          (n as Text).textContent!.split(/(\s+)/).forEach(part => {
+            if (/^\s+$/.test(part)) { el.appendChild(document.createTextNode(part)); return; }
+            if (!part) return;
+            const word = document.createElement('span');
+            word.style.cssText = 'display:inline-block';
+            Array.from(part).forEach(c => {
+              const s = document.createElement('span');
+              s.style.cssText = 'display:inline-block;will-change:transform,opacity';
+              s.textContent = c; word.appendChild(s); result.push(s);
+            });
+            el.appendChild(word);
           });
         } else if (n.nodeType === 1 && (n as Element).nodeName === 'BR') {
           el.appendChild(n);
@@ -309,12 +319,26 @@ export default function HeroSection() {
     }
   }, []);
 
-  // Hero spline desktop conditional
+  // Hero spline desktop conditional — only load the 3D figure on desktop,
+  // and drop its url once the hero scrolls fully out of view so it stops
+  // holding a WebGL context for the rest of the page (it was one of several
+  // concurrent WebGL contexts — this canvas, the background Spline scene,
+  // and this hero figure — implicated in intermittent renderer crashes).
   useEffect(() => {
-    if (window.innerWidth >= 1025) {
-      const heroSpline = document.getElementById('hero-spline');
-      if (heroSpline) heroSpline.setAttribute('url', './models/hero_figure.splinecode');
-    }
+    if (window.innerWidth < 1025) return;
+    const heroEl = document.getElementById('home');
+    const heroSpline = document.getElementById('hero-spline');
+    if (!heroEl || !heroSpline) return;
+
+    heroSpline.setAttribute('url', './models/hero_figure.splinecode');
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) heroSpline.setAttribute('url', './models/hero_figure.splinecode');
+      else heroSpline.removeAttribute('url');
+    }, { threshold: 0 });
+    observer.observe(heroEl);
+
+    return () => observer.disconnect();
   }, []);
 
   return (
