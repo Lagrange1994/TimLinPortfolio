@@ -4,7 +4,7 @@
 import { readFileSync } from 'fs';
 import path from 'path';
 import { GoogleGenAI } from '@google/genai';
-import { translations } from '../data/translations';
+import { translations } from '../data/translations.js';
 
 // ── Daily request limit (in-memory, resets on function cold start) ──────────
 const DAILY_LIMIT = Number(process.env.CHAT_DAILY_LIMIT ?? 50);

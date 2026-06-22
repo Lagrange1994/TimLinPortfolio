@@ -2,6 +2,7 @@
   "name": "frosty-kalam-5b4096",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "engines": {
     "node": ">=20.0.0"
   },
