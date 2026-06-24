@@ -483,15 +483,15 @@
       display: block;
     }
 
-    /* Desktop: show Spline, hide static img */
-    @media (min-width: 1025px) {
+    /* Desktop + tablet: show Spline, hide static img */
+    @media (min-width: 768px) {
       .hero-fig-mobile {
         display: none !important;
       }
     }
 
-    /* Tablet / Mobile: show static img, hide Spline */
-    @media (max-width: 1024px) {
+    /* Mobile only: show static img, hide Spline */
+    @media (max-width: 767px) {
       .hero-fig-desktop {
         display: none !important;
       }
@@ -3945,6 +3945,14 @@
          keeps shifting each stacked card down and it overlaps the next one. */
       .tech-items .tech-item {
         transform: translateY(0) !important;
+      }
+
+      /* .tech-sub's -32px margin only makes sense paired with item 1's 48px
+         desktop stagger pushing it back down clear of the heading — with
+         the stagger reset above, that same negative margin pulls the grid
+         up into the subtitle text instead. */
+      .tech-sub {
+        margin-bottom: 16px !important;
       }
 
       .process-column-grid--inhouse .process-swipe-slot {

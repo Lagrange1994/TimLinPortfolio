@@ -319,13 +319,14 @@ export default function HeroSection() {
     }
   }, []);
 
-  // Hero spline desktop conditional — only load the 3D figure on desktop,
-  // and drop its url once the hero scrolls fully out of view so it stops
-  // holding a WebGL context for the rest of the page (it was one of several
-  // concurrent WebGL contexts — this canvas, the background Spline scene,
-  // and this hero figure — implicated in intermittent renderer crashes).
+  // Hero spline desktop+tablet conditional — only load the 3D figure above
+  // mobile width, and drop its url once the hero scrolls fully out of view
+  // so it stops holding a WebGL context for the rest of the page (it was
+  // one of several concurrent WebGL contexts — this canvas, the background
+  // Spline scene, and this hero figure — implicated in intermittent
+  // renderer crashes).
   useEffect(() => {
-    if (window.innerWidth < 1025) return;
+    if (window.innerWidth < 768) return;
     const heroEl = document.getElementById('home');
     const heroSpline = document.getElementById('hero-spline');
     if (!heroEl || !heroSpline) return;
