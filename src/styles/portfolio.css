@@ -4481,9 +4481,9 @@
     .ai-chips-row{display:flex;flex-direction:column;align-items:center;gap:16px;margin-bottom:28px}
     .ai-chips-label{font-family:"Geist Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.28);display:flex;align-items:center;gap:12px}
     .ai-chips-label::before,.ai-chips-label::after{content:"";width:36px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent)}
-    .ai-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-    .ai-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 16px 9px 13px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px);font-size:13.5px;color:#ECE9F5;transition:all .3s;cursor:default}
-    .ai-chip:hover{background:rgba(255,255,255,.07);border-color:rgba(138,43,226,.4);transform:translateY(-2px)}
+    .ai-chips-row .ai-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+    .ai-chips-row .ai-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 16px 9px 13px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px);font-size:13.5px;color:#ECE9F5;transition:all .3s;cursor:default}
+    .ai-chips-row .ai-chip:hover{background:rgba(255,255,255,.07);border-color:rgba(138,43,226,.4);transform:translateY(-2px)}
     .ai-chip-dot{width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,#8A2BE2,#00D4FF);box-shadow:0 0 8px rgba(138,43,226,.5)}
     .ai-chip-count{font-family:"Geist Mono",monospace;font-size:10.5px;color:rgba(255,255,255,.3);padding-left:9px;margin-left:2px;border-left:1px solid rgba(255,255,255,.1)}
     .ai-principle{padding:28px 32px;border-radius:16px;text-align:center;background:rgba(138,43,226,.06);border:1px solid rgba(138,43,226,.18);font-size:20px;font-weight:500;letter-spacing:-.018em;color:#ECE9F5}
