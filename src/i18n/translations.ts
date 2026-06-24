@@ -15,7 +15,7 @@ export const translations = {
     about_p2: `除了嚴謹的系統思維，我擅長將<strong>沉浸式視覺</strong>注入介面設計。熟練運用 <span class="text-secondary">Blender</span> 與 <span class="text-secondary">Spline</span> 打造 3D 互動網頁體驗，也具備多媒體娛樂產業與商業專案的完整執行經驗——這讓我的設計能在邏輯嚴密的同時，保有視覺上的驚喜感。`,
     about_p3: `我把 <strong>AI 與自動化</strong>嵌進實際接案流程：當客戶從 LINE 官方帳號或表單送出需求後，Make 會先整理欄位、交由 <span class="text-purple">Gemini</span> 摘要需求與判斷類型，再寫入 <span class="text-purple">Google Sheets</span> 作為追蹤資料庫，最後分流發送 LINE 回覆與 Email 通知。這讓我在正式溝通前就能掌握需求背景、預算、時程與風險，回覆更快，也更精準。`,
     // tech stack
-    tech_sub: '我不是工程師，但我能讀懂程式、修改邏輯、有效縮短設計與開發之間的溝通距離。',
+    tech_sub: '我不是工程師，但我能讀懂程式、修改邏輯、<br>有效縮短設計與開發之間的溝通距離。',
     figma_mcp:
       '<strong>Figma MCP</strong> — 透過 MCP 讓 AI 直接讀取 Figma 設計稿的元件、Token 與標註規格，無需截圖或手動複製。設計稿即時轉為程式碼，一次對齊，省去反覆溝通。',
     skill_html:
@@ -52,7 +52,7 @@ export const translations = {
     fl_name_06: 'Delivery',
     fl_desc_06: '依里程碑交付 wireframe、高保真設計、互動說明與開發標註，並保留後續追蹤與回覆紀錄',
     // AI
-    ai_sub: 'AI 不只是讓工作變快的工具——而是讓每個設計決策都有更充分的依據。',
+    ai_sub: 'AI 不只是讓工作變快的工具——<br>而是讓每個設計決策都有更充分的依據。',
     ai_gemini_1: '<strong>邏輯生成與轉譯：</strong> 將設計需求轉化為精準的 Prompt，讓 AI 產出初始程式碼架構。',
     ai_gemini_2: '<strong>智慧除錯：</strong> 遇到程式錯誤時，擅長描述情境引導 AI 快速定位問題。',
     ai_gemini_3: '<strong>文案撰寫：</strong> 協助撰寫 UX 文案初稿，快速進入評審流程。',
@@ -202,7 +202,7 @@ export const translations = {
     about_p3: `I embed <strong>AI and automation</strong> directly into my freelance workflow. When a client submits a request through LINE or a form, Make structures the fields, asks <span class="text-purple">Gemini</span> to summarize the need and classify the request, saves it to <span class="text-purple">Google Sheets</span>, then routes LINE replies and email notifications. Before the first conversation, I already understand the context, budget, timeline, and risks, so my response is faster and more precise.`,
     // tech stack
     tech_sub:
-      "I'm not an engineer — but I can read code, modify logic, and effectively close the communication gap between design and development.",
+      "I'm not an engineer — but I can read code, modify logic,<br>and effectively close the communication gap between design and development.",
     figma_mcp:
       '<strong>Figma MCP</strong> — I connect AI directly to Figma via MCP, letting it read components, tokens, and specs in real time. No screenshots, no manual handoff — design-to-code in one pass.',
     skill_html:
@@ -252,7 +252,7 @@ export const translations = {
       'I deliver wireframes, high-fidelity designs, interaction notes, and dev annotations by milestone, with follow-up records kept in the workflow',
     // AI
     ai_sub:
-      "I don't use AI as a shortcut — I use it as a collaborator that makes design decisions faster and more grounded.",
+      "I don't use AI as a shortcut —<br>I use it as a collaborator that makes design decisions faster and more grounded.",
     ai_gemini_1:
       '<strong>Logic & Code Generation:</strong> Translating design requirements into precise prompts to generate initial code structures.',
     ai_gemini_2:

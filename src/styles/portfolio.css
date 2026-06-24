@@ -1352,8 +1352,26 @@
     }
 
     .process-swipe-dot.active {
-      width: 18px;
+      width: 24px;
+      background: rgba(108, 99, 255, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .process-swipe-dot-fill {
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
       background: var(--primary);
+      transform: scaleX(0);
+      transform-origin: left;
+      animation: process-dot-progress 6s linear forwards;
+      will-change: transform;
+    }
+
+    @keyframes process-dot-progress {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
     }
 
     .process-swipe-btn {
@@ -1585,27 +1603,33 @@
       font-weight: 700;
       letter-spacing: -.02em;
       margin-bottom: 8px;
+      max-width: 392px;
     }
 
     .tech-sub {
       color: rgba(255, 255, 255, 0.55);
       font-size: 14px;
-      margin-bottom: 24px;
+      margin-bottom: -32px;
+      max-width: 392px;
     }
 
     .tech-items {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 16px;
-      align-items: start;
+      align-items: stretch;
+      margin-bottom: 56px;
     }
 
     /* Left-low -> right-high stagger: the right card rises closer to the
        headline above, while the left card stays low, freeing the gap under
-       the headline's left side instead of running all three cards flush. */
-    .tech-items .tech-item:nth-child(1) { margin-top: 48px; }
-    .tech-items .tech-item:nth-child(2) { margin-top: 24px; }
-    .tech-items .tech-item:nth-child(3) { margin-top: 0; }
+       the headline's left side instead of running all three cards flush.
+       Uses transform (not margin-top) so the stagger offset is purely
+       visual and doesn't eat into the stretched card height — otherwise
+       the more-offset cards end up shorter than the others. */
+    .tech-items .tech-item:nth-child(1) { --stagger-y: 48px; }
+    .tech-items .tech-item:nth-child(2) { --stagger-y: 24px; }
+    .tech-items .tech-item:nth-child(3) { --stagger-y: 0px; }
 
     .tech-item {
       border-radius: 14px;
@@ -1615,10 +1639,10 @@
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       transition: all .25s;
+      transform: translateY(var(--stagger-y, 0px));
     }
 
     .tech-item:hover {
-      transform: translateY(-3px);
       border-color: rgba(108, 99, 255, 0.4);
     }
 
@@ -3533,12 +3557,14 @@
       font-weight: 700;
       letter-spacing: -.02em;
       margin-bottom: 8px;
+      max-width: 392px;
     }
 
     .tech-sub {
       color: rgba(255, 255, 255, 0.55);
       font-size: 14px;
-      margin-bottom: 24px;
+      margin-bottom: -32px;
+      max-width: 392px;
     }
 
     .tech-items {
@@ -3558,7 +3584,6 @@
     }
 
     .tech-item:hover {
-      transform: translateY(-3px);
       border-color: rgba(108, 99, 255, 0.4);
     }
 
@@ -3914,8 +3939,14 @@
 
       /* Tech Stack collapses to 1 column and Design Process loses its
          horizontal scroll row below 1024px — the left-low/right-high
-         stagger only makes sense as a horizontal arrangement. */
-      .tech-items .tech-item,
+         stagger only makes sense as a horizontal arrangement. .tech-item's
+         stagger is a transform (see --stagger-y above), not margin, so it
+         must be reset here too — otherwise the decreasing 48/24/0 offset
+         keeps shifting each stacked card down and it overlaps the next one. */
+      .tech-items .tech-item {
+        transform: translateY(0) !important;
+      }
+
       .process-column-grid--inhouse .process-swipe-slot {
         margin-top: 0 !important;
       }
@@ -4186,7 +4217,13 @@
     }
 
     /* consolidated from former in-body style blocks */
-    .ai-flow-grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;padding-bottom:48px}
+    .ai-flow-grid{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;padding-bottom:48px;transition:margin-top .3s ease}
+    /* When expanded, every card's stagger `top` resets to 0 (see the
+       has-expanded rule below) so card 1 — which normally sits 48px lower
+       than the row top to land 16px under .ai-sub — jumps up flush with
+       the row and overlaps the text instead. Push the whole grid down by
+       that same 48px to keep the gap intact. */
+    .ai-flow-grid.has-expanded{margin-top:48px}
     @media(max-width:960px){.ai-flow-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:640px){.ai-flow-grid{grid-template-columns:1fr;gap:14px;padding-bottom:0}}
 
@@ -4227,9 +4264,9 @@
     .ai-connectors svg{width:100%;height:100%;overflow:visible}
     @media(max-width:640px){.ai-connectors{display:none}}
     /* ── AI Intake Map card styles ── */
-    .ai-card{position:relative;z-index:1;padding:22px 26px 22px;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(24px) saturate(140%);-webkit-backdrop-filter:blur(24px) saturate(140%);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .4s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08)}
+    .ai-card{position:relative;z-index:1;padding:22px 26px 22px;border-radius:14px;background-color:rgba(20,18,28,.72);background-image:radial-gradient(380px 220px at 50% 0%,rgba(108,99,255,.14),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(1rem);-webkit-backdrop-filter:blur(1rem);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .4s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08)}
     .ai-card::before{content:"";position:absolute;top:0;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent)}
-    .ai-card:hover{border-color:rgba(108,99,255,0.4);transform:translateY(-3px);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 60px -10px rgba(181,139,255,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+    .ai-card:hover{border-color:rgba(108,99,255,0.4);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 60px -10px rgba(181,139,255,.35),inset 0 1px 0 rgba(255,255,255,.08)}
     /* Step badge — floats above card top-left */
     .ai-step-badge{position:absolute;top:-7px;left:18px;padding:2px 7px;font-family:"Geist Mono",monospace;font-size:9.5px;letter-spacing:.14em;color:rgba(255,255,255,.35);background:rgba(12,9,18,.85);border:1px solid rgba(255,255,255,.07);border-radius:4px;backdrop-filter:blur(8px);opacity:.85}
     .ai-step-badge em{font-style:normal;color:rgba(255,255,255,.55);font-weight:500}
@@ -4242,20 +4279,33 @@
     .ai-card:hover::after{animation:aiRingP 3s ease-out infinite}
     .ai-card.ai-focal::after{animation:aiRingP 3s ease-out infinite}
     /* AI Brief focal */
-    .ai-card.ai-focal{padding:32px 32px 28px;background:radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.24),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(181,139,255,.32);box-shadow:0 60px 140px -20px rgba(0,0,0,.7),0 0 0 1px rgba(181,139,255,.1),0 0 220px -20px rgba(181,139,255,.35),0 0 360px -40px rgba(255,123,200,.25),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-focal{padding:32px 32px 28px;background-color:rgba(24,16,32,.72);background-image:radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.32),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(181,139,255,.32);box-shadow:0 60px 140px -20px rgba(0,0,0,.7),0 0 0 1px rgba(181,139,255,.1),0 0 220px -20px rgba(181,139,255,.35),0 0 360px -40px rgba(255,123,200,.25),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-focal::before{background:linear-gradient(90deg,transparent,#FF7BC8,#B58BFF,transparent);opacity:.5}
     /* Human Review */
     .ai-card.ai-human{background:radial-gradient(460px 280px at 70% 0%,rgba(123,227,181,.2),transparent 65%),radial-gradient(280px 200px at 30% 100%,rgba(255,255,255,.06),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));border-color:rgba(123,227,181,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(123,227,181,.22),inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.14)}
     .ai-card.ai-human::before{background:linear-gradient(90deg,transparent,#7BE3B5,transparent);opacity:.5}
+    /* Logo-palette variants for the remaining (non-focal/human) cards */
+    .ai-card.ai-cyan{background-image:radial-gradient(460px 280px at 60% 0%,rgba(0,212,255,.2),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(0,212,255,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(0,212,255,.2),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-cyan::before{background:linear-gradient(90deg,transparent,#00D4FF,transparent);opacity:.5}
+    .ai-card.ai-purple{background-image:radial-gradient(460px 280px at 60% 0%,rgba(19,159,248,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(19,159,248,.32);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(19,159,248,.22),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-purple::before{background:linear-gradient(90deg,transparent,#139FF8,transparent);opacity:.5}
+    .ai-card.ai-violet{background-image:radial-gradient(460px 280px at 60% 0%,rgba(37,102,240,.24),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(37,102,240,.34);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(37,102,240,.24),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-violet::before{background:linear-gradient(90deg,transparent,#2566F0,transparent);opacity:.5}
+    .ai-card.ai-spectrum{background-image:radial-gradient(500px 300px at 50% 0%,rgba(74,0,224,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(74,0,224,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(74,0,224,.22),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-spectrum::before{background:linear-gradient(90deg,transparent,#4A00E0,transparent);opacity:.5}
     .ai-card-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
     .ai-glyph{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;color:#ECE9F5;flex-shrink:0}
     .ai-focal .ai-glyph{background:linear-gradient(135deg,rgba(181,139,255,.32),rgba(255,123,200,.22));border-color:rgba(181,139,255,.42);color:#fff;width:42px;height:42px}
     .ai-human .ai-glyph{background:rgba(123,227,181,.14);border-color:rgba(123,227,181,.38);color:#7BE3B5}
+    .ai-cyan .ai-glyph{background:rgba(0,212,255,.14);border-color:rgba(0,212,255,.4);color:#00D4FF}
+    .ai-purple .ai-glyph{background:rgba(19,159,248,.16);border-color:rgba(19,159,248,.42);color:#7CC4FF}
+    .ai-violet .ai-glyph{background:rgba(37,102,240,.18);border-color:rgba(37,102,240,.44);color:#6FA8FF}
+    .ai-spectrum .ai-glyph{background:linear-gradient(135deg,rgba(138,43,226,.3),rgba(0,212,255,.22));border-color:rgba(74,0,224,.42);color:#fff}
     .ai-card h3{margin:0;font-size:20px;font-weight:500;letter-spacing:-.01em;color:#ECE9F5;line-height:1.1;font-family:var(--font-heading)}
     .ai-focal h3{font-size:24px}
     .ai-card>p{margin:10px 0 14px;font-size:13.5px;line-height:1.55;color:var(--text-50);flex:1;font-family:var(--font)}
     .ai-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
-    .ai-tag{font-family:"Geist Mono",monospace;font-size:10.5px;padding:3px 8px;border-radius:6px;color:#9A93B0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);letter-spacing:.02em}
+    .ai-tag{font-family:"Geist Mono",monospace;font-size:10.5px;padding:3px 10px;border-radius:999px;color:#9A93B0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);letter-spacing:.02em}
 
     /* ── Expand-on-click detail panel ── */
     .ai-card{cursor:pointer}
@@ -4277,6 +4327,9 @@
       --ink:#ECE9F5;--ink-dim:#9A93B0;--ink-mute:#6A6580;--ink-faint:#4A4660;
       --line:rgba(255,255,255,.07);--line-strong:rgba(255,255,255,.14);
     }
+    .ai-cyan .ai-card-detail{--a1:#00D4FF}
+    .ai-violet .ai-card-detail{--a1:#2566F0}
+    .ai-card-detail > * + *{margin-top:12px}
     .detail-section{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
     .detail-section:last-child{margin-bottom:0}
     .d-label{font-family:"Geist Mono",monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mute);display:inline-flex;align-items:center;gap:8px}
@@ -4415,7 +4468,7 @@
         0 0 50px 2px var(--glow-color-10, hsl(264deg 70% 75% / 10%));
     }
     .ai-pipeline{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto}
-    .ai-pstep{font-family:"Geist Mono",monospace;font-size:10px;color:rgba(255,255,255,.9);padding:4px 7px;border-radius:5px;background:rgba(138,43,226,.08);border:1px solid rgba(138,43,226,.18)}
+    .ai-pstep{font-family:"Geist Mono",monospace;font-size:10px;color:#9A93B0;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1)}
     .ai-psep{color:rgba(255,255,255,.2);font-size:10px;align-self:center;font-family:"Geist Mono",monospace}
     .ai-chips-row{display:flex;flex-direction:column;align-items:center;gap:16px;margin-bottom:28px}
     .ai-chips-label{font-family:"Geist Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.28);display:flex;align-items:center;gap:12px}

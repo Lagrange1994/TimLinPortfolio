@@ -69,7 +69,7 @@ function makeAiCards(t: Record<string, string>) {
     {
       id: 'sources',
       step: '01',
-      variant: '',
+      variant: 'ai-cyan',
       badge: null as string | null,
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -234,7 +234,7 @@ function makeAiCards(t: Record<string, string>) {
     {
       id: 'intake',
       step: '02',
-      variant: '',
+      variant: 'ai-purple',
       badge: null as string | null,
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -271,7 +271,7 @@ function makeAiCards(t: Record<string, string>) {
     {
       id: 'tracking',
       step: '04',
-      variant: '',
+      variant: 'ai-violet',
       badge: null as string | null,
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -321,7 +321,7 @@ function makeAiCards(t: Record<string, string>) {
     {
       id: 'workflow',
       step: '06',
-      variant: '',
+      variant: 'ai-spectrum',
       badge: null as string | null,
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -509,20 +509,21 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
     setDragPx(0);
   }
 
-  // Autoplay: advance one card every 8s, looping back to the start. Paused
+  // Autoplay: advance one card every 6s, looping back to the start. Paused
   // while the user is dragging so it doesn't fight a manual swipe.
   useEffect(() => {
     if (maxOffset === 0 || dragging) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const id = setInterval(() => {
       setOffset(o => (o >= maxOffset ? 0 : o + 1));
-    }, 8000);
+    }, 6000);
     return () => clearInterval(id);
   }, [maxOffset, dragging]);
 
   const step = cardStep();
   const translatePx = -(offset * step) + dragPx;
   const dotCount = maxOffset + 1;
+  const autoplayLive = maxOffset > 0 && !dragging && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   return (
     <div className="process-scroll-wrap">
@@ -562,7 +563,9 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
           <div className="process-swipe-controls">
             <div className="process-swipe-dots">
               {Array.from({ length: dotCount }).map((_, i) => (
-                <span key={i} className={`process-swipe-dot${i === offset ? ' active' : ''}`} />
+                <span key={i} className={`process-swipe-dot${i === offset ? ' active' : ''}`}>
+                  {i === offset && autoplayLive && <span key={offset} className="process-swipe-dot-fill" />}
+                </span>
               ))}
             </div>
           </div>
@@ -768,6 +771,39 @@ export default function SkillsSection() {
     });
   }, [t]);
 
+  // Tech Stack / How I Use AI: the description text sits only 16px above
+  // the first card (by design, to match the grid gap), so a drag-select
+  // started in one can cross into the other. `user-select: contain` would
+  // be the clean CSS fix but isn't implemented in any major browser —
+  // clamp the Range manually instead, so each block stays independently
+  // selectable.
+  useEffect(() => {
+    function clampSelection() {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+      const anchorEl = sel.anchorNode instanceof Element ? sel.anchorNode : sel.anchorNode?.parentElement;
+      const container = anchorEl?.closest<HTMLElement>('.tech-sub, .tech-item, .ai-sub, .ai-card');
+      if (!container) return;
+
+      const range = sel.getRangeAt(0);
+      if (container.contains(range.commonAncestorContainer)) return;
+
+      const forward = sel.anchorNode === range.startContainer && sel.anchorOffset === range.startOffset;
+      const clamped = document.createRange();
+      if (forward) {
+        clamped.setStart(range.startContainer, range.startOffset);
+        clamped.setEnd(container, container.childNodes.length);
+      } else {
+        clamped.setStart(container, 0);
+        clamped.setEnd(range.endContainer, range.endOffset);
+      }
+      sel.removeAllRanges();
+      sel.addRange(clamped);
+    }
+    document.addEventListener('selectionchange', clampSelection);
+    return () => document.removeEventListener('selectionchange', clampSelection);
+  }, []);
+
   // Skills scrollers
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -923,7 +959,7 @@ export default function SkillsSection() {
       <section className="section">
         <div className="section-label fade-in">Tech Stack</div>
         <h2 className="tech-headline stagger-item">Web development <span className="gradient-text">literacy</span></h2>
-        <p className="tech-sub stagger-item">{t.tech_sub}</p>
+        <p className="tech-sub stagger-item" dangerouslySetInnerHTML={{ __html: t.tech_sub }} />
         <div className="tech-items stagger-item">
           <div className="tech-item html-item card-spotlight sc-card">
             <div className="tech-item-header">
@@ -1010,9 +1046,11 @@ export default function SkillsSection() {
         <h2 className="stagger-item" style={{ fontSize: 'clamp(1.6rem,2.5vw,2rem)', fontWeight: 700, letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
           AI-Assisted Design <span className="gradient-text">Intake System</span>
         </h2>
-        <p className="stagger-item" style={{ color: 'rgba(255,255,255,0.55)', fontSize: '14px', marginBottom: '32px' }}>
-          {t.ai_sub}
-        </p>
+        <p
+          className="ai-sub stagger-item"
+          style={{ color: 'rgba(255,255,255,0.55)', fontSize: '14px', marginBottom: '-32px', maxWidth: 392 }}
+          dangerouslySetInnerHTML={{ __html: t.ai_sub }}
+        />
 
         <div className="ai-flow-grid stagger-item" ref={aiFlowGridRef}>
           <div className="ai-connectors" aria-hidden="true" dangerouslySetInnerHTML={{ __html: `
