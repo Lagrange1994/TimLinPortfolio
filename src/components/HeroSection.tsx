@@ -4,65 +4,6 @@ import gsap from 'gsap';
 
 const SMOOTH_TAU = 0.18;
 
-function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: number) {
-  const inner = scroller.querySelector<HTMLElement>('.scroller-inner');
-  if (!inner) return;
-  const isReverse = scroller.getAttribute('data-direction') === 'right';
-  if (scroller.getAttribute('data-raf-init') === 'true') return;
-
-  const origItems = Array.from(inner.children) as HTMLElement[];
-  origItems.forEach(item => {
-    const clone = item.cloneNode(true) as HTMLElement;
-    clone.setAttribute('aria-hidden', 'true');
-    inner.appendChild(clone);
-  });
-  scroller.setAttribute('data-raf-init', 'true');
-
-  const gap = parseFloat(getComputedStyle(inner).gap) || 10;
-
-  function startRAF() {
-    const oneSetWidth = origItems.reduce((sum, el) => sum + el.offsetWidth + gap, 0);
-    if (oneSetWidth <= 0) return;
-
-    let offset = 0;
-    let velocity = normalSpeed;
-    let targetVelocity = normalSpeed;
-    let lastTs: number | null = null;
-    const direction = isReverse ? -1 : 1;
-
-    function tick(ts: number) {
-      if (!lastTs) lastTs = ts;
-      const dt = Math.min((ts - lastTs) / 1000, 0.05);
-      lastTs = ts;
-      const factor = 1 - Math.exp(-dt / SMOOTH_TAU);
-      velocity += (targetVelocity - velocity) * factor;
-      offset += velocity * dt * direction;
-      offset = ((offset % oneSetWidth) + oneSetWidth) % oneSetWidth;
-      inner!.style.transform = `translateX(${-offset}px)`;
-      requestAnimationFrame(tick);
-    }
-
-    requestAnimationFrame(tick);
-    scroller.addEventListener('mouseenter', () => { targetVelocity = hoverSpeed; });
-    scroller.addEventListener('mouseleave', () => { targetVelocity = normalSpeed; });
-  }
-
-  const images = inner.querySelectorAll('img');
-  if (images.length === 0) {
-    startRAF();
-  } else {
-    let loaded = 0;
-    const onLoad = () => { if (++loaded >= images.length) startRAF(); };
-    images.forEach(img => {
-      if (img.complete) onLoad();
-      else {
-        img.addEventListener('load', onLoad, { once: true });
-        img.addEventListener('error', onLoad, { once: true });
-      }
-    });
-  }
-}
-
 export default function HeroSection() {
   const { t, heroDescs, lang } = useLang();
   const typerRef = useRef<{
@@ -269,6 +210,9 @@ export default function HeroSection() {
 
     const timerId = setTimeout(startTyper, 2200);
     return () => clearTimeout(timerId);
+    // Mount-once: starts the typer with the initial heroDescs. Lang-driven
+    // updates are handled separately by the [lang, heroDescs] effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Restart typer on lang change
@@ -356,7 +300,7 @@ export default function HeroSection() {
           <spline-viewer id="hero-spline" className="hero-fig-desktop" />
         </div>
         <div className="hero-text">
-          <h1 className="hero-h1 stagger-item">Hi, I'm <span>Tim Lin</span></h1>
+          <h1 className="hero-h1 stagger-item">Hi, I&apos;m <span>Tim Lin</span></h1>
           <h2 className="hero-h2 stagger-item" data-i18n="hero_role">{t.hero_role}</h2>
           <p className="hero-desc hero-desc-wrap">
             <span id="hero-desc-text"></span>

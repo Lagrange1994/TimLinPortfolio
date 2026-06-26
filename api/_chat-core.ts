@@ -24,7 +24,7 @@ function checkDailyLimit(): boolean {
 // Defense in depth across three layers:
 //   1. normalizeForDetection — collapse common evasion tricks (full-width
 //      Unicode, zero-width/bidi control chars) before pattern matching, so
-//      e.g. "ｉｇｎｏｒｅ" or "ign​ore" still hits the plain regex.
+//      e.g. "ｉｇｎｏｒｅ" or "ign" + U+200B + "ore" still hits the plain regex.
 //   2. INJECTION_PATTERNS   — known jailbreak / override / exfiltration phrasings.
 //   3. leaksSystemPrompt    — output-side check: even if an attempt slips
 //      through, block replies that verbatim-echo confidential system-prompt
@@ -79,7 +79,7 @@ function normalizeForDetection(input: string): string {
     .normalize('NFKC')
     // Zero-width space/joiners (U+200B–U+200F), bidi overrides (U+202A–U+202E),
     // word joiner (U+2060), BOM / zero-width no-break space (U+FEFF).
-    .replace(/[​-‏‪-‮⁠﻿]/g, '');
+    .replace(/[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g, '');
 }
 
 function detectInjection(input: string): boolean {
@@ -132,7 +132,7 @@ const OFF_TOPIC_PATTERNS = [
   // a project date range "2020-2023" or a version string "v2.1-3").
   /(計算|算一下|算出|等於多少)[^。\n]{0,12}[\d０-９]+\s*[+\-*×÷]\s*[\d０-９]+/,
   /[\d０-９]+\s*[+\-*×÷]\s*[\d０-９]+\s*(等於|是多少|=)/,
-  /what\s+is\s+\d+\s*[\+\-*x×÷]\s*\d+/i,
+  /what\s+is\s+\d+\s*[+\-*x×÷]\s*\d+/i,
 
   // Generic coding help unrelated to Tim's own work — requires a direct
   // "do this for me" framing, not e.g. "did Tim build this with Python?"

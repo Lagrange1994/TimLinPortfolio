@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
@@ -163,11 +163,11 @@ gsap.registerPlugin(ScrollToPlugin);
 
                 const setResponsiveFontSize = () => {
                     const minDesktopWidth = 1024;
-                    let currentWidth = window.innerWidth;
+                    const currentWidth = window.innerWidth;
                     if (currentWidth >= minDesktopWidth) {
                         const baseWidth = 1920;
                         const baseFontSize = 16;
-                        let newFontSize = (currentWidth / baseWidth) * baseFontSize;
+                        const newFontSize = (currentWidth / baseWidth) * baseFontSize;
                         document.documentElement.style.fontSize = newFontSize + "px";
                     } else {
                         document.documentElement.style.fontSize = '';
@@ -207,12 +207,13 @@ gsap.registerPlugin(ScrollToPlugin);
                         setActiveSolutionId(currentFeatures[0].id);
                         setActiveGalleryId(null);
                         break;
-                    case 'climax':
+                    case 'climax': {
                         const firstImg = currentGalleries[0].images[0];
                         setCurrentImage(firstImg.src);
                         setActiveGalleryId(firstImg.id);
                         setActiveSolutionId(null);
                         break;
+                    }
                 }
             }, [activeTab, lang]);
 
@@ -291,6 +292,10 @@ gsap.registerPlugin(ScrollToPlugin);
                     window.removeEventListener('touchstart', handleTouchStart);
                     window.removeEventListener('touchend', handleTouchEnd);
                 };
+            // handleWheel/handleTouchEnd are recreated every render and already close
+            // over the latest currentSectionIndex; re-subscribing on every render would
+            // be wasteful and risks detaching mid-gesture, so only resync on index change.
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [currentSectionIndex]);
 
             const handleGallerySwitch = (imgObj) => { setCurrentImage(imgObj.src); setActiveGalleryId(imgObj.id); };

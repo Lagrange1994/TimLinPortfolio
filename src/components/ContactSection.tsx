@@ -43,7 +43,7 @@ export default function ContactSection() {
         <section id="contact" className="section">
           <div className="section-label fade-in">Contact Me</div>
           <h2 className="contact-headline stagger-item">
-            Let's build something <span className="gradient-text">worth using.</span>
+            Let&apos;s build something <span className="gradient-text">worth using.</span>
           </h2>
           <p className="contact-sub stagger-item">{t.contact_sub}</p>
 

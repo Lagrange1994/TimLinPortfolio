@@ -45,7 +45,10 @@ type Phase = 'type' | 'delete' | 'hold';
 // diverges and types the rest forward — i.e. it looks like someone editing
 // the snippet, not just a one-shot typewriter intro.
 export default function TypingCode({ versions, className = 'tcp-code' }: { versions: CodeVersion[]; className?: string }) {
-  const flatsRef = useRef<FlatChar[][]>(versions.map(flatten));
+  // Computed once from the initial `versions` prop and never reassigned —
+  // a lazy initial state (rather than a ref) so render can read it directly
+  // without tripping the "no ref access during render" rule.
+  const [flats] = useState<FlatChar[][]>(() => versions.map(flatten));
   const [state, setState] = useState({ idx: 0, count: 0 });
   const [reduced, setReduced] = useState(true);
   const preRef = useRef<HTMLPreElement>(null);
@@ -65,7 +68,6 @@ export default function TypingCode({ versions, className = 'tcp-code' }: { versi
     let phase: Phase = 'type';
 
     function run() {
-      const flats = flatsRef.current;
       if (phase === 'type') {
         const target = flats[idx];
         if (count < target.length) count += 1;
@@ -98,9 +100,9 @@ export default function TypingCode({ versions, className = 'tcp-code' }: { versi
       observer.disconnect();
       clearTimeout(timer);
     };
-  }, [reduced, versions.length]);
+  }, [reduced, versions.length, flats]);
 
-  const flat = flatsRef.current[reduced ? 0 : state.idx];
+  const flat = flats[reduced ? 0 : state.idx];
   const count = reduced ? flat.length : state.count;
   const runs = toRuns(flat, count);
   // Pin the box to its tallest version so typing/deleting lines doesn't

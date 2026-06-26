@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
@@ -200,6 +200,10 @@ gsap.registerPlugin(ScrollToPlugin);
                     default:
                         setCurrentImage(MAIN_IMAGE);
                 }
+            // galleryImages/solutionFeatures (or similarly named lists) are derived fresh
+            // from `lang` every render, not stored state — already covered by the `lang`
+            // dep, and listing them would just make this effect run on every render.
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [activeTab, lang]);
 
             useEffect(() => {
@@ -277,6 +281,10 @@ gsap.registerPlugin(ScrollToPlugin);
                     window.removeEventListener('touchstart', handleTouchStart);
                     window.removeEventListener('touchend', handleTouchEnd);
                 };
+            // handleWheel/handleTouchEnd are recreated every render and already close
+            // over the latest currentSectionIndex; re-subscribing on every render would
+            // be wasteful and risks detaching mid-gesture, so only resync on index change.
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [currentSectionIndex]);
 
             const goBack = () => { location.href = '/#portfolio'; };

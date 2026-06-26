@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
@@ -319,7 +319,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const tabsContainerRef = useRef(null);
 
             const [mobileVisualHeight, setMobileVisualHeight] = useState(35);
-            const isResizingRef = useRef(false);
+            const [isResizing, setIsResizing] = useState(false);
 
             const t = (key) => TRANSLATIONS[lang][key] || key;
 
@@ -338,11 +338,11 @@ gsap.registerPlugin(ScrollToPlugin);
 
                 const setResponsiveFontSize = () => {
                     const minDesktopWidth = 1024;
-                    let currentWidth = window.innerWidth;
+                    const currentWidth = window.innerWidth;
                     if (currentWidth >= minDesktopWidth) {
                         const baseWidth = 1920;
                         const baseFontSize = 16;
-                        let newFontSize = (currentWidth / baseWidth) * baseFontSize;
+                        const newFontSize = (currentWidth / baseWidth) * baseFontSize;
                         document.documentElement.style.fontSize = newFontSize + "px";
                     } else {
                         document.documentElement.style.fontSize = '';
@@ -355,16 +355,16 @@ gsap.registerPlugin(ScrollToPlugin);
                 return () => window.removeEventListener('resize', setResponsiveFontSize);
             }, []);
 
-            const handleResizeStart = (e) => {
+            const handleResizeStart = () => {
                 if (window.innerWidth >= 1024) return;
-                isResizingRef.current = true;
+                setIsResizing(true);
                 document.body.style.userSelect = 'none';
             };
 
             useEffect(() => {
                 const handleResizeMove = (e) => {
-                    if (!isResizingRef.current) return;
-                    let clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+                    if (!isResizing) return;
+                    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
                     const windowHeight = window.innerHeight;
                     let newHeightVh = (clientY / windowHeight) * 100;
                     if (newHeightVh < 35) newHeightVh = 35;
@@ -372,7 +372,7 @@ gsap.registerPlugin(ScrollToPlugin);
                     setMobileVisualHeight(newHeightVh);
                 };
                 const handleResizeEnd = () => {
-                    isResizingRef.current = false;
+                    setIsResizing(false);
                     document.body.style.userSelect = '';
                 };
                 window.addEventListener('mousemove', handleResizeMove);
@@ -385,7 +385,7 @@ gsap.registerPlugin(ScrollToPlugin);
                     window.removeEventListener('mouseup', handleResizeEnd);
                     window.removeEventListener('touchend', handleResizeEnd);
                 };
-            }, []);
+            }, [isResizing]);
 
             useEffect(() => {
                 if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
@@ -464,7 +464,7 @@ gsap.registerPlugin(ScrollToPlugin);
             };
 
             const handleTouchEnd = (e) => {
-                if (isScrollingRef.current || isResizingRef.current) return;
+                if (isScrollingRef.current || isResizing) return;
                 if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
 
                 const touchEndY = e.changedTouches[0].clientY;
@@ -495,6 +495,10 @@ gsap.registerPlugin(ScrollToPlugin);
                     window.removeEventListener('touchstart', handleTouchStart);
                     window.removeEventListener('touchend', handleTouchEnd);
                 };
+            // handleWheel/handleTouchEnd are recreated every render and already close
+            // over the latest currentSectionIndex; re-subscribing on every render would
+            // be wasteful and risks detaching mid-gesture, so only resync on index change.
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [currentSectionIndex]);
 
             const goBack = () => { location.href = '/#portfolio'; };
@@ -558,7 +562,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         {/* [修改] bg-dark -> bg-app-dark */}
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-app-dark overflow-hidden">
                             {/* [修改] bg-dark -> bg-app-dark, bg-dark-light -> bg-app-dark-light */}
-                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-app-dark relative border-b lg:border-b-0 lg:border-r border-white/5 flex items-center justify-center" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizingRef.current ? 'none' : 'height 0.3s ease' }}>
+                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-app-dark relative border-b lg:border-b-0 lg:border-r border-white/5 flex items-center justify-center" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <div className="w-full h-full overflow-hidden flex items-center justify-center lg:pb-0">{renderLeftPanel()}</div>
                                 <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
                                     <div className="w-10 h-10 bg-app-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group">
@@ -613,7 +617,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                                 <div className="text-app-secondary w-1/2 pl-2"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('app_simple')}</span>{point.app.desc}</div>
                                                             </div>
                                                             {/* [修改] border-secondary -> border-app-secondary */}
-                                                            <div className="text-xs text-gray-300 italic border-l-2 border-app-secondary pl-3">"{point.insight}"</div>
+                                                            <div className="text-xs text-gray-300 italic border-l-2 border-app-secondary pl-3">&quot;{point.insight}&quot;</div>
                                                         </div>
                                                     ))}
                                                 </div>

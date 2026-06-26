@@ -71,7 +71,6 @@ export default function PortfolioSection() {
   const gridLeaveHandlerRef = useRef<((e: MouseEvent) => void) | null>(null);
   const currentCardRef = useRef<HTMLElement | null>(null);
 
-  const MB_GLOW = '74, 0, 224';
   const MB_RADIUS = 170;
 
   function destroyMagicBento() {

@@ -1,10 +1,11 @@
-import { useEffect, useState, useRef, Fragment, useMemo, type ReactNode, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useState, useRef, Fragment, useMemo, type ReactNode, type PointerEvent as ReactPointerEvent } from 'react';
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
-import TypingCode, { type CodeVersion } from './TypingCode';
+import TypingCode, { flatten, toRuns, type CodeVersion, type CodeToken } from './TypingCode';
 
 const SMOOTH_TAU = 0.18;
+const AI_THINK_MS = 700;
 
 // Two "drafts" per tech-stack code preview — TypingCode loops between them,
 // backspacing to wherever the next draft diverges and typing the rest
@@ -64,6 +65,31 @@ const JSX_CODE_B: CodeVersion = [
   JSX_CODE_A[6],
 ];
 
+function escapeHtml(s: string) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Splits the static `<span class="hl">...</span>`-annotated summary HTML
+// (see translations.ts ai_d_summary_text) into typewriter tokens so the
+// AI Brief card can type it out while keeping the highlight styling.
+function tokenizeHighlight(html: string): CodeToken[] {
+  const tokens: CodeToken[] = [];
+  const re = /<span class="hl">([^<]*)<\/span>/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(html))) {
+    if (m.index > last) tokens.push({ text: html.slice(last, m.index) });
+    tokens.push({ text: m[1], cls: 'hl' });
+    last = m.index + m[0].length;
+  }
+  if (last < html.length) tokens.push({ text: html.slice(last) });
+  return tokens;
+}
+
+function runsToHtml(runs: { text: string; cls?: string }[]) {
+  return runs.map(r => (r.cls ? `<span class="${r.cls}">${escapeHtml(r.text)}</span>` : escapeHtml(r.text))).join('');
+}
+
 function makeAiCards(t: Record<string, string>) {
   return [
     {
@@ -84,6 +110,10 @@ function makeAiCards(t: Record<string, string>) {
       detail: (
         <div className="detail-section">
           <div className="d-label"><span className="dot" />{t.ai_d_recent}</div>
+          <div className="channel-loader" aria-hidden="true">
+            <span className="channel-loader-spinner" />
+            <span className="channel-loader-text">{t.ai_sources_loading}</span>
+          </div>
           <div className="channel-list">
             <div className="channel">
               <span className="ch-icon">L</span>
@@ -146,6 +176,12 @@ function makeAiCards(t: Record<string, string>) {
       pipeline: null as string[] | null,
       detail: (
         <>
+          <div className="ai-thinking-indicator" aria-hidden="true">
+            <span className="ai-thinking-dot" />
+            <span className="ai-thinking-dot" />
+            <span className="ai-thinking-dot" />
+            <span className="ai-thinking-label">{t.ai_thinking}</span>
+          </div>
           <div className="ai-summary">
             <div className="d-label"><span className="dot" />{t.ai_d_summary_lbl}</div>
             <p dangerouslySetInnerHTML={{ __html: t.ai_d_summary_text }} />
@@ -474,6 +510,7 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
   const [dragging, setDragging] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef(0);
+  const [cardStepPx, setCardStepPx] = useState(0);
 
   function cardStep() {
     const track = trackRef.current;
@@ -482,6 +519,16 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
     const gap = parseFloat(getComputedStyle(track).gap) || 0;
     return card.getBoundingClientRect().width + gap;
   }
+
+  // Measure the rendered card width/gap after layout — cardStep() reads the
+  // DOM, so it can't run during render (refs aren't guaranteed attached yet,
+  // and React may discard/redo a render pass before committing).
+  useLayoutEffect(() => {
+    setCardStepPx(cardStep());
+    const onResize = () => setCardStepPx(cardStep());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [cards.length]);
 
   function goTo(next: number) {
     setOffset(Math.min(maxOffset, Math.max(0, next)));
@@ -502,7 +549,7 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
   function endDrag() {
     if (!dragging) return;
     setDragging(false);
-    const step = cardStep();
+    const step = cardStepPx;
     if (step > 0 && Math.abs(dragPx) > step * 0.2) {
       goTo(offset + (dragPx < 0 ? 1 : -1));
     }
@@ -520,8 +567,7 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
     return () => clearInterval(id);
   }, [maxOffset, dragging]);
 
-  const step = cardStep();
-  const translatePx = -(offset * step) + dragPx;
+  const translatePx = -(offset * cardStepPx) + dragPx;
   const dotCount = maxOffset + 1;
   const autoplayLive = maxOffset > 0 && !dragging && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -588,6 +634,7 @@ export default function SkillsSection() {
   const [expandedAiCard, setExpandedAiCard] = useState<string | null>(null);
   const aiFlowGridRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const aiThinkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Toggle the bento "has-expanded" class imperatively (not via React's className prop) —
   // .ai-flow-grid is a .stagger-item whose .visible class is added by the scroll-reveal
@@ -659,7 +706,7 @@ export default function SkillsSection() {
       const [cx, cy] = getCenter(el);
       const dx = x - cx, dy = y - cy;
       if (!dx && !dy) return 0;
-      let deg = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+      const deg = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
       return deg < 0 ? deg + 360 : deg;
     }
 
@@ -748,6 +795,102 @@ export default function SkillsSection() {
       });
     };
   }, [t]);
+
+  // How I Use AI — live demo animations on open, echoing the Tech Stack
+  // section's "actively being edited" feel: Sources stacks its first 4 rows
+  // in (see toggle() in the card map), then simulates a new message landing
+  // — loader, then the 5th row slides in at the top while the others glide
+  // smoothly down (FLIP) to make room; AI Brief types out its summary.
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (expandedAiCard === 'sources') {
+      const card = cardRefs.current.get('sources');
+      const list = card?.querySelector<HTMLElement>('.channel-list');
+      const loader = card?.querySelector<HTMLElement>('.channel-loader');
+      const channels = list ? Array.from(list.querySelectorAll<HTMLElement>('.channel')) : [];
+      if (!list || channels.length < 2) return;
+      const incoming = channels[channels.length - 1];
+      const movers = channels.filter(c => c !== incoming);
+
+      if (reduced) {
+        incoming.classList.remove('channel-collapsed');
+        return () => incoming.classList.remove('channel-collapsed');
+      }
+
+      // Give the stack-in entrance (toggle(), ~4 * 0.14 stagger + 0.5s) time
+      // to finish before showing the loader for the new message.
+      const loaderTimer = setTimeout(() => {
+        loader?.classList.add('is-active');
+      }, 1300);
+
+      const revealTimer = setTimeout(() => {
+        loader?.classList.remove('is-active');
+
+        // Pin the grow target to an already-expanded row's real height so
+        // it finishes growing exactly when its transition ends, in sync
+        // with the siblings' FLIP slide below.
+        const targetHeight = movers[0].getBoundingClientRect().height;
+        const before = new Map(movers.map(c => [c, c.getBoundingClientRect().top] as const));
+        list.prepend(incoming);
+        incoming.style.maxHeight = `${targetHeight}px`;
+        incoming.classList.remove('channel-collapsed');
+        void list.offsetHeight;
+
+        movers.forEach(c => {
+          const delta = (before.get(c) ?? 0) - c.getBoundingClientRect().top;
+          if (delta) {
+            c.style.transition = 'none';
+            c.style.transform = `translateY(${delta}px)`;
+          }
+        });
+        void list.offsetHeight;
+        requestAnimationFrame(() => {
+          movers.forEach(c => {
+            c.style.transition = '';
+            c.style.transform = '';
+          });
+        });
+      }, 2700);
+
+      return () => {
+        clearTimeout(loaderTimer);
+        clearTimeout(revealTimer);
+        loader?.classList.remove('is-active');
+        channels.forEach(c => {
+          c.classList.remove('channel-collapsed');
+          c.style.maxHeight = '';
+          c.style.transition = '';
+          c.style.transform = '';
+        });
+      };
+    }
+
+    if (expandedAiCard === 'ai') {
+      const card = cardRefs.current.get('ai');
+      const p = card?.querySelector<HTMLParagraphElement>('.ai-summary p');
+      if (!p || reduced) return;
+      const original = p.innerHTML;
+      const flat = flatten([tokenizeHighlight(original)]);
+      let count = 0;
+      let intervalId: ReturnType<typeof setInterval> | null = null;
+      // Wait out the "thinking" beat (see toggle() in the card map) before
+      // typing, so the summary starts right as it fades into view.
+      const startTimer = setTimeout(() => {
+        intervalId = setInterval(() => {
+          count += 1;
+          const done = count >= flat.length;
+          p.innerHTML = runsToHtml(toRuns(flat, count)) + (done ? '' : '<span class="tcp-cursor"></span>');
+          if (done && intervalId) clearInterval(intervalId);
+        }, 28);
+      }, AI_THINK_MS);
+      return () => {
+        clearTimeout(startTimer);
+        if (intervalId) clearInterval(intervalId);
+        p.innerHTML = original;
+      };
+    }
+  }, [expandedAiCard]);
 
   // Spotlight cards
   useEffect(() => {
@@ -1106,12 +1249,54 @@ export default function SkillsSection() {
                 );
                 const detail = el.querySelector('.ai-card-detail');
                 if (detail) {
-                  gsap.fromTo(Array.from(detail.children),
-                    { opacity: 0, y: 14 },
-                    { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', stagger: 0.07, delay: 0.22, clearProps: 'all' }
-                  );
+                  if (card.id === 'ai') {
+                    // "Thinking" beat before content streams in line-by-line —
+                    // mirrors the Tech Stack section's live-demo feel but for
+                    // a reasoning step rather than typed code.
+                    el.classList.add('is-thinking');
+                    const targets = [
+                      detail.querySelector('.ai-summary'),
+                      ...Array.from(detail.querySelectorAll('.ai-row .ai-cell')),
+                      ...Array.from(detail.querySelectorAll('.ai-block.missing .d-label, .ai-block.missing li')),
+                      ...Array.from(detail.querySelectorAll('.ai-block.questions .d-label, .ai-block.questions li')),
+                      detail.querySelector('.ai-block.direction'),
+                    ].filter((node): node is Element => !!node);
+                    gsap.set(targets, { opacity: 0, y: 14 });
+                    if (aiThinkTimeoutRef.current) clearTimeout(aiThinkTimeoutRef.current);
+                    aiThinkTimeoutRef.current = setTimeout(() => {
+                      el.classList.remove('is-thinking');
+                      gsap.fromTo(targets,
+                        { opacity: 0, y: 14 },
+                        { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', stagger: 0.12, clearProps: 'all' }
+                      );
+                    }, AI_THINK_MS);
+                  } else if (card.id === 'sources') {
+                    // Stack the first 4 rows in one by one; the 5th stays
+                    // collapsed here so the live-demo effect in the effect
+                    // below can reveal it afterward as a new message landing.
+                    const rows = Array.from(detail.querySelectorAll<HTMLElement>('.channel'));
+                    const incoming = rows[rows.length - 1];
+                    const visible = rows.slice(0, -1);
+                    incoming.classList.add('channel-collapsed');
+                    gsap.set(visible, { opacity: 0, y: 26, scale: 0.96 });
+                    gsap.to(visible,
+                      { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'power3.out', stagger: 0.14, clearProps: 'all' }
+                    );
+                  } else {
+                    gsap.fromTo(Array.from(detail.children),
+                      { opacity: 0, y: 14 },
+                      { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', stagger: 0.07, delay: 0.22, clearProps: 'all' }
+                    );
+                  }
                 }
               } else {
+                if (card.id === 'ai') {
+                  el.classList.remove('is-thinking');
+                  if (aiThinkTimeoutRef.current) {
+                    clearTimeout(aiThinkTimeoutRef.current);
+                    aiThinkTimeoutRef.current = null;
+                  }
+                }
                 gsap.fromTo(el,
                   { scale: 1 },
                   { scale: 0.988, duration: 0.16, ease: 'power2.in', yoyo: true, repeat: 1, clearProps: 'transform' }

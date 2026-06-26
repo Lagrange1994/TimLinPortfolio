@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
@@ -153,7 +153,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 const initialLang = savedLang === 'en' ? 'en' : 'zh';
                 setLang(initialLang);
 
-                const heroImagePromise = new Promise((resolve, reject) => {
+                const heroImagePromise = new Promise((resolve) => {
                     const img = new Image();
                     img.src = './img/project_10/hero_img.jpg';
                     img.onload = () => resolve('hero loaded');
@@ -196,6 +196,9 @@ gsap.registerPlugin(ScrollToPlugin);
                     setActiveItemIndex(0);
                     setActiveSolutionId(null);
                 }
+            // galleryItems/solutionFeatures are derived fresh from `lang` every render,
+            // not stored state, so listing them would make this effect run every render.
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [activeTab]);
 
             const handleGalleryClick = (target, index) => {
@@ -281,6 +284,10 @@ gsap.registerPlugin(ScrollToPlugin);
                     window.removeEventListener('touchstart', handleTouchStart);
                     window.removeEventListener('touchend', handleTouchEnd);
                 };
+            // handleWheel/handleTouchEnd are recreated every render and already close
+            // over the latest currentSectionIndex; re-subscribing on every render would
+            // be wasteful and risks detaching mid-gesture, so only resync on index change.
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [currentSectionIndex]);
 
             const goBack = () => { location.href = '/#portfolio'; };
@@ -362,7 +369,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                         {activeTab === 'solution' && (
                                             <div className="space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold font-heading text-white mb-6">{t('sol_title')}</h3>
-                                                <div className="space-y-4">{solutionFeatures.map((item, idx) => { const IconComp = Icons[item.icon]; return (
+                                                <div className="space-y-4">{solutionFeatures.map((item) => { const IconComp = Icons[item.icon]; return (
                                                     /* [修正] 加入 activeSolutionId 判斷，選中時變色 */
                                                     <button key={item.id} onClick={() => handleSolutionSwitch(item)} className={`w-full text-left feature-card border p-5 flex items-start space-x-4 transition-all group ${activeSolutionId === item.id ? 'border-hc-primary bg-white/10 shadow-[0_0_15px_rgba(0,212,255,0.1)]' : 'border-white/5 hover:bg-white/5'}`}>
                                                         {/* [修正] 選中時 Icon 背景實心，圖示變黑 */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
@@ -189,7 +189,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const overscrollAccumulator = useRef(0);
 
             const [mobileVisualHeight, setMobileVisualHeight] = useState(35);
-            const isResizingRef = useRef(false);
+            const [isResizing, setIsResizing] = useState(false);
 
             const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
 
@@ -216,20 +216,20 @@ gsap.registerPlugin(ScrollToPlugin);
             }, []);
 
             // Mobile Resize
-            const handleResizeStart = (e) => { if (window.innerWidth >= 1024) return; isResizingRef.current = true; document.body.style.userSelect = 'none'; };
+            const handleResizeStart = () => { if (window.innerWidth >= 1024) return; setIsResizing(true); document.body.style.userSelect = 'none'; };
             useEffect(() => {
                 const handleResizeMove = (e) => {
-                    if (!isResizingRef.current) return;
-                    let clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+                    if (!isResizing) return;
+                    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
                     let newHeightVh = (clientY / window.innerHeight) * 100;
                     if (newHeightVh < 35) newHeightVh = 35; if (newHeightVh > 80) newHeightVh = 80;
                     setMobileVisualHeight(newHeightVh);
                 };
-                const handleResizeEnd = () => { isResizingRef.current = false; document.body.style.userSelect = ''; };
+                const handleResizeEnd = () => { setIsResizing(false); document.body.style.userSelect = ''; };
                 window.addEventListener('mousemove', handleResizeMove); window.addEventListener('touchmove', handleResizeMove, { passive: false });
                 window.addEventListener('mouseup', handleResizeEnd); window.addEventListener('touchend', handleResizeEnd);
                 return () => { window.removeEventListener('mousemove', handleResizeMove); window.removeEventListener('touchmove', handleResizeMove); window.removeEventListener('mouseup', handleResizeEnd); window.removeEventListener('touchend', handleResizeEnd); };
-            }, []);
+            }, [isResizing]);
 
             // Update Content on Lang/Tab Change
             useEffect(() => {
@@ -313,7 +313,7 @@ gsap.registerPlugin(ScrollToPlugin);
             };
 
             const handleTouchEnd = (e) => {
-                if (isScrollingRef.current || isResizingRef.current) return;
+                if (isScrollingRef.current || isResizing) return;
                 if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
                 const diff = touchStartY.current - e.changedTouches[0].clientY;
                 const isSplitView = currentSectionIndex === 1;
@@ -335,6 +335,10 @@ gsap.registerPlugin(ScrollToPlugin);
                     window.addEventListener('touchend', handleTouchEnd, { passive: true });
                 }
                 return () => { window.removeEventListener('wheel', handleWheel); };
+            // handleWheel/handleTouchEnd are recreated every render and already close
+            // over the latest currentSectionIndex; re-subscribing on every render would
+            // be wasteful and risks detaching mid-gesture, so only resync on index change.
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [currentSectionIndex]);
 
             const goBack = () => { location.href = '/#portfolio'; };
@@ -371,7 +375,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         </section>
 
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
-                            <div ref={imageScrollRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-black flex items-center justify-center border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizingRef.current ? 'none' : 'height 0.3s ease' }}>
+                            <div ref={imageScrollRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-black flex items-center justify-center border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 {renderPreview()}
                                 <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
                                     <div className="w-10 h-10 bg-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group"><i className="ph ph-caret-up text-[8px] text-gray-400 group-hover:text-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="ph ph-caret-down text-[8px] text-gray-400 group-hover:text-primary mt-0.5"></i></div>

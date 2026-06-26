@@ -7,7 +7,7 @@ import jsxA11y from 'eslint-plugin-jsx-a11y';
 import globals from 'globals';
 
 export default tseslint.config(
-  globalIgnores(['dist/**', 'public/**', 'node_modules/**']),
+  globalIgnores(['dist/**', 'public/**', 'node_modules/**', '.vercel/**']),
   {
     files: ['**/*.{js,jsx,ts,tsx,mjs}'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

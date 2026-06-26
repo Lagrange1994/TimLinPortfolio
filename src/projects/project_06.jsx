@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, Fragment } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
@@ -160,9 +160,8 @@ gsap.registerPlugin(ScrollToPlugin);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
             const contentScrollRef = useRef(null);
-            const overscrollAccumulator = useRef(0);
             const touchStartY = useRef(0);
-            const isResizingRef = useRef(false);
+            const [isResizing, setIsResizing] = useState(false);
             const [mobileVisualHeight, setMobileVisualHeight] = useState(40);
 
             const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
@@ -188,29 +187,29 @@ gsap.registerPlugin(ScrollToPlugin);
                 return () => window.removeEventListener('resize', setResponsiveFontSize);
             }, []);
 
-            const handleResizeStart = (e) => { if (window.innerWidth >= 1024) return; isResizingRef.current = true; document.body.style.userSelect = 'none'; };
+            const handleResizeStart = () => { if (window.innerWidth >= 1024) return; setIsResizing(true); document.body.style.userSelect = 'none'; };
             useEffect(() => {
                 const handleResizeMove = (e) => {
-                    if (!isResizingRef.current) return;
-                    let clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+                    if (!isResizing) return;
+                    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
                     let newHeightVh = (clientY / window.innerHeight) * 100;
                     if (newHeightVh < 35) newHeightVh = 35; if (newHeightVh > 80) newHeightVh = 80;
                     setMobileVisualHeight(newHeightVh);
                 };
-                const handleResizeEnd = () => { isResizingRef.current = false; document.body.style.userSelect = ''; };
+                const handleResizeEnd = () => { setIsResizing(false); document.body.style.userSelect = ''; };
                 window.addEventListener('mousemove', handleResizeMove); window.addEventListener('touchmove', handleResizeMove, { passive: false });
                 window.addEventListener('mouseup', handleResizeEnd); window.addEventListener('touchend', handleResizeEnd);
                 return () => { window.removeEventListener('mousemove', handleResizeMove); window.removeEventListener('touchmove', handleResizeMove); window.removeEventListener('mouseup', handleResizeEnd); window.removeEventListener('touchend', handleResizeEnd); };
-            }, []);
+            }, [isResizing]);
 
             useEffect(() => {
                 if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
                 setComparisonMode('after');
-                if (activeGalleryItem) {
+                setActiveGalleryItem(prev => {
+                    if (!prev) return prev;
                     const items = getGalleryItems(lang);
-                    const current = items.find(i => i.id === activeGalleryItem.id) || items[0];
-                    setActiveGalleryItem(current);
-                }
+                    return items.find(i => i.id === prev.id) || items[0];
+                });
             }, [activeTab, lang]);
 
             useEffect(() => {
@@ -243,7 +242,7 @@ gsap.registerPlugin(ScrollToPlugin);
             };
 
             const handleTouchEnd = (e) => {
-                if (isScrollingRef.current || isResizingRef.current) return;
+                if (isScrollingRef.current || isResizing) return;
                 const diff = touchStartY.current - e.changedTouches[0].clientY;
                 const isSplitView = currentSectionIndex === 1;
                 const contentEl = contentScrollRef.current;
@@ -264,6 +263,10 @@ gsap.registerPlugin(ScrollToPlugin);
                     window.addEventListener('touchend', handleTouchEnd, { passive: true });
                 }
                 return () => { window.removeEventListener('wheel', handleWheel); };
+            // handleWheel/handleTouchEnd are recreated every render and already close
+            // over the latest currentSectionIndex; re-subscribing on every render would
+            // be wasteful and risks detaching mid-gesture, so only resync on index change.
+            // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [currentSectionIndex]);
 
             const goBack = () => { location.href = '/#portfolio'; };
@@ -310,7 +313,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         </section>
 
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-tym-dark overflow-hidden">
-                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizingRef.current ? 'none' : 'height 0.3s ease' }}>
+                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <div className="absolute top-10 left-10 w-32 h-32 bg-tym-primary/20 blur-[60px] rounded-full"></div>
                                 <div className="absolute bottom-10 right-10 w-40 h-40 bg-tym-secondary/20 blur-[60px] rounded-full"></div>
                                 <div className="w-full h-full max-w-full flex flex-col items-center justify-center relative">
