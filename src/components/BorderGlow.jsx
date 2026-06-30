@@ -150,6 +150,7 @@ const BorderGlow = ({
         <div className="border-glow-bg-slot">{backgroundSlot}</div>
       )}
       <span className="edge-light" />
+      <span className="card-glass-highlight" aria-hidden="true" />
       <div className="border-glow-inner">
         {children}
       </div>

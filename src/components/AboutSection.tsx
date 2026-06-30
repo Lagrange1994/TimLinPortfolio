@@ -95,46 +95,91 @@ export default function AboutSection() {
     };
   }, []);
 
-  // Stat counters digit-wheel
+  // Stat counters digit-wheel — starts spinning random digits as soon as
+  // the card mounts (slot-machine flicker), independent of scroll/reveal
+  // state, then waits for each card's GSAP rise-reveal (useRiseReveal) to
+  // finish settling before smoothly gliding to the real value. Falls back
+  // to scroll-into-view triggering (no spin, immediate value) when
+  // reduced-motion is on, since useRiseReveal skips the animation (and the
+  // 'rise-settled' event) in that case.
   useEffect(() => {
     const statRow = document.getElementById('stat-row');
     if (!statRow) return;
-    let triggered = false;
 
-    function rollDigits() {
-      if (triggered) return;
-      triggered = true;
-      const wraps = statRow!.querySelectorAll<HTMLElement>('.stat-num-wrap');
-      wraps.forEach(wrap => {
-        const value = parseInt(wrap.dataset.value || '0', 10);
-        const digits = String(value).split('').map(Number);
-        const cols = wrap.querySelectorAll<HTMLElement>('.digit-col');
-        cols.forEach((col, i) => {
-          const target = digits[i];
-          const inner = col.querySelector<HTMLElement>('.digit-col-inner');
-          const cellH = col.offsetHeight || 35;
-          setTimeout(() => {
-            if (inner) inner.style.transform = 'translateY(-' + (target * cellH) + 'px)';
-          }, i * 120);
-        });
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const spinners = new Map<HTMLElement, number>();
+
+    const SPIN_FLIP_MS = 160;
+
+    function startSpin(inner: HTMLElement, cellH: number) {
+      if (spinners.has(inner)) return;
+      // Quick flip transition for each random tick (slower 2s CSS
+      // transition only kicks back in for the final glide to the real
+      // value, see rollWrap below).
+      inner.style.transition = `transform ${SPIN_FLIP_MS}ms cubic-bezier(.4,0,.2,1)`;
+      const id = window.setInterval(() => {
+        const r = Math.floor(Math.random() * 10);
+        inner.style.transform = 'translateY(-' + (r * cellH) + 'px)';
+      }, SPIN_FLIP_MS);
+      spinners.set(inner, id);
+    }
+
+    function stopSpin(inner: HTMLElement) {
+      const id = spinners.get(inner);
+      if (id !== undefined) { window.clearInterval(id); spinners.delete(inner); }
+    }
+
+    const rolled = new WeakSet<HTMLElement>();
+    function rollWrap(wrap: HTMLElement) {
+      if (rolled.has(wrap)) return;
+      rolled.add(wrap);
+      const value = parseInt(wrap.dataset.value || '0', 10);
+      const digits = String(value).split('').map(Number);
+      const cols = wrap.querySelectorAll<HTMLElement>('.digit-col');
+      cols.forEach((col, i) => {
+        const target = digits[i];
+        const inner = col.querySelector<HTMLElement>('.digit-col-inner');
+        const cellH = col.offsetHeight || 35;
+        setTimeout(() => {
+          if (!inner) return;
+          stopSpin(inner);
+          // Re-enable the CSS transition (cleared while spinning) and force
+          // a reflow so the glide to the real value animates from whatever
+          // random digit the spin last landed on, instead of jumping.
+          inner.style.transition = '';
+          void inner.offsetHeight;
+          inner.style.transform = 'translateY(-' + (target * cellH) + 'px)';
+        }, i * 120);
       });
     }
 
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) rollDigits(); });
-    }, { threshold: 0.1 });
-    obs.observe(statRow);
+    if (reduceMotion) {
+      const rollAll = () => {
+        statRow.querySelectorAll<HTMLElement>('.stat-num-wrap').forEach(rollWrap);
+      };
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) rollAll(); });
+      }, { threshold: 0.1 });
+      obs.observe(statRow);
+      return () => obs.disconnect();
+    }
 
-    const onScroll = () => {
-      const rect = statRow.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.9 && rect.bottom > 0) rollDigits();
+    statRow.querySelectorAll<HTMLElement>('.stat-num-wrap').forEach(wrap => {
+      wrap.querySelectorAll<HTMLElement>('.digit-col').forEach(col => {
+        const inner = col.querySelector<HTMLElement>('.digit-col-inner');
+        const cellH = col.offsetHeight || 35;
+        if (inner) startSpin(inner, cellH);
+      });
+    });
+
+    const onSettled = (e: Event) => {
+      const card = e.target as HTMLElement;
+      card.querySelectorAll<HTMLElement>('.stat-num-wrap').forEach(rollWrap);
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-
+    statRow.addEventListener('rise-settled', onSettled);
     return () => {
-      obs.disconnect();
-      window.removeEventListener('scroll', onScroll);
+      statRow.removeEventListener('rise-settled', onSettled);
+      spinners.forEach(id => window.clearInterval(id));
     };
   }, []);
 
@@ -153,14 +198,23 @@ export default function AboutSection() {
     initSpotlightCardEffect();
   }, []);
 
+  // Scroll-reveal (.rise-card/.rise-soft → elastic rise + squash-stretch) is
+  // handled site-wide by useRiseReveal(), called once in App.tsx.
+
   return (
     <div className="section-wrapper">
       <section id="about" className="section">
-        <div className="section-label fade-in">About Me</div>
-        <div className="about-grid stagger-item">
+        <div className="section-label rise-soft">About Me</div>
 
-          {/* COL 1: ProfileCard */}
-          <div className="about-left">
+        {/* One unified named-area grid — photo, headline, intro cards, and
+            the stat/chip/workflow cards are all direct grid items, no
+            nested sub-grid. See .about-grid in portfolio.css for the
+            per-breakpoint areas. id=stat-row keeps the existing digit-wheel
+            IntersectionObserver working (it just needs any .stat-num-wrap
+            descendants, regardless of DOM depth). */}
+        <div className="about-grid" id="stat-row">
+
+          <div className="about-photo rise-card">
             <div
               className="pc-card-wrapper"
               id="profile-card-wrap"
@@ -189,75 +243,93 @@ export default function AboutSection() {
             </div>
           </div>
 
-          {/* COL 2: bio text + stats + AI Workflow */}
-          <div className="about-right">
-            <div>
-              <h2
-                className="about-h2 stagger-item"
-                dangerouslySetInnerHTML={{ __html: t.about_headline }}
-              />
-              <div className="about-body">
-                <p dangerouslySetInnerHTML={{ __html: t.about_p1 }} />
-                <p dangerouslySetInnerHTML={{ __html: t.about_p2 }} />
-                <p dangerouslySetInnerHTML={{ __html: t.about_p3 }} />
+          <div className="about-headline">
+            <h2
+              className="about-h2 rise-soft"
+              dangerouslySetInnerHTML={{ __html: t.about_headline }}
+            />
+            <p className="about-lead rise-soft" dangerouslySetInnerHTML={{ __html: t.about_lead }} />
+          </div>
+
+          {/* Intro cards — the bio prose (about_p1/about_p2) */}
+          <div className="bento-card bento-violet bento-area-intro1 rise-card">
+            <div className="bento-label">{t.about_intro1_label}</div>
+            <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p1 }} />
+          </div>
+
+          <div className="bento-card bento-cyan bento-area-intro2 rise-card">
+            <div className="bento-label">{t.about_intro2_label}</div>
+            <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p2 }} />
+          </div>
+
+          <div className="bento-card bento-area-years rise-card">
+            <div className="bento-label">{t.about_stat_years_label}</div>
+            <div className="bento-num-center">
+              <div className="stat-num-wrap" data-value="5">
+                <div className="digit-col">
+                  <div className="digit-col-inner">
+                    {[0,1,2,3,4,5,6,7,8,9].map(n => <span key={n}>{n}</span>)}
+                  </div>
+                </div>
+                <span className="stat-suffix bento-accent">+</span>
               </div>
             </div>
-            <div className="about-widgets">
-              <div className="stat-row" id="stat-row">
-                <div className="stat-cell">
-                  <div className="stat-num-wrap" data-value="5" data-suffix="+">
-                    <div className="digit-col">
-                      <div className="digit-col-inner">
-                        {[0,1,2,3,4,5,6,7,8,9].map(n => <span key={n}>{n}</span>)}
-                      </div>
-                    </div>
-                    <span className="stat-suffix">+</span>
+          </div>
+
+          <div className="bento-card bento-human bento-area-projects rise-card">
+            <div className="bento-label">{t.about_stat_projects_label}</div>
+            <div className="bento-num-center">
+              <div className="stat-num-wrap" data-value="10">
+                <div className="digit-col">
+                  <div className="digit-col-inner">
+                    {[0,1,2,3,4,5,6,7,8,9].map(n => <span key={n}>{n}</span>)}
                   </div>
-                  <p className="stat-lbl">Years</p>
                 </div>
-                <div className="stat-cell">
-                  <div className="stat-num-wrap" data-value="10" data-suffix="+">
-                    <div className="digit-col">
-                      <div className="digit-col-inner">
-                        {[0,1,2,3,4,5,6,7,8,9].map(n => <span key={n}>{n}</span>)}
-                      </div>
-                    </div>
-                    <div className="digit-col">
-                      <div className="digit-col-inner">
-                        {[0,1,2,3,4,5,6,7,8,9].map(n => <span key={n}>{n}</span>)}
-                      </div>
-                    </div>
-                    <span className="stat-suffix">+</span>
+                <div className="digit-col">
+                  <div className="digit-col-inner">
+                    {[0,1,2,3,4,5,6,7,8,9].map(n => <span key={n}>{n}</span>)}
                   </div>
-                  <p className="stat-lbl">Projects</p>
                 </div>
-                <div className="stat-cell">
-                  <div className="stat-num-wrap" data-value="4" data-suffix="">
-                    <div className="digit-col">
-                      <div className="digit-col-inner">
-                        {[0,1,2,3,4,5,6,7,8,9].map(n => <span key={n}>{n}</span>)}
-                      </div>
-                    </div>
+                <span className="stat-suffix bento-accent">+</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bento-card bento-purple bento-area-domains rise-card">
+            <div className="bento-label">{t.about_stat_domains_label}</div>
+            <div className="bento-num-center">
+              <div className="stat-num-wrap" data-value="4">
+                <div className="digit-col">
+                  <div className="digit-col-inner">
+                    {[0,1,2,3,4,5,6,7,8,9].map(n => <span key={n}>{n}</span>)}
                   </div>
-                  <p className="stat-lbl">Domains</p>
                 </div>
               </div>
-              <div className="sidebar-block">
-                <div className="sb-sub-title">AI Workflow</div>
-                <div className="ai-chips">
-                  <span className="ai-chip">Make</span>
-                  <span className="ai-chip">LINE Bot</span>
-                  <span className="ai-chip">Gemini</span>
-                  <span className="ai-chip">Google Sheets</span>
-                </div>
-                <div className="sb-sub-title" style={{ marginTop: '14px' }}>Industry Focus</div>
-                <div className="ai-chips">
-                  <span className="domain-chip">Law Enforcement</span>
-                  <span className="domain-chip">Healthcare</span>
-                  <span className="domain-chip">Environmental Monitoring</span>
-                  <span className="domain-chip">Entertainment</span>
-                </div>
-              </div>
+            </div>
+            <p className="bento-caption">{t.about_domains_summary}</p>
+          </div>
+
+          <div className="bento-card bento-violet bento-area-industry rise-card">
+            <div className="bento-label">Industry Focus</div>
+            <div className="ai-chips">
+              <span className="domain-chip">Law Enforcement</span>
+              <span className="domain-chip">Healthcare</span>
+              <span className="domain-chip">Environmental Monitoring</span>
+              <span className="domain-chip">Entertainment</span>
+            </div>
+          </div>
+
+          <div className="bento-card bento-spectrum bento-card--wide bento-area-workflow rise-card">
+            <div className="bento-label">{t.about_ai_label}</div>
+            <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p3 }} />
+            <div className="ai-flow-mini">
+              <span className="ai-pstep">Make</span>
+              <span className="ai-psep">→</span>
+              <span className="ai-pstep">Gemini</span>
+              <span className="ai-psep">→</span>
+              <span className="ai-pstep">Sheets</span>
+              <span className="ai-psep">→</span>
+              <span className="ai-pstep">LINE / Email</span>
             </div>
           </div>
 

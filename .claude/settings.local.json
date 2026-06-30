@@ -74,7 +74,11 @@
       "Bash(/c/Users/user/.claude/skills/gstack/browse/dist/browse reload *)",
       "Bash(/c/Users/user/.claude/skills/gstack/browse/dist/browse stop *)",
       "Bash(powershell -Command 'Get-Process node -ErrorAction SilentlyContinue | Where-Object {$_.MainWindowTitle -eq '\\\\'''\\\\''} | Select-Object Id,CommandLine')",
-      "Bash(taskkill //F //IM node.exe)"
+      "Bash(taskkill //F //IM node.exe)",
+      "Skill(run)",
+      "Bash('C:\\\\Users\\\\user/.claude/skills/gstack/browse/dist/browse' wait *)",
+      "Bash('C:\\\\Users\\\\user/.claude/skills/gstack/browse/dist/browse' text *)",
+      "Bash('C:\\\\Users\\\\user/.claude/skills/gstack/browse/dist/browse' url *)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -1,33 +1,44 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
+import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
+import { primeHeaderForNav } from '../utils/navHeader';
 import gsap from 'gsap';
 
 const SMOOTH_TAU = 0.18;
+// Matches How I Use AI's card corner radius (.ai-card) so the squircle reads
+// consistently across sections instead of scaling with each card's box size.
+const CARD_CORNER_RADIUS = 44;
 
-function createPortfolioScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: number) {
-  const inner = scroller.querySelector<HTMLElement>('.scroller-inner');
+function createPortfolioScroller(row: HTMLElement, normalSpeed: number, hoverSpeed: number) {
+  const inner = row.querySelector<HTMLElement>('.scroller-inner');
   if (!inner) return;
-  if (scroller.getAttribute('data-raf-init') === 'true') return;
-  // Scroller is hidden (e.g. portfolio restored to "expanded" view on mount) —
+  if (row.getAttribute('data-raf-init') === 'true') return;
+  // Row is hidden (e.g. portfolio restored to "expanded" view on mount) —
   // offsetWidth would be 0, breaking the wrap-around math. Retry once visible.
-  if (scroller.offsetWidth === 0) return;
-  const isReverse = scroller.getAttribute('data-direction') === 'right';
+  if (row.offsetWidth === 0) return;
+  const isReverse = row.getAttribute('data-direction') === 'right';
 
   const origItems = Array.from(inner.children) as HTMLElement[];
-  origItems.forEach(item => {
-    const clone = item.cloneNode(true) as HTMLElement;
-    clone.setAttribute('aria-hidden', 'true');
-    inner.appendChild(clone);
-  });
-  scroller.setAttribute('data-raf-init', 'true');
-
   const gap = parseFloat(getComputedStyle(inner).gap) || 10;
+  const oneSetWidth = origItems.reduce((sum, el) => sum + el.offsetWidth + gap, 0);
+  if (oneSetWidth <= 0) return;
+
+  // Clone enough full sets to cover the row's width — a single clone (2x
+  // content) isn't enough once the row is wider than 2 sets of cards
+  // (e.g. the full-bleed wall), which left a blank gap before the looped
+  // content scrolled back into view.
+  const setsToAdd = Math.max(1, Math.ceil(row.offsetWidth / oneSetWidth));
+  for (let s = 0; s < setsToAdd; s++) {
+    origItems.forEach(item => {
+      const clone = item.cloneNode(true) as HTMLElement;
+      clone.setAttribute('aria-hidden', 'true');
+      inner.appendChild(clone);
+    });
+  }
+  row.setAttribute('data-raf-init', 'true');
 
   function startRAF() {
-    const oneSetWidth = origItems.reduce((sum, el) => sum + el.offsetWidth + gap, 0);
-    if (oneSetWidth <= 0) return;
-
     let offset = 0, velocity = normalSpeed, targetVelocity = normalSpeed, lastTs: number | null = null;
     const direction = isReverse ? -1 : 1;
 
@@ -43,8 +54,8 @@ function createPortfolioScroller(scroller: HTMLElement, normalSpeed: number, hov
     }
 
     requestAnimationFrame(tick);
-    scroller.addEventListener('mouseenter', () => { targetVelocity = hoverSpeed; });
-    scroller.addEventListener('mouseleave', () => { targetVelocity = normalSpeed; });
+    row.addEventListener('mouseenter', () => { targetVelocity = hoverSpeed; });
+    row.addEventListener('mouseleave', () => { targetVelocity = normalSpeed; });
   }
 
   startRAF();
@@ -179,19 +190,75 @@ export default function PortfolioSection() {
 
   // Init portfolio scrollers after render
   useEffect(() => {
-    if (scrollerInitRef.current) return;
     const initScrollers = () => {
-      document.querySelectorAll<HTMLElement>('.portfolio-scroller').forEach(s => {
-        createPortfolioScroller(s, 100, 30);
+      document.querySelectorAll<HTMLElement>('.portfolio-row').forEach(s => {
+        createPortfolioScroller(s, 40, 12);
       });
     };
-    if (document.fonts) {
-      document.fonts.ready.then(initScrollers);
-    } else {
-      window.addEventListener('load', initScrollers, { once: true });
+    if (!scrollerInitRef.current) {
+      if (document.fonts) {
+        document.fonts.ready.then(initScrollers);
+      } else {
+        window.addEventListener('load', initScrollers, { once: true });
+      }
+      scrollerInitRef.current = true;
     }
-    scrollerInitRef.current = true;
+    // Row 4 only becomes visible via a CSS breakpoint (tablet/mobile widths),
+    // not a JS state change — resizing across that breakpoint without a full
+    // reload would otherwise leave it permanently un-initialized since the
+    // first measurement at desktop width found offsetWidth 0 and bailed out.
+    window.addEventListener('resize', initScrollers);
+    return () => window.removeEventListener('resize', initScrollers);
   }, [lang]);
+
+  // Scale the whole tilted row stack (cards + gaps together) to fill the
+  // viewport-height .portfolio-wall, instead of stretching gaps apart via
+  // flexbox — keeps the original card spacing proportions intact.
+  useEffect(() => {
+    const wall = document.querySelector<HTMLElement>('.portfolio-wall');
+    const inner = document.querySelector<HTMLElement>('.portfolio-wall-inner');
+    if (!wall || !inner) return;
+
+    function applyScale() {
+      const rows = Array.from(inner!.querySelectorAll<HTMLElement>('.portfolio-row'))
+        .filter(r => r.offsetHeight > 0);
+      if (rows.length === 0 || wall!.offsetHeight === 0) return;
+      const gap = parseFloat(getComputedStyle(inner!).gap) || 0;
+      const contentHeight = rows.reduce((sum, r) => sum + r.offsetHeight, 0) + gap * (rows.length - 1);
+      if (contentHeight <= 0) return;
+      inner!.style.setProperty('--wall-scale', String(wall!.offsetHeight / contentHeight));
+    }
+
+    applyScale();
+    const ro = new ResizeObserver(applyScale);
+    ro.observe(wall);
+    return () => ro.disconnect();
+  }, [expanded]);
+
+  // Fixed-radius squircle clip-path for project/grid cards. These cards'
+  // boxes are responsive (fixed 340x220 vs 260x170 on mobile for
+  // .project-card; auto-sized grid cells, including the 2x2 .mb-big span,
+  // for .grid-card), so a single static path doesn't fit every size —
+  // ResizeObserver recomputes the path whenever a card's actual rendered
+  // box changes, keeping the corner radius constant instead of scaling
+  // proportionally with the box like a plain superellipse would.
+  useEffect(() => {
+    const cards = document.querySelectorAll<HTMLElement>('.project-card, .grid-card');
+    if (cards.length === 0) return;
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const el = entry.target as HTMLElement;
+        const { width, height } = entry.contentRect;
+        if (width <= 0 || height <= 0) continue;
+        el.style.clipPath = `path('${squircleRectPath(width, height, CARD_CORNER_RADIUS)}')`;
+        if (el.classList.contains('grid-card')) {
+          el.style.setProperty('--ring-mask', squircleRingMaskUrl(width, height, CARD_CORNER_RADIUS, 2));
+        }
+      }
+    });
+    cards.forEach(c => ro.observe(c));
+    return () => ro.disconnect();
+  }, [lang, expanded, activeFilter]);
 
   // Restore state on mount
   useEffect(() => {
@@ -228,8 +295,8 @@ export default function PortfolioSection() {
   // a restored "expanded" state, where init was skipped while hidden)
   useEffect(() => {
     if (expanded) return;
-    document.querySelectorAll<HTMLElement>('.portfolio-scroller').forEach(s => {
-      createPortfolioScroller(s, 100, 30);
+    document.querySelectorAll<HTMLElement>('.portfolio-row').forEach(s => {
+      createPortfolioScroller(s, 40, 12);
     });
   }, [expanded]);
 
@@ -307,13 +374,8 @@ export default function PortfolioSection() {
       setExpanded(false);
       sessionStorage.setItem('portfolioExpanded', 'false');
       destroyMagicBento();
-      const portfolioSec = document.getElementById('portfolio');
-      if (portfolioSec) {
-        const header = document.getElementById('main-header');
-        const headerOffset = header ? header.offsetHeight + 20 : 80;
-        const top = portfolioSec.getBoundingClientRect().top + window.pageYOffset - headerOffset;
-        window.scrollTo({ top, behavior: 'smooth' });
-      }
+      primeHeaderForNav();
+      document.getElementById('portfolio')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
       const portfolioSec = document.getElementById('portfolio');
       const header = document.getElementById('main-header');
@@ -356,39 +418,42 @@ export default function PortfolioSection() {
         }}
       >
         <img src={p.img} alt={title} loading="lazy" />
-        <div className="project-overlay">
-          <div className="project-title">{title}</div>
-          <div className="project-desc">{desc}</div>
-          <div className="project-tags">
-            {p.tags.map(tag => <span key={tag} className="project-tag">{tag}</span>)}
+        {mode === 'grid' && (
+          <div className="project-overlay">
+            <div className="project-title">{title}</div>
+            <div className="project-desc">{desc}</div>
+            <div className="project-tags">
+              {p.tags.map(tag => <span key={tag} className="project-tag">{tag}</span>)}
+            </div>
           </div>
-        </div>
+        )}
       </a>
     );
   }
 
-  const desk1Projects = PROJECTS.slice(0, 7);
-  const desk2Projects = PROJECTS.slice(7);
+  const rowProjects = [0, 1, 2, 3].map(row => PROJECTS.filter((_, i) => i % 4 === row));
 
   return (
     <div className="section-wrapper">
-      <section id="portfolio" className="section">
+      <section id="portfolio" className={`section${expanded ? ' portfolio-expanded' : ''}`}>
         <div className="portfolio-header">
-          <div className="section-label fade-in" style={{ marginBottom: 0 }}>My Portfolio</div>
+          <div className="section-label rise-soft" style={{ marginBottom: 0 }}>My Portfolio</div>
         </div>
 
-        {/* Scroller view */}
-        <div id="portfolio-scroller-desktop" className="stagger-item" style={{ display: expanded ? 'none' : '' }}>
-          <div className="scroller portfolio-scroller" data-direction="right" data-speed="slow">
-            <div className="scroller-inner" id="track-desk-1">
-              {desk1Projects.map(p => <ProjectCard key={p.id} p={p} mode="scroll" />)}
-            </div>
-          </div>
-          <div style={{ height: '20px' }} />
-          <div className="scroller portfolio-scroller" data-direction="left" data-speed="slow">
-            <div className="scroller-inner" id="track-desk-2">
-              {desk2Projects.map(p => <ProjectCard key={p.id} p={p} mode="scroll" />)}
-            </div>
+        {/* Scroller view — tilted 3-row marquee wall */}
+        <div id="portfolio-scroller-desktop" className="rise-soft portfolio-wall" style={{ display: expanded ? 'none' : '' }}>
+          <div className="portfolio-wall-inner">
+            {rowProjects.map((projects, row) => (
+              <div
+                key={row}
+                className="portfolio-row"
+                data-direction={row % 2 === 1 ? 'left' : 'right'}
+              >
+                <div className="scroller-inner" id={`track-desk-row-${row}`}>
+                  {projects.map(p => <ProjectCard key={p.id} p={p} mode="scroll" />)}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -423,7 +488,7 @@ export default function PortfolioSection() {
           ))}
         </div>
 
-        <div className="view-all-row fade-in">
+        <div className="view-all-row rise-soft">
           <button
             id="toggle-portfolio-view"
             className="btn-glass btn-grad"

@@ -121,7 +121,7 @@ function makeAiCards(t: Record<string, string>) {
                 <div className="ch-name">LINE · @pm.celine</div>
                 <div className="ch-snippet">Onboarding redesign for the new tier — Jun 17?</div>
               </div>
-              <span className="ch-time">2m</span>
+              <sgds-badge variant="neutral" outlined>2m</sgds-badge>
             </div>
             <div className="channel">
               <span className="ch-icon">E</span>
@@ -129,7 +129,7 @@ function makeAiCards(t: Record<string, string>) {
                 <div className="ch-name">Email · celine.h@firm.co</div>
                 <div className="ch-snippet">Quick question on tier-2 pricing visuals</div>
               </div>
-              <span className="ch-time">28m</span>
+              <sgds-badge variant="neutral" outlined>28m</sgds-badge>
             </div>
             <div className="channel">
               <span className="ch-icon">F</span>
@@ -137,7 +137,7 @@ function makeAiCards(t: Record<string, string>) {
                 <div className="ch-name">Form · Brief intake</div>
                 <div className="ch-snippet">Tier-2 pricing experiment — marketing</div>
               </div>
-              <span className="ch-time">1h</span>
+              <sgds-badge variant="neutral" outlined>1h</sgds-badge>
             </div>
             <div className="channel">
               <span className="ch-icon">S</span>
@@ -145,7 +145,7 @@ function makeAiCards(t: Record<string, string>) {
                 <div className="ch-name">Slack · #design-requests</div>
                 <div className="ch-snippet">Mobile sign-up flow — usability review</div>
               </div>
-              <span className="ch-time">3h</span>
+              <sgds-badge variant="neutral" outlined>3h</sgds-badge>
             </div>
             <div className="channel">
               <span className="ch-icon">M</span>
@@ -153,7 +153,7 @@ function makeAiCards(t: Record<string, string>) {
                 <div className="ch-name">Manual · Kickoff notes</div>
                 <div className="ch-snippet">In-person — Q3 roadmap dependencies</div>
               </div>
-              <span className="ch-time">1d</span>
+              <sgds-badge variant="neutral" outlined>1d</sgds-badge>
             </div>
           </div>
         </div>
@@ -190,33 +190,37 @@ function makeAiCards(t: Record<string, string>) {
             <div className="ai-cell">
               <div className="d-label"><span className="dot" />{t.ai_d_tasktype_lbl}</div>
               <div className="vv">
-                <span className="badge violet">Product UI</span>
-                <span className="conf">conf · 0.92</span>
+                <sgds-badge variant="purple" outlined>Product UI</sgds-badge>
+                <sgds-badge variant="neutral" outlined>conf · 0.92</sgds-badge>
               </div>
             </div>
             <div className="ai-cell">
               <div className="d-label amber"><span className="dot" />{t.ai_d_priority_lbl}</div>
               <div className="vv">
-                <span className="badge amber">P1 · HIGH</span>
-                <span className="conf">conf · 0.87</span>
+                <sgds-badge variant="warning">P1 · HIGH</sgds-badge>
+                <sgds-badge variant="neutral" outlined>conf · 0.87</sgds-badge>
               </div>
             </div>
           </div>
           <div className="ai-block missing">
-            <div className="d-label amber"><span className="dot" />{t.ai_d_missing_lbl}</div>
-            <ul>
-              <li>{t.ai_d_m1}</li>
-              <li>{t.ai_d_m2}</li>
-              <li>{t.ai_d_m3}</li>
-            </ul>
+            <sgds-alert show variant="warning" outlined title={t.ai_d_missing_lbl}>
+              <sgds-icon slot="icon" name="exclamation-triangle-fill" size="md" />
+              <ul>
+                <li>{t.ai_d_m1}</li>
+                <li>{t.ai_d_m2}</li>
+                <li>{t.ai_d_m3}</li>
+              </ul>
+            </sgds-alert>
           </div>
           <div className="ai-block questions">
-            <div className="d-label blue"><span className="dot" />{t.ai_d_questions_lbl}</div>
-            <ol>
-              <li>{t.ai_d_q1}</li>
-              <li>{t.ai_d_q2}</li>
-              <li>{t.ai_d_q3}</li>
-            </ol>
+            <sgds-alert show variant="info" outlined title={t.ai_d_questions_lbl}>
+              <sgds-icon slot="icon" name="info-circle-fill" size="md" />
+              <ol>
+                <li>{t.ai_d_q1}</li>
+                <li>{t.ai_d_q2}</li>
+                <li>{t.ai_d_q3}</li>
+              </ol>
+            </sgds-alert>
           </div>
           <div className="ai-block direction">
             <div className="d-label"><span className="dot" />{t.ai_d_direction_lbl}</div>
@@ -242,24 +246,27 @@ function makeAiCards(t: Record<string, string>) {
       detail: (
         <div className="detail-section">
           <div className="d-label green"><span className="dot" />{t.ai_d_assessment_lbl}</div>
-          <div className="review-grid">
-            <div className="rrow">
-              <div className="rl">{t.ai_hr_priority_row}</div>
-              <div className="rv">{t.ai_hr_priority_val}</div>
-            </div>
-            <div className="rrow">
-              <div className="rl">{t.ai_hr_strategy_row}</div>
-              <div className="rv">{t.ai_hr_strategy_val}</div>
-            </div>
-            <div className="rrow">
-              <div className="rl">{t.ai_hr_risks_row}</div>
-              <div className="rv">{t.ai_hr_risks_val}</div>
-            </div>
-            <div className="rrow">
-              <div className="rl">{t.ai_hr_nextstep_row}</div>
-              <div className="rv">{t.ai_hr_nextstep_val}</div>
-            </div>
-          </div>
+          <sgds-description-list-group stacked bordered>
+            <sgds-description-list>
+              {t.ai_hr_priority_row}
+              <span slot="data">
+                <sgds-badge variant="danger" style={{ marginRight: '6px' }}>P1</sgds-badge>
+                {t.ai_hr_priority_val.replace(/^P1[^a-z]+/i, '')}
+              </span>
+            </sgds-description-list>
+            <sgds-description-list>
+              {t.ai_hr_strategy_row}
+              <span slot="data">{t.ai_hr_strategy_val}</span>
+            </sgds-description-list>
+            <sgds-description-list>
+              {t.ai_hr_risks_row}
+              <span slot="data">{t.ai_hr_risks_val}</span>
+            </sgds-description-list>
+            <sgds-description-list>
+              {t.ai_hr_nextstep_row}
+              <span slot="data">{t.ai_hr_nextstep_val}</span>
+            </sgds-description-list>
+          </sgds-description-list-group>
           <div className="review-quote">
             <div className="ql">{t.ai_hr_op_lbl}</div>
             <div className="qq" dangerouslySetInnerHTML={{ __html: t.ai_hr_op_quote }} />
@@ -292,7 +299,7 @@ function makeAiCards(t: Record<string, string>) {
               <div className="field"><label>{t.ai_f_timeline}</label><div className="val"><span>Jun 03 — Jun 17</span></div></div>
               <div className="field"><label>{t.ai_f_budget}</label><div className="val"><span>Internal</span></div></div>
             </div>
-            <div className="field"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><span className="priority-pill">HIGH</span></div></div>
+            <div className="field"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><sgds-badge variant="danger">HIGH</sgds-badge></div></div>
             <div className="field"><label>{t.ai_f_contact}</label><div className="val"><span>celine.h@firm.co</span></div></div>
             <div className="form-status">
               <span>{t.ai_f_complete}</span>
@@ -321,35 +328,42 @@ function makeAiCards(t: Record<string, string>) {
       detail: (
         <div className="detail-section">
           <div className="d-label"><span className="dot" />{t.ai_d_sheets_lbl}</div>
-          <div className="sheet">
-            <div className="sheet-tabs">
-              <span className="tab active">Tracker</span>
-              <span className="tab">Backlog</span>
-              <span className="tab">Archive</span>
-            </div>
-            <table>
-              <thead>
-                <tr><th>ID</th><th>Src</th><th>Type</th><th>Pri</th><th>Status</th><th>Owner</th></tr>
-              </thead>
-              <tbody>
-                <tr className="current">
-                  <td>DR-248</td><td>LINE</td><td>Product UI</td><td>P1</td><td><span className="st active">Active</span></td><td>TL</td>
-                </tr>
-                <tr>
-                  <td>DR-247</td><td>Form</td><td>Graphic</td><td>P2</td><td><span className="st review">Review</span></td><td>TL</td>
-                </tr>
-                <tr>
-                  <td>DR-246</td><td>Email</td><td>UX Review</td><td>P2</td><td><span className="st done">Done</span></td><td>TL</td>
-                </tr>
-                <tr>
-                  <td>DR-245</td><td>LINE</td><td>Research</td><td>P3</td><td><span className="st queue">Backlog</span></td><td>TL</td>
-                </tr>
-              </tbody>
-            </table>
-            <div className="sheet-foot">
-              <span>4 of 142 records</span>
-              <span>Updated · 2m ago</span>
-            </div>
+          <div className="tracking-chart-container" style={{ height: 72, marginBottom: 8 }} />
+          <sgds-table responsive="always" tableBorder headerBackground>
+            <sgds-table-row>
+              <sgds-table-head>ID</sgds-table-head>
+              <sgds-table-head>Source</sgds-table-head>
+              <sgds-table-head>Type</sgds-table-head>
+              <sgds-table-head>Status</sgds-table-head>
+            </sgds-table-row>
+            <sgds-table-row>
+              <sgds-table-cell>DR-248</sgds-table-cell>
+              <sgds-table-cell>LINE</sgds-table-cell>
+              <sgds-table-cell>Product UI</sgds-table-cell>
+              <sgds-table-cell><sgds-badge variant="success">Active</sgds-badge></sgds-table-cell>
+            </sgds-table-row>
+            <sgds-table-row>
+              <sgds-table-cell>DR-247</sgds-table-cell>
+              <sgds-table-cell>Form</sgds-table-cell>
+              <sgds-table-cell>Graphic</sgds-table-cell>
+              <sgds-table-cell><sgds-badge variant="primary" outlined>Review</sgds-badge></sgds-table-cell>
+            </sgds-table-row>
+            <sgds-table-row>
+              <sgds-table-cell>DR-246</sgds-table-cell>
+              <sgds-table-cell>Email</sgds-table-cell>
+              <sgds-table-cell>UX Review</sgds-table-cell>
+              <sgds-table-cell><sgds-badge variant="neutral">Done</sgds-badge></sgds-table-cell>
+            </sgds-table-row>
+            <sgds-table-row>
+              <sgds-table-cell>DR-245</sgds-table-cell>
+              <sgds-table-cell>LINE</sgds-table-cell>
+              <sgds-table-cell>Research</sgds-table-cell>
+              <sgds-table-cell><sgds-badge variant="neutral" outlined>Backlog</sgds-badge></sgds-table-cell>
+            </sgds-table-row>
+          </sgds-table>
+          <div className="sheet-foot">
+            <span>4 of 142 records</span>
+            <span>Updated · 2m ago</span>
           </div>
         </div>
       ),
@@ -378,7 +392,7 @@ function makeAiCards(t: Record<string, string>) {
                 <div className="pt">{t.ai_ph_research}</div>
                 <div className="pd">{t.ai_ph_research_d}</div>
               </div>
-              <span className="ps">{t.ai_ph_upnext}</span>
+              <sgds-badge variant="cyan">{t.ai_ph_upnext}</sgds-badge>
             </div>
             <div className="phase">
               <div className="pn">02</div>
@@ -386,7 +400,7 @@ function makeAiCards(t: Record<string, string>) {
                 <div className="pt">{t.ai_ph_structure}</div>
                 <div className="pd">{t.ai_ph_structure_d}</div>
               </div>
-              <span className="ps">{t.ai_ph_queued}</span>
+              <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
             </div>
             <div className="phase">
               <div className="pn">03</div>
@@ -394,7 +408,7 @@ function makeAiCards(t: Record<string, string>) {
                 <div className="pt">{t.ai_ph_design}</div>
                 <div className="pd">{t.ai_ph_design_d}</div>
               </div>
-              <span className="ps">{t.ai_ph_queued}</span>
+              <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
             </div>
             <div className="phase">
               <div className="pn">04</div>
@@ -402,7 +416,7 @@ function makeAiCards(t: Record<string, string>) {
                 <div className="pt">{t.ai_ph_validate}</div>
                 <div className="pd">{t.ai_ph_validate_d}</div>
               </div>
-              <span className="ps">{t.ai_ph_queued}</span>
+              <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
             </div>
             <div className="phase">
               <div className="pn">05</div>
@@ -410,7 +424,7 @@ function makeAiCards(t: Record<string, string>) {
                 <div className="pt">{t.ai_ph_delivery}</div>
                 <div className="pd">{t.ai_ph_delivery_d}</div>
               </div>
-              <span className="ps">{t.ai_ph_queued}</span>
+              <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
             </div>
           </div>
         </div>
@@ -511,6 +525,35 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef(0);
   const [cardStepPx, setCardStepPx] = useState(0);
+  const [risen, setRisen] = useState(false);
+
+  // Hold off autoplay until the cards have finished useRiseReveal's scroll-in
+  // animation, instead of starting immediately on mount — otherwise the
+  // carousel could start sliding mid-reveal. useRiseReveal dispatches
+  // 'rise-settled' (bubbling) on each card as it finishes; the left→right
+  // stagger means later columns settle after the first one fires, so wait
+  // out that same worst-case stagger window (5 columns * 0.15s delay + the
+  // ~1.2s settle duration, rounded up) before flipping ready. Skips straight
+  // to ready under reduced motion, since useRiseReveal never fires the event
+  // there at all.
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setRisen(true);
+      return;
+    }
+    const track = trackRef.current;
+    if (!track) return;
+    let bufferId: ReturnType<typeof setTimeout> | null = null;
+    const onSettled = () => {
+      track.removeEventListener('rise-settled', onSettled);
+      bufferId = setTimeout(() => setRisen(true), 1500);
+    };
+    track.addEventListener('rise-settled', onSettled);
+    return () => {
+      track.removeEventListener('rise-settled', onSettled);
+      if (bufferId) clearTimeout(bufferId);
+    };
+  }, []);
 
   function cardStep() {
     const track = trackRef.current;
@@ -557,19 +600,29 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
   }
 
   // Autoplay: advance one card every 6s, looping back to the start. Paused
-  // while the user is dragging so it doesn't fight a manual swipe.
+  // while the user is dragging so it doesn't fight a manual swipe. A single
+  // re-scheduling setTimeout (not setInterval) keyed on `offset` — not just
+  // `[maxOffset, dragging, risen]` — so a manual swipe (drag or the Swipe
+  // button) restarts the 6s countdown from that moment instead of leaving
+  // the old interval's phase running underneath. This keeps the dot-fill
+  // animation below (also keyed on `offset`, see render) in sync with when
+  // the *next* auto-advance actually happens, instead of drifting apart.
   useEffect(() => {
-    if (maxOffset === 0 || dragging) return;
+    if (maxOffset === 0 || dragging || !risen) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const id = setInterval(() => {
+    const id = setTimeout(() => {
       setOffset(o => (o >= maxOffset ? 0 : o + 1));
     }, 6000);
-    return () => clearInterval(id);
-  }, [maxOffset, dragging]);
+    return () => clearTimeout(id);
+  }, [maxOffset, dragging, risen, offset]);
 
   const translatePx = -(offset * cardStepPx) + dragPx;
   const dotCount = maxOffset + 1;
-  const autoplayLive = maxOffset > 0 && !dragging && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Gate on `risen` too — otherwise the dot-fill span below mounts (and its
+  // 6s CSS fill starts ticking) the instant the carousel renders, well
+  // before the autoplay effect above is actually allowed to advance, so the
+  // dot would show "full" long before the carousel really slides.
+  const autoplayLive = maxOffset > 0 && !dragging && risen && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   return (
     <div className="process-scroll-wrap">
@@ -637,9 +690,9 @@ export default function SkillsSection() {
   const aiThinkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Toggle the bento "has-expanded" class imperatively (not via React's className prop) —
-  // .ai-flow-grid is a .stagger-item whose .visible class is added by the scroll-reveal
-  // effect outside React. If className were recomputed on state change, React's diff
-  // would overwrite the attribute and strip .visible, hiding the whole grid.
+  // .ai-flow-grid is a .rise-card whose entrance is driven by useRiseReveal() writing
+  // inline style/transform outside React. Keeping this outside the className prop avoids
+  // an unnecessary re-render of the whole grid's class string on every card expand/collapse.
   useEffect(() => {
     aiFlowGridRef.current?.classList.toggle('has-expanded', !!expandedAiCard);
   }, [expandedAiCard]);
@@ -890,6 +943,48 @@ export default function SkillsSection() {
         p.innerHTML = original;
       };
     }
+
+    if (expandedAiCard === 'tracking') {
+      let echartsInstance: { dispose: () => void } | null = null;
+      const timer = setTimeout(async () => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore — echarts ships its own types; tsc finds them post-install
+        const echarts = await import('echarts');
+        const el = cardRefs.current.get('tracking')?.querySelector<HTMLElement>('.tracking-chart-container');
+        if (!el) return;
+        const chart = echarts.init(el, undefined, { renderer: 'svg' });
+        chart.setOption({
+          backgroundColor: 'transparent',
+          grid: { top: 6, bottom: 6, left: 56, right: 48, containLabel: false },
+          xAxis: { type: 'value', show: false },
+          yAxis: {
+            type: 'category',
+            data: ['Backlog', 'Done', 'Review', 'Active'],
+            axisLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 10, fontFamily: 'inherit' },
+            axisLine: { show: false },
+            axisTick: { show: false },
+          },
+          series: [{
+            type: 'bar',
+            data: [
+              { value: 14, itemStyle: { color: '#7e6917' } },
+              { value: 72, itemStyle: { color: '#00758d' } },
+              { value: 38, itemStyle: { color: '#0269d0' } },
+              { value: 18, itemStyle: { color: '#0e7c3d' } },
+            ],
+            label: { show: true, position: 'right', color: 'rgba(255,255,255,0.45)', fontSize: 10, formatter: '{c}' },
+            barMaxWidth: 10,
+            itemStyle: { borderRadius: [0, 4, 4, 0] },
+          }],
+          animation: !reduced,
+        });
+        echartsInstance = chart;
+      }, 380);
+      return () => {
+        clearTimeout(timer);
+        echartsInstance?.dispose();
+      };
+    }
   }, [expandedAiCard]);
 
   // Spotlight cards
@@ -962,62 +1057,16 @@ export default function SkillsSection() {
     }
   }, []);
 
-  // Scroll animations
-  useEffect(() => {
-    const ROW_BAND = 80;
-    const ROW_DELAY = 230;
-    const COL_DELAY = 110;
-
-    function revealSection(section: HTMLElement) {
-      const items = Array.from(section.querySelectorAll<HTMLElement>('.stagger-item, .fade-in'))
-        .filter(el => !el.classList.contains('visible'));
-      if (!items.length) return;
-
-      const secTop = section.getBoundingClientRect().top;
-      const measured = items.map(el => {
-        const r = el.getBoundingClientRect();
-        return { el, relTop: r.top - secTop, left: r.left };
-      }).sort((a, b) => {
-        const ra = Math.round(a.relTop / ROW_BAND);
-        const rb = Math.round(b.relTop / ROW_BAND);
-        return ra !== rb ? ra - rb : a.left - b.left;
-      });
-
-      let baseRowKey = -1, rowIdx = -1, colIdx = 0;
-      measured.forEach(({ el, relTop }) => {
-        const key = Math.round(relTop / ROW_BAND);
-        if (key !== baseRowKey) { baseRowKey = key; rowIdx++; colIdx = 0; }
-        else colIdx++;
-        const delay = rowIdx * ROW_DELAY + colIdx * COL_DELAY;
-        setTimeout(() => el.classList.add('visible'), delay);
-      });
-    }
-
-    const seen = new Set<HTMLElement>();
-    const sections = Array.from(document.querySelectorAll<HTMLElement>('section.section'));
-
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        const sec = entry.target as HTMLElement;
-        if (seen.has(sec)) return;
-        seen.add(sec);
-        observer.unobserve(sec);
-        revealSection(sec);
-      });
-    }, { threshold: 0.05 });
-    sections.forEach(sec => observer.observe(sec));
-
-    return () => observer.disconnect();
-  }, []);
+  // Scroll-reveal (.rise-card/.rise-soft → elastic rise + squash-stretch) is
+  // handled site-wide by useRiseReveal(), called once in App.tsx.
 
   return (
     <>
       {/* DESIGN PROCESS */}
       <section className="section">
-        <div className="section-label fade-in">My Design Process</div>
+        <div className="section-label rise-soft">My Design Process</div>
         <div className="process-dual">
-          <div className="process-column stagger-item">
+          <div className="process-column">
             <div className="process-column-header">
               <i className="ph-bold ph-buildings"></i>
               <span>{t.tab_inhouse}</span>
@@ -1030,16 +1079,16 @@ export default function SkillsSection() {
                 return (
                   <BorderGlow
                     key={slug}
-                    className="process-card process-card--has-img"
+                    className="process-card process-card--has-img rise-card"
                     backgroundColor="#13101c"
-                    borderRadius={14}
+                    borderRadius={44}
                     colors={['#6C63FF', '#FF6584', '#38bdf8']}
                     glowColor="264 70 75"
                     edgeSensitivity={25}
                     glowRadius={24}
                     glowIntensity={1.1}
                     coneSpread={25}
-                    fillOpacity={0.4}
+                    fillOpacity={0}
                     spotlightColor="rgba(108, 99, 255, 0.12)"
                     backgroundSlot={
                       <>
@@ -1056,7 +1105,7 @@ export default function SkillsSection() {
               })}
             />
           </div>
-          <div className="process-column stagger-item">
+          <div className="process-column">
             <div className="process-column-header">
               <i className="ph-bold ph-handshake"></i>
               <span>{t.tab_freelance}</span>
@@ -1069,16 +1118,16 @@ export default function SkillsSection() {
                 return (
                   <BorderGlow
                     key={slug}
-                    className="process-card process-card--has-img"
+                    className="process-card process-card--has-img rise-card"
                     backgroundColor="#13101c"
-                    borderRadius={14}
+                    borderRadius={44}
                     colors={['#6C63FF', '#FF6584', '#38bdf8']}
                     glowColor="264 70 75"
                     edgeSensitivity={25}
                     glowRadius={24}
                     glowIntensity={1.1}
                     coneSpread={25}
-                    fillOpacity={0.4}
+                    fillOpacity={0}
                     spotlightColor="rgba(108, 99, 255, 0.12)"
                     backgroundSlot={
                       <>
@@ -1100,11 +1149,12 @@ export default function SkillsSection() {
 
       {/* TECH STACK */}
       <section className="section">
-        <div className="section-label fade-in">Tech Stack</div>
-        <h2 className="tech-headline stagger-item">Web development <span className="gradient-text">literacy</span></h2>
-        <p className="tech-sub stagger-item" dangerouslySetInnerHTML={{ __html: t.tech_sub }} />
-        <div className="tech-items stagger-item">
-          <div className="tech-item html-item card-spotlight sc-card">
+        <div className="section-label rise-soft">Tech Stack</div>
+        <h2 className="tech-headline rise-soft">Web development <span className="gradient-text">literacy</span></h2>
+        <p className="tech-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.tech_sub }} />
+        <div className="tech-items">
+          <div className="tech-item html-item card-spotlight sc-card rise-card">
+            <span className="card-glass-highlight" aria-hidden="true" />
             <div className="tech-item-header">
               <span className="tech-name"><i className="fab fa-html5" style={{ color: '#60a5fa', marginRight: '8px' }}></i>HTML / CSS / Tailwind</span>
               <span className="tech-level-badge">DESIGN-READY</span>
@@ -1118,7 +1168,8 @@ export default function SkillsSection() {
               <TypingCode versions={[CSS_CODE_A, CSS_CODE_B]} />
             </div>
           </div>
-          <div className="tech-item js-item card-spotlight sc-card">
+          <div className="tech-item js-item card-spotlight sc-card rise-card">
+            <span className="card-glass-highlight" aria-hidden="true" />
             <div className="tech-item-header">
               <span className="tech-name"><i className="fab fa-js" style={{ color: '#fb923c', marginRight: '8px' }}></i>JavaScript</span>
               <span className="tech-level-badge">AI-ASSISTED</span>
@@ -1132,7 +1183,8 @@ export default function SkillsSection() {
               <TypingCode versions={[JS_CODE_A, JS_CODE_B]} />
             </div>
           </div>
-          <div className="tech-item react-item card-spotlight sc-card">
+          <div className="tech-item react-item card-spotlight sc-card rise-card">
+            <span className="card-glass-highlight" aria-hidden="true" />
             <div className="tech-item-header">
               <span className="tech-name"><i className="fab fa-react" style={{ color: '#a5b4fc', marginRight: '8px' }}></i>React.js / Vue.js</span>
               <span className="tech-level-badge">RESPONSIVE</span>
@@ -1147,12 +1199,12 @@ export default function SkillsSection() {
             </div>
           </div>
         </div>
-        <div className="tech-note fade-in" dangerouslySetInnerHTML={{ __html: t.figma_mcp }} />
+        <div className="tech-note rise-soft" dangerouslySetInnerHTML={{ __html: t.figma_mcp }} />
       </section>
 
       {/* MY SKILLS */}
       <section id="my-skills" className="section">
-        <div className="section-label fade-in">My Skills</div>
+        <div className="section-label rise-soft">My Skills</div>
         <div className="skills-outer scroller skills-scroller" data-direction="left">
           <div className="scroller-inner">
             <span className="skill-pill"><img src="./img/others/Figma_logo.png" className="skill-icon-img" alt="Figma" />Figma</span>
@@ -1185,17 +1237,17 @@ export default function SkillsSection() {
 
       {/* HOW I USE AI */}
       <section className="section">
-        <div className="section-label fade-in">How I Use AI</div>
-        <h2 className="stagger-item" style={{ fontSize: 'clamp(1.6rem,2.5vw,2rem)', fontWeight: 700, letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
+        <div className="section-label rise-soft">How I Use AI</div>
+        <h2 className="rise-soft" style={{ fontSize: 'clamp(1.6rem,2.5vw,2rem)', fontWeight: 700, letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
           AI-Assisted Design <span className="gradient-text">Intake System</span>
         </h2>
         <p
-          className="ai-sub stagger-item"
+          className="ai-sub rise-soft"
           style={{ color: 'rgba(255,255,255,0.55)', fontSize: '14px', marginBottom: '-32px', maxWidth: 392 }}
           dangerouslySetInnerHTML={{ __html: t.ai_sub }}
         />
 
-        <div className="ai-flow-grid stagger-item" ref={aiFlowGridRef}>
+        <div className="ai-flow-grid" ref={aiFlowGridRef}>
           <div className="ai-connectors" aria-hidden="true" dangerouslySetInnerHTML={{ __html: `
             <svg viewBox="0 0 230 100" preserveAspectRatio="none">
               <defs>
@@ -1257,8 +1309,8 @@ export default function SkillsSection() {
                     const targets = [
                       detail.querySelector('.ai-summary'),
                       ...Array.from(detail.querySelectorAll('.ai-row .ai-cell')),
-                      ...Array.from(detail.querySelectorAll('.ai-block.missing .d-label, .ai-block.missing li')),
-                      ...Array.from(detail.querySelectorAll('.ai-block.questions .d-label, .ai-block.questions li')),
+                      detail.querySelector('.ai-block.missing'),
+                      detail.querySelector('.ai-block.questions'),
                       detail.querySelector('.ai-block.direction'),
                     ].filter((node): node is Element => !!node);
                     gsap.set(targets, { opacity: 0, y: 14 });
@@ -1307,7 +1359,7 @@ export default function SkillsSection() {
               <article
                 key={card.id}
                 ref={(el: HTMLElement | null) => { if (el) cardRefs.current.set(card.id, el); else cardRefs.current.delete(card.id); }}
-                className={`ai-card ai-card-glow${card.variant ? ' ' + card.variant : ''}${isOpen ? ' is-open' : ''}`}
+                className={`ai-card ai-card-glow rise-card${card.variant ? ' ' + card.variant : ''}${isOpen ? ' is-open' : ''}`}
                 onClick={toggle}
                 role="button"
                 tabIndex={0}
@@ -1343,7 +1395,7 @@ export default function SkillsSection() {
           })}
         </div>
 
-        <div className="ai-chips-row stagger-item">
+        <div className="ai-chips-row rise-card">
           <div className="ai-chips-label"><span>{t.ai_chips_label}</span></div>
           <div className="ai-chips">
             <span className="ai-chip"><span className="ai-chip-dot"></span>Product UI<span className="ai-chip-count">42%</span></span>
@@ -1353,7 +1405,7 @@ export default function SkillsSection() {
           </div>
         </div>
 
-        <div className="ai-principle stagger-item">
+        <div className="ai-principle rise-card">
           AI handles <em>structure</em><span className="ai-principle-dot"></span>I handle <em>judgment</em>.
         </div>
       </section>

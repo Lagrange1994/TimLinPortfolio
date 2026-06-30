@@ -41,13 +41,13 @@ export default function ContactSection() {
     <>
       <div className="section-wrapper">
         <section id="contact" className="section">
-          <div className="section-label fade-in">Contact Me</div>
-          <h2 className="contact-headline stagger-item">
+          <div className="section-label rise-soft">Contact Me</div>
+          <h2 className="contact-headline rise-soft">
             Let&apos;s build something <span className="gradient-text">worth using.</span>
           </h2>
-          <p className="contact-sub stagger-item">{t.contact_sub}</p>
+          <p className="contact-sub rise-soft">{t.contact_sub}</p>
 
-          <a className="line-banner stagger-item sc-card" href="https://line.me/R/ti/p/@072fubpj" target="_blank" rel="noreferrer">
+          <a className="line-banner rise-card sc-card" href="https://line.me/R/ti/p/@072fubpj" target="_blank" rel="noreferrer">
             <div className="line-icon-box">
               <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
                 <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0" />
@@ -69,8 +69,8 @@ export default function ContactSection() {
             </div>
           </a>
 
-          <div className="contact-two-col stagger-item">
-            <div className="contact-card sc-card">
+          <div className="contact-two-col">
+            <div className="contact-card sc-card rise-card">
               <div className="card-title">Contact Info</div>
               <div className="crow">
                 <div className="icon-circle"><i className="ph-fill ph-map-pin" style={{ fontSize: '18px' }}></i></div>
@@ -95,7 +95,7 @@ export default function ContactSection() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="rise-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div className="contact-card sc-card" style={{ flex: 1 }}>
                 <div className="card-title">Follow Me</div>
                 <div className="social-links">

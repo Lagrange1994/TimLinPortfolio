@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLang } from '../context/LangContext';
+import { primeHeaderForNav } from '../utils/navHeader';
 import gsap from 'gsap';
 
 declare global {
@@ -21,6 +22,7 @@ function scrollToSection(id: string) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
+  primeHeaderForNav();
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -41,6 +43,21 @@ export default function Navbar() {
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Keep --nav-h in sync with the header's real height, incl. its
+  // .scrolled compact-pill state — every `.section` uses this for
+  // scroll-margin-top so menu/CTA navigation lands consistently below it.
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const sync = () => {
+      document.documentElement.style.setProperty('--nav-h', `${header.offsetHeight}px`);
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(header);
+    return () => ro.disconnect();
   }, []);
 
   // Deep-link support: a fresh page load with a #section hash (e.g. a project

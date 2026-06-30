@@ -117,6 +117,10 @@
       --font: 'Quicksand', 'Noto Sans TC', sans-serif;
       --font-heading: 'Momo Trust Display', 'Noto Sans TC', sans-serif;
       --mono: 'Quicksand', sans-serif;
+      /* #main-header's measured height (Navbar.tsx keeps this in sync, incl.
+         its .scrolled compact-pill state). Fallback matches the header's
+         un-scrolled height for the first paint before JS runs. */
+      --nav-h: 72px;
     }
 
     html,
@@ -244,6 +248,11 @@
       border-bottom: 1px solid var(--border);
       max-width: 1440px;
       margin: 0 auto;
+      /* Lets scrollIntoView land each section's border-box top flush with
+         the fixed navbar, so the gap from navbar to the section's title
+         (its first child) is exactly the section's own padding-top —
+         consistent across every section without per-section offset math. */
+      scroll-margin-top: var(--nav-h);
     }
 
     .section-label {
@@ -713,35 +722,47 @@
       flex-shrink: 0;
     }
 
-    /* ABOUT */
+    /* ABOUT — one unified named-area grid for the whole section: photo,
+       headline, intro cards (the bio prose) and the stat/chip/workflow
+       cards are all direct grid items here, not nested sub-grids. Desktop:
+       photo spans every row on the left (1/4 width, 4fr of 16fr total);
+       the right 3/4 splits into 4 equal columns (3fr each) shared by the
+       headline (spans all 4), the intro cards (1 col each, 2 rows tall),
+       the stat/chip 2x2, and the workflow card (spans all 4). */
     .about-grid {
       display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: 36px;
-      align-items: start;
+      grid-template-columns: 4fr 3fr 3fr 3fr 3fr;
+      grid-template-areas:
+        "photo headline headline headline headline"
+        "photo intro1 intro2 years projects"
+        "photo intro1 intro2 domains industry"
+        "photo workflow workflow workflow workflow";
+      gap: 12px;
+      /* align-items defaults to stretch — intro1/intro2/domains (and every
+         other bento card) fill their full row height so their bottom edge
+         lines up with the row above the workflow card. Only the photo
+         opts out (align-self below), since its aspect-ratio'd ProfileCard
+         shouldn't be force-stretched taller than its own content. */
     }
 
-    .about-left {
+    .about-photo {
+      grid-area: photo;
+      align-self: start;
       display: flex;
       flex-direction: column;
     }
 
-    .about-right {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+    .about-headline {
+      grid-area: headline;
     }
 
-    .about-widgets {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      width: fit-content;
-    }
-
-    .about-widgets>* {
-      width: 100%;
-    }
+    .bento-area-intro1 { grid-area: intro1; }
+    .bento-area-intro2 { grid-area: intro2; }
+    .bento-area-years { grid-area: years; }
+    .bento-area-projects { grid-area: projects; }
+    .bento-area-domains { grid-area: domains; }
+    .bento-area-industry { grid-area: industry; }
+    .bento-area-workflow { grid-area: workflow; }
 
     .about-h2 {
       font-size: clamp(1.5rem, 2.5vw, 2rem);
@@ -751,14 +772,14 @@
       letter-spacing: -.02em;
     }
 
-    .about-body p {
+    .about-lead {
       color: rgba(255, 255, 255, 0.65);
       margin-bottom: 14px;
       font-size: 14px;
       line-height: 1.8;
     }
 
-    .about-body strong {
+    .about-lead strong {
       color: var(--text);
       font-weight: 600;
     }
@@ -805,60 +826,27 @@
       gap: 14px;
     }
 
-    /* STAT ROW */
-    .stat-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 14px;
-      overflow: hidden;
+    .bento-num-center {
+      flex: 1;
+      display: flex;
+      align-items: center;
     }
 
-    .stat-cell {
-      text-align: center;
-      padding: 14px 8px;
-      border-right: 1px solid rgba(255, 255, 255, 0.14);
-      background: rgba(255, 255, 255, 0.07);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-    }
-
-    .stat-cell:last-child {
-      border-right: none;
-    }
-
-    .stat-num {
-      font-size: 1.8rem;
-      font-weight: 700;
-      display: block;
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-
-    .stat-lbl {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: .1em;
-      color: #9090A8;
-      font-family: var(--mono);
-    }
-
-    /* digit-wheel counter */
+    /* digit-wheel counter — sized to match the reference's 100px/650 hero numbers */
     .stat-num-wrap {
       display: flex;
       align-items: flex-end;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 0;
       line-height: 1;
-      margin-bottom: 4px;
       overflow: hidden;
-      height: 2.16rem;
+      height: clamp(2.75rem, 6vw, 4.5rem);
     }
 
     .digit-col {
       position: relative;
       overflow: hidden;
-      height: 2.16rem;
+      height: clamp(2.75rem, 6vw, 4.5rem);
     }
 
     .digit-col-inner {
@@ -869,46 +857,20 @@
 
     .digit-col-inner span {
       display: block;
-      height: 2.16rem;
-      line-height: 2.16rem;
-      font-size: 1.8rem;
+      height: clamp(2.75rem, 6vw, 4.5rem);
+      line-height: clamp(2.75rem, 6vw, 4.5rem);
+      font-size: clamp(2.5rem, 5.6vw, 4.25rem);
       font-weight: 700;
+      font-family: var(--font-heading);
       text-align: center;
+      color: var(--text);
     }
 
     .stat-suffix {
-      font-size: 1.8rem;
+      font-size: clamp(2.5rem, 5.6vw, 4.25rem);
       font-weight: 700;
-      line-height: 2.16rem;
-    }
-
-    /* SIDEBAR BLOCKS */
-    .sidebar-block {
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--glass-border);
-      border-radius: 14px;
-      padding: 16px 18px;
-      position: relative;
-      overflow: hidden;
-      --mouse-x: 50%;
-      --mouse-y: 50%;
-      --spotlight-color: rgba(139, 92, 246, 0.2);
-    }
-
-    .sidebar-block::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent 80%);
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-
-    .sidebar-block:hover::before {
-      opacity: 0.6;
+      font-family: var(--font-heading);
+      line-height: clamp(2.75rem, 6vw, 4.5rem);
     }
 
     .block-title {
@@ -919,20 +881,6 @@
       font-weight: 600;
       font-family: var(--mono);
       margin-bottom: 14px;
-    }
-
-    .sb-sub-title {
-      font-size: 10px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: #888898;
-      font-family: var(--mono);
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .sb-sub-title+.sb-sub-title {
-      margin-top: 14px;
     }
 
     .domain-chip {
@@ -946,6 +894,136 @@
       border: 1px solid rgba(74, 222, 128, 0.28);
       background: rgba(74, 222, 128, 0.07);
       color: rgba(74, 222, 128, 0.85);
+    }
+
+    /* ── Bento card styling ── padding/gap lifted from inpublic.studio's
+       "Our focus is simple" section; corner shape + border background
+       match the How I Use AI cards (.ai-card in the section above), minus
+       their hover edge-light glow and radar ring — these stay static.
+       Equal-height cells (intro1/intro2 spanning 2 rows,
+       years/projects/domains/industry in a 2x2) come for free from CSS
+       Grid's default align-items:stretch. */
+    .bento-card {
+      position: relative;
+      background-color: rgba(20, 18, 28, 0.72);
+      background-image:
+        radial-gradient(380px 220px at 50% 0%, rgba(108, 99, 255, 0.14), transparent 65%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 44px;
+      corner-shape: squircle;
+      backdrop-filter: blur(1rem);
+      -webkit-backdrop-filter: blur(1rem);
+      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .08);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Per-card colored gradient backgrounds — same palette as the How I Use
+       AI cards' variants (.ai-cyan/.ai-purple/.ai-violet/.ai-human/
+       .ai-spectrum in the section above), just swapped onto .bento-card's
+       own glow position/size so it still reads as one consistent set. */
+    .bento-card.bento-cyan {
+      background-image:
+        radial-gradient(380px 220px at 50% 0%, rgba(0, 212, 255, .2), transparent 65%),
+        linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+      border-color: rgba(0, 212, 255, .3);
+    }
+    .bento-card.bento-purple {
+      background-image:
+        radial-gradient(380px 220px at 50% 0%, rgba(19, 159, 248, .22), transparent 65%),
+        linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+      border-color: rgba(19, 159, 248, .32);
+    }
+    .bento-card.bento-violet {
+      background-image:
+        radial-gradient(380px 220px at 50% 0%, rgba(37, 102, 240, .24), transparent 65%),
+        linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+      border-color: rgba(37, 102, 240, .34);
+    }
+    .bento-card.bento-human {
+      background-image:
+        radial-gradient(380px 220px at 50% 0%, rgba(123, 227, 181, .2), transparent 65%),
+        linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+      border-color: rgba(123, 227, 181, .3);
+    }
+    .bento-card.bento-spectrum {
+      background-image:
+        radial-gradient(420px 260px at 50% 0%, rgba(74, 0, 224, .22), transparent 65%),
+        linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+      border-color: rgba(74, 0, 224, .3);
+    }
+
+    /* Glass top-edge highlight — same thin gradient line as .ai-card::before */
+    .bento-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 12%;
+      right: 12%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .32), transparent);
+    }
+
+    /* Same glass top-edge highlight as .bento-card::before, but as a real
+       element — used on cards (.process-card, .tech-item) whose ::before
+       and ::after are already claimed by their own hover-glow effects, so
+       a third pseudo-element isn't available. */
+    .card-glass-highlight {
+      position: absolute;
+      top: 0;
+      left: 12%;
+      right: 12%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .32), transparent);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .bento-card--wide {
+      overflow: hidden;
+    }
+
+    /* Title/body proportions unified with the How I Use AI cards
+       (.ai-card h3 / .ai-card>p above) — only colors stay this section's
+       own tokens. */
+    .bento-label {
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: -.01em;
+      line-height: 1.1;
+      font-family: var(--font-heading);
+      color: var(--text);
+    }
+
+    .bento-caption {
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--text-50);
+      margin-top: 2px;
+    }
+
+    .bento-text {
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: var(--text-70);
+    }
+
+    .bento-accent {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .ai-flow-mini {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+      margin-top: auto;
     }
 
     .fact-row {
@@ -1036,11 +1114,22 @@
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
-      border-radius: 14px;
+      border-radius: 44px;
+      corner-shape: squircle;
       padding: 0;
       position: relative;
       box-shadow: none;
       transition: border-color .25s, transform .25s, background .25s;
+    }
+
+    /* 靜止外框比照 How I Use AI 卡片（.ai-card）的底色＋微光，蓋掉
+       .border-glow-card 強制的純色 background（!important + 兩個 class
+       的特異度蓋過原本單一 class 的規則）。 */
+    .process-card.border-glow-card {
+      background-color: rgba(20, 18, 28, 0.72) !important;
+      background-image:
+        radial-gradient(380px 220px at 50% 0%, rgba(108, 99, 255, 0.14), transparent 65%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)) !important;
     }
 
     .process-card:hover {
@@ -1053,7 +1142,8 @@
     .process-radar {
       position: absolute;
       inset: -10px;
-      border-radius: calc(14px + 10px);
+      border-radius: calc(44px + 10px);
+      corner-shape: squircle;
       border: 1px solid rgba(255, 255, 255, 0.14);
       pointer-events: none;
       opacity: 0;
@@ -1098,9 +1188,20 @@
     }
 
 
-    /* 移除方向陰影，邊框沿用 border-glow-card 預設（與 freelance 相同） */
+    /* 移除方向陰影，邊框沿用 border-glow-card 預設（與 freelance 相同），
+       但保留頂部玻璃高光 inset，與其餘卡片一致 */
     .process-card--has-img.border-glow-card {
-      box-shadow: none !important;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08) !important;
+    }
+
+    /* 關閉彩色描邊 ::before 跟蓋圖層 ::after——這兩個用 colors prop 算出來的
+       紫/粉/藍 mesh-gradient，會蓋住插圖。外擴的 edge-light 白色光圈跟 How I
+       Use AI 卡片是同一套（同樣的 glowColor），保留不動。
+       彩色版插圖的 hover 交叉淡入（process-card-bg-img--color）是另一套獨立
+       機制，不受影響，照常運作。 */
+    .process-card--has-img.border-glow-card::before,
+    .process-card--has-img.border-glow-card::after {
+      opacity: 0 !important;
     }
 
     /* hover：border 透明，讓 ::before 漸層環自然接管 */
@@ -1115,6 +1216,21 @@
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center top;
+    }
+
+    /* 插圖上的放射狀暗角 — 中心 25% 內幾乎透明，往外過渡到邊緣最深 0.8 */
+    .border-glow-bg-slot::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      corner-shape: inherit;
+      pointer-events: none;
+      background: radial-gradient(
+        circle at center,
+        rgba(13, 10, 28, 0.1) 25%,
+        rgba(13, 10, 28, 0.8) 100%
+      );
     }
 
     /* 白色／彩色圖片交叉淡入淡出：預設白色，hover 換彩色 */
@@ -1149,13 +1265,19 @@
       content: '';
       position: absolute;
       inset: 0;
-      border-radius: 13px;
+      /* .border-glow-inner (the direct parent) doesn't itself declare a
+         border-radius, so `inherit` here would resolve to 0, not the
+         card's 44px — match the card's own radius/corner-shape explicitly. */
+      border-radius: 44px;
+      corner-shape: squircle;
       pointer-events: none;
+      /* Shadow starts at center (50%) + 25% = 75%, later than the previous
+         72% start, so it covers less of the illustration above it. */
       background: linear-gradient(
         to bottom,
-        transparent 72%,
-        rgba(13, 10, 28, 0.88) 84%,
-        rgba(13, 10, 28, 0.98) 100%
+        transparent 75%,
+        rgba(13, 10, 28, 0.93) 86%,
+        rgba(13, 10, 28, 1) 100%
       );
       transition: background 0.35s ease;
       z-index: 0;
@@ -1431,29 +1553,46 @@
       gap: 12px;
     }
 
-    /* portfolio — CSS animation */
-    .scroller.portfolio-scroller {
+    /* portfolio — tilted 3-row marquee wall (mirrors the diagonal showcase
+       wall pattern: 3 horizontal RAF marquees, alternating direction,
+       stacked and tilted via a shared 3D transform). JS in
+       createPortfolioScroller (PortfolioSection.tsx) drives each row. */
+    .portfolio-wall {
+      position: relative;
+      /* Full-bleed: break out of .section's centered max-width/padding so
+         the wall spans the full browser width regardless of viewport size. */
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      /* Fixed at ~70% of viewport height, responsive to window resizing. */
+      height: 70dvh;
+      overflow: hidden;
       margin-bottom: 14px;
-      padding-top: 14px;
-      margin-top: -14px;
+      -webkit-mask: linear-gradient(180deg, transparent, white 12%, white 88%, transparent);
+      mask: linear-gradient(180deg, transparent, white 12%, white 88%, transparent);
     }
 
-    .scroller.portfolio-scroller[data-animated="true"] .scroller-inner {
-      animation: portfolio-scroll 40s linear infinite;
+    .portfolio-wall-inner {
+      position: absolute;
+      inset: -40px -120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      /* Same gap standard as the How I Use AI cards (.ai-flow-grid). */
+      gap: 16px;
+      /* --wall-scale is computed in PortfolioSection.tsx so the whole
+         row stack (cards + gaps together) scales up to fill the
+         viewport-height wall, instead of stretching gaps via flexbox. */
+      transform: perspective(1200px) skew(-3deg, -3deg) scale(var(--wall-scale, 1));
+      transform-origin: 50% 50%;
     }
 
-    .scroller.portfolio-scroller[data-direction="right"] .scroller-inner {
-      animation-direction: reverse;
+    .portfolio-row:nth-child(4) {
+      display: none;
     }
 
-    .scroller.portfolio-scroller .scroller-inner {
-      gap: 12px;
-    }
-
-    @keyframes portfolio-scroll {
-      to {
-        transform: translate(-50%);
-      }
+    .portfolio-row .scroller-inner {
+      gap: 16px;
     }
 
     .skill-pill {
@@ -1632,12 +1771,15 @@
     .tech-items .tech-item:nth-child(3) { --stagger-y: 0px; }
 
     .tech-item {
-      border-radius: 14px;
+      position: relative;
+      border-radius: 44px;
+      corner-shape: squircle;
       padding: 20px;
       display: flex;
       flex-direction: column;
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
+      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .08);
       transition: all .25s;
       transform: translateY(var(--stagger-y, 0px));
     }
@@ -1669,15 +1811,17 @@
     }
 
     .tech-name {
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: -.01em;
+      line-height: 1.1;
     }
 
     .tech-desc {
-      font-size: 12px;
+      font-size: 13.5px;
       color: var(--text-50);
       margin-bottom: 10px;
-      line-height: 1.5;
+      line-height: 1.55;
     }
 
     .tech-level-badge {
@@ -1735,6 +1879,7 @@
     .tech-code-preview {
       margin-top: auto;
       border-radius: 8px;
+      corner-shape: squircle;
       background: rgba(0, 0, 0, 0.35);
       border: 1px solid rgba(255, 255, 255, 0.07);
       overflow: hidden;
@@ -1828,6 +1973,17 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      /* Negative margin pulls the wall up so it slightly overlaps the
+         title — the wall's own mask gradient fades it out at the top edge,
+         so the overlap reads as a soft blend rather than a hard clip. Only
+         wanted in carousel mode: the expanded bento grid has no mask fade,
+         so the overlap there just clips the grid's first row. */
+      margin-bottom: -14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .portfolio-expanded .portfolio-header {
       margin-bottom: 28px;
     }
 
@@ -1900,8 +2056,8 @@
     /* portfolio scroller */
 
     .project-card {
-      width: 340px;
-      height: 220px;
+      width: 300px;
+      aspect-ratio: 3 / 2;
       border-radius: 16px;
       overflow: hidden;
       position: relative;
@@ -1980,6 +2136,16 @@
 
     .view-all-row {
       text-align: center;
+      /* Combined with .portfolio-wall's own 14px margin-bottom, this nets
+         a slight overlap onto the wall's bottom mask-fade — matches the
+         title treatment above. Carousel mode only, see .portfolio-expanded
+         override below. */
+      margin-top: -28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .portfolio-expanded .view-all-row {
       margin-top: 28px;
     }
 
@@ -2068,16 +2234,20 @@
       content: '';
       position: absolute;
       inset: 0;
-      padding: 2px;
       background: radial-gradient(var(--glow-radius) circle at var(--glow-x) var(--glow-y),
           rgba(255, 255, 255, calc(var(--glow-intensity) * 0.9)) 0%,
           rgba(255, 255, 255, calc(var(--glow-intensity) * 0.45)) 28%,
           transparent 58%);
-      border-radius: inherit;
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      mask-composite: exclude;
+      /* Ring shape baked as an explicit squircle path (see --ring-mask, set
+         per-card by ResizeObserver in PortfolioSection.tsx) — the old
+         content-box/border-box mask-composite trick only understands
+         border-radius geometry, so its ring didn't follow the card's
+         squircle clip-path and looked misaligned at the corners. */
+      -webkit-mask-image: var(--ring-mask);
+      mask-image: var(--ring-mask);
+      mask-size: 100% 100%;
+      -webkit-mask-size: 100% 100%;
+      mask-repeat: no-repeat;
       pointer-events: none;
       z-index: 3;
     }
@@ -2126,6 +2296,7 @@
       -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--line-bdr);
       border-radius: 16px;
+      corner-shape: squircle;
       padding: 24px 28px;
       display: grid;
       grid-template-columns: 52px 1fr auto;
@@ -2147,6 +2318,7 @@
       height: 52px;
       background: var(--line);
       border-radius: 13px;
+      corner-shape: squircle;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -2228,6 +2400,7 @@
       -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: 16px;
+      corner-shape: squircle;
       padding: 22px;
     }
 
@@ -2313,6 +2486,7 @@
       -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: 12px;
+      corner-shape: squircle;
       text-decoration: none;
       transition: all .2s;
     }
@@ -2369,6 +2543,7 @@
       position: absolute;
       inset: 0;
       border-radius: inherit;
+      corner-shape: inherit;
       pointer-events: none;
       z-index: 0;
       opacity: 0;
@@ -2387,6 +2562,7 @@
       inset: 0;
       padding: 1px;
       border-radius: inherit;
+      corner-shape: inherit;
       background: radial-gradient(280px circle at var(--sc-x, -500px) var(--sc-y, -500px),
           rgba(255, 255, 255, 0.32) 0%, transparent 70%);
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -2856,6 +3032,7 @@
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 12px;
+      corner-shape: squircle;
       overflow: hidden;
       z-index: 200;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
@@ -3016,6 +3193,21 @@
       transform: translateY(0);
     }
 
+    /* GSAP-driven scroll-reveal (rise + left→right velocity + squash-stretch).
+       Hidden up-front to avoid a flash before gsap.set runs; GSAP then owns
+       opacity/visibility/transform. */
+    .rise-card,
+    .rise-soft {
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .rise-card,
+      .rise-soft {
+        opacity: 1 !important;
+      }
+    }
+
     /* ── FOOTER ── */
     footer {
       padding: 32px 48px;
@@ -3089,19 +3281,20 @@
         font-size: clamp(1rem, 2.5vw, 1.5rem);
       }
 
-      /* About Me — keep 1:2 ratio on tablet */
+      /* About Me — tablet: 8-col grid. Photo (1/4, 2 of 8 cols) spans rows
+         1-2, sitting beside the headline (3/4, 6 cols) in row 1 and beside
+         intro1/intro2 (which split the headline's 6 cols evenly) in row 2.
+         Below that, the years/projects/domains/industry 2x2 takes the left
+         half (4 of 8 cols) while the workflow card fills the right half,
+         spanning both stat rows. */
       .about-grid {
-        grid-template-columns: 1fr 2fr;
-        gap: 24px;
-      }
-
-      .about-left,
-      .about-right {
-        width: 100%;
-      }
-
-      .stat-row {
-        max-width: 100%;
+        grid-template-columns: repeat(8, 1fr);
+        grid-template-areas:
+          "photo photo headline headline headline headline headline headline"
+          "photo photo intro1 intro1 intro1 intro2 intro2 intro2"
+          "years years projects projects workflow workflow workflow workflow"
+          "domains domains industry industry workflow workflow workflow workflow";
+        gap: 16px;
       }
 
       /* Process grid — 2×3 on tablet (override desktop flex-scroll) */
@@ -3186,6 +3379,11 @@
       /* Nav */
       #nav-container {
         padding: 0.5rem 1.2rem;
+      }
+
+      /* Portfolio carousel — 4 rows like mobile (desktop default hides row 4) */
+      .portfolio-row:nth-child(4) {
+        display: block;
       }
     }
 
@@ -3272,19 +3470,19 @@
         width: calc(100% - 1rem);
       }
 
-      /* About — single column */
+      /* About — mostly single column; years/projects/domains/industry form
+         a 2x2 within it instead of 4 separate full-width rows. */
       .about-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-      }
-
-      .about-left,
-      .about-right {
-        width: 100%;
-      }
-
-      .stat-row {
-        max-width: 100%;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+          "photo photo"
+          "headline headline"
+          "intro1 intro1"
+          "intro2 intro2"
+          "years projects"
+          "domains industry"
+          "workflow workflow";
+        gap: 14px;
       }
 
       .about-h2 {
@@ -3353,9 +3551,16 @@
         aspect-ratio: 3/2;
       }
 
-      .project-card {
-        width: 260px;
-        height: 170px;
+      .portfolio-wall {
+        height: 70dvh;
+      }
+
+      .portfolio-wall-inner {
+        transform: perspective(1200px) skew(-2deg, -2deg) scale(var(--wall-scale, 1));
+      }
+
+      .portfolio-row:nth-child(4) {
+        display: block;
       }
 
       /* Contact — single column */
@@ -3574,7 +3779,8 @@
     }
 
     .tech-item {
-      border-radius: 14px;
+      border-radius: 44px;
+      corner-shape: squircle;
       padding: 20px;
       display: flex;
       flex-direction: column;
@@ -3610,15 +3816,17 @@
     }
 
     .tech-name {
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: -.01em;
+      line-height: 1.1;
     }
 
     .tech-desc {
-      font-size: 12px;
+      font-size: 13.5px;
       color: var(--text-50);
       margin-bottom: 10px;
-      line-height: 1.5;
+      line-height: 1.55;
     }
 
     .tech-level-badge {
@@ -4093,7 +4301,7 @@
       --cursor-angle: 45deg;
       --edge-sensitivity: 30;
       --color-sensitivity: calc(var(--edge-sensitivity) + 20);
-      --border-radius: 14px;
+      --border-radius: 44px;
       --glow-padding: 28px;
       --cone-spread: 25;
       --fill-opacity: 0.4;
@@ -4109,7 +4317,8 @@
       box-shadow:
         rgba(0, 0, 0, .12) 0 1px 2px,
         rgba(0, 0, 0, .10) 0 4px 8px,
-        rgba(0, 0, 0, .08) 0 16px 32px !important;
+        rgba(0, 0, 0, .08) 0 16px 32px,
+        inset 0 1px 0 rgba(255, 255, 255, .08) !important;
     }
 
     .border-glow-card:hover {
@@ -4125,6 +4334,7 @@
       position: absolute;
       inset: 0;
       border-radius: inherit;
+      corner-shape: inherit;
       transition: opacity 0.25s ease-out;
       z-index: -1;
       pointer-events: none;
@@ -4185,9 +4395,16 @@
     }
 
     /* outer glow ring */
+    /* This box is inset:-glow-padding, i.e. card size + 2*glow-padding —
+       inheriting the card's own border-radius would leave the curve looking
+       flatter than the card's corner since it's stretched over a much bigger
+       box. Scale the radius by the same padding so the ring's corner reads
+       as a uniform-width offset of the card's squircle, not a mismatched one. */
     .border-glow-card>.edge-light {
       inset: calc(var(--glow-padding) * -1);
       z-index: 1;
+      border-radius: calc(var(--border-radius) + var(--glow-padding));
+      corner-shape: squircle;
       mask-image: conic-gradient(from var(--cursor-angle) at center,
           black 2.5%, transparent 10%, transparent 90%, black 97.5%);
       opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
@@ -4198,7 +4415,8 @@
       content: "";
       position: absolute;
       inset: var(--glow-padding);
-      border-radius: inherit;
+      border-radius: var(--border-radius);
+      corner-shape: squircle;
       box-shadow:
         inset 0 0 0 1px var(--glow-color, hsl(264deg 70% 75% / 100%)),
         inset 0 0 1px 0 var(--glow-color-60, hsl(264deg 70% 75% / 60%)),
@@ -4232,8 +4450,26 @@
        the row and overlaps the text instead. Push the whole grid down by
        that same 48px to keep the gap intact. */
     .ai-flow-grid.has-expanded{margin-top:48px}
-    @media(max-width:960px){.ai-flow-grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:640px){.ai-flow-grid{grid-template-columns:1fr;gap:14px;padding-bottom:0}}
+    /* The 48/24/0 diagonal stagger below is tuned for 3 columns, where only
+       column 1 sits under .ai-sub's narrow (max-width:392px) text box — so
+       only card 1 needs the +48px clearance. At the 2-column breakpoint,
+       column 2 also falls under that text box (392px spans into column 2's
+       horizontal range), but it only carries nth-of-type(2)'s smaller +24px
+       offset, so .ai-sub overlaps it. Reset every card's `top` and push the
+       whole grid down with `margin-top` instead, clearing .ai-sub's -32px
+       margin-bottom regardless of how many lines it wraps to at this width. */
+    @media(max-width:960px){
+      .ai-flow-grid{grid-template-columns:repeat(2,1fr);margin-top:48px}
+      .ai-flow-grid .ai-card{top:0}
+    }
+    @media(max-width:640px){
+      .ai-flow-grid{grid-template-columns:1fr;gap:14px;padding-bottom:0}
+      /* Single-column stack: the 48/24/0 diagonal `top` stagger below is
+         positional-only (doesn't affect grid track sizing), so on one
+         column it just shifts cards without reserving space, making them
+         overlap/clip into each other. Reset it here. */
+      .ai-flow-grid .ai-card{top:0}
+    }
 
     /* Left-low -> right-high stagger, same 48/24/0 spec as Tech Stack.
        Uses `top` (the card is already position:relative) instead of
@@ -4272,7 +4508,12 @@
     .ai-connectors svg{width:100%;height:100%;overflow:visible}
     @media(max-width:640px){.ai-connectors{display:none}}
     /* ── AI Intake Map card styles ── */
-    .ai-card{position:relative;z-index:1;padding:22px 26px 22px;border-radius:14px;background-color:rgba(20,18,28,.72);background-image:radial-gradient(380px 220px at 50% 0%,rgba(108,99,255,.14),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(1rem);-webkit-backdrop-filter:blur(1rem);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .4s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08)}
+    /* min-width:0 overrides the grid item's default auto min-width — without
+       it, a 1fr column track grows to fit the widest unbreakable content in
+       .ai-card-detail (tables, nowrap rows) even while that detail is
+       collapsed, blowing the card past its column and clipping it under
+       body's overflow-x:hidden. */
+    .ai-card{position:relative;z-index:1;min-width:0;padding:22px 26px 22px;border-radius:44px;corner-shape:squircle;background-color:rgba(20,18,28,.72);background-image:radial-gradient(380px 220px at 50% 0%,rgba(108,99,255,.14),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(1rem);-webkit-backdrop-filter:blur(1rem);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .4s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08)}
     .ai-card::before{content:"";position:absolute;top:0;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent)}
     .ai-card:hover{border-color:rgba(108,99,255,0.4);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 60px -10px rgba(181,139,255,.35),inset 0 1px 0 rgba(255,255,255,.08)}
     /* Step badge — floats above card top-left */
@@ -4283,7 +4524,7 @@
     .ai-focal-badge::before{content:"";width:5px;height:5px;border-radius:50%;background:#1a0a20}
     /* Radar ring */
     @keyframes aiRingP{0%{transform:scale(.99);opacity:.6}100%{transform:scale(1.04);opacity:0}}
-    .ai-card::after{content:"";position:absolute;inset:-10px;border-radius:calc(14px + 10px);border:1px solid rgba(255,255,255,.14);pointer-events:none;animation:none;opacity:0}
+    .ai-card::after{content:"";position:absolute;inset:-10px;border-radius:calc(44px + 10px);corner-shape:squircle;border:1px solid rgba(255,255,255,.14);pointer-events:none;animation:none;opacity:0}
     .ai-card:hover::after{animation:aiRingP 3s ease-out infinite}
     .ai-card.ai-focal::after{animation:aiRingP 3s ease-out infinite}
     /* AI Brief focal */
@@ -4332,7 +4573,7 @@
     /* ── Detail content atoms — ported from the AI Intake Map design ── */
     .ai-card-detail{
       --a1:#B58BFF;--a2:#FF7BC8;--a3:#7DB8FF;--a4:#7BE3B5;--a5:#FFC97B;
-      --ink:#ECE9F5;--ink-dim:#9A93B0;--ink-mute:#6A6580;--ink-faint:#4A4660;
+      --ink:var(--text);--ink-dim:var(--text-70);--ink-mute:var(--text-50);--ink-faint:var(--text-30);
       --line:rgba(255,255,255,.07);--line-strong:rgba(255,255,255,.14);
     }
     .ai-cyan .ai-card-detail{--a1:#00D4FF}
@@ -4411,6 +4652,11 @@
     .ai-block ol li::before{content:counter(q,decimal-leading-zero);font-family:"Geist Mono",monospace;font-size:10px;color:var(--a3);letter-spacing:.04em;flex-shrink:0;padding-top:2px}
     .ai-block.direction p{margin:8px 0 0;font-size:12.5px;color:var(--ink);line-height:1.5}
 
+    /* Tracking — sgds-table font-size override (match original .sheet table 11px scale) */
+    .ai-violet .ai-card-detail sgds-table{font-family:"Geist Mono",monospace;font-size:11px}
+    .ai-violet .ai-card-detail sgds-table-head{font-size:10px;letter-spacing:.06em}
+    .ai-violet .ai-card-detail sgds-table-cell{font-size:11px}
+
     /* Tracking — mini Sheets */
     .sheet{border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line);overflow:hidden}
     .sheet-tabs{display:flex;gap:0;padding:4px;background:rgba(255,255,255,.025);border-bottom:1px solid var(--line)}
@@ -4428,6 +4674,11 @@
     .st.done{background:color-mix(in oklab,var(--a4) 12%,transparent);color:var(--a4)}
     .st.queue{background:rgba(255,255,255,.05);color:var(--ink-mute)}
     .sheet-foot{padding:7px 10px;background:rgba(255,255,255,.012);border-top:1px solid var(--line);font-family:"Geist Mono",monospace;font-size:10px;color:var(--ink-mute);letter-spacing:.06em;display:flex;justify-content:space-between}
+
+    /* Human Review — sgds-description-list font-size override (match original .rrow scale) */
+    .ai-human .ai-card-detail sgds-description-list-group{font-size:12.5px}
+    .ai-human .ai-card-detail sgds-description-list{font-size:12.5px}
+    .ai-human .ai-card-detail span[slot="data"]{font-size:12.5px;color:var(--ink)}
 
     /* Human Review — assessment grid + operating-principle quote */
     .review-grid{display:flex;flex-direction:column;gap:6px}
@@ -4462,7 +4713,8 @@
       content: "";
       position: absolute;
       inset: calc(var(--glow-padding) * -1);
-      border-radius: inherit;
+      border-radius: calc(44px + var(--glow-padding));
+      corner-shape: squircle;
       z-index: 2;
       pointer-events: none;
       transition: opacity 0.25s ease-out;
@@ -4481,7 +4733,8 @@
       content: "";
       position: absolute;
       inset: var(--glow-padding);
-      border-radius: inherit;
+      border-radius: 44px;
+      corner-shape: squircle;
       box-shadow:
         inset 0 0 0 1px var(--glow-color, hsl(264deg 70% 75% / 100%)),
         inset 0 0 1px 0 var(--glow-color-60, hsl(264deg 70% 75% / 60%)),
@@ -4544,6 +4797,7 @@
       background: var(--bg-card);
       border: 1px solid var(--border-hi);
       border-radius: 16px;
+      corner-shape: squircle;
       display: none;
       flex-direction: column;
       z-index: 10000;
@@ -4587,6 +4841,7 @@
       max-width: 86%;
       padding: 9px 12px;
       border-radius: 12px;
+      corner-shape: squircle;
       font-size: 13px;
       line-height: 1.5;
       word-break: break-word;
@@ -4665,4 +4920,4 @@
       flex-shrink: 0;
     }
     #chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
-  
+

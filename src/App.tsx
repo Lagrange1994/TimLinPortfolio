@@ -1,5 +1,6 @@
 import './styles/portfolio.css';
 import { LangProvider } from './context/LangContext';
+import { useRiseReveal } from './utils/useRiseReveal';
 import Loader from './components/Loader';
 import BeamsBackground from './components/BeamsBackground';
 import Navbar from './components/Navbar';
@@ -11,6 +12,8 @@ import ContactSection from './components/ContactSection';
 import ChatPanel from './components/ChatPanel';
 
 export default function App() {
+  useRiseReveal();
+
   return (
     <LangProvider>
       <Loader />

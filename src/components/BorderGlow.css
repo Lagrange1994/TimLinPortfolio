@@ -5,6 +5,7 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
+  corner-shape: inherit;
   z-index: -2;
   overflow: hidden;
   pointer-events: none;
@@ -15,6 +16,7 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
+  corner-shape: inherit;
   pointer-events: none;
   z-index: 2;
   background: radial-gradient(
