@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLang } from '../context/LangContext';
-import { primeHeaderForNav } from '../utils/navHeader';
+import { scrollToSectionAligned } from '../utils/navHeader';
 import gsap from 'gsap';
 
 const SMOOTH_TAU = 0.18;
@@ -312,10 +312,7 @@ export default function HeroSection() {
               className="btn-glass btn-grad"
               style={{ padding: '12px 28px', borderRadius: '9999px' }}
               data-scroll-to="portfolio"
-              onClick={() => {
-                primeHeaderForNav();
-                document.getElementById('portfolio')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
+              onClick={() => scrollToSectionAligned('portfolio')}
             >
               View My Work
             </button>

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLang } from '../context/LangContext';
-import { primeHeaderForNav } from '../utils/navHeader';
+import { scrollToSectionAligned } from '../utils/navHeader';
 import gsap from 'gsap';
 
 declare global {
@@ -18,12 +18,7 @@ const NAV_ITEMS = [
 ];
 
 function scrollToSection(id: string) {
-  if (id === 'home') {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    return;
-  }
-  primeHeaderForNav();
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  scrollToSectionAligned(id);
 }
 
 export default function Navbar() {
@@ -318,7 +313,18 @@ export default function Navbar() {
     document.addEventListener('mousedown', onMousedown);
 
     panel.querySelectorAll<HTMLElement>('.sm-panel-item').forEach(btn => {
-      btn.addEventListener('click', () => { setTimeout(closeMenu, 80); });
+      btn.addEventListener('click', () => {
+        // closeMenu() restores body.style.overflow synchronously — scrolling
+        // before that (e.g. a scrollToSection fired straight from this click,
+        // racing the still-open menu's overflow:hidden lock) gets silently
+        // dropped, landing the section in the wrong spot. Scroll only after
+        // the menu has actually closed.
+        const target = btn.dataset.scrollTo;
+        setTimeout(() => {
+          closeMenu();
+          if (target) scrollToSection(target);
+        }, 80);
+      });
     });
 
     return () => {
@@ -432,7 +438,6 @@ export default function Navbar() {
                   <button
                     className="sm-panel-item"
                     data-scroll-to={item.scrollTo}
-                    onClick={() => scrollToSection(item.scrollTo)}
                   >
                     <span className="sm-panel-itemLabel">{item.label}</span>
                   </button>

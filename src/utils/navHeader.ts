@@ -38,3 +38,15 @@ export function primeHeaderForNav() {
     });
   }
 }
+
+export function scrollToSectionAligned(id: string) {
+  if (id === 'home') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  const target = document.getElementById(id);
+  if (!target) return;
+
+  primeHeaderForNav();
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}

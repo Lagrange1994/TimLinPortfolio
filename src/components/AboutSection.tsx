@@ -252,17 +252,20 @@ export default function AboutSection() {
           </div>
 
           {/* Intro cards — the bio prose (about_p1/about_p2) */}
-          <div className="bento-card bento-violet bento-area-intro1 rise-card">
+          <div className="bento-card bento-violet card-spotlight bento-area-intro1 rise-card">
+            <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro1_label}</div>
             <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p1 }} />
           </div>
 
-          <div className="bento-card bento-cyan bento-area-intro2 rise-card">
+          <div className="bento-card bento-cyan card-spotlight bento-area-intro2 rise-card">
+            <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro2_label}</div>
             <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p2 }} />
           </div>
 
-          <div className="bento-card bento-area-years rise-card">
+          <div className="bento-card card-spotlight bento-area-years rise-card">
+            <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_stat_years_label}</div>
             <div className="bento-num-center">
               <div className="stat-num-wrap" data-value="5">
@@ -276,7 +279,8 @@ export default function AboutSection() {
             </div>
           </div>
 
-          <div className="bento-card bento-human bento-area-projects rise-card">
+          <div className="bento-card bento-human card-spotlight bento-area-projects rise-card">
+            <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_stat_projects_label}</div>
             <div className="bento-num-center">
               <div className="stat-num-wrap" data-value="10">
@@ -295,7 +299,8 @@ export default function AboutSection() {
             </div>
           </div>
 
-          <div className="bento-card bento-purple bento-area-domains rise-card">
+          <div className="bento-card bento-purple card-spotlight bento-area-domains rise-card">
+            <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_stat_domains_label}</div>
             <div className="bento-num-center">
               <div className="stat-num-wrap" data-value="4">
@@ -309,7 +314,8 @@ export default function AboutSection() {
             <p className="bento-caption">{t.about_domains_summary}</p>
           </div>
 
-          <div className="bento-card bento-violet bento-area-industry rise-card">
+          <div className="bento-card bento-violet card-spotlight bento-area-industry rise-card">
+            <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">Industry Focus</div>
             <div className="ai-chips">
               <span className="domain-chip">Law Enforcement</span>
@@ -319,7 +325,8 @@ export default function AboutSection() {
             </div>
           </div>
 
-          <div className="bento-card bento-spectrum bento-card--wide bento-area-workflow rise-card">
+          <div className="bento-card bento-spectrum card-spotlight bento-card--wide bento-area-workflow rise-card">
+            <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_ai_label}</div>
             <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p3 }} />
             <div className="ai-flow-mini">

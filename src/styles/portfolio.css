@@ -958,8 +958,11 @@
       border-color: rgba(74, 0, 224, .3);
     }
 
-    /* Glass top-edge highlight — same thin gradient line as .ai-card::before */
-    .bento-card::before {
+    /* Glass top-edge highlight — same thin gradient line as .ai-card::before.
+       Scoped off .card-spotlight cards: those need ::before for the mouse
+       spotlight overlay, so they use the .card-glass-highlight span below
+       instead (same fix already applied to .process-card/.tech-item). */
+    .bento-card:not(.card-spotlight)::before {
       content: "";
       position: absolute;
       top: 0;
@@ -2620,12 +2623,56 @@
       --spotlight-color: rgba(108, 99, 255, 0.22);
     }
 
+    /* Keep real content above the spotlight overlay (::before, z-index:1) —
+       same fix as .bento-card above. .sc-overlay is JS-inserted for the
+       border-glow effect and must stay below content too, so it's excluded
+       here rather than promoted. */
+    .tech-item.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay) {
+      position: relative;
+      z-index: 2;
+    }
+
     .ai-usage-card {
       --spotlight-color: rgba(34, 211, 238, 0.18);
     }
 
     .philosophy-card {
       --spotlight-color: rgba(108, 99, 255, 0.22);
+    }
+
+    /* Bento cards (About section) — tinted to match each card's own
+       gradient (bento-cyan/purple/violet/human/spectrum above); the
+       plain .bento-card (years) reuses its default indigo glow. */
+    .bento-card {
+      --spotlight-color: rgba(108, 99, 255, 0.36);
+    }
+
+    .bento-card.bento-cyan {
+      --spotlight-color: rgba(0, 212, 255, 0.4);
+    }
+
+    .bento-card.bento-purple {
+      --spotlight-color: rgba(19, 159, 248, 0.4);
+    }
+
+    .bento-card.bento-violet {
+      --spotlight-color: rgba(37, 102, 240, 0.4);
+    }
+
+    .bento-card.bento-human {
+      --spotlight-color: rgba(123, 227, 181, 0.4);
+    }
+
+    .bento-card.bento-spectrum {
+      --spotlight-color: rgba(74, 0, 224, 0.4);
+    }
+
+    /* Keep real content above the spotlight overlay (::before, z-index:1) —
+       plain block children paint below any positioned z-index layer by
+       default, so without this the mouse glow washes out the text. */
+    .bento-card.card-spotlight > *:not(.card-glass-highlight) {
+      position: relative;
+      z-index: 2;
     }
 
     /* ── PROFILE CARD (React Bits) ── */
@@ -4601,6 +4648,7 @@
     .msg-panel-green{--panel-tint:var(--a4)}
     .msg-panel-violet{--panel-tint:var(--a3)}
 
+
     /* Request Sources — channel rows */
     .channel-list{display:flex;flex-direction:column;gap:2px}
     .channel{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:9px 2px;border-bottom:1px solid color-mix(in oklab,var(--panel-tint) 20%,transparent);max-height:100px;overflow:hidden;transition:border-color .4s ease,background .4s ease,box-shadow .4s ease,max-height .5s cubic-bezier(.22,.61,.36,1),opacity .4s ease,transform .5s cubic-bezier(.22,.61,.36,1),padding-top .4s ease,padding-bottom .4s ease}
@@ -4679,6 +4727,8 @@
     .ai-violet .ai-card-detail sgds-table{font-family:"Geist Mono",monospace;font-size:11px}
     .ai-violet .ai-card-detail sgds-table-head{font-size:10px;letter-spacing:.06em}
     .ai-violet .ai-card-detail sgds-table-cell{font-size:11px}
+    .ai-violet .ai-card-detail sgds-table{--sgds-surface-raised:rgba(255,255,255,.8);--sgds-border-color-muted:rgba(255,255,255,.25)}
+    .ai-violet .ai-card-detail sgds-table-head{color:#18181f}
 
     /* Tracking — mini Sheets */
     .sheet{border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line);overflow:hidden}
@@ -4699,7 +4749,7 @@
     .sheet-foot{padding:7px 10px;background:rgba(255,255,255,.012);border-top:1px solid var(--line);font-family:"Geist Mono",monospace;font-size:10px;color:var(--ink-mute);letter-spacing:.06em;display:flex;justify-content:space-between}
 
     /* Human Review — sgds-description-list font-size override (match original .rrow scale) */
-    .ai-human .ai-card-detail sgds-description-list-group{font-size:12.5px}
+    .ai-human .ai-card-detail sgds-description-list-group{font-size:12.5px;--sgds-border-color-muted:rgba(255,255,255,.25)}
     .ai-human .ai-card-detail sgds-description-list{font-size:12.5px}
     .ai-human .ai-card-detail span[slot="data"]{font-size:12.5px;color:var(--ink)}
 

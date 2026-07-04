@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react
 import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
 import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
-import { primeHeaderForNav } from '../utils/navHeader';
+import { scrollToSectionAligned } from '../utils/navHeader';
 import gsap from 'gsap';
 
 const SMOOTH_TAU = 0.18;
@@ -374,8 +374,7 @@ export default function PortfolioSection() {
       setExpanded(false);
       sessionStorage.setItem('portfolioExpanded', 'false');
       destroyMagicBento();
-      primeHeaderForNav();
-      document.getElementById('portfolio')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollToSectionAligned('portfolio');
     } else {
       const portfolioSec = document.getElementById('portfolio');
       const header = document.getElementById('main-header');
@@ -488,7 +487,7 @@ export default function PortfolioSection() {
           ))}
         </div>
 
-        <div className="view-all-row rise-soft">
+        <div className="view-all-row">
           <button
             id="toggle-portfolio-view"
             className="btn-glass btn-grad"

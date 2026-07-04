@@ -11,7 +11,7 @@ export const translations = {
     // about
     about_headline:
       '讓複雜系統變得可被掌控的產品設計師，<br><span class="gradient-text">兼具 3D 互動開發與 AI 工作流整合能力</span>',
-    about_lead: `過去五年主導政府與企業後台系統設計，並用 <strong>3D 互動視覺</strong>讓介面更有記憶點。`,
+    about_lead: `過去五年主導政府與企業後台系統設計，並善用 <strong>AI 工具串接自動化流程</strong>，讓設計與開發的溝通更有效率。`,
     about_p1: `我的設計核心是<strong>讓高複雜度的系統變得可以被人掌控</strong>。過去五年，我為政府與企業客戶主導後台系統設計，交付成果橫跨 <strong>警政雲端智慧影像分析系統</strong>、<strong>環保局數據管理平台</strong> 與 <strong>醫院醫療管理後台</strong>。面對龐雜的業務邏輯，我慣用 <span class="text-primary">Figma</span> 與 <span class="text-primary">Adobe XD</span> 從零梳理資訊架構，最終轉化為直觀、精準的數位工作環境。`,
     about_p2: `除了嚴謹的系統思維，我擅長將<strong>沉浸式視覺</strong>注入介面設計。熟練運用 <span class="text-secondary">Blender</span> 與 <span class="text-secondary">Spline</span> 打造 3D 互動網頁體驗，也具備多媒體娛樂產業與商業專案的完整執行經驗——這讓我的設計能在邏輯嚴密的同時，保有視覺上的驚喜感。`,
     about_p3: `我把 <strong>AI 與自動化</strong>嵌進實際接案流程：當客戶從 LINE 官方帳號或表單送出需求後，Make 會先整理欄位、交由 <span class="text-purple">Gemini</span> 摘要需求與判斷類型，再寫入 <span class="text-purple">Google Sheets</span> 作為追蹤資料庫，最後分流發送 LINE 回覆與 Email 通知。這讓我在正式溝通前就能掌握需求背景、預算、時程與風險，回覆更快，也更精準。`,
@@ -207,7 +207,7 @@ export const translations = {
     // about
     about_headline:
       'Product designer who tames complex systems,<br><span class="gradient-text">with 3D interactive development and AI workflow integration built in</span>',
-    about_lead: `Over the past five years I've led backend system design for government and enterprise clients, and brought <strong>3D interactive visuals</strong> into interfaces that stick.`,
+    about_lead: `Over the past five years I've led backend system design for government and enterprise clients, weaving <strong>AI tools into automated workflows</strong> to bridge design and development faster.`,
     about_p1: `My design focus is <strong>making high-complexity systems feel manageable</strong>. Over the past five years, I have led backend system design for government and enterprise clients, delivering across <strong>Police Cloud Video Analysis Systems</strong>, <strong>Environmental Bureau Data Platforms</strong>, and <strong>Hospital Management Dashboards</strong>. Faced with dense business logic, I use <span class="text-primary">Figma</span> and <span class="text-primary">Adobe XD</span> to untangle information architecture from the ground up, turning it into intuitive, precise digital workspaces.`,
     about_p2: `Beyond systems thinking, I bring <strong>immersive visuals</strong> into interface design. I build 3D interactive web experiences with <span class="text-secondary">Blender</span> and <span class="text-secondary">Spline</span>, drawing on a background in multimedia entertainment and commercial projects. This lets me deliver designs that are logically rigorous and visually memorable.`,
     about_p3: `I embed <strong>AI and automation</strong> directly into my freelance workflow. When a client submits a request through LINE or a form, Make structures the fields, asks <span class="text-purple">Gemini</span> to summarise the need and classify the request, saves it to <span class="text-purple">Google Sheets</span>, then routes LINE replies and email notifications. Before the first conversation, I already understand the context, budget, timeline, and risks, so my response is faster and more precise.`,
