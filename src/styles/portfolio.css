@@ -991,6 +991,20 @@
       overflow: hidden;
     }
 
+    /* years/projects/domains/industry drop into a narrow 2-col cell (~160px)
+       on tablet/mobile — the shared 44px squircle radius stays fixed while
+       the box shrinks, so corners balloon to ~27% of the card's width and
+       read as an oversized blob instead of a subtle squircle. Scale it down
+       to match the smaller cell instead of scaling with viewport width. */
+    @media (max-width: 1024px) {
+      .bento-area-years,
+      .bento-area-projects,
+      .bento-area-domains,
+      .bento-area-industry {
+        border-radius: 24px;
+      }
+    }
+
     /* Title/body proportions unified with the How I Use AI cards
        (.ai-card h3 / .ai-card>p above) — only colors stay this section's
        own tokens. */
@@ -3437,8 +3451,13 @@
         display: block;
       }
 
+      /* svh, not dvh — the address bar hiding/showing while the user scrolls
+         the page would otherwise change the wall's height every frame,
+         re-triggering the ResizeObserver-driven --wall-scale recalculation
+         in PortfolioSection.tsx and making the whole card marquee visibly
+         jitter/rescale mid-scroll on real touch devices. */
       .portfolio-wall {
-        height: 75dvh;
+        height: 75svh;
       }
     }
 
@@ -3470,9 +3489,21 @@
         min-height: 44px;
       }
 
-      /* Hero — mobile: stack, centred (matches flex-col on mobile in Vercel) */
+      /* Hero — mobile: stack, centred (matches flex-col on mobile in Vercel).
+         Height is pinned to svh (viewport minus the browser's address bar,
+         stable across the toolbar show/hide animation — see the portfolio
+         wall fix above for the same dvh-jitter reasoning) instead of
+         min-height, so the section never grows past one screen. The
+         top/bottom padding is measured in HeroSection.tsx from the real
+         navbar and tag-capsule row and written to these two custom
+         properties, so the image+headline+CTA group centers with an equal
+         gap to both — the rem fallbacks only cover the instant before that
+         effect runs. */
       #home {
-        padding-bottom: 4rem;
+        height: 100svh;
+        min-height: 100svh;
+        padding-top: var(--hero-navbar-clearance, 5rem);
+        padding-bottom: var(--hero-tags-clearance, 4rem);
       }
 
       .hero-inner {
@@ -3480,18 +3511,28 @@
         align-items: center;
         text-align: center;
         padding: 0 1rem;
+        min-height: 0;
       }
 
+      /* Sized by width (100vw, full-bleed) same as before as long as there's
+         room; --hero-fig-max-h (also set in HeroSection.tsx) only kicks in
+         when the device is too short for the natural width-driven height to
+         fit alongside the headline/CTA block, capping this box so the image
+         inside shrinks proportionally instead of the section overflowing. */
       .hero-fig {
         width: 100vw;
         height: auto;
-        flex-shrink: 0;
+        max-height: var(--hero-fig-max-h, none);
+        min-height: 0;
+        flex-shrink: 1;
         overflow: hidden;
       }
 
       .hero-fig img {
         width: 100%;
-        height: auto;
+        height: 100%;
+        object-fit: contain;
+        object-position: bottom center;
       }
 
       .hero-text {
@@ -3606,8 +3647,9 @@
         aspect-ratio: 3/2;
       }
 
+      /* svh, not dvh — see the tablet breakpoint above for why. */
       .portfolio-wall {
-        height: 75dvh;
+        height: 75svh;
       }
 
       .portfolio-wall-inner {

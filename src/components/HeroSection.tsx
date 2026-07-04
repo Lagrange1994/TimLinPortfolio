@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import gsap from 'gsap';
@@ -285,6 +285,53 @@ export default function HeroSection() {
     observer.observe(heroEl);
 
     return () => observer.disconnect();
+  }, []);
+
+  // Mobile hero layout: the image+headline+CTA group (.hero-inner) must sit
+  // an equal gap from the fixed navbar above and the tag-capsule row below,
+  // and — if the viewport is too short for the figure's natural width-driven
+  // height to fit alongside the headline/CTA block — only the figure should
+  // shrink, not the section overflow. Navbar height and the tag row's own
+  // reserved zone are measured (not hardcoded) since they're driven by CSS
+  // that can change independently of this file; useLayoutEffect (not
+  // useEffect) so the padding/cap are applied before first paint.
+  useLayoutEffect(() => {
+    const home = document.getElementById('home');
+    const nav = document.getElementById('main-header');
+    const tags = document.querySelector<HTMLElement>('.hero-tags');
+    const text = document.querySelector<HTMLElement>('.hero-text');
+    const img = document.querySelector<HTMLImageElement>('.hero-fig-mobile');
+    if (!home || !nav || !tags || !text || !img) return;
+
+    const GAP = 20; // px of breathing room on each side of the group
+
+    function apply() {
+      if (window.innerWidth >= 768 || !img!.naturalWidth) return;
+
+      const navClearance = nav!.getBoundingClientRect().height + GAP;
+      const tagsClearance = (home!.getBoundingClientRect().bottom - tags!.getBoundingClientRect().top) + GAP;
+      home!.style.setProperty('--hero-navbar-clearance', `${navClearance}px`);
+      home!.style.setProperty('--hero-tags-clearance', `${tagsClearance}px`);
+
+      const availableForFig = home!.clientHeight - navClearance - tagsClearance - text!.getBoundingClientRect().height;
+      const naturalFigH = window.innerWidth * (img!.naturalHeight / img!.naturalWidth);
+      home!.style.setProperty('--hero-fig-max-h', naturalFigH <= availableForFig ? 'none' : `${Math.max(0, availableForFig)}px`);
+    }
+
+    apply();
+    if (!img.naturalWidth) img.addEventListener('load', apply, { once: true });
+
+    const ro = new ResizeObserver(apply);
+    ro.observe(nav);
+    ro.observe(tags);
+    ro.observe(text);
+    window.addEventListener('resize', apply);
+    window.addEventListener('orientationchange', apply);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', apply);
+      window.removeEventListener('orientationchange', apply);
+    };
   }, []);
 
   return (

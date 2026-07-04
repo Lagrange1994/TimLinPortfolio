@@ -63,14 +63,14 @@ float cnoise(vec3 P){
 
 export default function BeamsBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // The decorative background Spline scene is desktop-only and gets fully
-  // unmounted (not just faded to opacity 0) once scrolled past the hero —
-  // see updateBg() below. Running it continuously for the rest of the page,
-  // on top of the hero's own Spline figure and this canvas's Three.js
-  // renderer, was sustained concurrent WebGL load that correlated with
-  // intermittent tab crashes and (on mobile, where it isn't needed at all)
-  // a flood of zero-size-framebuffer WebGL errors on viewport resize.
-  const [splineBgMounted, setSplineBgMounted] = useState(() => window.innerWidth >= 1025);
+  // The decorative background Spline scene gets fully unmounted (not just
+  // faded to opacity 0) once scrolled past the hero — see updateBg() below.
+  // Running it continuously for the rest of the page, on top of this
+  // canvas's Three.js renderer, was sustained concurrent WebGL load that
+  // correlated with intermittent tab crashes; the hero's own Spline figure
+  // stays desktop-only (see HeroSection) to keep mobile down to just this
+  // background scene plus the beams canvas — two contexts instead of three.
+  const [splineBgMounted, setSplineBgMounted] = useState(true);
   const splineBgMountedRef = useRef(splineBgMounted);
   splineBgMountedRef.current = splineBgMounted;
 
@@ -262,12 +262,10 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
         canvas.style.opacity = p.toFixed(3);
         beamsActive = p > 0.02;
 
-        if (window.innerWidth >= 1025) {
-          const shouldMount = p < 1;
-          if (shouldMount !== splineBgMountedRef.current) {
-            splineBgMountedRef.current = shouldMount;
-            setSplineBgMounted(shouldMount);
-          }
+        const shouldMount = p < 1;
+        if (shouldMount !== splineBgMountedRef.current) {
+          splineBgMountedRef.current = shouldMount;
+          setSplineBgMounted(shouldMount);
         }
       }
 
