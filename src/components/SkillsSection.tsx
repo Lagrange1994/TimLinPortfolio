@@ -109,51 +109,59 @@ function makeAiCards(t: Record<string, string>) {
       pipeline: null as string[] | null,
       detail: (
         <div className="detail-section">
-          <div className="d-label"><span className="dot" />{t.ai_d_recent}</div>
           <div className="channel-loader" aria-hidden="true">
             <span className="channel-loader-spinner" />
             <span className="channel-loader-text">{t.ai_sources_loading}</span>
           </div>
-          <div className="channel-list">
-            <div className="channel">
-              <span className="ch-icon">L</span>
-              <div className="ch-body">
-                <div className="ch-name">LINE · @pm.celine</div>
-                <div className="ch-snippet">Onboarding redesign for the new tier — Jun 17?</div>
-              </div>
-              <sgds-badge variant="neutral" outlined>2m</sgds-badge>
+          <div className="msg-panel">
+            <div className="msg-panel-head">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="6" cy="6" r="2.2" /><circle cx="18" cy="6" r="2.2" /><circle cx="6" cy="18" r="2.2" /><circle cx="18" cy="18" r="2.2" />
+                <path d="M8.2 6h7.6M6 8.2v7.6M18 8.2v7.6M8.2 18h7.6" />
+              </svg>
+              <span>{t.ai_d_recent}</span>
             </div>
-            <div className="channel">
-              <span className="ch-icon">E</span>
-              <div className="ch-body">
-                <div className="ch-name">Email · celine.h@firm.co</div>
-                <div className="ch-snippet">Quick question on tier-2 pricing visuals</div>
+            <div className="channel-list">
+              <div className="channel">
+                <span className="ch-icon">L</span>
+                <div className="ch-body">
+                  <div className="ch-name">LINE · @pm.celine</div>
+                  <div className="ch-snippet">Onboarding redesign for the new tier — Jun 17?</div>
+                </div>
+                <sgds-badge variant="neutral" outlined>2m</sgds-badge>
               </div>
-              <sgds-badge variant="neutral" outlined>28m</sgds-badge>
-            </div>
-            <div className="channel">
-              <span className="ch-icon">F</span>
-              <div className="ch-body">
-                <div className="ch-name">Form · Brief intake</div>
-                <div className="ch-snippet">Tier-2 pricing experiment — marketing</div>
+              <div className="channel">
+                <span className="ch-icon">E</span>
+                <div className="ch-body">
+                  <div className="ch-name">Email · celine.h@firm.co</div>
+                  <div className="ch-snippet">Quick question on tier-2 pricing visuals</div>
+                </div>
+                <sgds-badge variant="neutral" outlined>28m</sgds-badge>
               </div>
-              <sgds-badge variant="neutral" outlined>1h</sgds-badge>
-            </div>
-            <div className="channel">
-              <span className="ch-icon">S</span>
-              <div className="ch-body">
-                <div className="ch-name">Slack · #design-requests</div>
-                <div className="ch-snippet">Mobile sign-up flow — usability review</div>
+              <div className="channel">
+                <span className="ch-icon">F</span>
+                <div className="ch-body">
+                  <div className="ch-name">Form · Brief intake</div>
+                  <div className="ch-snippet">Tier-2 pricing experiment — marketing</div>
+                </div>
+                <sgds-badge variant="neutral" outlined>1h</sgds-badge>
               </div>
-              <sgds-badge variant="neutral" outlined>3h</sgds-badge>
-            </div>
-            <div className="channel">
-              <span className="ch-icon">M</span>
-              <div className="ch-body">
-                <div className="ch-name">Manual · Kickoff notes</div>
-                <div className="ch-snippet">In-person — Q3 roadmap dependencies</div>
+              <div className="channel">
+                <span className="ch-icon">S</span>
+                <div className="ch-body">
+                  <div className="ch-name">Slack · #design-requests</div>
+                  <div className="ch-snippet">Mobile sign-up flow — usability review</div>
+                </div>
+                <sgds-badge variant="neutral" outlined>3h</sgds-badge>
               </div>
-              <sgds-badge variant="neutral" outlined>1d</sgds-badge>
+              <div className="channel">
+                <span className="ch-icon">M</span>
+                <div className="ch-body">
+                  <div className="ch-name">Manual · Kickoff notes</div>
+                  <div className="ch-snippet">In-person — Q3 roadmap dependencies</div>
+                </div>
+                <sgds-badge variant="neutral" outlined>1d</sgds-badge>
+              </div>
             </div>
           </div>
         </div>
@@ -182,24 +190,30 @@ function makeAiCards(t: Record<string, string>) {
             <span className="ai-thinking-dot" />
             <span className="ai-thinking-label">{t.ai_thinking}</span>
           </div>
-          <div className="ai-summary">
-            <div className="d-label"><span className="dot" />{t.ai_d_summary_lbl}</div>
-            <p dangerouslySetInnerHTML={{ __html: t.ai_d_summary_text }} />
+          <div className="ai-block summary">
+            <sgds-alert show variant="neutral" outlined title={t.ai_d_summary_lbl}>
+              <sgds-icon slot="icon" name="file-text" size="md" />
+              <p dangerouslySetInnerHTML={{ __html: t.ai_d_summary_text }} />
+            </sgds-alert>
           </div>
           <div className="ai-row">
-            <div className="ai-cell">
-              <div className="d-label"><span className="dot" />{t.ai_d_tasktype_lbl}</div>
-              <div className="vv">
-                <sgds-badge variant="purple" outlined>Product UI</sgds-badge>
-                <sgds-badge variant="neutral" outlined>conf · 0.92</sgds-badge>
-              </div>
+            <div className="ai-block tasktype">
+              <sgds-alert show variant="neutral" outlined title={t.ai_d_tasktype_lbl}>
+                <sgds-icon slot="icon" name="grid-fill" size="md" />
+                <div className="vv">
+                  <sgds-badge variant="purple" outlined>Product UI</sgds-badge>
+                  <sgds-badge variant="neutral" outlined>conf · 0.92</sgds-badge>
+                </div>
+              </sgds-alert>
             </div>
-            <div className="ai-cell">
-              <div className="d-label amber"><span className="dot" />{t.ai_d_priority_lbl}</div>
-              <div className="vv">
-                <sgds-badge variant="warning">P1 · HIGH</sgds-badge>
-                <sgds-badge variant="neutral" outlined>conf · 0.87</sgds-badge>
-              </div>
+            <div className="ai-block priority">
+              <sgds-alert show variant="warning" outlined title={t.ai_d_priority_lbl}>
+                <sgds-icon slot="icon" name="star-fill" size="md" />
+                <div className="vv">
+                  <sgds-badge variant="warning">P1 · HIGH</sgds-badge>
+                  <sgds-badge variant="neutral" outlined>conf · 0.87</sgds-badge>
+                </div>
+              </sgds-alert>
             </div>
           </div>
           <div className="ai-block missing">
@@ -223,8 +237,10 @@ function makeAiCards(t: Record<string, string>) {
             </sgds-alert>
           </div>
           <div className="ai-block direction">
-            <div className="d-label"><span className="dot" />{t.ai_d_direction_lbl}</div>
-            <p>{t.ai_d_direction_text}</p>
+            <sgds-alert show variant="success" outlined title={t.ai_d_direction_lbl}>
+              <sgds-icon slot="icon" name="arrow-circle-right" size="md" />
+              <p>{t.ai_d_direction_text}</p>
+            </sgds-alert>
           </div>
         </>
       ),
@@ -245,30 +261,42 @@ function makeAiCards(t: Record<string, string>) {
       pipeline: null as string[] | null,
       detail: (
         <div className="detail-section">
-          <div className="d-label green"><span className="dot" />{t.ai_d_assessment_lbl}</div>
-          <sgds-description-list-group stacked bordered>
-            <sgds-description-list>
-              {t.ai_hr_priority_row}
-              <span slot="data">
-                <sgds-badge variant="danger" style={{ marginRight: '6px' }}>P1</sgds-badge>
-                {t.ai_hr_priority_val.replace(/^P1[^a-z]+/i, '')}
-              </span>
-            </sgds-description-list>
-            <sgds-description-list>
-              {t.ai_hr_strategy_row}
-              <span slot="data">{t.ai_hr_strategy_val}</span>
-            </sgds-description-list>
-            <sgds-description-list>
-              {t.ai_hr_risks_row}
-              <span slot="data">{t.ai_hr_risks_val}</span>
-            </sgds-description-list>
-            <sgds-description-list>
-              {t.ai_hr_nextstep_row}
-              <span slot="data">{t.ai_hr_nextstep_val}</span>
-            </sgds-description-list>
-          </sgds-description-list-group>
-          <div className="review-quote">
-            <div className="ql">{t.ai_hr_op_lbl}</div>
+          <div className="msg-panel msg-panel-green">
+            <div className="msg-panel-head">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="3.5" /><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" />
+              </svg>
+              <span>{t.ai_d_assessment_lbl}</span>
+            </div>
+            <sgds-description-list-group stacked bordered>
+              <sgds-description-list>
+                {t.ai_hr_priority_row}
+                <span slot="data">
+                  <sgds-badge variant="danger" style={{ marginRight: '6px' }}>P1</sgds-badge>
+                  {t.ai_hr_priority_val.replace(/^P1[^a-z]+/i, '')}
+                </span>
+              </sgds-description-list>
+              <sgds-description-list>
+                {t.ai_hr_strategy_row}
+                <span slot="data">{t.ai_hr_strategy_val}</span>
+              </sgds-description-list>
+              <sgds-description-list>
+                {t.ai_hr_risks_row}
+                <span slot="data">{t.ai_hr_risks_val}</span>
+              </sgds-description-list>
+              <sgds-description-list>
+                {t.ai_hr_nextstep_row}
+                <span slot="data">{t.ai_hr_nextstep_val}</span>
+              </sgds-description-list>
+            </sgds-description-list-group>
+          </div>
+          <div className="msg-panel msg-panel-green">
+            <div className="msg-panel-head">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 8h10M7 12h7M7 16h4" /><rect x="3.5" y="4" width="17" height="16" rx="2.5" />
+              </svg>
+              <span>{t.ai_hr_op_lbl}</span>
+            </div>
             <div className="qq" dangerouslySetInnerHTML={{ __html: t.ai_hr_op_quote }} />
           </div>
         </div>
@@ -290,21 +318,28 @@ function makeAiCards(t: Record<string, string>) {
       pipeline: null as string[] | null,
       detail: (
         <div className="detail-section">
-          <div className="d-label"><span className="dot" />{t.ai_d_req_form}</div>
-          <div className="form-mini">
-            <div className="field"><label>{t.ai_f_source}</label><div className="val"><span>LINE — @pm.celine</span></div></div>
-            <div className="field"><label>{t.ai_f_projtype}</label><div className="val"><span>Product UI · Mobile</span></div></div>
-            <div className="field"><label>{t.ai_f_goal}</label><div className="val"><span>Redesign onboarding for new pricing tier</span></div></div>
-            <div className="field-row">
-              <div className="field"><label>{t.ai_f_timeline}</label><div className="val"><span>Jun 03 — Jun 17</span></div></div>
-              <div className="field"><label>{t.ai_f_budget}</label><div className="val"><span>Internal</span></div></div>
+          <div className="msg-panel">
+            <div className="msg-panel-head">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" />
+              </svg>
+              <span>{t.ai_d_req_form}</span>
             </div>
-            <div className="field"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><sgds-badge variant="danger">HIGH</sgds-badge></div></div>
-            <div className="field"><label>{t.ai_f_contact}</label><div className="val"><span>celine.h@firm.co</span></div></div>
-            <div className="form-status">
-              <span>{t.ai_f_complete}</span>
-              <div className="bar">
-                {Array.from({ length: 7 }).map((_, i) => <div key={i} className="pdot" />)}
+            <div className="form-mini">
+              <div className="field"><label>{t.ai_f_source}</label><div className="val"><span>LINE — @pm.celine</span></div></div>
+              <div className="field"><label>{t.ai_f_projtype}</label><div className="val"><span>Product UI · Mobile</span></div></div>
+              <div className="field"><label>{t.ai_f_goal}</label><div className="val"><span>Redesign onboarding for new pricing tier</span></div></div>
+              <div className="field-row">
+                <div className="field"><label>{t.ai_f_timeline}</label><div className="val"><span>Jun 03 — Jun 17</span></div></div>
+                <div className="field"><label>{t.ai_f_budget}</label><div className="val"><span>Internal</span></div></div>
+              </div>
+              <div className="field"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><sgds-badge variant="danger">HIGH</sgds-badge></div></div>
+              <div className="field"><label>{t.ai_f_contact}</label><div className="val"><span>celine.h@firm.co</span></div></div>
+              <div className="form-status">
+                <span>{t.ai_f_complete}</span>
+                <div className="bar">
+                  {Array.from({ length: 7 }).map((_, i) => <div key={i} className="pdot" />)}
+                </div>
               </div>
             </div>
           </div>
@@ -327,7 +362,13 @@ function makeAiCards(t: Record<string, string>) {
       pipeline: null as string[] | null,
       detail: (
         <div className="detail-section">
-          <div className="d-label"><span className="dot" />{t.ai_d_sheets_lbl}</div>
+          <div className="msg-panel">
+            <div className="msg-panel-head">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3.5" y="4.5" width="17" height="15" rx="1.8" /><path d="M3.5 9.5h17M9 4.5v15M14.5 4.5v15" />
+              </svg>
+              <span>{t.ai_d_sheets_lbl}</span>
+            </div>
           <div className="tracking-chart-container" style={{ height: 72, marginBottom: 8 }} />
           <sgds-table responsive="always" tableBorder headerBackground>
             <sgds-table-row>
@@ -365,6 +406,7 @@ function makeAiCards(t: Record<string, string>) {
             <span>4 of 142 records</span>
             <span>Updated · 2m ago</span>
           </div>
+          </div>
         </div>
       ),
     },
@@ -384,47 +426,54 @@ function makeAiCards(t: Record<string, string>) {
       pipeline: [t.ai_ph_research, t.ai_ph_structure, t.ai_ph_design, t.ai_ph_validate, t.ai_ph_delivery],
       detail: (
         <div className="detail-section">
-          <div className="d-label blue"><span className="dot" />{t.ai_d_phases_lbl}</div>
-          <div className="phases">
-            <div className="phase next">
-              <div className="pn">01</div>
-              <div>
-                <div className="pt">{t.ai_ph_research}</div>
-                <div className="pd">{t.ai_ph_research_d}</div>
-              </div>
-              <sgds-badge variant="cyan">{t.ai_ph_upnext}</sgds-badge>
+          <div className="msg-panel msg-panel-violet">
+            <div className="msg-panel-head">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 12h4l2-6 4 12 2-6h4" />
+              </svg>
+              <span>{t.ai_d_phases_lbl}</span>
             </div>
-            <div className="phase">
-              <div className="pn">02</div>
-              <div>
-                <div className="pt">{t.ai_ph_structure}</div>
-                <div className="pd">{t.ai_ph_structure_d}</div>
+            <div className="phases">
+              <div className="phase next">
+                <div className="pn">01</div>
+                <div>
+                  <div className="pt">{t.ai_ph_research}</div>
+                  <div className="pd">{t.ai_ph_research_d}</div>
+                </div>
+                <sgds-badge variant="cyan">{t.ai_ph_upnext}</sgds-badge>
               </div>
-              <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
-            </div>
-            <div className="phase">
-              <div className="pn">03</div>
-              <div>
-                <div className="pt">{t.ai_ph_design}</div>
-                <div className="pd">{t.ai_ph_design_d}</div>
+              <div className="phase">
+                <div className="pn">02</div>
+                <div>
+                  <div className="pt">{t.ai_ph_structure}</div>
+                  <div className="pd">{t.ai_ph_structure_d}</div>
+                </div>
+                <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
               </div>
-              <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
-            </div>
-            <div className="phase">
-              <div className="pn">04</div>
-              <div>
-                <div className="pt">{t.ai_ph_validate}</div>
-                <div className="pd">{t.ai_ph_validate_d}</div>
+              <div className="phase">
+                <div className="pn">03</div>
+                <div>
+                  <div className="pt">{t.ai_ph_design}</div>
+                  <div className="pd">{t.ai_ph_design_d}</div>
+                </div>
+                <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
               </div>
-              <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
-            </div>
-            <div className="phase">
-              <div className="pn">05</div>
-              <div>
-                <div className="pt">{t.ai_ph_delivery}</div>
-                <div className="pd">{t.ai_ph_delivery_d}</div>
+              <div className="phase">
+                <div className="pn">04</div>
+                <div>
+                  <div className="pt">{t.ai_ph_validate}</div>
+                  <div className="pd">{t.ai_ph_validate_d}</div>
+                </div>
+                <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
               </div>
-              <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
+              <div className="phase">
+                <div className="pn">05</div>
+                <div>
+                  <div className="pt">{t.ai_ph_delivery}</div>
+                  <div className="pd">{t.ai_ph_delivery_d}</div>
+                </div>
+                <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
+              </div>
             </div>
           </div>
         </div>
@@ -921,7 +970,7 @@ export default function SkillsSection() {
 
     if (expandedAiCard === 'ai') {
       const card = cardRefs.current.get('ai');
-      const p = card?.querySelector<HTMLParagraphElement>('.ai-summary p');
+      const p = card?.querySelector<HTMLParagraphElement>('.ai-block.summary p');
       if (!p || reduced) return;
       const original = p.innerHTML;
       const flat = flatten([tokenizeHighlight(original)]);
@@ -1307,8 +1356,9 @@ export default function SkillsSection() {
                     // a reasoning step rather than typed code.
                     el.classList.add('is-thinking');
                     const targets = [
-                      detail.querySelector('.ai-summary'),
-                      ...Array.from(detail.querySelectorAll('.ai-row .ai-cell')),
+                      detail.querySelector('.ai-block.summary'),
+                      detail.querySelector('.ai-block.tasktype'),
+                      detail.querySelector('.ai-block.priority'),
                       detail.querySelector('.ai-block.missing'),
                       detail.querySelector('.ai-block.questions'),
                       detail.querySelector('.ai-block.direction'),
