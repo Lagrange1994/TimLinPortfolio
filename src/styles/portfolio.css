@@ -2337,11 +2337,6 @@
       transition: all .2s;
     }
 
-    .line-banner:hover {
-      border-color: var(--line);
-      box-shadow: 0 0 20px rgba(6, 199, 85, 0.15);
-    }
-
     .line-icon-box {
       width: 52px;
       height: 52px;
