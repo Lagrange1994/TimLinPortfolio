@@ -60,6 +60,7 @@ export default function ChatPanel() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [inputError, setInputError] = useState(false);
   const messagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -87,9 +88,14 @@ export default function ChatPanel() {
 
   async function sendQuestion(q: string) {
     q = (q || '').trim();
-    if (!q || sending) return;
+    if (sending) return;
+    if (!q) {
+      setInputError(true);
+      return;
+    }
 
     setInput('');
+    setInputError(false);
     setSending(true);
 
     const userMsg: Message = { role: 'user', text: q };
@@ -182,12 +188,14 @@ export default function ChatPanel() {
         <div id="chat-input-row">
           <input
             id="chat-input"
+            className={inputError ? 'error' : ''}
             type="text"
             placeholder={t.chat_placeholder}
             maxLength={200}
             autoComplete="off"
             value={input}
-            onChange={e => setInput(e.target.value)}
+            aria-invalid={inputError}
+            onChange={e => { setInput(e.target.value); if (inputError) setInputError(false); }}
             onKeyDown={handleKeyDown}
             ref={inputRef}
           />
@@ -200,6 +208,9 @@ export default function ChatPanel() {
             ➤
           </button>
         </div>
+        {inputError && (
+          <div id="chat-input-error" role="alert">{t.chat_empty_error}</div>
+        )}
       </div>
     </>
   );

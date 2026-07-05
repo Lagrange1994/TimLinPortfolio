@@ -5046,8 +5046,21 @@
     }
     #chat-input:focus { border-color: var(--primary); }
     #chat-input::placeholder { color: var(--text-30); }
+    #chat-input.error {
+      border-color: #ff6584;
+      animation: chat-input-shake 0.3s;
+    }
+    @keyframes chat-input-shake {
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+    #chat-input-error {
+      padding: 0 12px 8px;
+      color: #ff6584;
+      font-size: 12px;
+    }
     #chat-send {
-      width: 34px; height: 34px;
+      width: 44px; height: 44px;
       border-radius: 8px;
       background: var(--grad);
       border: none;
