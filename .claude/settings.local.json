@@ -78,7 +78,8 @@
       "Skill(run)",
       "Bash('C:\\\\Users\\\\user/.claude/skills/gstack/browse/dist/browse' wait *)",
       "Bash('C:\\\\Users\\\\user/.claude/skills/gstack/browse/dist/browse' text *)",
-      "Bash('C:\\\\Users\\\\user/.claude/skills/gstack/browse/dist/browse' url *)"
+      "Bash('C:\\\\Users\\\\user/.claude/skills/gstack/browse/dist/browse' url *)",
+      "Skill(design-review)"
     ]
   },
   "enableAllProjectMcpServers": true,

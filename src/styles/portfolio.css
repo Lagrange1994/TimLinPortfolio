@@ -189,6 +189,8 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
+      min-height: 44px;
+      box-sizing: border-box;
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -315,10 +317,16 @@
     }
 
     .logo {
+      display: inline-block;
       font-size: 22px;
       font-weight: 700;
       text-decoration: none;
       letter-spacing: -.02em;
+      /* Invisible hit-area expansion to the 44px touch-target floor —
+         padding grows the tap box, negative margin cancels it back out
+         of layout flow so the header's visual height is unchanged. */
+      padding: 5px 0;
+      margin: -5px 0;
     }
 
     nav {
@@ -2482,9 +2490,15 @@
     }
 
     .rv a {
+      display: inline-block;
       color: var(--text);
       text-decoration: none;
       transition: color .2s;
+      /* Invisible hit-area expansion: padding grows the tap target to the
+         44px floor, negative margin cancels it back out of layout flow so
+         the row's visual height/spacing is unchanged. */
+      padding: 17px 4px;
+      margin: -17px -4px;
     }
 
     .rv a:hover {
@@ -2502,6 +2516,8 @@
       align-items: center;
       gap: 12px;
       padding: 11px 14px;
+      min-height: 44px;
+      box-sizing: border-box;
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
@@ -3691,8 +3707,8 @@
       #back-to-top {
         bottom: 4.75rem;
         right: 1rem;
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 2.75rem;
+        height: 2.75rem;
       }
 
     }
@@ -4011,6 +4027,7 @@
       letter-spacing: 0.04em;
       line-height: 1;
       padding: 0.35rem 0.55rem;
+      min-height: 44px;
       z-index: 200;
     }
 
@@ -4185,6 +4202,9 @@
          phones that the longest label (PORTFOLIO) doesn't get pushed past
          the right edge and clipped by .sm-panel-itemWrap's overflow:hidden. */
       padding-left: clamp(1.3rem, 4.5vw, 2rem);
+      padding-block: 5px;
+      min-height: 44px;
+      box-sizing: border-box;
       background: none;
       border: none;
       transition: color 0.25s;
@@ -4285,6 +4305,7 @@
       font-family: var(--font);
       letter-spacing: 0.04em;
       padding: 0.35rem 0.55rem;
+      min-height: 44px;
       z-index: 20;
       transition: color 0.2s;
     }
@@ -4348,6 +4369,9 @@
 
     .sm-lang-btn {
       padding: 0.4rem 1.1rem;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
       border-radius: 9999px;
       font-size: 0.85rem;
       font-weight: 600;
@@ -4897,8 +4921,8 @@
       #chat-fab {
         bottom: 1rem;
         right: 1rem;
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 2.75rem;
+        height: 2.75rem;
       }
     }
 
