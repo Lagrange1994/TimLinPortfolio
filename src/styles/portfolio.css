@@ -2320,10 +2320,11 @@
     }
 
     .line-banner {
+      position: relative;
       background: linear-gradient(135deg, rgba(6, 199, 85, 0.1), rgba(6, 199, 85, 0.04));
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--line-bdr);
+      border: none;
       border-radius: 16px;
       corner-shape: squircle;
       padding: 24px 28px;
@@ -2334,7 +2335,30 @@
       margin-bottom: 14px;
       text-decoration: none;
       color: inherit;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 8px 32px -12px rgba(6, 199, 85, 0.25);
       transition: all .2s;
+    }
+
+    /* Liquid-glass edge: a gradient ring masked to the border area only, so
+       it reads as light refracting around the rim instead of tinting the
+       translucent interior (a plain gradient-border trick would do that,
+       since the low-alpha glass fill can't fully occlude a vivid layer
+       painted behind it). */
+    .line-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1.5px;
+      background: linear-gradient(135deg,
+          rgba(255, 255, 255, 0.65),
+          rgba(6, 199, 85, 0.75) 35%,
+          rgba(6, 199, 85, 0.25) 65%,
+          rgba(255, 255, 255, 0.45));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
     }
 
     .line-icon-box {
@@ -3249,7 +3273,7 @@
 
     .line-banner {
       background: linear-gradient(135deg, rgba(6, 199, 85, 0.1), rgba(6, 199, 85, 0.04));
-      border-color: var(--line-bdr);
+      border: none;
     }
 
 
