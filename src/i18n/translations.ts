@@ -146,7 +146,7 @@ export const translations = {
     line_desc: '留下專案目標、時程與預算後，系統會建立追蹤紀錄並通知我回覆',
     line_btn: '加入 LINE 聯繫我',
     open_for_work: '接案中',
-    open_for_work_sub: '接受全職 / 兼職 / 專案合作洽談',
+    open_for_work_sub: '接受全職 /\n兼職 / 專案合作洽談',
     // chat
     chat_status: 'AI 助理 · 即時回覆',
     chat_greeting: 'Hi！我是 Tim 的 AI 助理。想了解 Tim 的設計背景、作品集或合作意願，直接問我吧 👋',

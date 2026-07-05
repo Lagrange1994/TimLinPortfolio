@@ -117,11 +117,11 @@ export default function ContactSection() {
               <div className="cta-strip sc-card">
                 <div className="cta-txt">
                   <strong>{t.open_for_work}</strong><br />
-                  <span>{t.open_for_work_sub}</span>
+                  <span className="cta-txt-sub">{t.open_for_work_sub}</span>
                 </div>
                 <button
                   className="btn-glass btn-grad"
-                  style={{ padding: '9px 20px', borderRadius: '9999px', fontSize: '12px' }}
+                  style={{ padding: '9px 20px', borderRadius: '9999px', fontSize: '12px', whiteSpace: 'nowrap', flexShrink: 0 }}
                   onClick={() => { window.location.href = 'mailto:lyfun0202@gmail.com'; }}
                 >
                   Send Email ↗
