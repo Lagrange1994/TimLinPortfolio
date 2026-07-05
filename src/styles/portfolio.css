@@ -3693,9 +3693,13 @@
       }
 
       .line-banner {
-        grid-template-columns: 44px 1fr;
+        grid-template-columns: 1fr;
         gap: 14px;
         padding: 18px 16px;
+      }
+
+      .line-icon-box {
+        display: none;
       }
 
       /* Forced break (see line_title in translations.ts) so the title
