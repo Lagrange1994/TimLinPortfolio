@@ -1799,7 +1799,7 @@
 
     .tech-item {
       position: relative;
-      border-radius: 44px;
+      border-radius: 28px;
       corner-shape: squircle;
       padding: 20px;
       display: flex;
@@ -3934,7 +3934,7 @@
     }
 
     .tech-item {
-      border-radius: 44px;
+      border-radius: 28px;
       corner-shape: squircle;
       padding: 20px;
       display: flex;
