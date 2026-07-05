@@ -745,7 +745,8 @@
       grid-template-areas:
         "headline headline headline headline headline"
         "photo intro1 intro2 years projects"
-        "photo intro1 intro2 domains industry"
+        "photo intro1 intro2 domains domains"
+        "photo industry industry . ."
         "photo workflow workflow workflow workflow";
       gap: 12px;
       /* align-items defaults to stretch — intro1/intro2/domains (and every
@@ -1114,7 +1115,7 @@
     .ai-chips {
       display: flex;
       gap: 6px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
 
     .ai-chip {
@@ -3402,6 +3403,12 @@
         gap: 16px;
       }
 
+      /* Industry card is still narrow (2 of 8 cols) at this breakpoint,
+         unlike the widened desktop layout — keep the chips wrapping. */
+      .ai-chips {
+        flex-wrap: wrap;
+      }
+
       /* Process grid — 2×3 on tablet (override desktop flex-scroll) */
       .process-scroll-wrap {
         overflow-x: visible;
@@ -3623,6 +3630,12 @@
           "domains industry"
           "workflow workflow";
         gap: 14px;
+      }
+
+      /* Industry card is half-width here, unlike the widened desktop
+         layout — keep the chips wrapping. */
+      .ai-chips {
+        flex-wrap: wrap;
       }
 
       .about-h2 {
