@@ -1,5 +1,14 @@
 import { useEffect } from 'react';
 import { useLang } from '../context/LangContext';
+import { squircleRectPath } from '../utils/squircle';
+
+// Matches PortfolioSection's CARD_CORNER_RADIUS so bento cards read as the
+// same squircle family. Narrow 2-col cells (years/projects/domains/industry,
+// ~160-180px wide on tablet/mobile) get a smaller fixed radius instead —
+// otherwise the same absolute curve balloons on the smaller box.
+const BENTO_CORNER_RADIUS = 44;
+const BENTO_CORNER_RADIUS_NARROW = 24;
+const BENTO_NARROW_THRESHOLD = 200;
 
 export default function AboutSection() {
   const { t } = useLang();
@@ -196,6 +205,33 @@ export default function AboutSection() {
       });
     }
     initSpotlightCardEffect();
+  }, []);
+
+  // Fixed-radius squircle clip-path for bento cards — same technique as
+  // PortfolioSection's project/grid cards. CSS corner-shape:squircle is
+  // unreliable on real mobile browsers (and doesn't fall back to a smaller
+  // radius on its own), so the corner curve is drawn as an explicit SVG
+  // path instead, recomputed whenever a card's actual rendered box changes.
+  useEffect(() => {
+    const cards = document.querySelectorAll<HTMLElement>('.bento-card');
+    if (cards.length === 0) return;
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const el = entry.target as HTMLElement;
+        // offsetWidth/Height (border-box), not entry.contentRect (content-box)
+        // — .bento-card has 24px padding + a 1px border, and clip-path's
+        // default reference box is border-box, so a content-box-sized path
+        // clips off that padding+border strip on the right/bottom edge
+        // instead of just shaping the corners.
+        const width = el.offsetWidth;
+        const height = el.offsetHeight;
+        if (width <= 0 || height <= 0) continue;
+        const radius = width < BENTO_NARROW_THRESHOLD ? BENTO_CORNER_RADIUS_NARROW : BENTO_CORNER_RADIUS;
+        el.style.clipPath = `path('${squircleRectPath(width, height, radius)}')`;
+      }
+    });
+    cards.forEach(c => ro.observe(c));
+    return () => ro.disconnect();
   }, []);
 
   // Scroll-reveal (.rise-card/.rise-soft → elastic rise + squash-stretch) is

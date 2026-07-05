@@ -295,6 +295,14 @@ export default function HeroSection() {
   // reserved zone are measured (not hardcoded) since they're driven by CSS
   // that can change independently of this file; useLayoutEffect (not
   // useEffect) so the padding/cap are applied before first paint.
+  //
+  // Measured once (plus a retry once the image's natural size is known) and
+  // then locked: #main-header toggles a `.scrolled` compact-pill state as the
+  // page scrolls, which changes nav.getBoundingClientRect().height even
+  // though the device height hasn't changed. Re-measuring on every one of
+  // those toggles (previously via a ResizeObserver on nav) made the figure
+  // visibly resize mid-scroll. Only a genuine viewport change (resize/
+  // orientationchange) should trigger a re-measure.
   useLayoutEffect(() => {
     const home = document.getElementById('home');
     const nav = document.getElementById('main-header');
@@ -305,7 +313,7 @@ export default function HeroSection() {
 
     const GAP = 20; // px of breathing room on each side of the group
 
-    function apply() {
+    function measure() {
       if (window.innerWidth >= 768 || !img!.naturalWidth) return;
 
       const navClearance = nav!.getBoundingClientRect().height + GAP;
@@ -318,19 +326,14 @@ export default function HeroSection() {
       home!.style.setProperty('--hero-fig-max-h', naturalFigH <= availableForFig ? 'none' : `${Math.max(0, availableForFig)}px`);
     }
 
-    apply();
-    if (!img.naturalWidth) img.addEventListener('load', apply, { once: true });
+    measure();
+    if (!img.naturalWidth) img.addEventListener('load', measure, { once: true });
 
-    const ro = new ResizeObserver(apply);
-    ro.observe(nav);
-    ro.observe(tags);
-    ro.observe(text);
-    window.addEventListener('resize', apply);
-    window.addEventListener('orientationchange', apply);
+    window.addEventListener('resize', measure);
+    window.addEventListener('orientationchange', measure);
     return () => {
-      ro.disconnect();
-      window.removeEventListener('resize', apply);
-      window.removeEventListener('orientationchange', apply);
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('orientationchange', measure);
     };
   }, []);
 
