@@ -2339,22 +2339,20 @@
       transition: all .2s;
     }
 
-    /* Liquid-glass edge: a gradient ring masked to the border area only, so
-       it reads as light refracting around the rim instead of tinting the
-       translucent interior (a plain gradient-border trick would do that,
-       since the low-alpha glass fill can't fully occlude a vivid layer
-       painted behind it). */
+    /* Liquid-glass edge: a solid-green ring masked to the border area only,
+       so it reads as a crisp rim instead of tinting the translucent
+       interior (a plain gradient-border trick would do that, since the
+       low-alpha glass fill can't fully occlude a vivid layer painted
+       behind it). corner-shape must match the card's own squircle or the
+       ring's corners won't line up with the card's actual outer curve. */
     .line-banner::before {
       content: '';
       position: absolute;
       inset: 0;
       border-radius: inherit;
+      corner-shape: squircle;
       padding: 1.5px;
-      background: linear-gradient(135deg,
-          rgba(255, 255, 255, 0.65),
-          rgba(6, 199, 85, 0.75) 35%,
-          rgba(6, 199, 85, 0.25) 65%,
-          rgba(255, 255, 255, 0.45));
+      background: var(--line);
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
       mask-composite: exclude;
