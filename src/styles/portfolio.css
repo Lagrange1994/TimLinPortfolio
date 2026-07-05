@@ -2394,6 +2394,8 @@
       border: none;
       border-radius: 10px;
       padding: 10px 18px;
+      min-height: 44px;
+      box-sizing: border-box;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
@@ -3453,13 +3455,17 @@
         grid-template-columns: 1fr;
       }
 
-      /* Line banner — stack */
+      /* Line banner — stack: icon+text row, CTA drops to its own full-width row */
       .line-banner {
         grid-template-columns: 52px 1fr;
       }
 
       .line-cta {
-        display: none;
+        grid-column: 1 / -1;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 14px;
       }
 
       /* Nav */
@@ -3693,7 +3699,11 @@
       }
 
       .line-cta {
-        display: none;
+        grid-column: 1 / -1;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
       }
 
       .contact-headline {
