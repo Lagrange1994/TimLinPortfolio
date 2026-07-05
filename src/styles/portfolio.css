@@ -3698,6 +3698,12 @@
         padding: 18px 16px;
       }
 
+      /* Forced break (see line_title in translations.ts) so the title
+         doesn't crowd right up against the icon on narrow screens. */
+      .line-title {
+        white-space: pre-line;
+      }
+
       .line-cta {
         grid-column: 1 / -1;
         flex-direction: row;

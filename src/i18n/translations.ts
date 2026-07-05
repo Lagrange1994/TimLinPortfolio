@@ -142,7 +142,7 @@ export const translations = {
     // contact
     contact_sub: '有專案合作需求？歡迎隨時與我聯繫',
     line_eyebrow: 'Design Consultation · 免費初次諮詢',
-    line_title: '有設計需求？LINE Bot 會先幫我整理重點',
+    line_title: '有設計需求？\nLINE Bot 會先幫我整理重點',
     line_desc: '留下專案目標、時程與預算後，系統會建立追蹤紀錄並通知我回覆',
     line_btn: '加入 LINE 聯繫我',
     open_for_work: '接案中',
