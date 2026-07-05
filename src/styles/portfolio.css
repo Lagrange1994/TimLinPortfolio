@@ -3710,7 +3710,7 @@
 
       .line-cta {
         grid-column: 1 / -1;
-        flex-direction: row;
+        flex-direction: row-reverse;
         align-items: center;
         justify-content: space-between;
         margin-top: 12px;
