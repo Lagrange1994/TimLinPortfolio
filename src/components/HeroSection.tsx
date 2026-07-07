@@ -99,6 +99,8 @@ export default function HeroSection() {
     if (h2Chars.length) gsap.set(h2Chars, { opacity: 0, y: 28 });
 
     const scrollIndicator = document.querySelector<HTMLElement>('.hero-scroll-indicator');
+    // Its reveal is handled by the dedicated idle-detection effect below,
+    // not this entrance sequence — just keep it hidden until then.
     if (scrollIndicator) gsap.set(scrollIndicator, { opacity: 0, y: 20 });
 
     function animate() {
@@ -106,10 +108,6 @@ export default function HeroSection() {
         if (heroFig) gsap.to(heroFig, { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out' });
         if (h1Words.length) gsap.to(h1Words, { opacity: 1, y: 0, rotation: 0, duration: 1.0, ease: 'power3.out', stagger: 0.11, delay: 0.15 });
         if (h2Chars.length) gsap.to(h2Chars, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.035, delay: 0.6 });
-        if (scrollIndicator) gsap.to(scrollIndicator, {
-          opacity: 0.65, y: 0, duration: 0.8, ease: 'power3.out', delay: 4.25,
-          onComplete: () => gsap.set(scrollIndicator, { clearProps: 'opacity,transform' }),
-        });
       }, 350);
     }
 
@@ -262,6 +260,55 @@ export default function HeroSection() {
     } else {
       window.addEventListener('load', initHeroScrollers, { once: true });
     }
+  }, []);
+
+  // Hero scroll indicator (mouse icon) — only reveals once the hero has sat
+  // idle (no scroll/wheel/touch movement) for SCROLL_INDICATOR_IDLE_MS while
+  // still in view, instead of a fixed post-load delay, so it doesn't nudge
+  // a user who's already mid-scroll.
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const indicator = document.querySelector<HTMLElement>('.hero-scroll-indicator');
+    if (!indicator) return;
+
+    const SCROLL_INDICATOR_IDLE_MS = 7000;
+    let revealed = false;
+    let lastActivity = Date.now();
+    let heroInView = true;
+
+    const markActivity = () => { lastActivity = Date.now(); };
+    window.addEventListener('scroll', markActivity, { passive: true });
+    window.addEventListener('wheel', markActivity, { passive: true });
+    window.addEventListener('touchmove', markActivity, { passive: true });
+
+    const heroEl = document.getElementById('home');
+    const observer = heroEl ? new IntersectionObserver(([entry]) => {
+      heroInView = entry.isIntersecting;
+      if (heroInView) lastActivity = Date.now();
+    }, { threshold: 0.5 }) : null;
+    if (heroEl) observer!.observe(heroEl);
+
+    const idleCheck = setInterval(() => {
+      if (revealed || !heroInView || Date.now() - lastActivity < SCROLL_INDICATOR_IDLE_MS) return;
+      revealed = true;
+      clearInterval(idleCheck);
+      observer?.disconnect();
+      window.removeEventListener('scroll', markActivity);
+      window.removeEventListener('wheel', markActivity);
+      window.removeEventListener('touchmove', markActivity);
+      gsap.to(indicator, {
+        opacity: 0.65, y: 0, duration: 0.8, ease: 'power3.out',
+        onComplete: () => gsap.set(indicator, { clearProps: 'opacity,transform' }),
+      });
+    }, 300);
+
+    return () => {
+      clearInterval(idleCheck);
+      observer?.disconnect();
+      window.removeEventListener('scroll', markActivity);
+      window.removeEventListener('wheel', markActivity);
+      window.removeEventListener('touchmove', markActivity);
+    };
   }, []);
 
   // Hero spline desktop+tablet conditional — only load the 3D figure above

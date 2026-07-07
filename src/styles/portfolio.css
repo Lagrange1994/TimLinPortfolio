@@ -608,7 +608,9 @@
       -webkit-mask: linear-gradient(90deg, transparent, white 5%, white 95%, transparent);
       mask: linear-gradient(90deg, transparent, white 5%, white 95%, transparent);
       opacity: 0;
-      animation: hero-btns-float-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards 2.6s;
+      /* Synced to the hero-h1 title's own GSAP entrance start (350ms
+         setTimeout + 0.15s tween delay in HeroSection.tsx), not the CTA. */
+      animation: hero-btns-float-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.5s;
       animation-play-state: paused;
     }
 
