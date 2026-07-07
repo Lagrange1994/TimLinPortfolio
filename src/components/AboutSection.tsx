@@ -1,6 +1,17 @@
 import { useEffect } from 'react';
 import { useLang } from '../context/LangContext';
 import { squircleRectPath } from '../utils/squircle';
+import CardSwap, { Card } from './CardSwap';
+
+// One representative project cover per Service Domains chip (Law
+// Enforcement/Healthcare/Environmental Monitoring/Entertainment), reused
+// from the portfolio project images rather than duplicated assets.
+const DOMAIN_COVERS = [
+  { label: 'Law Enforcement', img: './img/my_portfolio/police.webp' },
+  { label: 'Healthcare', img: './img/my_portfolio/student.webp' },
+  { label: 'Environmental Monitoring', img: './img/my_portfolio/enviroment.webp' },
+  { label: 'Entertainment', img: './img/my_portfolio/stream.webp' },
+];
 
 // Matches PortfolioSection's CARD_CORNER_RADIUS so bento cards read as the
 // same squircle family. Narrow 2-col cells (years/projects/domains/industry,
@@ -12,6 +23,16 @@ const BENTO_NARROW_THRESHOLD = 200;
 
 export default function AboutSection() {
   const { t } = useLang();
+
+  // Service Domains caption ("警政・環保・醫療・娛樂" / "Police · Environmental
+  // · Healthcare · Entertainment") — split into two 2-noun halves so a
+  // tablet/mobile-only line break (.domains-caption-break, CSS-hidden on
+  // desktop) can land cleanly between the 2nd and 3rd noun instead of
+  // wrapping wherever the narrower column happens to run out of width.
+  const domainsSeparator = t.about_domains_summary.includes('・') ? '・' : ' · ';
+  const domainsWords = t.about_domains_summary.split(/[・·]/).map(w => w.trim());
+  const domainsFirstHalf = domainsWords.slice(0, 2).join(domainsSeparator);
+  const domainsSecondHalf = domainsWords.slice(2).join(domainsSeparator);
 
   // Profile card 3D tilt
   useEffect(() => {
@@ -250,6 +271,14 @@ export default function AboutSection() {
             descendants, regardless of DOM depth). */}
         <div className="about-grid" id="stat-row">
 
+          <div className="about-headline">
+            <h2
+              className="about-h2 rise-soft"
+              dangerouslySetInnerHTML={{ __html: t.about_headline }}
+            />
+            <p className="about-lead rise-soft" dangerouslySetInnerHTML={{ __html: t.about_lead }} />
+          </div>
+
           <div className="about-photo rise-card">
             <div
               className="pc-card-wrapper"
@@ -277,14 +306,6 @@ export default function AboutSection() {
                 </section>
               </div>
             </div>
-          </div>
-
-          <div className="about-headline">
-            <h2
-              className="about-h2 rise-soft"
-              dangerouslySetInnerHTML={{ __html: t.about_headline }}
-            />
-            <p className="about-lead rise-soft" dangerouslySetInnerHTML={{ __html: t.about_lead }} />
           </div>
 
           {/* Intro cards — the bio prose (about_p1/about_p2) */}
@@ -347,17 +368,39 @@ export default function AboutSection() {
                 </div>
               </div>
             </div>
-            <p className="bento-caption">{t.about_domains_summary}</p>
+            <p className="bento-caption">
+              {domainsFirstHalf}
+              <span className="domains-caption-sep">{domainsSeparator}</span>
+              <br className="domains-caption-break" />
+              {domainsSecondHalf}
+            </p>
+            <div className="domain-swap-stage">
+              <CardSwap width={216} height={144} cardDistance={28} verticalDistance={24} skewAmount={4} delay={3400} pauseOnHover>
+                {DOMAIN_COVERS.map(d => (
+                  <Card key={d.label} customClass="domain-cover-card">
+                    <img src={d.img} alt={d.label} loading="lazy" />
+                  </Card>
+                ))}
+              </CardSwap>
+            </div>
           </div>
 
           <div className="bento-card bento-violet card-spotlight bento-area-industry rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
-            <div className="bento-label">Industry Focus</div>
-            <div className="ai-chips">
-              <span className="domain-chip">Law Enforcement</span>
-              <span className="domain-chip">Healthcare</span>
-              <span className="domain-chip">Environmental Monitoring</span>
-              <span className="domain-chip">Entertainment</span>
+            <div className="industry-row">
+              <div className="bento-label industry-label">Industry Focus</div>
+              <div className="ai-chips-marquee">
+                <div className="ai-chips-track">
+                  <span className="domain-chip">Law Enforcement</span>
+                  <span className="domain-chip">Healthcare</span>
+                  <span className="domain-chip">Environmental Monitoring</span>
+                  <span className="domain-chip">Entertainment</span>
+                  <span className="domain-chip" aria-hidden="true">Law Enforcement</span>
+                  <span className="domain-chip" aria-hidden="true">Healthcare</span>
+                  <span className="domain-chip" aria-hidden="true">Environmental Monitoring</span>
+                  <span className="domain-chip" aria-hidden="true">Entertainment</span>
+                </div>
+              </div>
             </div>
           </div>
 
