@@ -39,6 +39,22 @@ function getBaseTranslate(el: HTMLElement): { x: number; y: number } {
   }
 }
 
+// Some elements carry a decorative CSS `top`/`left` offset instead of a
+// transform (e.g. the How I Use AI staircase, which deliberately uses `top`
+// so it doesn't collide with the card's own hover/GSAP transforms — see
+// portfolio.css). That offset is baked into getBoundingClientRect() but
+// isn't part of the element's underlying grid-row position, so it has to be
+// discounted before row/column bucketing — otherwise a same-row sibling
+// with a large enough offset (relative to ROW_BAND) gets misclassified as
+// a separate row.
+function getPositionOffset(el: HTMLElement): { x: number; y: number } {
+  const cs = getComputedStyle(el);
+  if (cs.position === 'static') return { x: 0, y: 0 };
+  const top = parseFloat(cs.top);
+  const left = parseFloat(cs.left);
+  return { x: Number.isNaN(left) ? 0 : left, y: Number.isNaN(top) ? 0 : top };
+}
+
 export function useRiseReveal() {
   useEffect(() => {
     const sections = Array.from(document.querySelectorAll<HTMLElement>('section'));
@@ -60,7 +76,8 @@ export function useRiseReveal() {
         const measured = all.map(el => {
           const r = el.getBoundingClientRect();
           const base = getBaseTranslate(el);
-          return { el, relTop: r.top - secTop - base.y, left: r.left - base.x, restY: base.y };
+          const pos = getPositionOffset(el);
+          return { el, relTop: r.top - secTop - base.y - pos.y, left: r.left - base.x - pos.x, restY: base.y };
         }).sort((a, b) => {
           const ra = Math.round(a.relTop / ROW_BAND);
           const rb = Math.round(b.relTop / ROW_BAND);

@@ -168,6 +168,50 @@ function makeAiCards(t: Record<string, string>) {
       ),
     },
     {
+      id: 'intake',
+      step: '02',
+      variant: 'ai-purple',
+      badge: null as string | null,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="4" y="4" width="16" height="16" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" />
+        </svg>
+      ),
+      title: 'Intake',
+      summary: t.ai_intake_sum,
+      tags: ['Make', 'Webhooks', 'Fields'],
+      pipeline: null as string[] | null,
+      detail: (
+        <div className="detail-section">
+          <div className="msg-panel">
+            <div className="msg-panel-head">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" />
+              </svg>
+              <span>{t.ai_d_req_form}</span>
+            </div>
+            <div className="form-mini">
+              <div className="field"><label>{t.ai_f_source}</label><div className="val"><span>LINE — @pm.celine</span></div></div>
+              <div className="field"><label>{t.ai_f_projtype}</label><div className="val"><span>Product UI · Mobile</span></div></div>
+              <div className="field"><label>{t.ai_f_goal}</label><div className="val"><span>Redesign onboarding for new pricing tier</span></div></div>
+              <div className="field-row">
+                <div className="field"><label>{t.ai_f_timeline}</label><div className="val"><span>Jun 03 — Jun 17</span></div></div>
+                <div className="field"><label>{t.ai_f_budget}</label><div className="val"><span>Internal</span></div></div>
+              </div>
+              <div className="field"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><sgds-badge variant="danger">HIGH</sgds-badge></div></div>
+              <div className="field"><label>{t.ai_f_contact}</label><div className="val"><span>celine.h@firm.co</span></div></div>
+              <div className="form-status">
+                <span>{t.ai_f_complete}</span>
+                <div className="bar">
+                  {Array.from({ length: 7 }).map((_, i) => <div key={i} className="pdot" />)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
       id: 'ai',
       step: '03',
       variant: 'ai-focal',
@@ -246,107 +290,6 @@ function makeAiCards(t: Record<string, string>) {
       ),
     },
     {
-      id: 'human',
-      step: '05',
-      variant: 'ai-human',
-      badge: null as string | null,
-      icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="8" r="3.5" /><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" />
-        </svg>
-      ),
-      title: 'Human Review',
-      summary: t.ai_human_sum,
-      tags: ['Priority', 'Strategy', 'Risk', 'Next step'],
-      pipeline: null as string[] | null,
-      detail: (
-        <div className="detail-section">
-          <div className="msg-panel msg-panel-green">
-            <div className="msg-panel-head">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="8" r="3.5" /><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" />
-              </svg>
-              <span>{t.ai_d_assessment_lbl}</span>
-            </div>
-            <sgds-description-list-group stacked bordered>
-              <sgds-description-list>
-                {t.ai_hr_priority_row}
-                <span slot="data">
-                  <sgds-badge variant="danger" style={{ marginRight: '6px' }}>P1</sgds-badge>
-                  {t.ai_hr_priority_val.replace(/^P1[^a-z]+/i, '')}
-                </span>
-              </sgds-description-list>
-              <sgds-description-list>
-                {t.ai_hr_strategy_row}
-                <span slot="data">{t.ai_hr_strategy_val}</span>
-              </sgds-description-list>
-              <sgds-description-list>
-                {t.ai_hr_risks_row}
-                <span slot="data">{t.ai_hr_risks_val}</span>
-              </sgds-description-list>
-              <sgds-description-list>
-                {t.ai_hr_nextstep_row}
-                <span slot="data">{t.ai_hr_nextstep_val}</span>
-              </sgds-description-list>
-            </sgds-description-list-group>
-          </div>
-          <div className="msg-panel msg-panel-green">
-            <div className="msg-panel-head">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M7 8h10M7 12h7M7 16h4" /><rect x="3.5" y="4" width="17" height="16" rx="2.5" />
-              </svg>
-              <span>{t.ai_hr_op_lbl}</span>
-            </div>
-            <div className="qq" dangerouslySetInnerHTML={{ __html: t.ai_hr_op_quote }} />
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: 'intake',
-      step: '02',
-      variant: 'ai-purple',
-      badge: null as string | null,
-      icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="4" y="4" width="16" height="16" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" />
-        </svg>
-      ),
-      title: 'Intake',
-      summary: t.ai_intake_sum,
-      tags: ['Make', 'Webhooks', 'Fields'],
-      pipeline: null as string[] | null,
-      detail: (
-        <div className="detail-section">
-          <div className="msg-panel">
-            <div className="msg-panel-head">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="4" y="4" width="16" height="16" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" />
-              </svg>
-              <span>{t.ai_d_req_form}</span>
-            </div>
-            <div className="form-mini">
-              <div className="field"><label>{t.ai_f_source}</label><div className="val"><span>LINE — @pm.celine</span></div></div>
-              <div className="field"><label>{t.ai_f_projtype}</label><div className="val"><span>Product UI · Mobile</span></div></div>
-              <div className="field"><label>{t.ai_f_goal}</label><div className="val"><span>Redesign onboarding for new pricing tier</span></div></div>
-              <div className="field-row">
-                <div className="field"><label>{t.ai_f_timeline}</label><div className="val"><span>Jun 03 — Jun 17</span></div></div>
-                <div className="field"><label>{t.ai_f_budget}</label><div className="val"><span>Internal</span></div></div>
-              </div>
-              <div className="field"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><sgds-badge variant="danger">HIGH</sgds-badge></div></div>
-              <div className="field"><label>{t.ai_f_contact}</label><div className="val"><span>celine.h@firm.co</span></div></div>
-              <div className="form-status">
-                <span>{t.ai_f_complete}</span>
-                <div className="bar">
-                  {Array.from({ length: 7 }).map((_, i) => <div key={i} className="pdot" />)}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
       id: 'tracking',
       step: '04',
       variant: 'ai-violet',
@@ -406,6 +349,63 @@ function makeAiCards(t: Record<string, string>) {
             <span>4 of 142 records</span>
             <span>Updated · 2m ago</span>
           </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'human',
+      step: '05',
+      variant: 'ai-human',
+      badge: null as string | null,
+      icon: (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="3.5" /><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" />
+        </svg>
+      ),
+      title: 'Human Review',
+      summary: t.ai_human_sum,
+      tags: ['Priority', 'Strategy', 'Risk', 'Next step'],
+      pipeline: null as string[] | null,
+      detail: (
+        <div className="detail-section">
+          <div className="msg-panel msg-panel-green">
+            <div className="msg-panel-head">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="3.5" /><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" />
+              </svg>
+              <span>{t.ai_d_assessment_lbl}</span>
+            </div>
+            <sgds-description-list-group stacked bordered>
+              <sgds-description-list>
+                {t.ai_hr_priority_row}
+                <span slot="data">
+                  <sgds-badge variant="danger" style={{ marginRight: '6px' }}>P1</sgds-badge>
+                  {t.ai_hr_priority_val.replace(/^P1[^a-z]+/i, '')}
+                </span>
+              </sgds-description-list>
+              <sgds-description-list>
+                {t.ai_hr_strategy_row}
+                <span slot="data">{t.ai_hr_strategy_val}</span>
+              </sgds-description-list>
+              <sgds-description-list>
+                {t.ai_hr_risks_row}
+                <span slot="data">{t.ai_hr_risks_val}</span>
+              </sgds-description-list>
+              <sgds-description-list>
+                {t.ai_hr_nextstep_row}
+                <span slot="data">{t.ai_hr_nextstep_val}</span>
+              </sgds-description-list>
+            </sgds-description-list-group>
+          </div>
+          <div className="msg-panel msg-panel-green">
+            <div className="msg-panel-head">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 8h10M7 12h7M7 16h4" /><rect x="3.5" y="4" width="17" height="16" rx="2.5" />
+              </svg>
+              <span>{t.ai_hr_op_lbl}</span>
+            </div>
+            <div className="qq" dangerouslySetInnerHTML={{ __html: t.ai_hr_op_quote }} />
           </div>
         </div>
       ),
