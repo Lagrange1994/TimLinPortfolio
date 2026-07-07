@@ -2831,8 +2831,12 @@
 
     /* Keep real content above the spotlight overlay (::before, z-index:1) —
        plain block children paint below any positioned z-index layer by
-       default, so without this the mouse glow washes out the text. */
-    .bento-card.card-spotlight > *:not(.card-glass-highlight) {
+       default, so without this the mouse glow washes out the text.
+       .sc-overlay (JS-inserted for the .sc-card border-glow effect) is
+       excluded — same fix as .tech-item.card-spotlight above — otherwise
+       this rule's higher specificity overrides its own position:absolute/
+       z-index:0 and breaks the border-glow layering. */
+    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay) {
       position: relative;
       z-index: 2;
     }

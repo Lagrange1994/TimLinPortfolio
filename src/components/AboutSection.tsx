@@ -228,6 +228,29 @@ export default function AboutSection() {
     initSpotlightCardEffect();
   }, []);
 
+  // White border-ring hover effect — same .sc-card/.sc-overlay mechanism
+  // used by the Tech Stack cards (SkillsSection) and Contact cards.
+  useEffect(() => {
+    document.querySelectorAll<HTMLElement>('.sc-card').forEach(card => {
+      if (card.querySelector(':scope > .sc-overlay')) return;
+      const ov = document.createElement('div');
+      ov.className = 'sc-overlay';
+      card.insertBefore(ov, card.firstChild);
+
+      const onMove = (e: MouseEvent) => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty('--sc-x', (e.clientX - r.left) + 'px');
+        card.style.setProperty('--sc-y', (e.clientY - r.top) + 'px');
+      };
+      const onLeave = () => {
+        card.style.setProperty('--sc-x', '-500px');
+        card.style.setProperty('--sc-y', '-500px');
+      };
+      card.addEventListener('mousemove', onMove);
+      card.addEventListener('mouseleave', onLeave);
+    });
+  }, []);
+
   // Fixed-radius squircle clip-path for bento cards — same technique as
   // PortfolioSection's project/grid cards. CSS corner-shape:squircle is
   // unreliable on real mobile browsers (and doesn't fall back to a smaller
@@ -249,6 +272,11 @@ export default function AboutSection() {
         if (width <= 0 || height <= 0) continue;
         const radius = width < BENTO_NARROW_THRESHOLD ? BENTO_CORNER_RADIUS_NARROW : BENTO_CORNER_RADIUS;
         el.style.clipPath = `path('${squircleRectPath(width, height, radius)}')`;
+        // .sc-card::after's border-glow ring reads border-radius: inherit —
+        // without this it stays at the stylesheet's static 44px even on
+        // narrow cards clipped down to 24px, so the ring's corners visibly
+        // don't match the actual squircle-clipped card corners.
+        el.style.borderRadius = `${radius}px`;
       }
     });
     cards.forEach(c => ro.observe(c));
@@ -309,19 +337,19 @@ export default function AboutSection() {
           </div>
 
           {/* Intro cards — the bio prose (about_p1/about_p2) */}
-          <div className="bento-card bento-violet card-spotlight bento-area-intro1 rise-card">
+          <div className="bento-card bento-violet card-spotlight sc-card bento-area-intro1 rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro1_label}</div>
             <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p1 }} />
           </div>
 
-          <div className="bento-card bento-cyan card-spotlight bento-area-intro2 rise-card">
+          <div className="bento-card bento-cyan card-spotlight sc-card bento-area-intro2 rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro2_label}</div>
             <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p2 }} />
           </div>
 
-          <div className="bento-card card-spotlight bento-area-years rise-card">
+          <div className="bento-card card-spotlight sc-card bento-area-years rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_stat_years_label}</div>
             <div className="bento-num-center">
@@ -336,7 +364,7 @@ export default function AboutSection() {
             </div>
           </div>
 
-          <div className="bento-card bento-human card-spotlight bento-area-projects rise-card">
+          <div className="bento-card bento-human card-spotlight sc-card bento-area-projects rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_stat_projects_label}</div>
             <div className="bento-num-center">
@@ -356,7 +384,7 @@ export default function AboutSection() {
             </div>
           </div>
 
-          <div className="bento-card bento-purple card-spotlight bento-area-domains rise-card">
+          <div className="bento-card bento-purple card-spotlight sc-card bento-area-domains rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_stat_domains_label}</div>
             <div className="bento-num-center">
@@ -385,7 +413,7 @@ export default function AboutSection() {
             </div>
           </div>
 
-          <div className="bento-card bento-violet card-spotlight bento-area-industry rise-card">
+          <div className="bento-card bento-violet card-spotlight sc-card bento-area-industry rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="industry-row">
               <div className="bento-label industry-label">Industry Focus</div>
@@ -404,7 +432,7 @@ export default function AboutSection() {
             </div>
           </div>
 
-          <div className="bento-card bento-spectrum card-spotlight bento-card--wide bento-area-workflow rise-card">
+          <div className="bento-card bento-spectrum card-spotlight sc-card bento-card--wide bento-area-workflow rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_ai_label}</div>
             <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p3 }} />
