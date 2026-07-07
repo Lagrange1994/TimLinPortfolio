@@ -587,7 +587,8 @@
     }
 
     body.hero-ready .hero-desc-wrap,
-    body.hero-ready .hero-btns-seq {
+    body.hero-ready .hero-btns-seq,
+    body.hero-ready .hero-tags {
       animation-play-state: running;
     }
 
@@ -606,6 +607,9 @@
       pointer-events: auto;
       -webkit-mask: linear-gradient(90deg, transparent, white 5%, white 95%, transparent);
       mask: linear-gradient(90deg, transparent, white 5%, white 95%, transparent);
+      opacity: 0;
+      animation: hero-btns-float-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards 2.6s;
+      animation-play-state: paused;
     }
 
     /* Scroll indicator — mouse + arrows */
@@ -746,7 +750,7 @@
         "headline headline headline headline headline"
         "photo intro1 intro2 years projects"
         "photo intro1 intro2 domains domains"
-        "photo industry industry . ."
+        "photo industry industry domains domains"
         "photo workflow workflow workflow workflow";
       gap: 12px;
       /* align-items defaults to stretch — intro1/intro2/domains (and every
@@ -771,9 +775,57 @@
     .bento-area-intro2 { grid-area: intro2; }
     .bento-area-years { grid-area: years; }
     .bento-area-projects { grid-area: projects; }
-    .bento-area-domains { grid-area: domains; }
+    .bento-area-domains { grid-area: domains; min-height: 240px; }
+
+    /* Base (desktop): keep the inline "・" separator, hide the line break —
+       overridden the other way for tablet/mobile at the 1024px breakpoint
+       below. Must stay ahead of that media block in source order, since a
+       media-scoped rule doesn't win a same-specificity tie against a later
+       unconditional rule just because its condition matches. */
+    .domains-caption-break {
+      display: none;
+    }
     .bento-area-industry { grid-area: industry; }
     .bento-area-workflow { grid-area: workflow; }
+
+    /* Domain CardSwap — now the Service Domains card's own background layer
+       rather than a boxed-in strip: it's taken out of the card's flex flow
+       (position:absolute, inset:0) and sits behind the label/number/caption
+       text, which get position:relative + a higher z-index to read on top.
+       min-height on .bento-area-domains (above) keeps the card — and the
+       canvas this stack has to play in — generous now that the stack no
+       longer contributes flow height of its own. The stack is still
+       anchored bottom-right and allowed to overhang past the card's own
+       rounded corner (that's fine — it's clipped by the card's squircle
+       clip-path, and the reference look wants a dominant, slightly
+       overflowing stack, not one that's boxed to fit exactly). */
+    /* Beats the generic .bento-card.card-spotlight > * rule (below) that
+       otherwise forces every direct child — this stage included — to
+       position:relative + z-index:2, which would flatten it back into flow
+       and stack it above (not below) the text siblings. */
+    .bento-card.card-spotlight.bento-area-domains > .domain-swap-stage {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    /* Cover image fills its swap card edge-to-edge — no more inner browser-
+       chrome bar (that split the card into two rows); the image itself is
+       the entire card face now. A plain, shallow border-radius (not the
+       outer card's squircle) keeps each swapping card reading as a distinct
+       photo tile rather than matching the bento card's own corner shape. */
+    .cardswap-card.domain-cover-card {
+      overflow: hidden;
+      cursor: default;
+      border-radius: 8px;
+    }
+
+    .domain-cover-card img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
     .about-h2 {
       font-size: clamp(1.5rem, 2.5vw, 2rem);
@@ -1012,6 +1064,18 @@
       .bento-area-industry {
         border-radius: 24px;
       }
+
+      /* Domains caption — swap the inline separator for the line break so
+         "警政・環保・醫療・娛樂" reads as two nouns per line instead of
+         wrapping wherever the narrower tablet/mobile column runs out of
+         width. */
+      .domains-caption-sep {
+        display: none;
+      }
+
+      .domains-caption-break {
+        display: block;
+      }
     }
 
     /* Title/body proportions unified with the How I Use AI cards
@@ -1115,7 +1179,48 @@
     .ai-chips {
       display: flex;
       gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* Industry Focus — label + marquee share one row; the chip track is
+       duplicated in JSX and scrolls exactly -50% for a seamless loop. */
+    .industry-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .industry-label {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .ai-chips-marquee {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      -webkit-mask: linear-gradient(90deg, transparent, white 8%, white 92%, transparent);
+      mask: linear-gradient(90deg, transparent, white 8%, white 92%, transparent);
+    }
+
+    .ai-chips-track {
+      display: flex;
       flex-wrap: nowrap;
+      width: max-content;
+      gap: 6px;
+      animation: industry-chips-scroll 14s linear infinite;
+    }
+
+    @keyframes industry-chips-scroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ai-chips-track {
+        animation: none;
+      }
     }
 
     .ai-chip {
@@ -3387,26 +3492,74 @@
         font-size: clamp(1rem, 2.5vw, 1.5rem);
       }
 
-      /* About Me — tablet: 8-col grid. Photo (1/4, 2 of 8 cols) spans rows
-         1-2, sitting beside the headline (3/4, 6 cols) in row 1 and beside
-         intro1/intro2 (which split the headline's 6 cols evenly) in row 2.
-         Below that, the years/projects/domains/industry 2x2 takes the left
-         half (4 of 8 cols) while the workflow card fills the right half,
-         spanning both stat rows. */
+      /* About Me — tablet: 24-col grid (LCM of 8 and 3) so row 1 can split
+         into exact equal thirds (photo/intro1/intro2, 8 cols each) while
+         every other row keeps its original 8-col-equivalent ratio — years/
+         projects/workflow at 2/2/4 (→6/6/12 of 24), domains/workflow at
+         4/4 (→12/12), industry full-width. Row 1's width no longer needs to
+         match row 2's column boundaries (that requirement was dropped);
+         only .about-photo's align-self:stretch (below) still keeps all
+         three row-1 cards equal height. */
       .about-grid {
-        grid-template-columns: repeat(8, 1fr);
+        grid-template-columns: repeat(24, 1fr);
         grid-template-areas:
-          "photo photo headline headline headline headline headline headline"
-          "photo photo intro1 intro1 intro1 intro2 intro2 intro2"
-          "years years projects projects workflow workflow workflow workflow"
-          "domains domains industry industry workflow workflow workflow workflow";
+          "headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline"
+          "photo photo photo photo photo photo photo photo intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2"
+          "years years years years years years projects projects projects projects projects projects workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow"
+          "domains domains domains domains domains domains domains domains domains domains domains domains workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow"
+          "industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry";
         gap: 16px;
       }
 
-      /* Industry card is still narrow (2 of 8 cols) at this breakpoint,
-         unlike the widened desktop layout — keep the chips wrapping. */
-      .ai-chips {
-        flex-wrap: wrap;
+      /* Desktop opts .about-photo out of the row's align-items:stretch
+         (base rule, align-self:start) so the ProfileCard's own tall aspect
+         ratio isn't force-stretched. On tablet the photo card is only 2
+         columns tall instead of spanning every row like it does on
+         desktop, so opting out left it stuck at its own short natural
+         height while intro1/intro2 stretch to the row's real height (driven
+         by whichever has the longer bio text) — the row's bottom edge
+         landed at different heights per card instead of one shared edge
+         that meets row 2 below. Stretch it like every other card. */
+      .about-photo {
+        align-self: stretch;
+        /* Establishes a query container so .pc-card's min-height (below)
+           can read this box's own resolved width via cqw — needed since
+           the column width is fluid (fr-based), not a fixed px we could
+           hardcode into a calc(). */
+        container-type: inline-size;
+      }
+
+      /* Ratio doesn't need to stay fixed on tablet (unlike desktop/mobile)
+         — the card is allowed to stretch taller than 0.718 to fill the row
+         and meet row 2 with no gap — but it also shouldn't get squatter
+         (proportionally shorter) than the original photo ratio if row 2's
+         height ever shrinks below that. height:100% is the base (stretch
+         to fill); min-height reconstructs the original 0.718 ratio from
+         the card's own width (via container query units) as a floor, so
+         the used height is effectively max(stretch height, original-ratio
+         height). The actual photo (.avatar) already uses object-fit:cover
+         (see .pc-avatar-content .avatar), so it just crops to whatever box
+         size results instead of distorting. */
+      .about-photo .pc-card-wrapper,
+      .about-photo .pc-card-shell {
+        height: 100%;
+      }
+
+      .about-photo .pc-card {
+        height: 100%;
+        aspect-ratio: unset;
+        min-height: calc(100cqw / 0.718);
+      }
+
+      /* Profile card overlay text — the 2-col-wide photo cell is narrower
+         relative to its own card height here than on desktop, so the name/
+         title overlay is scaled down to match. */
+      .pc-details h3 {
+        font-size: min(4svh, 1.8em);
+      }
+
+      .pc-details p {
+        font-size: 12px;
       }
 
       /* Process grid — 2×3 on tablet (override desktop flex-scroll) */
@@ -3617,8 +3770,10 @@
         width: calc(100% - 1rem);
       }
 
-      /* About — mostly single column; years/projects/domains/industry form
-         a 2x2 within it instead of 4 separate full-width rows. */
+      /* About — mostly single column; years/projects still pair up, but
+         domains (now a dominant CardSwap background card) takes the full
+         width and industry drops to its own full-width row below it,
+         matching the tablet/desktop "single marquee banner" treatment. */
       .about-grid {
         grid-template-columns: 1fr 1fr;
         grid-template-areas:
@@ -3627,15 +3782,39 @@
           "intro1 intro1"
           "intro2 intro2"
           "years projects"
-          "domains industry"
+          "domains domains"
+          "industry industry"
           "workflow workflow";
         gap: 14px;
       }
 
-      /* Industry card is half-width here, unlike the widened desktop
-         layout — keep the chips wrapping. */
-      .ai-chips {
-        flex-wrap: wrap;
+      /* Industry Focus — too narrow at mobile width for label + marquee to
+         share a row (see base .industry-row), so stack the chip track under
+         the title instead. */
+      .industry-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .ai-chips-marquee {
+        width: 100%;
+      }
+
+      /* Domain CardSwap — desktop/tablet anchor it bottom-right corner-
+         peeking; at mobile width that reads as a small tucked-away sliver.
+         Drop the scale-down (CardSwap.css's own 0.55 media rule) so the
+         stack reads as a proper half-of-the-card visual instead of a corner
+         accent, while keeping the same bottom-right anchor (overhanging
+         past the card's own corner is fine — see .cardswap-container's
+         desktop default). Selector specificity (2 classes) beats
+         CardSwap.css's single-class .cardswap-container rules regardless
+         of source order. */
+      .domain-swap-stage .cardswap-container {
+        bottom: 0;
+        right: 0;
+        transform: translate(5%, 20%);
+        transform-origin: bottom right;
       }
 
       .about-h2 {
