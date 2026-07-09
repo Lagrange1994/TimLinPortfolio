@@ -1,0 +1,13 @@
+/* Utilities-only import: no preflight/base reset, so this does not clobber
+   the hand-written global styles in portfolio.css. Scoped for use inside
+   the How I Use AI cards Horizon UI styled detail content.
+
+   utilities.css is intentionally NOT wrapped in @layer: portfolio.css has a
+   global unlayered star-selector margin/padding reset, and cascade layers
+   make any layered rule lose to an unlayered one regardless of specificity
+   or source order, so a layered utilities.css would have every Tailwind
+   spacing utility class silently overridden by that reset. Importing it
+   unlayered instead means normal specificity applies, and a class selector
+   correctly beats the reset's universal selector. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css";

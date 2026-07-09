@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useRef, Fragment, useMemo, type ReactNode, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useState, useRef, Fragment, useMemo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
@@ -100,6 +100,68 @@ function runsToHtml(runs: { text: string; cls?: string }[]) {
   return runs.map(r => (r.cls ? `<span class="${r.cls}">${escapeHtml(r.text)}</span>` : escapeHtml(r.text))).join('');
 }
 
+// Horizon UI–style badge/alert primitives (Tailwind utility classes) — the
+// "How I Use AI" card details used to render this content via SGDS web
+// components; class strings must stay fully literal (not template-built) so
+// Tailwind's source scanner can find them.
+type HColor = 'neutral' | 'purple' | 'cyan' | 'warning' | 'danger' | 'success' | 'info' | 'primary';
+
+const BADGE_COLORS: Record<HColor, { solid: string; outline: string }> = {
+  neutral: { solid: 'bg-white/10 text-white/70', outline: 'border border-white/25 text-white/70' },
+  purple: { solid: 'bg-violet-400/15 text-violet-300', outline: 'border border-violet-400/40 text-violet-300' },
+  cyan: { solid: 'bg-cyan-400/15 text-cyan-300', outline: 'border border-cyan-400/40 text-cyan-300' },
+  warning: { solid: 'bg-amber-400/15 text-amber-300', outline: 'border border-amber-400/40 text-amber-300' },
+  danger: { solid: 'bg-red-400/15 text-red-300', outline: 'border border-red-400/40 text-red-300' },
+  success: { solid: 'bg-emerald-400/15 text-emerald-300', outline: 'border border-emerald-400/40 text-emerald-300' },
+  info: { solid: 'bg-blue-400/15 text-blue-300', outline: 'border border-blue-400/40 text-blue-300' },
+  primary: { solid: 'bg-indigo-400/15 text-indigo-300', outline: 'border border-indigo-400/40 text-indigo-300' },
+};
+
+function HBadge({ variant = 'neutral', outline = false, style, children }: { variant?: HColor; outline?: boolean; style?: CSSProperties; children: ReactNode }) {
+  const c = BADGE_COLORS[variant] ?? BADGE_COLORS.neutral;
+  return (
+    <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-bold ${outline ? c.outline : c.solid}`} style={style}>
+      {children}
+    </span>
+  );
+}
+
+const ALERT_COLORS: Record<string, string> = {
+  neutral: 'border-white/15 bg-white/[0.04]',
+  warning: 'border-amber-400/25 bg-amber-400/[0.06]',
+  info: 'border-blue-400/25 bg-blue-400/[0.06]',
+  success: 'border-emerald-400/25 bg-emerald-400/[0.06]',
+};
+const ALERT_ICON_COLORS: Record<string, string> = {
+  neutral: 'bg-white/10 text-white/70',
+  warning: 'bg-amber-400/15 text-amber-300',
+  info: 'bg-blue-400/15 text-blue-300',
+  success: 'bg-emerald-400/15 text-emerald-300',
+};
+
+function HAlert({ variant = 'neutral', icon, title, children }: { variant?: 'neutral' | 'warning' | 'info' | 'success'; icon: ReactNode; title: string; children: ReactNode }) {
+  return (
+    <div className={`rounded-2xl border p-3 ${ALERT_COLORS[variant] ?? ALERT_COLORS.neutral}`}>
+      <div className="mb-2 flex items-center gap-2">
+        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-sm ${ALERT_ICON_COLORS[variant] ?? ALERT_ICON_COLORS.neutral}`}>
+          {icon}
+        </span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-white/80">{title}</span>
+      </div>
+      <div className="text-[13px] leading-relaxed text-white/70">{children}</div>
+    </div>
+  );
+}
+
+function HRow({ label, children }: { label: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex items-start justify-between gap-3 border-b border-white/10 py-2 text-[12.5px] last:border-0">
+      <span className="text-white/50">{label}</span>
+      <span className="text-right font-medium text-white/85">{children}</span>
+    </div>
+  );
+}
+
 function makeAiCards(t: Record<string, string>) {
   return [
     {
@@ -138,7 +200,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="ch-name">LINE · @pm.celine</div>
                   <div className="ch-snippet">Onboarding redesign for the new tier — Jun 17?</div>
                 </div>
-                <sgds-badge variant="neutral" outlined>2m</sgds-badge>
+                <HBadge variant="neutral" outline>2m</HBadge>
               </div>
               <div className="channel">
                 <span className="ch-icon">E</span>
@@ -146,7 +208,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="ch-name">Email · celine.h@firm.co</div>
                   <div className="ch-snippet">Quick question on tier-2 pricing visuals</div>
                 </div>
-                <sgds-badge variant="neutral" outlined>28m</sgds-badge>
+                <HBadge variant="neutral" outline>28m</HBadge>
               </div>
               <div className="channel">
                 <span className="ch-icon">F</span>
@@ -154,7 +216,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="ch-name">Form · Brief intake</div>
                   <div className="ch-snippet">Tier-2 pricing experiment — marketing</div>
                 </div>
-                <sgds-badge variant="neutral" outlined>1h</sgds-badge>
+                <HBadge variant="neutral" outline>1h</HBadge>
               </div>
               <div className="channel">
                 <span className="ch-icon">S</span>
@@ -162,7 +224,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="ch-name">Slack · #design-requests</div>
                   <div className="ch-snippet">Mobile sign-up flow — usability review</div>
                 </div>
-                <sgds-badge variant="neutral" outlined>3h</sgds-badge>
+                <HBadge variant="neutral" outline>3h</HBadge>
               </div>
               <div className="channel">
                 <span className="ch-icon">M</span>
@@ -170,7 +232,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="ch-name">Manual · Kickoff notes</div>
                   <div className="ch-snippet">In-person — Q3 roadmap dependencies</div>
                 </div>
-                <sgds-badge variant="neutral" outlined>1d</sgds-badge>
+                <HBadge variant="neutral" outline>1d</HBadge>
               </div>
             </div>
           </div>
@@ -208,7 +270,7 @@ function makeAiCards(t: Record<string, string>) {
                 <div className="field"><label>{t.ai_f_timeline}</label><div className="val"><span>Jun 03 — Jun 17</span></div></div>
                 <div className="field"><label>{t.ai_f_budget}</label><div className="val"><span>Internal</span></div></div>
               </div>
-              <div className="field"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><sgds-badge variant="danger">HIGH</sgds-badge></div></div>
+              <div className="field"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><HBadge variant="danger">HIGH</HBadge></div></div>
               <div className="field"><label>{t.ai_f_contact}</label><div className="val"><span>celine.h@firm.co</span></div></div>
               <div className="form-status">
                 <span>{t.ai_f_complete}</span>
@@ -245,56 +307,50 @@ function makeAiCards(t: Record<string, string>) {
             <span className="ai-thinking-label">{t.ai_thinking}</span>
           </div>
           <div className="ai-block summary">
-            <sgds-alert show variant="neutral" outlined title={t.ai_d_summary_lbl}>
-              <sgds-icon slot="icon" name="file-text" size="md" />
+            <HAlert variant="neutral" title={t.ai_d_summary_lbl} icon={<i className="ph-bold ph-file-text" />}>
               <p dangerouslySetInnerHTML={{ __html: t.ai_d_summary_text }} />
-            </sgds-alert>
+            </HAlert>
           </div>
           <div className="ai-row">
             <div className="ai-block tasktype">
-              <sgds-alert show variant="neutral" outlined title={t.ai_d_tasktype_lbl}>
-                <sgds-icon slot="icon" name="grid-fill" size="md" />
+              <HAlert variant="neutral" title={t.ai_d_tasktype_lbl} icon={<i className="ph-fill ph-grid-four" />}>
                 <div className="vv">
-                  <sgds-badge variant="purple" outlined>Product UI</sgds-badge>
-                  <sgds-badge variant="neutral" outlined>conf · 0.92</sgds-badge>
+                  <HBadge variant="purple" outline>Product UI</HBadge>
+                  <HBadge variant="neutral" outline>conf · 0.92</HBadge>
                 </div>
-              </sgds-alert>
+              </HAlert>
             </div>
             <div className="ai-block priority">
-              <sgds-alert show variant="warning" outlined title={t.ai_d_priority_lbl}>
-                <sgds-icon slot="icon" name="star-fill" size="md" />
+              <HAlert variant="warning" title={t.ai_d_priority_lbl} icon={<i className="ph-fill ph-star" />}>
                 <div className="vv">
-                  <sgds-badge variant="warning">P1 · HIGH</sgds-badge>
-                  <sgds-badge variant="neutral" outlined>conf · 0.87</sgds-badge>
+                  <HBadge variant="warning">P1 · HIGH</HBadge>
+                  <HBadge variant="neutral" outline>conf · 0.87</HBadge>
                 </div>
-              </sgds-alert>
+              </HAlert>
             </div>
           </div>
           <div className="ai-block missing">
-            <sgds-alert show variant="warning" outlined title={t.ai_d_missing_lbl}>
-              <sgds-icon slot="icon" name="exclamation-triangle-fill" size="md" />
+            <HAlert variant="warning" title={t.ai_d_missing_lbl} icon={<i className="ph-fill ph-warning" />}>
               <ul>
                 <li>{t.ai_d_m1}</li>
                 <li>{t.ai_d_m2}</li>
                 <li>{t.ai_d_m3}</li>
               </ul>
-            </sgds-alert>
+            </HAlert>
           </div>
           <div className="ai-block questions">
-            <sgds-alert show variant="info" outlined title={t.ai_d_questions_lbl}>
-              <sgds-icon slot="icon" name="info-circle-fill" size="md" />
+            <HAlert variant="info" title={t.ai_d_questions_lbl} icon={<i className="ph-fill ph-info" />}>
               <ol>
                 <li>{t.ai_d_q1}</li>
                 <li>{t.ai_d_q2}</li>
                 <li>{t.ai_d_q3}</li>
               </ol>
-            </sgds-alert>
+            </HAlert>
           </div>
           <div className="ai-block direction">
-            <sgds-alert show variant="success" outlined title={t.ai_d_direction_lbl}>
-              <sgds-icon slot="icon" name="arrow-circle-right" size="md" />
+            <HAlert variant="success" title={t.ai_d_direction_lbl} icon={<i className="ph-bold ph-arrow-circle-right" />}>
               <p>{t.ai_d_direction_text}</p>
-            </sgds-alert>
+            </HAlert>
           </div>
         </>
       ),
@@ -323,38 +379,42 @@ function makeAiCards(t: Record<string, string>) {
               <span>{t.ai_d_sheets_lbl}</span>
             </div>
           <div className="tracking-chart-container" style={{ height: 72, marginBottom: 8 }} />
-          <sgds-table responsive="always" tableBorder headerBackground>
-            <sgds-table-row>
-              <sgds-table-head>ID</sgds-table-head>
-              <sgds-table-head>Source</sgds-table-head>
-              <sgds-table-head>Type</sgds-table-head>
-              <sgds-table-head>Status</sgds-table-head>
-            </sgds-table-row>
-            <sgds-table-row>
-              <sgds-table-cell>DR-248</sgds-table-cell>
-              <sgds-table-cell>LINE</sgds-table-cell>
-              <sgds-table-cell>Product UI</sgds-table-cell>
-              <sgds-table-cell><sgds-badge variant="success">Active</sgds-badge></sgds-table-cell>
-            </sgds-table-row>
-            <sgds-table-row>
-              <sgds-table-cell>DR-247</sgds-table-cell>
-              <sgds-table-cell>Form</sgds-table-cell>
-              <sgds-table-cell>Graphic</sgds-table-cell>
-              <sgds-table-cell><sgds-badge variant="primary" outlined>Review</sgds-badge></sgds-table-cell>
-            </sgds-table-row>
-            <sgds-table-row>
-              <sgds-table-cell>DR-246</sgds-table-cell>
-              <sgds-table-cell>Email</sgds-table-cell>
-              <sgds-table-cell>UX Review</sgds-table-cell>
-              <sgds-table-cell><sgds-badge variant="neutral">Done</sgds-badge></sgds-table-cell>
-            </sgds-table-row>
-            <sgds-table-row>
-              <sgds-table-cell>DR-245</sgds-table-cell>
-              <sgds-table-cell>LINE</sgds-table-cell>
-              <sgds-table-cell>Research</sgds-table-cell>
-              <sgds-table-cell><sgds-badge variant="neutral" outlined>Backlog</sgds-badge></sgds-table-cell>
-            </sgds-table-row>
-          </sgds-table>
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr>
+                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">ID</th>
+                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">Source</th>
+                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">Type</th>
+                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="border-b border-white/10 py-2">DR-248</td>
+                <td className="border-b border-white/10 py-2">LINE</td>
+                <td className="border-b border-white/10 py-2">Product UI</td>
+                <td className="border-b border-white/10 py-2"><HBadge variant="success">Active</HBadge></td>
+              </tr>
+              <tr>
+                <td className="border-b border-white/10 py-2">DR-247</td>
+                <td className="border-b border-white/10 py-2">Form</td>
+                <td className="border-b border-white/10 py-2">Graphic</td>
+                <td className="border-b border-white/10 py-2"><HBadge variant="primary" outline>Review</HBadge></td>
+              </tr>
+              <tr>
+                <td className="border-b border-white/10 py-2">DR-246</td>
+                <td className="border-b border-white/10 py-2">Email</td>
+                <td className="border-b border-white/10 py-2">UX Review</td>
+                <td className="border-b border-white/10 py-2"><HBadge variant="neutral">Done</HBadge></td>
+              </tr>
+              <tr>
+                <td className="py-2">DR-245</td>
+                <td className="py-2">LINE</td>
+                <td className="py-2">Research</td>
+                <td className="py-2"><HBadge variant="neutral" outline>Backlog</HBadge></td>
+              </tr>
+            </tbody>
+          </table>
           <div className="sheet-foot">
             <span>4 of 142 records</span>
             <span>Updated · 2m ago</span>
@@ -386,27 +446,15 @@ function makeAiCards(t: Record<string, string>) {
               </svg>
               <span>{t.ai_d_assessment_lbl}</span>
             </div>
-            <sgds-description-list-group stacked bordered>
-              <sgds-description-list>
-                {t.ai_hr_priority_row}
-                <span slot="data">
-                  <sgds-badge variant="danger" style={{ marginRight: '6px' }}>P1</sgds-badge>
-                  {t.ai_hr_priority_val.replace(/^P1[^a-z]+/i, '')}
-                </span>
-              </sgds-description-list>
-              <sgds-description-list>
-                {t.ai_hr_strategy_row}
-                <span slot="data">{t.ai_hr_strategy_val}</span>
-              </sgds-description-list>
-              <sgds-description-list>
-                {t.ai_hr_risks_row}
-                <span slot="data">{t.ai_hr_risks_val}</span>
-              </sgds-description-list>
-              <sgds-description-list>
-                {t.ai_hr_nextstep_row}
-                <span slot="data">{t.ai_hr_nextstep_val}</span>
-              </sgds-description-list>
-            </sgds-description-list-group>
+            <div>
+              <HRow label={t.ai_hr_priority_row}>
+                <HBadge variant="danger" style={{ marginRight: '6px' }}>P1</HBadge>
+                {t.ai_hr_priority_val.replace(/^P1[^a-z]+/i, '')}
+              </HRow>
+              <HRow label={t.ai_hr_strategy_row}>{t.ai_hr_strategy_val}</HRow>
+              <HRow label={t.ai_hr_risks_row}>{t.ai_hr_risks_val}</HRow>
+              <HRow label={t.ai_hr_nextstep_row}>{t.ai_hr_nextstep_val}</HRow>
+            </div>
           </div>
           <div className="msg-panel msg-panel-green">
             <div className="msg-panel-head">
@@ -450,7 +498,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="pt">{t.ai_ph_research}</div>
                   <div className="pd">{t.ai_ph_research_d}</div>
                 </div>
-                <sgds-badge variant="cyan">{t.ai_ph_upnext}</sgds-badge>
+                <HBadge variant="cyan">{t.ai_ph_upnext}</HBadge>
               </div>
               <div className="phase">
                 <div className="pn">02</div>
@@ -458,7 +506,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="pt">{t.ai_ph_structure}</div>
                   <div className="pd">{t.ai_ph_structure_d}</div>
                 </div>
-                <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
+                <HBadge variant="neutral" outline>{t.ai_ph_queued}</HBadge>
               </div>
               <div className="phase">
                 <div className="pn">03</div>
@@ -466,7 +514,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="pt">{t.ai_ph_design}</div>
                   <div className="pd">{t.ai_ph_design_d}</div>
                 </div>
-                <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
+                <HBadge variant="neutral" outline>{t.ai_ph_queued}</HBadge>
               </div>
               <div className="phase">
                 <div className="pn">04</div>
@@ -474,7 +522,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="pt">{t.ai_ph_validate}</div>
                   <div className="pd">{t.ai_ph_validate_d}</div>
                 </div>
-                <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
+                <HBadge variant="neutral" outline>{t.ai_ph_queued}</HBadge>
               </div>
               <div className="phase">
                 <div className="pn">05</div>
@@ -482,7 +530,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="pt">{t.ai_ph_delivery}</div>
                   <div className="pd">{t.ai_ph_delivery_d}</div>
                 </div>
-                <sgds-badge variant="neutral" outlined>{t.ai_ph_queued}</sgds-badge>
+                <HBadge variant="neutral" outline>{t.ai_ph_queued}</HBadge>
               </div>
             </div>
           </div>

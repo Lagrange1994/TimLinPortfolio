@@ -1,4 +1,5 @@
 import './styles/portfolio.css';
+import './styles/tailwind.css';
 import { LangProvider } from './context/LangContext';
 import { useRiseReveal } from './utils/useRiseReveal';
 import Loader from './components/Loader';
