@@ -35,8 +35,13 @@ function devChatApi() {
             const raw = Buffer.concat(chunks).toString('utf8');
             const { generateReply } = await server.ssrLoadModule('/api/_chat-core.ts');
             let question = '';
-            try { question = JSON.parse(raw || '{}').question; } catch { /* ignore */ }
-            const result = await generateReply(question);
+            let lang = '';
+            try {
+              const parsed = JSON.parse(raw || '{}');
+              question = parsed.question;
+              lang = parsed.lang;
+            } catch { /* ignore */ }
+            const result = await generateReply(question, lang);
             res.statusCode = result.status;
             res.end(JSON.stringify(result.body));
           } catch (e) {

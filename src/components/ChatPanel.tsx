@@ -55,7 +55,7 @@ function FormattedReply({ text }: { text: string }) {
 }
 
 export default function ChatPanel() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -106,7 +106,7 @@ export default function ChatPanel() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, lang }),
       });
       const data = await res.json();
       setMessages(prev => {

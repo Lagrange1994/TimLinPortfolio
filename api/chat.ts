@@ -21,13 +21,19 @@ export default async function handler(req: ReqLike, res: ResLike) {
   }
 
   let question: unknown = '';
+  let lang: unknown = '';
   const body = req.body;
   if (typeof body === 'string') {
-    try { question = JSON.parse(body).question; } catch { question = ''; }
+    try {
+      const parsed = JSON.parse(body);
+      question = parsed.question;
+      lang = parsed.lang;
+    } catch { question = ''; }
   } else if (body && typeof body === 'object') {
     question = (body as Record<string, unknown>).question;
+    lang = (body as Record<string, unknown>).lang;
   }
 
-  const result = await generateReply(question);
+  const result = await generateReply(question, lang);
   res.status(result.status).json(result.body);
 }

@@ -1,5 +1,10 @@
 import { useEffect } from 'react';
 
+// Must match HeroSection's "Hero spline desktop+tablet conditional" effect —
+// that's the breakpoint below which the hero figure is a static <img> instead
+// of a Spline scene.
+const HERO_FIGURE_BREAKPOINT = 768;
+
 export default function Loader() {
   useEffect(() => {
     const loader = document.getElementById('page-loader');
@@ -16,27 +21,37 @@ export default function Loader() {
 
     const forceTimer = setTimeout(hideLoader, 4000);
 
-    function waitForSpline() {
-      // The desktop hero figure only gets a Spline `url` (and thus only ever
-      // fires `load`) when window.innerWidth >= 1025 — see HeroSection's
-      // "Hero spline desktop conditional" effect. Below that breakpoint the
-      // element exists but never loads anything, so waiting for its `load`
-      // event would just burn the full 4s forceTimer on every mobile visit.
-      const splineEl = document.querySelector('.hero-fig-desktop');
-      if (!splineEl || window.innerWidth < 1025) {
+    function waitForAssets() {
+      // Background Spline scene (#spline-bg) loads at every viewport width.
+      // The hero character Spline only gets a `url` (and thus only ever
+      // fires `load`) at HERO_FIGURE_BREAKPOINT and up; below that it's a
+      // static <img>, so there's nothing to wait for there — mobile only
+      // waits on the background.
+      const isDesktop = window.innerWidth >= HERO_FIGURE_BREAKPOINT;
+      const pending = [
+        document.getElementById('spline-bg'),
+        isDesktop ? document.querySelector('.hero-fig-desktop') : null,
+      ].filter((el): el is Element => !!el);
+
+      if (!pending.length) {
         hideLoader();
         return;
       }
-      splineEl.addEventListener('load', function () {
-        clearTimeout(forceTimer);
-        hideLoader();
-      }, { once: true });
+
+      let remaining = pending.length;
+      pending.forEach(el => el.addEventListener('load', function () {
+        remaining -= 1;
+        if (remaining === 0) {
+          clearTimeout(forceTimer);
+          hideLoader();
+        }
+      }, { once: true }));
     }
 
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', waitForSpline, { once: true });
+      document.addEventListener('DOMContentLoaded', waitForAssets, { once: true });
     } else {
-      waitForSpline();
+      waitForAssets();
     }
 
     return () => {

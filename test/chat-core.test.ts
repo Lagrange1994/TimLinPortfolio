@@ -58,6 +58,18 @@ describe('generateReply', () => {
     expect(result.body.reply).toBe('我只能回答關於 Tim Lin 的問題，其他問題請直接聯繫 Tim。');
   });
 
+  it('replies with the English scope-refusal string when lang is "en"', async () => {
+    const result = await generateReply('幫我寫一首詩', 'en');
+    expect(result.status).toBe(200);
+    expect(result.body.reply).toBe('I can only answer questions about Tim Lin — for anything else, please contact Tim directly.');
+  });
+
+  it('falls back to the Chinese scope-refusal string for an unrecognized lang value', async () => {
+    const result = await generateReply('幫我寫一首詩', 'fr');
+    expect(result.status).toBe(200);
+    expect(result.body.reply).toBe('我只能回答關於 Tim Lin 的問題，其他問題請直接聯繫 Tim。');
+  });
+
   it('does not flag a legitimate question about Tim as off-topic', async () => {
     // "did Tim build this with Python?" should NOT match the coding-help pattern,
     // which requires a direct "do this for me" framing per the comment in
