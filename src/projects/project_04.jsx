@@ -49,6 +49,10 @@ gsap.registerPlugin(ScrollToPlugin);
         // --- DATA ---
         const TRANSLATIONS = {
             zh: {
+                loader_step1: "讀取專案中繼資料",
+                loader_step2: "載入視覺素材",
+                loader_step3: "建構渲染畫布",
+                loader_step4: "初始化完成",
                 title_main: "臺南市政府警察局",
                 title_sub: "臺南智慧巡簽系統",
                 hero_desc: "從「物聯網」到「護聯網」。結合智慧導航與緊急互助，為一線員警打造的數位保命符。",
@@ -85,6 +89,10 @@ gsap.registerPlugin(ScrollToPlugin);
                 back_home: "Back to Portfolio"
             },
             en: {
+                loader_step1: "Reading project metadata",
+                loader_step2: "Loading visual assets",
+                loader_step3: "Constructing render canvas",
+                loader_step4: "Initialization complete",
                 title_main: "Tainan City Police",
                 title_sub: "Smart Patrol System",
                 hero_desc: "From 'IoT' to 'Internet of Protection'. Combining smart navigation and emergency mutual aid to create a digital lifeline for frontline officers.",
@@ -159,6 +167,8 @@ gsap.registerPlugin(ScrollToPlugin);
             const [solutionFeatures, setSolutionFeatures] = useState([]);
             const [galleryImages, setGalleryImages] = useState([]);
             const [loading, setLoading] = useState(true);
+            const [loaderStep, setLoaderStep] = useState(0);
+            const [loaderDone, setLoaderDone] = useState(false);
             const [activeTab, setActiveTab] = useState('context');
             const [currentImage, setCurrentImage] = useState('./img/project_04/display.jpg');
             const [activeGalleryId, setActiveGalleryId] = useState(null);
@@ -256,17 +266,24 @@ gsap.registerPlugin(ScrollToPlugin);
 
             // Loader Logic
             useEffect(() => {
-                const checkHero = () => {
-                    return new Promise((resolve) => {
-                        const img = new Image();
-                        img.src = './img/project_04/hero_img.jpg';
-                        if (img.complete) { resolve(); return; }
-                        img.onload = () => resolve();
-                        img.onerror = () => resolve();
-                    });
-                };
-                const minTime = new Promise(r => setTimeout(r, 1000));
-                Promise.all([checkHero(), minTime]).then(() => setLoading(false));
+                const preload = (src) => new Promise((resolve) => {
+                    const img = new Image();
+                    img.src = src;
+                    if (img.complete) { resolve(); return; }
+                    img.onload = () => resolve();
+                    img.onerror = () => resolve();
+                });
+                const assetsPromise = Promise.all([
+                    preload('./img/project_04/hero_img.jpg'),
+                    preload('./img/project_04/display.jpg'),
+                ]);
+                const forceTimeout = new Promise(r => setTimeout(r, 4000));
+                Promise.race([assetsPromise, forceTimeout]).then(() => { setLoaderDone(true); setLoading(false); });
+            }, []);
+
+            useEffect(() => {
+                const stepTimer = setInterval(() => setLoaderStep(i => (i + 1) % 3), 500);
+                return () => clearInterval(stepTimer);
             }, []);
 
             useEffect(() => {
@@ -382,7 +399,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
             return (
                 <React.Fragment>
-                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-tn-primary/50 hover:bg-tn-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">

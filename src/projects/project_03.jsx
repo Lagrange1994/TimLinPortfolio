@@ -54,6 +54,10 @@ gsap.registerPlugin(ScrollToPlugin);
         // --- 1. 多語言資料庫 ---
         const TRANSLATIONS = {
             zh: {
+                loader_step1: "讀取專案中繼資料",
+                loader_step2: "載入視覺素材",
+                loader_step3: "建構渲染畫布",
+                loader_step4: "初始化完成",
                 title_main: "高雄市警察局",
                 title_sub: "新世代智慧科技辦案系統",
                 hero_desc: "如果說 AI 是大腦，這套系統就是免疫系統。從「環境感知」轉向「系統維運」，打造確保辦案工具隨時可用的後勤中樞。",
@@ -90,6 +94,10 @@ gsap.registerPlugin(ScrollToPlugin);
                 back_home: "Back to Portfolio"
             },
             en: {
+                loader_step1: "Reading project metadata",
+                loader_step2: "Loading visual assets",
+                loader_step3: "Constructing render canvas",
+                loader_step4: "Initialization complete",
                 title_main: "Kaohsiung City Police",
                 title_sub: "Next-Gen Smart Investigation System",
                 hero_desc: "If AI is the brain, this system is the immune system. Shifting focus from 'Environmental Sensing' to 'System Maintenance', creating a logistics hub ensuring investigation tools are always ready.",
@@ -163,6 +171,8 @@ gsap.registerPlugin(ScrollToPlugin);
             const [galleryCategories, setGalleryCategories] = useState([]);
 
             const [loading, setLoading] = useState(true);
+            const [loaderStep, setLoaderStep] = useState(0);
+            const [loaderDone, setLoaderDone] = useState(false);
             const [activeTab, setActiveTab] = useState('context');
 
             const [currentImage, setCurrentImage] = useState('./img/project_03/display.jpg');
@@ -212,16 +222,23 @@ gsap.registerPlugin(ScrollToPlugin);
             }, []);
 
             useEffect(() => {
-                const heroImagePromise = new Promise((resolve) => {
+                const preload = (src) => new Promise((resolve) => {
                     const img = new Image();
-                    img.src = './img/project_03/hero_img.jpg';
-                    img.onload = () => resolve('hero loaded');
-                    img.onerror = () => resolve('hero error');
+                    img.src = src;
+                    img.onload = () => resolve();
+                    img.onerror = () => resolve();
                 });
+                const assetsPromise = Promise.all([
+                    preload('./img/project_03/hero_img.jpg'),
+                    preload('./img/project_03/display.jpg'),
+                ]);
+                const forceTimeout = new Promise(resolve => setTimeout(resolve, 4000));
+                Promise.race([assetsPromise, forceTimeout]).then(() => { setLoaderDone(true); setLoading(false); });
+            }, []);
 
-                const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
-
-                Promise.all([heroImagePromise, timerPromise]).then(() => setLoading(false));
+            useEffect(() => {
+                const stepTimer = setInterval(() => setLoaderStep(i => (i + 1) % 3), 500);
+                return () => clearInterval(stepTimer);
             }, []);
 
             useEffect(() => {
@@ -346,7 +363,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
             return (
                 <React.Fragment>
-                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         {/* [修改] bg-dark-lighter -> bg-kh-dark-lighter, border-primary -> border-kh-primary */}

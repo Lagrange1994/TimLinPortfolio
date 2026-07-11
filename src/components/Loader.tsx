@@ -1,11 +1,26 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useLang } from '../context/LangContext';
 
 // Must match HeroSection's "Hero spline desktop+tablet conditional" effect —
 // that's the breakpoint below which the hero figure is a static <img> instead
 // of a Spline scene.
 const HERO_FIGURE_BREAKPOINT = 768;
 
+const STEP_KEYS = ['loader_step1', 'loader_step2', 'loader_step3'] as const;
+const STEP_INTERVAL_MS = 1000;
+
 export default function Loader() {
+  const { t } = useLang();
+  const [stepIndex, setStepIndex] = useState(0);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    const stepTimer = setInterval(() => {
+      setStepIndex(i => (i + 1) % STEP_KEYS.length);
+    }, STEP_INTERVAL_MS);
+    return () => clearInterval(stepTimer);
+  }, []);
+
   useEffect(() => {
     const loader = document.getElementById('page-loader');
     if (!loader) return;
@@ -14,6 +29,7 @@ export default function Loader() {
     function hideLoader() {
       if (dismissed) return;
       dismissed = true;
+      setDone(true);
       loader!.classList.add('hidden');
       document.body.classList.add('hero-ready');
       window.dispatchEvent(new Event('hero-ready'));
@@ -62,6 +78,7 @@ export default function Loader() {
   return (
     <div className="loader" id="page-loader">
       <div className="loader-animation"></div>
+      <p className="loader-text">{done ? t.loader_step4 : t[STEP_KEYS[stepIndex]]}</p>
     </div>
   );
 }

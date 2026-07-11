@@ -36,6 +36,10 @@ gsap.registerPlugin(ScrollToPlugin);
         // --- TRANSLATIONS ---
         const TRANSLATIONS = {
             zh: {
+                loader_step1: "讀取專案中繼資料",
+                loader_step2: "載入視覺素材",
+                loader_step3: "建構渲染畫布",
+                loader_step4: "初始化完成",
                 title_main: "Love Two live app", title_sub: "遊戲化留存設計",
                 hero_desc: "透過「青綠色」科技感視覺與深度的遊戲化任務設計，解決用戶留存痛點，打造全時段的社交直播生態。",
                 btn_explore: "探索設計旅程", back_home: "Back to Portfolio",
@@ -70,6 +74,10 @@ gsap.registerPlugin(ScrollToPlugin);
                 img_profile: "個人主頁", img_self: "個人資訊彈窗", img_rank_con: "貢獻等級說明", img_rank_broad: "主播等級說明"
             },
             en: {
+                loader_step1: "Reading project metadata",
+                loader_step2: "Loading visual assets",
+                loader_step3: "Constructing render canvas",
+                loader_step4: "Initialization complete",
                 title_main: "Love Two live app", title_sub: "Gamified Retention Design",
                 hero_desc: "Utilizing 'Teal' sci-fi visuals and deep gamification strategies to solve retention pain points, creating a 24/7 social live streaming ecosystem.",
                 btn_explore: "Explore the Journey", back_home: "Back to Portfolio",
@@ -173,6 +181,8 @@ gsap.registerPlugin(ScrollToPlugin);
         const App = () => {
             const [lang, setLang] = useState('zh');
             const [loading, setLoading] = useState(true);
+            const [loaderStep, setLoaderStep] = useState(0);
+            const [loaderDone, setLoaderDone] = useState(false);
             const [activeTab, setActiveTab] = useState('context');
             const [currentImage, setCurrentImage] = useState(MAIN_IMAGE);
             const [activeGalleryId, setActiveGalleryId] = useState('01');
@@ -204,14 +214,18 @@ gsap.registerPlugin(ScrollToPlugin);
                 const initialLang = savedLang === 'en' ? 'en' : 'zh';
                 setLang(initialLang);
 
-                const heroImagePromise = new Promise((resolve) => {
+                const preload = (src) => new Promise((resolve) => {
                     const img = new Image();
-                    img.src = './img/project_08/hero_img.jpg';
-                    img.onload = () => resolve('hero loaded');
-                    img.onerror = () => resolve('hero error');
+                    img.src = src;
+                    img.onload = () => resolve();
+                    img.onerror = () => resolve();
                 });
-                const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
-                Promise.all([heroImagePromise, timerPromise]).then(() => setLoading(false));
+                const assetsPromise = Promise.all([
+                    preload('./img/project_08/hero_img.jpg'),
+                    preload(MAIN_IMAGE),
+                ]);
+                const forceTimeout = new Promise(resolve => setTimeout(resolve, 4000));
+                Promise.race([assetsPromise, forceTimeout]).then(() => { setLoaderDone(true); setLoading(false); });
 
                 const setResponsiveFontSize = () => {
                     if (window.innerWidth >= 1024) document.documentElement.style.fontSize = (window.innerWidth / 1920) * 16 + "px";
@@ -221,6 +235,11 @@ gsap.registerPlugin(ScrollToPlugin);
                 setResponsiveFontSize();
 
                 return () => window.removeEventListener('resize', setResponsiveFontSize);
+            }, []);
+
+            useEffect(() => {
+                const stepTimer = setInterval(() => setLoaderStep(i => (i + 1) % 3), 500);
+                return () => clearInterval(stepTimer);
             }, []);
 
             // Mobile Resize Logic
@@ -350,7 +369,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
             return (
                 <React.Fragment>
-                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         {/* [修改] bg-dark-lighter -> bg-lv-dark-lighter, border-primary -> border-lv-primary */}

@@ -42,6 +42,10 @@ gsap.registerPlugin(ScrollToPlugin);
         // --- TRANSLATIONS ---
         const TRANSLATIONS = {
             zh: {
+                loader_step1: "讀取專案中繼資料",
+                loader_step2: "載入視覺素材",
+                loader_step3: "建構渲染畫布",
+                loader_step4: "初始化完成",
                 title_main: "恆春航空站", title_sub: "網站設計提案",
                 hero_desc: "從功能性到體驗感 —— 在嚴格的預算與法規限制下，重新定義公部門網站的視覺想像。",
                 btn_explore: "探索設計旅程", back_home: "Back to Portfolio",
@@ -72,6 +76,10 @@ gsap.registerPlugin(ScrollToPlugin);
                 img_list: "列表式排版", img_list_desc: "針對高密度資訊設計的整潔列表模式"
             },
             en: {
+                loader_step1: "Reading project metadata",
+                loader_step2: "Loading visual assets",
+                loader_step3: "Constructing render canvas",
+                loader_step4: "Initialization complete",
                 title_main: "Hengchun Airport", title_sub: "Web Design Proposal",
                 hero_desc: "From Function to Experience. Redefining public sector web design under strict budget and regulations.",
                 btn_explore: "Explore the Journey", back_home: "Back to Portfolio",
@@ -120,6 +128,8 @@ gsap.registerPlugin(ScrollToPlugin);
         const App = () => {
             const [lang, setLang] = useState('zh');
             const [loading, setLoading] = useState(true);
+            const [loaderStep, setLoaderStep] = useState(0);
+            const [loaderDone, setLoaderDone] = useState(false);
             const [activeTab, setActiveTab] = useState('context');
             const [previewImage, setPreviewImage] = useState('v15');
             const [showBackToHero, setShowBackToHero] = useState(false);
@@ -153,14 +163,24 @@ gsap.registerPlugin(ScrollToPlugin);
                 const initialLang = savedLang === 'en' ? 'en' : 'zh';
                 setLang(initialLang);
 
-                const heroImagePromise = new Promise((resolve) => {
+                const preload = (src) => new Promise((resolve) => {
                     const img = new Image();
-                    img.src = './img/project_10/hero_img.jpg';
-                    img.onload = () => resolve('hero loaded');
-                    img.onerror = () => resolve('hero error');
+                    img.src = src;
+                    if (img.complete) { resolve(); return; }
+                    img.onload = () => resolve();
+                    img.onerror = () => resolve();
                 });
-                const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
-                Promise.all([heroImagePromise, timerPromise]).then(() => setLoading(false));
+                const assetsPromise = Promise.all([
+                    preload('./img/project_10/hero_img.jpg'),
+                    preload('./img/project_10/tw_index_lg_v15.jpg.jpg'),
+                ]);
+                const forceTimeout = new Promise(resolve => setTimeout(resolve, 4000));
+                Promise.race([assetsPromise, forceTimeout]).then(() => { setLoaderDone(true); setLoading(false); });
+            }, []);
+
+            useEffect(() => {
+                const stepTimer = setInterval(() => setLoaderStep(i => (i + 1) % 3), 500);
+                return () => clearInterval(stepTimer);
             }, []);
 
             // [新增] 響應式字體大小邏輯
@@ -294,7 +314,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
             return (
                 <React.Fragment>
-                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-hc-primary/50 hover:bg-hc-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">

@@ -55,6 +55,10 @@ gsap.registerPlugin(ScrollToPlugin);
         // --- DATA ---
         const TRANSLATIONS = {
             zh: {
+                loader_step1: "讀取專案中繼資料",
+                loader_step2: "載入視覺素材",
+                loader_step3: "建構渲染畫布",
+                loader_step4: "初始化完成",
                 title_main: "新竹市動物園", title_sub: "內部管理與行動應變系統",
                 hero_desc: "從辦公室的「數據司令部」到現場的「行動先鋒」，打造全方位的智慧園區管理體驗。",
                 btn_explore: "探索設計旅程", back_home: "Back to Portfolio",
@@ -78,6 +82,10 @@ gsap.registerPlugin(ScrollToPlugin);
                 gallery_title: "介面總覽 Gallery", gallery_desc: "完整系統介面展示"
             },
             en: {
+                loader_step1: "Reading project metadata",
+                loader_step2: "Loading visual assets",
+                loader_step3: "Constructing render canvas",
+                loader_step4: "Initialization complete",
                 title_main: "Hsinchu Zoo", title_sub: "Management & Response System",
                 hero_desc: "From the office 'Command Center' to the frontline 'Mobile Pioneer'.",
                 btn_explore: "Explore the Journey", back_home: "Back to Portfolio",
@@ -161,6 +169,8 @@ gsap.registerPlugin(ScrollToPlugin);
         const App = () => {
             const [lang, setLang] = useState('zh');
             const [loading, setLoading] = useState(true);
+            const [loaderStep, setLoaderStep] = useState(0);
+            const [loaderDone, setLoaderDone] = useState(false);
             const [activeTab, setActiveTab] = useState('context');
 
             // Data
@@ -210,9 +220,22 @@ gsap.registerPlugin(ScrollToPlugin);
                 window.addEventListener('resize', setResponsiveFontSize);
                 setResponsiveFontSize();
 
-                setTimeout(() => setLoading(false), 1000);
+                const displayPromise = new Promise((resolve) => {
+                    const img = new Image();
+                    img.src = './img/project_05/display.jpg';
+                    if (img.complete) { resolve(); return; }
+                    img.onload = () => resolve();
+                    img.onerror = () => resolve();
+                });
+                const forceTimeout = new Promise(resolve => setTimeout(resolve, 4000));
+                Promise.race([displayPromise, forceTimeout]).then(() => { setLoaderDone(true); setLoading(false); });
 
                 return () => window.removeEventListener('resize', setResponsiveFontSize);
+            }, []);
+
+            useEffect(() => {
+                const stepTimer = setInterval(() => setLoaderStep(i => (i + 1) % 3), 500);
+                return () => clearInterval(stepTimer);
             }, []);
 
             // Mobile Resize
@@ -351,7 +374,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
             return (
                 <React.Fragment>
-                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">

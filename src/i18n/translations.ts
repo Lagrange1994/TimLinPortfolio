@@ -5,6 +5,11 @@ export const translations = {
     nav_about: 'About',
     nav_portfolio: 'Portfolio',
     nav_contact: 'Contact',
+    // loader
+    loader_step1: '讀取專案中繼資料',
+    loader_step2: '載入視覺素材',
+    loader_step3: '建構渲染畫布',
+    loader_step4: '初始化完成',
     // hero
     hero_role: 'UI/UX Designer & Web Developer',
     hero_desc: '致力於打造兼具美學與功能的數位體驗<br>協助企業推動業務成長並深化用戶互動',
@@ -201,6 +206,11 @@ export const translations = {
     nav_about: 'About',
     nav_portfolio: 'Portfolio',
     nav_contact: 'Contact',
+    // loader
+    loader_step1: 'Reading project metadata',
+    loader_step2: 'Loading visual assets',
+    loader_step3: 'Constructing render canvas',
+    loader_step4: 'Initialization complete',
     // hero
     hero_role: 'UI/UX Designer & Web Developer',
     hero_desc:

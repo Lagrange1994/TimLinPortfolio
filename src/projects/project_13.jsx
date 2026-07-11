@@ -10,6 +10,10 @@ const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
 
         const CONTENT = {
             zh: {
+                loader_step1: "讀取專案中繼資料",
+                loader_step2: "載入視覺素材",
+                loader_step3: "建構渲染畫布",
+                loader_step4: "初始化完成",
                 hero_title: "SUPER HIGH TECH",
                 hero_sub: "CNC 3D SIMULATOR v4.2",
                 hero_desc: "Tech Coordinate — 定義未來的精密加工體驗。結合六邊形結構美學與數位孿生技術，打造工程師最可靠的虛擬指揮中心。",
@@ -57,6 +61,10 @@ const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
                 }
             },
             en: {
+                loader_step1: "Reading project metadata",
+                loader_step2: "Loading visual assets",
+                loader_step3: "Constructing render canvas",
+                loader_step4: "Initialization complete",
                 hero_title: "SUPER HIGH TECH",
                 hero_sub: "CNC 3D SIMULATOR v4.2",
                 hero_desc: "Tech Coordinate — Defining the future of precision machining. Combining hexagonal structural aesthetics with digital twin technology to build the most reliable virtual command center for engineers.",
@@ -576,11 +584,17 @@ const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
         const App = () => {
             const [isLoading, setIsLoading] = useState(true);
             const [isSimOpen, setIsSimOpen] = useState(false);
-            useEffect(() => { setTimeout(() => setIsLoading(false), 1500); }, []);
+            const [loaderStep, setLoaderStep] = useState(0);
+            const [loaderDone, setLoaderDone] = useState(false);
+            useEffect(() => { setTimeout(() => { setLoaderDone(true); setIsLoading(false); }, 1500); }, []);
+            useEffect(() => {
+                const stepTimer = setInterval(() => setLoaderStep(i => (i + 1) % 3), 500);
+                return () => clearInterval(stepTimer);
+            }, []);
             return (
                 <React.Fragment>
                     <div className={`loader-overlay ${!isLoading ? 'loader-hidden' : ''}`}>
-                        <div className="flex flex-col items-center"><div className="w-16 h-16 border-4 border-tech-primary border-t-transparent rounded-full animate-spin mb-4"></div><div className="font-mono text-tech-primary text-xs tracking-[0.3em] animate-pulse">INITIALIZING...</div></div>
+                        <div className="flex flex-col items-center"><div className="w-16 h-16 border-4 border-tech-primary border-t-transparent rounded-full animate-spin mb-4"></div><div className="font-mono text-tech-primary text-xs tracking-[0.3em] animate-pulse">{loaderDone ? t.loader_step4 : t[`loader_step${loaderStep + 1}`]}</div></div>
                     </div>
                     <Navbar />
                     <main><Hero onLaunch={() => setIsSimOpen(true)} /><Features /><DesignLanguage /></main>

@@ -36,6 +36,10 @@ gsap.registerPlugin(ScrollToPlugin);
         // --- TRANSLATIONS & DATA ---
         const TRANSLATIONS = {
             zh: {
+                loader_step1: "讀取專案中繼資料",
+                loader_step2: "載入視覺素材",
+                loader_step3: "建構渲染畫布",
+                loader_step4: "初始化完成",
                 title_main: "新竹縣環保局", title_sub: "內部整合資訊系統",
                 hero_desc: "從繁瑣到直觀，為公部門打造的高效數位辦公樞紐。",
                 btn_explore: "探索設計旅程", back_home: "Back to Portfolio",
@@ -64,6 +68,10 @@ gsap.registerPlugin(ScrollToPlugin);
                 img_admin: "管理者後台", img_news: "消息中心", img_booking: "預約表單", img_meeting: "局務會議"
             },
             en: {
+                loader_step1: "Reading project metadata",
+                loader_step2: "Loading visual assets",
+                loader_step3: "Constructing render canvas",
+                loader_step4: "Initialization complete",
                 title_main: "Hsinchu EPB", title_sub: "Internal Info System",
                 hero_desc: "From tedious to intuitive. Creating an efficient digital office hub for the public sector.",
                 btn_explore: "Explore the Journey", back_home: "Back to Portfolio",
@@ -110,6 +118,8 @@ gsap.registerPlugin(ScrollToPlugin);
         const App = () => {
             const [lang, setLang] = useState('zh');
             const [loading, setLoading] = useState(true);
+            const [loaderStep, setLoaderStep] = useState(0);
+            const [loaderDone, setLoaderDone] = useState(false);
             const [activeTab, setActiveTab] = useState('context');
             const [currentImage, setCurrentImage] = useState('./img/project_09/display.jpg');
             const [activeGalleryId, setActiveGalleryId] = useState(null);
@@ -140,14 +150,23 @@ gsap.registerPlugin(ScrollToPlugin);
                 const initialLang = savedLang === 'en' ? 'en' : 'zh';
                 setLang(initialLang);
 
-                const heroImagePromise = new Promise((resolve) => {
+                const preload = (src) => new Promise((resolve) => {
                     const img = new Image();
-                    img.src = './img/project_09/hero_img.jpg';
-                    img.onload = () => resolve('hero loaded');
-                    img.onerror = () => resolve('hero error');
+                    img.src = src;
+                    img.onload = () => resolve();
+                    img.onerror = () => resolve();
                 });
-                const timerPromise = new Promise(resolve => setTimeout(resolve, 1000));
-                Promise.all([heroImagePromise, timerPromise]).then(() => setLoading(false));
+                const assetsPromise = Promise.all([
+                    preload('./img/project_09/hero_img.jpg'),
+                    preload('./img/project_09/display.jpg'),
+                ]);
+                const forceTimeout = new Promise(resolve => setTimeout(resolve, 4000));
+                Promise.race([assetsPromise, forceTimeout]).then(() => { setLoaderDone(true); setLoading(false); });
+            }, []);
+
+            useEffect(() => {
+                const stepTimer = setInterval(() => setLoaderStep(i => (i + 1) % 3), 500);
+                return () => clearInterval(stepTimer);
             }, []);
 
             // [新增] 響應式字體大小邏輯
@@ -277,7 +296,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
             return (
                 <React.Fragment>
-                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div></div>
+                    <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         {/* [修改] bg-dark-lighter -> bg-epb-dark-lighter, border-primary -> border-epb-primary */}
