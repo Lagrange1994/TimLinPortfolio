@@ -195,7 +195,7 @@ function makeAiCards(t: Record<string, string>) {
             </div>
             <div className="channel-list">
               <div className="channel">
-                <span className="ch-icon">L</span>
+                <span className="ch-icon"><i className="ph-fill ph-chat-circle-text" /></span>
                 <div className="ch-body">
                   <div className="ch-name">LINE · @pm.celine</div>
                   <div className="ch-snippet">Onboarding redesign for the new tier — Jun 17?</div>
@@ -203,7 +203,7 @@ function makeAiCards(t: Record<string, string>) {
                 <HBadge variant="neutral" outline>2m</HBadge>
               </div>
               <div className="channel">
-                <span className="ch-icon">E</span>
+                <span className="ch-icon"><i className="ph-fill ph-envelope-simple" /></span>
                 <div className="ch-body">
                   <div className="ch-name">Email · celine.h@firm.co</div>
                   <div className="ch-snippet">Quick question on tier-2 pricing visuals</div>
@@ -211,7 +211,7 @@ function makeAiCards(t: Record<string, string>) {
                 <HBadge variant="neutral" outline>28m</HBadge>
               </div>
               <div className="channel">
-                <span className="ch-icon">F</span>
+                <span className="ch-icon"><i className="ph-fill ph-clipboard-text" /></span>
                 <div className="ch-body">
                   <div className="ch-name">Form · Brief intake</div>
                   <div className="ch-snippet">Tier-2 pricing experiment — marketing</div>
@@ -219,7 +219,7 @@ function makeAiCards(t: Record<string, string>) {
                 <HBadge variant="neutral" outline>1h</HBadge>
               </div>
               <div className="channel">
-                <span className="ch-icon">S</span>
+                <span className="ch-icon"><i className="ph-fill ph-hash" /></span>
                 <div className="ch-body">
                   <div className="ch-name">Slack · #design-requests</div>
                   <div className="ch-snippet">Mobile sign-up flow — usability review</div>
@@ -227,7 +227,7 @@ function makeAiCards(t: Record<string, string>) {
                 <HBadge variant="neutral" outline>3h</HBadge>
               </div>
               <div className="channel">
-                <span className="ch-icon">M</span>
+                <span className="ch-icon"><i className="ph-fill ph-note-pencil" /></span>
                 <div className="ch-body">
                   <div className="ch-name">Manual · Kickoff notes</div>
                   <div className="ch-snippet">In-person — Q3 roadmap dependencies</div>
