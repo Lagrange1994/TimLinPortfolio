@@ -312,26 +312,16 @@ export default function HeroSection() {
   }, []);
 
   // Hero spline desktop+tablet conditional — only load the 3D figure above
-  // mobile width, and drop its url once the hero scrolls fully out of view
-  // so it stops holding a WebGL context for the rest of the page (it was
-  // one of several concurrent WebGL contexts — this canvas, the background
-  // Spline scene, and this hero figure — implicated in intermittent
-  // renderer crashes).
+  // mobile width. Loaded once and left alone: it used to drop its `url`
+  // (and thus its WebGL context) whenever the hero scrolled out of view,
+  // which forced a full model reload — visible pop-in/reset — every time
+  // it scrolled back. Now it just loads once and keeps its context.
   useEffect(() => {
     if (window.innerWidth < 768) return;
-    const heroEl = document.getElementById('home');
     const heroSpline = document.getElementById('hero-spline');
-    if (!heroEl || !heroSpline) return;
+    if (!heroSpline) return;
 
     heroSpline.setAttribute('url', './models/hero_figure.splinecode');
-
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) heroSpline.setAttribute('url', './models/hero_figure.splinecode');
-      else heroSpline.removeAttribute('url');
-    }, { threshold: 0 });
-    observer.observe(heroEl);
-
-    return () => observer.disconnect();
   }, []);
 
   // Mobile hero layout: the image+headline+CTA group (.hero-inner) must sit
