@@ -589,7 +589,17 @@ const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
             const [isSimOpen, setIsSimOpen] = useState(false);
             const [loaderStep, setLoaderStep] = useState(0);
             const [loaderDone, setLoaderDone] = useState(false);
-            useEffect(() => { setTimeout(() => { setLoaderDone(true); setIsLoading(false); }, 1500); }, []);
+            useEffect(() => {
+                const preload = (src) => new Promise(resolve => {
+                    const img = new Image();
+                    img.src = src;
+                    if (img.complete) resolve();
+                    else { img.onload = () => resolve(); img.onerror = () => resolve(); }
+                });
+                const assetsPromise = preload('./img/project_13/CNC.webp');
+                const forceTimeout = new Promise(resolve => setTimeout(resolve, 4000));
+                Promise.race([assetsPromise, forceTimeout]).then(() => { setLoaderDone(true); setIsLoading(false); });
+            }, []);
             useEffect(() => {
                 const stepTimer = setInterval(() => setLoaderStep(i => (i + 1) % 3), 500);
                 return () => clearInterval(stepTimer);
