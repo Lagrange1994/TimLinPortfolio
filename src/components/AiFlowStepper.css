@@ -1,0 +1,89 @@
+.ai-flow-stepper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  row-gap: 8px;
+  column-gap: 0;
+  margin-top: auto;
+}
+
+.afs-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #23232E;
+  border: 1px solid rgba(255, 255, 255, .1);
+  transition: background .35s ease, border-color .35s ease, box-shadow .35s ease;
+}
+
+.afs-step-active {
+  background: #6C63FF;
+  border-color: #6C63FF;
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, .28);
+}
+
+.afs-step-complete {
+  background: #4A4390;
+  border-color: #4A4390;
+}
+
+.afs-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .3);
+  transition: background .35s ease, box-shadow .35s ease, transform .35s ease;
+}
+
+.afs-dot-active {
+  background: #fff;
+  transform: scale(1.15);
+  animation: afs-pulse 1.8s ease-in-out infinite;
+}
+
+.afs-dot-complete {
+  background: #E4E1FF;
+}
+
+.afs-label {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  color: #9A93B0;
+  white-space: nowrap;
+  transition: color .35s ease;
+}
+
+.afs-label-active {
+  color: #fff;
+}
+
+.afs-label-complete {
+  color: #E4E1FF;
+}
+
+.afs-connector {
+  width: 16px;
+  height: 1px;
+  margin: 0 6px;
+  background: #38325C;
+  flex-shrink: 0;
+  transition: background .4s ease;
+}
+
+.afs-connector-filled {
+  background: #6C63FF;
+}
+
+@keyframes afs-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(108, 99, 255, .22); }
+  50% { box-shadow: 0 0 0 5px rgba(108, 99, 255, .12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .afs-dot-active {
+    animation: none;
+  }
+}

@@ -1,9 +1,10 @@
-import { useEffect, useLayoutEffect, useState, useRef, Fragment, useMemo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useState, useRef, useMemo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
 import TypingCode, { flatten, toRuns, type CodeVersion, type CodeToken } from './TypingCode';
 import { squircleRectPath } from '../utils/squircle';
+import AiFlowStepper from './AiFlowStepper';
 
 const SMOOTH_TAU = 0.18;
 const AI_THINK_MS = 700;
@@ -1558,16 +1559,7 @@ export default function SkillsSection() {
                     {card.tags.map(tag => <span key={tag} className="ai-tag">{tag}</span>)}
                   </div>
                 )}
-                {card.pipeline && (
-                  <div className="ai-pipeline">
-                    {card.pipeline.map((step, i) => (
-                      <Fragment key={step}>
-                        {i > 0 && <span className="ai-psep">→</span>}
-                        <span className="ai-pstep">{step}</span>
-                      </Fragment>
-                    ))}
-                  </div>
-                )}
+                {card.pipeline && <AiFlowStepper steps={card.pipeline} />}
                 <div className="ai-card-detail">{card.detail}</div>
               </article>
             );

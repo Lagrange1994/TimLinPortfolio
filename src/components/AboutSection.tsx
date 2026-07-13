@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useLang } from '../context/LangContext';
 import { squircleRectPath } from '../utils/squircle';
 import CardSwap, { Card } from './CardSwap';
+import AiFlowStepper from './AiFlowStepper';
 
 // One representative project cover per Service Domains chip (Law
 // Enforcement/Healthcare/Environmental Monitoring/Entertainment), reused
@@ -440,15 +441,7 @@ export default function AboutSection() {
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_ai_label}</div>
             <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p3 }} />
-            <div className="ai-flow-mini">
-              <span className="ai-pstep">Make</span>
-              <span className="ai-psep">→</span>
-              <span className="ai-pstep">Gemini</span>
-              <span className="ai-psep">→</span>
-              <span className="ai-pstep">Sheets</span>
-              <span className="ai-psep">→</span>
-              <span className="ai-pstep">LINE / Email</span>
-            </div>
+            <AiFlowStepper steps={['Make', 'Gemini', 'Sheets', 'LINE / Email']} />
           </div>
 
         </div>
