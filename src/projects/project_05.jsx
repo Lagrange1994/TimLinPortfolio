@@ -380,22 +380,22 @@ gsap.registerPlugin(ScrollToPlugin);
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
-                            <i className="ph ph-arrow-left text-primary group-hover:text-secondary flex-shrink-0"></i>
+                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-zoo-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
+                            <i className="ph ph-arrow-left text-zoo-primary group-hover:text-zoo-secondary flex-shrink-0"></i>
                             <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
                         </button>
                     </nav>
 
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-primary hover:border-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="ph ph-arrow-up"></i></button>
+                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-zoo-primary hover:border-zoo-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="ph ph-arrow-up"></i></button>
 
                     <div id="main-scroller" ref={mainContainerRef}>
                         <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
-                                    <div className={`inline-block px-4 py-1 rounded-full border border-accent/50 bg-accent/20 text-accent text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART ZOO MANAGEMENT</div>
-                                    <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
+                                    <div className={`inline-block px-4 py-1 rounded-full border border-zoo-accent/50 bg-zoo-accent/20 text-zoo-accent text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART ZOO MANAGEMENT</div>
+                                    <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-zoo-primary to-zoo-secondary font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-primary border border-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-primary transition-all shadow-[0_10px_30px_rgba(134,194,50,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="ph ph-arrow-down ml-2 animate-bounce"></i></button>
+                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-zoo-primary border border-zoo-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-zoo-primary transition-all shadow-[0_10px_30px_rgba(134,194,50,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="ph ph-arrow-down ml-2 animate-bounce"></i></button>
                                 </div>
                             </div>
                         </section>
@@ -404,7 +404,7 @@ gsap.registerPlugin(ScrollToPlugin);
                             <div ref={imageScrollRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-black flex items-center justify-center border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 {renderPreview()}
                                 <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
-                                    <div className="w-10 h-10 bg-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group"><i className="ph ph-caret-up text-[8px] text-gray-400 group-hover:text-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="ph ph-caret-down text-[8px] text-gray-400 group-hover:text-primary mt-0.5"></i></div>
+                                    <div className="w-10 h-10 bg-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group"><i className="ph ph-caret-up text-[8px] text-gray-400 group-hover:text-zoo-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="ph ph-caret-down text-[8px] text-gray-400 group-hover:text-zoo-primary mt-0.5"></i></div>
                                 </div>
                             </div>
 
@@ -416,7 +416,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                             <p className="text-gray-400 text-xs lg:text-sm mb-4">Internal Management & Mobile Response</p>
                                             <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full touch-pan-x">
                                                 {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_web') }, { id: 'solution', label: t('tab_app') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? 'text-primary border-b-2 border-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
+                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? 'text-zoo-primary border-b-2 border-zoo-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
                                                 ))}
                                             </div>
                                         </div>
@@ -425,25 +425,25 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
                                         {activeTab === 'context' && (
                                             <div className="space-y-12 animate-fadeIn">
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30"><Icons.Figma /> <span className="ml-1">Figma</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary/20 text-secondary border border-secondary/30"><Icons.Illustrator /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zoo-primary/20 text-zoo-primary border border-zoo-primary/30"><Icons.Figma /> <span className="ml-1">Figma</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zoo-secondary/20 text-zoo-secondary border border-zoo-secondary/30"><Icons.Illustrator /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><div className="feature-card feature-card-secondary p-5"><h4 className="text-secondary font-bold text-sm mb-3">{t('pain_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><div className="feature-card feature-card-secondary p-5"><h4 className="text-zoo-secondary font-bold text-sm mb-3">{t('pain_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
                                             <div className="space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-6">{t('web_title')}</h3>
-                                                <div className="feature-card feature-card-primary p-5 mb-8"><h4 className="text-primary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">♜</span> {t('web_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-primary mr-2">•</span><span>{t('web_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-primary mr-2">•</span><span>{t('web_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-primary mr-2">•</span><span>{t('web_p3')}</span></li></ul></div>
+                                                <div className="feature-card feature-card-primary p-5 mb-8"><h4 className="text-zoo-primary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">♜</span> {t('web_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p3')}</span></li></ul></div>
                                                 <div className="w-full h-px bg-white/10 mb-8"></div>
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-primary rounded-full mr-3"></span>{t('web_core')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-primary rounded-full mr-3"></span>{t('web_core')}</h3>
                                                 <div className="space-y-4">{webFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
                                                     let benefitColor, bgClass, bgGradient, borderColor, shadowClass;
                                                     if (feat.benefit === 'primary') { 
-                                                        benefitColor = 'text-primary'; 
-                                                        bgClass = 'bg-primary'; 
-                                                        bgGradient = 'bg-gradient-to-br from-primary/20 to-primary/5'; 
-                                                        borderColor = '!border-primary';
+                                                        benefitColor = 'text-zoo-primary'; 
+                                                        bgClass = 'bg-zoo-primary'; 
+                                                        bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; 
+                                                        borderColor = '!border-zoo-primary';
                                                         shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]';
                                                     } else if (feat.benefit === 'blue-400') { 
                                                         benefitColor = 'text-blue-400'; 
@@ -466,23 +466,23 @@ gsap.registerPlugin(ScrollToPlugin);
                                         {activeTab === 'solution' && (
                                             <div className="space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-6">{t('app_title')}</h3>
-                                                <div className="feature-card feature-card-secondary p-5 mb-8"><h4 className="text-secondary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">⚡</span> {t('app_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-secondary mr-2">•</span><span>{t('app_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-secondary mr-2">•</span><span>{t('app_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-secondary mr-2">•</span><span>{t('app_p3')}</span></li></ul></div>
+                                                <div className="feature-card feature-card-secondary p-5 mb-8"><h4 className="text-zoo-secondary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">⚡</span> {t('app_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p3')}</span></li></ul></div>
                                                 <div className="w-full h-px bg-white/10 mb-8"></div>
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-secondary rounded-full mr-3"></span>{t('app_core')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('app_core')}</h3>
                                                 <div className="space-y-4">{appFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
                                                     let benefitColor, bgClass, bgGradient, borderColor, shadowClass;
                                                     if (feat.benefit === 'primary') { 
-                                                        benefitColor = 'text-primary'; 
-                                                        bgClass = 'bg-primary'; 
-                                                        bgGradient = 'bg-gradient-to-br from-primary/20 to-primary/5'; 
-                                                        borderColor = '!border-primary';
+                                                        benefitColor = 'text-zoo-primary'; 
+                                                        bgClass = 'bg-zoo-primary'; 
+                                                        bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; 
+                                                        borderColor = '!border-zoo-primary';
                                                         shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]';
                                                     } else if (feat.benefit === 'secondary') { 
-                                                        benefitColor = 'text-secondary'; 
-                                                        bgClass = 'bg-secondary'; 
-                                                        bgGradient = 'bg-gradient-to-br from-secondary/20 to-secondary/5'; 
-                                                        borderColor = '!border-secondary';
+                                                        benefitColor = 'text-zoo-secondary'; 
+                                                        bgClass = 'bg-zoo-secondary'; 
+                                                        bgGradient = 'bg-gradient-to-br from-zoo-secondary/20 to-zoo-secondary/5'; 
+                                                        borderColor = '!border-zoo-secondary';
                                                         shadowClass = 'shadow-[0_0_15px_rgba(255,150,113,0.2)]';
                                                     } else if (feat.benefit === 'yellow') { 
                                                         // Corrected logic for 'yellow' to use accent/specific yellow color
@@ -492,10 +492,10 @@ gsap.registerPlugin(ScrollToPlugin);
                                                         borderColor = '!border-yellow-400';
                                                         shadowClass = 'shadow-[0_0_15px_rgba(250,204,21,0.2)]';
                                                     } else { 
-                                                        benefitColor = 'text-accent'; 
-                                                        bgClass = 'bg-accent'; 
-                                                        bgGradient = 'bg-gradient-to-br from-accent/20 to-accent/5'; 
-                                                        borderColor = '!border-accent';
+                                                        benefitColor = 'text-zoo-accent'; 
+                                                        bgClass = 'bg-zoo-accent'; 
+                                                        bgGradient = 'bg-gradient-to-br from-zoo-accent/20 to-zoo-accent/5'; 
+                                                        borderColor = '!border-zoo-accent';
                                                         shadowClass = 'shadow-[0_0_15px_rgba(255,199,95,0.2)]';
                                                     }
 
@@ -510,26 +510,26 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <div className="space-y-6">
                                                     {galleryCategories.map(category => (
                                                         <div key={category.id} className="space-y-3">
-                                                            <h4 className={`font-bold text-md flex items-center ${category.type === 'web' ? 'text-primary' : 'text-secondary'}`}>
-                                                                <span className={`w-2 h-2 rounded-full mr-2 ${category.type === 'web' ? 'bg-primary' : 'bg-secondary'}`}></span>
+                                                            <h4 className={`font-bold text-md flex items-center ${category.type === 'web' ? 'text-zoo-primary' : 'text-zoo-secondary'}`}>
+                                                                <span className={`w-2 h-2 rounded-full mr-2 ${category.type === 'web' ? 'bg-zoo-primary' : 'bg-zoo-secondary'}`}></span>
                                                                 {category.title}
                                                             </h4>
                                                             <div className="grid gap-3 pl-4 border-l border-white/10">
                                                                 {category.images.map(img => {
                                                                     const isWeb = category.type === 'web';
                                                                     const activeClass = isWeb 
-                                                                        ? 'border-primary shadow-[0_0_15px_rgba(134,194,50,0.1)]' 
-                                                                        : 'border-secondary shadow-[0_0_15px_rgba(255,150,113,0.1)]';
+                                                                        ? 'border-zoo-primary shadow-[0_0_15px_rgba(134,194,50,0.1)]' 
+                                                                        : 'border-zoo-secondary shadow-[0_0_15px_rgba(255,150,113,0.1)]';
                                                                     
                                                                     return (
                                                                         <button key={img.id} onClick={() => handleGallerySwitch(img, category.type)} 
                                                                             className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? `${activeClass} bg-white/5` : 'border-white/5'}`}>
                                                                             <div className="flex justify-between items-center">
                                                                                 <h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}>
-                                                                                    <span className={`${category.type === 'web' ? 'text-primary/70' : 'text-secondary/70'} mr-2 text-xs font-mono`}>{img.id}</span>
+                                                                                    <span className={`${category.type === 'web' ? 'text-zoo-primary/70' : 'text-zoo-secondary/70'} mr-2 text-xs font-mono`}>{img.id}</span>
                                                                                     {img.name}
                                                                                 </h4>
-                                                                                <i className={`ph ph-caret-right transform transition-all text-xs ${activeGalleryId === img.id ? (category.type === 'web' ? 'text-primary' : 'text-secondary') + ' translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
+                                                                                <i className={`ph ph-caret-right transform transition-all text-xs ${activeGalleryId === img.id ? (category.type === 'web' ? 'text-zoo-primary' : 'text-zoo-secondary') + ' translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
                                                                             </div>
                                                                         </button>
                                                                     );
