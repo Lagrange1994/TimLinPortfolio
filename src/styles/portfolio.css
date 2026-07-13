@@ -759,8 +759,8 @@
       grid-template-columns: 2fr 1.7fr 1.7fr 1.3fr 1.3fr;
       grid-template-areas:
         "headline headline headline headline headline"
-        "photo intro1 intro2 years projects"
-        "photo intro1 intro2 domains domains"
+        "photo intro1 intro1 years projects"
+        "photo intro2 intro2 domains domains"
         "photo industry industry domains domains"
         "photo workflow workflow workflow workflow";
       gap: 12px;
@@ -795,6 +795,14 @@
        unconditional rule just because its condition matches. */
     .domains-caption-break {
       display: none;
+    }
+
+    /* English domain names ("Police · Environmental · Healthcare ·
+       Entertainment") are too long to fit the desktop Domains card on one
+       line like the Chinese caption does — force the break on regardless
+       of viewport when AboutSection flags the English locale. */
+    .domains-caption-break--en {
+      display: block;
     }
     .bento-area-industry { grid-area: industry; }
     .bento-area-workflow { grid-area: workflow; }
@@ -1509,6 +1517,14 @@
     .process-column-header i {
       font-size: 15px;
       color: var(--primary);
+    }
+
+    .process-column-desc {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-70);
+      max-width: 42ch;
+      margin-bottom: 16px;
     }
 
     .process-column-grid {
@@ -2841,13 +2857,29 @@
     /* Keep real content above the spotlight overlay (::before, z-index:1) —
        plain block children paint below any positioned z-index layer by
        default, so without this the mouse glow washes out the text.
-       .sc-overlay (JS-inserted for the .sc-card border-glow effect) is
+       .sc-overlay (JS-inserted for the .sc-card border-glow effect) and
+       .domain-swap-stage (Service Domains' own z-index:0 photo layer) are
        excluded — same fix as .tech-item.card-spotlight above — otherwise
-       this rule's higher specificity overrides its own position:absolute/
-       z-index:0 and breaks the border-glow layering. */
-    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay) {
+       this rule's higher specificity (3 :not() clauses vs. that rule's 1
+       descendant class) overrides their own position/z-index and breaks
+       the layering both rely on. */
+    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay):not(.domains-scrim):not(.domain-swap-stage) {
       position: relative;
       z-index: 2;
+    }
+
+    /* Service Domains card — the CardSwap photo stack (z-index:0, above)
+       overhangs into the same corner as the caption text, and busy photos
+       under white text hurt legibility. A scrim sandwiched between the
+       stage and the text (z-index:1) darkens bottom-left (where the label/
+       number/caption sit) and fades out toward top-right (where the stack
+       reads clearly on its own). */
+    .domains-scrim {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: linear-gradient(to top right, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 65%);
     }
 
     /* ── PROFILE CARD (React Bits) ── */
@@ -3519,7 +3551,8 @@
         grid-template-columns: repeat(24, 1fr);
         grid-template-areas:
           "headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline"
-          "photo photo photo photo photo photo photo photo intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2"
+          "photo photo photo photo photo photo photo photo intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1"
+          "photo photo photo photo photo photo photo photo intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2"
           "years years years years years years projects projects projects projects projects projects workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow"
           "domains domains domains domains domains domains domains domains domains domains domains domains workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow"
           "industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry";
@@ -3590,6 +3623,8 @@
         transform: none !important;
         touch-action: auto;
         cursor: auto;
+        padding-left: 0;
+        padding-right: 0;
       }
 
       .process-column-grid--inhouse .process-swipe-slot {
@@ -3625,6 +3660,26 @@
          through unrelated offsets per row and looks jumbled, so flatten it. */
       .ai-flow-grid .ai-card {
         top: 0 !important;
+      }
+
+      /* Section subtitles (tech-sub, ai-sub) hard-wrap via an inline <br> and
+         cap max-width:392px for the desktop layout's staggered cards below —
+         tablet has no such stagger to clear, so let the text use the section's
+         full width and wrap naturally instead. ai-sub's 392px comes from an
+         inline style, so !important is needed to win over it. A literal space
+         was added before each <br> in translations.ts so hiding it here still
+         leaves a word-separating space in the flowed text. process-column-desc
+         has no <br>, just the same max-width:42ch cap tuned for the desktop
+         1/4-column layout — same fix, minus the <br> handling. */
+      .tech-sub br,
+      .ai-sub br {
+        display: none;
+      }
+
+      .tech-sub,
+      .ai-sub,
+      .process-column-desc {
+        max-width: none !important;
       }
 
       /* Tech stack — single column */
@@ -3677,6 +3732,25 @@
          jitter/rescale mid-scroll on real touch devices. */
       .portfolio-wall {
         height: 75svh;
+      }
+    }
+
+    /* Design Process — carousel column occupies the right 3/4 of the row,
+       label the left 1/4, side by side. Scoped above the tablet range
+       (768–1024px, static 2x3 grid above) since that's the only width where
+       the swipe-carousel-of-3 is actually live; overrides the base 768px+
+       block's absolute-positioned label with a plain grid column instead. */
+    @media (min-width: 1025px) {
+      .process-column {
+        display: grid;
+        grid-template-columns: 1fr 3fr;
+        column-gap: 32px;
+        align-items: center;
+      }
+
+      .process-column-header {
+        position: static;
+        margin: 0;
       }
     }
 

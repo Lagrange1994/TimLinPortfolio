@@ -1233,9 +1233,12 @@ export default function SkillsSection() {
         <div className="section-label rise-soft">My Design Process</div>
         <div className="process-dual">
           <div className="process-column">
-            <div className="process-column-header">
-              <i className="ph-bold ph-buildings"></i>
-              <span>{t.tab_inhouse}</span>
+            <div className="process-column-head">
+              <div className="process-column-header">
+                <i className="ph-bold ph-buildings"></i>
+                <span>{t.tab_inhouse}</span>
+              </div>
+              <p className="process-column-desc">{t.tab_inhouse_desc}</p>
             </div>
             <ProcessCarousel
               cards={(['Align','Research','Structure','Design','Validate','Iterate'] as const).map((slug, i) => {
@@ -1272,9 +1275,12 @@ export default function SkillsSection() {
             />
           </div>
           <div className="process-column">
-            <div className="process-column-header">
-              <i className="ph-bold ph-handshake"></i>
-              <span>{t.tab_freelance}</span>
+            <div className="process-column-head">
+              <div className="process-column-header">
+                <i className="ph-bold ph-handshake"></i>
+                <span>{t.tab_freelance}</span>
+              </div>
+              <p className="process-column-desc">{t.tab_freelance_desc}</p>
             </div>
             <ProcessCarousel
               cards={(['Intake','AI Brief','Triage','Discovery','Proposal','Delivery'] as const).map((slug, i) => {

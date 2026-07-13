@@ -22,13 +22,16 @@ const BENTO_CORNER_RADIUS_NARROW = 24;
 const BENTO_NARROW_THRESHOLD = 200;
 
 export default function AboutSection() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
 
   // Service Domains caption ("警政・環保・醫療・娛樂" / "Police · Environmental
   // · Healthcare · Entertainment") — split into two 2-noun halves so a
   // tablet/mobile-only line break (.domains-caption-break, CSS-hidden on
   // desktop) can land cleanly between the 2nd and 3rd noun instead of
   // wrapping wherever the narrower column happens to run out of width.
+  // English is long enough to need that same break on desktop too (see
+  // .domains-caption-break--en), where the Chinese caption still fits on
+  // one line.
   const domainsSeparator = t.about_domains_summary.includes('・') ? '・' : ' · ';
   const domainsWords = t.about_domains_summary.split(/[・·]/).map(w => w.trim());
   const domainsFirstHalf = domainsWords.slice(0, 2).join(domainsSeparator);
@@ -399,7 +402,7 @@ export default function AboutSection() {
             <p className="bento-caption">
               {domainsFirstHalf}
               <span className="domains-caption-sep">{domainsSeparator}</span>
-              <br className="domains-caption-break" />
+              <br className={`domains-caption-break${lang === 'en' ? ' domains-caption-break--en' : ''}`} />
               {domainsSecondHalf}
             </p>
             <div className="domain-swap-stage">
@@ -411,6 +414,7 @@ export default function AboutSection() {
                 ))}
               </CardSwap>
             </div>
+            <span className="domains-scrim" aria-hidden="true" />
           </div>
 
           <div className="bento-card bento-violet card-spotlight sc-card bento-area-industry rise-card">

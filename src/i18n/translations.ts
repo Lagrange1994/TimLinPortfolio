@@ -28,7 +28,7 @@ export const translations = {
     about_domains_summary: '警政・環保・醫療・娛樂',
     about_ai_label: 'AI-Powered Workflow',
     // tech stack
-    tech_sub: '我不是工程師，但我能讀懂程式、修改邏輯、<br>有效縮短設計與開發之間的溝通距離。',
+    tech_sub: '我不是工程師，但我能讀懂程式、修改邏輯、 <br>有效縮短設計與開發之間的溝通距離。',
     figma_mcp:
       '<strong>Figma MCP</strong> — 透過 MCP 讓 AI 直接讀取 Figma 設計稿的元件、Token 與標註規格，無需截圖或手動複製。設計稿即時轉為程式碼，一次對齊，省去反覆溝通。',
     skill_html:
@@ -39,7 +39,9 @@ export const translations = {
       '具備 Flexbox 與 Tailwind 排版實作能力，能獨立處理 RWD 樣式調整，並理解設計決策對前端渲染的影響。',
     // design process tabs
     tab_inhouse: 'In-house',
+    tab_inhouse_desc: '在企業與政府專案中，我隸屬產品團隊，與 PM、工程師協作，從對齊目標到迭代優化，走完一套完整的內部設計流程。',
     tab_freelance: 'Freelance',
+    tab_freelance_desc: '接案時，我獨立面對客戶，透過 AI 輔助的需求收件系統，把從初次接觸到交付驗收的每個環節都變得有跡可循。',
     ih_name_01: 'Align',
     ih_desc_01: '與 PM、工程、業務對齊目標與 OKR，確認設計介入的時機與範疇',
     ih_name_02: 'Research',
@@ -65,7 +67,7 @@ export const translations = {
     fl_name_06: 'Delivery',
     fl_desc_06: '依里程碑交付 wireframe、高保真設計、互動說明與開發標註，並保留後續追蹤與回覆紀錄',
     // AI
-    ai_sub: 'AI 不只是讓工作變快的工具——<br>而是讓每個設計決策都有更充分的依據。',
+    ai_sub: 'AI 不只是讓工作變快的工具—— <br>而是讓每個設計決策都有更充分的依據。',
     ai_gemini_1: '<strong>邏輯生成與轉譯：</strong> 將設計需求轉化為精準的 Prompt，讓 AI 產出初始程式碼架構。',
     ai_gemini_2: '<strong>智慧除錯：</strong> 遇到程式錯誤時，擅長描述情境引導 AI 快速定位問題。',
     ai_gemini_3: '<strong>文案撰寫：</strong> 協助撰寫 UX 文案初稿，快速進入評審流程。',
@@ -231,7 +233,7 @@ export const translations = {
     about_ai_label: 'AI-Powered Workflow',
     // tech stack
     tech_sub:
-      'I read code, modify logic,<br>and bridge the communication gap between design and development.',
+      'I read code, modify logic, <br>and bridge the communication gap between design and development.',
     figma_mcp:
       '<strong>Figma MCP</strong>: I connect AI directly to Figma via MCP, letting it read components, tokens, and specs in real time. No screenshots, no manual handoff. Design translates to code in one pass.',
     skill_html:
@@ -242,7 +244,11 @@ export const translations = {
       'Able to implement responsive layouts with Flexbox and Tailwind, adjust styles independently, and understand how design decisions translate to rendered output.',
     // design process tabs
     tab_inhouse: 'In-house',
+    tab_inhouse_desc:
+      'On enterprise and government projects, I work within the product team alongside PMs and engineers, running a full internal design process from goal alignment through iteration.',
     tab_freelance: 'Freelance',
+    tab_freelance_desc:
+      'On freelance work, I handle clients independently, using an AI-assisted intake system to keep every step traceable, from first contact through final delivery.',
     ih_name_01: 'Align',
     ih_desc_01:
       'Sync with PM, engineering, and business stakeholders to align on OKRs and define the scope and timing of design involvement',
@@ -281,7 +287,7 @@ export const translations = {
       'I deliver wireframes, high-fidelity designs, interaction notes, and development annotations by milestone, with follow-up records kept in the workflow',
     // AI
     ai_sub:
-      'I use AI as a collaborator,<br>so every design decision is faster and better grounded.',
+      'I use AI as a collaborator, <br>so every design decision is faster and better grounded.',
     ai_gemini_1:
       '<strong>Logic and code generation:</strong> I translate design requirements into precise prompts to generate initial code structures.',
     ai_gemini_2:
