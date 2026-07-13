@@ -16,7 +16,10 @@ gsap.registerPlugin(ScrollToPlugin);
             return (
                 <div className={`relative overflow-hidden ${containerClassName || 'w-full h-full'}`}>
                     {!loaded && <div className="absolute inset-0 skeleton z-10 flex items-center justify-center"><i className="ph ph-image text-white/10 text-3xl"></i></div>}
-                    <img src={src} alt={alt} className={`${className || ''} ${fitClass} w-full h-full transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={handleLoad} onError={handleError} />
+                    <picture style={{ display: 'contents' }}>
+                        <source srcSet={encodeURI(src.replace(/\.(jpg|jpeg|png)$/i, '.webp'))} type="image/webp" />
+                        <img src={src} alt={alt} className={`${className || ''} ${fitClass} w-full h-full transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={handleLoad} onError={handleError} />
+                    </picture>
                 </div>
             );
         };
@@ -222,7 +225,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                 const displayPromise = new Promise((resolve) => {
                     const img = new Image();
-                    img.src = './img/project_05/display.jpg';
+                    img.src = './img/project_05/display.webp';
                     if (img.complete) { resolve(); return; }
                     img.onload = () => resolve();
                     img.onerror = () => resolve();

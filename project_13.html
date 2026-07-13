@@ -192,6 +192,9 @@
             width: calc(100% + var(--gap-horizontal) * 2);
             height: calc(100% + var(--gap-vertical) * 2);
             background-color: var(--blend-color-1);
+            background-image: var(--bg-jpg);
+            background-image: -webkit-image-set(var(--bg-webp) 1x, var(--bg-jpg) 1x);
+            background-image: image-set(var(--bg-webp) 1x, var(--bg-jpg) 1x);
             background-size: cover;
             background-position: center;
             transform: translate3d(0, 0, 0);

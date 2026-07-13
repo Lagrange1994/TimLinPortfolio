@@ -11,7 +11,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
             return (
                 <picture style={{ display: 'contents' }}>
-                    <source srcSet={webpSrc} type="image/webp" />
+                    <source srcSet={encodeURI(webpSrc)} type="image/webp" />
                     <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} />
                 </picture>
             );
@@ -189,7 +189,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 window.addEventListener('resize', setResponsiveFontSize);
                 setResponsiveFontSize();
                 const heroImagePromise = new Promise((resolve) => {
-                    const img = new Image(); img.src = './img/project_06/hero_img.jpg';
+                    const img = new Image(); img.src = './img/project_06/hero_img.webp';
                     if (img.complete) { resolve(); return; }
                     img.onload = () => resolve(); img.onerror = () => resolve();
                 });

@@ -196,8 +196,8 @@ gsap.registerPlugin(ScrollToPlugin);
                     else { img.onload = () => resolve(); img.onerror = () => resolve(); }
                 });
                 const assetsPromise = Promise.all([
-                    preload('./img/project_01/hero_img.jpg'),
-                    preload('./img/project_01/home_01.jpg'),
+                    preload('./img/project_01/hero_img.webp'),
+                    preload('./img/project_01/home_01.webp'),
                 ]);
                 const forceTimeout = new Promise(resolve => setTimeout(resolve, 4000));
                 Promise.race([assetsPromise, forceTimeout]).then(() => { setLoaderDone(true); setLoading(false); });
@@ -370,7 +370,10 @@ gsap.registerPlugin(ScrollToPlugin);
                                         )}
                                         <div className="relative overflow-hidden bg-white/5 group h-full w-full">
                                             {isImgLoading && <div className="absolute inset-0 z-20 skeleton flex items-center justify-center"><i className="ph ph-image text-4xl text-white/20 animate-pulse"></i></div>}
-                                            <img src={currentImage} alt="Preview" className={`w-full h-full object-cover transition-opacity duration-500 ${isImgLoading ? 'opacity-0' : 'opacity-100'}`} onLoad={() => setIsImgLoading(false)} />
+                                            <picture style={{ display: 'contents' }}>
+                                                <source srcSet={encodeURI(currentImage.replace(/\.(jpg|jpeg|png)$/i, '.webp'))} type="image/webp" />
+                                                <img src={currentImage} alt="Preview" className={`w-full h-full object-cover transition-opacity duration-500 ${isImgLoading ? 'opacity-0' : 'opacity-100'}`} onLoad={() => setIsImgLoading(false)} />
+                                            </picture>
                                         </div>
                                     </div>
                                 </div>

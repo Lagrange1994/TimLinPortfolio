@@ -9,7 +9,7 @@ gsap.registerPlugin(ScrollToPlugin);
         const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
             if (!src) return null;
             const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
-            return (<picture style={{ display: 'contents' }}> <source srcSet={webpSrc} type="image/webp" /> <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} /> </picture>);
+            return (<picture style={{ display: 'contents' }}> <source srcSet={encodeURI(webpSrc)} type="image/webp" /> <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} /> </picture>);
         };
 
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
@@ -167,7 +167,7 @@ gsap.registerPlugin(ScrollToPlugin);
                     img.onerror = () => resolve();
                 });
                 const assetsPromise = Promise.all([
-                    preload('./img/project_11/hero_img.jpg'),
+                    preload('./img/project_11/hero_img.webp'),
                     preload(MAIN_IMAGE),
                 ]);
                 const forceTimeout = new Promise(resolve => setTimeout(resolve, 4000));

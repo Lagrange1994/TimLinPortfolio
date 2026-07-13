@@ -12,7 +12,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
             return (
                 <picture style={{ display: 'contents' }}>
-                    <source srcSet={webpSrc} type="image/webp" />
+                    <source srcSet={encodeURI(webpSrc)} type="image/webp" />
                     <img
                         src={src}
                         className={className}
@@ -229,8 +229,8 @@ gsap.registerPlugin(ScrollToPlugin);
                     img.onerror = () => resolve();
                 });
                 const assetsPromise = Promise.all([
-                    preload('./img/project_03/hero_img.jpg'),
-                    preload('./img/project_03/display.jpg'),
+                    preload('./img/project_03/hero_img.webp'),
+                    preload('./img/project_03/display.webp'),
                 ]);
                 const forceTimeout = new Promise(resolve => setTimeout(resolve, 4000));
                 Promise.race([assetsPromise, forceTimeout]).then(() => { setLoaderDone(true); setLoading(false); });

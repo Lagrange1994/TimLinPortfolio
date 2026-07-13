@@ -213,7 +213,7 @@ const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
                     <div className="absolute inset-0 z-0 opacity-80 group-hover:opacity-100 transition-opacity duration-500">
                         <div className="glitch-container">
                             {[...Array(5)].map((_, i) => (
-                                <div key={i} className="glitch__img" style={{ backgroundImage: `url(./img/project_13/${item.img_bg}.jpg)` }}></div>
+                                <div key={i} className="glitch__img" style={{ '--bg-jpg': `url(./img/project_13/${item.img_bg}.jpg)`, '--bg-webp': `url(./img/project_13/${item.img_bg}.webp)` }}></div>
                             ))}
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-tech-dark/95 via-tech-dark/50 to-transparent z-10 pointer-events-none"></div>
@@ -225,9 +225,12 @@ const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
                                 style={{ width: large ? '100px' : '80px', height: large ? '100px' : '80px', clipPath: 'polygon(20% 0%, 100% 0, 100% 80%, 80% 100%, 0 100%, 0 20%)' }}>
                                 <div className="w-full h-full bg-tech-dark/80 backdrop-blur-md flex items-center justify-center overflow-hidden relative"
                                     style={{ clipPath: 'polygon(20% 0%, 100% 0, 100% 80%, 80% 100%, 0 100%, 0 20%)' }}>
-                                    <img src={`./img/project_13/${item.img_3d}.png`} alt={item.title}
-                                        className="relative z-10 w-full h-full object-cover transform scale-110 transition-transform duration-700"
-                                        onError={(e) => e.target.style.display = 'none'} />
+                                    <picture style={{ display: 'contents' }}>
+                                        <source srcSet={`./img/project_13/${item.img_3d}.webp`} type="image/webp" />
+                                        <img src={`./img/project_13/${item.img_3d}.png`} alt={item.title}
+                                            className="relative z-10 w-full h-full object-cover transform scale-110 transition-transform duration-700"
+                                            onError={(e) => e.target.style.display = 'none'} />
+                                    </picture>
                                     <div className="absolute inset-0 bg-gradient-to-t from-tech-dark/40 to-transparent z-20 pointer-events-none"></div>
                                 </div>
                             </div>

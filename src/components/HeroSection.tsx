@@ -378,13 +378,16 @@ export default function HeroSection() {
     <section id="home">
       <div className="hero-inner">
         <div className="hero-fig">
-          <img
-            src="./img/figure.png"
-            alt="Tim Lin"
-            className="hero-fig-mobile"
-            fetchPriority="high"
-            decoding="async"
-          />
+          <picture style={{ display: 'contents' }}>
+            <source srcSet="./img/figure.webp" type="image/webp" />
+            <img
+              src="./img/figure.png"
+              alt="Tim Lin"
+              className="hero-fig-mobile"
+              fetchPriority="high"
+              decoding="async"
+            />
+          </picture>
           <spline-viewer id="hero-spline" className="hero-fig-desktop" />
         </div>
         <div className="hero-text">

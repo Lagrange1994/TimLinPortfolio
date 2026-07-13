@@ -13,7 +13,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
             return (
                 <picture style={{ display: 'contents' }}>
-                    <source srcSet={webpSrc} type="image/webp" />
+                    <source srcSet={encodeURI(webpSrc)} type="image/webp" />
                     <img
                         src={src}
                         className={className}
@@ -407,7 +407,7 @@ gsap.registerPlugin(ScrollToPlugin);
             useEffect(() => {
                 const heroPromise = new Promise((resolve) => {
                     const img = new Image();
-                    img.src = './img/project_02/hero_img.jpg';
+                    img.src = './img/project_02/hero_img.webp';
                     if (img.complete) resolve();
                     else { img.onload = () => resolve(); img.onerror = () => resolve(); }
                 });
