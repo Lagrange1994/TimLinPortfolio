@@ -1926,12 +1926,24 @@
        Uses transform (not margin-top) so the stagger offset is purely
        visual and doesn't eat into the stretched card height — otherwise
        the more-offset cards end up shorter than the others. */
-    .tech-items .tech-item:nth-child(1) { --stagger-y: 48px; }
-    .tech-items .tech-item:nth-child(2) { --stagger-y: 24px; }
-    .tech-items .tech-item:nth-child(3) { --stagger-y: 0px; }
+    .tech-items .tech-item-wrap:nth-child(1) { --stagger-y: 48px; }
+    .tech-items .tech-item-wrap:nth-child(2) { --stagger-y: 24px; }
+    .tech-items .tech-item-wrap:nth-child(3) { --stagger-y: 0px; }
+
+    /* Wrapper is the actual grid item now (not .tech-item) so that
+       .tech-level-badge — a sibling of .tech-item, not a descendant — can
+       overhang the card's top edge without being clipped by .tech-item's
+       own overflow:hidden (needed for its squircle corner-shape + spotlight
+       glow containment). The stagger transform lives here too, so the card
+       and its badge move together as one unit. */
+    .tech-item-wrap {
+      position: relative;
+      transform: translateY(var(--stagger-y, 0px));
+    }
 
     .tech-item {
       position: relative;
+      height: 100%;
       border-radius: 28px;
       corner-shape: squircle;
       padding: 20px;
@@ -1941,7 +1953,6 @@
       -webkit-backdrop-filter: var(--glass-blur);
       box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .08);
       transition: all .25s;
-      transform: translateY(var(--stagger-y, 0px));
     }
 
     .tech-item:hover {
@@ -1984,31 +1995,51 @@
       line-height: 1.55;
     }
 
+    /* Same floating gradient capsule shape/position as the AI Brief card's
+       .ai-focal-badge (top-right, overlapping the card edge), but colored
+       per tech-item's own theme hue (below) instead of AI Brief's shared
+       purple-pink. */
     .tech-level-badge {
-      font-size: 10px;
-      font-family: var(--mono);
-      padding: 2px 10px;
+      position: absolute;
+      top: -13px;
+      right: 22px;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
       border-radius: 9999px;
-      font-weight: 700;
-      letter-spacing: .06em;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      white-space: nowrap;
     }
 
-    .tech-item.html-item .tech-level-badge {
-      background: rgba(59, 130, 246, 0.15);
-      color: #93c5fd;
-      border: 1px solid rgba(59, 130, 246, 0.3);
+    .tech-level-badge::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
     }
 
-    .tech-item.js-item .tech-level-badge {
-      background: rgba(251, 146, 60, 0.15);
-      color: #fdba74;
-      border: 1px solid rgba(251, 146, 60, 0.3);
+    .tech-level-badge.html-item {
+      background: linear-gradient(135deg, #60a5fa, #3b82f6);
+      color: #0b1220;
+      box-shadow: 0 10px 30px -6px rgba(96, 165, 250, .5);
     }
 
-    .tech-item.react-item .tech-level-badge {
-      background: rgba(108, 99, 255, 0.15);
-      color: #a5b4fc;
-      border: 1px solid rgba(108, 99, 255, 0.3);
+    .tech-level-badge.js-item {
+      background: linear-gradient(135deg, #fb923c, #f97316);
+      color: #1f1206;
+      box-shadow: 0 10px 30px -6px rgba(251, 146, 60, .5);
+    }
+
+    .tech-level-badge.react-item {
+      background: linear-gradient(135deg, #8b7bff, #6C63FF);
+      color: #ffffff;
+      box-shadow: 0 10px 30px -6px rgba(108, 99, 255, .5);
     }
 
     .progress-bar {
@@ -2813,7 +2844,9 @@
     /* Keep real content above the spotlight overlay (::before, z-index:1) —
        same fix as .bento-card above. .sc-overlay is JS-inserted for the
        border-glow effect and must stay below content too, so it's excluded
-       here rather than promoted. */
+       here rather than promoted. .tech-level-badge now lives outside
+       .tech-item entirely (see .tech-item-wrap above), so it's no longer
+       a direct child this rule needs to worry about. */
     .tech-item.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay) {
       position: relative;
       z-index: 2;
@@ -3682,9 +3715,13 @@
         max-width: none !important;
       }
 
-      /* Tech stack — single column */
+      /* Tech stack — single column. Wider row-gap than the desktop 16px —
+         each card's .tech-level-badge overhangs ~13px above its own card,
+         and stacked single-column cards need enough clearance so that
+         overhang doesn't touch the card above. */
       .tech-items {
         grid-template-columns: 1fr;
+        gap: 24px;
       }
 
       /* AI grid — single column */
@@ -3943,9 +3980,10 @@
         line-height: 1.45;
       }
 
-      /* Tech Stack — single column */
+      /* Tech Stack — single column, wider row-gap (see 768–1024 block above) */
       .tech-items {
         grid-template-columns: 1fr;
+        gap: 24px;
       }
 
       .tech-headline {
@@ -4265,31 +4303,51 @@
       line-height: 1.55;
     }
 
+    /* Same floating gradient capsule shape/position as the AI Brief card's
+       .ai-focal-badge (top-right, overlapping the card edge), but colored
+       per tech-item's own theme hue (below) instead of AI Brief's shared
+       purple-pink. */
     .tech-level-badge {
-      font-size: 10px;
-      font-family: var(--mono);
-      padding: 2px 10px;
+      position: absolute;
+      top: -13px;
+      right: 22px;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
       border-radius: 9999px;
-      font-weight: 700;
-      letter-spacing: .06em;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      white-space: nowrap;
     }
 
-    .tech-item.html-item .tech-level-badge {
-      background: rgba(59, 130, 246, 0.15);
-      color: #93c5fd;
-      border: 1px solid rgba(59, 130, 246, 0.3);
+    .tech-level-badge::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
     }
 
-    .tech-item.js-item .tech-level-badge {
-      background: rgba(251, 146, 60, 0.15);
-      color: #fdba74;
-      border: 1px solid rgba(251, 146, 60, 0.3);
+    .tech-level-badge.html-item {
+      background: linear-gradient(135deg, #60a5fa, #3b82f6);
+      color: #0b1220;
+      box-shadow: 0 10px 30px -6px rgba(96, 165, 250, .5);
     }
 
-    .tech-item.react-item .tech-level-badge {
-      background: rgba(108, 99, 255, 0.15);
-      color: #a5b4fc;
-      border: 1px solid rgba(108, 99, 255, 0.3);
+    .tech-level-badge.js-item {
+      background: linear-gradient(135deg, #fb923c, #f97316);
+      color: #1f1206;
+      box-shadow: 0 10px 30px -6px rgba(251, 146, 60, .5);
+    }
+
+    .tech-level-badge.react-item {
+      background: linear-gradient(135deg, #8b7bff, #6C63FF);
+      color: #ffffff;
+      box-shadow: 0 10px 30px -6px rgba(108, 99, 255, .5);
     }
 
     .progress-bar {
@@ -4587,11 +4645,13 @@
 
       /* Tech Stack collapses to 1 column and Design Process loses its
          horizontal scroll row below 1024px — the left-low/right-high
-         stagger only makes sense as a horizontal arrangement. .tech-item's
-         stagger is a transform (see --stagger-y above), not margin, so it
-         must be reset here too — otherwise the decreasing 48/24/0 offset
-         keeps shifting each stacked card down and it overlaps the next one. */
-      .tech-items .tech-item {
+         stagger only makes sense as a horizontal arrangement. The stagger
+         transform now lives on .tech-item-wrap (see --stagger-y above,
+         moved there so .tech-level-badge can share it), not .tech-item, so
+         it must be reset there too — otherwise the decreasing 48/24/0
+         offset keeps shifting each stacked card down and it overlaps the
+         next one, collapsing the gap between them. */
+      .tech-items .tech-item-wrap {
         transform: translateY(0) !important;
       }
 
@@ -4716,6 +4776,7 @@
     @media (min-width: 768px) and (max-width: 1024px) {
       .tech-items {
         grid-template-columns: 1fr;
+        gap: 24px;
       }
 
       .ai-usage-grid {
@@ -4726,6 +4787,7 @@
     @media (max-width: 767px) {
       .tech-items {
         grid-template-columns: 1fr;
+        gap: 24px;
       }
 
       .ai-usage-grid {
@@ -4903,15 +4965,18 @@
        whole grid down with `margin-top` instead, clearing .ai-sub's -32px
        margin-bottom regardless of how many lines it wraps to at this width. */
     @media(max-width:960px){
-      .ai-flow-grid{grid-template-columns:repeat(2,1fr);margin-top:48px}
+      .ai-flow-grid{grid-template-columns:repeat(2,1fr);margin-top:48px;row-gap:24px}
       .ai-flow-grid .ai-card{top:0}
     }
     @media(max-width:640px){
-      .ai-flow-grid{grid-template-columns:1fr;gap:14px;padding-bottom:0}
+      .ai-flow-grid{grid-template-columns:1fr;gap:24px;padding-bottom:0}
       /* Single-column stack: the 48/24/0 diagonal `top` stagger below is
          positional-only (doesn't affect grid track sizing), so on one
          column it just shifts cards without reserving space, making them
-         overlap/clip into each other. Reset it here. */
+         overlap/clip into each other. Reset it here. Gap bumped from the
+         desktop 16px (was even smaller, 14px, at this breakpoint) so each
+         card's .ai-focal-badge overhang (~13px above its own card) doesn't
+         touch the card stacked above it. */
       .ai-flow-grid .ai-card{top:0}
     }
 

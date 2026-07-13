@@ -1325,50 +1325,56 @@ export default function SkillsSection() {
         <h2 className="tech-headline rise-soft">Web development <span className="gradient-text">literacy</span></h2>
         <p className="tech-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.tech_sub }} />
         <div className="tech-items">
-          <div className="tech-item html-item card-spotlight sc-card rise-card">
-            <span className="card-glass-highlight" aria-hidden="true" />
-            <div className="tech-item-header">
-              <span className="tech-name"><i className="fab fa-html5" style={{ color: '#60a5fa', marginRight: '8px' }}></i>HTML / CSS / Tailwind</span>
-              <span className="tech-level-badge">DESIGN-READY</span>
-            </div>
-            <div className="tech-desc">{t.skill_html}</div>
-            <div className="tech-code-preview">
-              <div className="tcp-bar">
-                <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
-                <span className="tcp-filename">portfolio.css</span>
+          <div className="tech-item-wrap">
+            <div className="tech-item html-item card-spotlight sc-card rise-card">
+              <span className="card-glass-highlight" aria-hidden="true" />
+              <div className="tech-item-header">
+                <span className="tech-name"><i className="fab fa-html5" style={{ color: '#60a5fa', marginRight: '8px' }}></i>HTML / CSS / Tailwind</span>
               </div>
-              <TypingCode versions={[CSS_CODE_A, CSS_CODE_B]} />
+              <div className="tech-desc">{t.skill_html}</div>
+              <div className="tech-code-preview">
+                <div className="tcp-bar">
+                  <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
+                  <span className="tcp-filename">portfolio.css</span>
+                </div>
+                <TypingCode versions={[CSS_CODE_A, CSS_CODE_B]} />
+              </div>
             </div>
+            <span className="tech-level-badge html-item">DESIGN-READY</span>
           </div>
-          <div className="tech-item js-item card-spotlight sc-card rise-card">
-            <span className="card-glass-highlight" aria-hidden="true" />
-            <div className="tech-item-header">
-              <span className="tech-name"><i className="fab fa-js" style={{ color: '#fb923c', marginRight: '8px' }}></i>JavaScript</span>
-              <span className="tech-level-badge">AI-ASSISTED</span>
-            </div>
-            <div className="tech-desc">{t.skill_js}</div>
-            <div className="tech-code-preview">
-              <div className="tcp-bar">
-                <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
-                <span className="tcp-filename">HeroSection.tsx</span>
+          <div className="tech-item-wrap">
+            <div className="tech-item js-item card-spotlight sc-card rise-card">
+              <span className="card-glass-highlight" aria-hidden="true" />
+              <div className="tech-item-header">
+                <span className="tech-name"><i className="fab fa-js" style={{ color: '#fb923c', marginRight: '8px' }}></i>JavaScript</span>
               </div>
-              <TypingCode versions={[JS_CODE_A, JS_CODE_B]} />
+              <div className="tech-desc">{t.skill_js}</div>
+              <div className="tech-code-preview">
+                <div className="tcp-bar">
+                  <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
+                  <span className="tcp-filename">HeroSection.tsx</span>
+                </div>
+                <TypingCode versions={[JS_CODE_A, JS_CODE_B]} />
+              </div>
             </div>
+            <span className="tech-level-badge js-item">AI-ASSISTED</span>
           </div>
-          <div className="tech-item react-item card-spotlight sc-card rise-card">
-            <span className="card-glass-highlight" aria-hidden="true" />
-            <div className="tech-item-header">
-              <span className="tech-name"><i className="fab fa-react" style={{ color: '#a5b4fc', marginRight: '8px' }}></i>React.js / Vue.js</span>
-              <span className="tech-level-badge">RESPONSIVE</span>
-            </div>
-            <div className="tech-desc">{t.skill_css}</div>
-            <div className="tech-code-preview">
-              <div className="tcp-bar">
-                <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
-                <span className="tcp-filename">SkillsSection.tsx</span>
+          <div className="tech-item-wrap">
+            <div className="tech-item react-item card-spotlight sc-card rise-card">
+              <span className="card-glass-highlight" aria-hidden="true" />
+              <div className="tech-item-header">
+                <span className="tech-name"><i className="fab fa-react" style={{ color: '#a5b4fc', marginRight: '8px' }}></i>React.js / Vue.js</span>
               </div>
-              <TypingCode versions={[JSX_CODE_A, JSX_CODE_B]} />
+              <div className="tech-desc">{t.skill_css}</div>
+              <div className="tech-code-preview">
+                <div className="tcp-bar">
+                  <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
+                  <span className="tcp-filename">SkillsSection.tsx</span>
+                </div>
+                <TypingCode versions={[JSX_CODE_A, JSX_CODE_B]} />
+              </div>
             </div>
+            <span className="tech-level-badge react-item">RESPONSIVE</span>
           </div>
         </div>
         <div className="tech-note rise-soft" dangerouslySetInnerHTML={{ __html: t.figma_mcp }} />
