@@ -5,6 +5,8 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 
 gsap.registerPlugin(ScrollToPlugin);
 
+const loadedImageCache = new Set();
+
 // === 1. 多語言資料庫 ===
         const TRANSLATIONS = {
             zh: {
@@ -140,7 +142,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const [activeGalleryId, setActiveGalleryId] = useState(null);
             const [activeSolutionId, setActiveSolutionId] = useState('sol-01');
             const [showBackToHero, setShowBackToHero] = useState(false);
-            const [isImgLoading, setIsImgLoading] = useState(true);
+            const [isImgLoading, setIsImgLoading] = useState(() => !loadedImageCache.has('./img/project_01/home_01.jpg'));
 
             // GSAP Refs
             const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -236,7 +238,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 }
             }, [activeTab, lang]);
 
-            useEffect(() => setIsImgLoading(true), [currentImage]);
+            useEffect(() => setIsImgLoading(!loadedImageCache.has(currentImage)), [currentImage]);
 
             useEffect(() => {
                 sectionsRef.current = [heroRef.current, splitRef.current];
@@ -372,7 +374,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                             {isImgLoading && <div className="absolute inset-0 z-20 skeleton flex items-center justify-center"><i className="ph ph-image text-4xl text-white/20 animate-pulse"></i></div>}
                                             <picture style={{ display: 'contents' }}>
                                                 <source srcSet={encodeURI(currentImage.replace(/\.(jpg|jpeg|png)$/i, '.webp'))} type="image/webp" />
-                                                <img src={currentImage} alt="Preview" className={`w-full h-full object-cover transition-opacity duration-500 ${isImgLoading ? 'opacity-0' : 'opacity-100'}`} onLoad={() => setIsImgLoading(false)} />
+                                                <img src={currentImage} alt="Preview" className={`w-full h-full object-cover transition-opacity duration-500 ${isImgLoading ? 'opacity-0' : 'opacity-100'}`} onLoad={() => { loadedImageCache.add(currentImage); setIsImgLoading(false); }} />
                                             </picture>
                                         </div>
                                     </div>

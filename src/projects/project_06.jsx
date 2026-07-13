@@ -17,10 +17,12 @@ gsap.registerPlugin(ScrollToPlugin);
             );
         };
 
+        const loadedImageCache = new Set();
+
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
-            const [loaded, setLoaded] = useState(false);
-            useEffect(() => { setLoaded(false); }, [src]);
-            const handleLoad = () => setLoaded(true);
+            const [loaded, setLoaded] = useState(() => loadedImageCache.has(src));
+            useEffect(() => { setLoaded(loadedImageCache.has(src)); }, [src]);
+            const handleLoad = () => { loadedImageCache.add(src); setLoaded(true); };
             const handleError = () => { console.warn("Image error:", src); setLoaded(true); };
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>

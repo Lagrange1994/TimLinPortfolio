@@ -12,15 +12,18 @@ gsap.registerPlugin(ScrollToPlugin);
             return (<picture style={{ display: 'contents' }}> <source srcSet={encodeURI(webpSrc)} type="image/webp" /> <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} /> </picture>);
         };
 
+        const loadedImageCache = new Set();
+
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
-            const [loaded, setLoaded] = useState(false);
-            useEffect(() => { setLoaded(false); }, [src]);
+            const [loaded, setLoaded] = useState(() => loadedImageCache.has(src));
+            useEffect(() => { setLoaded(loadedImageCache.has(src)); }, [src]);
+            const handleLoad = () => { loadedImageCache.add(src); setLoaded(true); };
             const handleError = () => { console.warn("Image load failed", src); setLoaded(true); };
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
                     {!loaded && (<div className="absolute inset-0 bg-tmu-dark-lighter rounded-lg z-10 overflow-hidden flex items-center justify-center pointer-events-none"> <div className="absolute z-10 opacity-20"> <i className="ph ph-image text-white text-3xl"></i> </div> <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent z-20"></div> </div>)}
-                    <ResponsiveImage src={src} alt={alt} className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={() => setLoaded(true)} onError={handleError} {...props} />
+                    <ResponsiveImage src={src} alt={alt} className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={handleLoad} onError={handleError} {...props} />
                 </div>
             );
         };

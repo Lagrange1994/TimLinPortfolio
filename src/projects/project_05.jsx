@@ -7,11 +7,13 @@ gsap.registerPlugin(ScrollToPlugin);
 
 // --- COMPONENTS ---
 
+        const loadedImageCache = new Set();
+
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, objectFit }) => {
-            const [loaded, setLoaded] = useState(false);
+            const [loaded, setLoaded] = useState(() => loadedImageCache.has(src));
             const fitClass = objectFit || "object-contain";
-            useEffect(() => { setLoaded(false); }, [src]);
-            const handleLoad = () => setLoaded(true);
+            useEffect(() => { setLoaded(loadedImageCache.has(src)); }, [src]);
+            const handleLoad = () => { loadedImageCache.add(src); setLoaded(true); };
             const handleError = () => { console.warn("Image error:", src); setLoaded(true); };
             return (
                 <div className={`relative overflow-hidden ${containerClassName || 'w-full h-full'}`}>

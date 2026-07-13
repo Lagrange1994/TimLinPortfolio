@@ -26,12 +26,16 @@ gsap.registerPlugin(ScrollToPlugin);
         };
 
         // --- COMPONENT: Image with Skeleton Loading ---
+        const loadedImageCache = new Set();
+
         const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
-            const [loaded, setLoaded] = useState(false);
+            const [loaded, setLoaded] = useState(() => loadedImageCache.has(src));
 
             useEffect(() => {
-                setLoaded(false);
+                setLoaded(loadedImageCache.has(src));
             }, [src]);
+
+            const handleLoad = () => { loadedImageCache.add(src); setLoaded(true); };
 
             return (
                 <div className={`relative ${containerClassName || 'w-full h-full'}`}>
@@ -44,7 +48,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         src={src}
                         alt={alt}
                         className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-                        onLoad={() => setLoaded(true)}
+                        onLoad={handleLoad}
                         {...props}
                     />
                 </div>
