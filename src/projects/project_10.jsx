@@ -73,7 +73,8 @@ gsap.registerPlugin(ScrollToPlugin);
                 gallery_title: "介面展示 Gallery", gallery_desc: "點擊下方卡片查看高保真設計。",
                 img_hero: "首頁 Hero Header", img_hero_desc: "展示「衝出畫框」的飛機動態視覺",
                 img_map: "情境導覽地圖", img_map_desc: "中段的情境地圖，將帆船石與燈塔融入介面",
-                img_list: "列表式排版", img_list_desc: "針對高密度資訊設計的整潔列表模式"
+                img_list: "列表式排版", img_list_desc: "針對高密度資訊設計的整潔列表模式",
+                scroll_hint: "上下滾動瀏覽完整畫面"
             },
             en: {
                 loader_step1: "Reading project metadata",
@@ -107,7 +108,8 @@ gsap.registerPlugin(ScrollToPlugin);
                 gallery_title: "Interface Gallery", gallery_desc: "Click the cards below to view high-fidelity designs.",
                 img_hero: "Hero Header", img_hero_desc: "Dynamic visual of the plane 'breaking the frame'.",
                 img_map: "Contextual Map", img_map_desc: "Mid-section map integrating local landmarks.",
-                img_list: "List View Layout", img_list_desc: "Clean list mode for high-density information."
+                img_list: "List View Layout", img_list_desc: "Clean list mode for high-density information.",
+                scroll_hint: "Scroll to view the full screen"
             }
         };
 
@@ -339,17 +341,20 @@ gsap.registerPlugin(ScrollToPlugin);
 
                         <section id="split-section" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-black overflow-hidden relative">
                             <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#050505] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/10 shadow-2xl">
-                                <div className="w-full h-[35vh] lg:h-full flex items-center justify-center">
-                                    <div className="relative w-full h-auto max-w-full max-h-full lg:max-h-[90%] bg-hc-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-500">
-                                        <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0"><div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div></div>
-                                        <div ref={imageScrollRef} className="flex-1 min-h-0 overflow-y-auto custom-scroll relative bg-white/5 block">
-                                            <ImageWithSkeleton src={previewImage === 'v15' ? "./img/project_10/tw_index_lg_v15.jpg.jpg" : "./img/project_10/tw_index_lg_v16.jpg.jpg"} alt="Website Preview" className="w-full h-auto block transition-opacity duration-500" containerClassName="w-full h-auto" />
-                                        </div>
-                                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-1 md:space-x-2 p-1 md:p-1.5 bg-black/80 backdrop-blur rounded-full border border-white/10 shadow-xl z-20">
-                                            <button onClick={() => setPreviewImage('v16')} className={`px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold transition-all whitespace-nowrap ${previewImage === 'v16' ? 'bg-hc-primary text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}>News</button>
-                                            <button onClick={() => setPreviewImage('v15')} className={`px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold transition-all whitespace-nowrap ${previewImage === 'v15' ? 'bg-hc-primary text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}>Info</button>
+                                <div className="w-full h-[35vh] lg:h-full flex flex-col items-center justify-center">
+                                    <div className="flex-1 min-h-0 w-full flex items-center justify-center">
+                                        <div className="relative w-full h-auto max-w-full max-h-full lg:max-h-[90%] bg-hc-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-500">
+                                            <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0"><div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div></div>
+                                            <div ref={imageScrollRef} className="flex-1 min-h-0 overflow-y-auto custom-scroll relative bg-white/5 block">
+                                                <ImageWithSkeleton src={previewImage === 'v15' ? "./img/project_10/tw_index_lg_v15.jpg.jpg" : "./img/project_10/tw_index_lg_v16.jpg.jpg"} alt="Website Preview" className="w-full h-auto block transition-opacity duration-500" containerClassName="w-full h-auto" />
+                                            </div>
+                                            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-1 md:space-x-2 p-1 md:p-1.5 bg-black/80 backdrop-blur rounded-full border border-white/10 shadow-xl z-20">
+                                                <button onClick={() => setPreviewImage('v16')} className={`px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold transition-all whitespace-nowrap ${previewImage === 'v16' ? 'bg-hc-primary text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}>News</button>
+                                                <button onClick={() => setPreviewImage('v15')} className={`px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold transition-all whitespace-nowrap ${previewImage === 'v15' ? 'bg-hc-primary text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}>Info</button>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div className="text-center mt-2 text-xs text-gray-500 shrink-0"><i className="ph ph-arrows-down-up mr-2"></i>{t('scroll_hint')}</div>
                                 </div>
                             </div>
 

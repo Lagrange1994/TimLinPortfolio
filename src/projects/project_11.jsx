@@ -70,7 +70,8 @@ gsap.registerPlugin(ScrollToPlugin);
                 img_dashboard: "學習儀表板", img_dashboard_desc: "總覽課程完成度與核心指標。",
                 img_assess: "多元評核表", img_assess_desc: "整合 Mini-CEX 與 DOPS 評分統計。",
                 img_radar: "能力雷達圖", img_radar_desc: "視覺化呈現六大核心能力消長。",
-                img_report: "完整總覽", img_report_desc: "支援行政所需的報表輸出功能。"
+                img_report: "完整總覽", img_report_desc: "支援行政所需的報表輸出功能。",
+                scroll_hint: "上下滾動瀏覽完整畫面"
             },
             en: {
                 loader_step1: "Reading project metadata",
@@ -105,7 +106,8 @@ gsap.registerPlugin(ScrollToPlugin);
                 img_dashboard: "Learning Dashboard", img_dashboard_desc: "Overview of course completion and core metrics.",
                 img_assess: "Multi-Source Assessment", img_assess_desc: "Integrating stats for Mini-CEX and DOPS.",
                 img_radar: "Competency Radar", img_radar_desc: "Visualizing the growth of six core competencies.",
-                img_report: "Full Overview", img_report_desc: "Supports report export functions for administration."
+                img_report: "Full Overview", img_report_desc: "Supports report export functions for administration.",
+                scroll_hint: "Scroll to view the full screen"
             }
         };
 
@@ -347,18 +349,23 @@ gsap.registerPlugin(ScrollToPlugin);
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-tmu-dark overflow-hidden">
                             {/* [修改] bg-[#1e293b] (保留原色碼) */}
                             <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl">
-                                <div className="w-full h-[35vh] lg:h-full flex items-center justify-center">
-                                    {/* [修改] bg-dark-light -> bg-tmu-dark-light */}
-                                    <div className={`relative transition-all duration-500 shadow-2xl rounded-xl border border-white/10 overflow-hidden flex flex-col ${showBrowserHeader ? 'w-full h-full max-w-full max-h-full lg:max-h-[90%] bg-tmu-dark-light' : 'w-auto h-auto max-w-full max-h-full lg:max-h-[90%] bg-transparent'}`}>
-                                        {showBrowserHeader && (
-                                            <div className="h-8 bg-[#334155] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
-                                                <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                <div className="w-full h-[35vh] lg:h-full flex flex-col items-center justify-center">
+                                    <div className="flex-1 min-h-0 w-full flex items-center justify-center">
+                                        {/* [修改] bg-dark-light -> bg-tmu-dark-light */}
+                                        <div className={`relative transition-all duration-500 shadow-2xl rounded-xl border border-white/10 overflow-hidden flex flex-col ${showBrowserHeader ? 'w-full h-full max-w-full max-h-full lg:max-h-[90%] bg-tmu-dark-light' : 'w-auto h-auto max-w-full max-h-full lg:max-h-[90%] bg-transparent'}`}>
+                                            {showBrowserHeader && (
+                                                <div className="h-8 bg-[#334155] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
+                                                    <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                                </div>
+                                            )}
+                                            <div ref={imageScrollRef} className={`relative w-full h-full scrollable-area ${showBrowserHeader ? 'flex-1 min-h-0 block bg-white/5' : 'overflow-hidden flex items-center justify-center h-full'}`}>
+                                                <ImageWithSkeleton src={currentImage} alt="Preview" className={`transition-all duration-500 block ${showBrowserHeader ? 'w-full h-auto' : 'max-w-full max-h-full object-contain'}`} containerClassName={showBrowserHeader ? 'w-full h-auto' : 'w-full h-full flex items-center justify-center'} />
                                             </div>
-                                        )}
-                                        <div ref={imageScrollRef} className={`relative w-full h-full scrollable-area ${showBrowserHeader ? 'flex-1 min-h-0 block bg-white/5' : 'overflow-hidden flex items-center justify-center h-full'}`}>
-                                            <ImageWithSkeleton src={currentImage} alt="Preview" className={`transition-all duration-500 block ${showBrowserHeader ? 'w-full h-auto' : 'max-w-full max-h-full object-contain'}`} containerClassName={showBrowserHeader ? 'w-full h-auto' : 'w-full h-full flex items-center justify-center'} />
                                         </div>
                                     </div>
+                                    {showBrowserHeader && (
+                                        <div className="text-center mt-2 text-xs text-gray-500 shrink-0"><i className="ph ph-arrows-down-up mr-2"></i>{t('scroll_hint')}</div>
+                                    )}
                                 </div>
                             </div>
 

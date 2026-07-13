@@ -67,7 +67,8 @@ gsap.registerPlugin(ScrollToPlugin);
                 step_4_title: "Step 4. 地圖整合", step_4_desc: "繪製專屬的向量地圖，將申請場地與導覽路線具象化，讓使用者對「地點」有直觀認識。",
 
                 highlights_title: "設計特色 Highlights",
-                gallery_title: "頁面展示 Gallery", gallery_desc: "點擊下方卡片預覽各個申請頁面的最終設計成果。"
+                gallery_title: "頁面展示 Gallery", gallery_desc: "點擊下方卡片預覽各個申請頁面的最終設計成果。",
+                scroll_hint: "上下滾動瀏覽完整畫面"
             },
             en: {
                 loader_step1: "Reading project metadata",
@@ -94,7 +95,8 @@ gsap.registerPlugin(ScrollToPlugin);
                 step_4_title: "Step 4. Map Integration", step_4_desc: "Created custom vector maps to visualize venues and routes, giving users a clear sense of 'location'.",
 
                 highlights_title: "Design Highlights",
-                gallery_title: "Gallery", gallery_desc: "Click the cards below to preview the final design of each application page."
+                gallery_title: "Gallery", gallery_desc: "Click the cards below to preview the final design of each application page.",
+                scroll_hint: "Scroll to view the full screen"
             }
         };
 
@@ -342,18 +344,23 @@ gsap.registerPlugin(ScrollToPlugin);
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-sm-dark overflow-hidden">
                             {/* [修改] bg-[#1e293b] (保留原色碼) */}
                             <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl">
-                                <div className="w-full h-[35vh] lg:h-full flex items-center justify-center">
-                                    {/* [修改] bg-dark-light -> bg-sm-dark-light */}
-                                    <div className={`relative transition-all duration-500 shadow-2xl rounded-xl border border-white/10 overflow-hidden flex flex-col ${['highlights', 'gallery'].includes(activeTab) ? 'w-full h-full max-w-full max-h-full lg:max-h-[90%] bg-sm-dark-light' : 'w-auto h-auto max-w-full max-h-full lg:max-h-[90%] bg-transparent'}`}>
-                                        {['highlights', 'gallery'].includes(activeTab) && (
-                                            <div className="h-8 bg-[#334155] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
-                                                <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                <div className="w-full h-[35vh] lg:h-full flex flex-col items-center justify-center">
+                                    <div className="flex-1 min-h-0 w-full flex items-center justify-center">
+                                        {/* [修改] bg-dark-light -> bg-sm-dark-light */}
+                                        <div className={`relative transition-all duration-500 shadow-2xl rounded-xl border border-white/10 overflow-hidden flex flex-col ${['highlights', 'gallery'].includes(activeTab) ? 'w-full h-full max-w-full max-h-full lg:max-h-[90%] bg-sm-dark-light' : 'w-auto h-auto max-w-full max-h-full lg:max-h-[90%] bg-transparent'}`}>
+                                            {['highlights', 'gallery'].includes(activeTab) && (
+                                                <div className="h-8 bg-[#334155] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
+                                                    <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
+                                                </div>
+                                            )}
+                                            <div ref={imageScrollRef} className={`relative w-full h-full scrollable-area ${['highlights', 'gallery'].includes(activeTab) ? 'flex-1 min-h-0 block bg-white/5' : 'overflow-hidden flex items-center justify-center h-full'}`}>
+                                                <ImageWithSkeleton src={currentImage} alt="Preview" className={`transition-all duration-500 block ${['highlights', 'gallery'].includes(activeTab) ? 'w-full h-auto' : 'max-w-full max-h-full object-contain'}`} containerClassName={['highlights', 'gallery'].includes(activeTab) ? 'w-full h-auto' : 'w-full h-full flex items-center justify-center'} />
                                             </div>
-                                        )}
-                                        <div ref={imageScrollRef} className={`relative w-full h-full scrollable-area ${['highlights', 'gallery'].includes(activeTab) ? 'flex-1 min-h-0 block bg-white/5' : 'overflow-hidden flex items-center justify-center h-full'}`}>
-                                            <ImageWithSkeleton src={currentImage} alt="Preview" className={`transition-all duration-500 block ${['highlights', 'gallery'].includes(activeTab) ? 'w-full h-auto' : 'max-w-full max-h-full object-contain'}`} containerClassName={['highlights', 'gallery'].includes(activeTab) ? 'w-full h-auto' : 'w-full h-full flex items-center justify-center'} />
                                         </div>
                                     </div>
+                                    {['highlights', 'gallery'].includes(activeTab) && (
+                                        <div className="text-center mt-2 text-xs text-gray-500 shrink-0"><i className="ph ph-arrows-down-up mr-2"></i>{t('scroll_hint')}</div>
+                                    )}
                                 </div>
                             </div>
 
