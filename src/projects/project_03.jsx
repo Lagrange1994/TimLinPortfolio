@@ -363,7 +363,12 @@ gsap.registerPlugin(ScrollToPlugin);
 
             const handleGallerySwitch = (imgObj) => { setCurrentImage(imgObj.src); setActiveGalleryId(imgObj.id); };
             const handleSolutionSwitch = (solObj) => { setCurrentImage(solObj.image); setActiveSolutionId(solObj.id); };
-            const goBack = () => { location.href = '/#portfolio'; };
+            const goBack = () => {
+                let sameOrigin = false;
+                try { sameOrigin = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) {}
+                if (sameOrigin && window.history.length > 1) history.back();
+                else location.href = '/#portfolio';
+            };
 
             return (
                 <React.Fragment>

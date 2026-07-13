@@ -519,7 +519,12 @@ gsap.registerPlugin(ScrollToPlugin);
             // eslint-disable-next-line react-hooks/exhaustive-deps
             }, [currentSectionIndex]);
 
-            const goBack = () => { location.href = '/#portfolio'; };
+            const goBack = () => {
+                let sameOrigin = false;
+                try { sameOrigin = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) {}
+                if (sameOrigin && window.history.length > 1) history.back();
+                else location.href = '/#portfolio';
+            };
 
             const renderLeftPanel = () => {
                 switch (activeTab) {
