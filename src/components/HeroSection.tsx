@@ -98,10 +98,9 @@ export default function HeroSection() {
     if (h1Words.length) gsap.set(h1Words, { opacity: 0, y: 40, rotation: 5 });
     if (h2Chars.length) gsap.set(h2Chars, { opacity: 0, y: 28 });
 
-    const scrollIndicator = document.querySelector<HTMLElement>('.hero-scroll-indicator');
-    // Its reveal is handled by the dedicated idle-detection effect below,
-    // not this entrance sequence — just keep it hidden until then.
-    if (scrollIndicator) gsap.set(scrollIndicator, { opacity: 0, y: 20 });
+    // The scroll indicator starts hidden via CSS (.hero-scroll-indicator has
+    // opacity:0) and is revealed by the idle-detection effect below by adding
+    // .is-revealed, so the entrance sequence leaves it alone.
 
     function animate() {
       setTimeout(() => {
@@ -262,24 +261,31 @@ export default function HeroSection() {
     }
   }, []);
 
-  // Hero scroll indicator (mouse icon) — only reveals once the hero has sat
-  // idle (no scroll/wheel/touch movement) for SCROLL_INDICATOR_IDLE_MS while
-  // still in view, instead of a fixed post-load delay, so it doesn't nudge
-  // a user who's already mid-scroll.
+  // Hero scroll indicator (mouse icon) — stays hidden after the intro and only
+  // surfaces once the user has sat completely still on the hero for
+  // SCROLL_INDICATOR_IDLE_MS. ANY movement (scroll/wheel/touch/mouse/pointer/
+  // key) resets the clock, so it never nudges a user who's actively exploring
+  // the hero, and the count only starts once the hero entrance is ready — so
+  // it can't elapse mid-animation and pop the moment the intro lands.
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const indicator = document.querySelector<HTMLElement>('.hero-scroll-indicator');
     if (!indicator) return;
+    // Reduced-motion users opt out of the idle-timing choreography — just show
+    // the hint (CSS keeps it hidden by default otherwise).
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      indicator.classList.add('is-revealed');
+      return;
+    }
 
-    const SCROLL_INDICATOR_IDLE_MS = 7000;
+    const SCROLL_INDICATOR_IDLE_MS = 6000;
     let revealed = false;
+    let idleStarted = false;
     let lastActivity = Date.now();
     let heroInView = true;
 
     const markActivity = () => { lastActivity = Date.now(); };
-    window.addEventListener('scroll', markActivity, { passive: true });
-    window.addEventListener('wheel', markActivity, { passive: true });
-    window.addEventListener('touchmove', markActivity, { passive: true });
+    const activityEvents = ['scroll', 'wheel', 'touchmove', 'mousemove', 'pointermove', 'keydown'] as const;
+    activityEvents.forEach(ev => window.addEventListener(ev, markActivity, { passive: true }));
 
     const heroEl = document.getElementById('home');
     const observer = heroEl ? new IntersectionObserver(([entry]) => {
@@ -288,26 +294,31 @@ export default function HeroSection() {
     }, { threshold: 0.5 }) : null;
     if (heroEl) observer!.observe(heroEl);
 
+    // Don't begin counting stillness until the hero entrance has played,
+    // resetting the baseline at that moment so the 6s window measures idle
+    // time *after* the animation, not from page mount.
+    const startIdle = () => { idleStarted = true; lastActivity = Date.now(); };
+    if (document.body.classList.contains('hero-ready')) startIdle();
+    else window.addEventListener('hero-ready', startIdle, { once: true });
+
+    const cleanupListeners = () => {
+      activityEvents.forEach(ev => window.removeEventListener(ev, markActivity));
+      window.removeEventListener('hero-ready', startIdle);
+    };
+
     const idleCheck = setInterval(() => {
-      if (revealed || !heroInView || Date.now() - lastActivity < SCROLL_INDICATOR_IDLE_MS) return;
+      if (revealed || !idleStarted || !heroInView || Date.now() - lastActivity < SCROLL_INDICATOR_IDLE_MS) return;
       revealed = true;
       clearInterval(idleCheck);
       observer?.disconnect();
-      window.removeEventListener('scroll', markActivity);
-      window.removeEventListener('wheel', markActivity);
-      window.removeEventListener('touchmove', markActivity);
-      gsap.to(indicator, {
-        opacity: 0.65, y: 0, duration: 0.8, ease: 'power3.out',
-        onComplete: () => gsap.set(indicator, { clearProps: 'opacity,transform' }),
-      });
+      cleanupListeners();
+      indicator.classList.add('is-revealed');
     }, 300);
 
     return () => {
       clearInterval(idleCheck);
       observer?.disconnect();
-      window.removeEventListener('scroll', markActivity);
-      window.removeEventListener('wheel', markActivity);
-      window.removeEventListener('touchmove', markActivity);
+      cleanupListeners();
     };
   }, []);
 
