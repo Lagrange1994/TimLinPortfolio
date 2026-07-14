@@ -7,6 +7,17 @@
       "NODE_VERSION": "20"
     }
   },
+  "headers": [
+    {
+      "source": "/models/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=604800, stale-while-revalidate=86400"
+        }
+      ]
+    }
+  ],
   "functions": {
     "api/chat.ts": {
       "includeFiles": "data/tim-faq.md"

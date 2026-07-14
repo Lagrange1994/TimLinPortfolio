@@ -10,11 +10,17 @@
   <!-- Perf: resource hints for third-party origins + LCP hero image -->
   <link rel="dns-prefetch" href="https://unpkg.com" />
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
-  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
   <link rel="preconnect" href="https://unpkg.com" crossorigin />
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="preload" as="image" href="/img/figure.png" type="image/png" fetchpriority="high" />
+  <!-- Perf: start Spline scene downloads immediately, in parallel with the
+       viewer script / React bundle that would otherwise gate them. Media
+       queries mirror HERO_FIGURE_BREAKPOINT (768px, see Loader.tsx) — below
+       it both scenes are swapped for static images, so mobile preloads the
+       jpg background instead and never touches the .splinecode files. -->
+  <link rel="preload" as="fetch" href="/models/bg_scene.splinecode" crossorigin media="(min-width: 768px)" />
+  <link rel="preload" as="fetch" href="/models/hero_figure.splinecode" crossorigin media="(min-width: 768px)" />
+  <link rel="preload" as="image" href="/img/bg.jpg" media="(max-width: 767px)" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
