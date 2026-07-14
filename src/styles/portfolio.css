@@ -5456,6 +5456,21 @@
     }
     #chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
 
+    /* Mobile chat panel — desktop uses a fixed 320px box anchored right:2rem,
+       which overflows the left edge on any viewport <=351px (iPhone SE 320px
+       cut off by 32px). Anchor to both gutters with width:auto so it stays
+       fully on-screen at every phone width, and cap height to the viewport
+       (dvh accounts for the mobile URL bar) so it never runs off the bottom. */
+    @media (max-width: 767px) {
+      #chat-panel {
+        left: 1rem;
+        right: 1rem;
+        width: auto;
+        max-height: min(70dvh, 440px);
+        bottom: calc(1rem + 2.75rem + 0.5rem);
+      }
+    }
+
     /* Mobile corner-radius pass — .bento-card/.process-card/.ai-card/
        .tech-item used to rely on a JS ResizeObserver + clip-path hack
        (superellipse squircle drawn by hand) because corner-shape:squircle
@@ -5489,6 +5504,32 @@
       .bento-area-years,
       .bento-area-projects {
         border-radius: 12px;
+      }
+
+      /* .process-card (.border-glow-card) and the How I Use AI cards
+         (.ai-card-glow) both shrink to a 20px corner above, but their
+         border-glow layers stay pinned to the desktop 44px: the .edge-light
+         outer ring and its inner glow box are sized off 44px — via
+         --border-radius on .border-glow-card, hardcoded on .ai-card-glow — so
+         the card corner (20px) and the glow curve (44–68px) no longer share a
+         radius. That's the reported inner/outer mismatch. Re-point both
+         systems' ring + inner box at the 20px mobile corner so the ring stays
+         a uniform-width offset of the card. The mesh ::before/::after use
+         border-radius:inherit and the .ai-card::after ring is handled above,
+         so both already track the card. */
+      .border-glow-card > .edge-light,
+      .ai-card-glow > .edge-light {
+        border-radius: calc(20px + var(--glow-padding));
+      }
+      .border-glow-card > .edge-light::before,
+      .ai-card-glow > .edge-light::before {
+        border-radius: 20px;
+      }
+      .process-radar {
+        border-radius: calc(20px + 10px);
+      }
+      .process-card--has-img .border-glow-inner::before {
+        border-radius: 20px;
       }
     }
 
