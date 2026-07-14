@@ -15,7 +15,7 @@ export const translations = {
     hero_desc: '致力於打造兼具美學與功能的數位體驗<br>協助企業推動業務成長並深化用戶互動',
     // about
     about_headline:
-      '讓複雜系統變得可被掌控的產品設計師，<br><span class="gradient-text">兼具 3D 互動開發與 AI 工作流整合能力</span>',
+      '讓複雜系統變得可被掌控的<br class="br-mobile">產品設計師，<br><span class="gradient-text">兼具 3D 互動開發與 <br class="br-mobile">AI 工作流整合能力</span>',
     about_lead: `過去五年主導政府與企業後台系統設計，並善用 <strong>AI 工具串接自動化流程</strong>，讓設計與開發的溝通更有效率。`,
     about_p1: `我的設計核心是<strong>讓高複雜度的系統變得可以被人掌控</strong>。過去五年，我為政府與企業客戶主導後台系統設計，交付成果橫跨 <strong>警政雲端智慧影像分析系統</strong>、<strong>環保局數據管理平台</strong> 與 <strong>醫院醫療管理後台</strong>。面對龐雜的業務邏輯，我慣用 <span class="text-primary">Figma</span> 與 <span class="text-primary">Adobe XD</span> 從零梳理資訊架構，最終轉化為直觀、精準的數位工作環境。`,
     about_p2: `除了嚴謹的系統思維，我擅長將<strong>沉浸式視覺</strong>注入介面設計。熟練運用 <span class="text-secondary">Blender</span> 與 <span class="text-secondary">Spline</span> 打造 3D 互動網頁體驗，也具備多媒體娛樂產業與商業專案的完整執行經驗——這讓我的設計能在邏輯嚴密的同時，保有視覺上的驚喜感。`,

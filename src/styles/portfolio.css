@@ -275,6 +275,9 @@
       font-family: var(--mono);
       position: relative;
       padding-left: 20px;
+      /* Eyebrow labels are short and meant to sit on a single line — never let
+         a narrow container force an awkward wrap (e.g. "My Design Process"). */
+      white-space: nowrap;
     }
 
     .section-label::before {
@@ -792,6 +795,13 @@
       align-self: start;
       display: flex;
       flex-direction: column;
+    }
+
+    /* Mobile-only line break: hidden at desktop/tablet, shown < 768px (see the
+       mobile block below) so headlines can break at clean phrase boundaries on
+       narrow screens without affecting the wider layout. */
+    .br-mobile {
+      display: none;
     }
 
     .about-headline {
@@ -1539,7 +1549,10 @@
       font-size: 13px;
       line-height: 1.6;
       color: var(--text-70);
-      max-width: 42ch;
+      /* Fluid width — fill the grid track / container at every breakpoint
+         instead of capping at a fixed character count, so the text adapts to
+         the available column width rather than force-wrapping early. */
+      max-width: 100%;
       margin-bottom: 16px;
     }
 
@@ -5494,6 +5507,11 @@
       .about-h2 .gradient-text,
       .contact-headline .gradient-text {
         display: block;
+      }
+
+      /* Enable the mobile-only phrase breaks (see .br-mobile above). */
+      .br-mobile {
+        display: inline;
       }
 
       .bento-card {
