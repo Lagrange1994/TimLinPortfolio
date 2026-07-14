@@ -29,12 +29,11 @@ export default function AboutSection() {
   const domainsFirstHalf = domainsWords.slice(0, 2).join(domainsSeparator);
   const domainsSecondHalf = domainsWords.slice(2).join(domainsSeparator);
 
-  // Profile card 3D tilt — pointer-based (fires on tap too), and with no
-  // real hover to send a pointerleave on touch devices, a tap left the
-  // card stuck mid-tilt. Skip entirely on touch/coarse-pointer devices so
-  // the card stays flat and unresponsive there instead.
+  // Profile card 3D tilt — pointer-based, no gate or filter (restored to the
+  // original working behavior). An earlier matchMedia('(hover:none)') gate
+  // and a later pointerType filter both wrongly disabled it for real mouse
+  // users on some devices; pointerleave still resets it on touch.
   useEffect(() => {
-    if (window.matchMedia('(hover: none)').matches) return;
     const wrap = document.getElementById('profile-card-wrap') as HTMLElement | null;
     const shell = document.getElementById('profile-card-shell') as HTMLElement | null;
     const card = document.getElementById('profile-card-el') as HTMLElement | null;
@@ -212,12 +211,10 @@ export default function AboutSection() {
     };
   }, []);
 
-  // Spotlight card effect — mousemove-driven; on touch a tap can fire a
-  // synthetic move that leaves the spotlight stuck at the tap point with
-  // no mouseleave to clear it. Same touch/coarse-pointer skip as the
-  // profile card tilt above.
+  // Spotlight card effect — plain mousemove, matching ContactSection's
+  // working pattern. No matchMedia gate and no pointerType filter (both
+  // wrongly disabled it for real mouse users on some devices).
   useEffect(() => {
-    if (window.matchMedia('(hover: none)').matches) return;
     function initSpotlightCardEffect() {
       document.querySelectorAll<HTMLElement>('.card-spotlight, .sidebar-block').forEach(card => {
         const onMove = (e: MouseEvent) => {
@@ -231,12 +228,13 @@ export default function AboutSection() {
     initSpotlightCardEffect();
   }, []);
 
-  // White border-ring hover effect — same .sc-card/.sc-overlay mechanism
-  // used by the Tech Stack cards (SkillsSection) and Contact cards. Same
-  // touch/coarse-pointer skip as the two effects above — no hover to clear
-  // the ring after a tap.
+  // White border-ring hover effect — identical mechanism to
+  // ContactSection's working effect: plain mousemove/mouseleave, no
+  // matchMedia gate and no pointerType filter (a pointerType filter wrongly
+  // bailed on devices reporting a non-'mouse' pointerType, killing it). Bento
+  // cards are also .card-spotlight, so drive --mouse-x/y here too so both
+  // glow layers track.
   useEffect(() => {
-    if (window.matchMedia('(hover: none)').matches) return;
     document.querySelectorAll<HTMLElement>('#about .sc-card').forEach(card => {
       if (card.querySelector(':scope > .sc-overlay')) return;
       const ov = document.createElement('div');
@@ -245,12 +243,18 @@ export default function AboutSection() {
 
       const onMove = (e: MouseEvent) => {
         const r = card.getBoundingClientRect();
-        card.style.setProperty('--sc-x', (e.clientX - r.left) + 'px');
-        card.style.setProperty('--sc-y', (e.clientY - r.top) + 'px');
+        const x = (e.clientX - r.left) + 'px';
+        const y = (e.clientY - r.top) + 'px';
+        card.style.setProperty('--sc-x', x);
+        card.style.setProperty('--sc-y', y);
+        card.style.setProperty('--mouse-x', x);
+        card.style.setProperty('--mouse-y', y);
       };
       const onLeave = () => {
         card.style.setProperty('--sc-x', '-500px');
         card.style.setProperty('--sc-y', '-500px');
+        card.style.setProperty('--mouse-x', '-500px');
+        card.style.setProperty('--mouse-y', '-500px');
       };
       card.addEventListener('mousemove', onMove);
       card.addEventListener('mouseleave', onLeave);

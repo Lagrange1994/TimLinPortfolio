@@ -280,7 +280,7 @@ function makeAiCards(t: Record<string, string>) {
       variant: 'ai-focal',
       badge: 'GEMINI · DRAFT',
       icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 3 13.6 8.4 19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z" />
           <path d="M19 17l.7 2.3L22 20l-2.3.7L19 23l-.7-2.3L16 20l2.3-.7z" />
         </svg>
@@ -1085,13 +1085,16 @@ export default function SkillsSection() {
     }
   }, [expandedAiCard]);
 
-  // Spotlight cards — scoped to this section's own root so it doesn't also
-  // pick up AboutSection's/ContactSection's .sc-card elements (all three
-  // components run this same effect; an unscoped document-wide query would
-  // let this one attach listeners to cards AboutSection deliberately skips
-  // on touch devices).
+  // Spotlight cards — identical mechanism to ContactSection's working
+  // effect: plain mousemove/mouseleave, scoped to this section's own root
+  // so it doesn't cross-contaminate About's/Contact's .sc-card elements. No
+  // matchMedia gate and no pointerType filter — a filter on pointerType
+  // wrongly bailed on devices whose mouse/trackpad reports a non-'mouse'
+  // pointerType, killing the effect entirely. These tech cards also carry
+  // the .card-spotlight colored tint (::before at --mouse-x/--mouse-y), which
+  // Contact's plain sc-cards don't, so drive those vars here too.
   useEffect(() => {
-    document.querySelectorAll<HTMLElement>('#my-skills .sc-card').forEach(card => {
+    document.querySelectorAll<HTMLElement>('#tech-stack .sc-card').forEach(card => {
       if (card.querySelector(':scope > .sc-overlay')) return;
       const ov = document.createElement('div');
       ov.className = 'sc-overlay';
@@ -1099,12 +1102,18 @@ export default function SkillsSection() {
 
       const onMove = (e: MouseEvent) => {
         const r = card.getBoundingClientRect();
-        card.style.setProperty('--sc-x', (e.clientX - r.left) + 'px');
-        card.style.setProperty('--sc-y', (e.clientY - r.top) + 'px');
+        const x = (e.clientX - r.left) + 'px';
+        const y = (e.clientY - r.top) + 'px';
+        card.style.setProperty('--sc-x', x);
+        card.style.setProperty('--sc-y', y);
+        card.style.setProperty('--mouse-x', x);
+        card.style.setProperty('--mouse-y', y);
       };
       const onLeave = () => {
         card.style.setProperty('--sc-x', '-500px');
         card.style.setProperty('--sc-y', '-500px');
+        card.style.setProperty('--mouse-x', '-500px');
+        card.style.setProperty('--mouse-y', '-500px');
       };
       card.addEventListener('mousemove', onMove);
       card.addEventListener('mouseleave', onLeave);
@@ -1256,13 +1265,13 @@ export default function SkillsSection() {
       </section>
 
       {/* TECH STACK */}
-      <section className="section">
+      <section id="tech-stack" className="section">
         <div className="section-label rise-soft">Tech Stack</div>
-        <h2 className="tech-headline rise-soft">Web development <span className="gradient-text">literacy</span></h2>
+        <h2 className="about-h2 rise-soft" style={{ marginBottom: '8px' }}>Web development <span className="gradient-text">literacy</span></h2>
         <p className="tech-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.tech_sub }} />
         <div className="tech-items">
-          <div className="tech-item-wrap">
-            <div className="tech-item html-item card-spotlight sc-card rise-card">
+          <div className="tech-item-wrap rise-card">
+            <div className="tech-item html-item card-spotlight sc-card">
               <span className="card-glass-highlight" aria-hidden="true" />
               <div className="tech-item-header">
                 <span className="tech-name"><i className="fab fa-html5" style={{ color: '#60a5fa', marginRight: '8px' }}></i>HTML / CSS / Tailwind</span>
@@ -1278,8 +1287,8 @@ export default function SkillsSection() {
             </div>
             <span className="tech-level-badge html-item">DESIGN-READY</span>
           </div>
-          <div className="tech-item-wrap">
-            <div className="tech-item js-item card-spotlight sc-card rise-card">
+          <div className="tech-item-wrap rise-card">
+            <div className="tech-item js-item card-spotlight sc-card">
               <span className="card-glass-highlight" aria-hidden="true" />
               <div className="tech-item-header">
                 <span className="tech-name"><i className="fab fa-js" style={{ color: '#fb923c', marginRight: '8px' }}></i>JavaScript</span>
@@ -1295,8 +1304,8 @@ export default function SkillsSection() {
             </div>
             <span className="tech-level-badge js-item">AI-ASSISTED</span>
           </div>
-          <div className="tech-item-wrap">
-            <div className="tech-item react-item card-spotlight sc-card rise-card">
+          <div className="tech-item-wrap rise-card">
+            <div className="tech-item react-item card-spotlight sc-card">
               <span className="card-glass-highlight" aria-hidden="true" />
               <div className="tech-item-header">
                 <span className="tech-name"><i className="fab fa-react" style={{ color: '#a5b4fc', marginRight: '8px' }}></i>React.js / Vue.js</span>
@@ -1352,7 +1361,7 @@ export default function SkillsSection() {
       {/* HOW I USE AI */}
       <section className="section">
         <div className="section-label rise-soft">How I Use AI</div>
-        <h2 className="rise-soft" style={{ fontSize: 'clamp(1.6rem,2.5vw,2rem)', fontWeight: 700, letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
+        <h2 className="about-h2 rise-soft" style={{ letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
           AI-Assisted Design <span className="gradient-text">Intake System</span>
         </h2>
         <p

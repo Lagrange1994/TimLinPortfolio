@@ -175,8 +175,9 @@ export default function CardSwap({
 
     // Touch devices have no real hover to send a leave event, so a tap on
     // the card would fire mouseenter, pause the swap, and leave it stuck —
-    // skip the hover listeners there and let it keep auto-cycling.
-    if (pauseOnHover && !window.matchMedia('(hover: none)').matches) {
+    // skip the hover listeners there and let it keep auto-cycling. Gate on
+    // any-hover (not hover) so touchscreen laptops with a mouse still pause.
+    if (pauseOnHover && !window.matchMedia('(any-hover: none)').matches) {
       const node = container.current;
       const pause = () => {
         tlRef.current?.pause();

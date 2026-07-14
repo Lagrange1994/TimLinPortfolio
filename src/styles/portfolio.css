@@ -1116,14 +1116,14 @@
     }
 
     .bento-caption {
-      font-size: 15px;
+      font-size: 13.5px;
       line-height: 1.55;
       color: var(--text-50);
       margin-top: 2px;
     }
 
     .bento-text {
-      font-size: 15px;
+      font-size: 13.5px;
       line-height: 1.55;
       color: var(--text-70);
     }
@@ -1903,14 +1903,6 @@
     }
 
     /* TECH STACK */
-    .tech-headline {
-      font-size: 26px;
-      font-weight: 700;
-      letter-spacing: -.02em;
-      margin-bottom: 8px;
-      max-width: 392px;
-    }
-
     .tech-sub {
       color: rgba(255, 255, 255, 0.55);
       font-size: 14px;
@@ -1952,7 +1944,7 @@
       height: 100%;
       border-radius: 28px;
       corner-shape: squircle;
-      padding: 20px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
       backdrop-filter: var(--glass-blur);
@@ -1984,7 +1976,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 10px;
     }
 
     .tech-name {
@@ -1997,7 +1989,7 @@
     .tech-desc {
       font-size: 13.5px;
       color: var(--text-50);
-      margin-bottom: 10px;
+      margin: 10px 0 14px;
       line-height: 1.55;
     }
 
@@ -2476,7 +2468,7 @@
 
     /* CONTACT */
     .contact-headline {
-      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      font-size: clamp(1.5rem, 2.5vw, 2rem);
       font-weight: 700;
       letter-spacing: -.02em;
       line-height: 1.15;
@@ -2813,8 +2805,16 @@
     .card-spotlight {
       position: relative;
       overflow: hidden;
-      --mouse-x: 50%;
-      --mouse-y: 50%;
+      /* Rest off-screen (not centered) so a sticky :hover left behind by a
+         touch tap shows nothing — the JS spotlight effect ignores touch
+         pointers and never moves these, so on touch they stay at this
+         default. Mirrors the -500px fallback the .sc-overlay/.sc-card::after
+         gradients already use. A real mouse sets them on pointermove before
+         :hover fades ::before in. This is what lets the touch fallback work
+         without an @media(any-hover:none) opacity override that also risked
+         suppressing the glow for real mouse users the query misclassified. */
+      --mouse-x: -500px;
+      --mouse-y: -500px;
       --spotlight-color: rgba(255, 255, 255, 0.15);
     }
 
@@ -3272,7 +3272,6 @@
     .hero-h2,
     .about-h2,
     .section-h2,
-    .tech-headline,
     .contact-headline,
     .ai-tool-name,
     .tech-name,
@@ -3802,26 +3801,27 @@
 
       /* General */
       .section {
-        padding: 48px 20px;
+        padding: 36px 16px;
       }
 
       /* Nav */
       #nav-container {
-        padding: 0.4rem 0.8rem;
+        padding: 0.35rem 0.65rem;
         gap: 4px;
       }
 
+      /* min-height stays 44px (tap-target minimum) even as padding/font shrink */
       .nav-link {
-        padding: 0.6rem 0.6rem;
-        font-size: 11px;
+        padding: 0.5rem 0.5rem;
+        font-size: 10px;
         min-height: 44px;
         display: inline-flex;
         align-items: center;
       }
 
       #lang-menu-btn {
-        padding: 0 10px;
-        font-size: 11px;
+        padding: 0 8px;
+        font-size: 10px;
         min-height: 44px;
       }
 
@@ -3873,22 +3873,22 @@
 
       .hero-text {
         width: 100%;
-        padding: 1.5rem 1rem 0;
+        padding: 1.25rem 0.875rem 0;
         align-items: center;
       }
 
       .hero-h1 {
-        font-size: clamp(2rem, 10vw, 3rem);
+        font-size: clamp(1.75rem, 9vw, 2.5rem);
       }
 
       .hero-h2 {
-        font-size: clamp(1rem, 4vw, 1.25rem);
-        margin-bottom: 0.75rem;
+        font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+        margin-bottom: 0.6rem;
       }
 
       .hero-desc {
-        font-size: 1rem;
-        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        margin-bottom: 1.25rem;
       }
 
       .hero-btns {
@@ -3950,7 +3950,7 @@
       }
 
       .about-h2 {
-        font-size: clamp(1.2rem, 5vw, 1.6rem);
+        font-size: clamp(1.3rem, 6vw, 1.75rem);
       }
 
       /* Design Process — 2 col */
@@ -3974,15 +3974,15 @@
       }
 
       .border-glow-inner {
-        padding: 14px 12px;
+        padding: 16px;
       }
 
       .process-name {
-        font-size: 12px;
+        font-size: 11px;
       }
 
       .process-desc {
-        font-size: 11px;
+        font-size: 10px;
         line-height: 1.45;
       }
 
@@ -3990,10 +3990,6 @@
       .tech-items {
         grid-template-columns: 1fr;
         gap: 24px;
-      }
-
-      .tech-headline {
-        font-size: 20px;
       }
 
       /* How I Use AI — single column */
@@ -4037,7 +4033,7 @@
       .line-banner {
         grid-template-columns: 1fr;
         gap: 14px;
-        padding: 18px 16px;
+        padding: 16px;
       }
 
       .line-icon-box {
@@ -4059,7 +4055,7 @@
       }
 
       .contact-headline {
-        font-size: clamp(1.4rem, 5vw, 1.8rem);
+        font-size: clamp(1.3rem, 6vw, 1.75rem);
       }
 
       /* Footer */
@@ -4067,7 +4063,7 @@
         flex-direction: column;
         gap: 10px;
         text-align: center;
-        padding: 24px 20px;
+        padding: 20px 16px;
       }
 
       /* Back to top */
@@ -4237,14 +4233,6 @@
     }
 
     /* TECH STACK */
-    .tech-headline {
-      font-size: 26px;
-      font-weight: 700;
-      letter-spacing: -.02em;
-      margin-bottom: 8px;
-      max-width: 392px;
-    }
-
     .tech-sub {
       color: rgba(255, 255, 255, 0.55);
       font-size: 14px;
@@ -4261,7 +4249,7 @@
     .tech-item {
       border-radius: 28px;
       corner-shape: squircle;
-      padding: 20px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
       backdrop-filter: var(--glass-blur);
@@ -4292,7 +4280,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 10px;
     }
 
     .tech-name {
@@ -4305,7 +4293,7 @@
     .tech-desc {
       font-size: 13.5px;
       color: var(--text-50);
-      margin-bottom: 10px;
+      margin: 10px 0 14px;
       line-height: 1.55;
     }
 
@@ -5043,7 +5031,7 @@
     .ai-card:hover::after{animation:aiRingP 3s ease-out infinite}
     .ai-card.ai-focal::after{animation:aiRingP 3s ease-out infinite}
     /* AI Brief focal */
-    .ai-card.ai-focal{padding:32px 32px 28px;background-color:rgba(24,16,32,.72);background-image:radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.32),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(181,139,255,.32);box-shadow:0 60px 140px -20px rgba(0,0,0,.7),0 0 0 1px rgba(181,139,255,.1),0 0 220px -20px rgba(181,139,255,.35),0 0 360px -40px rgba(255,123,200,.25),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-focal{background-color:rgba(24,16,32,.72);background-image:radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.32),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(181,139,255,.32);box-shadow:0 60px 140px -20px rgba(0,0,0,.7),0 0 0 1px rgba(181,139,255,.1),0 0 220px -20px rgba(181,139,255,.35),0 0 360px -40px rgba(255,123,200,.25),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-focal::before{background:linear-gradient(90deg,transparent,#FF7BC8,#B58BFF,transparent);opacity:.5}
     /* Human Review */
     .ai-card.ai-human{background:radial-gradient(460px 280px at 70% 0%,rgba(123,227,181,.2),transparent 65%),radial-gradient(280px 200px at 30% 100%,rgba(255,255,255,.06),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));border-color:rgba(123,227,181,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(123,227,181,.22),inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.14)}
@@ -5059,7 +5047,7 @@
     .ai-card.ai-spectrum::before{background:linear-gradient(90deg,transparent,#4A00E0,transparent);opacity:.5}
     .ai-card-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
     .ai-glyph{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;color:#ECE9F5;flex-shrink:0}
-    .ai-focal .ai-glyph{background:linear-gradient(135deg,rgba(181,139,255,.32),rgba(255,123,200,.22));border-color:rgba(181,139,255,.42);color:#fff;width:42px;height:42px}
+    .ai-focal .ai-glyph{background:linear-gradient(135deg,rgba(181,139,255,.32),rgba(255,123,200,.22));border-color:rgba(181,139,255,.42);color:#fff}
     .ai-human .ai-glyph{background:rgba(123,227,181,.14);border-color:rgba(123,227,181,.38);color:#7BE3B5}
     .ai-cyan .ai-glyph{background:rgba(0,212,255,.14);border-color:rgba(0,212,255,.4);color:#00D4FF}
     .ai-purple .ai-glyph{background:rgba(19,159,248,.16);border-color:rgba(19,159,248,.42);color:#7CC4FF}
@@ -5481,22 +5469,108 @@
       }
     }
 
-    /* About Me — same "stuck after tap" problem as the JS pointer/mousemove
-       effects gated in AboutSection.tsx, but for the plain-CSS :hover rules
-       that need no JS at all: a tap triggers a sticky :hover on touch
-       devices with no real hover to clear it afterwards, leaving the
-       spotlight/ring/glow visibly stuck on. #about scopes this to the About
-       section only; (hover: none) leaves desktop hover elsewhere untouched.
-       The #about id gives these enough specificity to win outright, so
-       source order versus the base rules above doesn't matter. */
-    @media (hover: none) {
-      #about .sc-card:hover .sc-overlay,
-      #about .sc-card:hover::after,
-      #about .card-spotlight:hover::before,
-      #about .card-spotlight:focus-within::before {
-        opacity: 0;
+    /* Mobile font/padding pass — cards that don't already have a <=767px
+       override above still carry their desktop padding/font-size at mobile
+       widths. Trimmed further here, same "append at end of stylesheet to
+       win the cascade" placement as the corner-radius pass above. */
+    @media (max-width: 767px) {
+      /* Force the gradient-colored span of each unified section h2 onto its
+         own line on mobile, instead of wherever it happens to wrap at the
+         narrower width. .about-h2 covers About's own headline, the How I
+         Use AI headline, and Tech Stack's headline — all three now share
+         this one class (see SkillsSection.tsx/AboutSection.tsx). About's
+         span already has a hard <br> before it at every breakpoint via
+         translations.ts, so this rule is a no-op there. */
+      .about-h2 .gradient-text,
+      .contact-headline .gradient-text {
+        display: block;
       }
 
+      .bento-card {
+        padding: 16px;
+      }
+
+      .contact-card {
+        padding: 16px;
+      }
+
+      .card-title {
+        font-size: 10px;
+        margin-bottom: 14px;
+      }
+
+      .crow {
+        gap: 10px;
+        padding: 9px 0;
+      }
+
+      .rl {
+        font-size: 10px;
+      }
+
+      .rv {
+        font-size: 12px;
+      }
+
+      .tech-item {
+        padding: 16px;
+      }
+
+      .skill-pill {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      /* How I Use AI flow cards — real classes are .ai-card/.ai-focal (not
+         the unused .ai-usage-card/.ai-tool-name/.level-badge/.ai-bullets
+         rules elsewhere in this file, which no JSX references anymore). */
+      .ai-card {
+        padding: 16px;
+      }
+
+      .ai-card.ai-focal {
+        padding: 16px;
+      }
+
+      .ai-card h3 {
+        font-size: 17px;
+      }
+
+      .ai-focal h3 {
+        font-size: 19px;
+      }
+
+      .ai-card > p {
+        font-size: 12.5px;
+      }
+
+      .msg-panel {
+        padding: 12px 14px;
+      }
+
+      .line-eyebrow {
+        font-size: 10px;
+      }
+
+      .line-title {
+        font-size: 16px;
+      }
+
+      .line-desc {
+        font-size: 12px;
+      }
+    }
+
+    /* Profile card shine — the only remaining touch "stuck after tap"
+       fallback that still needs an @media guard. The sc-card/card-spotlight
+       glows no longer need one: their position vars rest off-screen (see
+       .card-spotlight and the .sc-* gradient fallbacks) and the JS ignores
+       touch pointers, so a sticky :hover left by a tap simply shows nothing.
+       The profile shine is driven purely by :hover → --card-opacity with no
+       position var to park off-screen, so it's zeroed here instead. Gated on
+       any-hover:none (matches only devices with NO hover-capable input) so a
+       touchscreen laptop with a mouse keeps the shine. */
+    @media (any-hover: none) {
       #about .pc-card-wrapper:hover {
         --card-opacity: 0;
       }
