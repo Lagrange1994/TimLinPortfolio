@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useLang } from '../context/LangContext';
-import { squircleRectPath } from '../utils/squircle';
 import CardSwap, { Card } from './CardSwap';
 import AiFlowStepper from './AiFlowStepper';
 
@@ -13,14 +12,6 @@ const DOMAIN_COVERS = [
   { label: 'Environmental Monitoring', img: './img/my_portfolio/enviroment.webp' },
   { label: 'Entertainment', img: './img/my_portfolio/stream.webp' },
 ];
-
-// Matches PortfolioSection's CARD_CORNER_RADIUS so bento cards read as the
-// same squircle family. Narrow 2-col cells (years/projects/domains/industry,
-// ~160-180px wide on tablet/mobile) get a smaller fixed radius instead —
-// otherwise the same absolute curve balloons on the smaller box.
-const BENTO_CORNER_RADIUS = 44;
-const BENTO_CORNER_RADIUS_NARROW = 24;
-const BENTO_NARROW_THRESHOLD = 200;
 
 export default function AboutSection() {
   const { t, lang } = useLang();
@@ -38,8 +29,12 @@ export default function AboutSection() {
   const domainsFirstHalf = domainsWords.slice(0, 2).join(domainsSeparator);
   const domainsSecondHalf = domainsWords.slice(2).join(domainsSeparator);
 
-  // Profile card 3D tilt
+  // Profile card 3D tilt — pointer-based (fires on tap too), and with no
+  // real hover to send a pointerleave on touch devices, a tap left the
+  // card stuck mid-tilt. Skip entirely on touch/coarse-pointer devices so
+  // the card stays flat and unresponsive there instead.
   useEffect(() => {
+    if (window.matchMedia('(hover: none)').matches) return;
     const wrap = document.getElementById('profile-card-wrap') as HTMLElement | null;
     const shell = document.getElementById('profile-card-shell') as HTMLElement | null;
     const card = document.getElementById('profile-card-el') as HTMLElement | null;
@@ -217,8 +212,12 @@ export default function AboutSection() {
     };
   }, []);
 
-  // Spotlight card effect
+  // Spotlight card effect — mousemove-driven; on touch a tap can fire a
+  // synthetic move that leaves the spotlight stuck at the tap point with
+  // no mouseleave to clear it. Same touch/coarse-pointer skip as the
+  // profile card tilt above.
   useEffect(() => {
+    if (window.matchMedia('(hover: none)').matches) return;
     function initSpotlightCardEffect() {
       document.querySelectorAll<HTMLElement>('.card-spotlight, .sidebar-block').forEach(card => {
         const onMove = (e: MouseEvent) => {
@@ -233,9 +232,12 @@ export default function AboutSection() {
   }, []);
 
   // White border-ring hover effect — same .sc-card/.sc-overlay mechanism
-  // used by the Tech Stack cards (SkillsSection) and Contact cards.
+  // used by the Tech Stack cards (SkillsSection) and Contact cards. Same
+  // touch/coarse-pointer skip as the two effects above — no hover to clear
+  // the ring after a tap.
   useEffect(() => {
-    document.querySelectorAll<HTMLElement>('.sc-card').forEach(card => {
+    if (window.matchMedia('(hover: none)').matches) return;
+    document.querySelectorAll<HTMLElement>('#about .sc-card').forEach(card => {
       if (card.querySelector(':scope > .sc-overlay')) return;
       const ov = document.createElement('div');
       ov.className = 'sc-overlay';
@@ -253,38 +255,6 @@ export default function AboutSection() {
       card.addEventListener('mousemove', onMove);
       card.addEventListener('mouseleave', onLeave);
     });
-  }, []);
-
-  // Fixed-radius squircle clip-path for bento cards — same technique as
-  // PortfolioSection's project/grid cards. CSS corner-shape:squircle is
-  // unreliable on real mobile browsers (and doesn't fall back to a smaller
-  // radius on its own), so the corner curve is drawn as an explicit SVG
-  // path instead, recomputed whenever a card's actual rendered box changes.
-  useEffect(() => {
-    const cards = document.querySelectorAll<HTMLElement>('.bento-card');
-    if (cards.length === 0) return;
-    const ro = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        const el = entry.target as HTMLElement;
-        // offsetWidth/Height (border-box), not entry.contentRect (content-box)
-        // — .bento-card has 24px padding + a 1px border, and clip-path's
-        // default reference box is border-box, so a content-box-sized path
-        // clips off that padding+border strip on the right/bottom edge
-        // instead of just shaping the corners.
-        const width = el.offsetWidth;
-        const height = el.offsetHeight;
-        if (width <= 0 || height <= 0) continue;
-        const radius = width < BENTO_NARROW_THRESHOLD ? BENTO_CORNER_RADIUS_NARROW : BENTO_CORNER_RADIUS;
-        el.style.clipPath = `path('${squircleRectPath(width, height, radius)}')`;
-        // .sc-card::after's border-glow ring reads border-radius: inherit —
-        // without this it stays at the stylesheet's static 44px even on
-        // narrow cards clipped down to 24px, so the ring's corners visibly
-        // don't match the actual squircle-clipped card corners.
-        el.style.borderRadius = `${radius}px`;
-      }
-    });
-    cards.forEach(c => ro.observe(c));
-    return () => ro.disconnect();
   }, []);
 
   // Scroll-reveal (.rise-card/.rise-soft → elastic rise + squash-stretch) is

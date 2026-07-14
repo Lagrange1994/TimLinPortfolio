@@ -15,9 +15,11 @@ export default function ContactSection() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Spotlight card effect
+  // Spotlight card effect — scoped to this section's own root; see the
+  // matching comment in SkillsSection.tsx (all three sections run this same
+  // effect and an unscoped query would cross-contaminate).
   useEffect(() => {
-    document.querySelectorAll<HTMLElement>('.sc-card').forEach(card => {
+    document.querySelectorAll<HTMLElement>('#contact .sc-card').forEach(card => {
       if (card.querySelector(':scope > .sc-overlay')) return;
       const ov = document.createElement('div');
       ov.className = 'sc-overlay';

@@ -173,7 +173,10 @@ export default function CardSwap({
     swap();
     intervalRef.current = window.setInterval(swap, delay);
 
-    if (pauseOnHover) {
+    // Touch devices have no real hover to send a leave event, so a tap on
+    // the card would fire mouseenter, pause the swap, and leave it stuck —
+    // skip the hover listeners there and let it keep auto-cycling.
+    if (pauseOnHover && !window.matchMedia('(hover: none)').matches) {
       const node = container.current;
       const pause = () => {
         tlRef.current?.pause();

@@ -3,20 +3,10 @@ import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
 import TypingCode, { flatten, toRuns, type CodeVersion, type CodeToken } from './TypingCode';
-import { squircleRectPath } from '../utils/squircle';
 import AiFlowStepper from './AiFlowStepper';
 
 const SMOOTH_TAU = 0.18;
 const AI_THINK_MS = 700;
-
-// Fixed-radius squircle clip-path targets — same technique as PortfolioSection's
-// project/grid cards and AboutSection's bento cards, matched to each card's own
-// stylesheet border-radius (.process-card/.ai-card: 44px, .tech-item: 28px).
-const MOBILE_SQUIRCLE_CARDS: [string, number][] = [
-  ['.process-card', 44],
-  ['.tech-item', 28],
-  ['.ai-card', 44],
-];
 
 // Two "drafts" per tech-stack code preview — TypingCode loops between them,
 // backspacing to wherever the next draft diverges and typing the rest
@@ -957,65 +947,6 @@ export default function SkillsSection() {
     };
   }, [t]);
 
-  // Mobile-only fixed-radius squircle clip-path for the Design Process /
-  // Tech Stack / How I Use AI cards — same fix as PortfolioSection's
-  // project/grid cards and AboutSection's bento cards: backdrop-filter +
-  // border-radius (and the still-unsupported corner-shape:squircle) render
-  // with square corners on real mobile browsers. Scoped to the <=767px
-  // layout breakpoint rather than applied everywhere, because .process-card
-  // and .ai-card also carry a hover-only edge-light/radar glow ring that
-  // sits *outside* their own box (negative inset) — a clip-path on the card
-  // itself would clip that ring off, which only matters on desktop where
-  // mouse hover actually fires.
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)');
-    const radiusByEl = new Map<HTMLElement, number>();
-    let ro: ResizeObserver | null = null;
-
-    function applyRadius(el: HTMLElement, radius: number) {
-      const width = el.offsetWidth;
-      const height = el.offsetHeight;
-      if (width <= 0 || height <= 0) return;
-      el.style.clipPath = `path('${squircleRectPath(width, height, radius)}')`;
-      el.style.borderRadius = `${radius}px`;
-    }
-
-    function enable() {
-      radiusByEl.clear();
-      MOBILE_SQUIRCLE_CARDS.forEach(([selector, radius]) => {
-        document.querySelectorAll<HTMLElement>(selector).forEach(el => radiusByEl.set(el, radius));
-      });
-      ro = new ResizeObserver(entries => {
-        for (const entry of entries) {
-          const el = entry.target as HTMLElement;
-          const radius = radiusByEl.get(el);
-          if (radius != null) applyRadius(el, radius);
-        }
-      });
-      radiusByEl.forEach((_, el) => ro!.observe(el));
-    }
-
-    function disable() {
-      ro?.disconnect();
-      ro = null;
-      radiusByEl.forEach((_, el) => {
-        el.style.clipPath = '';
-        el.style.borderRadius = '';
-      });
-    }
-
-    if (mq.matches) enable();
-    const onChange = (e: MediaQueryListEvent) => {
-      disable();
-      if (e.matches) enable();
-    };
-    mq.addEventListener('change', onChange);
-    return () => {
-      mq.removeEventListener('change', onChange);
-      disable();
-    };
-  }, [t]);
-
   // How I Use AI — live demo animations on open, echoing the Tech Stack
   // section's "actively being edited" feel: Sources stacks its first 4 rows
   // in (see toggle() in the card map), then simulates a new message landing
@@ -1154,9 +1085,13 @@ export default function SkillsSection() {
     }
   }, [expandedAiCard]);
 
-  // Spotlight cards
+  // Spotlight cards — scoped to this section's own root so it doesn't also
+  // pick up AboutSection's/ContactSection's .sc-card elements (all three
+  // components run this same effect; an unscoped document-wide query would
+  // let this one attach listeners to cards AboutSection deliberately skips
+  // on touch devices).
   useEffect(() => {
-    document.querySelectorAll<HTMLElement>('.sc-card').forEach(card => {
+    document.querySelectorAll<HTMLElement>('#my-skills .sc-card').forEach(card => {
       if (card.querySelector(':scope > .sc-overlay')) return;
       const ov = document.createElement('div');
       ov.className = 'sc-overlay';

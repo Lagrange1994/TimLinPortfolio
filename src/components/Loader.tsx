@@ -38,11 +38,13 @@ export default function Loader() {
     const forceTimer = setTimeout(hideLoader, 4000);
 
     function waitForAssets() {
-      // Background Spline scene (#spline-bg) loads at every viewport width.
-      // The hero character Spline only gets a `url` (and thus only ever
-      // fires `load`) at HERO_FIGURE_BREAKPOINT and up; below that it's a
-      // static <img>, so there's nothing to wait for there — mobile only
-      // waits on the background.
+      // #spline-bg loads at every viewport width — a Spline scene at/above
+      // HERO_FIGURE_BREAKPOINT, a plain <img> below it (see BeamsBackground),
+      // both firing a native `load` event either way. The hero character
+      // Spline only gets a `url` (and thus only ever fires `load`) at
+      // HERO_FIGURE_BREAKPOINT and up; below that it's a static <img> too,
+      // so there's nothing to wait for there — mobile only waits on the
+      // background.
       const isDesktop = window.innerWidth >= HERO_FIGURE_BREAKPOINT;
       const pending = [
         document.getElementById('spline-bg'),

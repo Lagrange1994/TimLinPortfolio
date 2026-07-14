@@ -447,12 +447,18 @@
       z-index: -1;
       pointer-events: none;
       transition: opacity 0.7s ease;
+      /* No-op on spline-viewer (not a replaced element); covers the mobile
+         jpg fallback (BeamsBackground.tsx) edge-to-edge without stretching. */
+      object-fit: cover;
+      object-position: center;
     }
 
     /* 直向（portrait）視口比 16:9 更窄時，橫向拉寬 spline-viewer
-       確保景象填滿全螢幕高度，不出現上下黑邊 */
+       確保景象填滿全螢幕高度，不出現上下黑邊 — tag-qualified so it only
+       targets the WebGL scene; the mobile <img> fallback already covers via
+       object-fit above and doesn't need the extra width. */
     @media (max-aspect-ratio: 16/9) {
-      #spline-bg {
+      spline-viewer#spline-bg {
         width: calc(100dvh * 16 / 9);
         left: 50%;
         transform: translateX(-50%);
@@ -5438,4 +5444,61 @@
       flex-shrink: 0;
     }
     #chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Mobile corner-radius pass — .bento-card/.process-card/.ai-card/
+       .tech-item used to rely on a JS ResizeObserver + clip-path hack
+       (superellipse squircle drawn by hand) because corner-shape:squircle
+       doesn't render on real mobile browsers and the fixed 44px/28px radius
+       it carried didn't shrink as the card itself narrowed on small phones.
+       Dropped in favor of the same plain-CSS approach .contact-card already
+       used (flat border-radius + corner-shape:squircle, no JS): a smaller
+       fixed radius just for the <=767px layout breakpoint, sized to each
+       card's own mobile width instead of its desktop one. Placed at the end
+       of the stylesheet, after every earlier same-specificity declaration
+       of these selectors, so it wins the cascade regardless of source order
+       above. */
+    @media (max-width: 767px) {
+      .bento-card,
+      .process-card,
+      .ai-card {
+        border-radius: 20px;
+      }
+
+      .ai-card::after {
+        border-radius: calc(20px + 10px);
+      }
+
+      .tech-item {
+        border-radius: 16px;
+      }
+
+      /* years/projects pair up into ~160px-wide halves at this breakpoint
+         (see .about-grid's mobile grid-template-areas) — the general 20px
+         bento radius still reads oversized on a box that narrow. */
+      .bento-area-years,
+      .bento-area-projects {
+        border-radius: 12px;
+      }
+    }
+
+    /* About Me — same "stuck after tap" problem as the JS pointer/mousemove
+       effects gated in AboutSection.tsx, but for the plain-CSS :hover rules
+       that need no JS at all: a tap triggers a sticky :hover on touch
+       devices with no real hover to clear it afterwards, leaving the
+       spotlight/ring/glow visibly stuck on. #about scopes this to the About
+       section only; (hover: none) leaves desktop hover elsewhere untouched.
+       The #about id gives these enough specificity to win outright, so
+       source order versus the base rules above doesn't matter. */
+    @media (hover: none) {
+      #about .sc-card:hover .sc-overlay,
+      #about .sc-card:hover::after,
+      #about .card-spotlight:hover::before,
+      #about .card-spotlight:focus-within::before {
+        opacity: 0;
+      }
+
+      #about .pc-card-wrapper:hover {
+        --card-opacity: 0;
+      }
+    }
 
