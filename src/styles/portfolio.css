@@ -5543,51 +5543,44 @@
        of these selectors, so it wins the cascade regardless of source order
        above. */
     @media (max-width: 767px) {
-      .bento-card,
-      .process-card,
-      .ai-card {
-        border-radius: 20px;
-      }
-
-      .ai-card::after {
-        border-radius: calc(20px + 10px);
-      }
-
+      /* Floor is 44px everywhere on mobile — same as .bento-card/.process-card/
+         .ai-card's own desktop radius, so no override is needed for those
+         three (or their glow-ring/radar layers, which are already pinned to
+         44px both here and on desktop — see .border-glow-card's
+         --border-radius default and .ai-card-glow/.ai-card::after below).
+         Only cards whose desktop radius is below 44px need bumping up. */
       .tech-item {
-        border-radius: 16px;
+        border-radius: 44px;
       }
 
-      /* years/projects pair up into ~160px-wide halves at this breakpoint
-         (see .about-grid's mobile grid-template-areas) — the general 20px
-         bento radius still reads oversized on a box that narrow. */
       .bento-area-years,
       .bento-area-projects {
-        border-radius: 12px;
+        border-radius: 44px;
       }
 
-      /* .process-card (.border-glow-card) and the How I Use AI cards
-         (.ai-card-glow) both shrink to a 20px corner above, but their
-         border-glow layers stay pinned to the desktop 44px: the .edge-light
-         outer ring and its inner glow box are sized off 44px — via
-         --border-radius on .border-glow-card, hardcoded on .ai-card-glow — so
-         the card corner (20px) and the glow curve (44–68px) no longer share a
-         radius. That's the reported inner/outer mismatch. Re-point both
-         systems' ring + inner box at the 20px mobile corner so the ring stays
-         a uniform-width offset of the card. The mesh ::before/::after use
-         border-radius:inherit and the .ai-card::after ring is handled above,
-         so both already track the card. */
-      .border-glow-card > .edge-light,
-      .ai-card-glow > .edge-light {
-        border-radius: calc(20px + var(--glow-padding));
+      /* An earlier <=1024px rule (still active for real tablet widths)
+         grouped years/projects/domains/industry together at 24px, sized for
+         the narrow half-width cells they all shared on tablet. At <=767px
+         domains and industry instead take the full row width (see
+         .about-grid's mobile grid-template-areas above), same as any other
+         .bento-card — so they belong on the general 44px floor, not the
+         tablet narrow-cell value. Only years/projects still pair up into
+         halves at this breakpoint and need the dedicated rule above. */
+      .bento-area-domains,
+      .bento-area-industry {
+        border-radius: 44px;
       }
-      .border-glow-card > .edge-light::before,
-      .ai-card-glow > .edge-light::before {
-        border-radius: 20px;
+
+      .contact-card,
+      .line-banner {
+        border-radius: 44px;
       }
-      .process-radar {
-        border-radius: calc(20px + 10px);
-      }
-      .process-card--has-img .border-glow-inner::before {
+
+      /* .cta-strip ("接案中" banner) is a short ~98px-tall horizontal strip
+         — 44px reads as ~45% of its height, tipping it into a pill/stadium
+         shape instead of a rounded rectangle. Kept lower, proportionate to
+         its own shorter box instead of matching the taller cards above. */
+      .cta-strip {
         border-radius: 20px;
       }
     }
