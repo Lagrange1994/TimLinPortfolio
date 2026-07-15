@@ -68,6 +68,12 @@ function getBentoBigIndices(total: number) {
 }
 
 const bentoBigIndices = getBentoBigIndices(PROJECTS.length);
+// The infinite scroller wall clones cards with plain DOM cloneNode (see
+// createPortfolioScroller) — clones aren't React-managed, so their
+// data-title never updates when the language changes. Keyed by href
+// (identical on the original and every clone) so hover text can be
+// re-derived from the live translation table instead of a stale attribute.
+const projectsByLink = new Map(PROJECTS.map(p => [p.link, p]));
 
 export default function PortfolioSection() {
   const { t, lang } = useLang();
@@ -303,6 +309,20 @@ export default function PortfolioSection() {
   // Cursor-following project info tag for the carousel wall (scroller view)
   // — same pattern as Spline's showcase gallery: a small label tracks the
   // pointer while hovering a card instead of an in-card overlay.
+  const hoveredCardRef = useRef<HTMLElement | null>(null);
+  const cursorTagTextRef = useRef<HTMLElement | null>(null);
+  const cursorTagSubRef = useRef<HTMLElement | null>(null);
+  // Always-current translation table for the mount-once listener below —
+  // its closure is fixed at mount, so it can't see later `t` values itself.
+  const tRef = useRef(t);
+  tRef.current = t;
+
+  const getCardTitle = useCallback((card: HTMLElement) => {
+    const proj = projectsByLink.get(card.getAttribute('href') || '');
+    if (!proj) return card.dataset.title || '';
+    return (tRef.current as Record<string, string>)[proj.id + '_title'] || proj.id;
+  }, []);
+
   useEffect(() => {
     const wall = document.getElementById('portfolio-scroller-desktop');
     if (!wall) return;
@@ -313,6 +333,8 @@ export default function PortfolioSection() {
     document.body.appendChild(tag);
     const textEl = tag.querySelector<HTMLElement>('.cursor-project-tag-text')!;
     const subEl = tag.querySelector<HTMLElement>('.cursor-project-tag-sub')!;
+    cursorTagTextRef.current = textEl;
+    cursorTagSubRef.current = subEl;
 
     // Spline drives its hover label straight off mousemove — the tag's
     // `transform` is set to the raw cursor position on every event, and a
@@ -320,27 +342,26 @@ export default function PortfolioSection() {
     // A JS lerp loop always lags a frame or two behind real input and reads
     // as "slow"; letting the compositor interpolate the transform keeps it
     // glued to the pointer while still looking eased rather than snapping.
-    let hoveredCard: HTMLElement | null = null;
     const OFFSET_X = 18, OFFSET_Y = 22;
 
     function onMove(e: MouseEvent) {
       tag.style.transform = `translate(${e.clientX + OFFSET_X}px, ${e.clientY + OFFSET_Y}px)`;
       const card = (e.target as HTMLElement).closest?.('.project-card') as HTMLElement | null;
       if (card) {
-        if (card !== hoveredCard) {
-          hoveredCard = card;
-          textEl.textContent = card.dataset.title || '';
+        if (card !== hoveredCardRef.current) {
+          hoveredCardRef.current = card;
+          textEl.textContent = getCardTitle(card);
           subEl.textContent = card.dataset.sub || '';
           tag.classList.add('visible');
         }
-      } else if (hoveredCard) {
-        hoveredCard = null;
+      } else if (hoveredCardRef.current) {
+        hoveredCardRef.current = null;
         tag.classList.remove('visible');
       }
     }
 
     function onLeave() {
-      hoveredCard = null;
+      hoveredCardRef.current = null;
       tag.classList.remove('visible');
     }
 
@@ -351,8 +372,22 @@ export default function PortfolioSection() {
       wall.removeEventListener('mousemove', onMove);
       wall.removeEventListener('mouseleave', onLeave);
       tag.remove();
+      hoveredCardRef.current = null;
+      cursorTagTextRef.current = null;
+      cursorTagSubRef.current = null;
     };
-  }, [lang]);
+  }, [getCardTitle]);
+
+  // Re-paint the tag immediately when the language changes instead of
+  // waiting for the next mousemove — card is looked up by href through
+  // getCardTitle, not read off the hovered DOM node's own attributes,
+  // since scroller clones (see createPortfolioScroller) are plain
+  // cloneNode copies that React never re-renders with the new text.
+  useEffect(() => {
+    const card = hoveredCardRef.current;
+    if (!card || !cursorTagTextRef.current) return;
+    cursorTagTextRef.current.textContent = getCardTitle(card);
+  }, [lang, getCardTitle]);
 
   // Init MagicBento when expanded
   useEffect(() => {
