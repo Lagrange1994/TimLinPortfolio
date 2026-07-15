@@ -300,6 +300,60 @@ export default function PortfolioSection() {
     });
   }, [expanded]);
 
+  // Cursor-following project info tag for the carousel wall (scroller view)
+  // — same pattern as Spline's showcase gallery: a small label tracks the
+  // pointer while hovering a card instead of an in-card overlay.
+  useEffect(() => {
+    const wall = document.getElementById('portfolio-scroller-desktop');
+    if (!wall) return;
+
+    const tag = document.createElement('div');
+    tag.className = 'cursor-project-tag';
+    tag.innerHTML = '<span class="cursor-project-tag-text"></span><span class="cursor-project-tag-sub"></span>';
+    document.body.appendChild(tag);
+    const textEl = tag.querySelector<HTMLElement>('.cursor-project-tag-text')!;
+    const subEl = tag.querySelector<HTMLElement>('.cursor-project-tag-sub')!;
+
+    // Spline drives its hover label straight off mousemove — the tag's
+    // `transform` is set to the raw cursor position on every event, and a
+    // short CSS transition (not a JS rAF/lerp loop) supplies the smoothing.
+    // A JS lerp loop always lags a frame or two behind real input and reads
+    // as "slow"; letting the compositor interpolate the transform keeps it
+    // glued to the pointer while still looking eased rather than snapping.
+    let hoveredCard: HTMLElement | null = null;
+    const OFFSET_X = 18, OFFSET_Y = 22;
+
+    function onMove(e: MouseEvent) {
+      tag.style.transform = `translate(${e.clientX + OFFSET_X}px, ${e.clientY + OFFSET_Y}px)`;
+      const card = (e.target as HTMLElement).closest?.('.project-card') as HTMLElement | null;
+      if (card) {
+        if (card !== hoveredCard) {
+          hoveredCard = card;
+          textEl.textContent = card.dataset.title || '';
+          subEl.textContent = card.dataset.sub || '';
+          tag.classList.add('visible');
+        }
+      } else if (hoveredCard) {
+        hoveredCard = null;
+        tag.classList.remove('visible');
+      }
+    }
+
+    function onLeave() {
+      hoveredCard = null;
+      tag.classList.remove('visible');
+    }
+
+    wall.addEventListener('mousemove', onMove);
+    wall.addEventListener('mouseleave', onLeave);
+
+    return () => {
+      wall.removeEventListener('mousemove', onMove);
+      wall.removeEventListener('mouseleave', onLeave);
+      tag.remove();
+    };
+  }, [lang]);
+
   // Init MagicBento when expanded
   useEffect(() => {
     if (expanded) {
@@ -405,11 +459,14 @@ export default function PortfolioSection() {
     const desc = (t as Record<string, string>)[p.id + '_desc'] || '';
     const isBig = mode === 'grid' && index !== undefined && bentoBigIndices.includes(index);
     const cls = mode === 'grid' ? `grid-card${isBig ? ' mb-big' : ''}` : 'project-card';
+    const categoryLabel = p.category === 'mobile' ? 'Apps Design' : p.category === 'web' ? 'Web Design' : '';
     return (
       <a
         className={cls}
         href={p.link}
         data-category={p.category}
+        data-title={title}
+        data-sub={categoryLabel}
         onClick={() => {
           sessionStorage.setItem('portfolioScrollY', String(window.scrollY));
           sessionStorage.setItem('portfolioExpanded', expanded ? 'true' : 'false');

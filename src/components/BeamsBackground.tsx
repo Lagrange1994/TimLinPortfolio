@@ -318,7 +318,12 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
       )}
       {splineBgMounted && (
         useStaticBg
-          ? <img id="spline-bg" src="./img/bg.jpg" alt="" aria-hidden="true" />
+          ? (
+            <picture>
+              <source srcSet="./img/bg.webp" type="image/webp" />
+              <img id="spline-bg" src="./img/bg.jpg" alt="" aria-hidden="true" />
+            </picture>
+          )
           : <spline-viewer id="spline-bg" url="./models/bg_scene.splinecode" />
       )}
     </>

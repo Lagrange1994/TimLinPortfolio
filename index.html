@@ -17,10 +17,12 @@
        viewer script / React bundle that would otherwise gate them. Media
        queries mirror HERO_FIGURE_BREAKPOINT (768px, see Loader.tsx) — below
        it both scenes are swapped for static images, so mobile preloads the
-       jpg background instead and never touches the .splinecode files. -->
+       webp background instead (browsers without webp support skip this
+       preload by type and just fetch the <picture>'s jpg fallback normally,
+       see BeamsBackground.tsx) and never touches the .splinecode files. -->
   <link rel="preload" as="fetch" href="/models/bg_scene.splinecode" crossorigin media="(min-width: 768px)" />
   <link rel="preload" as="fetch" href="/models/hero_figure.splinecode" crossorigin media="(min-width: 768px)" />
-  <link rel="preload" as="image" href="/img/bg.jpg" media="(max-width: 767px)" />
+  <link rel="preload" as="image" type="image/webp" href="/img/bg.webp" media="(max-width: 767px)" />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
