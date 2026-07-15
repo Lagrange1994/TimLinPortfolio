@@ -2,19 +2,14 @@ import { useEffect } from 'react';
 import { squircleRectPath } from './squircle';
 
 // Portfolio's .project-card/.grid-card (see CARD_CORNER_RADIUS in
-// PortfolioSection.tsx) use a fixed 44px radius on a 300x200 box — a ratio
-// of 44 / (200/2) = 44% of the box's own half-short-side. Reusing that same
-// *ratio* (rather than reapplying the raw 44px to every box regardless of
-// size) is what actually reads as "the same corner as Portfolio": a flat
-// 44px on a short box like .bento-area-industry (~343x75) would clamp to
-// nearly half its height — a pill, not a rounded rectangle — while 44% of
-// its own half-height keeps the same visual proportion Portfolio's cards
-// have at their own size.
-const PORTFOLIO_RADIUS_RATIO = 44 / (200 / 2);
-
-function cardRadius(w: number, h: number) {
-  return PORTFOLIO_RADIUS_RATIO * (Math.min(w, h) / 2);
-}
+// PortfolioSection.tsx) use squircleRectPath with a FIXED 44px radius,
+// regardless of box size — squircleRectPath itself is explicitly designed
+// to hold a constant corner radius rather than scale proportionally with
+// the box (see the doc comment in squircle.ts). "Same proportion as
+// Portfolio" therefore means reusing this same constant, not deriving a
+// per-box ratio — squircleRectPath already clamps it down via
+// Math.min(radius, w/2, h/2) for any box smaller than 88x88.
+const CARD_CORNER_RADIUS = 44;
 
 // Every selector here was checked for descendants that intentionally
 // overhang the box (badges, glow rings) — clip-path clips ALL descendants
@@ -44,6 +39,11 @@ export function useMobileCardSquircle() {
       });
     }
 
+    function apply(el: HTMLElement, w: number, h: number) {
+      if (w <= 0 || h <= 0) return;
+      el.style.clipPath = `path('${squircleRectPath(w, h, CARD_CORNER_RADIUS)}')`;
+    }
+
     function start() {
       ro = new ResizeObserver(entries => {
         for (const entry of entries) {
@@ -54,11 +54,19 @@ export function useMobileCardSquircle() {
           const box = entry.borderBoxSize?.[0];
           const w = box ? box.inlineSize : el.offsetWidth;
           const h = box ? box.blockSize : el.offsetHeight;
-          if (w <= 0 || h <= 0) continue;
-          el.style.clipPath = `path('${squircleRectPath(w, h, cardRadius(w, h))}')`;
+          apply(el, w, h);
         }
       });
-      document.querySelectorAll<HTMLElement>(SELECTOR).forEach(el => ro!.observe(el));
+      const els = document.querySelectorAll<HTMLElement>(SELECTOR);
+      // ResizeObserver's first callback is async and not guaranteed to land
+      // before paint (observed stuck at document.hidden in the preview tab,
+      // and unreliable on some mobile browsers too) — apply once synchronously
+      // off the already-laid-out box so the squircle shows immediately instead
+      // of only after some later resize/reflow triggers the observer.
+      els.forEach(el => {
+        apply(el, el.offsetWidth, el.offsetHeight);
+        ro!.observe(el);
+      });
     }
 
     function sync() {
