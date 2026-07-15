@@ -443,7 +443,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const activeGalleryImg = (appGallery.find(g => g.id === activeGalleryId) || appGallery[0] || {}).src;
 
             useEffect(() => {
-                const savedLang = localStorage.getItem('preferredLang');
+                const savedLang = localStorage.getItem('lang');
                 const initialLang = savedLang === 'en' ? 'en' : 'zh';
                 setLang(initialLang);
                 document.documentElement.lang = initialLang === 'zh' ? 'zh-TW' : 'en';

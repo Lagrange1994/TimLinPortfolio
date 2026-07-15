@@ -299,7 +299,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
             // Initialization
             useEffect(() => {
-                const savedLang = localStorage.getItem('preferredLang');
+                const savedLang = localStorage.getItem('lang');
                 const initialLang = savedLang === 'en' ? 'en' : 'zh';
                 setLang(initialLang);
                 document.documentElement.lang = initialLang === 'zh' ? 'zh-TW' : 'en';

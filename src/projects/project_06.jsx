@@ -281,7 +281,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
 
             useEffect(() => {
-                const savedLang = localStorage.getItem('preferredLang');
+                const savedLang = localStorage.getItem('lang');
                 const initialLang = savedLang === 'en' ? 'en' : 'zh';
                 setLang(initialLang);
                 const items = getGalleryItems(initialLang);
