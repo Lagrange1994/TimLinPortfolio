@@ -4642,6 +4642,20 @@ video {
     transition: all 0.3s ease;
 }
 
+/* Hero h1 on every project page uses Tailwind's .text-5xl (48px) below the
+   lg: breakpoint — sized for CJK titles, which pack the same meaning into
+   far fewer characters. English titles at the same 48px wrap onto several
+   more lines inside the fixed 100vh hero section, pushing the CTA button
+   below the viewport. .text-5xl appears exactly once per project page (the
+   hero h1), so it's safe to target directly; clamp() instead of a fixed
+   px so the very longest English titles (e.g. project_11's) still shrink
+   further on the narrowest phones instead of overflowing again. */
+@media (max-width: 767px) {
+    html[lang="en"] .text-5xl {
+        font-size: clamp(1.5rem, 8vw, 2.25rem);
+    }
+}
+
 .custom-scroll::-webkit-scrollbar {
     width: 6px;
     height: 6px;

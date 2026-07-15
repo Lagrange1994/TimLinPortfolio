@@ -5538,18 +5538,17 @@
       }
     }
 
-    /* Mobile corner-radius pass — .bento-card/.process-card/.ai-card/
-       .tech-item used to rely on a JS ResizeObserver + clip-path hack
-       (superellipse squircle drawn by hand) because corner-shape:squircle
-       doesn't render on real mobile browsers and the fixed 44px/28px radius
-       it carried didn't shrink as the card itself narrowed on small phones.
-       Dropped in favor of the same plain-CSS approach .contact-card already
-       used (flat border-radius + corner-shape:squircle, no JS): a smaller
-       fixed radius just for the <=767px layout breakpoint, sized to each
-       card's own mobile width instead of its desktop one. Placed at the end
-       of the stylesheet, after every earlier same-specificity declaration
-       of these selectors, so it wins the cascade regardless of source order
-       above. */
+    /* Mobile corner-radius pass — no-JS/no-ResizeObserver fallback only.
+       useMobileCardSquircle (src/utils/useMobileCardSquircle.ts) now draws
+       the real corner on .tech-item, the .bento-area-years/projects/domains
+       /industry cards, .contact-card, .line-banner and .cta-strip via the
+       same squircleRectPath + 44px radius Portfolio's own cards use,
+       clamped per-card to min(44, w/2, h/2) so a short box like .cta-strip
+       automatically gets a proportionally smaller curve instead of the flat
+       44px/20px split below. These plain border-radius values only paint if
+       that JS never runs. Placed at the end of the stylesheet, after every
+       earlier same-specificity declaration of these selectors, so it wins
+       the cascade regardless of source order above. */
     @media (max-width: 767px) {
       /* Floor is 44px everywhere on mobile — same as .bento-card/.process-card/
          .ai-card's own desktop radius, so no override is needed for those
