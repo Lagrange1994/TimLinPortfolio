@@ -172,6 +172,24 @@ gsap.registerPlugin(ScrollToPlugin);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
             const contentScrollRef = useRef(null);
+            const touchStartRef = useRef({ x: 0, y: 0 });
+            const TAB_ORDER = ['context', 'ux_strategy', 'biz_value', 'engagement', 'gallery'];
+            const handleTabTouchStart = (e) => {
+                if (e.target.closest('.overflow-x-auto')) { touchStartRef.current = null; return; }
+                const t = e.touches[0];
+                touchStartRef.current = { x: t.clientX, y: t.clientY };
+            };
+            const handleTabTouchEnd = (e) => {
+                if (!touchStartRef.current) return;
+                const t = e.changedTouches[0];
+                const dx = t.clientX - touchStartRef.current.x;
+                const dy = t.clientY - touchStartRef.current.y;
+                touchStartRef.current = null;
+                if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+                const idx = TAB_ORDER.indexOf(activeTab);
+                if (dx < 0 && idx < TAB_ORDER.length - 1) setActiveTab(TAB_ORDER[idx + 1]);
+                else if (dx > 0 && idx > 0) setActiveTab(TAB_ORDER[idx - 1]);
+            };
             const touchStartY = useRef(0);
             const [isResizing, setIsResizing] = useState(false);
             const [mobileVisualHeight, setMobileVisualHeight] = useState(40);
@@ -364,10 +382,10 @@ gsap.registerPlugin(ScrollToPlugin);
                             <div className="w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     <div className="sticky top-0 bg-tym-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
-                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
+                                        <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold font-heading text-white mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">Revamp Plan & Design Strategy</p>
-                                            <div className="flex space-x-6 horizontal-tabs mt-4 pb-1 border-b border-white/5">
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4">Revamp Plan & Design Strategy</p>
+                                            <div className="flex space-x-6 horizontal-tabs mt-2 lg:mt-4 pb-1 border-b border-white/5">
                                                 {[{ id: 'context', label: t('tab_context') }, { id: 'ux_strategy', label: t('tab_ux') }, { id: 'biz_value', label: t('tab_biz') }, { id: 'engagement', label: t('tab_loop') }, { id: 'gallery', label: t('tab_gallery') }].map(tab => (
                                                     <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-all pb-3 relative flex-shrink-0 ${activeTab === tab.id ? 'text-tym-primary' : 'text-gray-500 hover:text-white'}`}>{tab.label}{activeTab === tab.id && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-tym-primary rounded-t-full"></span>}</button>
                                                 ))}
@@ -375,14 +393,14 @@ gsap.registerPlugin(ScrollToPlugin);
                                         </div>
                                     </div>
 
-                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-10 pb-24 overflow-y-auto custom-scroll scroll-content">
+                                    <div ref={contentScrollRef} onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd} className="flex-1 p-4 lg:p-10 pb-24 overflow-y-auto custom-scroll scroll-content">
                                         {activeTab === 'context' && (
-                                            <div className="space-y-10 animate-fadeIn">
-                                                <div><h3 className="text-lg md:text-2xl font-bold text-white mb-3">{t('overview_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('overview_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tym-primary/20 text-tym-primary border border-tym-primary/30"><Icons.XD /><span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tym-secondary/20 text-tym-secondary border border-tym-secondary/30"><Icons.AI /><span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                            <div className="space-y-8 lg:space-y-10 animate-fadeIn">
+                                                <div><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-3">{t('overview_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('overview_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tym-primary/20 text-tym-primary border border-tym-primary/30"><Icons.XD /><span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tym-secondary/20 text-tym-secondary border border-tym-secondary/30"><Icons.AI /><span className="ml-1">Illustrator</span></span></div></div></div></div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div>
                                                     {/* [修正] 標題加上了 flex 和 span 裝飾桿 */}
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-tym-secondary rounded-full mr-3"></span>{t('challenge_title')}</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tym-secondary rounded-full mr-3"></span>{t('challenge_title')}</h3>
                                                     <div className="grid gap-5">
                                                         {/* [修正] 移除了 border-l-4 等設定，僅保留 border border-white/10 */}
                                                         <div className="feature-card-standard border border-white/10 p-6"><div className="flex items-center mb-3 text-tym-secondary"><Icons.User /><span className="ml-2 font-bold text-sm uppercase tracking-wider">User Pain Points</span></div><h4 className="text-white font-bold text-lg mb-2">{t('pain_user_title')}</h4><ul className="list-disc list-inside text-sm text-gray-400 space-y-1">{t('pain_user_desc').map((item, i) => <li key={i}>{item}</li>)}</ul></div>
@@ -392,21 +410,21 @@ gsap.registerPlugin(ScrollToPlugin);
                                             </div>
                                         )}
                                         {activeTab === 'ux_strategy' && (
-                                            <div className="space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('strat_1_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_1_sub')}</p><p className="text-gray-300 text-sm leading-relaxed mb-6">{t('strat_1_desc')}</p></div><div className="space-y-4">
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('strat_1_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_1_sub')}</p><p className="text-gray-300 text-sm leading-relaxed mb-6">{t('strat_1_desc')}</p></div><div className="space-y-4">
                                                 {/* [修正] 移除了 border-l-4 */}
                                                 <div className="feature-card-minimal border border-white/10 p-6 hover:border-tym-secondary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Train /></div><div className="ml-5"><h4 className="text-white font-bold text-lg">{t('feat_1_title')}</h4><p className="text-sm text-gray-400 mt-2 leading-relaxed">{t('feat_1_desc')}</p></div></div></div>
                                                 <div className="feature-card-minimal border border-white/10 p-6 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0 mt-1"><Icons.Question /></div><div className="ml-5"><h4 className="text-white font-bold text-lg">{t('feat_2_title')}</h4><p className="text-sm text-gray-400 mt-2 leading-relaxed">{t('feat_2_desc')}</p></div></div></div>
                                             </div></div>
                                         )}
                                         {activeTab === 'biz_value' && (
-                                            <div className="space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('strat_2_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_2_sub')}</p><p className="text-gray-300 text-sm leading-relaxed mb-6">{t('strat_2_desc')}</p></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('strat_2_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_2_sub')}</p><p className="text-gray-300 text-sm leading-relaxed mb-6">{t('strat_2_desc')}</p></div>
                                                 {/* [修正] 移除了 border-l-4 */}
                                                 <div className="feature-card-minimal border border-white/10 p-6 hover:border-tym-secondary "><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Shop /></div><div className="ml-5"><h4 className="text-white font-bold text-lg">{t('feat_3_title')}</h4><p className="text-sm text-gray-300 leading-relaxed mt-2">{t('feat_3_desc')}</p></div></div></div>
                                                 <div className="feature-card-minimal border border-white/10 p-6 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0 mt-1"><Icons.Shop /></div><div className="ml-5"><h4 className="text-white font-bold text-lg">{t('feat_4_title')}</h4><p className="text-sm text-gray-400 mt-2 space-y-1">{t('feat_4_desc')}</p></div></div></div>
                                             </div>
                                         )}
                                         {activeTab === 'engagement' && (
-                                            <div className="space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-3">{t('strat_3_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_3_sub')}</p><p className="text-gray-300 text-sm leading-relaxed mb-6">{t('strat_3_desc')}</p></div><div className="space-y-4">
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-3">{t('strat_3_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_3_sub')}</p><p className="text-gray-300 text-sm leading-relaxed mb-6">{t('strat_3_desc')}</p></div><div className="space-y-4">
                                                 {/* [修正] 移除了 border-l-4 */}
                                                 <div className="feature-card-minimal border border-white/10 p-6 hover:border-tym-secondary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Loop /></div><div className="ml-5"><h4 className="text-white font-bold text-lg">{t('feat_5_title')}</h4><p className="text-sm text-gray-400 mt-2 leading-relaxed">{t('feat_5_desc')}</p></div></div></div>
                                                 <div className="feature-card-minimal border border-white/10 p-6 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0 mt-1"><Icons.Popup /></div><div className="ml-5"><h4 className="text-white font-bold text-lg">{t('feat_6_title')}</h4><p className="text-sm text-gray-400 mt-2 leading-relaxed">{t('feat_6_desc')}</p></div></div></div>
@@ -414,7 +432,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                         )}
                                         {activeTab === 'gallery' && (
                                             /* [修正] 按鈕加上了 border (width) */
-                                            <div className="space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-3">{t('gallery_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-6"><span className="text-tym-primary font-bold">Value Delivered:</span><br />{t('gallery_desc')}</p></div><div className="grid grid-cols-1 gap-3"><div className="text-xs font-bold text-gray-500 uppercase mb-1">Interface Gallery</div>{galleryItems.map((item) => (<button key={item.id} onClick={() => setActiveGalleryItem(item)} className={`text-left feature-card-standard border p-4 hover:border-tym-primary transition-colors group flex items-center ${activeGalleryItem && activeGalleryItem.id === item.id ? '!border-tym-primary bg-white/5' : 'border-white/10'}`}><div className="flex-1"><h4 className={`font-bold transition-colors text-sm mb-1 ${activeGalleryItem && activeGalleryItem.id === item.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>{item.name}</h4><p className="text-xs text-gray-500 group-hover:text-gray-400">{item.desc}</p></div><i className={`ph ph-caret-left transform transition-all ml-4 ${activeGalleryItem && activeGalleryItem.id === item.id ? 'text-tym-primary -translate-x-1' : 'text-gray-600 group-hover:text-tym-primary group-hover:-translate-x-1'}`}></i></button>))}</div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-3">{t('gallery_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-6"><span className="text-tym-primary font-bold">Value Delivered:</span><br />{t('gallery_desc')}</p></div><div className="grid grid-cols-1 gap-3"><div className="text-xs font-bold text-gray-500 uppercase mb-1">Interface Gallery</div>{galleryItems.map((item) => (<button key={item.id} onClick={() => setActiveGalleryItem(item)} className={`text-left feature-card-standard border p-4 hover:border-tym-primary transition-colors group flex items-center ${activeGalleryItem && activeGalleryItem.id === item.id ? '!border-tym-primary bg-white/5' : 'border-white/10'}`}><div className="flex-1"><h4 className={`font-bold transition-colors text-sm mb-1 ${activeGalleryItem && activeGalleryItem.id === item.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>{item.name}</h4><p className="text-xs text-gray-500 group-hover:text-gray-400">{item.desc}</p></div><i className={`ph ph-caret-left transform transition-all ml-4 ${activeGalleryItem && activeGalleryItem.id === item.id ? 'text-tym-primary -translate-x-1' : 'text-gray-600 group-hover:text-tym-primary group-hover:-translate-x-1'}`}></i></button>))}</div></div>
                                         )}
                                     </div>
                                 </div>

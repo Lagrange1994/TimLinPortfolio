@@ -199,6 +199,24 @@ gsap.registerPlugin(ScrollToPlugin);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
             const contentScrollRef = useRef(null);
+            const touchStartRef = useRef({ x: 0, y: 0 });
+            const TAB_ORDER = ['context', 'process', 'solution', 'climax'];
+            const handleTabTouchStart = (e) => {
+                if (e.target.closest('.overflow-x-auto')) { touchStartRef.current = null; return; }
+                const t = e.touches[0];
+                touchStartRef.current = { x: t.clientX, y: t.clientY };
+            };
+            const handleTabTouchEnd = (e) => {
+                if (!touchStartRef.current) return;
+                const t = e.changedTouches[0];
+                const dx = t.clientX - touchStartRef.current.x;
+                const dy = t.clientY - touchStartRef.current.y;
+                touchStartRef.current = null;
+                if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+                const idx = TAB_ORDER.indexOf(activeTab);
+                if (dx < 0 && idx < TAB_ORDER.length - 1) setActiveTab(TAB_ORDER[idx + 1]);
+                else if (dx > 0 && idx > 0) setActiveTab(TAB_ORDER[idx - 1]);
+            };
             const imageScrollRef = useRef(null);
             const touchStartY = useRef(0);
             const [isResizing, setIsResizing] = useState(false);
@@ -431,10 +449,10 @@ gsap.registerPlugin(ScrollToPlugin);
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     {/* [修改] bg-dark/95 -> bg-lv-dark/95 */}
                                     <div className="sticky top-0 bg-lv-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
-                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
+                                        <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-gray-400 text-xs lg:text-sm mb-4 font-sans">Gamified Social Live Streaming Platform</p>
-                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full touch-pan-x">
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4 font-sans">Gamified Social Live Streaming Platform</p>
+                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-2 lg:mt-4 pb-2 w-full touch-pan-x">
                                                 {/* [修改] text-primary -> text-lv-primary, border-primary -> border-lv-primary */}
                                                 {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
                                                     <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-lv-primary border-b-2 border-lv-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
@@ -443,25 +461,25 @@ gsap.registerPlugin(ScrollToPlugin);
                                         </div>
                                     </div>
 
-                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
+                                    <div ref={contentScrollRef} onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd} className="flex-1 p-4 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
                                         {activeTab === 'context' && (
-                                            <div className="space-y-12 animate-fadeIn">
-                                                <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3>
+                                            <div className="space-y-8 lg:space-y-12 animate-fadeIn">
+                                                <div className="space-y-4 lg:space-y-6">
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
                                                     <p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
                                                     <div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-lv-primary/20 text-lv-primary border border-lv-primary/30"><span className=""></span> Adobe XD</span></div></div></div>
                                                 </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div className="space-y-6">
                                                     {/* [修改] bg-secondary -> bg-lv-secondary */}
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-4 flex items-center"><span className="w-1 h-6 bg-lv-secondary rounded-full mr-3"></span>{t('visual_strat_title')}</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-lv-secondary rounded-full mr-3"></span>{t('visual_strat_title')}</h3>
                                                     {/* [修改] border-l-secondary -> border-l-lv-secondary */}
                                                     <div className="feature-card p-5"><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-lv-primary mr-3 mt-1"><i className="ph ph-palette"></i></span><div><strong className="text-gray-200 block text-sm">{t('visual_p1_title')}</strong>{t('visual_p1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-lv-primary mr-3 mt-1"><i className="ph ph-game-controller"></i></span><div><strong className="text-gray-200 block text-sm">{t('visual_p2_title')}</strong>{t('visual_p2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-lv-primary mr-3 mt-1"><i className="ph ph-fingerprint"></i></span><div><strong className="text-gray-200 block text-sm">{t('visual_p3_title')}</strong>{t('visual_p3_desc')}</div></li></ul></div>
                                                 </div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
-                                            <div className="space-y-8 animate-fadeIn">
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3>
                                                 <p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p>
                                                 <div className="relative pl-4 border-l border-white/10 space-y-8">
@@ -474,8 +492,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                             </div>
                                         )}
                                         {activeTab === 'solution' && (
-                                            <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-6">{t('sol_title')}</h3>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('sol_title')}</h3>
                                                 <div className="space-y-4">
                                                     {/* [修改] active -> active class (CSS handled), bg-primary -> bg-lv-primary, bg-secondary -> bg-lv-secondary, bg-accent -> bg-lv-accent */}
                                                     <button onClick={() => handleGallerySwitch(galleryImages[0])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '01' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '01' ? 'bg-lv-primary text-lv-dark' : 'bg-lv-primary/20 text-lv-primary'}`}><Icons.Game /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '01' ? 'text-white' : 'text-gray-200'}`}>{t('feat_1_title')}</h4><p className="text-xs text-gray-400 leading-relaxed">{t('feat_1_desc')}</p></div></button>
@@ -485,8 +503,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                             </div>
                                         )}
                                         {activeTab === 'climax' && (
-                                            <div className="space-y-8 animate-fadeIn pb-12">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('climax_title')}</h3>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn pb-12">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('climax_title')}</h3>
                                                 <p className="text-gray-400 mb-8 text-sm">{t('climax_desc')}</p>
                                                 <div className="space-y-6">
                                                     {ecosystemCategories.map((category) => (

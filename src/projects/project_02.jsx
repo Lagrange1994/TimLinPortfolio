@@ -328,6 +328,24 @@ gsap.registerPlugin(ScrollToPlugin);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
             const contentScrollRef = useRef(null);
+            const touchStartRef = useRef({ x: 0, y: 0 });
+            const TAB_ORDER = ['context', 'focus', 'features', 'gallery'];
+            const handleTabTouchStart = (e) => {
+                if (e.target.closest('.overflow-x-auto')) { touchStartRef.current = null; return; }
+                const t = e.touches[0];
+                touchStartRef.current = { x: t.clientX, y: t.clientY };
+            };
+            const handleTabTouchEnd = (e) => {
+                if (!touchStartRef.current) return;
+                const t = e.changedTouches[0];
+                const dx = t.clientX - touchStartRef.current.x;
+                const dy = t.clientY - touchStartRef.current.y;
+                touchStartRef.current = null;
+                if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+                const idx = TAB_ORDER.indexOf(activeTab);
+                if (dx < 0 && idx < TAB_ORDER.length - 1) setActiveTab(TAB_ORDER[idx + 1]);
+                else if (dx > 0 && idx > 0) setActiveTab(TAB_ORDER[idx - 1]);
+            };
             const overscrollAccumulator = useRef(0);
             const touchStartY = useRef(0);
             const tabsContainerRef = useRef(null);
@@ -599,11 +617,11 @@ gsap.registerPlugin(ScrollToPlugin);
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     {/* [修改] bg-dark/95 -> bg-app-dark/95 */}
                                     <div className="sticky top-0 bg-app-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
-                                        <div className="p-6 lg:p-8 pb-0 lg:pb-0">
+                                        <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold mb-1 font-heading">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-gray-400 text-xs lg:text-sm mb-4">Mobile Experience Optimization</p>
+                                            <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4">Mobile Experience Optimization</p>
 
-                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-4 pb-2 w-full touch-pan-x">
+                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-2 lg:mt-4 pb-2 w-full touch-pan-x">
                                                 {/* [修改] text-primary -> text-app-primary, border-primary -> border-app-primary */}
                                                 {[{ id: 'context', label: t('tab_context') }, { id: 'focus', label: t('tab_focus') }, { id: 'features', label: t('tab_features') }, { id: 'gallery', label: t('tab_gallery') }].map(tab => (
                                                     <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? 'text-app-primary border-b-2 border-app-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
@@ -612,10 +630,10 @@ gsap.registerPlugin(ScrollToPlugin);
                                         </div>
                                     </div>
 
-                                    <div ref={contentScrollRef} className="flex-1 p-6 lg:p-8 overflow-y-auto custom-scroll pb-24 scroll-content">
+                                    <div ref={contentScrollRef} onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd} className="flex-1 p-4 lg:p-8 overflow-y-auto custom-scroll pb-24 scroll-content">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('context_title')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
                                                 <p className="text-gray-300 leading-relaxed text-sm">{t('context_desc')}</p>
                                                 <div className="grid grid-cols-2 gap-4 mt-6">
                                                     {/* [修改] text-primary -> text-app-primary, text-secondary -> text-app-secondary */}
@@ -667,7 +685,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                                         {activeTab === 'gallery' && (
                                             <div className="space-y-6 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-4">{t('gallery_title')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
                                                 <div className="space-y-3">
                                                     {appGallery.map((img) => (
                                                         /* [修改] border-primary -> border-app-primary */
