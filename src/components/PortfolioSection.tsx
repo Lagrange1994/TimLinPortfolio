@@ -9,11 +9,6 @@ const SMOOTH_TAU = 0.18;
 // Matches How I Use AI's card corner radius (.ai-card) so the squircle reads
 // consistently across sections instead of scaling with each card's box size.
 const CARD_CORNER_RADIUS = 44;
-// Mobile cards render narrower (single-column grid / 300px scroller cards),
-// so the same fixed radius reads proportionally flatter — bump it up below
-// the 767px breakpoint used elsewhere in portfolio.css to keep the corners
-// looking as rounded as they do on desktop.
-const CARD_CORNER_RADIUS_MOBILE = 60;
 
 function createPortfolioScroller(row: HTMLElement, normalSpeed: number, hoverSpeed: number) {
   const inner = row.querySelector<HTMLElement>('.scroller-inner');
@@ -251,14 +246,13 @@ export default function PortfolioSection() {
     const cards = document.querySelectorAll<HTMLElement>('.project-card, .grid-card');
     if (cards.length === 0) return;
     const ro = new ResizeObserver(entries => {
-      const radius = window.innerWidth <= 767 ? CARD_CORNER_RADIUS_MOBILE : CARD_CORNER_RADIUS;
       for (const entry of entries) {
         const el = entry.target as HTMLElement;
         const { width, height } = entry.contentRect;
         if (width <= 0 || height <= 0) continue;
-        el.style.clipPath = `path('${squircleRectPath(width, height, radius)}')`;
+        el.style.clipPath = `path('${squircleRectPath(width, height, CARD_CORNER_RADIUS)}')`;
         if (el.classList.contains('grid-card')) {
-          el.style.setProperty('--ring-mask', squircleRingMaskUrl(width, height, radius, 2));
+          el.style.setProperty('--ring-mask', squircleRingMaskUrl(width, height, CARD_CORNER_RADIUS, 2));
         }
       }
     });

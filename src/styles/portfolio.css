@@ -5528,6 +5528,14 @@
         max-height: min(70dvh, 440px);
         bottom: calc(1rem + 2.75rem + 0.5rem);
       }
+
+      /* iOS Safari auto-zooms the page on focus for any input with
+         font-size below 16px — the chat toggle auto-focuses #chat-input
+         the instant the panel opens, so the page visibly "jumped" zoomed
+         in on tap. 16px is the zoom threshold; below it Safari zooms in. */
+      #chat-input {
+        font-size: 16px;
+      }
     }
 
     /* Mobile corner-radius pass — .bento-card/.process-card/.ai-card/
