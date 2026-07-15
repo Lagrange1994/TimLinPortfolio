@@ -328,24 +328,108 @@ gsap.registerPlugin(ScrollToPlugin);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
             const contentScrollRef = useRef(null);
-            const touchStartRef = useRef({ x: 0, y: 0 });
+            const swipeContentRef = useRef(null);
+            const peekContentRef = useRef(null);
+            const touchStartRef = useRef(null);
+            const isDraggingRef = useRef(false);
+            const dragDirRef = useRef(0);
+            const [peekTab, setPeekTab] = useState(null);
             const TAB_ORDER = ['context', 'focus', 'features', 'gallery'];
             const handleTabTouchStart = (e) => {
                 if (e.target.closest('.overflow-x-auto')) { touchStartRef.current = null; return; }
+                if (swipeContentRef.current) gsap.killTweensOf(swipeContentRef.current);
+                if (peekContentRef.current) gsap.killTweensOf(peekContentRef.current);
                 const t = e.touches[0];
                 touchStartRef.current = { x: t.clientX, y: t.clientY };
+                isDraggingRef.current = false;
             };
             const handleTabTouchEnd = (e) => {
                 if (!touchStartRef.current) return;
                 const t = e.changedTouches[0];
                 const dx = t.clientX - touchStartRef.current.x;
-                const dy = t.clientY - touchStartRef.current.y;
                 touchStartRef.current = null;
-                if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+                const el = swipeContentRef.current;
+                const peekEl = peekContentRef.current;
+                if (!isDraggingRef.current) return;
+                isDraggingRef.current = false;
                 const idx = TAB_ORDER.indexOf(activeTab);
-                if (dx < 0 && idx < TAB_ORDER.length - 1) setActiveTab(TAB_ORDER[idx + 1]);
-                else if (dx > 0 && idx > 0) setActiveTab(TAB_ORDER[idx - 1]);
+                const width = (contentScrollRef.current && contentScrollRef.current.offsetWidth) || 320;
+                const threshold = Math.min(100, width * 0.22);
+                const dir = dragDirRef.current;
+                dragDirRef.current = 0;
+                if (dir === 1 && dx <= -threshold && idx < TAB_ORDER.length - 1) {
+                    const nextId = TAB_ORDER[idx + 1];
+                    gsap.to(el, { x: -width, duration: 0.24, ease: 'power2.out' });
+                    if (peekEl) {
+                        gsap.to(peekEl, {
+                            x: 0, duration: 0.24, ease: 'power2.out', onComplete: () => {
+                                setActiveTab(nextId);
+                                setPeekTab(null);
+                                gsap.set(el, { x: 0 });
+                            }
+                        });
+                    } else {
+                        setActiveTab(nextId);
+                        gsap.set(el, { x: 0 });
+                    }
+                } else if (dir === -1 && dx >= threshold && idx > 0) {
+                    const prevId = TAB_ORDER[idx - 1];
+                    gsap.to(el, { x: width, duration: 0.24, ease: 'power2.out' });
+                    if (peekEl) {
+                        gsap.to(peekEl, {
+                            x: 0, duration: 0.24, ease: 'power2.out', onComplete: () => {
+                                setActiveTab(prevId);
+                                setPeekTab(null);
+                                gsap.set(el, { x: 0 });
+                            }
+                        });
+                    } else {
+                        setActiveTab(prevId);
+                        gsap.set(el, { x: 0 });
+                    }
+                } else {
+                    gsap.to(el, { x: 0, duration: 0.25, ease: 'power2.out' });
+                    if (peekEl && dir) {
+                        gsap.to(peekEl, { x: dir * width, duration: 0.25, ease: 'power2.out', onComplete: () => setPeekTab(null) });
+                    } else {
+                        setPeekTab(null);
+                    }
+                }
             };
+            useEffect(() => {
+                const node = contentScrollRef.current;
+                if (!node) return;
+                const onTouchMove = (e) => {
+                    if (!touchStartRef.current) return;
+                    const t = e.touches[0];
+                    const dx = t.clientX - touchStartRef.current.x;
+                    const dy = t.clientY - touchStartRef.current.y;
+                    if (!isDraggingRef.current) {
+                        if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+                            isDraggingRef.current = true;
+                            const idx = TAB_ORDER.indexOf(activeTab);
+                            const dir = dx < 0 ? 1 : -1;
+                            const peekId = dir === 1 ? TAB_ORDER[idx + 1] : TAB_ORDER[idx - 1];
+                            dragDirRef.current = peekId ? dir : 0;
+                            if (peekId) setPeekTab(peekId);
+                        } else if (Math.abs(dy) > 10) {
+                            touchStartRef.current = null;
+                            return;
+                        } else {
+                            return;
+                        }
+                    }
+                    e.preventDefault();
+                    const damped = dx * 0.5;
+                    if (swipeContentRef.current) gsap.set(swipeContentRef.current, { x: damped });
+                    if (peekContentRef.current && dragDirRef.current) {
+                        const width = (contentScrollRef.current && contentScrollRef.current.offsetWidth) || 320;
+                        gsap.set(peekContentRef.current, { x: dragDirRef.current * width + damped });
+                    }
+                };
+                node.addEventListener('touchmove', onTouchMove, { passive: false });
+                return () => node.removeEventListener('touchmove', onTouchMove);
+            }, [activeTab]);
             const overscrollAccumulator = useRef(0);
             const touchStartY = useRef(0);
             const tabsContainerRef = useRef(null);
@@ -421,6 +505,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
             useEffect(() => {
                 if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
+                if (swipeContentRef.current) gsap.set(swipeContentRef.current, { x: 0, opacity: 1 });
                 setSimplificationPoints(getSimplificationPoints(lang));
                 setAppFeatures(getAppFeatures(lang));
                 setAppGallery(getAppGallery(lang));
@@ -630,7 +715,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                         </div>
                                     </div>
 
-                                    <div ref={contentScrollRef} onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd} className="flex-1 p-4 lg:p-8 overflow-y-auto custom-scroll pb-24 scroll-content">
+                                    <div ref={contentScrollRef} onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd} className="flex-1 overflow-y-auto custom-scroll scroll-content overflow-x-hidden relative">
+                                    <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
@@ -698,7 +784,81 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 </div>
                                             </div>
                                         )}
+                                    
                                     </div>
+                                    {peekTab && (
+                                    <div ref={peekContentRef} style={{ transform: `translateX(${dragDirRef.current * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
+                                        {peekTab === 'context' && (
+                                            <div className="space-y-8 animate-fadeIn">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
+                                                <p className="text-gray-300 leading-relaxed text-sm">{t('context_desc')}</p>
+                                                <div className="grid grid-cols-2 gap-4 mt-6">
+                                                    {/* [修改] text-primary -> text-app-primary, text-secondary -> text-app-secondary */}
+                                                    <div className="p-4 bg-white/5 rounded-xl border border-white/10"><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-gray-400 mt-1">{t('mobile_first_sub')}</p></div>
+                                                    <div className="p-4 bg-white/5 rounded-xl border border-white/10"><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-gray-400 mt-1">{t('soft_ui_sub')}</p></div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {peekTab === 'focus' && (
+                                            <div className="space-y-6 animate-fadeIn">
+                                                <div className="mb-4"><h3 className="text-lg md:text-2xl font-bold text-white">{t('focus_title')}</h3><p className="text-xs text-gray-400 mt-1">{t('focus_sub')}</p></div>
+                                                <div className="space-y-4">
+                                                    {simplificationPoints.map((point) => (
+                                                        /* [修改] border-l-primary -> border-l-app-primary */
+                                                        <div key={point.id} className="feature-card border border-white/10 bg-white/5 p-5 border-l-4 border-l-app-primary hover:translate-x-1 transition-all duration-300 group">
+                                                            {/* [修改] bg-secondary/20 -> bg-app-secondary/20, text-secondary -> text-app-secondary */}
+                                                            <div className="flex items-center mb-3"><div className="w-8 h-8 rounded-full bg-app-secondary/20 flex items-center justify-center text-app-secondary mr-3"><i className={`ph ${point.icon}`}></i></div><h4 className="font-bold text-white">{point.title}</h4></div>
+                                                            <div className="flex items-center justify-between text-xs mb-3 bg-black/20 p-2 rounded-lg border border-white/10">
+                                                                <div className="text-gray-500 w-1/2 pr-2 border-r border-gray-700"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('web_complex')}</span>{point.web.desc}</div>
+                                                                {/* [修改] text-secondary -> text-app-secondary */}
+                                                                <div className="text-app-secondary w-1/2 pl-2"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('app_simple')}</span>{point.app.desc}</div>
+                                                            </div>
+                                                            {/* [修改] border-secondary -> border-app-secondary */}
+                                                            <div className="text-xs text-gray-300 italic border-l-2 border-app-secondary pl-3">&quot;{point.insight}&quot;</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {peekTab === 'features' && (
+                                            <div className="space-y-6 animate-fadeIn">
+                                                <div className="mb-4"><h3 className="text-lg md:text-2xl font-bold text-white">{t('features_title')}</h3><p className="text-xs text-gray-400 mt-1">{t('features_sub')}</p></div>
+                                                <div className="space-y-3">
+                                                    {appFeatures.map((feat) => (
+                                                        /* [修改] bg-primary/10 -> bg-app-primary/10, border-primary -> border-app-primary */
+                                                        <button key={feat.id} onClick={() => setActiveFeatureId(feat.id)} className={`w-full text-left p-4 rounded-xl border transition-all ${activeFeatureId === feat.id ? 'bg-app-primary/10 border-app-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
+                                                            {/* [修改] text-primary -> text-app-primary */}
+                                                            <h4 className={`font-bold text-sm mb-1 ${activeFeatureId === feat.id ? 'text-app-primary' : 'text-white'}`}>{feat.title}</h4>
+                                                            <p className="text-xs text-gray-400 mb-2">{feat.desc}</p>
+                                                            {/* [修改] bg-dark/50 -> bg-app-dark/50, border-secondary -> border-app-secondary */}
+                                                            {activeFeatureId === feat.id && <div className="text-xs text-white bg-app-dark/50 p-2 rounded mt-2 border-l-2 border-app-secondary animate-fadeIn"><i className="ph ph-lightbulb text-yellow-400 mr-1"></i> {feat.point}</div>}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {peekTab === 'gallery' && (
+                                            <div className="space-y-6 animate-fadeIn">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
+                                                <div className="space-y-3">
+                                                    {appGallery.map((img) => (
+                                                        /* [修改] border-primary -> border-app-primary */
+                                                        <button key={img.id} onClick={() => setActiveGalleryId(img.id)} className={`w-full text-left feature-card border p-4 transition-all group flex items-center justify-between ${activeGalleryId === img.id ? 'border-app-primary bg-white/5 shadow-[0_0_15px_rgba(255,74,0,0.1)]' : 'border-white/10 hover:bg-white/10'}`}>
+                                                            <div className="flex-1 min-w-0 pr-4"><div className="flex items-center mb-1"><span className={`font-bold text-sm truncate transition-colors ${activeGalleryId === img.id ? 'text-app-primary' : 'text-gray-300 group-hover:text-white'}`}>{img.title}</span></div><p className={`text-xs truncate transition-colors ${activeGalleryId === img.id ? 'text-gray-400' : 'text-gray-600 group-hover:text-gray-500'}`}>{img.desc}</p></div>
+                                                            {/* [修改] text-primary -> text-app-primary */}
+                                                            <i className={`ph ph-caret-right ml-4 transform transition-all text-xs ${activeGalleryId === img.id ? 'text-app-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    
+                                    
+                                    </div>
+                                    )}</div>
                                 </div>
                             </div>
                         </section>

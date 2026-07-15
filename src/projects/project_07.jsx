@@ -140,24 +140,108 @@ gsap.registerPlugin(ScrollToPlugin);
             const mainContainerRef = useRef(null);
             const sectionsRef = useRef([]);
             const contentScrollRef = useRef(null);
-            const touchStartRef = useRef({ x: 0, y: 0 });
+            const swipeContentRef = useRef(null);
+            const peekContentRef = useRef(null);
+            const touchStartRef = useRef(null);
+            const isDraggingRef = useRef(false);
+            const dragDirRef = useRef(0);
+            const [peekTab, setPeekTab] = useState(null);
             const TAB_ORDER = ['request', 'process', 'highlights', 'gallery'];
             const handleTabTouchStart = (e) => {
                 if (e.target.closest('.overflow-x-auto')) { touchStartRef.current = null; return; }
+                if (swipeContentRef.current) gsap.killTweensOf(swipeContentRef.current);
+                if (peekContentRef.current) gsap.killTweensOf(peekContentRef.current);
                 const t = e.touches[0];
                 touchStartRef.current = { x: t.clientX, y: t.clientY };
+                isDraggingRef.current = false;
             };
             const handleTabTouchEnd = (e) => {
                 if (!touchStartRef.current) return;
                 const t = e.changedTouches[0];
                 const dx = t.clientX - touchStartRef.current.x;
-                const dy = t.clientY - touchStartRef.current.y;
                 touchStartRef.current = null;
-                if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+                const el = swipeContentRef.current;
+                const peekEl = peekContentRef.current;
+                if (!isDraggingRef.current) return;
+                isDraggingRef.current = false;
                 const idx = TAB_ORDER.indexOf(activeTab);
-                if (dx < 0 && idx < TAB_ORDER.length - 1) setActiveTab(TAB_ORDER[idx + 1]);
-                else if (dx > 0 && idx > 0) setActiveTab(TAB_ORDER[idx - 1]);
+                const width = (contentScrollRef.current && contentScrollRef.current.offsetWidth) || 320;
+                const threshold = Math.min(100, width * 0.22);
+                const dir = dragDirRef.current;
+                dragDirRef.current = 0;
+                if (dir === 1 && dx <= -threshold && idx < TAB_ORDER.length - 1) {
+                    const nextId = TAB_ORDER[idx + 1];
+                    gsap.to(el, { x: -width, duration: 0.24, ease: 'power2.out' });
+                    if (peekEl) {
+                        gsap.to(peekEl, {
+                            x: 0, duration: 0.24, ease: 'power2.out', onComplete: () => {
+                                setActiveTab(nextId);
+                                setPeekTab(null);
+                                gsap.set(el, { x: 0 });
+                            }
+                        });
+                    } else {
+                        setActiveTab(nextId);
+                        gsap.set(el, { x: 0 });
+                    }
+                } else if (dir === -1 && dx >= threshold && idx > 0) {
+                    const prevId = TAB_ORDER[idx - 1];
+                    gsap.to(el, { x: width, duration: 0.24, ease: 'power2.out' });
+                    if (peekEl) {
+                        gsap.to(peekEl, {
+                            x: 0, duration: 0.24, ease: 'power2.out', onComplete: () => {
+                                setActiveTab(prevId);
+                                setPeekTab(null);
+                                gsap.set(el, { x: 0 });
+                            }
+                        });
+                    } else {
+                        setActiveTab(prevId);
+                        gsap.set(el, { x: 0 });
+                    }
+                } else {
+                    gsap.to(el, { x: 0, duration: 0.25, ease: 'power2.out' });
+                    if (peekEl && dir) {
+                        gsap.to(peekEl, { x: dir * width, duration: 0.25, ease: 'power2.out', onComplete: () => setPeekTab(null) });
+                    } else {
+                        setPeekTab(null);
+                    }
+                }
             };
+            useEffect(() => {
+                const node = contentScrollRef.current;
+                if (!node) return;
+                const onTouchMove = (e) => {
+                    if (!touchStartRef.current) return;
+                    const t = e.touches[0];
+                    const dx = t.clientX - touchStartRef.current.x;
+                    const dy = t.clientY - touchStartRef.current.y;
+                    if (!isDraggingRef.current) {
+                        if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+                            isDraggingRef.current = true;
+                            const idx = TAB_ORDER.indexOf(activeTab);
+                            const dir = dx < 0 ? 1 : -1;
+                            const peekId = dir === 1 ? TAB_ORDER[idx + 1] : TAB_ORDER[idx - 1];
+                            dragDirRef.current = peekId ? dir : 0;
+                            if (peekId) setPeekTab(peekId);
+                        } else if (Math.abs(dy) > 10) {
+                            touchStartRef.current = null;
+                            return;
+                        } else {
+                            return;
+                        }
+                    }
+                    e.preventDefault();
+                    const damped = dx * 0.5;
+                    if (swipeContentRef.current) gsap.set(swipeContentRef.current, { x: damped });
+                    if (peekContentRef.current && dragDirRef.current) {
+                        const width = (contentScrollRef.current && contentScrollRef.current.offsetWidth) || 320;
+                        gsap.set(peekContentRef.current, { x: dragDirRef.current * width + damped });
+                    }
+                };
+                node.addEventListener('touchmove', onTouchMove, { passive: false });
+                return () => node.removeEventListener('touchmove', onTouchMove);
+            }, [activeTab]);
             const imageScrollRef = useRef(null);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
@@ -212,6 +296,7 @@ gsap.registerPlugin(ScrollToPlugin);
             // Tab / Lang Update
             useEffect(() => {
                 if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
+                if (swipeContentRef.current) gsap.set(swipeContentRef.current, { x: 0, opacity: 1 });
                 if (imageScrollRef.current) imageScrollRef.current.scrollTop = 0;
 
                 // Reset view based on tab
@@ -406,7 +491,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                         </div>
                                     </div>
 
-                                    <div ref={contentScrollRef} onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd} className="flex-1 p-4 lg:p-8 pb-24 scroll-content scrollable-area custom-scroll">
+                                    <div ref={contentScrollRef} onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd} className="flex-1 scroll-content scrollable-area custom-scroll overflow-x-hidden relative">
+                                    <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'request' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
                                                 <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('request_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('request_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sm-primary/20 text-sm-primary border border-sm-primary/30"><Icons.XD /> <span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sm-secondary/20 text-sm-secondary border border-sm-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span></div></div></div><div className="grid grid-cols-1 gap-4"><div className="feature-card p-5"><h4 className="text-sm-secondary font-bold text-sm mb-3">{t('list_title')}</h4><ul className="space-y-3 text-gray-300"><li className="flex items-start text-sm"><span className="text-sm-primary mr-3 mt-1"><i className="ph ph-check-circle"></i></span><div><strong className="text-white">{t('req_1_title')}</strong><span className="block text-xs text-gray-500">{t('req_1_desc')}</span></div></li><li className="flex items-start text-sm"><span className="text-sm-primary mr-3 mt-1"><i className="ph ph-check-circle"></i></span><div><strong className="text-white">{t('req_2_title')}</strong><span className="block text-xs text-gray-500">{t('req_2_desc')}</span></div></li><li className="flex items-start text-sm"><span className="text-sm-primary mr-3 mt-1"><i className="ph ph-check-circle"></i></span><div><strong className="text-white">{t('req_3_title')}</strong><span className="block text-xs text-gray-500">{t('req_3_desc')}</span></div></li></ul></div></div></div></div>
@@ -426,7 +512,33 @@ gsap.registerPlugin(ScrollToPlugin);
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{gallery.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? '!border-sm-primary bg-white/5' : ''}`}><div className="flex justify-between items-center mb-2"><h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}><span className="text-sm-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`ph ph-eye transform transition-all ${activeGalleryId === img.id ? 'text-sm-primary' : 'text-gray-600 group-hover:text-sm-primary'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400">{img.desc}</p></button>))}</div></div>
                                         )}
                                         <div className="h-8"></div>
+                                    
                                     </div>
+                                    {peekTab && (
+                                    <div ref={peekContentRef} style={{ transform: `translateX(${dragDirRef.current * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
+                                        {peekTab === 'request' && (
+                                            <div className="space-y-8 lg:space-y-12 animate-fadeIn">
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('request_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('request_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sm-primary/20 text-sm-primary border border-sm-primary/30"><Icons.XD /> <span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sm-secondary/20 text-sm-secondary border border-sm-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span></div></div></div><div className="grid grid-cols-1 gap-4"><div className="feature-card p-5"><h4 className="text-sm-secondary font-bold text-sm mb-3">{t('list_title')}</h4><ul className="space-y-3 text-gray-300"><li className="flex items-start text-sm"><span className="text-sm-primary mr-3 mt-1"><i className="ph ph-check-circle"></i></span><div><strong className="text-white">{t('req_1_title')}</strong><span className="block text-xs text-gray-500">{t('req_1_desc')}</span></div></li><li className="flex items-start text-sm"><span className="text-sm-primary mr-3 mt-1"><i className="ph ph-check-circle"></i></span><div><strong className="text-white">{t('req_2_title')}</strong><span className="block text-xs text-gray-500">{t('req_2_desc')}</span></div></li><li className="flex items-start text-sm"><span className="text-sm-primary mr-3 mt-1"><i className="ph ph-check-circle"></i></span><div><strong className="text-white">{t('req_3_title')}</strong><span className="block text-xs text-gray-500">{t('req_3_desc')}</span></div></li></ul></div></div></div></div>
+                                        )}
+                                        {peekTab === 'process' && (
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3><div className="relative pl-4 border-l border-white/10 space-y-8"><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-sm-primary"></div><h4 className="text-sm font-bold text-sm-primary mb-1">{t('step_1_title')}</h4><p className="text-sm text-gray-300">{t('step_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-sm-dark border border-gray-600"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_2_title')}</h4><p className="text-sm text-gray-300">{t('step_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-sm-dark border border-gray-600"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_3_title')}</h4><p className="text-sm text-gray-300">{t('step_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-sm-secondary"></div><h4 className="text-sm font-bold text-sm-secondary mb-1">{t('step_4_title')}</h4><p className="text-sm text-gray-300">{t('step_4_desc')}</p></div></div></div>
+                                        )}
+                                        {peekTab === 'highlights' && (
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('highlights_title')}</h3><div className="space-y-4">{features.map((feat) => { const IconComp = Icons[feat.icon]; return (
+                                                /* [修改] border-primary -> border-sm-primary */
+                                                <button key={feat.id} onClick={() => handleFeatureSwitch(feat)} className={`w-full text-left feature-card border p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? '!border-sm-primary bg-white/5 shadow-[0_0_15px_rgba(34,211,238,0.1)]' : 'border-white/5 hover:bg-white/5'}`}>
+                                                    {/* [修改] bg-primary -> bg-sm-primary, text-primary -> text-sm-primary */}
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? 'bg-sm-primary text-white' : 'bg-white/10 text-sm-primary'}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? 'text-sm-primary' : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}<br /><br /><span className={`font-semibold ${activeFeatureId === feat.id ? 'text-white' : 'text-gray-500'}`}>{feat.note}</span></p></div></button>); })}</div></div>
+                                        )}
+                                        {peekTab === 'gallery' && (
+                                            /* [關鍵修正] 1. 外框: !border-sm-primary (藍色) 2. 標題: text-white (白色) */
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{gallery.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? '!border-sm-primary bg-white/5' : ''}`}><div className="flex justify-between items-center mb-2"><h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}><span className="text-sm-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`ph ph-eye transform transition-all ${activeGalleryId === img.id ? 'text-sm-primary' : 'text-gray-600 group-hover:text-sm-primary'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400">{img.desc}</p></button>))}</div></div>
+                                        )}
+                                        <div className="h-8"></div>
+                                    
+                                    
+                                    </div>
+                                    )}</div>
                                 </div>
                             </div>
 

@@ -198,24 +198,108 @@ gsap.registerPlugin(ScrollToPlugin);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
             const contentScrollRef = useRef(null);
-            const touchStartRef = useRef({ x: 0, y: 0 });
+            const swipeContentRef = useRef(null);
+            const peekContentRef = useRef(null);
+            const touchStartRef = useRef(null);
+            const isDraggingRef = useRef(false);
+            const dragDirRef = useRef(0);
+            const [peekTab, setPeekTab] = useState(null);
             const TAB_ORDER = ['context', 'process', 'solution', 'climax'];
             const handleTabTouchStart = (e) => {
                 if (e.target.closest('.overflow-x-auto')) { touchStartRef.current = null; return; }
+                if (swipeContentRef.current) gsap.killTweensOf(swipeContentRef.current);
+                if (peekContentRef.current) gsap.killTweensOf(peekContentRef.current);
                 const t = e.touches[0];
                 touchStartRef.current = { x: t.clientX, y: t.clientY };
+                isDraggingRef.current = false;
             };
             const handleTabTouchEnd = (e) => {
                 if (!touchStartRef.current) return;
                 const t = e.changedTouches[0];
                 const dx = t.clientX - touchStartRef.current.x;
-                const dy = t.clientY - touchStartRef.current.y;
                 touchStartRef.current = null;
-                if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+                const el = swipeContentRef.current;
+                const peekEl = peekContentRef.current;
+                if (!isDraggingRef.current) return;
+                isDraggingRef.current = false;
                 const idx = TAB_ORDER.indexOf(activeTab);
-                if (dx < 0 && idx < TAB_ORDER.length - 1) setActiveTab(TAB_ORDER[idx + 1]);
-                else if (dx > 0 && idx > 0) setActiveTab(TAB_ORDER[idx - 1]);
+                const width = (contentScrollRef.current && contentScrollRef.current.offsetWidth) || 320;
+                const threshold = Math.min(100, width * 0.22);
+                const dir = dragDirRef.current;
+                dragDirRef.current = 0;
+                if (dir === 1 && dx <= -threshold && idx < TAB_ORDER.length - 1) {
+                    const nextId = TAB_ORDER[idx + 1];
+                    gsap.to(el, { x: -width, duration: 0.24, ease: 'power2.out' });
+                    if (peekEl) {
+                        gsap.to(peekEl, {
+                            x: 0, duration: 0.24, ease: 'power2.out', onComplete: () => {
+                                setActiveTab(nextId);
+                                setPeekTab(null);
+                                gsap.set(el, { x: 0 });
+                            }
+                        });
+                    } else {
+                        setActiveTab(nextId);
+                        gsap.set(el, { x: 0 });
+                    }
+                } else if (dir === -1 && dx >= threshold && idx > 0) {
+                    const prevId = TAB_ORDER[idx - 1];
+                    gsap.to(el, { x: width, duration: 0.24, ease: 'power2.out' });
+                    if (peekEl) {
+                        gsap.to(peekEl, {
+                            x: 0, duration: 0.24, ease: 'power2.out', onComplete: () => {
+                                setActiveTab(prevId);
+                                setPeekTab(null);
+                                gsap.set(el, { x: 0 });
+                            }
+                        });
+                    } else {
+                        setActiveTab(prevId);
+                        gsap.set(el, { x: 0 });
+                    }
+                } else {
+                    gsap.to(el, { x: 0, duration: 0.25, ease: 'power2.out' });
+                    if (peekEl && dir) {
+                        gsap.to(peekEl, { x: dir * width, duration: 0.25, ease: 'power2.out', onComplete: () => setPeekTab(null) });
+                    } else {
+                        setPeekTab(null);
+                    }
+                }
             };
+            useEffect(() => {
+                const node = contentScrollRef.current;
+                if (!node) return;
+                const onTouchMove = (e) => {
+                    if (!touchStartRef.current) return;
+                    const t = e.touches[0];
+                    const dx = t.clientX - touchStartRef.current.x;
+                    const dy = t.clientY - touchStartRef.current.y;
+                    if (!isDraggingRef.current) {
+                        if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) {
+                            isDraggingRef.current = true;
+                            const idx = TAB_ORDER.indexOf(activeTab);
+                            const dir = dx < 0 ? 1 : -1;
+                            const peekId = dir === 1 ? TAB_ORDER[idx + 1] : TAB_ORDER[idx - 1];
+                            dragDirRef.current = peekId ? dir : 0;
+                            if (peekId) setPeekTab(peekId);
+                        } else if (Math.abs(dy) > 10) {
+                            touchStartRef.current = null;
+                            return;
+                        } else {
+                            return;
+                        }
+                    }
+                    e.preventDefault();
+                    const damped = dx * 0.5;
+                    if (swipeContentRef.current) gsap.set(swipeContentRef.current, { x: damped });
+                    if (peekContentRef.current && dragDirRef.current) {
+                        const width = (contentScrollRef.current && contentScrollRef.current.offsetWidth) || 320;
+                        gsap.set(peekContentRef.current, { x: dragDirRef.current * width + damped });
+                    }
+                };
+                node.addEventListener('touchmove', onTouchMove, { passive: false });
+                return () => node.removeEventListener('touchmove', onTouchMove);
+            }, [activeTab]);
             const imageScrollRef = useRef(null);
             const tabsContainerRef = useRef(null);
             const touchStartY = useRef(0);
@@ -280,6 +364,7 @@ gsap.registerPlugin(ScrollToPlugin);
             // Update Content on Lang/Tab Change
             useEffect(() => {
                 if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
+                if (swipeContentRef.current) gsap.set(swipeContentRef.current, { x: 0, opacity: 1 });
 
                 const wFeats = getWebFeatures(lang);
                 const aFeats = getAppFeatures(lang);
@@ -447,7 +532,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                         </div>
                                     </div>
 
-                                    <div ref={contentScrollRef} onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd} className="flex-1 p-4 lg:p-8 pb-24 overflow-y-auto custom-scroll scroll-content">
+                                    <div ref={contentScrollRef} onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd} className="flex-1 overflow-y-auto custom-scroll scroll-content overflow-x-hidden relative">
+                                    <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
                                                 <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zoo-primary/20 text-zoo-primary border border-zoo-primary/30"><Icons.Figma /> <span className="ml-1">Figma</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zoo-secondary/20 text-zoo-secondary border border-zoo-secondary/30"><Icons.Illustrator /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
@@ -566,7 +652,132 @@ gsap.registerPlugin(ScrollToPlugin);
                                             </div>
                                         )}
                                         <div className="h-8"></div>
+                                    
                                     </div>
+                                    {peekTab && (
+                                    <div ref={peekContentRef} style={{ transform: `translateX(${dragDirRef.current * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
+                                        {peekTab === 'context' && (
+                                            <div className="space-y-8 lg:space-y-12 animate-fadeIn">
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zoo-primary/20 text-zoo-primary border border-zoo-primary/30"><Icons.Figma /> <span className="ml-1">Figma</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zoo-secondary/20 text-zoo-secondary border border-zoo-secondary/30"><Icons.Illustrator /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div className="w-full h-px bg-white/10"></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><div className="feature-card feature-card-secondary p-5"><h4 className="text-zoo-secondary font-bold text-sm mb-3">{t('pain_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
+                                            </div>
+                                        )}
+                                        {peekTab === 'process' && (
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('web_title')}</h3>
+                                                <div className="feature-card feature-card-primary p-5 mb-8"><h4 className="text-zoo-primary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">♜</span> {t('web_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p3')}</span></li></ul></div>
+                                                <div className="w-full h-px bg-white/10 mb-8"></div>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-primary rounded-full mr-3"></span>{t('web_core')}</h3>
+                                                <div className="space-y-4">{webFeatures.map(feat => {
+                                                    const IconComp = Icons[feat.icon];
+                                                    let benefitColor, bgClass, bgGradient, borderColor, shadowClass;
+                                                    if (feat.benefit === 'primary') { 
+                                                        benefitColor = 'text-zoo-primary'; 
+                                                        bgClass = 'bg-zoo-primary'; 
+                                                        bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; 
+                                                        borderColor = '!border-zoo-primary';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]';
+                                                    } else if (feat.benefit === 'blue-400') { 
+                                                        benefitColor = 'text-blue-400'; 
+                                                        bgClass = 'bg-blue-400'; 
+                                                        bgGradient = 'bg-gradient-to-br from-blue-400/20 to-blue-400/5'; 
+                                                        borderColor = '!border-blue-400';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(96,165,250,0.2)]';
+                                                    } else { 
+                                                        benefitColor = 'text-purple-400'; 
+                                                        bgClass = 'bg-purple-400'; 
+                                                        bgGradient = 'bg-gradient-to-br from-purple-400/20 to-purple-400/5'; 
+                                                        borderColor = '!border-purple-400';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(192,132,252,0.2)]';
+                                                    }
+
+                                                    return (<button key={feat.id} onClick={() => handleFeatureClick(feat.image, feat.id, 'web')} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? `${borderColor} bg-white/10 ${shadowClass}` : 'border-white/10 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? `${bgClass} text-dark` : `${bgGradient} ${benefitColor}`}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? benefitColor : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p></div></button>);
+                                                })}</div>
+                                            </div>
+                                        )}
+                                        {peekTab === 'solution' && (
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('app_title')}</h3>
+                                                <div className="feature-card feature-card-secondary p-5 mb-8"><h4 className="text-zoo-secondary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">⚡</span> {t('app_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p3')}</span></li></ul></div>
+                                                <div className="w-full h-px bg-white/10 mb-8"></div>
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('app_core')}</h3>
+                                                <div className="space-y-4">{appFeatures.map(feat => {
+                                                    const IconComp = Icons[feat.icon];
+                                                    let benefitColor, bgClass, bgGradient, borderColor, shadowClass;
+                                                    if (feat.benefit === 'primary') { 
+                                                        benefitColor = 'text-zoo-primary'; 
+                                                        bgClass = 'bg-zoo-primary'; 
+                                                        bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; 
+                                                        borderColor = '!border-zoo-primary';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]';
+                                                    } else if (feat.benefit === 'secondary') { 
+                                                        benefitColor = 'text-zoo-secondary'; 
+                                                        bgClass = 'bg-zoo-secondary'; 
+                                                        bgGradient = 'bg-gradient-to-br from-zoo-secondary/20 to-zoo-secondary/5'; 
+                                                        borderColor = '!border-zoo-secondary';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(255,150,113,0.2)]';
+                                                    } else if (feat.benefit === 'yellow') { 
+                                                        // Corrected logic for 'yellow' to use accent/specific yellow color
+                                                        benefitColor = 'text-yellow-400'; 
+                                                        bgClass = 'bg-yellow-400'; 
+                                                        bgGradient = 'bg-gradient-to-br from-yellow-400/20 to-yellow-400/5'; 
+                                                        borderColor = '!border-yellow-400';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(250,204,21,0.2)]';
+                                                    } else { 
+                                                        benefitColor = 'text-zoo-accent'; 
+                                                        bgClass = 'bg-zoo-accent'; 
+                                                        bgGradient = 'bg-gradient-to-br from-zoo-accent/20 to-zoo-accent/5'; 
+                                                        borderColor = '!border-zoo-accent';
+                                                        shadowClass = 'shadow-[0_0_15px_rgba(255,199,95,0.2)]';
+                                                    }
+
+                                                    return (<button key={feat.id} onClick={() => handleFeatureClick(feat.image, feat.id, 'app')} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? `${borderColor} bg-white/10 ${shadowClass}` : 'border-white/10 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? `${bgClass} text-dark` : `${bgGradient} ${benefitColor}`}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? benefitColor : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p></div></button>);
+                                                })}</div>
+                                            </div>
+                                        )}
+                                        {peekTab === 'climax' && (
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn pb-12">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
+                                                <p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p>
+                                                <div className="space-y-6">
+                                                    {galleryCategories.map(category => (
+                                                        <div key={category.id} className="space-y-3">
+                                                            <h4 className={`font-bold text-md flex items-center ${category.type === 'web' ? 'text-zoo-primary' : 'text-zoo-secondary'}`}>
+                                                                <span className={`w-2 h-2 rounded-full mr-2 ${category.type === 'web' ? 'bg-zoo-primary' : 'bg-zoo-secondary'}`}></span>
+                                                                {category.title}
+                                                            </h4>
+                                                            <div className="grid gap-3 pl-4 border-l border-white/10">
+                                                                {category.images.map(img => {
+                                                                    const isWeb = category.type === 'web';
+                                                                    const activeClass = isWeb 
+                                                                        ? 'border-zoo-primary shadow-[0_0_15px_rgba(134,194,50,0.1)]' 
+                                                                        : 'border-zoo-secondary shadow-[0_0_15px_rgba(255,150,113,0.1)]';
+                                                                    
+                                                                    return (
+                                                                        <button key={img.id} onClick={() => handleGallerySwitch(img, category.type)} 
+                                                                            className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? `${activeClass} bg-white/5` : 'border-white/5'}`}>
+                                                                            <div className="flex justify-between items-center">
+                                                                                <h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}>
+                                                                                    <span className={`${category.type === 'web' ? 'text-zoo-primary/70' : 'text-zoo-secondary/70'} mr-2 text-xs font-mono`}>{img.id}</span>
+                                                                                    {img.name}
+                                                                                </h4>
+                                                                                <i className={`ph ph-caret-right transform transition-all text-xs ${activeGalleryId === img.id ? (category.type === 'web' ? 'text-zoo-primary' : 'text-zoo-secondary') + ' translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
+                                                                            </div>
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        <div className="h-8"></div>
+                                    
+                                    
+                                    </div>
+                                    )}</div>
                                 </div>
                             </div>
                         </section>
