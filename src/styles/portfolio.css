@@ -4062,6 +4062,13 @@
         margin-top: 24px;
       }
 
+      /* First column (In-house) sits right under the "My Design Process"
+         label — its header's default 24px top margin just adds an extra gap.
+         Freelance keeps its margin: it's the divider from In-house above. */
+      .process-column:first-child .process-column-header {
+        margin-top: 0;
+      }
+
       .border-glow-inner {
         padding: 16px;
       }
