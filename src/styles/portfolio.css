@@ -3855,7 +3855,21 @@
         display: grid;
         grid-template-columns: 1fr 3fr;
         column-gap: 32px;
-        align-items: center;
+        /* Top-anchor both cells (was center) so the title's offset below is
+           measured from the carousel's top, not its centre. */
+        align-items: start;
+      }
+
+      /* Continue the carousel's descending staircase into the title: the
+         label is the leftmost, lowest "step". The staircase is built from the
+         grid's 12px top padding + the leftmost slot's (PROCESS_VISIBLE-1)*
+         STAIR_STEP = 64px margin (see SkillsSection.tsx), so the leftmost
+         (nearest) card's top sits 76px below the carousel top. Push the title
+         one more 32px STAIR_STEP below that (76 + 32 = 108px) so every element,
+         right to left — rightmost card, middle, leftmost card, title — drops by
+         an equal 32px step. */
+      .process-column-head {
+        padding-top: 108px;
       }
 
       .process-column-header {
