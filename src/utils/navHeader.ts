@@ -39,8 +39,28 @@ export function primeHeaderForNav() {
   }
 }
 
+// Google Fonts are loaded with `display=swap` (see index.html), so on a
+// fresh load/refresh the page first paints with fallback metrics and swaps
+// to the real webfont a beat later. If that swap reflows anything above the
+// nav target (header text, earlier sections), it shifts the whole page
+// after scrollIntoView() has already locked onto its target Y — the
+// in-flight smooth scroll keeps heading for the pre-swap position and lands
+// short/long. Re-align once fonts settle, but only for the request that's
+// still current (id match) and only if the user hasn't since taken over
+// scrolling themselves (wheel/touch/key), so this can't yank them back
+// mid-manual-scroll.
+let pendingAlignId: string | null = null;
+
+function cancelPendingAlignOnUserInput() {
+  const cancel = () => { pendingAlignId = null; };
+  (['wheel', 'touchmove', 'keydown'] as const).forEach(evt =>
+    window.addEventListener(evt, cancel, { once: true, passive: true })
+  );
+}
+
 export function scrollToSectionAligned(id: string) {
   if (id === 'home') {
+    pendingAlignId = null;
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
@@ -49,4 +69,15 @@ export function scrollToSectionAligned(id: string) {
 
   primeHeaderForNav();
   target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (document.fonts && document.fonts.status !== 'loaded') {
+    pendingAlignId = id;
+    cancelPendingAlignOnUserInput();
+    document.fonts.ready.then(() => {
+      if (pendingAlignId !== id) return;
+      pendingAlignId = null;
+      primeHeaderForNav();
+      target.scrollIntoView({ behavior: 'instant', block: 'start' });
+    });
+  }
 }
