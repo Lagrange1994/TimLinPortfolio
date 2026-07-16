@@ -5738,11 +5738,23 @@
 
       /* .ai-card drives its coupled glow rings (::after radar, .edge-light
          outer glow + ::before inner edge) off the --ai-card-r var; pin it to
-         44px so the card and all three rings stay concentric. The rings' own
-         corner-shape is bumped to superellipse(2.32) at their base rules so
-         they trace the same n=5 curve as the card. */
+         44px so the card and all three rings stay concentric. Their own
+         corner-shape declarations still say `squircle` (n≈4) at their base
+         rules, so they must be bumped here too or they'd trace a visibly
+         different curve than the card body (n=5). */
       .ai-card {
         --ai-card-r: 44px;
+        corner-shape: superellipse(2.32);
+      }
+
+      .ai-card::after,
+      .ai-card-glow > .edge-light,
+      .ai-card-glow > .edge-light::before {
+        corner-shape: superellipse(2.32);
+      }
+
+      /* Same mismatch on the freelance process cards' hover radar ring. */
+      .process-radar {
         corner-shape: superellipse(2.32);
       }
     }
