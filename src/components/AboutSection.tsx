@@ -415,7 +415,7 @@ export default function AboutSection() {
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_ai_label}</div>
             <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p3 }} />
-            <AiFlowStepper steps={['Make', 'Gemini', 'Sheets', 'LINE / Email']} />
+            <AiFlowStepper steps={['Make', 'Claude', 'Sheets', 'LINE / Email']} />
           </div>
 
         </div>

@@ -287,7 +287,7 @@ function makeAiCards(t: Record<string, string>) {
       ),
       title: 'AI Brief',
       summary: t.ai_ai_sum,
-      tags: ['Gemini', 'Classify', 'Summarize', 'Gap-find'],
+      tags: ['Claude', 'Classify', 'Summarize', 'Gap-find'],
       pipeline: null as string[] | null,
       detail: (
         <>
