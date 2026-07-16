@@ -2315,10 +2315,15 @@
        so only the downward-offset part shows. text-shadow:none clears the white
        readability shadow the title sets, which would otherwise smudge through. */
     .portfolio-headline-title .gradient-text {
+      /* Site logo gradient (see --grad-logo) instead of the default
+         primary/secondary gradient. */
+      background: var(--grad-logo);
+      -webkit-background-clip: text;
+      background-clip: text;
       text-shadow: none;
-      /* Single-layer, same button formula as .headline-lead above — own
-         original outer-glow color (deepened #FF6584), 3-layer halo dropped. */
-      filter: drop-shadow(0 6px 22px rgba(80, 30, 42, 1));
+      /* Single-layer, same button formula as .headline-lead above — dark
+         violet shadow matching the new logo-gradient hue. */
+      filter: drop-shadow(0 6px 22px rgba(30, 10, 60, 1));
     }
 
     .portfolio-headline-sub {
