@@ -280,6 +280,15 @@
       white-space: nowrap;
     }
 
+    /* "My Portfolio" eyebrow only — echoes the View All Projects button's
+       glow (.btn-grad: 0 4px 20px rgba(255,101,132,.35)) as a text-shadow,
+       plus a darker near shadow standing in for .btn-glass's own
+       0 4px 6px rgba(0,0,0,.1) (bumped up since text needs more contrast
+       than a box to read against the busy scroller wall behind it). */
+    #portfolio .section-label {
+      text-shadow: 0 4px 6px rgba(0, 0, 0, 0.35), 0 4px 20px rgba(255, 101, 132, 0.35);
+    }
+
     .section-label::before {
       content: '';
       position: absolute;
