@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLang } from '../context/LangContext';
+import SpecularButton from './SpecularButton';
 
 export default function ContactSection() {
   const { t } = useLang();
@@ -126,13 +127,20 @@ export default function ContactSection() {
                   <strong>{t.open_for_work}</strong><br />
                   <span className="cta-txt-sub">{t.open_for_work_sub}</span>
                 </div>
-                <button
-                  className="btn-glass btn-grad"
-                  style={{ padding: '9px 20px', borderRadius: '9999px', fontSize: '12px', whiteSpace: 'nowrap', flexShrink: 0 }}
+                <SpecularButton
+                  size="sm"
+                  radius={999}
+                  className="cta-send-btn"
+                  tint="#FF6584"
+                  tintOpacity={0.14}
+                  textColor="#fff"
+                  lineColor="#FF6584"
+                  baseColor="#6C63FF"
+                  proximity={220}
                   onClick={() => { window.location.href = 'mailto:lyfun0202@gmail.com'; }}
                 >
                   Send Email ↗
-                </button>
+                </SpecularButton>
               </div>
             </div>
           </div>
