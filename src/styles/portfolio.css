@@ -1526,23 +1526,20 @@
       margin-top: 32px;
     }
 
+    /* Big section-title styling — matches .about-h2 (heading font, ~2rem),
+       so In-house / Freelance read as headlines, not the old mono kicker. */
     .process-column-header {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      font-family: var(--mono);
+      font-family: var(--font-heading);
+      font-size: clamp(1.5rem, 2.5vw, 2rem);
       font-weight: 700;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--text-50);
+      line-height: 1.2;
+      letter-spacing: -.02em;
+      text-transform: none;
+      color: var(--text);
       margin-top: 24px;
       margin-bottom: 14px;
-    }
-
-    .process-column-header i {
-      font-size: 15px;
-      color: var(--primary);
     }
 
     .process-column-desc {

@@ -1180,7 +1180,6 @@ export default function SkillsSection() {
           <div className="process-column">
             <div className="process-column-head">
               <div className="process-column-header">
-                <i className="ph-bold ph-buildings"></i>
                 <span>{t.tab_inhouse}</span>
               </div>
               <p className="process-column-desc">{t.tab_inhouse_desc}</p>
@@ -1222,7 +1221,6 @@ export default function SkillsSection() {
           <div className="process-column">
             <div className="process-column-head">
               <div className="process-column-header">
-                <i className="ph-bold ph-handshake"></i>
                 <span>{t.tab_freelance}</span>
               </div>
               <p className="process-column-desc">{t.tab_freelance_desc}</p>
