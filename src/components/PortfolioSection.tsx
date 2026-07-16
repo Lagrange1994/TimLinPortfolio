@@ -467,7 +467,10 @@ export default function PortfolioSection() {
     } else {
       const portfolioSec = document.getElementById('portfolio');
       const header = document.getElementById('main-header');
-      const headerOffset = header ? header.offsetHeight + 20 : 80;
+      // Match every other section's scroll-margin-top landing exactly (no
+      // extra offset) so "My Portfolio"'s gap to the navbar doesn't shift
+      // when expanding into the bento grid.
+      const headerOffset = header ? header.offsetHeight : 80;
       const targetScrollY = portfolioSec
         ? portfolioSec.getBoundingClientRect().top + window.pageYOffset - headerOffset
         : 0;
@@ -529,6 +532,10 @@ export default function PortfolioSection() {
       <section id="portfolio" className={`section${expanded ? ' portfolio-expanded' : ''}`}>
         <div className="portfolio-header">
           <div className="section-label rise-soft" style={{ marginBottom: 0 }}>My Portfolio</div>
+          <div className="portfolio-headline">
+            <h2 className="portfolio-headline-title rise-soft"><span className="headline-lead">Where Bold Ideas </span><span className="gradient-text">Become Real Products</span></h2>
+            <p className="portfolio-headline-sub rise-soft">精選作品——從第一筆草圖到正式上線，<br />記錄每一次完整的設計旅程。</p>
+          </div>
         </div>
 
         {/* Scroller view — tilted 3-row marquee wall */}

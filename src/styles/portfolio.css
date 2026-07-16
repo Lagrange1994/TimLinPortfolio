@@ -873,7 +873,7 @@
     }
 
     .about-h2 {
-      font-size: clamp(1.5rem, 2.5vw, 2rem);
+      font-size: clamp(1.75rem, 2.8vw, 2.25rem);
       font-weight: 700;
       line-height: 1.2;
       margin-bottom: 20px;
@@ -1743,6 +1743,62 @@
        wall pattern: 3 horizontal RAF marquees, alternating direction,
        stacked and tilted via a shared 3D transform). JS in
        createPortfolioScroller (PortfolioSection.tsx) drives each row. */
+    /* Carousel mode lays out three independent layers, each with its own
+       position rule + z-index (per the different placement each needs):
+       • header/title — normal flow at the top, so its gap to the navbar matches
+         every other section; lifted above the wall. z-index 3.
+       • wall — absolutely centred in the 100dvh section (full-bleed). z-index 1.
+       • View All button — absolutely anchored just inside the centred wall's
+         bottom edge (over its mask fade), so it rides with the wall and stays
+         clear of the fold. z-index 2.
+       --wall-h keeps the button anchor in sync with the wall's height across
+       breakpoints (80dvh desktop / 75svh below — set in the media queries).
+       Expanded/bento mode is untouched (normal block flow). */
+    #portfolio:not(.portfolio-expanded) {
+      position: relative;
+      min-height: 100dvh;
+    }
+
+    #portfolio:not(.portfolio-expanded) .portfolio-header {
+      z-index: 3;
+    }
+
+    #portfolio:not(.portfolio-expanded) .portfolio-wall {
+      position: absolute;
+      /* Centre via top/left offsets, NOT transform: the wall carries .rise-soft,
+         so GSAP owns its inline transform (entrance translateY) and would clobber
+         a transform-based centre. left: 50% − 50vw keeps the original full-bleed
+         trick.
+         "50% of the section" isn't the same as "50% of the browser window":
+         nav clicks land here via scrollIntoView + scroll-margin-top (var(--nav-h)),
+         which stops the scroll with the section's top sitting var(--nav-h) below
+         the viewport top rather than flush with it — so the section's own 100dvh
+         box hangs that much past the bottom of the window. Subtracting --nav-h
+         re-centres the wall on the actual visible viewport instead of the
+         section's box, matching how it looks after the nav-triggered jump.
+         --nav-h already covers the header's rendered box (incl. the pill's
+         own margin-top, since position:fixed makes it a BFC root that
+         contains that margin). margin-top below adds a further 1.25rem,
+         matching #main-header.scrolled #nav-container's margin-top, as
+         breathing room so the wall doesn't ride flush against the pill
+         navbar — kept as an actual margin (not folded into `top`) so it
+         reads as space above the wall rather than shifting its centre. */
+      top: calc((100dvh - var(--wall-h, 80dvh)) / 2 - var(--nav-h, 0px));
+      left: calc(50% - 50vw);
+      width: 100vw;
+      margin: 1.25rem 0 0;
+      z-index: 1;
+    }
+
+    #portfolio:not(.portfolio-expanded) .view-all-row {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc((100dvh - var(--wall-h, 80dvh)) / 2 - var(--nav-h, 0px) + 1.25rem + var(--wall-h, 80dvh) - 40px);
+      margin: 0;
+      z-index: 2;
+    }
+
     .portfolio-wall {
       position: relative;
       /* Full-bleed: break out of .section's centered max-width/padding so
@@ -1750,12 +1806,12 @@
       width: 100vw;
       margin-left: calc(50% - 50vw);
       margin-right: calc(50% - 50vw);
-      /* Fixed at ~70% of viewport height, responsive to window resizing. */
-      height: 70dvh;
+      /* Fixed at ~80% of viewport height, responsive to window resizing. */
+      height: 80dvh;
       overflow: hidden;
       margin-bottom: 14px;
-      -webkit-mask: linear-gradient(180deg, transparent, white 12%, white 88%, transparent);
-      mask: linear-gradient(180deg, transparent, white 12%, white 88%, transparent);
+      -webkit-mask: linear-gradient(180deg, transparent, white 18%, white 82%, transparent);
+      mask: linear-gradient(180deg, transparent, white 18%, white 82%, transparent);
     }
 
     .portfolio-wall-inner {
@@ -2196,6 +2252,83 @@
       margin-bottom: 28px;
     }
 
+    /* Headline overlay only makes sense over the carousel wall; the expanded
+       bento grid has its own filter pills up top, so hide it there. */
+    .portfolio-expanded .portfolio-headline {
+      display: none;
+    }
+
+    /* Top-left headline, absolutely positioned so it overlays the carousel
+       wall WITHOUT taking layout height — the header collapses back to just
+       the eyebrow, leaving the wall at its original position. Sits below the
+       eyebrow (top:100%) and presses onto the wall's masked top edge.
+       pointer-events:none so the wall's hover/cursor-tag still works through
+       it. Layered blurred text-shadows give a soft dark halo for legibility
+       over busy card imagery. */
+    .portfolio-headline {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .portfolio-headline-title {
+      /* 28px matches Contact's eyebrow→headline gap (.section-label
+         margin-bottom); here it's a top margin since the eyebrow sits in
+         normal flow and this block is the absolute overlay below it. */
+      margin: 28px 0 0;
+      font-family: var(--font-heading);
+      font-size: clamp(1.75rem, 2.8vw, 2.25rem);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -.02em;
+      color: var(--text);
+    }
+
+    /* Every shadow in this headline uses filter:drop-shadow (not text-shadow)
+       so it renders behind the glyphs and reads as a true drop shadow. On the
+       white lead it's the dark readability halo; kept on the .headline-lead
+       span (not the h2) so it doesn't compound onto the gradient suffix, which
+       carries its own coloured drop-shadow. */
+    .portfolio-headline-title .headline-lead {
+      filter:
+        drop-shadow(0 0 3px rgba(0, 0, 0, .7))
+        drop-shadow(0 2px 10px rgba(0, 0, 0, .7))
+        drop-shadow(0 10px 42px rgba(0, 0, 0, .55));
+    }
+
+    /* Coloured suffix casts a shadow BELOW the glyphs in the gradient's own
+       hues, just darker — deepened #6C63FF and #FF6584. MUST use drop-shadow,
+       not text-shadow: the glyphs have a transparent fill (background-clip:text),
+       so a text-shadow shows THROUGH them and lands over the letters instead of
+       under. drop-shadow traces the rendered gradient pixels and paints behind,
+       so only the downward-offset part shows. text-shadow:none clears the white
+       readability shadow the title sets, which would otherwise smudge through. */
+    .portfolio-headline-title .gradient-text {
+      text-shadow: none;
+      filter:
+        drop-shadow(0 0 3px rgba(0, 0, 0, .9))
+        drop-shadow(0 3px 8px rgba(54, 50, 128, .75))
+        drop-shadow(0 12px 44px rgba(128, 51, 66, .6));
+    }
+
+    .portfolio-headline-sub {
+      margin: 0;
+      max-width: 42ch;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-70);
+      /* drop-shadow, matching the rest of the headline (see .headline-lead). */
+      filter:
+        drop-shadow(0 0 2px rgba(0, 0, 0, .6))
+        drop-shadow(0 1px 6px rgba(0, 0, 0, .55))
+        drop-shadow(0 6px 28px rgba(0, 0, 0, .45));
+    }
+
     /* PORTFOLIO FILTER BUTTONS — btn-glass style */
     #portfolio-filters {
       display: none;
@@ -2351,7 +2484,7 @@
          a slight overlap onto the wall's bottom mask-fade — matches the
          title treatment above. Carousel mode only, see .portfolio-expanded
          override below. */
-      margin-top: -28px;
+      margin-top: -40px;
       position: relative;
       z-index: 1;
     }
@@ -2536,7 +2669,7 @@
 
     /* CONTACT */
     .contact-headline {
-      font-size: clamp(1.5rem, 2.5vw, 2rem);
+      font-size: clamp(1.75rem, 2.8vw, 2.25rem);
       font-weight: 700;
       letter-spacing: -.02em;
       line-height: 1.15;
@@ -3843,6 +3976,12 @@
       .portfolio-wall {
         height: 75svh;
       }
+      /* Keep the button anchor (see #portfolio .view-all-row) on the same svh
+         basis as the wall here, so it doesn't drift while the address bar
+         shows/hides. */
+      #portfolio:not(.portfolio-expanded) {
+        --wall-h: 75svh;
+      }
     }
 
     /* Design Process — carousel column occupies the right 3/4 of the row,
@@ -4039,7 +4178,7 @@
       }
 
       .about-h2 {
-        font-size: clamp(1.3rem, 6vw, 1.75rem);
+        font-size: clamp(1.5rem, 6.5vw, 2rem);
       }
 
       /* Design Process — 2 col */
@@ -4112,6 +4251,9 @@
       .portfolio-wall {
         height: 75svh;
       }
+      #portfolio:not(.portfolio-expanded) {
+        --wall-h: 75svh;
+      }
 
       .portfolio-wall-inner {
         transform: perspective(1200px) skew(-2deg, -2deg) scale(var(--wall-scale, 1));
@@ -4150,8 +4292,15 @@
         margin-top: 12px;
       }
 
-      .contact-headline {
-        font-size: clamp(1.3rem, 6vw, 1.75rem);
+      .contact-headline,
+      .portfolio-headline-title {
+        font-size: clamp(1.5rem, 6.5vw, 2rem);
+      }
+
+      /* Forces "Take Shape" onto its own line on mobile instead of an
+         awkward width-based break (e.g. "...Take" / "Shape"). */
+      .portfolio-headline-title .gradient-text {
+        display: block;
       }
 
       /* Footer */
