@@ -5705,22 +5705,22 @@
       }
     }
 
-    /* Mobile corner-radius pass — corners that scale with the viewport.
-       PRIOR VERSION used a fixed border-radius: 44px + corner-shape: squircle.
-       corner-shape (the squircle superellipse) is a very new CSS feature that
-       iOS WebKit — i.e. BOTH Safari and iOS Chrome, which share that engine —
-       doesn't yet support, so on iPhone the squircle silently dropped and only
-       the fixed 44px circular radius applied: the corners never scaled down on
-       smaller cards/phones (the "圓角沒生效 / 沒有漸進縮放" report). Plain
-       border-radius works on every engine, so switching the fixed px to a
-       viewport-scaled clamp() gives real "radius scales with size" behaviour on
-       iOS. corner-shape is kept as a harmless progressive enhancement: engines
-       that support it still get the squircle curve on top of the same radius,
-       engines that don't just render a plain rounded rect at the scaled radius.
-       Short horizontal strips (.bento-area-industry ~75px, .cta-strip ~97px)
-       use a smaller clamp so the radius can't tip them into a pill.
-       Placed at the end of the stylesheet so it wins the cascade over every
-       earlier same-specificity declaration above. */
+    /* Mobile corner-radius pass — match the section's hero cards.
+       The signature squircle in this design is a fixed 44px radius:
+       .bento-card, .ai-card and .process-card all use border-radius: 44px +
+       corner-shape: squircle, and that's the look the portfolio project cards
+       carry too. The outlier cards below (tech-item 28px, contact-card 16px,
+       line-banner 16px) plus the bento cards' own tablet/mobile "blob"
+       reduction to 24px made those corners read visibly *tighter* than the
+       hero cards on phones — the "圓角跟 portfolio 長得不一樣" report. A prior
+       attempt scaled them with clamp(), but that only pushed them to ~30px,
+       still short of 44, so it read as "no change". corner-shape: squircle is
+       confirmed working on the target iPhone (process-card renders correctly
+       there), so just pin the same fixed 44px squircle used by the hero cards.
+       Placed at the end of the stylesheet so it wins the cascade over the
+       earlier same-specificity 24px bento override and the cards' own bases.
+       Short horizontal strips (.bento-area-industry ~75px, .cta-strip ~81px)
+       stay at 24px — a 44px radius would round them into pills. */
     @media (max-width: 767px) {
       .tech-item,
       .bento-area-years,
@@ -5728,23 +5728,23 @@
       .bento-area-domains,
       .contact-card,
       .line-banner {
-        border-radius: clamp(22px, 8vw, 44px);
+        border-radius: 44px;
         corner-shape: squircle;
       }
 
-      /* .ai-card (How I Use AI) drives its border-radius AND its coupled glow
-         rings (::after radar, .edge-light outer glow + ::before inner edge)
-         off one --ai-card-r var, so scaling the var keeps all four concentric
-         instead of the rings floating at a fixed 44px while the card shrinks. */
+      /* .ai-card is already 44px at its base and drives its coupled glow rings
+         (::after radar, .edge-light outer glow + ::before inner edge) off the
+         --ai-card-r var; pin it to 44px so the rings stay concentric on mobile
+         instead of inheriting any scaled value. */
       .ai-card {
-        --ai-card-r: clamp(22px, 8vw, 44px);
+        --ai-card-r: 44px;
       }
 
-      /* Short strips: scaled down further so the radius stays a corner, not a
-         pill, on their ~75-97px height. */
+      /* Short strips: kept smaller so the radius stays a corner, not a pill,
+         on their ~75-81px height. */
       .bento-area-industry,
       .cta-strip {
-        border-radius: clamp(14px, 4.5vw, 24px);
+        border-radius: 24px;
         corner-shape: squircle;
       }
     }
