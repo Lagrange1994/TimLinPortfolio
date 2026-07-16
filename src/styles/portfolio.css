@@ -5538,57 +5538,36 @@
       }
     }
 
-    /* Mobile corner-radius pass — no-JS/no-ResizeObserver fallback only.
-       useMobileCardSquircle (src/utils/useMobileCardSquircle.ts) now draws
-       the real corner on .tech-item, the .bento-area-years/projects/domains
-       /industry cards, .contact-card, .line-banner and .cta-strip via the
-       same squircleRectPath + 44px radius Portfolio's own cards use,
-       clamped per-card to min(44, w/2, h/2) so a short box like .cta-strip
-       automatically gets a proportionally smaller curve instead of the flat
-       44px/20px split below. These plain border-radius values only paint if
-       that JS never runs. Placed at the end of the stylesheet, after every
-       earlier same-specificity declaration of these selectors, so it wins
-       the cascade regardless of source order above. */
+    /* Mobile corner-radius pass — matches Portfolio's own .process-card exactly:
+       border-radius: 44px + corner-shape: squircle (see .process-card at the
+       top of this file). Using the SAME native mechanism (not a JS clip-path)
+       is what makes these cards read identically to the process cards — the
+       border, background and clip all follow one squircle curve, and the phone
+       renders it the same way it renders the process cards (squircle where
+       corner-shape is supported, plain rounded rect where it isn't — either
+       way both match). Short horizontal strips (.bento-area-industry ~75px,
+       .cta-strip ~97px) drop to a smaller radius so 44px doesn't tip them into
+       a pill; the process cards are ~134px tall so 44px stays a corner there.
+       Placed at the end of the stylesheet so it wins the cascade over every
+       earlier same-specificity declaration above. */
     @media (max-width: 767px) {
-      /* Floor is 44px everywhere on mobile — same as .bento-card/.process-card/
-         .ai-card's own desktop radius, so no override is needed for those
-         three (or their glow-ring/radar layers, which are already pinned to
-         44px both here and on desktop — see .border-glow-card's
-         --border-radius default and .ai-card-glow/.ai-card::after below).
-         Only cards whose desktop radius is below 44px need bumping up. */
-      .tech-item {
-        border-radius: 44px;
-      }
-
+      .tech-item,
       .bento-area-years,
-      .bento-area-projects {
-        border-radius: 44px;
-      }
-
-      /* An earlier <=1024px rule (still active for real tablet widths)
-         grouped years/projects/domains/industry together at 24px, sized for
-         the narrow half-width cells they all shared on tablet. At <=767px
-         domains and industry instead take the full row width (see
-         .about-grid's mobile grid-template-areas above), same as any other
-         .bento-card — so they belong on the general 44px floor, not the
-         tablet narrow-cell value. Only years/projects still pair up into
-         halves at this breakpoint and need the dedicated rule above. */
+      .bento-area-projects,
       .bento-area-domains,
-      .bento-area-industry {
-        border-radius: 44px;
-      }
-
       .contact-card,
       .line-banner {
         border-radius: 44px;
+        corner-shape: squircle;
       }
 
-      /* .cta-strip ("接案中" banner) is a short ~98px-tall horizontal strip
-         — 44px reads as ~45% of its height, tipping it into a pill/stadium
-         shape instead of a rounded rectangle. Kept lower, proportionate to
-         its own shorter box instead of matching the taller cards above. */
+      /* Short strips: 44px would be ~45-60% of their height and read as a
+         pill. Keep the same squircle curvature, just a smaller radius sized
+         to their own shorter box. */
+      .bento-area-industry,
       .cta-strip {
-        border-radius: 20px;
+        border-radius: 22px;
+        corner-shape: squircle;
       }
     }
 
