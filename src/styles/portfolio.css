@@ -5728,6 +5728,7 @@
       .bento-area-years,
       .bento-area-projects,
       .bento-area-domains,
+      .bento-area-workflow,
       .contact-card,
       .line-banner,
       .process-card {
@@ -5762,6 +5763,24 @@
          the card's desktop calc(44px + 10px) — recompute for the 20px body. */
       .process-radar {
         border-radius: 30px;
+        corner-shape: round;
+      }
+
+      /* The freelance/in-house process cards render through <BorderGlow
+         borderRadius={44}>, which sets --border-radius:44px as an INLINE
+         style (BorderGlow.jsx line ~141) — inline style always beats an
+         external stylesheet rule regardless of media query, so the plain
+         override below is what actually needs !important, not the usual
+         "append at end of file" cascade trick. Its edge-light glow ring
+         reads border-radius from this var, so it kept tracing the old 44px
+         squircle around the now-20px card until this was added. */
+      .border-glow-card {
+        --border-radius: 20px !important;
+        corner-shape: round;
+      }
+
+      .border-glow-card > .edge-light,
+      .border-glow-card > .edge-light::before {
         corner-shape: round;
       }
     }
