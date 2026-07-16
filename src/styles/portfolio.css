@@ -5723,6 +5723,8 @@
        oversized pill once forced onto narrower cards). */
     @media (max-width: 767px) {
       .tech-item,
+      .bento-area-intro1,
+      .bento-area-intro2,
       .bento-area-years,
       .bento-area-projects,
       .bento-area-domains,
