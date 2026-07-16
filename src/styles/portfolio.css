@@ -2315,9 +2315,10 @@
        so only the downward-offset part shows. text-shadow:none clears the white
        readability shadow the title sets, which would otherwise smudge through. */
     .portfolio-headline-title .gradient-text {
-      /* Site logo gradient (see --grad-logo) instead of the default
-         primary/secondary gradient. */
-      background: var(--grad-logo);
+      /* Logo gradient hues, but with a brighter middle stop than
+         --grad-logo's #4A00E0 (kept local so the navbar logo/chat-fab
+         aren't affected). */
+      background: linear-gradient(45deg, #8A2BE2, #7A2BFF, #00D4FF);
       -webkit-background-clip: text;
       background-clip: text;
       text-shadow: none;
