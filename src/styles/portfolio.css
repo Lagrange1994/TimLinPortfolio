@@ -3074,11 +3074,6 @@
       font-weight: 600;
     }
 
-    .cta-send-btn {
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
     /* SPOTLIGHT CARD */
     .sc-card {
       position: relative;

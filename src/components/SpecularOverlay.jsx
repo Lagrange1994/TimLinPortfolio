@@ -1,6 +1,5 @@
-import { useRef, useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Renderer, Program, Mesh, Triangle, Color } from 'ogl';
-import './SpecularButton.css';
 
 const PAD = 20;
 
@@ -47,12 +46,8 @@ void main() {
   float d = shapeSDF(p);
   vec2 L = vec2(cos(uAngle), sin(uAngle));
 
-  // Dark base stroke hugging the edge for a sense of thickness
   float base = (1.0 - smoothstep(0.0, uBaseWidth, abs(d))) * 0.45;
 
-  // Symmetric specular: the edges facing toward/away from the light both
-  // catch a streak. The angular window (size + fade) is measured with an
-  // elliptical normal so it varies continuously along straight edges.
   vec2 nEll = normalize(p / (uHalfSize * uHalfSize) + 1e-6);
   float phi = acos(clamp(abs(dot(nEll, L)), 0.0, 1.0));
   float rim = 1.0 - smoothstep(uShineSize - uShineFade, uShineSize + uShineFade + 1e-4, phi);
@@ -66,14 +61,14 @@ void main() {
 }
 `;
 
-const SpecularButton = ({
-  children = 'Get Started',
-  size = 'lg',
-  radius = 18,
-  tint = '#ffffff',
-  tintOpacity = 0,
-  blur = 0,
-  textColor = '#f5f5f5',
+/**
+ * React Bits' SpecularButton WebGL shine, decoupled from its own <button>
+ * markup/CSS. Tracks an externally-owned element via `targetRef` with a
+ * position:fixed canvas layer, so the target keeps its original classes,
+ * inline style, and border-radius untouched — this only paints on top.
+ */
+const SpecularOverlay = ({
+  targetRef,
   lineColor = '#ffffff',
   baseColor = '#525252',
   intensity = 1,
@@ -84,21 +79,21 @@ const SpecularButton = ({
   followMouse = true,
   proximity = 250,
   autoAnimate = false,
-  disabled = false,
-  onClick,
-  className = '',
-  type = 'button'
 }) => {
-  const btnRef = useRef(null);
-  const fxRef = useRef(null);
   const propsRef = useRef({});
-
-  propsRef.current = { radius, lineColor, baseColor, intensity, shineSize, shineFade, thickness, speed, followMouse, proximity, autoAnimate };
+  propsRef.current = { lineColor, baseColor, intensity, shineSize, shineFade, thickness, speed, followMouse, proximity, autoAnimate };
 
   useEffect(() => {
-    const btn = btnRef.current;
-    const fx = fxRef.current;
-    if (!btn || !fx) return;
+    const target = targetRef.current;
+    if (!target) return;
+
+    const host = document.createElement('div');
+    host.style.position = 'fixed';
+    host.style.top = '0';
+    host.style.left = '0';
+    host.style.pointerEvents = 'none';
+    host.style.zIndex = '5';
+    document.body.appendChild(host);
 
     const dpr = window.devicePixelRatio || 1;
     const renderer = new Renderer({ alpha: true, premultipliedAlpha: true, antialias: true, dpr });
@@ -106,6 +101,9 @@ const SpecularButton = ({
     gl.clearColor(0, 0, 0, 0);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.canvas.style.display = 'block';
+    gl.canvas.style.position = 'fixed';
+    host.appendChild(gl.canvas);
 
     const geometry = new Triangle(gl);
     if (geometry.attributes.uv) delete geometry.attributes.uv;
@@ -125,44 +123,42 @@ const SpecularButton = ({
         uShineSize: { value: 0.17 },
         uShineFade: { value: 0.7 },
         uThickness: { value: 1 },
-
         uBaseWidth: { value: dpr }
       }
     });
 
     const mesh = new Mesh(gl, { geometry, program });
-    fx.appendChild(gl.canvas);
 
-    const sizeRef = { w: 1, h: 1 };
-    const resize = () => {
-      // Fractional size + explicit center keep the SDF pinned to the exact
-      // CSS border, instead of drifting up to a pixel from offsetWidth rounding.
-      const rect = btn.getBoundingClientRect();
+    const sizeRef = { w: 1, h: 1, radius: 0 };
+    // Called every animation frame (not just on resize/scroll) since layout
+    // shifts from async content/fonts above the button move it without
+    // firing either event — cheap to re-read, so just always stay in sync.
+    const reposition = () => {
+      const rect = target.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
-      sizeRef.w = w;
-      sizeRef.h = h;
-      renderer.setSize(w + PAD * 2, h + PAD * 2);
-      program.uniforms.uCenter.value = [(PAD + w / 2) * dpr, (PAD + h / 2) * dpr];
-      program.uniforms.uHalfSize.value = [(w / 2) * dpr, (h / 2) * dpr];
+      host.style.left = `${rect.left - PAD}px`;
+      host.style.top = `${rect.top - PAD}px`;
+      if (w !== sizeRef.w || h !== sizeRef.h) {
+        sizeRef.w = w;
+        sizeRef.h = h;
+        renderer.setSize(w + PAD * 2, h + PAD * 2);
+        program.uniforms.uCenter.value = [(PAD + w / 2) * dpr, (PAD + h / 2) * dpr];
+        program.uniforms.uHalfSize.value = [(w / 2) * dpr, (h / 2) * dpr];
+      }
+      sizeRef.radius = parseFloat(getComputedStyle(target).borderTopLeftRadius) || 0;
     };
-    const ro = new ResizeObserver(resize);
-    ro.observe(btn);
-    resize();
+    reposition();
 
-    // Light angle steers toward the pointer (anywhere on the page) and falls
-    // back to a slow sweep when the pointer hasn't moved yet.
     let pointerAngle = null;
     let proximityT = 0;
     const onPointerMove = e => {
-      const rect = btn.getBoundingClientRect();
+      const rect = target.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
       const dx = Math.max(rect.left - e.clientX, 0, e.clientX - rect.right);
       const dy = Math.max(rect.top - e.clientY, 0, e.clientY - rect.bottom);
       const dist = Math.hypot(dx, dy);
-      // Over the button itself the light settles on the diagonal (framing the
-      // corners) and gently sways with the cursor position within the button.
       if (dist === 0) {
         const nx = (e.clientX - cx) / (rect.width / 2);
         const ny = (cy - e.clientY) / (rect.height / 2);
@@ -190,20 +186,24 @@ const SpecularButton = ({
       last = now;
       const p = propsRef.current;
 
+      // Layout shifts (fonts, async content above the button) move it
+      // without firing resize/scroll, so re-read its rect every frame
+      // rather than relying on those listeners alone.
+      reposition();
+
       idleAngle += p.speed * dt;
       const steer = p.followMouse && pointerAngle != null && (!p.autoAnimate || proximityT > 0);
-      const target = steer ? pointerAngle : idleAngle;
-      const diff = ((target - angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+      const target2 = steer ? pointerAngle : idleAngle;
+      const diff = ((target2 - angle + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
       angle += diff * (1 - Math.exp(-dt * 7));
 
-      // Shine fades in with pointer proximity unless autoAnimate keeps it on
       const brightTarget = p.autoAnimate ? 1 : proximityT;
       bright += (brightTarget - bright) * (1 - Math.exp(-dt * 8));
 
       lineC.set(p.lineColor);
       baseC.set(p.baseColor);
       program.uniforms.uAngle.value = angle;
-      program.uniforms.uRadius.value = Math.min(p.radius, Math.min(sizeRef.w, sizeRef.h) / 2) * dpr;
+      program.uniforms.uRadius.value = Math.min(sizeRef.radius, Math.min(sizeRef.w, sizeRef.h) / 2) * dpr;
       program.uniforms.uLineColor.value = [lineC.r, lineC.g, lineC.b];
       program.uniforms.uBaseColor.value = [baseC.r, baseC.g, baseC.b];
       program.uniforms.uIntensity.value = p.intensity * bright;
@@ -216,32 +216,13 @@ const SpecularButton = ({
 
     return () => {
       cancelAnimationFrame(raf);
-      ro.disconnect();
       window.removeEventListener('pointermove', onPointerMove);
-      if (gl.canvas.parentNode === fx) fx.removeChild(gl.canvas);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
+      host.remove();
     };
-  }, []);
+  }, [targetRef]);
 
-  return (
-    <button
-      ref={btnRef}
-      type={type}
-      disabled={disabled}
-      onClick={onClick}
-      className={`specular-button specular-button--${size}${className ? ` ${className}` : ''}`}
-      style={{
-        '--sb-radius': `${radius}px`,
-        '--sb-tint': tint,
-        '--sb-tint-opacity': tintOpacity,
-        '--sb-blur': `${blur}px`,
-        '--sb-text-color': textColor
-      }}
-    >
-      <span ref={fxRef} className="specular-button__fx" aria-hidden="true" />
-      <span className="specular-button__label">{children}</span>
-    </button>
-  );
+  return null;
 };
 
-export default SpecularButton;
+export default SpecularOverlay;

@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLang } from '../context/LangContext';
-import SpecularButton from './SpecularButton';
+import SpecularOverlay from './SpecularOverlay';
 
 export default function ContactSection() {
   const { t } = useLang();
+  const sendEmailRef = useRef(null);
 
   // Back-to-top: toggle .visible class based on scroll position
   useEffect(() => {
@@ -127,20 +128,20 @@ export default function ContactSection() {
                   <strong>{t.open_for_work}</strong><br />
                   <span className="cta-txt-sub">{t.open_for_work_sub}</span>
                 </div>
-                <SpecularButton
-                  size="sm"
-                  radius={999}
-                  className="cta-send-btn"
-                  tint="#FF6584"
-                  tintOpacity={0.14}
-                  textColor="#fff"
-                  lineColor="#FF6584"
-                  baseColor="#6C63FF"
-                  proximity={220}
+                <button
+                  ref={sendEmailRef}
+                  className="btn-glass btn-grad"
+                  style={{ padding: '9px 20px', borderRadius: '9999px', fontSize: '12px', whiteSpace: 'nowrap', flexShrink: 0 }}
                   onClick={() => { window.location.href = 'mailto:lyfun0202@gmail.com'; }}
                 >
                   Send Email ↗
-                </SpecularButton>
+                </button>
+                <SpecularOverlay
+                  targetRef={sendEmailRef}
+                  lineColor="#FF6584"
+                  baseColor="#6C63FF"
+                  proximity={220}
+                />
               </div>
             </div>
           </div>
