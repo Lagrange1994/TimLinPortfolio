@@ -278,7 +278,7 @@ function makeAiCards(t: Record<string, string>) {
       id: 'ai',
       step: '03',
       variant: 'ai-focal',
-      badge: 'GEMINI · DRAFT',
+      badge: 'CLAUDE · DRAFT',
       icon: (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 3 13.6 8.4 19 10l-5.4 1.6L12 17l-1.6-5.4L5 10l5.4-1.6L12 3z" />
