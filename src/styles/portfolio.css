@@ -283,7 +283,7 @@
     /* "My Portfolio" eyebrow only — single-layer text-shadow using the
        exact View All Projects button formula (.btn-grad: 0 4px 20px COLOR). */
     #portfolio .section-label {
-      text-shadow: 0 4px 20px rgba(255, 101, 132, 0.35);
+      text-shadow: 0 6px 22px rgba(255, 101, 132, 0.75);
     }
 
     .section-label::before {
@@ -2304,7 +2304,7 @@
       /* Single-layer, matching the View All Projects button's own shadow
          formula (.btn-grad: 0 4px 20px COLOR) instead of the previous
          3-layer halo — same offset/blur, own original black. */
-      filter: drop-shadow(0 4px 20px rgba(0, 0, 0, .7));
+      filter: drop-shadow(0 6px 22px rgba(0, 0, 0, .9));
     }
 
     /* Coloured suffix casts a shadow BELOW the glyphs in the gradient's own
@@ -2318,7 +2318,7 @@
       text-shadow: none;
       /* Single-layer, same button formula as .headline-lead above — own
          original outer-glow color (deepened #FF6584), 3-layer halo dropped. */
-      filter: drop-shadow(0 4px 20px rgba(128, 51, 66, .6));
+      filter: drop-shadow(0 6px 22px rgba(128, 51, 66, .9));
     }
 
     .portfolio-headline-sub {
