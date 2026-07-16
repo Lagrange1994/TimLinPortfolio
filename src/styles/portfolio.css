@@ -5705,40 +5705,45 @@
       }
     }
 
-    /* Mobile corner-radius pass — match the portfolio project cards.
-       The portfolio section's project cards render with a 16px corner on
-       phones (their JS squircle clip-path isn't applied there, so the plain
-       16px border-radius is what actually shows), and that modest corner is
-       the reference the user means by "portfolio 的圓角". The 44px squircle on
-       the hero cards (.bento-card/.process-card/.ai-card and the outliers
-       tech-item/contact-card/line-banner once bumped to match them) read as
-       too large next to that 16px reference on mobile. So on phones pull the
-       whole card set down to the same 16px corner as the portfolio cards.
-       corner-shape: squircle is kept (confirmed working on the target iPhone
-       via process-card) but at 16px it's a near-imperceptible refinement of a
-       plain rounded rect — matching the portfolio look either way.
-       Placed at the end of the stylesheet so it wins the cascade over the
-       cards' own 28/44px bases and the earlier 24px bento mobile override. */
+    /* Mobile corner pass — match the portfolio project cards' EXACT curve.
+       The portfolio cards are clipped with squircleRectPath, a fixed-radius
+       superellipse of exponent n=5, at radius 44 (PortfolioSection.tsx). CSS
+       `corner-shape: squircle` is only a milder superellipse (≈ exponent 4), so
+       even at radius 44 it read visibly rounder/larger than the portfolio
+       cards. `corner-shape: superellipse(2.32)` is exponent 2^2.32 ≈ 5 —
+       geometrically identical to the portfolio clip — so the corners now match.
+       Using CSS corner-shape (not a JS clip-path) means the border, edge
+       highlight and glow rings all follow the same curve automatically and
+       nothing clips the card's padding/content. Placed at end of stylesheet so
+       it wins the cascade over the cards' 28/44px bases + squircle. Thin strips
+       (.cta-strip/.bento-area-industry) keep a smaller 24px radius so their
+       ~75-81px height can't round into a pill. */
     @media (max-width: 767px) {
       .tech-item,
       .bento-area-years,
       .bento-area-projects,
       .bento-area-domains,
-      .bento-area-industry,
       .contact-card,
       .line-banner,
-      .cta-strip,
       .process-card {
-        border-radius: 16px;
-        corner-shape: squircle;
+        border-radius: 44px;
+        corner-shape: superellipse(2.32);
+      }
+
+      .bento-area-industry,
+      .cta-strip {
+        border-radius: 24px;
+        corner-shape: superellipse(2.32);
       }
 
       /* .ai-card drives its coupled glow rings (::after radar, .edge-light
          outer glow + ::before inner edge) off the --ai-card-r var; pin it to
-         16px so the card and all three rings stay concentric at the smaller
-         corner instead of the card shrinking while the rings hold at 44px. */
+         44px so the card and all three rings stay concentric. The rings' own
+         corner-shape is bumped to superellipse(2.32) at their base rules so
+         they trace the same n=5 curve as the card. */
       .ai-card {
-        --ai-card-r: 16px;
+        --ai-card-r: 44px;
+        corner-shape: superellipse(2.32);
       }
     }
 
