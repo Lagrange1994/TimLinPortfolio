@@ -2318,7 +2318,7 @@
       text-shadow: none;
       /* Single-layer, same button formula as .headline-lead above — own
          original outer-glow color (deepened #FF6584), 3-layer halo dropped. */
-      filter: drop-shadow(0 6px 22px rgba(128, 51, 66, .9));
+      filter: drop-shadow(0 6px 22px rgba(80, 30, 42, 1));
     }
 
     .portfolio-headline-sub {
