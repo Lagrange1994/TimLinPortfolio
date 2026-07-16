@@ -1880,12 +1880,8 @@
       height: 80dvh;
       overflow: hidden;
       margin-bottom: 14px;
-      /* Matches .portfolio-wall-inner's skew(-3deg,-3deg) card tilt below
-         (see --wall-tilt, overridden to 2deg at the mobile breakpoint where
-         the skew itself is -2deg) instead of a straight 180deg fade. */
-      --wall-tilt: 3deg;
-      -webkit-mask: linear-gradient(calc(180deg - var(--wall-tilt)), transparent, white 18%, white 82%, transparent);
-      mask: linear-gradient(calc(180deg - var(--wall-tilt)), transparent, white 18%, white 82%, transparent);
+      -webkit-mask: linear-gradient(180deg, transparent, white 18%, white 82%, transparent);
+      mask: linear-gradient(180deg, transparent, white 18%, white 82%, transparent);
     }
 
     .portfolio-wall-inner {
@@ -4371,8 +4367,6 @@
       /* svh, not dvh — see the tablet breakpoint above for why. */
       .portfolio-wall {
         height: 75svh;
-        /* Matches this breakpoint's skew(-2deg,-2deg) below. */
-        --wall-tilt: 2deg;
       }
       #portfolio:not(.portfolio-expanded) {
         --wall-h: 75svh;
