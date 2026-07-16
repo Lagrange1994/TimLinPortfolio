@@ -130,6 +130,56 @@
          its .scrolled compact-pill state). Fallback matches the header's
          un-scrolled height for the first paint before JS runs. */
       --nav-h: 72px;
+
+      /* ── CARD SHADOW SYSTEM ──
+         Light source is upper-left, so every layer offsets down-right
+         (positive x/y). Colors are dark grayish-violet — a blend of --bg
+         (#121212) and --primary (#6C63FF) — never pure black, so shadows
+         read as ambient depth rather than a flat cutout. Each tier stacks
+         two layers: a tight "contact" shadow (small offset/blur, higher
+         opacity, near the card) + a soft "ambient" shadow (large offset/
+         blur, low opacity, ~how far the card floats above the page).
+         --shadow-near/-far are raw "R, G, B" channels (no rgb() wrapper)
+         so callers can drop them into rgba(var(--shadow-near), alpha). */
+      --shadow-near: 20, 16, 30;
+      --shadow-far: 10, 9, 16;
+
+      --card-shadow-sm:
+        0 2px 6px rgba(var(--shadow-near), 0.12),
+        6px 16px 32px rgba(var(--shadow-far), 0.08);
+      --card-shadow-md:
+        0 4px 10px rgba(var(--shadow-near), 0.16),
+        8px 24px 56px rgba(var(--shadow-far), 0.12);
+      --card-shadow-hover:
+        0 6px 14px rgba(var(--shadow-near), 0.20),
+        10px 32px 72px rgba(var(--shadow-far), 0.16);
+      /* Emphasized tier — pop-up/selected cards. Adds a faint brand-color
+         ring on top of the deeper two-layer shadow so "selected" reads as
+         lifted + highlighted, not just darker. */
+      --card-shadow-selected:
+        0 8px 18px rgba(var(--shadow-near), 0.24),
+        12px 40px 90px rgba(var(--shadow-far), 0.22),
+        0 0 0 1px rgba(108, 99, 255, 0.16);
+      --card-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+      /* Same near+far, dark-not-black, down-right logic as the card
+         shadows above, re-expressed as filter:drop-shadow for gradient
+         headline text. Must be drop-shadow, not text-shadow: gradient
+         text fills via background-clip:text with a transparent glyph
+         fill, so a text-shadow shows straight THROUGH the letters instead
+         of sitting behind them — drop-shadow traces the actual rendered
+         pixels and paints behind. Opacity is higher than the card tiers
+         because it's only carrying a thin glyph stroke, not a filled box. */
+      --text-shadow-md:
+        drop-shadow(0 2px 6px rgba(var(--shadow-near), 0.35))
+        drop-shadow(6px 14px 28px rgba(var(--shadow-far), 0.25));
+      /* Stronger tier for headline text that overlaps busy imagery (e.g.
+         Portfolio's title sits over the scrolling project-wall collage,
+         not a plain dark background) — same near+far logic, higher
+         opacity so the glyphs stay legible against whatever's behind them. */
+      --text-shadow-emphasis:
+        drop-shadow(0 3px 8px rgba(var(--shadow-near), 0.45))
+        drop-shadow(8px 20px 40px rgba(var(--shadow-far), 0.35));
     }
 
     html,
@@ -886,6 +936,14 @@
       letter-spacing: -.02em;
     }
 
+    /* Shared by About's own headline, the How I Use AI headline, and Tech
+       Stack's headline (all three use .about-h2 — see comment near the
+       mobile .gradient-text display:block rule below). Same drop-shadow
+       logic as the card shadow system (near+far, dark-not-black). */
+    .about-h2 .gradient-text {
+      filter: var(--text-shadow-md);
+    }
+
     .about-lead {
       color: rgba(255, 255, 255, 0.65);
       margin-bottom: 14px;
@@ -1028,11 +1086,17 @@
       corner-shape: squircle;
       backdrop-filter: blur(1rem);
       -webkit-backdrop-filter: blur(1rem);
-      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .08);
+      box-shadow: var(--card-shadow-md), var(--card-edge);
       padding: 24px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      transition: transform .25s ease, box-shadow .25s ease, border-color .3s, background .3s;
+    }
+
+    .bento-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-hover), var(--card-edge);
     }
 
     /* Per-card colored gradient backgrounds — same palette as the How I Use
@@ -1816,8 +1880,12 @@
       height: 80dvh;
       overflow: hidden;
       margin-bottom: 14px;
-      -webkit-mask: linear-gradient(180deg, transparent, white 18%, white 82%, transparent);
-      mask: linear-gradient(180deg, transparent, white 18%, white 82%, transparent);
+      /* Matches .portfolio-wall-inner's skew(-3deg,-3deg) card tilt below
+         (see --wall-tilt, overridden to 2deg at the mobile breakpoint where
+         the skew itself is -2deg) instead of a straight 180deg fade. */
+      --wall-tilt: 3deg;
+      -webkit-mask: linear-gradient(calc(180deg - var(--wall-tilt)), transparent, white 18%, white 82%, transparent);
+      mask: linear-gradient(calc(180deg - var(--wall-tilt)), transparent, white 18%, white 82%, transparent);
     }
 
     .portfolio-wall-inner {
@@ -2031,12 +2099,14 @@
       flex-direction: column;
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
-      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .08);
+      box-shadow: var(--card-shadow-md), var(--card-edge);
       transition: all .25s;
     }
 
     .tech-item:hover {
       border-color: rgba(108, 99, 255, 0.4);
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-hover), var(--card-edge);
     }
 
     .tech-item.html-item {
@@ -2202,7 +2272,7 @@
     .tok-kw    { color: #fb923c; }
     .tok-fn    { color: #fde68a; }
     .tok-pink  { color: #f9a8d4; }
-    .tok-muted { color: rgba(255, 255, 255, 0.25); }
+    .tok-muted { color: rgba(255, 255, 255, 0.45); }
 
     .tcp-cursor {
       display: inline-block;
@@ -2315,16 +2385,17 @@
        so only the downward-offset part shows. text-shadow:none clears the white
        readability shadow the title sets, which would otherwise smudge through. */
     .portfolio-headline-title .gradient-text {
-      /* Logo gradient hues, but with a brighter middle stop than
-         --grad-logo's #4A00E0 (kept local so the navbar logo/chat-fab
-         aren't affected). */
-      background: linear-gradient(45deg, #8A2BE2, #7A2BFF, #00D4FF);
+      /* Same --grad used by every other section's headline (About, Contact,
+         etc.) — Portfolio no longer carries its own one-off hue. */
+      background: var(--grad);
       -webkit-background-clip: text;
       background-clip: text;
       text-shadow: none;
-      /* Single-layer, same button formula as .headline-lead above — dark
-         violet shadow matching the new logo-gradient hue. */
-      filter: drop-shadow(0 6px 22px rgba(30, 10, 60, 1));
+      /* Same card-shadow-system logic as .about-h2/.contact-headline's
+         gradient text, but the emphasis tier — this title overlaps the
+         scrolling project-wall collage below it, not a plain background,
+         so it needs the stronger pass to stay legible. */
+      filter: var(--text-shadow-emphasis);
     }
 
     .portfolio-headline-sub {
@@ -2687,6 +2758,12 @@
       margin-bottom: 10px;
     }
 
+    /* Same drop-shadow logic as the card shadow system and .about-h2
+       .gradient-text above. */
+    .contact-headline .gradient-text {
+      filter: var(--text-shadow-md);
+    }
+
     .contact-sub {
       color: var(--text-70);
       font-size: 14px;
@@ -2709,8 +2786,25 @@
       margin-bottom: 14px;
       text-decoration: none;
       color: inherit;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 8px 32px -12px rgba(6, 199, 85, 0.25);
+      /* Emphasized tier (this is Contact's primary CTA) — keeps its own
+         brand-green contact shadow up close, adds the shared neutral
+         ambient layer + ring so it still reads as "lifted" like the other
+         selected/emphasized cards on the site. */
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 6px 16px rgba(6, 199, 85, 0.18),
+        10px 36px 80px rgba(var(--shadow-far), 0.24),
+        0 0 0 1px rgba(6, 199, 85, 0.12);
       transition: all .2s;
+    }
+
+    .line-banner:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        0 8px 20px rgba(6, 199, 85, 0.24),
+        12px 44px 96px rgba(var(--shadow-far), 0.3),
+        0 0 0 1px rgba(6, 199, 85, 0.18);
     }
 
     /* Liquid-glass edge: a solid-green ring masked to the border area only,
@@ -2824,6 +2918,14 @@
       border-radius: 16px;
       corner-shape: squircle;
       padding: 22px;
+      box-shadow: var(--card-shadow-md), var(--card-edge);
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+
+    .contact-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-hi);
+      box-shadow: var(--card-shadow-hover), var(--card-edge);
     }
 
     .card-title {
@@ -2951,6 +3053,14 @@
       justify-content: space-between;
       gap: 12px;
       gap: 16px;
+      box-shadow: var(--card-shadow-sm), var(--card-edge);
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+
+    .cta-strip:hover {
+      transform: translateY(-3px);
+      border-color: rgba(108, 99, 255, 0.4);
+      box-shadow: var(--card-shadow-md), var(--card-edge);
     }
 
     .cta-txt {
@@ -4261,6 +4371,8 @@
       /* svh, not dvh — see the tablet breakpoint above for why. */
       .portfolio-wall {
         height: 75svh;
+        /* Matches this breakpoint's skew(-2deg,-2deg) below. */
+        --wall-tilt: 2deg;
       }
       #portfolio:not(.portfolio-expanded) {
         --wall-h: 75svh;
