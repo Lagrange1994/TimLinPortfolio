@@ -1,15 +1,11 @@
 // #main-header's height changes between its resting/un-scrolled and
 // .scrolled (compact pill) states. Every `.section` uses scroll-margin-top:
 // var(--nav-h) so menu/CTA navigation lands with the title exactly
-// padding-top below the navbar — but native scrollIntoView() snapshots that
-// margin once at call time. If navigation starts near the top of the page
-// (header still in its pre-scroll state) the header then flips to .scrolled
-// mid-animation, changing height and throwing off the resting gap.
-//
-// Call this right before scrollIntoView()/scrollTo() for any non-home
-// target: it forces the header into its post-scroll (.scrolled) state and
-// re-measures --nav-h synchronously, so the margin used for the scroll is
-// already the one that'll be active once the scroll settles.
+// padding-top below the navbar. Force the header into its post-scroll
+// (.scrolled) state and re-measure --nav-h synchronously before a nav jump,
+// so the gap used is already the one that'll be active once the scroll
+// settles (the animator below also re-reads --nav-h live every frame, but
+// priming avoids a visible header-height jump at the very start).
 //
 // #main-header and #nav-container both carry `transition: all .3s` (for the
 // normal scroll-driven compact-pill animation), so just adding the class and
@@ -39,45 +35,115 @@ export function primeHeaderForNav() {
   }
 }
 
-// Google Fonts are loaded with `display=swap` (see index.html), so on a
-// fresh load/refresh the page first paints with fallback metrics and swaps
-// to the real webfont a beat later. If that swap reflows anything above the
-// nav target (header text, earlier sections), it shifts the whole page
-// after scrollIntoView() has already locked onto its target Y — the
-// in-flight smooth scroll keeps heading for the pre-swap position and lands
-// short/long. Re-align once fonts settle, but only for the request that's
-// still current (id match) and only if the user hasn't since taken over
-// scrolling themselves (wheel/touch/key), so this can't yank them back
-// mid-manual-scroll.
-let pendingAlignId: string | null = null;
+// Native scrollIntoView({behavior:'smooth'}) / scrollTo({behavior:'smooth'})
+// locks onto the target Y computed at call time and never re-targets. On a
+// fresh load/refresh that's exactly when the target keeps moving: webfonts
+// swap in (display=swap), images below the fold finish decoding, and GSAP
+// scroll-reveal settles — every one of those reflows content above the
+// target after the smooth scroll has already committed to the old position,
+// so the first CTA/menu jump lands short and only a second click (page now
+// static) hits the mark. The native smoother is also unreliable when the
+// tab isn't focused. So drive the scroll ourselves with rAF and re-read the
+// live target position + --nav-h every frame — any mid-flight layout shift
+// is tracked automatically, and the jump converges on the real resting spot
+// in one go.
 
-function cancelPendingAlignOnUserInput() {
-  const cancel = () => { pendingAlignId = null; };
-  (['wheel', 'touchmove', 'keydown'] as const).forEach(evt =>
-    window.addEventListener(evt, cancel, { once: true, passive: true })
+let rafId: number | null = null;
+let cleanupInput: (() => void) | null = null;
+
+function stopAnimatedScroll() {
+  if (rafId != null) cancelAnimationFrame(rafId);
+  rafId = null;
+  if (cleanupInput) cleanupInput();
+  cleanupInput = null;
+}
+
+function desiredScrollY(target: HTMLElement): number {
+  const navH =
+    parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue('--nav-h')
+    ) || 0;
+  const absTop = target.getBoundingClientRect().top + window.scrollY;
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  return Math.min(Math.max(absTop - navH, 0), max);
+}
+
+// A fixed proportional ease (cur += diff * k) is fastest at the very first
+// frame — for a long jump that first step lurches hundreds of px with no
+// ramp-up, which reads as "too fast / no damping". Instead run a
+// duration-based tween with an ease-in-out curve so motion accelerates from
+// rest and decelerates into the target. The end point is still read *live*
+// every frame (start + (liveTarget - start) * ease(p)), so the tween stays
+// self-correcting: if content loads and shifts the target mid-flight, the
+// whole curve rescales and still lands exactly on the real resting spot.
+//
+// After the tween completes, a short grace phase gently follows any late
+// layout shift (image decode, scroll-reveal settle) that lands after the
+// curve is already done — small residuals only, so it never feels fast.
+const GRACE_MS = 450; // post-tween window to absorb late reflow
+const GRACE_EASE = 0.18;
+
+// Standard easeInOutCubic: slow start, quick middle, slow finish.
+function easeInOutCubic(p: number): number {
+  return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+}
+
+function animateScrollTo(getTargetY: () => number) {
+  stopAnimatedScroll();
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    window.scrollTo(0, getTargetY());
+    return;
+  }
+
+  const startY = window.scrollY;
+  const distance = Math.abs(getTargetY() - startY);
+  // Scale duration with distance so a short hop and a full-page jump both
+  // feel deliberate, clamped so neither drags nor flicks.
+  const duration = Math.min(1600, Math.max(700, 650 + distance * 0.22));
+
+  const t0 = performance.now();
+  let doneAt: number | null = null; // when the main tween finished (grace start)
+  let userTookOver = false;
+  const onUserInput = () => { userTookOver = true; };
+  (['wheel', 'touchstart', 'keydown'] as const).forEach(evt =>
+    window.addEventListener(evt, onUserInput, { passive: true })
   );
+  cleanupInput = () =>
+    (['wheel', 'touchstart', 'keydown'] as const).forEach(evt =>
+      window.removeEventListener(evt, onUserInput)
+    );
+
+  const step = () => {
+    if (userTookOver) { stopAnimatedScroll(); return; }
+    const now = performance.now();
+    const target = getTargetY();
+
+    if (doneAt == null) {
+      const p = Math.min((now - t0) / duration, 1);
+      window.scrollTo(0, startY + (target - startY) * easeInOutCubic(p));
+      if (p >= 1) doneAt = now;
+    } else {
+      // Grace: softly track late shifts, then stop once settled or expired.
+      const cur = window.scrollY;
+      const diff = target - cur;
+      if (Math.abs(diff) < 0.5) window.scrollTo(0, target);
+      else window.scrollTo(0, cur + diff * GRACE_EASE);
+      if (now - doneAt > GRACE_MS) { stopAnimatedScroll(); return; }
+    }
+    rafId = requestAnimationFrame(step);
+  };
+  rafId = requestAnimationFrame(step);
 }
 
 export function scrollToSectionAligned(id: string) {
   if (id === 'home') {
-    pendingAlignId = null;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    animateScrollTo(() => 0);
     return;
   }
   const target = document.getElementById(id);
   if (!target) return;
 
   primeHeaderForNav();
-  target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  if (document.fonts && document.fonts.status !== 'loaded') {
-    pendingAlignId = id;
-    cancelPendingAlignOnUserInput();
-    document.fonts.ready.then(() => {
-      if (pendingAlignId !== id) return;
-      pendingAlignId = null;
-      primeHeaderForNav();
-      target.scrollIntoView({ behavior: 'instant', block: 'start' });
-    });
-  }
+  animateScrollTo(() => desiredScrollY(target));
 }
