@@ -1,10 +1,25 @@
 import { useEffect, useRef } from 'react';
 import { useLang } from '../context/LangContext';
 import SpecularOverlay from './SpecularOverlay';
+import {
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+} from './animate-ui/components/headless/accordion';
 
 export default function ContactSection() {
   const { t } = useLang();
   const sendEmailRef = useRef(null);
+
+  const faqItems = [
+    { q: t.faq_q1, a: t.faq_a1 },
+    { q: t.faq_q2, a: t.faq_a2 },
+    { q: t.faq_q3, a: t.faq_a3 },
+    { q: t.faq_q4, a: t.faq_a4 },
+    { q: t.faq_q5, a: t.faq_a5 },
+    { q: t.faq_q6, a: t.faq_a6 },
+  ];
 
   // Back-to-top: toggle .visible class based on scroll position
   useEffect(() => {
@@ -78,34 +93,34 @@ export default function ContactSection() {
             </div>
           </div>
 
-          <div className="contact-two-col">
-            <div className="contact-card sc-card rise-card">
-              <div className="card-title">Contact Info</div>
-              <div className="crow">
-                <div className="icon-circle"><i className="ph-fill ph-map-pin" style={{ fontSize: '18px' }}></i></div>
-                <div>
-                  <div className="rl">Location</div>
-                  <div className="rv">Taipei, Taiwan</div>
+          <div className="contact-faq-layout">
+            <div className="contact-left-panel">
+              <div className="contact-card sc-card rise-card">
+                <div className="card-title">Contact Info</div>
+                <div className="crow">
+                  <div className="icon-circle"><i className="ph-fill ph-map-pin" style={{ fontSize: '18px' }}></i></div>
+                  <div>
+                    <div className="rl">Location</div>
+                    <div className="rv">Taipei, Taiwan</div>
+                  </div>
+                </div>
+                <div className="crow">
+                  <div className="icon-circle"><i className="ph-fill ph-envelope-simple" style={{ fontSize: '18px' }}></i></div>
+                  <div>
+                    <div className="rl">Email</div>
+                    <div className="rv"><a href="mailto:lyfun0202@gmail.com">lyfun0202@gmail.com</a></div>
+                  </div>
+                </div>
+                <div className="crow">
+                  <div className="icon-circle"><i className="ph-fill ph-phone" style={{ fontSize: '18px' }}></i></div>
+                  <div>
+                    <div className="rl">Phone</div>
+                    <div className="rv">+886-928051947</div>
+                  </div>
                 </div>
               </div>
-              <div className="crow">
-                <div className="icon-circle"><i className="ph-fill ph-envelope-simple" style={{ fontSize: '18px' }}></i></div>
-                <div>
-                  <div className="rl">Email</div>
-                  <div className="rv"><a href="mailto:lyfun0202@gmail.com">lyfun0202@gmail.com</a></div>
-                </div>
-              </div>
-              <div className="crow">
-                <div className="icon-circle"><i className="ph-fill ph-phone" style={{ fontSize: '18px' }}></i></div>
-                <div>
-                  <div className="rl">Phone</div>
-                  <div className="rv">+886-928051947</div>
-                </div>
-              </div>
-            </div>
 
-            <div className="rise-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div className="contact-card sc-card" style={{ flex: 1 }}>
+              <div className="contact-card sc-card rise-card">
                 <div className="card-title">Follow Me</div>
                 <div className="social-links">
                   <a className="slink" href="https://github.com/Lagrange1994" target="_blank" rel="noreferrer">
@@ -123,7 +138,8 @@ export default function ContactSection() {
                   </a>
                 </div>
               </div>
-              <div className="cta-strip sc-card">
+
+              <div className="cta-strip sc-card rise-card">
                 <div className="cta-txt">
                   <strong>{t.open_for_work}</strong><br />
                   <span className="cta-txt-sub">{t.open_for_work_sub}</span>
@@ -142,6 +158,39 @@ export default function ContactSection() {
                   baseColor="#6C63FF"
                   proximity={220}
                 />
+              </div>
+            </div>
+
+            <div className="faq-panel">
+              <div className="contact-stats-row rise-card">
+                <div className="contact-stat-pill">
+                  <div className="stat-pill-value">24h</div>
+                  <div className="stat-pill-label">Avg. Response</div>
+                </div>
+                <div className="contact-stat-pill">
+                  <div className="stat-pill-value">5+</div>
+                  <div className="stat-pill-label">{t.about_stat_years_label}</div>
+                </div>
+                <div className="contact-stat-pill">
+                  <div className="stat-pill-value">10+</div>
+                  <div className="stat-pill-label">{t.about_stat_projects_label}</div>
+                </div>
+              </div>
+
+              <div className="faq-card contact-card sc-card rise-card">
+                <div className="card-title">FAQ</div>
+                <Accordion className="faq-list">
+                  {faqItems.map((item, i) => (
+                    <AccordionItem key={i} defaultOpen={i === 0} className="faq-item">
+                      <AccordionButton>
+                        <span>{item.q}</span>
+                      </AccordionButton>
+                      <AccordionPanel>
+                        <p>{item.a}</p>
+                      </AccordionPanel>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
               </div>
             </div>
           </div>

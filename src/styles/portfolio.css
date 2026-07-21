@@ -2900,12 +2900,6 @@
       color: var(--line);
     }
 
-    .contact-two-col {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
     .contact-card {
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
@@ -3037,7 +3031,6 @@
     }
 
     .cta-strip {
-      margin-top: 12px;
       background: linear-gradient(135deg, rgba(108, 99, 255, 0.12), rgba(255, 101, 132, 0.06));
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
@@ -3072,6 +3065,125 @@
     .cta-txt strong {
       color: var(--text);
       font-weight: 600;
+    }
+
+    /* CONTACT — FAQ layout: narrow sticky left panel (contact info / stats /
+       follow / send email), wide FAQ accordion grid on the right. */
+    .contact-faq-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .contact-left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: sticky;
+      top: 100px;
+    }
+
+    .contact-stats-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .contact-stat-pill {
+      flex: 1;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      corner-shape: squircle;
+      padding: 14px 10px;
+      text-align: center;
+      box-shadow: var(--card-shadow-sm), var(--card-edge);
+    }
+
+    .stat-pill-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .stat-pill-label {
+      font-size: 10px;
+      letter-spacing: .04em;
+      color: var(--text-30);
+      font-family: var(--mono);
+      line-height: 1.3;
+    }
+
+    .faq-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* One big card (.faq-card, reuses .contact-card's glass-panel look)
+       holds the whole list — individual .faq-item rows are plain dividers
+       inside it, not their own cards. Row rhythm (padding/gap/font-size/
+       align-items/hover-underline/icon) mirrors the Animate UI docs site's
+       own Accordion demo (border-b last:border-b-0, py-4, gap-4, text-sm,
+       items-start, hover:underline, size-4 muted chevron). */
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .faq-item:last-child {
+      border-bottom: none;
+    }
+
+    .faq-question {
+      width: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      background: none;
+      border: none;
+      border-radius: 6px;
+      padding: 16px 0;
+      margin: 0;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: color .2s ease;
+    }
+
+    .faq-toggle-icon {
+      flex-shrink: 0;
+      color: var(--text-50);
+      font-size: 16px;
+      transform: translateY(2px);
+      transition: transform .2s ease;
+    }
+
+    /* Animate UI's Headless Accordion sets `data-open` on the button itself
+       (Headless UI's Disclosure state) — no React state/class of our own
+       needed to drive the chevron. The panel's own show/hide + height
+       animation is likewise handled by Motion (see
+       animate-ui/primitives/headless/disclosure.tsx), not CSS. */
+    .faq-question[data-open] .faq-toggle-icon {
+      transform: translateY(2px) rotate(180deg);
+    }
+
+    .faq-answer-inner p {
+      padding: 0 0 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-50);
     }
 
     /* SPOTLIGHT CARD */
@@ -4052,9 +4164,14 @@
         grid-template-columns: 1fr;
       }
 
-      /* Contact two col — single column */
-      .contact-two-col {
+      /* Contact FAQ layout — stack, drop the sticky pin (nothing left to
+         scroll past once the left panel isn't beside a tall column). */
+      .contact-faq-layout {
         grid-template-columns: 1fr;
+      }
+
+      .contact-left-panel {
+        position: static;
       }
 
       /* Portfolio grid — single column */
@@ -4381,8 +4498,12 @@
       }
 
       /* Contact — single column */
-      .contact-two-col {
+      .contact-faq-layout {
         grid-template-columns: 1fr;
+      }
+
+      .contact-left-panel {
+        position: static;
       }
 
       .line-banner {

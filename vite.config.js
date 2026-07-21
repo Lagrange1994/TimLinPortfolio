@@ -59,7 +59,7 @@ export default defineConfig({
   plugins: [react(), devChatApi()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, '.'),
+      '@': path.resolve(__dirname, 'src'),
     },
   },
   publicDir: 'public',
