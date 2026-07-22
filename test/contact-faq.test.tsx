@@ -50,48 +50,55 @@ describe('Contact FAQ accordion (Animate UI headless accordion)', () => {
     localStorage.setItem('lang', 'en');
   });
 
-  it('opens the first FAQ item by default and leaves the rest closed', () => {
+  it('starts fully collapsed — no FAQ item open by default', () => {
     const { container } = render(<LangProvider><ContactSection /></LangProvider>);
     const questions = container.querySelectorAll('.faq-question');
     expect(questions).toHaveLength(9);
-    expect(questions[0].getAttribute('aria-expanded')).toBe('true');
-    for (let i = 1; i < questions.length; i++) {
-      expect(questions[i].getAttribute('aria-expanded')).toBe('false');
+    for (const q of questions) {
+      expect(q.getAttribute('aria-expanded')).toBe('false');
     }
   });
 
-  it('switching to the freelance tab shows its own 9 items, reopened to the first', () => {
+  it('switching to the freelance tab shows its own 9 items, also fully collapsed', () => {
     const { container } = render(<LangProvider><ContactSection /></LangProvider>);
     fireEvent.click(container.querySelector('.faq-tab:nth-of-type(2)')!);
 
     const questions = container.querySelectorAll('.faq-question');
     expect(questions).toHaveLength(9);
-    expect(questions[0].getAttribute('aria-expanded')).toBe('true');
-    for (let i = 1; i < questions.length; i++) {
-      expect(questions[i].getAttribute('aria-expanded')).toBe('false');
+    for (const q of questions) {
+      expect(q.getAttribute('aria-expanded')).toBe('false');
     }
   });
 
-  it('clicking a closed item opens it independently, without closing the others', () => {
+  it('clicking a closed item opens it and leaves the rest closed', () => {
     const { container } = render(<LangProvider><ContactSection /></LangProvider>);
+    fireEvent.click(container.querySelectorAll('.faq-question')[3]);
+
+    // The click remounts the accordion items to enforce exclusivity, so
+    // re-query rather than reuse the stale pre-click node references.
     const questions = container.querySelectorAll('.faq-question');
-
-    fireEvent.click(questions[3]);
-
     expect(questions[3].getAttribute('aria-expanded')).toBe('true');
     expect(questions[3].hasAttribute('data-open')).toBe(true);
-    // The default-open first item is untouched — this accordion allows
-    // multiple items open at once (Headless UI's Disclosure has no built-in
-    // single-open exclusivity).
-    expect(questions[0].getAttribute('aria-expanded')).toBe('true');
+    expect(questions[0].getAttribute('aria-expanded')).toBe('false');
+    expect(questions[0].hasAttribute('data-open')).toBe(false);
   });
 
-  it('clicking an open item closes it', () => {
+  it('clicking a different item collapses the previously-open one', () => {
     const { container } = render(<LangProvider><ContactSection /></LangProvider>);
+    fireEvent.click(container.querySelectorAll('.faq-question')[3]);
+    fireEvent.click(container.querySelectorAll('.faq-question')[5]);
+
     const questions = container.querySelectorAll('.faq-question');
+    expect(questions[5].getAttribute('aria-expanded')).toBe('true');
+    expect(questions[3].getAttribute('aria-expanded')).toBe('false');
+  });
 
-    fireEvent.click(questions[0]);
+  it('clicking an open item closes it again', () => {
+    const { container } = render(<LangProvider><ContactSection /></LangProvider>);
+    fireEvent.click(container.querySelectorAll('.faq-question')[0]);
+    fireEvent.click(container.querySelectorAll('.faq-question')[0]);
 
+    const questions = container.querySelectorAll('.faq-question');
     expect(questions[0].getAttribute('aria-expanded')).toBe('false');
     expect(questions[0].hasAttribute('data-open')).toBe(false);
   });

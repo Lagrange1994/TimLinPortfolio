@@ -1629,20 +1629,126 @@
       gap: 16px;
     }
 
-    /* Freelance-only note — the due-diligence policy only applies to
-       client-facing project intake, not the In-house column. */
-    .process-policy-note {
-      margin-top: 20px;
+    /* Freelance-only pill — the due-diligence policy only applies to
+       client-facing project intake, not the In-house column. Click opens
+       an anchored chat-bubble popover (see SkillsSection.tsx) right below
+       the pill instead of a page-covering modal, so the rest of the page
+       stays visible and interactive. */
+    .policy-pill-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .policy-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 16px;
+      padding: 6px 14px;
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
-      border-radius: 16px;
-      corner-shape: squircle;
-      padding: 18px 20px;
+      border-radius: 9999px;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-70);
+      cursor: pointer;
+      transition: color .2s ease, border-color .2s ease, background .2s ease;
     }
 
-    .process-policy-note p {
+    .policy-pill i {
+      font-size: 14px;
+      color: var(--primary);
+    }
+
+    .policy-pill:hover {
+      color: var(--text);
+      border-color: var(--border-hi);
+      background: rgba(108, 99, 255, 0.1);
+    }
+
+    /* Chat-bubble popover — anchored under the pill (not a fixed/full-page
+       overlay). Box + tail are ONE continuous shape, not two bordered
+       pieces glued together: a single SVG <path> (rounded rect with a
+       triangular notch cut into its top edge) supplies the fill AND the
+       1px stroke, so there is exactly one uninformed border line all the
+       way around — no seam where a separate tail-triangle's border would
+       have to line up against the box's border. The path's "d" is computed
+       in SkillsSection.tsx (policyBubble state) from the popover content's
+       actual rendered size plus the pill button's rendered width (so the
+       notch always sits over the pill's true center, in zh or en). */
+    .policy-popover-shell {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 20;
+      filter:
+        drop-shadow(0 6px 14px rgba(var(--shadow-near), 0.20))
+        drop-shadow(10px 32px 72px rgba(var(--shadow-far), 0.16));
+      animation: policy-popover-in .18s ease;
+    }
+
+    .policy-popover-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .policy-popover {
+      position: relative;
+      z-index: 2;
+      /* Matches the SVG path's TAIL_H (14px) — leaves room above the
+         content box for the tail notch drawn by the SVG behind it. */
+      margin-top: 14px;
+      width: min(360px, 84vw);
+      max-height: 60vh;
+      overflow-y: auto;
+      background: transparent;
+      padding: 20px;
+    }
+
+    @keyframes policy-popover-in {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .policy-popover-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      color: var(--text-50);
+      cursor: pointer;
+      transition: color .2s ease, background .2s ease;
+    }
+
+    .policy-popover-close:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .policy-popover-title {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      padding-right: 24px;
+    }
+
+    .policy-popover-body {
       font-size: 13px;
       line-height: 1.7;
       color: var(--text-70);
@@ -3104,37 +3210,20 @@
       top: 100px;
     }
 
-    .contact-stats-row {
+    /* Response-time line merged into the "open for work" CTA card itself
+       (used to be its own row of 3 stat pills above the FAQ card). */
+    .cta-response-time {
       display: flex;
-      gap: 10px;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-50);
     }
 
-    .contact-stat-pill {
-      flex: 1;
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--glass-border);
-      border-radius: 14px;
-      corner-shape: squircle;
-      padding: 14px 10px;
-      text-align: center;
-      box-shadow: var(--card-shadow-sm), var(--card-edge);
-    }
-
-    .stat-pill-value {
-      font-size: 18px;
-      font-weight: 700;
+    .cta-response-time i {
+      font-size: 13px;
       color: var(--primary);
-      margin-bottom: 4px;
-    }
-
-    .stat-pill-label {
-      font-size: 10px;
-      letter-spacing: .04em;
-      color: var(--text-30);
-      font-family: var(--mono);
-      line-height: 1.3;
     }
 
     .faq-panel {

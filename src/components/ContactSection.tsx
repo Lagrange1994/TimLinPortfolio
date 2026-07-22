@@ -12,6 +12,19 @@ export default function ContactSection() {
   const { t } = useLang();
   const sendEmailRef = useRef(null);
   const [faqTab, setFaqTab] = useState<'experience' | 'freelance'>('experience');
+  // Single-open accordion: starts fully collapsed (-1 = none open).
+  // Clicking an open item toggles it closed again. Headless UI's Disclosure
+  // has no controlled `open` prop, so exclusivity used to be enforced by
+  // keying each AccordionItem on its own open/closed state and remounting
+  // it — but a key change is a hard unmount/remount, which skips the
+  // AnimatePresence exit animation in DisclosurePanel entirely (no closing
+  // transition). Instead, each item's real `bag.close()` is captured into
+  // closeFnsRef during render; when a DIFFERENT item is clicked open, we
+  // call the previously-open item's own close() — a real Headless UI state
+  // transition on a component that stays mounted, so its exit animation
+  // plays normally. No remounting needed for either side of the swap.
+  const [openFaqIndex, setOpenFaqIndex] = useState(-1);
+  const closeFnsRef = useRef<Record<number, () => void>>({});
 
   const faqTabs = {
     experience: [
@@ -162,6 +175,10 @@ export default function ContactSection() {
                 <div className="cta-txt">
                   <strong>{t.open_for_work}</strong><br />
                   <span className="cta-txt-sub">{t.open_for_work_sub}</span>
+                  <div className="cta-response-time">
+                    <i className="ph-fill ph-clock" aria-hidden="true" />
+                    <span>24h Avg. Response</span>
+                  </div>
                 </div>
                 <button
                   ref={sendEmailRef}
@@ -181,21 +198,6 @@ export default function ContactSection() {
             </div>
 
             <div className="faq-panel">
-              <div className="contact-stats-row rise-card">
-                <div className="contact-stat-pill">
-                  <div className="stat-pill-value">24h</div>
-                  <div className="stat-pill-label">Avg. Response</div>
-                </div>
-                <div className="contact-stat-pill">
-                  <div className="stat-pill-value">5+</div>
-                  <div className="stat-pill-label">{t.about_stat_years_label}</div>
-                </div>
-                <div className="contact-stat-pill">
-                  <div className="stat-pill-value">10+</div>
-                  <div className="stat-pill-label">{t.about_stat_projects_label}</div>
-                </div>
-              </div>
-
               <div className="faq-card contact-card sc-card rise-card">
                 <div className="card-title">FAQ</div>
                 <div className="faq-tabs" role="tablist">
@@ -204,7 +206,7 @@ export default function ContactSection() {
                     role="tab"
                     aria-selected={faqTab === 'experience'}
                     className={`faq-tab${faqTab === 'experience' ? ' active' : ''}`}
-                    onClick={() => setFaqTab('experience')}
+                    onClick={() => { setFaqTab('experience'); setOpenFaqIndex(-1); }}
                   >
                     {t.faq_tab_experience}
                   </button>
@@ -213,20 +215,42 @@ export default function ContactSection() {
                     role="tab"
                     aria-selected={faqTab === 'freelance'}
                     className={`faq-tab${faqTab === 'freelance' ? ' active' : ''}`}
-                    onClick={() => setFaqTab('freelance')}
+                    onClick={() => { setFaqTab('freelance'); setOpenFaqIndex(-1); }}
                   >
                     {t.faq_tab_freelance}
                   </button>
                 </div>
                 <Accordion className="faq-list" key={faqTab}>
                   {faqItems.map((item, i) => (
-                    <AccordionItem key={i} defaultOpen={i === 0} className="faq-item">
-                      <AccordionButton>
-                        <span>{item.q}</span>
-                      </AccordionButton>
-                      <AccordionPanel>
-                        <p>{item.a}</p>
-                      </AccordionPanel>
+                    <AccordionItem
+                      key={i}
+                      defaultOpen={i === openFaqIndex}
+                      className="faq-item"
+                    >
+                      {(bag) => {
+                        // Mutating a ref during render (not an effect) is
+                        // intentional here: it just captures the latest
+                        // close() for later imperative use in a click
+                        // handler, doesn't affect this render's own output.
+                        closeFnsRef.current[i] = bag.close;
+                        return (
+                          <>
+                            <AccordionButton
+                              onClick={() => {
+                                if (openFaqIndex !== -1 && openFaqIndex !== i) {
+                                  closeFnsRef.current[openFaqIndex]?.();
+                                }
+                                setOpenFaqIndex(prev => (prev === i ? -1 : i));
+                              }}
+                            >
+                              <span>{item.q}</span>
+                            </AccordionButton>
+                            <AccordionPanel>
+                              <p>{item.a}</p>
+                            </AccordionPanel>
+                          </>
+                        );
+                      }}
                     </AccordionItem>
                   ))}
                 </Accordion>
