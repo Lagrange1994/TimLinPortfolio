@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLang } from '../context/LangContext';
 import SpecularOverlay from './SpecularOverlay';
 import {
@@ -11,15 +11,34 @@ import {
 export default function ContactSection() {
   const { t } = useLang();
   const sendEmailRef = useRef(null);
+  const [faqTab, setFaqTab] = useState<'experience' | 'freelance'>('experience');
 
-  const faqItems = [
-    { q: t.faq_q1, a: t.faq_a1 },
-    { q: t.faq_q2, a: t.faq_a2 },
-    { q: t.faq_q3, a: t.faq_a3 },
-    { q: t.faq_q4, a: t.faq_a4 },
-    { q: t.faq_q5, a: t.faq_a5 },
-    { q: t.faq_q6, a: t.faq_a6 },
-  ];
+  const faqTabs = {
+    experience: [
+      { q: t.faq_exp_q1, a: t.faq_exp_a1 },
+      { q: t.faq_exp_q2, a: t.faq_exp_a2 },
+      { q: t.faq_exp_q3, a: t.faq_exp_a3 },
+      { q: t.faq_exp_q4, a: t.faq_exp_a4 },
+      { q: t.faq_exp_q5, a: t.faq_exp_a5 },
+      { q: t.faq_exp_q6, a: t.faq_exp_a6 },
+      { q: t.faq_exp_q7, a: t.faq_exp_a7 },
+      { q: t.faq_exp_q8, a: t.faq_exp_a8 },
+      { q: t.faq_exp_q9, a: t.faq_exp_a9 },
+    ],
+    freelance: [
+      { q: t.faq_biz_q1, a: t.faq_biz_a1 },
+      { q: t.faq_biz_q2, a: t.faq_biz_a2 },
+      { q: t.faq_biz_q3, a: t.faq_biz_a3 },
+      { q: t.faq_biz_q4, a: t.faq_biz_a4 },
+      { q: t.faq_biz_q5, a: t.faq_biz_a5 },
+      { q: t.faq_biz_q6, a: t.faq_biz_a6 },
+      { q: t.faq_biz_q7, a: t.faq_biz_a7 },
+      { q: t.faq_biz_q8, a: t.faq_biz_a8 },
+      { q: t.faq_biz_q9, a: t.faq_biz_a9 },
+    ],
+  } as const;
+
+  const faqItems = faqTabs[faqTab];
 
   // Back-to-top: toggle .visible class based on scroll position
   useEffect(() => {
@@ -179,7 +198,27 @@ export default function ContactSection() {
 
               <div className="faq-card contact-card sc-card rise-card">
                 <div className="card-title">FAQ</div>
-                <Accordion className="faq-list">
+                <div className="faq-tabs" role="tablist">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={faqTab === 'experience'}
+                    className={`faq-tab${faqTab === 'experience' ? ' active' : ''}`}
+                    onClick={() => setFaqTab('experience')}
+                  >
+                    {t.faq_tab_experience}
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={faqTab === 'freelance'}
+                    className={`faq-tab${faqTab === 'freelance' ? ' active' : ''}`}
+                    onClick={() => setFaqTab('freelance')}
+                  >
+                    {t.faq_tab_freelance}
+                  </button>
+                </div>
+                <Accordion className="faq-list" key={faqTab}>
                   {faqItems.map((item, i) => (
                     <AccordionItem key={i} defaultOpen={i === 0} className="faq-item">
                       <AccordionButton>

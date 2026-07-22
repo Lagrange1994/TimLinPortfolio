@@ -53,7 +53,19 @@ describe('Contact FAQ accordion (Animate UI headless accordion)', () => {
   it('opens the first FAQ item by default and leaves the rest closed', () => {
     const { container } = render(<LangProvider><ContactSection /></LangProvider>);
     const questions = container.querySelectorAll('.faq-question');
-    expect(questions).toHaveLength(6);
+    expect(questions).toHaveLength(9);
+    expect(questions[0].getAttribute('aria-expanded')).toBe('true');
+    for (let i = 1; i < questions.length; i++) {
+      expect(questions[i].getAttribute('aria-expanded')).toBe('false');
+    }
+  });
+
+  it('switching to the freelance tab shows its own 9 items, reopened to the first', () => {
+    const { container } = render(<LangProvider><ContactSection /></LangProvider>);
+    fireEvent.click(container.querySelector('.faq-tab:nth-of-type(2)')!);
+
+    const questions = container.querySelectorAll('.faq-question');
+    expect(questions).toHaveLength(9);
     expect(questions[0].getAttribute('aria-expanded')).toBe('true');
     for (let i = 1; i < questions.length; i++) {
       expect(questions[i].getAttribute('aria-expanded')).toBe('false');

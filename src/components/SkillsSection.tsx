@@ -1258,6 +1258,10 @@ export default function SkillsSection() {
                 );
               })}
             />
+            <div className="process-policy-note rise-card">
+              <div className="card-title">{t.process_policy_title}</div>
+              <p>{t.process_policy_body}</p>
+            </div>
           </div>
         </div>
       </section>
