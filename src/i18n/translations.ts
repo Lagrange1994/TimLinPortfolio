@@ -68,6 +68,8 @@ export const translations = {
     fl_desc_06: '依里程碑交付 wireframe、高保真設計、互動說明與開發標註，並保留後續追蹤與回覆紀錄',
     process_policy_title: 'Development Policy',
     process_policy_body: '每個專案在正式報價前，都會進行基本的需求與風險審查（Project Due Diligence）。這包含技術可行性、資訊安全、資料保護、商業模式以及基本法規風險評估。這個流程的目的不是對客戶進行法律判斷，而是確認專案符合一般軟體開發與商業實務，降低雙方合作風險，確保最終交付的系統能夠穩定且長期營運。',
+    process_policy_team_title: 'Team Collaboration',
+    process_policy_team_body: 'In-house 專案隸屬產品團隊，設計不是我一個人拍板：需求對齊、進度同步與設計評審都與 PM、工程師、研究員共同進行，重大決策會經過內部評審與跨部門確認。這裡呈現的是流程與方法，實際畫面、數據與客戶名稱皆因公司機密與使用者隱私考量已做遮蔽或省略，不代表原始交付內容。',
     // AI
     ai_sub: 'AI 不只是讓工作變快的工具—— <br>而是讓每個設計決策都有更充分的依據。',
     ai_gemini_1: '<strong>邏輯生成與轉譯：</strong> 將設計需求轉化為精準的 Prompt，讓 AI 產出初始程式碼架構。',
@@ -331,6 +333,8 @@ export const translations = {
       'I deliver wireframes, high-fidelity designs, interaction notes, and development annotations by milestone, with follow-up records kept in the workflow',
     process_policy_title: 'Development Policy',
     process_policy_body: "Before any formal quote, every project goes through a basic requirements and risk review (Project Due Diligence) — covering technical feasibility, information security, data protection, business model, and baseline regulatory risk. The goal isn't to pass legal judgment on the client, but to confirm the project fits normal software-development and business practice, lower risk for both sides, and make sure the system I deliver can run stably for the long term.",
+    process_policy_team_title: 'Team Collaboration',
+    process_policy_team_body: "In-house work sits inside a product team — design decisions aren't mine alone. Requirements alignment, progress syncs, and design reviews happen together with PMs, engineers, and researchers, and major calls go through internal review and cross-team sign-off. What's shown here is the process and method: real screens, data, and client names are blurred or omitted for confidentiality and user-privacy reasons, and don't represent original deliverables.",
     // AI
     ai_sub:
       'I use AI as a collaborator, <br>so every design decision is faster and better grounded.',
