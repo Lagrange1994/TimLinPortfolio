@@ -3254,7 +3254,11 @@
       padding: 8px 10px;
       background: none;
       border: none;
-      border-radius: 7px;
+      /* Concentric with .faq-tabs' own 10px squircle: offset from the
+         outer edge is border(1px) + padding(4px) = 5px, so radius here
+         must be 10 - 5 = 5px (same curvature too) to share one center. */
+      border-radius: 5px;
+      corner-shape: squircle;
       font-family: var(--font);
       font-size: 12.5px;
       font-weight: 500;
