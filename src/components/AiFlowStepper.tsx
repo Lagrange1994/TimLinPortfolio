@@ -5,6 +5,10 @@ const STEP_INTERVAL_MS = 1800;
 
 interface AiFlowStepperProps {
   steps: string[];
+  // Lets a caller (e.g. the Design Workflow card's phase list) mirror this
+  // stepper's own timer exactly instead of running a second setInterval
+  // that would slowly drift out of sync with it.
+  onActiveChange?: (active: number) => void;
 }
 
 // Auto-advancing progress-stepper for capsule-pipeline callouts (AI-Powered
@@ -12,8 +16,12 @@ interface AiFlowStepperProps {
 // language as React Bits' Stepper (dot + connector, active / complete /
 // inactive states) but loops on its own instead of Back/Next buttons, since
 // this is a passive illustration, not a real multi-step form.
-export default function AiFlowStepper({ steps }: AiFlowStepperProps) {
+export default function AiFlowStepper({ steps, onActiveChange }: AiFlowStepperProps) {
   const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    onActiveChange?.(active);
+  }, [active, onActiveChange]);
 
   useEffect(() => {
     // Site-wide convention (see CardSwap) — reduced-motion users get the

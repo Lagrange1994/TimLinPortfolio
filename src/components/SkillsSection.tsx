@@ -8,6 +8,11 @@ import PolicyPill from './PolicyPill';
 
 const SMOOTH_TAU = 0.18;
 const AI_THINK_MS = 700;
+// When the Operating Principle panel starts fading in during the Human
+// Review timeline (see toggle() in the card map) — shared so the quote
+// typewriter effect below can start right after, without duplicating the
+// timeline's own timing math.
+const HUMAN_QUOTE_MS = 1500;
 
 // Two "drafts" per tech-stack code preview — TypingCode loops between them,
 // backspacing to wherever the next draft diverges and typing the rest
@@ -74,14 +79,14 @@ function escapeHtml(s: string) {
 // Splits the static `<span class="hl">...</span>`-annotated summary HTML
 // (see translations.ts ai_d_summary_text) into typewriter tokens so the
 // AI Brief card can type it out while keeping the highlight styling.
-function tokenizeHighlight(html: string): CodeToken[] {
+function tokenizeHighlight(html: string, cls: string = 'hl'): CodeToken[] {
   const tokens: CodeToken[] = [];
-  const re = /<span class="hl">([^<]*)<\/span>/g;
+  const re = new RegExp(`<span class="${cls}">([^<]*)</span>`, 'g');
   let last = 0;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html))) {
     if (m.index > last) tokens.push({ text: html.slice(last, m.index) });
-    tokens.push({ text: m[1], cls: 'hl' });
+    tokens.push({ text: m[1], cls });
     last = m.index + m[0].length;
   }
   if (last < html.length) tokens.push({ text: html.slice(last) });
@@ -96,11 +101,15 @@ function runsToHtml(runs: { text: string; cls?: string }[]) {
 // "How I Use AI" card details used to render this content via SGDS web
 // components; class strings must stay fully literal (not template-built) so
 // Tailwind's source scanner can find them.
-type HColor = 'neutral' | 'purple' | 'cyan' | 'warning' | 'danger' | 'success' | 'info' | 'primary';
+type HColor = 'neutral' | 'purple' | 'cyan' | 'warning' | 'danger' | 'success' | 'info' | 'primary' | 'brand';
 
 const BADGE_COLORS: Record<HColor, { solid: string; outline: string }> = {
   neutral: { solid: 'bg-white/10 text-white/70', outline: 'border border-white/25 text-white/70' },
   purple: { solid: 'bg-violet-400/15 text-violet-300', outline: 'border border-violet-400/40 text-violet-300' },
+  // Matches AiFlowStepper's own solid "active step" fill (#6C63FF) exactly,
+  // for the phase badge that mirrors it — a fully opaque pill, not the
+  // usual translucent 15%-tint "solid" look every other variant uses.
+  brand: { solid: 'bg-[#6C63FF] text-white', outline: 'border border-[#6C63FF]/60 text-[#6C63FF]' },
   cyan: { solid: 'bg-cyan-400/15 text-cyan-300', outline: 'border border-cyan-400/40 text-cyan-300' },
   warning: { solid: 'bg-amber-400/15 text-amber-300', outline: 'border border-amber-400/40 text-amber-300' },
   danger: { solid: 'bg-red-400/15 text-red-300', outline: 'border border-red-400/40 text-red-300' },
@@ -109,10 +118,10 @@ const BADGE_COLORS: Record<HColor, { solid: string; outline: string }> = {
   primary: { solid: 'bg-indigo-400/15 text-indigo-300', outline: 'border border-indigo-400/40 text-indigo-300' },
 };
 
-function HBadge({ variant = 'neutral', outline = false, style, children }: { variant?: HColor; outline?: boolean; style?: CSSProperties; children: ReactNode }) {
+function HBadge({ variant = 'neutral', outline = false, style, className, children }: { variant?: HColor; outline?: boolean; style?: CSSProperties; className?: string; children: ReactNode }) {
   const c = BADGE_COLORS[variant] ?? BADGE_COLORS.neutral;
   return (
-    <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-bold ${outline ? c.outline : c.solid}`} style={style}>
+    <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-bold ${outline ? c.outline : c.solid}${className ? ' ' + className : ''}`} style={style}>
       {children}
     </span>
   );
@@ -145,9 +154,9 @@ function HAlert({ variant = 'neutral', icon, title, children }: { variant?: 'neu
   );
 }
 
-function HRow({ label, children }: { label: ReactNode; children: ReactNode }) {
+function HRow({ label, className, children }: { label: ReactNode; className?: string; children: ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-3 border-b border-white/10 py-2 text-[12.5px] last:border-0">
+    <div className={`flex items-start justify-between gap-3 border-b border-white/10 py-2 text-[12.5px] last:border-0${className ? ' ' + className : ''}`}>
       <span className="text-white/50">{label}</span>
       <span className="text-right font-medium text-white/85">{children}</span>
     </div>
@@ -262,10 +271,10 @@ function makeAiCards(t: Record<string, string>) {
                 <div className="field"><label>{t.ai_f_timeline}</label><div className="val"><span>Jun 03 — Jun 17</span></div></div>
                 <div className="field"><label>{t.ai_f_budget}</label><div className="val"><span>Internal</span></div></div>
               </div>
-              <div className="field"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><HBadge variant="danger">HIGH</HBadge></div></div>
+              <div className="field field-priority"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><HBadge variant="danger">HIGH</HBadge></div></div>
               <div className="field"><label>{t.ai_f_contact}</label><div className="val"><span>celine.h@firm.co</span></div></div>
               <div className="form-status">
-                <span>{t.ai_f_complete}</span>
+                <span className="fs-label">{t.ai_f_complete}</span>
                 <div className="bar">
                   {Array.from({ length: 7 }).map((_, i) => <div key={i} className="pdot" />)}
                 </div>
@@ -323,7 +332,8 @@ function makeAiCards(t: Record<string, string>) {
           </div>
           <div className="ai-block missing">
             <HAlert variant="warning" title={t.ai_d_missing_lbl} icon={<i className="ph-fill ph-warning" />}>
-              <ul>
+              <div className="ai-block-spinner"><span className="spin-ring" aria-hidden="true" /><span>{t.ai_thinking}</span></div>
+              <ul className="real-content" style={{ display: 'none' }}>
                 <li>{t.ai_d_m1}</li>
                 <li>{t.ai_d_m2}</li>
                 <li>{t.ai_d_m3}</li>
@@ -332,7 +342,8 @@ function makeAiCards(t: Record<string, string>) {
           </div>
           <div className="ai-block questions">
             <HAlert variant="info" title={t.ai_d_questions_lbl} icon={<i className="ph-fill ph-info" />}>
-              <ol>
+              <div className="ai-block-spinner"><span className="spin-ring" aria-hidden="true" /><span>{t.ai_thinking}</span></div>
+              <ol className="real-content" style={{ display: 'none' }}>
                 <li>{t.ai_d_q1}</li>
                 <li>{t.ai_d_q2}</li>
                 <li>{t.ai_d_q3}</li>
@@ -341,7 +352,8 @@ function makeAiCards(t: Record<string, string>) {
           </div>
           <div className="ai-block direction">
             <HAlert variant="success" title={t.ai_d_direction_lbl} icon={<i className="ph-bold ph-arrow-circle-right" />}>
-              <p>{t.ai_d_direction_text}</p>
+              <div className="ai-block-spinner"><span className="spin-ring" aria-hidden="true" /><span>{t.ai_thinking}</span></div>
+              <p className="real-content" style={{ display: 'none' }}>{t.ai_d_direction_text}</p>
             </HAlert>
           </div>
         </>
@@ -381,7 +393,7 @@ function makeAiCards(t: Record<string, string>) {
               </tr>
             </thead>
             <tbody>
-              <tr>
+              <tr className="tr-live">
                 <td className="border-b border-white/10 py-2">DR-248</td>
                 <td className="border-b border-white/10 py-2">LINE</td>
                 <td className="border-b border-white/10 py-2">Product UI</td>
@@ -408,8 +420,8 @@ function makeAiCards(t: Record<string, string>) {
             </tbody>
           </table>
           <div className="sheet-foot">
-            <span>4 of 142 records</span>
-            <span>Updated · 2m ago</span>
+            <span><span className="rec-current">4</span> of <span className="rec-total">142</span> records</span>
+            <span className="sync-live"><span className="sync-dot" aria-hidden="true" />Updated · 2m ago</span>
           </div>
           </div>
         </div>
@@ -438,13 +450,13 @@ function makeAiCards(t: Record<string, string>) {
               </svg>
               <span>{t.ai_d_assessment_lbl}</span>
             </div>
-            <div>
+            <div className="hr-rows">
               <HRow label={t.ai_hr_priority_row}>
-                <HBadge variant="danger" style={{ marginRight: '6px' }}>P1</HBadge>
+                <HBadge variant="danger" className="p1-badge" style={{ marginRight: '6px' }}>P1</HBadge>
                 {t.ai_hr_priority_val.replace(/^P1[^a-z]+/i, '')}
               </HRow>
               <HRow label={t.ai_hr_strategy_row}>{t.ai_hr_strategy_val}</HRow>
-              <HRow label={t.ai_hr_risks_row}>{t.ai_hr_risks_val}</HRow>
+              <HRow label={t.ai_hr_risks_row} className="hr-risk">{t.ai_hr_risks_val}</HRow>
               <HRow label={t.ai_hr_nextstep_row}>{t.ai_hr_nextstep_val}</HRow>
             </div>
           </div>
@@ -484,13 +496,13 @@ function makeAiCards(t: Record<string, string>) {
               <span>{t.ai_d_phases_lbl}</span>
             </div>
             <div className="phases">
-              <div className="phase next">
+              <div className="phase">
                 <div className="pn">01</div>
                 <div>
                   <div className="pt">{t.ai_ph_research}</div>
                   <div className="pd">{t.ai_ph_research_d}</div>
                 </div>
-                <HBadge variant="cyan">{t.ai_ph_upnext}</HBadge>
+                <HBadge variant="brand" className="phase-badge">{t.ai_ph_inprogress}</HBadge>
               </div>
               <div className="phase">
                 <div className="pn">02</div>
@@ -498,7 +510,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="pt">{t.ai_ph_structure}</div>
                   <div className="pd">{t.ai_ph_structure_d}</div>
                 </div>
-                <HBadge variant="neutral" outline>{t.ai_ph_queued}</HBadge>
+                <HBadge variant="cyan" className="phase-badge">{t.ai_ph_upnext}</HBadge>
               </div>
               <div className="phase">
                 <div className="pn">03</div>
@@ -506,7 +518,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="pt">{t.ai_ph_design}</div>
                   <div className="pd">{t.ai_ph_design_d}</div>
                 </div>
-                <HBadge variant="neutral" outline>{t.ai_ph_queued}</HBadge>
+                <HBadge variant="neutral" outline className="phase-badge">{t.ai_ph_queued}</HBadge>
               </div>
               <div className="phase">
                 <div className="pn">04</div>
@@ -514,7 +526,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="pt">{t.ai_ph_validate}</div>
                   <div className="pd">{t.ai_ph_validate_d}</div>
                 </div>
-                <HBadge variant="neutral" outline>{t.ai_ph_queued}</HBadge>
+                <HBadge variant="neutral" outline className="phase-badge">{t.ai_ph_queued}</HBadge>
               </div>
               <div className="phase">
                 <div className="pn">05</div>
@@ -522,7 +534,7 @@ function makeAiCards(t: Record<string, string>) {
                   <div className="pt">{t.ai_ph_delivery}</div>
                   <div className="pd">{t.ai_ph_delivery_d}</div>
                 </div>
-                <HBadge variant="neutral" outline>{t.ai_ph_queued}</HBadge>
+                <HBadge variant="neutral" outline className="phase-badge">{t.ai_ph_queued}</HBadge>
               </div>
             </div>
           </div>
@@ -784,6 +796,9 @@ export default function SkillsSection() {
   const { t } = useLang();
   const aiCards = useMemo(() => makeAiCards(t), [t]);
   const [expandedAiCard, setExpandedAiCard] = useState<string | null>(null);
+  // Mirrors the Design Workflow card's AiFlowStepper (its "progress bar")
+  // so the phase list below can cycle each row's status pill in lockstep.
+  const [wfActive, setWfActive] = useState(0);
   const aiFlowGridRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
   const aiThinkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -795,6 +810,65 @@ export default function SkillsSection() {
   useEffect(() => {
     aiFlowGridRef.current?.classList.toggle('has-expanded', !!expandedAiCard);
   }, [expandedAiCard]);
+
+  // Design Workflow card — mirror the AiFlowStepper's active step into the
+  // phase list below it. A phase that has already had its turn as "in
+  // progress" stays marked in-progress from then on (workflow phases keep
+  // running in the background even once later phases kick off) — only the
+  // single upcoming phase and the not-yet-reached ones still cycle. The
+  // whole thing only clears once the progress bar above wraps back to its
+  // first step and starts a fresh lap.
+  const wfReachedRef = useRef<Set<number>>(new Set([0]));
+  const wfPrevRef = useRef(0);
+  useEffect(() => {
+    const card = cardRefs.current.get('workflow');
+    const rows = card ? Array.from(card.querySelectorAll<HTMLElement>('.phases .phase')) : [];
+    if (!rows.length) return;
+    if (wfActive === 0 && wfPrevRef.current === rows.length - 1) {
+      wfReachedRef.current.clear();
+      // Drop the one-shot pulse markers too so each phase's flash can
+      // replay from scratch once its turn comes back around next lap.
+      // Research (row 0) gets re-flagged again a few lines down in the
+      // same tick — force a reflow in between so the browser registers
+      // the removal before the class comes back, or it never notices
+      // anything changed and the animation doesn't restart.
+      rows.forEach(r => r.classList.remove('phase-pulse'));
+      void card?.offsetWidth;
+    }
+    wfPrevRef.current = wfActive;
+    wfReachedRef.current.add(wfActive);
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const badgeClass = (variant: HColor, outline: boolean) =>
+      `inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-bold ${outline ? BADGE_COLORS[variant].outline : BADGE_COLORS[variant].solid}`;
+
+    rows.forEach((row, i) => {
+      const badge = row.querySelector<HTMLElement>('.phase-badge');
+      if (!badge) return;
+      const isCurrent = i === wfActive;
+      const isCompleted = !isCurrent && wfReachedRef.current.has(i);
+      const isUpnext = !isCurrent && !isCompleted && i === (wfActive + 1) % rows.length;
+      // Same language as Request Sources' "just landed" row (channel-new-pulse):
+      // a couple of ring pulses that fade to nothing, not a lingering tint —
+      // fired once, right when this phase first flips to in-progress.
+      if (isCurrent && !reduced) row.classList.add('phase-pulse');
+      const [text, cls] = isCurrent
+        ? [t.ai_ph_inprogress, badgeClass('brand', false)]
+        : isCompleted
+        ? [t.ai_ph_completed, badgeClass('purple', false)]
+        : isUpnext
+        ? [t.ai_ph_upnext, badgeClass('cyan', false)]
+        : [t.ai_ph_queued, badgeClass('neutral', true)];
+      if (badge.textContent === text) return;
+      badge.textContent = text;
+      // Keep the "phase-badge" marker so this same badge is still findable
+      // on the next tick — overwriting className wholesale would drop it.
+      badge.className = `${cls} phase-badge`;
+      if (!reduced) {
+        gsap.fromTo(badge, { scale: 0.7, opacity: 0.4 }, { scale: 1, opacity: 1, duration: 0.32, ease: 'back.out(3)' });
+      }
+    });
+  }, [wfActive, t]);
 
   // Restart SVG SMIL animations (<animateMotion>/<mpath>) injected via
   // dangerouslySetInnerHTML — browsers only auto-start SMIL on document
@@ -1003,14 +1077,32 @@ export default function SkillsSection() {
             c.style.transform = '';
           });
         });
+
+        // Flag the just-landed row with a couple of pulse rings so it
+        // reads as a fresh notification, not just another list item.
+        incoming.classList.add('channel-new-pulse');
+
+        // The pulsing row's own border-bottom is hidden (its rounded
+        // corners would curve the line) — an absolutely-positioned divider
+        // takes its place, sized to incoming's own box. It sits outside
+        // flex/grid flow entirely so it can never end up sharing a bento
+        // grid row with a neighboring channel (which inflated that row's
+        // height) or get auto-placed into the wrong cell.
+        const divider = document.createElement('div');
+        divider.className = 'channel-pulse-divider';
+        divider.style.left = `${incoming.offsetLeft}px`;
+        divider.style.top = `${incoming.offsetTop + incoming.offsetHeight}px`;
+        divider.style.width = `${incoming.offsetWidth}px`;
+        incoming.insertAdjacentElement('afterend', divider);
       }, 2700);
 
       return () => {
         clearTimeout(loaderTimer);
         clearTimeout(revealTimer);
         loader?.classList.remove('is-active');
+        list.querySelector('.channel-pulse-divider')?.remove();
         channels.forEach(c => {
-          c.classList.remove('channel-collapsed');
+          c.classList.remove('channel-collapsed', 'channel-new-pulse');
           c.style.maxHeight = '';
           c.style.transition = '';
           c.style.transform = '';
@@ -1018,10 +1110,104 @@ export default function SkillsSection() {
       };
     }
 
+    if (expandedAiCard === 'intake') {
+      const card = cardRefs.current.get('intake');
+      const fieldEls = Array.from(card?.querySelectorAll<HTMLElement>('.form-mini .field') ?? []);
+      const dots = Array.from(card?.querySelectorAll<HTMLElement>('.form-status .pdot') ?? []);
+      const badge = card?.querySelector<HTMLElement>('.field-priority .val > span:last-child') ?? null;
+      const statusBar = card?.querySelector<HTMLElement>('.form-status') ?? null;
+      const statusLabel = statusBar?.querySelector<HTMLElement>('.fs-label') ?? null;
+      const items = fieldEls
+        .map(field => ({ field, span: field.querySelector<HTMLElement>('.val > span:first-child') }))
+        .filter((it): it is { field: HTMLElement; span: HTMLElement } => !!it.span)
+        .map(({ field, span }) => ({ field, span, text: span.dataset.original ?? span.textContent ?? '' }));
+      if (!items.length) return;
+
+      if (reduced) {
+        items.forEach(({ span, text }) => { span.textContent = text; });
+        gsap.set(dots, { clearProps: 'all' });
+        if (badge) gsap.set(badge, { clearProps: 'all' });
+        if (statusLabel) statusLabel.textContent = t.ai_f_complete;
+        statusBar?.classList.remove('is-filling');
+        statusBar?.classList.add('is-complete');
+        return;
+      }
+
+      let stepTimer: ReturnType<typeof setTimeout> | null = null;
+      // Types each field's value in, then lights its progress dot and moves
+      // on — simulates the form being auto-filled from the source message,
+      // field by field, with the Priority badge stamping in once its own
+      // field lands (it doesn't have to be the last field to type).
+      const typeField = (i: number) => {
+        if (i >= items.length) return;
+        const { field, span, text } = items[i];
+        field.classList.add('is-filling');
+        let count = 0;
+        const step = () => {
+          count += 1;
+          span.innerHTML = text.slice(0, count) + (count < text.length ? '<span class="tcp-cursor"></span>' : '');
+          if (count < text.length) {
+            stepTimer = setTimeout(step, 16);
+          } else {
+            field.classList.remove('is-filling');
+            const dot = dots[i];
+            if (dot) gsap.fromTo(dot, { opacity: 0.25, scaleY: 2.2 }, { opacity: 1, scaleY: 1, duration: 0.3, ease: 'back.out(3)' });
+            if (field.classList.contains('field-priority') && badge) {
+              gsap.fromTo(badge, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(2.6)', delay: 0.1 });
+            }
+            if (i === items.length - 1) {
+              if (statusLabel) statusLabel.textContent = t.ai_f_complete;
+              statusBar?.classList.remove('is-filling');
+              statusBar?.classList.add('is-complete');
+            }
+            stepTimer = setTimeout(() => typeField(i + 1), 110);
+          }
+        };
+        step();
+      };
+      const startTimer = setTimeout(() => typeField(0), 180);
+
+      return () => {
+        clearTimeout(startTimer);
+        if (stepTimer) clearTimeout(stepTimer);
+        items.forEach(({ field, span, text }) => {
+          span.textContent = text;
+          field.classList.remove('is-filling');
+        });
+        gsap.set(dots, { clearProps: 'all' });
+        if (badge) gsap.set(badge, { clearProps: 'all' });
+        if (statusLabel) statusLabel.textContent = t.ai_f_complete;
+        statusBar?.classList.remove('is-filling');
+        statusBar?.classList.add('is-complete');
+      };
+    }
+
     if (expandedAiCard === 'ai') {
       const card = cardRefs.current.get('ai');
       const p = card?.querySelector<HTMLParagraphElement>('.ai-block.summary p');
-      if (!p || reduced) return;
+      if (!p) return;
+      // Missing/Questions/Direction stay behind a "thinking" spinner until the
+      // summary finishes typing, then swap in with a fade — content that
+      // depends on the summary shouldn't appear before it does.
+      const revealPending = (animate: boolean) => {
+        const blocks = card?.querySelectorAll<HTMLElement>('.ai-block.missing, .ai-block.questions, .ai-block.direction');
+        blocks?.forEach(block => {
+          const spinner = block.querySelector<HTMLElement>('.ai-block-spinner');
+          const content = block.querySelector<HTMLElement>('.real-content');
+          if (spinner) {
+            if (animate) gsap.to(spinner, { opacity: 0, duration: 0.2, onComplete: () => { spinner.style.display = 'none'; } });
+            else spinner.style.display = 'none';
+          }
+          if (content) {
+            content.style.display = content.tagName === 'P' ? 'block' : 'flex';
+            if (animate) gsap.fromTo(content, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', clearProps: 'opacity,transform' });
+          }
+        });
+      };
+      if (reduced) {
+        revealPending(false);
+        return;
+      }
       const original = p.innerHTML;
       const flat = flatten([tokenizeHighlight(original)]);
       let count = 0;
@@ -1033,18 +1219,60 @@ export default function SkillsSection() {
           count += 1;
           const done = count >= flat.length;
           p.innerHTML = runsToHtml(toRuns(flat, count)) + (done ? '' : '<span class="tcp-cursor"></span>');
-          if (done && intervalId) clearInterval(intervalId);
+          if (done) {
+            if (intervalId) clearInterval(intervalId);
+            revealPending(true);
+          }
         }, 28);
       }, AI_THINK_MS);
       return () => {
         clearTimeout(startTimer);
         if (intervalId) clearInterval(intervalId);
         p.innerHTML = original;
+        // Reset the pending blocks so the spinner-then-reveal sequence
+        // replays correctly the next time this card is opened.
+        card?.querySelectorAll<HTMLElement>('.ai-block.missing .ai-block-spinner, .ai-block.questions .ai-block-spinner, .ai-block.direction .ai-block-spinner')
+          .forEach(el => { el.style.removeProperty('display'); gsap.set(el, { clearProps: 'opacity' }); });
+        card?.querySelectorAll<HTMLElement>('.ai-block.missing .real-content, .ai-block.questions .real-content, .ai-block.direction .real-content')
+          .forEach(el => { el.style.display = 'none'; gsap.set(el, { clearProps: 'opacity,transform' }); });
       };
     }
 
     if (expandedAiCard === 'tracking') {
       let echartsInstance: { dispose: () => void } | null = null;
+
+      // Count the record totals up from 0 instead of just fading in —
+      // plain setInterval rather than a GSAP tween, since this only needs
+      // to mutate text on a timer, not interpolate a DOM property.
+      const trackingCard = cardRefs.current.get('tracking');
+      const curEl = trackingCard?.querySelector<HTMLElement>('.rec-current');
+      const totEl = trackingCard?.querySelector<HTMLElement>('.rec-total');
+      let countTimer: ReturnType<typeof setInterval> | null = null;
+      let countStart: ReturnType<typeof setTimeout> | null = null;
+      if (curEl && totEl) {
+        const curTarget = parseInt(curEl.dataset.target ?? curEl.textContent ?? '0', 10);
+        const totTarget = parseInt(totEl.dataset.target ?? totEl.textContent ?? '0', 10);
+        if (reduced) {
+          curEl.textContent = String(curTarget);
+          totEl.textContent = String(totTarget);
+        } else {
+          const steps = 22;
+          let step = 0;
+          countStart = setTimeout(() => {
+            countTimer = setInterval(() => {
+              step += 1;
+              const eased = 1 - Math.pow(1 - Math.min(1, step / steps), 3);
+              curEl.textContent = String(Math.round(curTarget * eased));
+              totEl.textContent = String(Math.round(totTarget * eased));
+              if (step >= steps && countTimer) {
+                clearInterval(countTimer);
+                countTimer = null;
+              }
+            }, 26);
+          }, 260);
+        }
+      }
+
       const timer = setTimeout(async () => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore — echarts ships its own types; tsc finds them post-install
@@ -1076,12 +1304,63 @@ export default function SkillsSection() {
             itemStyle: { borderRadius: [0, 4, 4, 0] },
           }],
           animation: !reduced,
+          // Slower + elastic so the grow-in reads as a deliberate reveal
+          // (matches the elastic/back easings used on the card pop and
+          // pill/badge animations elsewhere in this section) instead of
+          // echarts' default quick linear-ish cubicOut.
+          animationDuration: 900,
+          animationEasing: 'elasticOut',
+          animationDelay: (idx: number) => idx * 90,
         });
         echartsInstance = chart;
       }, 380);
       return () => {
         clearTimeout(timer);
         echartsInstance?.dispose();
+        if (countStart) clearTimeout(countStart);
+        if (countTimer) clearInterval(countTimer);
+        if (curEl) curEl.textContent = curEl.dataset.target ?? curEl.textContent ?? '';
+        if (totEl) totEl.textContent = totEl.dataset.target ?? totEl.textContent ?? '';
+      };
+    }
+
+    if (expandedAiCard === 'human') {
+      const card = cardRefs.current.get('human');
+      const quote = card?.querySelector<HTMLElement>('.qq');
+      if (!quote) return;
+      const original = quote.dataset.original ?? quote.innerHTML;
+
+      if (reduced) {
+        quote.innerHTML = original;
+        return;
+      }
+
+      const flat = flatten([tokenizeHighlight(original, 'pivot')]);
+      let count = 0;
+      let stepTimer: ReturnType<typeof setTimeout> | null = null;
+      // Deliberately irregular per-character pacing (plus a longer beat
+      // after punctuation) instead of the AI summary's steady 28ms/char —
+      // this quote is the human reviewer's own note, so it should read as
+      // someone actually typing rather than a machine printing it out.
+      const typeStep = () => {
+        count += 1;
+        const done = count >= flat.length;
+        quote.innerHTML = runsToHtml(toRuns(flat, count)) + (done ? '' : '<span class="tcp-cursor tcp-cursor-human"></span>');
+        if (!done) {
+          const lastCh = flat[count - 1]?.ch;
+          const pause = lastCh && /[。.，,]/.test(lastCh) ? 220 : 26 + Math.random() * 34;
+          stepTimer = setTimeout(typeStep, pause);
+        }
+      };
+      // Picks up right as the Operating Principle panel finishes fading in
+      // (see toggle() in the card map — panel2's tween starts at
+      // HUMAN_QUOTE_MS and runs 450ms).
+      const startTimer = setTimeout(typeStep, HUMAN_QUOTE_MS + 300);
+
+      return () => {
+        clearTimeout(startTimer);
+        if (stepTimer) clearTimeout(stepTimer);
+        quote.innerHTML = original;
       };
     }
   }, [expandedAiCard]);
@@ -1396,7 +1675,14 @@ export default function SkillsSection() {
                     // "Thinking" beat before content streams in line-by-line —
                     // mirrors the Tech Stack section's live-demo feel but for
                     // a reasoning step rather than typed code.
-                    el.classList.add('is-thinking');
+                    // Deferred: setExpandedAiCard() above just queued a
+                    // re-render that changes this element's own className (adds
+                    // "is-open"), and React overwrites className wholesale on
+                    // commit — adding "is-thinking" before that commit lands
+                    // gets it silently wiped. setTimeout(0) runs after the
+                    // commit regardless of tab visibility (rAF doesn't fire
+                    // on a backgrounded tab, but this still needs to work there).
+                    setTimeout(() => el.classList.add('is-thinking'), 0);
                     const targets = [
                       detail.querySelector('.ai-block.summary'),
                       detail.querySelector('.ai-block.tasktype'),
@@ -1405,7 +1691,9 @@ export default function SkillsSection() {
                       detail.querySelector('.ai-block.questions'),
                       detail.querySelector('.ai-block.direction'),
                     ].filter((node): node is Element => !!node);
+                    const pills = detail.querySelectorAll('.ai-block.tasktype .vv > *, .ai-block.priority .vv > *');
                     gsap.set(targets, { opacity: 0, y: 14 });
+                    gsap.set(pills, { opacity: 0, y: 6 });
                     if (aiThinkTimeoutRef.current) clearTimeout(aiThinkTimeoutRef.current);
                     aiThinkTimeoutRef.current = setTimeout(() => {
                       el.classList.remove('is-thinking');
@@ -1413,19 +1701,103 @@ export default function SkillsSection() {
                         { opacity: 0, y: 14 },
                         { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', stagger: 0.12, clearProps: 'all' }
                       );
+                      // Task type / Priority pills pop in on their own beat,
+                      // after the surrounding card has settled into place.
+                      gsap.fromTo(pills,
+                        { opacity: 0, y: 6 },
+                        { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out', stagger: 0.07, delay: 0.28, clearProps: 'all' }
+                      );
                     }, AI_THINK_MS);
                   } else if (card.id === 'sources') {
-                    // Stack the first 4 rows in one by one; the 5th stays
-                    // collapsed here so the live-demo effect in the effect
-                    // below can reveal it afterward as a new message landing.
+                    // Stack the first 4 rows in one by one, top row first —
+                    // each drops down into place (like a message dropping in
+                    // from above) with its icon giving a small arrival bounce.
+                    // The 5th stays collapsed here so the live-demo effect in
+                    // the effect below can reveal it afterward as a new
+                    // message landing.
                     const rows = Array.from(detail.querySelectorAll<HTMLElement>('.channel'));
                     const incoming = rows[rows.length - 1];
                     const visible = rows.slice(0, -1);
+                    const icons = visible.map(r => r.querySelector<HTMLElement>('.ch-icon')).filter((n): n is HTMLElement => !!n);
                     incoming.classList.add('channel-collapsed');
-                    gsap.set(visible, { opacity: 0, y: 26, scale: 0.96 });
+                    gsap.set(visible, { opacity: 0, y: -18, scale: 0.96 });
+                    gsap.set(icons, { scale: 0.5 });
                     gsap.to(visible,
                       { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'power3.out', stagger: 0.14, clearProps: 'all' }
                     );
+                    gsap.to(icons,
+                      { scale: 1, duration: 0.5, ease: 'back.out(3.2)', stagger: 0.14, delay: 0.08, clearProps: 'scale' }
+                    );
+                  } else if (card.id === 'intake') {
+                    // Blank the field values synchronously (before the effect
+                    // below runs) so there's no flash of the fully-filled form —
+                    // same reasoning as the "is-thinking" class deferral above,
+                    // just via direct textContent instead of a class React would wipe.
+                    const fields = Array.from(detail.querySelectorAll<HTMLElement>('.form-mini .field'));
+                    fields.forEach(f => {
+                      const span = f.querySelector<HTMLElement>('.val > span:first-child');
+                      if (span) {
+                        span.dataset.original = span.dataset.original ?? span.textContent ?? '';
+                        span.textContent = '';
+                      }
+                    });
+                    const dots = detail.querySelectorAll('.form-status .pdot');
+                    gsap.set(dots, { opacity: 0.25 });
+                    const badge = detail.querySelector('.field-priority .val > span:last-child');
+                    if (badge) gsap.set(badge, { opacity: 0, scale: 0.5 });
+                    // The status bar only reads "Form complete" — and only
+                    // turns its green success tint — once every field has
+                    // actually finished typing (see the effect below).
+                    const statusBar = detail.querySelector<HTMLElement>('.form-status');
+                    const statusLabel = statusBar?.querySelector<HTMLElement>('.fs-label');
+                    statusBar?.classList.remove('is-complete');
+                    statusBar?.classList.add('is-filling');
+                    if (statusLabel) statusLabel.textContent = t.ai_f_filling;
+                  } else if (card.id === 'tracking') {
+                    gsap.fromTo(Array.from(detail.children),
+                      { opacity: 0, y: 14 },
+                      { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', stagger: 0.07, delay: 0.22, clearProps: 'all' }
+                    );
+                    // Zero the record counters synchronously — same
+                    // flash-prevention reasoning as intake's field blanking —
+                    // the effect below counts them back up to their real value.
+                    const cur = detail.querySelector<HTMLElement>('.rec-current');
+                    const tot = detail.querySelector<HTMLElement>('.rec-total');
+                    if (cur) { cur.dataset.target = cur.dataset.target ?? cur.textContent ?? '0'; cur.textContent = '0'; }
+                    if (tot) { tot.dataset.target = tot.dataset.target ?? tot.textContent ?? '0'; tot.textContent = '0'; }
+                  } else if (card.id === 'human') {
+                    const panels = Array.from(detail.querySelectorAll<HTMLElement>('.msg-panel'));
+                    const [panel1, panel2] = panels;
+                    if (!panel1 || !panel2) return;
+                    // Assessment rows tick in one at a time, the Risks row
+                    // gets its own amber underline once it lands, the P1
+                    // badge stamps in with a slight rotate-and-settle, then
+                    // — only once the verdict has fully landed, at
+                    // HUMAN_QUOTE_MS — the Operating Principle panel
+                    // follows (its quote typewriter picks up from there,
+                    // see the effect below). Verdict, then the reasoning
+                    // behind it; not both panels arriving together.
+                    const rows = Array.from(panel1.querySelectorAll<HTMLElement>('.hr-rows > div'));
+                    const badge = panel1.querySelector<HTMLElement>('.p1-badge');
+                    const risksRow = panel1.querySelector<HTMLElement>('.hr-risk');
+                    const quote = panel2.querySelector<HTMLElement>('.qq');
+                    if (quote) {
+                      quote.dataset.original = quote.dataset.original ?? quote.innerHTML;
+                      quote.innerHTML = '';
+                    }
+
+                    gsap.set(panel1, { opacity: 0, y: 14 });
+                    gsap.set(rows, { opacity: 0, y: 10 });
+                    if (badge) gsap.set(badge, { opacity: 0, scale: 1.7, rotate: -12 });
+                    if (risksRow) gsap.set(risksRow, { borderBottomColor: 'rgba(255,255,255,0.1)' });
+                    gsap.set(panel2, { opacity: 0, y: 14 });
+
+                    const tl = gsap.timeline();
+                    tl.to(panel1, { opacity: 1, y: 0, duration: 0.35, ease: 'power3.out', clearProps: 'all' }, 0.15)
+                      .to(rows, { opacity: 1, y: 0, duration: 0.35, ease: 'power3.out', stagger: 0.14, clearProps: 'all' }, 0.35);
+                    if (badge) tl.to(badge, { opacity: 1, scale: 1, rotate: 0, duration: 0.4, ease: 'back.out(2.6)', clearProps: 'all' }, 0.7);
+                    if (risksRow) tl.to(risksRow, { borderBottomColor: 'rgba(251,191,36,0.4)', duration: 0.5, ease: 'power2.out' }, 1.0);
+                    tl.to(panel2, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', clearProps: 'all' }, HUMAN_QUOTE_MS / 1000);
                   } else {
                     gsap.fromTo(Array.from(detail.children),
                       { opacity: 0, y: 14 },
@@ -1471,7 +1843,7 @@ export default function SkillsSection() {
                     {card.tags.map(tag => <span key={tag} className="ai-tag">{tag}</span>)}
                   </div>
                 )}
-                {card.pipeline && <AiFlowStepper steps={card.pipeline} />}
+                {card.pipeline && <AiFlowStepper steps={card.pipeline} onActiveChange={setWfActive} />}
                 <div className="ai-card-detail">{card.detail}</div>
               </article>
             );

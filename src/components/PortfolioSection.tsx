@@ -534,7 +534,7 @@ export default function PortfolioSection() {
           <div className="section-label rise-soft" style={{ marginBottom: 0 }}>My Portfolio</div>
           <div className="portfolio-headline">
             <h2 className="portfolio-headline-title rise-soft"><span className="headline-lead">Every Idea, Taken </span><span className="gradient-text">All the Way</span></h2>
-            <p className="portfolio-headline-sub rise-soft">精選作品——從第一筆草圖到正式上線，<br />記錄每一次完整的設計旅程。</p>
+            <p className="portfolio-headline-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.portfolio_headline_sub }} />
           </div>
         </div>
 
