@@ -4637,20 +4637,63 @@
         width: 100%;
       }
 
-      /* Domain CardSwap — desktop/tablet anchor it bottom-right corner-
-         peeking; at mobile width that reads as a small tucked-away sliver.
-         Drop the scale-down (CardSwap.css's own 0.55 media rule) so the
-         stack reads as a proper half-of-the-card visual instead of a corner
-         accent, while keeping the same bottom-right anchor (overhanging
-         past the card's own corner is fine — see .cardswap-container's
-         desktop default). Selector specificity (2 classes) beats
-         CardSwap.css's single-class .cardswap-container rules regardless
-         of source order. */
+      /* Domain CardSwap — mobile drops the min-height (below) so the card's
+         height comes purely from the label/number/caption text stack. The
+         stack's own width/height (216/144 props, see AboutSection.tsx) are
+         inline styles React sets on both .cardswap-container and every
+         .cardswap-card, and inline style always wins over any stylesheet
+         selector regardless of specificity — re-deriving width/height from
+         container query length units (cqh) needs !important to actually
+         land. .domain-swap-stage is the query container (container-type:
+         size), with its top inset by .bento-label's own line-height so the
+         "Service Domains" title has a clear row above the stack instead of
+         the stack's box starting underneath it — that reserved row also
+         shrinks the container's queried height, so the cqh-derived stack
+         size (already trimmed a notch smaller than the prior pass) comes
+         out smaller too. Driving both width and height off cqh (not
+         cqw) keeps the 3:2 aspect ratio while tying the whole thing to
+         card height — taller caption text (longer translation, larger
+         type) grows the stack with it instead of it staying pinned to a
+         fixed px size. The now-shorter card's overflow:hidden (.sc-card)
+         clips whatever spills past the right/bottom edges — a fixed crop
+         instead of a fitted shrink. */
+      .domain-swap-stage {
+        container-type: size;
+      }
+
+      /* .bento-card.card-spotlight.bento-area-domains > .domain-swap-stage's
+         own inset:0 (3-class + child-combinator selector) outranks a plain
+         .domain-swap-stage rule regardless of media-query source order —
+         match its specificity to actually move the top edge. */
+      .bento-card.card-spotlight.bento-area-domains > .domain-swap-stage {
+        top: 22px;
+      }
+
+      .domain-swap-stage .cardswap-container,
+      .domain-swap-stage .cardswap-card {
+        width: 108cqh !important;
+        height: 72cqh !important;
+      }
+
       .domain-swap-stage .cardswap-container {
         bottom: 0;
         right: 0;
         transform: translate(5%, 20%);
         transform-origin: bottom right;
+      }
+
+      .bento-area-domains {
+        min-height: 0;
+      }
+
+      /* The big "4" digit sat in a flex:1 area that centered it between the
+         label and caption to fill the old fixed 240px min-height. Now that
+         the card's height is content-driven (see .bento-area-domains
+         above), stop it from claiming grown flex space so it sits close to
+         the label instead of stretching the stack out. */
+      .bento-area-domains .bento-num-center {
+        flex: 0 1 auto;
+        margin: 4px 0;
       }
 
       .about-h2 {
@@ -4713,6 +4756,11 @@
         grid-template-columns: 1fr;
       }
 
+      .portfolio-filter-tabs {
+        margin-left: auto;
+        margin-right: auto;
+      }
+
       #portfolio-grid {
         grid-template-columns: 1fr !important;
       }
@@ -4744,8 +4792,29 @@
         grid-template-columns: 1fr;
       }
 
+      /* FAQ tab switch swaps .faq-list's whole subtree (Accordion is keyed
+         on faqTab, so it unmounts/remounts) right where the user's thumb
+         is. Mobile browsers' scroll anchoring tries to compensate for that
+         DOM removal/insertion and ends up jumping the page instead of
+         holding it still — disable anchoring for the card so a tab click
+         never scrolls the page. */
+      .faq-card {
+        overflow-anchor: none;
+      }
+
       .contact-left-panel {
         position: static;
+      }
+
+      /* corner-shape:squircle's superellipse clip path is unreliable on
+         real mobile browsers (see the portfolio-card corner history) — the
+         ::before ring (border-radius: inherit + mask xor trick) ends up
+         mis-clipped against the card's own corner, reading as an abnormally
+         cut border. Fall back to plain rounding on mobile, same fix already
+         used for the portfolio cards. */
+      .line-banner,
+      .line-banner::before {
+        corner-shape: round;
       }
 
       .line-banner {
