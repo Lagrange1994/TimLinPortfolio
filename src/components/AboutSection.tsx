@@ -325,6 +325,25 @@ export default function AboutSection() {
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro2_label}</div>
             <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p2 }} />
+            <div className="about-orbit" aria-hidden="true">
+              <div className="about-orbit-ring">
+                <div className="about-orbit-node" style={{ ['--angle' as string]: '-90deg' }}>
+                  <div className="about-orbit-icon"><img src="./img/others/Blender_logo.png" alt="" /></div>
+                </div>
+                <div className="about-orbit-node" style={{ ['--angle' as string]: '-18deg' }}>
+                  <div className="about-orbit-icon"><img src="./img/others/Spline_logo.webp" alt="" /></div>
+                </div>
+                <div className="about-orbit-node" style={{ ['--angle' as string]: '54deg' }}>
+                  <div className="about-orbit-icon"><img src="./img/others/Dora_logo.png" alt="" /></div>
+                </div>
+                <div className="about-orbit-node" style={{ ['--angle' as string]: '126deg' }}>
+                  <div className="about-orbit-icon"><i className="ph-bold ph-cube" /></div>
+                </div>
+                <div className="about-orbit-node" style={{ ['--angle' as string]: '198deg' }}>
+                  <div className="about-orbit-icon"><i className="ph-bold ph-browser" /></div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="bento-card card-spotlight sc-card bento-area-years rise-card">

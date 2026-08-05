@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
 import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
@@ -6,6 +7,8 @@ import { scrollToSectionAligned } from '../utils/navHeader';
 import gsap from 'gsap';
 
 const SMOOTH_TAU = 0.18;
+// Spring tuning matches animata.design's Fluid Tabs indicator (see the FAQ tabs in ContactSection.tsx).
+const FILTER_TAB_INDICATOR_SPRING = { type: 'spring' as const, stiffness: 380, damping: 34, mass: 0.75 };
 // Matches How I Use AI's card corner radius (.ai-card) so the squircle reads
 // consistently across sections instead of scaling with each card's box size.
 const CARD_CORNER_RADIUS = 44;
@@ -557,15 +560,28 @@ export default function PortfolioSection() {
 
         {/* Filter buttons */}
         {expanded && (
-          <div id="portfolio-filters" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
+          <div id="portfolio-filters" className="portfolio-filter-tabs" role="tablist">
             {['all', 'mobile', 'web'].map(f => (
               <button
                 key={f}
-                className={`btn-glass filter-btn${activeFilter === f ? ' active' : ''}`}
+                type="button"
+                role="tab"
+                aria-selected={activeFilter === f}
+                className={`portfolio-filter-tab${activeFilter === f ? ' active' : ''}`}
                 data-filter={f}
                 onClick={() => handleFilter(f)}
               >
-                {f === 'all' ? 'All' : f === 'mobile' ? 'Apps Design' : 'Web Design'}
+                {activeFilter === f && (
+                  <motion.span
+                    layoutId="portfolio-filter-indicator"
+                    className="portfolio-filter-indicator"
+                    transition={FILTER_TAB_INDICATOR_SPRING}
+                    aria-hidden="true"
+                  />
+                )}
+                <span className="portfolio-filter-label">
+                  {f === 'all' ? 'All' : f === 'mobile' ? 'Apps Design' : 'Web Design'}
+                </span>
               </button>
             ))}
           </div>

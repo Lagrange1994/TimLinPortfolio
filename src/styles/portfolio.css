@@ -2538,69 +2538,59 @@
     }
 
     /* PORTFOLIO FILTER BUTTONS — btn-glass style */
-    #portfolio-filters {
-      display: none;
-      gap: 8px;
-    }
 
-    .filter-btn {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 6px 18px;
-      border-radius: 9999px;
-      font-size: 12px;
-      font-family: var(--mono);
-      font-weight: 600;
-      cursor: pointer;
+    /* Fluid Tabs track (same technique as .faq-tabs in ContactSection):
+       one glass pill shell holds flat tab buttons, and a single
+       motion.span with a shared layoutId slides between them instead of
+       each button carrying its own active background. */
+    .portfolio-filter-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      width: fit-content;
+      margin-bottom: 24px;
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 9999px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 0 15px rgba(255, 255, 255, 0.1);
+    }
+
+    .portfolio-filter-tab {
+      position: relative;
+      padding: 6px 18px;
+      background: none;
+      border: none;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-family: var(--mono);
+      font-weight: 600;
       color: var(--text-70);
-      overflow: hidden;
-      z-index: 1;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      transition: color .2s ease;
     }
 
-    .filter-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 150%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1) 40%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0.1) 60%, transparent);
-      transform: skewX(-25deg);
-      transition: left 0.6s ease;
-      z-index: -1;
-    }
-
-    .filter-btn:hover {
+    .portfolio-filter-tab:hover {
       color: var(--text);
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2), inset 0 0 0 1px rgba(255, 255, 255, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.2);
     }
 
-    .filter-btn:hover::before {
-      left: 100%;
-    }
-
-    .filter-btn:active {
-      transform: translateY(1px) scale(0.98);
-    }
-
-    .filter-btn.active {
-      background: var(--grad);
-      border-color: rgba(255, 255, 255, 0.3);
+    .portfolio-filter-tab.active {
       color: #fff;
+    }
+
+    .portfolio-filter-indicator {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      border-radius: 9999px;
+      background: var(--grad);
       box-shadow: 0 4px 20px rgba(255, 101, 132, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 0 15px rgba(255, 255, 255, 0.1);
     }
 
-    .filter-btn.active:hover {
-      box-shadow: 0 6px 25px rgba(255, 101, 132, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.2);
+    .portfolio-filter-label {
+      position: relative;
+      z-index: 1;
     }
 
     /* portfolio scroller */
@@ -3249,26 +3239,22 @@
       margin-bottom: 4px;
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--glass-border);
-      border-radius: 10px;
-      corner-shape: squircle;
+      border-radius: 9999px;
     }
 
     .faq-tab {
+      position: relative;
       flex: 1;
       padding: 8px 10px;
       background: none;
       border: none;
-      /* Concentric with .faq-tabs' own 10px squircle: offset from the
-         outer edge is border(1px) + padding(4px) = 5px, so radius here
-         must be 10 - 5 = 5px (same curvature too) to share one center. */
-      border-radius: 5px;
-      corner-shape: squircle;
+      border-radius: 9999px;
       font-family: var(--font);
       font-size: 12.5px;
       font-weight: 500;
       color: var(--text-50);
       cursor: pointer;
-      transition: color .2s ease, background .2s ease;
+      transition: color .2s ease;
     }
 
     .faq-tab:hover {
@@ -3277,8 +3263,24 @@
 
     .faq-tab.active {
       color: #fff;
+    }
+
+    /* Sliding pill indicator, same technique as animata.design's Fluid
+       Tabs: a single motion.span shares one layoutId across both buttons,
+       so Motion animates it between them instead of cross-fading a
+       background on each button individually. */
+    .faq-tab-indicator {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      border-radius: 9999px;
       background: var(--primary);
       box-shadow: 0 2px 10px color-mix(in oklab, var(--primary) 45%, transparent);
+    }
+
+    .faq-tab-label {
+      position: relative;
+      z-index: 1;
     }
 
     .faq-list {
@@ -3484,7 +3486,7 @@
        this rule's higher specificity (3 :not() clauses vs. that rule's 1
        descendant class) overrides their own position/z-index and breaks
        the layering both rely on. */
-    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay):not(.domains-scrim):not(.domain-swap-stage) {
+    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay):not(.domains-scrim):not(.domain-swap-stage):not(.about-orbit) {
       position: relative;
       z-index: 2;
     }
@@ -3501,6 +3503,94 @@
       z-index: 1;
       pointer-events: none;
       background: linear-gradient(to top right, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 65%);
+    }
+
+    /* Immersive Visuals card — bio text keeps to 3/4 width, leaving the
+       right-hand quarter as breathing room for the orbit. The orbit itself
+       is sized bigger than that reserved quarter and anchored past the
+       card's own bottom-right edge, the same "dominant, allowed to overhang
+       past the corner" treatment as .domain-swap-stage above — .sc-card's
+       overflow:hidden clips it for free, so it reads as partially cropped
+       by the card edge instead of neatly boxed in. */
+    .bento-area-intro2 .bento-text {
+      max-width: 75%;
+    }
+
+    /* Icons ride a single rotating ring but each counter-rotates in its own
+       inner wrapper so they stay upright instead of spinning in place —
+       same technique reactbits.dev uses for its "Well Organized" bento
+       card. --radius is a percentage (not px) so the ring keeps its icons
+       proportionally spaced as .about-orbit's own size changes across
+       breakpoints. */
+    .about-orbit {
+      position: absolute;
+      right: -24px;
+      bottom: -24px;
+      width: 140px;
+      height: 140px;
+      z-index: 0;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .about-orbit-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      animation: about-orbit-spin 26s linear infinite;
+    }
+
+    .about-orbit-node {
+      --angle: 0deg;
+      --radius: 50%;
+      position: absolute;
+      top: calc(50% + (var(--radius) * sin(var(--angle))));
+      left: calc(50% + (var(--radius) * cos(var(--angle))));
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transform: translate(-50%, -50%);
+    }
+
+    .about-orbit-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      animation: about-orbit-spin-rev 26s linear infinite;
+    }
+
+    .about-orbit-node img {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      filter: grayscale(1) brightness(1.6);
+    }
+
+    .about-orbit-node i {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    @keyframes about-orbit-spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes about-orbit-spin-rev {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(-360deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .about-orbit-ring,
+      .about-orbit-icon {
+        animation: none;
+      }
     }
 
     /* ── PROFILE CARD (React Bits) ── */
@@ -6321,6 +6411,16 @@
 
       .line-desc {
         font-size: 12px;
+      }
+
+      /* Immersive Visuals orbit — mobile cards use 16px padding (not the
+         desktop 24px), so shrink+match the overhang to that padding value
+         to keep the same "cropped by the corner" proportions. */
+      .about-orbit {
+        right: -16px;
+        bottom: -16px;
+        width: 100px;
+        height: 100px;
       }
     }
 

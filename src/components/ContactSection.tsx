@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import SpecularOverlay from './SpecularOverlay';
 import {
@@ -7,6 +8,9 @@ import {
   AccordionButton,
   AccordionPanel,
 } from './animate-ui/components/headless/accordion';
+
+// Spring tuning matches animata.design's Fluid Tabs indicator.
+const FAQ_TAB_INDICATOR_SPRING = { type: 'spring' as const, stiffness: 380, damping: 34, mass: 0.75 };
 
 export default function ContactSection() {
   const { t } = useLang();
@@ -208,7 +212,15 @@ export default function ContactSection() {
                     className={`faq-tab${faqTab === 'experience' ? ' active' : ''}`}
                     onClick={() => { setFaqTab('experience'); setOpenFaqIndex(-1); }}
                   >
-                    {t.faq_tab_experience}
+                    {faqTab === 'experience' && (
+                      <motion.span
+                        layoutId="faq-tab-indicator"
+                        className="faq-tab-indicator"
+                        transition={FAQ_TAB_INDICATOR_SPRING}
+                        aria-hidden="true"
+                      />
+                    )}
+                    <span className="faq-tab-label">{t.faq_tab_experience}</span>
                   </button>
                   <button
                     type="button"
@@ -217,7 +229,15 @@ export default function ContactSection() {
                     className={`faq-tab${faqTab === 'freelance' ? ' active' : ''}`}
                     onClick={() => { setFaqTab('freelance'); setOpenFaqIndex(-1); }}
                   >
-                    {t.faq_tab_freelance}
+                    {faqTab === 'freelance' && (
+                      <motion.span
+                        layoutId="faq-tab-indicator"
+                        className="faq-tab-indicator"
+                        transition={FAQ_TAB_INDICATOR_SPRING}
+                        aria-hidden="true"
+                      />
+                    )}
+                    <span className="faq-tab-label">{t.faq_tab_freelance}</span>
                   </button>
                 </div>
                 <Accordion className="faq-list" key={faqTab}>
