@@ -2,37 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
+import {
+    SharedIcons, BackButton, ScrollTopButton, HeroCTAButton, TabNav, ToolPill,
+    InfoGrid, InfoCard, PainPointCard, GalleryItemButton, ImageWithSkeleton, ResizeHandle,
+} from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
 
-// --- COMPONENTS ---
-        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
-            if (!src) return null;
-            const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
-            return (
-                <picture style={{ display: 'contents' }}>
-                    <source srcSet={encodeURI(webpSrc)} type="image/webp" />
-                    <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} />
-                </picture>
-            );
-        };
-
-        const loadedImageCache = new Set();
-
-        const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
-            const [loaded, setLoaded] = useState(() => loadedImageCache.has(src));
-            useEffect(() => { setLoaded(loadedImageCache.has(src)); }, [src]);
-            const handleLoad = () => { loadedImageCache.add(src); setLoaded(true); };
-            const handleError = () => { console.warn("Image error:", src); setLoaded(true); };
-            return (
-                <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {!loaded && <div className="absolute inset-0 skeleton rounded-lg z-10 flex items-center justify-center"><i className="ph ph-image text-white/10 text-3xl"></i></div>}
-                    <ResponsiveImage src={src} alt={alt} className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={handleLoad} onError={handleError} {...props} />
-                </div>
-            );
-        };
-
-        // --- FRAMES ---
+// --- FRAMES ---
         const PhoneFrame = ({ src, alt }) => (
             <div className="flex items-center justify-center w-full h-full pointer-events-none">
                 <div className="relative h-full w-auto max-w-full aspect-[9/19] border-[6px] md:border-[8px] border-[#2d2d2d] rounded-[1.5rem] lg:rounded-[2.5rem] overflow-hidden shadow-2xl bg-black animate-fadeIn shrink-0 pointer-events-auto">
@@ -51,8 +28,6 @@ gsap.registerPlugin(ScrollToPlugin);
 
         // --- ICONS ---
         const Icons = {
-            XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
-            AI: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l-9 18h18L12 3z" /><circle cx="12" cy="13" r="2" /></svg>,
             Train: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2zM16 3v18M8 3v18M3 12h18" /></svg>,
             Shop: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>,
             User: () => <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
@@ -418,13 +393,10 @@ gsap.registerPlugin(ScrollToPlugin);
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-tym-primary/50 hover:bg-tym-dark-light transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
-                            <i className="ph ph-arrow-left text-tym-primary group-hover:text-tym-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
-                        </button>
+                        <BackButton prefix="tym" label={t('back_home')} onClick={goBack} />
                     </nav>
 
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-tym-primary hover:border-tym-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="ph ph-arrow-up"></i></button>
+                    <ScrollTopButton prefix="tym" visible={showBackToHero} onClick={() => scrollToSection(0)} />
 
                     <div id="main-scroller" ref={mainContainerRef}>
                         <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-tym-dark relative hero-bg-metro">
@@ -433,7 +405,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div className={`inline-block px-4 py-1 rounded-full border border-white bg-black/20 text-white text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>APP REDESIGN</div>
                                     <h1 className={`text-5xl lg:text-7xl font-bold font-heading mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /> <span className="text-white">{t('title_sub')}</span></h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-200 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-tym-primary border border-tym-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-tym-primary transition-all shadow-lg transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="ph ph-arrow-down ml-2 animate-bounce"></i></button>
+                                    <HeroCTAButton prefix="tym" shadowClass="shadow-[0_10px_30px_rgba(127,63,152,0.4)]" loading={loading} label={t('btn_explore')} onClick={() => scrollToSection(1)} />
                                 </div>
                             </div>
                         </section>
@@ -459,9 +431,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                         </div>
                                     )}
                                 </div>
-                                <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
-                                    <div className="w-10 h-10 bg-[#1E1E1E]/90 backdrop-blur-md rounded-full shadow border border-white/20 flex flex-col items-center justify-center"><i className="ph ph-caret-up text-[8px] text-gray-400 mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="ph ph-caret-down text-[8px] text-gray-400 mt-0.5"></i></div>
-                                </div>
+                                <ResizeHandle prefix="tym" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
                             </div>
 
                             <div className="w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col min-h-0">
@@ -470,11 +440,12 @@ gsap.registerPlugin(ScrollToPlugin);
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold font-heading text-white mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4">Revamp Plan & Design Strategy</p>
-                                            <div className="flex space-x-6 horizontal-tabs mt-2 lg:mt-4 pb-1 border-b border-white/5">
-                                                {[{ id: 'context', label: t('tab_context') }, { id: 'ux_strategy', label: t('tab_ux') }, { id: 'biz_value', label: t('tab_biz') }, { id: 'engagement', label: t('tab_loop') }, { id: 'gallery', label: t('tab_gallery') }].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-all pb-3 relative flex-shrink-0 ${activeTab === tab.id ? 'text-tym-primary' : 'text-gray-500 hover:text-white'}`}>{tab.label}{activeTab === tab.id && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-tym-primary rounded-t-full"></span>}</button>
-                                                ))}
-                                            </div>
+                                            <TabNav
+                                                prefix="tym"
+                                                activeTab={activeTab}
+                                                onChange={setActiveTab}
+                                                tabs={[{ id: 'context', label: t('tab_context') }, { id: 'ux_strategy', label: t('tab_ux') }, { id: 'biz_value', label: t('tab_biz') }, { id: 'engagement', label: t('tab_loop') }, { id: 'gallery', label: t('tab_gallery') }]}
+                                            />
                                         </div>
                                     </div>
 
@@ -482,15 +453,35 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={swipeContentRef} className="p-4 lg:p-10 pb-24">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-10 animate-fadeIn">
-                                                <div><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-3">{t('overview_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('overview_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tym-primary/20 text-tym-primary border border-tym-primary/30"><Icons.XD /><span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tym-secondary/20 text-tym-secondary border border-tym-secondary/30"><Icons.AI /><span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-3">{t('overview_title')}</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">{t('overview_desc')}</p>
+                                                    <InfoGrid>
+                                                        <InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard>
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <ToolPill prefix="tym" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
+                                                                <ToolPill prefix="tym" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" />
+                                                            </div>
+                                                        </InfoCard>
+                                                    </InfoGrid>
+                                                </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div>
                                                     {/* [修正] 標題加上了 flex 和 span 裝飾桿 */}
                                                     <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tym-secondary rounded-full mr-3"></span>{t('challenge_title')}</h3>
                                                     <div className="grid gap-5">
-                                                        {/* [修正] 移除了 border-l-4 等設定，僅保留 border border-white/10 */}
-                                                        <div className="feature-card-standard border border-white/10 p-6"><div className="flex items-center mb-3 text-tym-secondary"><Icons.User /><span className="ml-2 font-bold text-sm uppercase tracking-wider">User Pain Points</span></div><h4 className="text-white font-bold text-lg mb-2">{t('pain_user_title')}</h4><ul className="list-disc list-inside text-sm text-gray-400 space-y-1">{t('pain_user_desc').map((item, i) => <li key={i}>{item}</li>)}</ul></div>
-                                                        <div className="feature-card-standard border border-white/10 p-6"><div className="flex items-center mb-3 text-tym-primary"><Icons.Shop /><span className="ml-2 font-bold text-sm uppercase tracking-wider">Business Pain Points</span></div><h4 className="text-white font-bold text-lg mb-2">{t('pain_biz_title')}</h4><ul className="list-disc list-inside text-sm text-gray-400 space-y-1">{t('pain_biz_desc').map((item, i) => <li key={i}>{item}</li>)}</ul></div>
+                                                        <PainPointCard
+                                                            prefix="tym"
+                                                            subtitle={<span className="inline-flex items-center"><Icons.User /><span className="ml-2">{t('pain_user_title')}</span></span>}
+                                                            items={t('pain_user_desc').map((desc) => ({ desc }))}
+                                                        />
+                                                        <PainPointCard
+                                                            prefix="tym"
+                                                            subtitle={<span className="inline-flex items-center"><Icons.Shop /><span className="ml-2">{t('pain_biz_title')}</span></span>}
+                                                            items={t('pain_biz_desc').map((desc) => ({ desc }))}
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
@@ -518,7 +509,18 @@ gsap.registerPlugin(ScrollToPlugin);
                                         )}
                                         {activeTab === 'gallery' && (
                                             /* [修正] 按鈕加上了 border (width) */
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-3">{t('gallery_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-6"><span className="text-tym-primary font-bold">Value Delivered:</span><br />{t('gallery_desc')}</p></div><div className="grid grid-cols-1 gap-3"><div className="text-xs font-bold text-gray-500 uppercase mb-1">Interface Gallery</div>{galleryItems.map((item) => (<button key={item.id} onClick={() => setActiveGalleryItem(item)} className={`text-left feature-card-standard border p-4 hover:border-tym-primary transition-colors group flex items-center ${activeGalleryItem && activeGalleryItem.id === item.id ? '!border-tym-primary bg-white/5' : 'border-white/10'}`}><div className="flex-1"><h4 className={`font-bold transition-colors text-sm mb-1 ${activeGalleryItem && activeGalleryItem.id === item.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>{item.name}</h4><p className="text-xs text-gray-500 group-hover:text-gray-400">{item.desc}</p></div><i className={`ph ph-caret-left transform transition-all ml-4 ${activeGalleryItem && activeGalleryItem.id === item.id ? 'text-tym-primary -translate-x-1' : 'text-gray-600 group-hover:text-tym-primary group-hover:-translate-x-1'}`}></i></button>))}</div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-3">{t('gallery_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-6"><span className="text-tym-primary font-bold">Value Delivered:</span><br />{t('gallery_desc')}</p></div><div className="grid grid-cols-1 gap-3"><div className="text-xs font-bold text-gray-500 uppercase mb-1">Interface Gallery</div>{galleryItems.map((item) => (
+                                                    <GalleryItemButton
+                                                        key={item.id}
+                                                        prefix="tym"
+                                                        active={!!(activeGalleryItem && activeGalleryItem.id === item.id)}
+                                                        onClick={() => setActiveGalleryItem(item)}
+                                                        id={item.id}
+                                                        name={item.name}
+                                                        desc={item.desc}
+                                                        activeShadowClass="shadow-[0_0_15px_rgba(127,63,152,0.1)]"
+                                                    />
+                                                ))}</div></div>
                                         )}
                                     
                                     </div>
@@ -526,15 +528,35 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={peekContentRef} style={{ transform: `translateX(${dragDirRef.current * 100}%)` }} className="absolute inset-0 p-4 lg:p-10 pb-24 overflow-y-auto">
                                         {peekTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-10 animate-fadeIn">
-                                                <div><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-3">{t('overview_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('overview_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tym-primary/20 text-tym-primary border border-tym-primary/30"><Icons.XD /><span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tym-secondary/20 text-tym-secondary border border-tym-secondary/30"><Icons.AI /><span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-3">{t('overview_title')}</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">{t('overview_desc')}</p>
+                                                    <InfoGrid>
+                                                        <InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard>
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <ToolPill prefix="tym" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
+                                                                <ToolPill prefix="tym" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" />
+                                                            </div>
+                                                        </InfoCard>
+                                                    </InfoGrid>
+                                                </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div>
                                                     {/* [修正] 標題加上了 flex 和 span 裝飾桿 */}
                                                     <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tym-secondary rounded-full mr-3"></span>{t('challenge_title')}</h3>
                                                     <div className="grid gap-5">
-                                                        {/* [修正] 移除了 border-l-4 等設定，僅保留 border border-white/10 */}
-                                                        <div className="feature-card-standard border border-white/10 p-6"><div className="flex items-center mb-3 text-tym-secondary"><Icons.User /><span className="ml-2 font-bold text-sm uppercase tracking-wider">User Pain Points</span></div><h4 className="text-white font-bold text-lg mb-2">{t('pain_user_title')}</h4><ul className="list-disc list-inside text-sm text-gray-400 space-y-1">{t('pain_user_desc').map((item, i) => <li key={i}>{item}</li>)}</ul></div>
-                                                        <div className="feature-card-standard border border-white/10 p-6"><div className="flex items-center mb-3 text-tym-primary"><Icons.Shop /><span className="ml-2 font-bold text-sm uppercase tracking-wider">Business Pain Points</span></div><h4 className="text-white font-bold text-lg mb-2">{t('pain_biz_title')}</h4><ul className="list-disc list-inside text-sm text-gray-400 space-y-1">{t('pain_biz_desc').map((item, i) => <li key={i}>{item}</li>)}</ul></div>
+                                                        <PainPointCard
+                                                            prefix="tym"
+                                                            subtitle={<span className="inline-flex items-center"><Icons.User /><span className="ml-2">{t('pain_user_title')}</span></span>}
+                                                            items={t('pain_user_desc').map((desc) => ({ desc }))}
+                                                        />
+                                                        <PainPointCard
+                                                            prefix="tym"
+                                                            subtitle={<span className="inline-flex items-center"><Icons.Shop /><span className="ml-2">{t('pain_biz_title')}</span></span>}
+                                                            items={t('pain_biz_desc').map((desc) => ({ desc }))}
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
@@ -562,7 +584,18 @@ gsap.registerPlugin(ScrollToPlugin);
                                         )}
                                         {peekTab === 'gallery' && (
                                             /* [修正] 按鈕加上了 border (width) */
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-3">{t('gallery_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-6"><span className="text-tym-primary font-bold">Value Delivered:</span><br />{t('gallery_desc')}</p></div><div className="grid grid-cols-1 gap-3"><div className="text-xs font-bold text-gray-500 uppercase mb-1">Interface Gallery</div>{galleryItems.map((item) => (<button key={item.id} onClick={() => setActiveGalleryItem(item)} className={`text-left feature-card-standard border p-4 hover:border-tym-primary transition-colors group flex items-center ${activeGalleryItem && activeGalleryItem.id === item.id ? '!border-tym-primary bg-white/5' : 'border-white/10'}`}><div className="flex-1"><h4 className={`font-bold transition-colors text-sm mb-1 ${activeGalleryItem && activeGalleryItem.id === item.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>{item.name}</h4><p className="text-xs text-gray-500 group-hover:text-gray-400">{item.desc}</p></div><i className={`ph ph-caret-left transform transition-all ml-4 ${activeGalleryItem && activeGalleryItem.id === item.id ? 'text-tym-primary -translate-x-1' : 'text-gray-600 group-hover:text-tym-primary group-hover:-translate-x-1'}`}></i></button>))}</div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-3">{t('gallery_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-6"><span className="text-tym-primary font-bold">Value Delivered:</span><br />{t('gallery_desc')}</p></div><div className="grid grid-cols-1 gap-3"><div className="text-xs font-bold text-gray-500 uppercase mb-1">Interface Gallery</div>{galleryItems.map((item) => (
+                                                    <GalleryItemButton
+                                                        key={item.id}
+                                                        prefix="tym"
+                                                        active={!!(activeGalleryItem && activeGalleryItem.id === item.id)}
+                                                        onClick={() => setActiveGalleryItem(item)}
+                                                        id={item.id}
+                                                        name={item.name}
+                                                        desc={item.desc}
+                                                        activeShadowClass="shadow-[0_0_15px_rgba(127,63,152,0.1)]"
+                                                    />
+                                                ))}</div></div>
                                         )}
                                     
                                     

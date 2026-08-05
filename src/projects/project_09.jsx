@@ -2,33 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
+import {
+    SharedIcons, BackButton, ScrollTopButton, HeroCTAButton, TabNav, ToolPill,
+    InfoGrid, InfoCard, PainPointCard, ProcessTimeline, FeatureCard,
+    GalleryItemButton, BrowserFrame, ImageWithSkeleton,
+} from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
 
 // --- COMPONENTS ---
-        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
-            if (!src) return null;
-            const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
-            return (<picture style={{ display: 'contents' }}> <source srcSet={encodeURI(webpSrc)} type="image/webp" /> <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} /> </picture>);
-        };
-
-        const loadedImageCache = new Set();
-
-        const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
-            const [loaded, setLoaded] = useState(() => loadedImageCache.has(src));
-            useEffect(() => { setLoaded(loadedImageCache.has(src)); }, [src]);
-            const handleLoad = () => { loadedImageCache.add(src); setLoaded(true); };
-            return (
-                <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {!loaded && (<div className="absolute inset-0 skeleton rounded-lg z-10 flex items-center justify-center pointer-events-none"> <i className="ph ph-image text-white/10 text-3xl"></i> </div>)}
-                    <ResponsiveImage src={src} alt={alt} className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={handleLoad} {...props} />
-                </div>
-            );
-        };
-
         const Icons = {
-            XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
-            AI: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l-9 18h18L12 3z" /><circle cx="12" cy="13" r="2" /></svg>,
             Clock: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
             Users: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
             Shield: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
@@ -68,6 +51,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 sol_3_title: "分級權限管理", sol_3_desc: "針對不同科室與職級設定專屬權限，確保資料流向安全可控。", sol_3_benefit: "Benefit: 針對不同科室設定專屬權限，確保資料流向安全可控。",
 
                 gallery_title: "介面展示 Gallery", gallery_desc: "點擊下方卡片查看高保真設計。",
+                gallery_item_hint: "點擊預覽 {name} 介面細節。",
                 img_admin: "管理者後台", img_news: "消息中心", img_booking: "預約表單", img_meeting: "局務會議",
                 scroll_hint: "上下滾動瀏覽完整畫面"
             },
@@ -101,6 +85,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 sol_3_title: "Permission Management", sol_3_desc: "Specific permissions for different departments and ranks to ensure data security.", sol_3_benefit: "Benefit: Custom permissions ensure controllable and secure data flow.",
 
                 gallery_title: "Interface Gallery", gallery_desc: "Click the cards below to view high-fidelity designs.",
+                gallery_item_hint: "Click to preview interface details for {name}.",
                 img_admin: "Admin Dashboard", img_news: "News Center", img_booking: "Reservation Form", img_meeting: "Bureau Meeting",
                 scroll_hint: "Scroll to view the full screen"
             }
@@ -113,12 +98,15 @@ gsap.registerPlugin(ScrollToPlugin);
             { id: 'sol-03', title: t('sol_3_title'), desc: t('sol_3_desc'), icon: 'Lock', image: './img/project_09/manage.jpg', benefit: t('sol_3_benefit') }
         ];
 
-        const getGalleryImages = (t) => [
-            { id: '01', name: t('img_admin'), src: './img/project_09/manage.jpg' },
-            { id: '02', name: t('img_news'), src: './img/project_09/News.jpg' },
-            { id: '03', name: t('img_booking'), src: './img/project_09/Room Reservation non.jpg' },
-            { id: '04', name: t('img_meeting'), src: './img/project_09/Authority.jpg' }
-        ];
+        const getGalleryImages = (t) => {
+            const items = [
+                { id: '01', name: t('img_admin'), src: './img/project_09/manage.jpg' },
+                { id: '02', name: t('img_news'), src: './img/project_09/News.jpg' },
+                { id: '03', name: t('img_booking'), src: './img/project_09/Room Reservation non.jpg' },
+                { id: '04', name: t('img_meeting'), src: './img/project_09/Authority.jpg' }
+            ];
+            return items.map((img) => ({ ...img, desc: t('gallery_item_hint').replace('{name}', img.name) }));
+        };
 
         const App = () => {
             const [lang, setLang] = useState('zh');
@@ -412,15 +400,10 @@ gsap.registerPlugin(ScrollToPlugin);
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        {/* [修改] bg-dark-lighter -> bg-epb-dark-lighter, border-primary -> border-epb-primary */}
-                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-epb-primary/50 hover:bg-epb-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
-                            {/* [修改] text-primary -> text-epb-primary, group-hover:text-secondary -> group-hover:text-epb-secondary */}
-                            <i className="ph ph-arrow-left text-epb-primary group-hover:text-epb-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
-                        </button>
+                        <BackButton prefix="epb" label={t('back_home')} onClick={goBack} />
                     </nav>
 
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-epb-primary hover:border-epb-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="ph ph-arrow-up"></i></button>
+                    <ScrollTopButton prefix="epb" visible={showBackToHero} onClick={() => scrollToSection(0)} />
 
                     <div id="main-scroller" ref={mainContainerRef}>
                         {/* [修改] bg-dark -> bg-epb-dark */}
@@ -431,8 +414,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div className={`inline-block px-4 py-1 rounded-full border border-epb-accent text-epb-accent text-xs font-bold tracking-widest mb-6 font-sans ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>GOV. DIGITAL TRANSFORMATION</div>
                                     <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-epb-accent to-white font-heading">{t('title_sub')}</span></h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
-                                    {/* [修改] bg-primary -> bg-epb-primary */}
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-epb-primary border border-epb-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-epb-primary transition-all shadow-[0_10px_30px_rgba(0,113,184,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="ph ph-arrow-down ml-2 animate-bounce"></i></button>
+                                    <HeroCTAButton prefix="epb" shadowClass="shadow-[0_10px_30px_rgba(0,113,184,0.4)]" loading={loading} label={t('btn_explore')} onClick={() => scrollToSection(1)} />
                                 </div>
                             </div>
                         </section>
@@ -445,11 +427,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div className="flex-1 min-h-0 w-full flex items-center justify-center">
                                         {/* [修改] bg-dark-light -> bg-epb-dark-light */}
                                         <div className={`relative transition-all duration-500 shadow-2xl rounded-xl border border-white/10 overflow-hidden flex flex-col ${showBrowserHeader ? 'w-full h-full max-w-full max-h-full lg:max-h-[90%] bg-epb-dark-light' : 'w-auto h-auto max-w-full max-h-full lg:max-h-[90%] bg-transparent'}`}>
-                                            {showBrowserHeader && (
-                                                <div className="h-8 bg-[#334155] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
-                                                    <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
-                                                </div>
-                                            )}
+                                            {showBrowserHeader && <BrowserFrame />}
                                             <div ref={imageScrollRef} className={`relative w-full h-full scrollable-area ${showBrowserHeader ? 'flex-1 min-h-0 block bg-white/5' : 'overflow-hidden flex items-center justify-center h-full'}`}>
                                                 <ImageWithSkeleton src={currentImage} alt="Preview" className={`transition-all duration-500 block ${showBrowserHeader ? 'w-full h-auto' : 'max-w-full max-h-full object-contain'}`} containerClassName={showBrowserHeader ? 'w-full h-auto' : 'w-full h-full flex items-center justify-center'} />
                                             </div>
@@ -468,12 +446,13 @@ gsap.registerPlugin(ScrollToPlugin);
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4">UI/UX Design Audit Report</p>
-                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-2 lg:mt-4 pb-2 w-full touch-pan-x">
-                                                {/* [修改] text-primary -> text-epb-primary, border-primary -> border-epb-primary */}
-                                                {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-epb-primary border-b-2 border-epb-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
-                                                ))}
-                                            </div>
+                                            <TabNav
+                                                prefix="epb"
+                                                containerRef={tabsContainerRef}
+                                                activeTab={activeTab}
+                                                onChange={setActiveTab}
+                                                tabs={[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }]}
+                                            />
                                         </div>
                                     </div>
 
@@ -481,36 +460,75 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-epb-primary/20 text-epb-primary border border-epb-primary/30"><Icons.XD /> <span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-epb-secondary/20 text-epb-secondary border border-epb-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
+                                                    <InfoGrid>
+                                                        <InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard>
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <ToolPill prefix="epb" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
+                                                                <ToolPill prefix="epb" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" />
+                                                            </div>
+                                                        </InfoCard>
+                                                    </InfoGrid>
+                                                </div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                {/* [修改] bg-secondary -> bg-epb-secondary */}
                                                 <div className="space-y-6">
                                                     <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-epb-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3>
-                                                    {/* [修改] 插入新標題，取代原有的 grid */}
-                                                    <div className="feature-card border border-white/10 p-5">
-                                                        <h4 className="text-epb-secondary font-bold text-sm mb-3">{t('conflict_sub')}</h4>
-                                                        <ul className="space-y-3 text-gray-300">
-                                                            <li className="flex items-start text-sm"><span className="text-epb-secondary mr-3 mt-1"><i className="ph ph-x-circle"></i></span><div><strong className="text-white">{t('pain_1_title')}</strong><span className="block text-xs text-gray-500">{t('pain_1_desc')}</span></div></li>
-                                                            <li className="flex items-start text-sm"><span className="text-epb-secondary mr-3 mt-1"><i className="ph ph-x-circle"></i></span><div><strong className="text-white">{t('pain_2_title')}</strong><span className="block text-xs text-gray-500">{t('pain_2_desc')}</span></div></li>
-                                                            <li className="flex items-start text-sm"><span className="text-epb-secondary mr-3 mt-1"><i className="ph ph-x-circle"></i></span><div><strong className="text-white">{t('pain_3_title')}</strong><span className="block text-xs text-gray-500">{t('pain_3_desc')}</span></div></li>
-                                                        </ul>
-                                                    </div>
+                                                    <PainPointCard
+                                                        prefix="epb"
+                                                        subtitle={t('conflict_sub')}
+                                                        items={[
+                                                            { title: t('pain_1_title'), desc: t('pain_1_desc') },
+                                                            { title: t('pain_2_title'), desc: t('pain_2_desc') },
+                                                            { title: t('pain_3_title'), desc: t('pain_3_desc') },
+                                                        ]}
+                                                    />
                                                 </div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3><div className="relative pl-4 border-l border-white/10 space-y-8"><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-epb-primary"></div><h4 className="text-sm font-bold text-epb-primary mb-1">{t('step_1_title')}</h4><p className="text-sm text-gray-300">{t('step_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-epb-dark border border-gray-600"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_2_title')}</h4><p className="text-sm text-gray-300">{t('step_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-epb-dark border border-gray-600"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_3_title')}</h4><p className="text-sm text-gray-300">{t('step_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-epb-secondary"></div><h4 className="text-sm font-bold text-epb-secondary mb-1">{t('step_4_title')}</h4><p className="text-sm text-gray-300">{t('step_4_desc')}</p></div></div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3>
+                                                <ProcessTimeline
+                                                    prefix="epb"
+                                                    glowShadowClass="shadow-[0_0_10px_rgba(0,113,184,0.5)]"
+                                                    steps={[
+                                                        { title: t('step_1_title'), desc: t('step_1_desc') },
+                                                        { title: t('step_2_title'), desc: t('step_2_desc') },
+                                                        { title: t('step_3_title'), desc: t('step_3_desc') },
+                                                        { title: t('step_4_title'), desc: t('step_4_desc') },
+                                                    ]}
+                                                />
+                                            </div>
                                         )}
                                         {activeTab === 'solution' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('sol_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (
-                                                /* [修改] border-primary -> border-epb-primary */
-                                                <button key={sol.id} onClick={() => handleSolutionSwitch(sol)} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeSolutionId === sol.id ? '!border-epb-primary bg-white/5 shadow-[0_0_15px_rgba(0,212,255,0.1)]' : 'border-white/5 hover:bg-white/5'}`}>
-                                                    {/* [修改] bg-primary -> bg-epb-primary, text-primary -> text-epb-primary */}
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeSolutionId === sol.id ? 'bg-epb-primary text-white' : 'bg-white/10 text-epb-primary'}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeSolutionId === sol.id ? 'text-epb-primary' : 'text-white'}`}>{sol.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{sol.desc}<br /><br /><span className={`font-semibold ${activeSolutionId === sol.id ? 'text-white' : 'text-gray-500'}`}>{sol.benefit}</span></p></div></button>); })}</div></div>
+                                                <FeatureCard
+                                                    key={sol.id}
+                                                    prefix="epb"
+                                                    active={activeSolutionId === sol.id}
+                                                    onClick={() => handleSolutionSwitch(sol)}
+                                                    icon={<IconComp />}
+                                                    title={sol.title}
+                                                    desc={sol.desc}
+                                                    benefit={sol.benefit}
+                                                    activeShadowClass="shadow-[0_0_15px_rgba(0,212,255,0.1)]"
+                                                />
+                                            ); })}</div></div>
                                         )}
                                         {activeTab === 'climax' && (
-                                            /* [關鍵修正] 比照 P6/P7/P8 標準：1. 藍框 (!border-epb-primary) 2. 白字 (text-white) */
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? '!border-epb-primary bg-white/5' : ''}`}><div className="flex justify-between items-center mb-2"><h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}><span className="text-epb-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`ph ph-arrow-left transform transition-all ${activeGalleryId === img.id ? 'text-epb-primary -translate-x-1' : 'text-gray-600 group-hover:text-epb-primary group-hover:-translate-x-1'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400">點擊預覽 {img.name} 介面細節。</p></button>))}</div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (
+                                                <GalleryItemButton
+                                                    key={img.id}
+                                                    prefix="epb"
+                                                    active={activeGalleryId === img.id}
+                                                    onClick={() => handleGallerySwitch(img)}
+                                                    id={img.id}
+                                                    name={img.name}
+                                                    desc={img.desc}
+                                                    activeShadowClass="shadow-[0_0_15px_rgba(0,113,184,0.1)]"
+                                                />
+                                            ))}</div></div>
                                         )}
                                         <div className="h-8"></div>
                                     
@@ -519,36 +537,75 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={peekContentRef} style={{ transform: `translateX(${dragDirRef.current * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
                                         {peekTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-epb-primary/20 text-epb-primary border border-epb-primary/30"><Icons.XD /> <span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-epb-secondary/20 text-epb-secondary border border-epb-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
+                                                    <InfoGrid>
+                                                        <InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard>
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <ToolPill prefix="epb" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
+                                                                <ToolPill prefix="epb" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" />
+                                                            </div>
+                                                        </InfoCard>
+                                                    </InfoGrid>
+                                                </div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                {/* [修改] bg-secondary -> bg-epb-secondary */}
                                                 <div className="space-y-6">
                                                     <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-epb-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3>
-                                                    {/* [修改] 插入新標題，取代原有的 grid */}
-                                                    <div className="feature-card border border-white/10 p-5">
-                                                        <h4 className="text-epb-secondary font-bold text-sm mb-3">{t('conflict_sub')}</h4>
-                                                        <ul className="space-y-3 text-gray-300">
-                                                            <li className="flex items-start text-sm"><span className="text-epb-secondary mr-3 mt-1"><i className="ph ph-x-circle"></i></span><div><strong className="text-white">{t('pain_1_title')}</strong><span className="block text-xs text-gray-500">{t('pain_1_desc')}</span></div></li>
-                                                            <li className="flex items-start text-sm"><span className="text-epb-secondary mr-3 mt-1"><i className="ph ph-x-circle"></i></span><div><strong className="text-white">{t('pain_2_title')}</strong><span className="block text-xs text-gray-500">{t('pain_2_desc')}</span></div></li>
-                                                            <li className="flex items-start text-sm"><span className="text-epb-secondary mr-3 mt-1"><i className="ph ph-x-circle"></i></span><div><strong className="text-white">{t('pain_3_title')}</strong><span className="block text-xs text-gray-500">{t('pain_3_desc')}</span></div></li>
-                                                        </ul>
-                                                    </div>
+                                                    <PainPointCard
+                                                        prefix="epb"
+                                                        subtitle={t('conflict_sub')}
+                                                        items={[
+                                                            { title: t('pain_1_title'), desc: t('pain_1_desc') },
+                                                            { title: t('pain_2_title'), desc: t('pain_2_desc') },
+                                                            { title: t('pain_3_title'), desc: t('pain_3_desc') },
+                                                        ]}
+                                                    />
                                                 </div>
                                             </div>
                                         )}
                                         {peekTab === 'process' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3><div className="relative pl-4 border-l border-white/10 space-y-8"><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-epb-primary"></div><h4 className="text-sm font-bold text-epb-primary mb-1">{t('step_1_title')}</h4><p className="text-sm text-gray-300">{t('step_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-epb-dark border border-gray-600"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_2_title')}</h4><p className="text-sm text-gray-300">{t('step_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-epb-dark border border-gray-600"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_3_title')}</h4><p className="text-sm text-gray-300">{t('step_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-epb-secondary"></div><h4 className="text-sm font-bold text-epb-secondary mb-1">{t('step_4_title')}</h4><p className="text-sm text-gray-300">{t('step_4_desc')}</p></div></div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3>
+                                                <ProcessTimeline
+                                                    prefix="epb"
+                                                    glowShadowClass="shadow-[0_0_10px_rgba(0,113,184,0.5)]"
+                                                    steps={[
+                                                        { title: t('step_1_title'), desc: t('step_1_desc') },
+                                                        { title: t('step_2_title'), desc: t('step_2_desc') },
+                                                        { title: t('step_3_title'), desc: t('step_3_desc') },
+                                                        { title: t('step_4_title'), desc: t('step_4_desc') },
+                                                    ]}
+                                                />
+                                            </div>
                                         )}
                                         {peekTab === 'solution' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('sol_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (
-                                                /* [修改] border-primary -> border-epb-primary */
-                                                <button key={sol.id} onClick={() => handleSolutionSwitch(sol)} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeSolutionId === sol.id ? '!border-epb-primary bg-white/5 shadow-[0_0_15px_rgba(0,212,255,0.1)]' : 'border-white/5 hover:bg-white/5'}`}>
-                                                    {/* [修改] bg-primary -> bg-epb-primary, text-primary -> text-epb-primary */}
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeSolutionId === sol.id ? 'bg-epb-primary text-white' : 'bg-white/10 text-epb-primary'}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeSolutionId === sol.id ? 'text-epb-primary' : 'text-white'}`}>{sol.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{sol.desc}<br /><br /><span className={`font-semibold ${activeSolutionId === sol.id ? 'text-white' : 'text-gray-500'}`}>{sol.benefit}</span></p></div></button>); })}</div></div>
+                                                <FeatureCard
+                                                    key={sol.id}
+                                                    prefix="epb"
+                                                    active={activeSolutionId === sol.id}
+                                                    onClick={() => handleSolutionSwitch(sol)}
+                                                    icon={<IconComp />}
+                                                    title={sol.title}
+                                                    desc={sol.desc}
+                                                    benefit={sol.benefit}
+                                                    activeShadowClass="shadow-[0_0_15px_rgba(0,212,255,0.1)]"
+                                                />
+                                            ); })}</div></div>
                                         )}
                                         {peekTab === 'climax' && (
-                                            /* [關鍵修正] 比照 P6/P7/P8 標準：1. 藍框 (!border-epb-primary) 2. 白字 (text-white) */
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? '!border-epb-primary bg-white/5' : ''}`}><div className="flex justify-between items-center mb-2"><h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}><span className="text-epb-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`ph ph-arrow-left transform transition-all ${activeGalleryId === img.id ? 'text-epb-primary -translate-x-1' : 'text-gray-600 group-hover:text-epb-primary group-hover:-translate-x-1'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400">點擊預覽 {img.name} 介面細節。</p></button>))}</div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (
+                                                <GalleryItemButton
+                                                    key={img.id}
+                                                    prefix="epb"
+                                                    active={activeGalleryId === img.id}
+                                                    onClick={() => handleGallerySwitch(img)}
+                                                    id={img.id}
+                                                    name={img.name}
+                                                    desc={img.desc}
+                                                    activeShadowClass="shadow-[0_0_15px_rgba(0,113,184,0.1)]"
+                                                />
+                                            ))}</div></div>
                                         )}
                                         <div className="h-8"></div>
                                     

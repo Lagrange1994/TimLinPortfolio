@@ -2,52 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
+import {
+    SharedIcons, BackButton, ScrollTopButton, HeroCTAButton, TabNav, ToolPill,
+    InfoGrid, InfoCard, PainPointCard, ProcessTimeline, FeatureCard,
+    GalleryItemButton, PhoneFrame, ImageWithSkeleton, ResizeHandle,
+} from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
-
-// --- COMPONENTS ---
-        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
-            if (!src) return null;
-            const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
-            return (
-                <picture style={{ display: 'contents' }}>
-                    <source srcSet={encodeURI(webpSrc)} type="image/webp" />
-                    <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} />
-                </picture>
-            );
-        };
-
-        const loadedImageCache = new Set();
-
-        const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
-            const [loaded, setLoaded] = useState(() => loadedImageCache.has(src));
-            useEffect(() => { setLoaded(loadedImageCache.has(src)); }, [src]);
-            const handleLoad = () => { loadedImageCache.add(src); setLoaded(true); };
-
-            return (
-                <div className={`relative overflow-hidden ${containerClassName || 'w-full h-full'}`}>
-                    {!loaded && <div className="absolute inset-0 skeleton z-10 flex items-center justify-center"><i className="ph ph-image text-white/10 text-3xl"></i></div>}
-                    <ResponsiveImage
-                        src={src}
-                        alt={alt}
-                        className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-                        onLoad={handleLoad}
-                        {...props}
-                    />
-                </div>
-            );
-        };
-
-        // --- PHONE COMPONENT ---
-        const PhoneFrame = ({ src, alt }) => {
-            return (
-                <div className="flex items-center justify-center w-full h-full p-4 lg:p-8">
-                    <div className="relative h-full w-auto max-w-full aspect-[9/19] border-[6px] md:border-[8px] border-[#2d2d2d] rounded-[1.5rem] lg:rounded-[2.5rem] overflow-hidden shadow-2xl bg-black animate-fadeIn shrink-0">
-                        <ImageWithSkeleton src={src} alt={alt} className="w-full h-full object-cover block" />
-                    </div>
-                </div>
-            );
-        };
 
         // --- DATA ---
         const TRANSLATIONS = {
@@ -134,8 +95,6 @@ gsap.registerPlugin(ScrollToPlugin);
         };
 
         const Icons = {
-            XD: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 8l4 8" /><path d="M12 8l-4 8" /></svg>,
-            AI: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3l-9 18h18L12 3z" /><circle cx="12" cy="13" r="2" /></svg>,
             Map: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>,
             Shield: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>,
             Alert: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
@@ -513,13 +472,10 @@ gsap.registerPlugin(ScrollToPlugin);
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-tn-primary/50 hover:bg-tn-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
-                            <i className="ph ph-arrow-left text-tn-primary group-hover:text-tn-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
-                        </button>
+                        <BackButton prefix="tn" label={t('back_home')} onClick={goBack} />
                     </nav>
 
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-tn-primary hover:border-tn-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="ph ph-arrow-up"></i></button>
+                    <ScrollTopButton prefix="tn" visible={showBackToHero} onClick={() => scrollToSection(0)} />
 
                     <div id="main-scroller" ref={mainContainerRef}>
                         <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-tn-dark relative overflow-hidden hero-bg-custom">
@@ -528,7 +484,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div className={`inline-block px-4 py-1 rounded-full border border-tn-primary/50 bg-tn-primary/20 text-tn-primary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART CITY & PUBLIC SAFETY</div>
                                     <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-tn-primary to-tn-accent font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-tn-primary border border-tn-primary/50 rounded-full text-tn-dark font-bold text-lg hover:bg-white hover:text-tn-primary transition-all shadow-[0_10px_30px_rgba(45,212,191,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="ph ph-arrow-down ml-2 animate-bounce"></i></button>
+                                    <HeroCTAButton prefix="tn" shadowClass="shadow-[0_10px_30px_rgba(45,212,191,0.4)]" loading={loading} label={t('btn_explore')} onClick={() => scrollToSection(1)} />
                                 </div>
                             </div>
                         </section>
@@ -537,9 +493,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                             <div ref={imageScrollRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 {renderPreview()}
-                                <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
-                                    <div className="w-10 h-10 bg-tn-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group"><i className="ph ph-caret-up text-[8px] text-gray-400 group-hover:text-tn-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="ph ph-caret-down text-[8px] text-gray-400 group-hover:text-tn-primary mt-0.5"></i></div>
-                                </div>
+                                <ResizeHandle prefix="tn" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
                             </div>
 
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
@@ -548,11 +502,13 @@ gsap.registerPlugin(ScrollToPlugin);
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4 font-sans">Smart Patrol System UX Case Study</p>
-                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-2 lg:mt-4 pb-2 w-full touch-pan-x">
-                                                {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? 'text-tn-primary border-b-2 border-tn-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
-                                                ))}
-                                            </div>
+                                            <TabNav
+                                                prefix="tn"
+                                                containerRef={tabsContainerRef}
+                                                activeTab={activeTab}
+                                                onChange={setActiveTab}
+                                                tabs={[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }]}
+                                            />
                                         </div>
                                     </div>
 
@@ -560,108 +516,191 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tn-primary/20 text-tn-primary border border-tn-primary/30"><Icons.XD /> <span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tn-secondary/20 text-tn-secondary border border-tn-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div className="space-y-4 lg:space-y-6">
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
+                                                    <InfoGrid>
+                                                        <InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard>
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <ToolPill prefix="tn" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
+                                                                <ToolPill prefix="tn" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" />
+                                                            </div>
+                                                        </InfoCard>
+                                                    </InfoGrid>
+                                                </div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tn-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><div className="feature-card border border-white/10 p-5"><h4 className="text-tn-secondary font-bold text-sm mb-3">{t('pain_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-tn-secondary mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-tn-secondary mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-tn-secondary mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
+                                                <div className="space-y-6">
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tn-secondary rounded-full mr-3"></span>{t('pain_title')}</h3>
+                                                    <PainPointCard
+                                                        prefix="tn"
+                                                        subtitle={t('pain_sub')}
+                                                        items={[
+                                                            { title: t('pain_1_title'), desc: t('pain_1_desc') },
+                                                            { title: t('pain_2_title'), desc: t('pain_2_desc') },
+                                                            { title: t('pain_3_title'), desc: t('pain_3_desc') },
+                                                        ]}
+                                                    />
+                                                </div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3><p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p><div className="relative pl-4 border-l border-white/10 space-y-8">
-                                                <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tn-primary"></div><h4 className="text-sm font-bold text-tn-primary mb-1">{t('process_1_title')}</h4><p className="text-xs text-gray-400">{t('process_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tn-dark border border-gray-600"></div><h4 className="text-sm font-bold text-tn-primary mb-1">{t('process_2_title')}</h4><p className="text-xs text-gray-400">{t('process_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tn-dark border border-gray-600"></div><h4 className="text-sm font-bold text-tn-primary mb-1">{t('process_3_title')}</h4><p className="text-xs text-gray-400">{t('process_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tn-primary shadow-[0_0_10px_rgba(45,212,191,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('process_4_title')}</h4><p className="text-xs text-gray-400">{t('process_4_desc')}</p></div></div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3>
+                                                <p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p>
+                                                <ProcessTimeline
+                                                    prefix="tn"
+                                                    glowShadowClass="shadow-[0_0_10px_rgba(45,212,191,0.5)]"
+                                                    steps={[
+                                                        { title: t('process_1_title'), desc: t('process_1_desc') },
+                                                        { title: t('process_2_title'), desc: t('process_2_desc') },
+                                                        { title: t('process_3_title'), desc: t('process_3_desc') },
+                                                        { title: t('process_4_title'), desc: t('process_4_desc') },
+                                                    ]}
+                                                />
+                                            </div>
                                         )}
                                         {activeTab === 'solution' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('solution_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => {
-                                                const IconComp = Icons[sol.icon];
-                                                return (
-                                                    <button
-                                                        key={sol.id}
-                                                        onClick={() => handleSolutionSwitch(sol)}
-                                                        className={`w-full text-left feature-card border p-5 flex items-start space-x-4 transition-all group ${activeSolutionId === sol.id ? 'border-tn-primary bg-white/5 shadow-[0_0_15px_rgba(45,212,191,0.1)]' : 'border-white/5 hover:bg-white/5'}`}
-                                                    >
-                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeSolutionId === sol.id ? 'bg-tn-primary text-tn-dark' : 'bg-gradient-to-br from-tn-primary/20 to-tn-primary/5 text-tn-primary'}`}>
-                                                            <IconComp />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className={`font-bold text-sm mb-1 transition-colors ${activeSolutionId === sol.id ? 'text-tn-primary' : 'text-white'}`}>{sol.title}</h4>
-                                                            <p className="text-xs text-gray-400 leading-relaxed">{sol.desc}<br /><br /><span className={`font-semibold ${activeSolutionId === sol.id ? 'text-white' : 'text-gray-300'}`}>{sol.benefit}</span></p>
-                                                        </div>
-                                                    </button>
-                                                );
-                                            })}</div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('solution_title')}</h3>
+                                                <div className="space-y-4">
+                                                    {solutionFeatures.map((sol) => {
+                                                        const IconComp = Icons[sol.icon];
+                                                        return (
+                                                            <FeatureCard
+                                                                key={sol.id}
+                                                                prefix="tn"
+                                                                active={activeSolutionId === sol.id}
+                                                                onClick={() => handleSolutionSwitch(sol)}
+                                                                icon={<IconComp />}
+                                                                title={sol.title}
+                                                                desc={sol.desc}
+                                                                benefit={sol.benefit}
+                                                                activeShadowClass="shadow-[0_0_15px_rgba(45,212,191,0.1)]"
+                                                            />
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
                                         )}
                                         {activeTab === 'climax' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn pb-12"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p><div className="space-y-3">{galleryImages.map((img) => (
-                                                <button
-                                                    key={img.id}
-                                                    onClick={() => handleGallerySwitch(img)}
-                                                    className={`w-full text-left feature-card border p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-tn-primary bg-white/5 shadow-[0_0_15px_rgba(45,212,191,0.1)]' : 'border-white/5'}`}
-                                                >
-                                                    <div className="flex justify-between items-center mb-1">
-                                                        <h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-tn-primary' : 'text-gray-300 group-hover:text-gray-200'}`}>
-                                                            <span className={`mr-2 text-xs font-mono ${activeGalleryId === img.id ? 'text-tn-primary' : 'text-tn-primary/70'}`}>{img.id}.</span>{img.name}
-                                                        </h4>
-                                                        <i className={`ph ph-caret-right transform transition-all text-xs ${activeGalleryId === img.id ? 'text-tn-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
-                                                    </div>
-                                                    <p className="text-xs text-gray-500 group-hover:text-gray-400 leading-relaxed">{img.desc}</p>
-                                                </button>
-                                            ))}</div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn pb-12">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
+                                                <p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p>
+                                                <div className="space-y-3">
+                                                    {galleryImages.map((img) => (
+                                                        <GalleryItemButton
+                                                            key={img.id}
+                                                            prefix="tn"
+                                                            active={activeGalleryId === img.id}
+                                                            onClick={() => handleGallerySwitch(img)}
+                                                            id={img.id}
+                                                            name={img.name}
+                                                            desc={img.desc}
+                                                            activeShadowClass="shadow-[0_0_15px_rgba(45,212,191,0.1)]"
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
                                         )}
                                         <div className="h-8"></div>
-                                    
+
                                     </div>
                                     {peekTab && (
                                     <div ref={peekContentRef} style={{ transform: `translateX(${dragDirRef.current * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
                                         {peekTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tn-primary/20 text-tn-primary border border-tn-primary/30"><Icons.XD /> <span className="ml-1">Adobe XD</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tn-secondary/20 text-tn-secondary border border-tn-secondary/30"><Icons.AI /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div className="space-y-4 lg:space-y-6">
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
+                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
+                                                    <InfoGrid>
+                                                        <InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard>
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <ToolPill prefix="tn" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
+                                                                <ToolPill prefix="tn" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" />
+                                                            </div>
+                                                        </InfoCard>
+                                                    </InfoGrid>
+                                                </div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tn-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><div className="feature-card border border-white/10 p-5"><h4 className="text-tn-secondary font-bold text-sm mb-3">{t('pain_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-tn-secondary mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-tn-secondary mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-tn-secondary mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
+                                                <div className="space-y-6">
+                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tn-secondary rounded-full mr-3"></span>{t('pain_title')}</h3>
+                                                    <PainPointCard
+                                                        prefix="tn"
+                                                        subtitle={t('pain_sub')}
+                                                        items={[
+                                                            { title: t('pain_1_title'), desc: t('pain_1_desc') },
+                                                            { title: t('pain_2_title'), desc: t('pain_2_desc') },
+                                                            { title: t('pain_3_title'), desc: t('pain_3_desc') },
+                                                        ]}
+                                                    />
+                                                </div>
                                             </div>
                                         )}
                                         {peekTab === 'process' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3><p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p><div className="relative pl-4 border-l border-white/10 space-y-8">
-                                                <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tn-primary"></div><h4 className="text-sm font-bold text-tn-primary mb-1">{t('process_1_title')}</h4><p className="text-xs text-gray-400">{t('process_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tn-dark border border-gray-600"></div><h4 className="text-sm font-bold text-tn-primary mb-1">{t('process_2_title')}</h4><p className="text-xs text-gray-400">{t('process_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tn-dark border border-gray-600"></div><h4 className="text-sm font-bold text-tn-primary mb-1">{t('process_3_title')}</h4><p className="text-xs text-gray-400">{t('process_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tn-primary shadow-[0_0_10px_rgba(45,212,191,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('process_4_title')}</h4><p className="text-xs text-gray-400">{t('process_4_desc')}</p></div></div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3>
+                                                <p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p>
+                                                <ProcessTimeline
+                                                    prefix="tn"
+                                                    glowShadowClass="shadow-[0_0_10px_rgba(45,212,191,0.5)]"
+                                                    steps={[
+                                                        { title: t('process_1_title'), desc: t('process_1_desc') },
+                                                        { title: t('process_2_title'), desc: t('process_2_desc') },
+                                                        { title: t('process_3_title'), desc: t('process_3_desc') },
+                                                        { title: t('process_4_title'), desc: t('process_4_desc') },
+                                                    ]}
+                                                />
+                                            </div>
                                         )}
                                         {peekTab === 'solution' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('solution_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => {
-                                                const IconComp = Icons[sol.icon];
-                                                return (
-                                                    <button
-                                                        key={sol.id}
-                                                        onClick={() => handleSolutionSwitch(sol)}
-                                                        className={`w-full text-left feature-card border p-5 flex items-start space-x-4 transition-all group ${activeSolutionId === sol.id ? 'border-tn-primary bg-white/5 shadow-[0_0_15px_rgba(45,212,191,0.1)]' : 'border-white/5 hover:bg-white/5'}`}
-                                                    >
-                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeSolutionId === sol.id ? 'bg-tn-primary text-tn-dark' : 'bg-gradient-to-br from-tn-primary/20 to-tn-primary/5 text-tn-primary'}`}>
-                                                            <IconComp />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className={`font-bold text-sm mb-1 transition-colors ${activeSolutionId === sol.id ? 'text-tn-primary' : 'text-white'}`}>{sol.title}</h4>
-                                                            <p className="text-xs text-gray-400 leading-relaxed">{sol.desc}<br /><br /><span className={`font-semibold ${activeSolutionId === sol.id ? 'text-white' : 'text-gray-300'}`}>{sol.benefit}</span></p>
-                                                        </div>
-                                                    </button>
-                                                );
-                                            })}</div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('solution_title')}</h3>
+                                                <div className="space-y-4">
+                                                    {solutionFeatures.map((sol) => {
+                                                        const IconComp = Icons[sol.icon];
+                                                        return (
+                                                            <FeatureCard
+                                                                key={sol.id}
+                                                                prefix="tn"
+                                                                active={activeSolutionId === sol.id}
+                                                                onClick={() => handleSolutionSwitch(sol)}
+                                                                icon={<IconComp />}
+                                                                title={sol.title}
+                                                                desc={sol.desc}
+                                                                benefit={sol.benefit}
+                                                                activeShadowClass="shadow-[0_0_15px_rgba(45,212,191,0.1)]"
+                                                            />
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
                                         )}
                                         {peekTab === 'climax' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn pb-12"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p><div className="space-y-3">{galleryImages.map((img) => (
-                                                <button
-                                                    key={img.id}
-                                                    onClick={() => handleGallerySwitch(img)}
-                                                    className={`w-full text-left feature-card border p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? 'border-tn-primary bg-white/5 shadow-[0_0_15px_rgba(45,212,191,0.1)]' : 'border-white/5'}`}
-                                                >
-                                                    <div className="flex justify-between items-center mb-1">
-                                                        <h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-tn-primary' : 'text-gray-300 group-hover:text-gray-200'}`}>
-                                                            <span className={`mr-2 text-xs font-mono ${activeGalleryId === img.id ? 'text-tn-primary' : 'text-tn-primary/70'}`}>{img.id}.</span>{img.name}
-                                                        </h4>
-                                                        <i className={`ph ph-caret-right transform transition-all text-xs ${activeGalleryId === img.id ? 'text-tn-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
-                                                    </div>
-                                                    <p className="text-xs text-gray-500 group-hover:text-gray-400 leading-relaxed">{img.desc}</p>
-                                                </button>
-                                            ))}</div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn pb-12">
+                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
+                                                <p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p>
+                                                <div className="space-y-3">
+                                                    {galleryImages.map((img) => (
+                                                        <GalleryItemButton
+                                                            key={img.id}
+                                                            prefix="tn"
+                                                            active={activeGalleryId === img.id}
+                                                            onClick={() => handleGallerySwitch(img)}
+                                                            id={img.id}
+                                                            name={img.name}
+                                                            desc={img.desc}
+                                                            activeShadowClass="shadow-[0_0_15px_rgba(45,212,191,0.1)]"
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
                                         )}
                                         <div className="h-8"></div>
-                                    
-                                    
+
                                     </div>
                                     )}</div>
                                 </div>

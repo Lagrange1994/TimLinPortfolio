@@ -2,38 +2,22 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
+import {
+    SharedIcons, BackButton, ScrollTopButton, HeroCTAButton, TabNav,
+    ToolPill, InfoGrid, InfoCard, PainPointCard, FeatureCard,
+    GalleryItemButton, BrowserFrame, ImageWithSkeleton, ResizeHandle,
+} from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
 
 // --- COMPONENTS ---
 
-        const loadedImageCache = new Set();
-
-        const ImageWithSkeleton = ({ src, className, alt, containerClassName, objectFit }) => {
-            const [loaded, setLoaded] = useState(() => loadedImageCache.has(src));
-            const fitClass = objectFit || "object-contain";
-            useEffect(() => { setLoaded(loadedImageCache.has(src)); }, [src]);
-            const handleLoad = () => { loadedImageCache.add(src); setLoaded(true); };
-            const handleError = () => { console.warn("Image error:", src); setLoaded(true); };
-            return (
-                <div className={`relative overflow-hidden ${containerClassName || 'w-full h-full'}`}>
-                    {!loaded && <div className="absolute inset-0 skeleton z-10 flex items-center justify-center"><i className="ph ph-image text-white/10 text-3xl"></i></div>}
-                    <picture style={{ display: 'contents' }}>
-                        <source srcSet={encodeURI(src.replace(/\.(jpg|jpeg|png)$/i, '.webp'))} type="image/webp" />
-                        <img src={src} alt={alt} className={`${className || ''} ${fitClass} w-full h-full transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={handleLoad} onError={handleError} />
-                    </picture>
-                </div>
-            );
-        };
-
         const WebFrame = ({ src }) => (
             <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
-                    <div className="h-8 bg-[#252525] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
-                        <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
-                    </div>
+                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
+                    <BrowserFrame />
                     <div className="w-full h-full bg-white/5 flex items-center justify-center overflow-hidden relative group">
-                        <ImageWithSkeleton src={src} alt="Web View" objectFit="object-contain" />
+                        <ImageWithSkeleton src={src} alt="Web View" className="w-full h-full object-contain" />
                     </div>
                 </div>
             </div>
@@ -41,9 +25,9 @@ gsap.registerPlugin(ScrollToPlugin);
 
         const SimpleRoundedFrame = ({ src }) => (
             <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
+                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
                     <div className="w-full h-full bg-white/5 flex items-center justify-center overflow-hidden relative group">
-                        <ImageWithSkeleton src={src} alt="Context View" objectFit="object-contain" />
+                        <ImageWithSkeleton src={src} alt="Context View" className="w-full h-full object-contain" />
                     </div>
                 </div>
             </div>
@@ -52,7 +36,7 @@ gsap.registerPlugin(ScrollToPlugin);
         const AppRawFrame = ({ src }) => (
             <div className="flex items-center justify-center w-full h-full p-4 lg:p-8 pointer-events-none">
                 <div className="relative h-full w-auto max-w-full bg-transparent animate-fadeIn shrink-0 pointer-events-auto flex justify-center">
-                    <ImageWithSkeleton src={src} alt="App View" objectFit="object-contain" />
+                    <ImageWithSkeleton src={src} alt="App View" className="w-full h-full object-contain" />
                 </div>
             </div>
         );
@@ -116,8 +100,6 @@ gsap.registerPlugin(ScrollToPlugin);
         };
 
         const Icons = {
-            Figma: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2H8.5C6.57 2 5 3.57 5 5.5C5 7.43 6.57 9 8.5 9H12V2Z" /><path d="M12 9H8.5C6.57 9 5 10.57 5 12.5C5 14.43 6.57 16 8.5 16H12V9Z" /><path d="M12 16H8.5C6.57 16 5 17.57 5 19.5C5 21.43 6.57 23 8.5 23C10.43 23 12 21.43 12 19.5V16Z" /><path d="M12 2H15.5C17.43 2 19 3.57 19 5.5C19 7.43 17.43 9 15.5 9H12V2Z" /><circle cx="15.5" cy="12.5" r="3.5" /></svg>,
-            Illustrator: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 4H4V20H20V4Z" /><path d="M8 16L11 8L14 16" /><path d="M8.5 14H13.5" /><circle cx="17" cy="15" r="1" /></svg>,
             Chart: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
             Mobile: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>,
             Alert: () => <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>,
@@ -490,45 +472,42 @@ gsap.registerPlugin(ScrollToPlugin);
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-zoo-primary/50 hover:bg-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
-                            <i className="ph ph-arrow-left text-zoo-primary group-hover:text-zoo-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
-                        </button>
+                        <BackButton prefix="zoo" label={t('back_home')} onClick={goBack} />
                     </nav>
 
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-zoo-primary hover:border-zoo-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="ph ph-arrow-up"></i></button>
+                    <ScrollTopButton prefix="zoo" visible={showBackToHero} onClick={() => scrollToSection(0)} />
 
                     <div id="main-scroller" ref={mainContainerRef}>
-                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-dark relative hero-bg-custom">
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-zoo-dark relative hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
                                     <div className={`inline-block px-4 py-1 rounded-full border border-zoo-accent/50 bg-zoo-accent/20 text-zoo-accent text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SMART ZOO MANAGEMENT</div>
                                     <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-zoo-primary to-zoo-secondary font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-zoo-primary border border-zoo-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-zoo-primary transition-all shadow-[0_10px_30px_rgba(134,194,50,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="ph ph-arrow-down ml-2 animate-bounce"></i></button>
+                                    <HeroCTAButton prefix="zoo" shadowClass="shadow-[0_10px_30px_rgba(134,194,50,0.4)]" loading={loading} label={t('btn_explore')} onClick={() => scrollToSection(1)} />
                                 </div>
                             </div>
                         </section>
 
-                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-dark h-screen overflow-hidden relative">
+                        <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-zoo-dark h-screen overflow-hidden relative">
                             <div ref={imageScrollRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-black flex items-center justify-center border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 {renderPreview()}
-                                <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
-                                    <div className="w-10 h-10 bg-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group"><i className="ph ph-caret-up text-[8px] text-gray-400 group-hover:text-zoo-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="ph ph-caret-down text-[8px] text-gray-400 group-hover:text-zoo-primary mt-0.5"></i></div>
-                                </div>
+                                <ResizeHandle prefix="zoo" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
                             </div>
 
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
-                                    <div className="sticky top-0 bg-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                    <div className="sticky top-0 bg-zoo-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4">Internal Management & Mobile Response</p>
-                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-2 lg:mt-4 pb-2 w-full touch-pan-x">
-                                                {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_web') }, { id: 'solution', label: t('tab_app') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? 'text-zoo-primary border-b-2 border-zoo-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
-                                                ))}
-                                            </div>
+                                            <TabNav
+                                                prefix="zoo"
+                                                containerRef={tabsContainerRef}
+                                                activeTab={activeTab}
+                                                onChange={setActiveTab}
+                                                tabs={[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_web') }, { id: 'solution', label: t('tab_app') }, { id: 'climax', label: t('tab_climax') }]}
+                                            />
                                         </div>
                                     </div>
 
@@ -536,9 +515,9 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zoo-primary/20 text-zoo-primary border border-zoo-primary/30"><Icons.Figma /> <span className="ml-1">Figma</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zoo-secondary/20 text-zoo-secondary border border-zoo-secondary/30"><Icons.Illustrator /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><InfoGrid><InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard><InfoCard><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><ToolPill prefix="zoo" color="primary" icon={<SharedIcons.Figma />} label="Figma" /><ToolPill prefix="zoo" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" /></div></InfoCard></InfoGrid></div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><div className="feature-card feature-card-secondary p-5"><h4 className="text-zoo-secondary font-bold text-sm mb-3">{t('pain_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><PainPointCard prefix="zoo" subtitle={t('pain_sub')} items={[{ title: t('pain_1_title'), desc: t('pain_1_desc') }, { title: t('pain_2_title'), desc: t('pain_2_desc') }, { title: t('pain_3_title'), desc: t('pain_3_desc') }]} /></div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
@@ -549,28 +528,18 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-primary rounded-full mr-3"></span>{t('web_core')}</h3>
                                                 <div className="space-y-4">{webFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
-                                                    let benefitColor, bgClass, bgGradient, borderColor, shadowClass;
-                                                    if (feat.benefit === 'primary') { 
-                                                        benefitColor = 'text-zoo-primary'; 
-                                                        bgClass = 'bg-zoo-primary'; 
-                                                        bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; 
-                                                        borderColor = '!border-zoo-primary';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]';
-                                                    } else if (feat.benefit === 'blue-400') { 
-                                                        benefitColor = 'text-blue-400'; 
-                                                        bgClass = 'bg-blue-400'; 
-                                                        bgGradient = 'bg-gradient-to-br from-blue-400/20 to-blue-400/5'; 
-                                                        borderColor = '!border-blue-400';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(96,165,250,0.2)]';
-                                                    } else { 
-                                                        benefitColor = 'text-purple-400'; 
-                                                        bgClass = 'bg-purple-400'; 
-                                                        bgGradient = 'bg-gradient-to-br from-purple-400/20 to-purple-400/5'; 
-                                                        borderColor = '!border-purple-400';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(192,132,252,0.2)]';
-                                                    }
-
-                                                    return (<button key={feat.id} onClick={() => handleFeatureClick(feat.image, feat.id, 'web')} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? `${borderColor} bg-white/10 ${shadowClass}` : 'border-white/10 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? `${bgClass} text-dark` : `${bgGradient} ${benefitColor}`}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? benefitColor : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p></div></button>);
+                                                    return (
+                                                        <FeatureCard
+                                                            key={feat.id}
+                                                            prefix="zoo"
+                                                            active={activeFeatureId === feat.id}
+                                                            onClick={() => handleFeatureClick(feat.image, feat.id, 'web')}
+                                                            icon={<IconComp />}
+                                                            title={feat.title}
+                                                            desc={feat.desc}
+                                                            activeShadowClass="shadow-[0_0_15px_rgba(134,194,50,0.1)]"
+                                                        />
+                                                    );
                                                 })}</div>
                                             </div>
                                         )}
@@ -582,35 +551,18 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('app_core')}</h3>
                                                 <div className="space-y-4">{appFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
-                                                    let benefitColor, bgClass, bgGradient, borderColor, shadowClass;
-                                                    if (feat.benefit === 'primary') { 
-                                                        benefitColor = 'text-zoo-primary'; 
-                                                        bgClass = 'bg-zoo-primary'; 
-                                                        bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; 
-                                                        borderColor = '!border-zoo-primary';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]';
-                                                    } else if (feat.benefit === 'secondary') { 
-                                                        benefitColor = 'text-zoo-secondary'; 
-                                                        bgClass = 'bg-zoo-secondary'; 
-                                                        bgGradient = 'bg-gradient-to-br from-zoo-secondary/20 to-zoo-secondary/5'; 
-                                                        borderColor = '!border-zoo-secondary';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(255,150,113,0.2)]';
-                                                    } else if (feat.benefit === 'yellow') { 
-                                                        // Corrected logic for 'yellow' to use accent/specific yellow color
-                                                        benefitColor = 'text-yellow-400'; 
-                                                        bgClass = 'bg-yellow-400'; 
-                                                        bgGradient = 'bg-gradient-to-br from-yellow-400/20 to-yellow-400/5'; 
-                                                        borderColor = '!border-yellow-400';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(250,204,21,0.2)]';
-                                                    } else { 
-                                                        benefitColor = 'text-zoo-accent'; 
-                                                        bgClass = 'bg-zoo-accent'; 
-                                                        bgGradient = 'bg-gradient-to-br from-zoo-accent/20 to-zoo-accent/5'; 
-                                                        borderColor = '!border-zoo-accent';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(255,199,95,0.2)]';
-                                                    }
-
-                                                    return (<button key={feat.id} onClick={() => handleFeatureClick(feat.image, feat.id, 'app')} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? `${borderColor} bg-white/10 ${shadowClass}` : 'border-white/10 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? `${bgClass} text-dark` : `${bgGradient} ${benefitColor}`}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? benefitColor : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p></div></button>);
+                                                    return (
+                                                        <FeatureCard
+                                                            key={feat.id}
+                                                            prefix="zoo"
+                                                            active={activeFeatureId === feat.id}
+                                                            onClick={() => handleFeatureClick(feat.image, feat.id, 'app')}
+                                                            icon={<IconComp />}
+                                                            title={feat.title}
+                                                            desc={feat.desc}
+                                                            activeShadowClass="shadow-[0_0_15px_rgba(134,194,50,0.1)]"
+                                                        />
+                                                    );
                                                 })}</div>
                                             </div>
                                         )}
@@ -626,25 +578,17 @@ gsap.registerPlugin(ScrollToPlugin);
                                                                 {category.title}
                                                             </h4>
                                                             <div className="grid gap-3 pl-4 border-l border-white/10">
-                                                                {category.images.map(img => {
-                                                                    const isWeb = category.type === 'web';
-                                                                    const activeClass = isWeb 
-                                                                        ? 'border-zoo-primary shadow-[0_0_15px_rgba(134,194,50,0.1)]' 
-                                                                        : 'border-zoo-secondary shadow-[0_0_15px_rgba(255,150,113,0.1)]';
-                                                                    
-                                                                    return (
-                                                                        <button key={img.id} onClick={() => handleGallerySwitch(img, category.type)} 
-                                                                            className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? `${activeClass} bg-white/5` : 'border-white/5'}`}>
-                                                                            <div className="flex justify-between items-center">
-                                                                                <h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}>
-                                                                                    <span className={`${category.type === 'web' ? 'text-zoo-primary/70' : 'text-zoo-secondary/70'} mr-2 text-xs font-mono`}>{img.id}</span>
-                                                                                    {img.name}
-                                                                                </h4>
-                                                                                <i className={`ph ph-caret-right transform transition-all text-xs ${activeGalleryId === img.id ? (category.type === 'web' ? 'text-zoo-primary' : 'text-zoo-secondary') + ' translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
-                                                                            </div>
-                                                                        </button>
-                                                                    );
-                                                                })}
+                                                                {category.images.map(img => (
+                                                                    <GalleryItemButton
+                                                                        key={img.id}
+                                                                        prefix="zoo"
+                                                                        active={activeGalleryId === img.id}
+                                                                        onClick={() => handleGallerySwitch(img, category.type)}
+                                                                        id={img.id}
+                                                                        name={img.name}
+                                                                        activeShadowClass="shadow-[0_0_15px_rgba(134,194,50,0.1)]"
+                                                                    />
+                                                                ))}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -658,9 +602,9 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={peekContentRef} style={{ transform: `translateX(${dragDirRef.current * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
                                         {peekTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zoo-primary/20 text-zoo-primary border border-zoo-primary/30"><Icons.Figma /> <span className="ml-1">Figma</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zoo-secondary/20 text-zoo-secondary border border-zoo-secondary/30"><Icons.Illustrator /> <span className="ml-1">Illustrator</span></span></div></div></div></div>
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><InfoGrid><InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard><InfoCard><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><ToolPill prefix="zoo" color="primary" icon={<SharedIcons.Figma />} label="Figma" /><ToolPill prefix="zoo" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" /></div></InfoCard></InfoGrid></div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><div className="feature-card feature-card-secondary p-5"><h4 className="text-zoo-secondary font-bold text-sm mb-3">{t('pain_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-red-400 mr-3 mt-1"><i className="ph ph-x"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><PainPointCard prefix="zoo" subtitle={t('pain_sub')} items={[{ title: t('pain_1_title'), desc: t('pain_1_desc') }, { title: t('pain_2_title'), desc: t('pain_2_desc') }, { title: t('pain_3_title'), desc: t('pain_3_desc') }]} /></div>
                                             </div>
                                         )}
                                         {peekTab === 'process' && (
@@ -671,28 +615,18 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-primary rounded-full mr-3"></span>{t('web_core')}</h3>
                                                 <div className="space-y-4">{webFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
-                                                    let benefitColor, bgClass, bgGradient, borderColor, shadowClass;
-                                                    if (feat.benefit === 'primary') { 
-                                                        benefitColor = 'text-zoo-primary'; 
-                                                        bgClass = 'bg-zoo-primary'; 
-                                                        bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; 
-                                                        borderColor = '!border-zoo-primary';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]';
-                                                    } else if (feat.benefit === 'blue-400') { 
-                                                        benefitColor = 'text-blue-400'; 
-                                                        bgClass = 'bg-blue-400'; 
-                                                        bgGradient = 'bg-gradient-to-br from-blue-400/20 to-blue-400/5'; 
-                                                        borderColor = '!border-blue-400';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(96,165,250,0.2)]';
-                                                    } else { 
-                                                        benefitColor = 'text-purple-400'; 
-                                                        bgClass = 'bg-purple-400'; 
-                                                        bgGradient = 'bg-gradient-to-br from-purple-400/20 to-purple-400/5'; 
-                                                        borderColor = '!border-purple-400';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(192,132,252,0.2)]';
-                                                    }
-
-                                                    return (<button key={feat.id} onClick={() => handleFeatureClick(feat.image, feat.id, 'web')} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? `${borderColor} bg-white/10 ${shadowClass}` : 'border-white/10 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? `${bgClass} text-dark` : `${bgGradient} ${benefitColor}`}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? benefitColor : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p></div></button>);
+                                                    return (
+                                                        <FeatureCard
+                                                            key={feat.id}
+                                                            prefix="zoo"
+                                                            active={activeFeatureId === feat.id}
+                                                            onClick={() => handleFeatureClick(feat.image, feat.id, 'web')}
+                                                            icon={<IconComp />}
+                                                            title={feat.title}
+                                                            desc={feat.desc}
+                                                            activeShadowClass="shadow-[0_0_15px_rgba(134,194,50,0.1)]"
+                                                        />
+                                                    );
                                                 })}</div>
                                             </div>
                                         )}
@@ -704,35 +638,18 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('app_core')}</h3>
                                                 <div className="space-y-4">{appFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
-                                                    let benefitColor, bgClass, bgGradient, borderColor, shadowClass;
-                                                    if (feat.benefit === 'primary') { 
-                                                        benefitColor = 'text-zoo-primary'; 
-                                                        bgClass = 'bg-zoo-primary'; 
-                                                        bgGradient = 'bg-gradient-to-br from-zoo-primary/20 to-zoo-primary/5'; 
-                                                        borderColor = '!border-zoo-primary';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(134,194,50,0.2)]';
-                                                    } else if (feat.benefit === 'secondary') { 
-                                                        benefitColor = 'text-zoo-secondary'; 
-                                                        bgClass = 'bg-zoo-secondary'; 
-                                                        bgGradient = 'bg-gradient-to-br from-zoo-secondary/20 to-zoo-secondary/5'; 
-                                                        borderColor = '!border-zoo-secondary';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(255,150,113,0.2)]';
-                                                    } else if (feat.benefit === 'yellow') { 
-                                                        // Corrected logic for 'yellow' to use accent/specific yellow color
-                                                        benefitColor = 'text-yellow-400'; 
-                                                        bgClass = 'bg-yellow-400'; 
-                                                        bgGradient = 'bg-gradient-to-br from-yellow-400/20 to-yellow-400/5'; 
-                                                        borderColor = '!border-yellow-400';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(250,204,21,0.2)]';
-                                                    } else { 
-                                                        benefitColor = 'text-zoo-accent'; 
-                                                        bgClass = 'bg-zoo-accent'; 
-                                                        bgGradient = 'bg-gradient-to-br from-zoo-accent/20 to-zoo-accent/5'; 
-                                                        borderColor = '!border-zoo-accent';
-                                                        shadowClass = 'shadow-[0_0_15px_rgba(255,199,95,0.2)]';
-                                                    }
-
-                                                    return (<button key={feat.id} onClick={() => handleFeatureClick(feat.image, feat.id, 'app')} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all group ${activeFeatureId === feat.id ? `${borderColor} bg-white/10 ${shadowClass}` : 'border-white/10 hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeFeatureId === feat.id ? `${bgClass} text-dark` : `${bgGradient} ${benefitColor}`}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeFeatureId === feat.id ? benefitColor : 'text-white'}`}>{feat.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{feat.desc}</p></div></button>);
+                                                    return (
+                                                        <FeatureCard
+                                                            key={feat.id}
+                                                            prefix="zoo"
+                                                            active={activeFeatureId === feat.id}
+                                                            onClick={() => handleFeatureClick(feat.image, feat.id, 'app')}
+                                                            icon={<IconComp />}
+                                                            title={feat.title}
+                                                            desc={feat.desc}
+                                                            activeShadowClass="shadow-[0_0_15px_rgba(134,194,50,0.1)]"
+                                                        />
+                                                    );
                                                 })}</div>
                                             </div>
                                         )}
@@ -748,25 +665,17 @@ gsap.registerPlugin(ScrollToPlugin);
                                                                 {category.title}
                                                             </h4>
                                                             <div className="grid gap-3 pl-4 border-l border-white/10">
-                                                                {category.images.map(img => {
-                                                                    const isWeb = category.type === 'web';
-                                                                    const activeClass = isWeb 
-                                                                        ? 'border-zoo-primary shadow-[0_0_15px_rgba(134,194,50,0.1)]' 
-                                                                        : 'border-zoo-secondary shadow-[0_0_15px_rgba(255,150,113,0.1)]';
-                                                                    
-                                                                    return (
-                                                                        <button key={img.id} onClick={() => handleGallerySwitch(img, category.type)} 
-                                                                            className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? `${activeClass} bg-white/5` : 'border-white/5'}`}>
-                                                                            <div className="flex justify-between items-center">
-                                                                                <h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}>
-                                                                                    <span className={`${category.type === 'web' ? 'text-zoo-primary/70' : 'text-zoo-secondary/70'} mr-2 text-xs font-mono`}>{img.id}</span>
-                                                                                    {img.name}
-                                                                                </h4>
-                                                                                <i className={`ph ph-caret-right transform transition-all text-xs ${activeGalleryId === img.id ? (category.type === 'web' ? 'text-zoo-primary' : 'text-zoo-secondary') + ' translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
-                                                                            </div>
-                                                                        </button>
-                                                                    );
-                                                                })}
+                                                                {category.images.map(img => (
+                                                                    <GalleryItemButton
+                                                                        key={img.id}
+                                                                        prefix="zoo"
+                                                                        active={activeGalleryId === img.id}
+                                                                        onClick={() => handleGallerySwitch(img, category.type)}
+                                                                        id={img.id}
+                                                                        name={img.name}
+                                                                        activeShadowClass="shadow-[0_0_15px_rgba(134,194,50,0.1)]"
+                                                                    />
+                                                                ))}
                                                             </div>
                                                         </div>
                                                     ))}

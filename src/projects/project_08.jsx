@@ -2,31 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
+import {
+    SharedIcons, BackButton, ScrollTopButton, HeroCTAButton, TabNav, ToolPill,
+    InfoGrid, InfoCard, ProcessTimeline, FeatureCard, GalleryItemButton,
+    ImageWithSkeleton, ResizeHandle,
+} from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
 
 // --- COMPONENTS ---
-        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
-            if (!src) return null;
-            const webpSrc = src.replace(/\.(png|jpg|jpeg)$/i, '.webp');
-            return (<picture style={{ display: 'contents' }}> <source srcSet={encodeURI(webpSrc)} type="image/webp" /> <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} /> </picture>);
-        };
-
-        const loadedImageCache = new Set();
-
-        const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
-            const [loaded, setLoaded] = useState(() => loadedImageCache.has(src));
-            useEffect(() => { setLoaded(loadedImageCache.has(src)); }, [src]);
-            const handleLoad = () => { loadedImageCache.add(src); setLoaded(true); };
-            const handleError = () => { console.warn("Image load failed", src); setLoaded(true); };
-            return (
-                <div className={`relative ${containerClassName || 'w-full h-full'} overflow-hidden rounded-lg`}>
-                    {!loaded && (<div className="absolute inset-0 z-10 skeleton flex items-center justify-center"> <i className="ph ph-image text-white/10 text-3xl"></i> </div>)}
-                    <ResponsiveImage src={src} alt={alt} className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={handleLoad} onError={handleError} {...props} />
-                </div>
-            );
-        };
-
         const Icons = {
             Code: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>,
             Mobile: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>,
@@ -162,6 +146,10 @@ gsap.registerPlugin(ScrollToPlugin);
         ];
 
         // --- PHONE FRAME ---
+        // Kept local (not swapped to shared PhoneFrame): this wrapper's padding,
+        // corner radius, and pointer-events treatment differ from the shared
+        // version, and the task's replace list only calls out the image-loading
+        // primitive, not this outer frame markup.
         const PhoneFrame = ({ src, alt }) => {
             return (
                 <div className="w-full h-full flex items-center justify-center pointer-events-none">
@@ -483,36 +471,25 @@ gsap.registerPlugin(ScrollToPlugin);
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        {/* [修改] bg-dark-lighter -> bg-lv-dark-lighter, border-primary -> border-lv-primary */}
-                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-lv-primary/50 hover:bg-lv-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
-                            {/* [修改] text-primary -> text-lv-primary, group-hover:text-secondary -> group-hover:text-lv-secondary */}
-                            <i className="ph ph-arrow-left text-lv-primary group-hover:text-lv-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
-                        </button>
+                        <BackButton prefix="lv" label={t('back_home')} onClick={goBack} />
                     </nav>
 
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-lv-primary hover:border-lv-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="ph ph-arrow-up"></i></button>
+                    <ScrollTopButton prefix="lv" visible={showBackToHero} onClick={() => scrollToSection(0)} />
 
                     <div id="main-scroller" ref={mainContainerRef}>
-                        {/* [修改] bg-dark -> bg-lv-dark */}
                         <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-lv-dark relative hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
-                                    {/* [修改] border-primary -> border-lv-primary, bg-primary -> bg-lv-primary, text-primary -> text-lv-primary */}
                                     <div className={`inline-block px-4 py-1 rounded-full border border-lv-primary/50 bg-lv-primary/20 text-lv-primary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SOCIAL LIVE STREAMING APP</div>
                                     <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-lv-primary to-lv-secondary font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
-                                    {/* [修改] bg-primary -> bg-lv-primary, text-dark -> text-lv-dark, hover:text-primary -> hover:text-lv-primary */}
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-lv-primary border border-lv-primary/50 rounded-full text-lv-dark font-bold text-lg hover:bg-white hover:text-lv-primary transition-all shadow-[0_10px_30px_rgba(0,210,160,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="ph ph-arrow-down ml-2 animate-bounce"></i></button>
+                                    <HeroCTAButton prefix="lv" shadowClass="shadow-[0_10px_30px_rgba(0,210,160,0.4)]" loading={loading} label={t('btn_explore')} onClick={() => scrollToSection(1)} />
                                 </div>
                             </div>
                         </section>
 
-                        {/* [修改] bg-dark -> bg-lv-dark */}
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-lv-dark overflow-hidden">
-                            {/* [修改] bg-[#1a1a1a] */}
                             <div ref={imageScrollRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
-                                {/* [修改] bg-primary -> bg-lv-primary, bg-secondary -> bg-lv-secondary */}
                                 <div className="absolute top-10 left-10 w-32 h-32 bg-lv-primary/20 blur-[60px] rounded-full"></div>
                                 <div className="absolute bottom-10 right-10 w-40 h-40 bg-lv-secondary/20 blur-[60px] rounded-full"></div>
                                 <div className="w-full h-full max-w-full flex flex-col items-center justify-center relative">
@@ -524,25 +501,22 @@ gsap.registerPlugin(ScrollToPlugin);
                                         </div>
                                     </div>
                                 </div>
-                                <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
-                                    {/* [修改] bg-dark-light -> bg-lv-dark-light, group-hover:text-primary -> group-hover:text-lv-primary */}
-                                    <div className="w-10 h-10 bg-lv-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group"><i className="ph ph-caret-up text-[8px] text-gray-400 group-hover:text-lv-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="ph ph-caret-down text-[8px] text-gray-400 group-hover:text-lv-primary mt-0.5"></i></div>
-                                </div>
+                                <ResizeHandle prefix="lv" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
                             </div>
 
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
-                                    {/* [修改] bg-dark/95 -> bg-lv-dark/95 */}
                                     <div className="sticky top-0 bg-lv-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4 font-sans">Gamified Social Live Streaming Platform</p>
-                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-2 lg:mt-4 pb-2 w-full touch-pan-x">
-                                                {/* [修改] text-primary -> text-lv-primary, border-primary -> border-lv-primary */}
-                                                {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-lv-primary border-b-2 border-lv-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
-                                                ))}
-                                            </div>
+                                            <TabNav
+                                                prefix="lv"
+                                                containerRef={tabsContainerRef}
+                                                activeTab={activeTab}
+                                                onChange={setActiveTab}
+                                                tabs={[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }]}
+                                            />
                                         </div>
                                     </div>
 
@@ -553,13 +527,20 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <div className="space-y-4 lg:space-y-6">
                                                     <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
                                                     <p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
-                                                    <div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-lv-primary/20 text-lv-primary border border-lv-primary/30"><span className=""></span> Adobe XD</span></div></div></div>
+                                                    <InfoGrid>
+                                                        <InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard>
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <ToolPill prefix="lv" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
+                                                                <ToolPill prefix="lv" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" />
+                                                            </div>
+                                                        </InfoCard>
+                                                    </InfoGrid>
                                                 </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div className="space-y-6">
-                                                    {/* [修改] bg-secondary -> bg-lv-secondary */}
                                                     <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-lv-secondary rounded-full mr-3"></span>{t('visual_strat_title')}</h3>
-                                                    {/* [修改] border-l-secondary -> border-l-lv-secondary */}
                                                     <div className="feature-card p-5"><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-lv-primary mr-3 mt-1"><i className="ph ph-palette"></i></span><div><strong className="text-gray-200 block text-sm">{t('visual_p1_title')}</strong>{t('visual_p1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-lv-primary mr-3 mt-1"><i className="ph ph-game-controller"></i></span><div><strong className="text-gray-200 block text-sm">{t('visual_p2_title')}</strong>{t('visual_p2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-lv-primary mr-3 mt-1"><i className="ph ph-fingerprint"></i></span><div><strong className="text-gray-200 block text-sm">{t('visual_p3_title')}</strong>{t('visual_p3_desc')}</div></li></ul></div>
                                                 </div>
                                             </div>
@@ -568,23 +549,25 @@ gsap.registerPlugin(ScrollToPlugin);
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3>
                                                 <p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p>
-                                                <div className="relative pl-4 border-l border-white/10 space-y-8">
-                                                    {/* [修改] bg-primary -> bg-lv-primary, text-primary -> text-lv-primary, bg-dark -> bg-lv-dark */}
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-lv-primary"></div><h4 className="text-sm font-bold text-lv-primary mb-1">{t('proc_1_title')}</h4><p className="text-xs text-gray-400">{t('proc_1_desc')}</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-lv-dark border border-gray-600"></div><h4 className="text-sm font-bold text-lv-primary mb-1">{t('proc_2_title')}</h4><p className="text-xs text-gray-400">{t('proc_2_desc')}</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-lv-dark border border-gray-600"></div><h4 className="text-sm font-bold text-lv-primary mb-1">{t('proc_3_title')}</h4><p className="text-xs text-gray-400">{t('proc_3_desc')}</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-lv-primary shadow-[0_0_10px_rgba(0,210,160,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('proc_4_title')}</h4><p className="text-xs text-gray-400">{t('proc_4_desc')}</p></div>
-                                                </div>
+                                                <ProcessTimeline
+                                                    prefix="lv"
+                                                    glowShadowClass="shadow-[0_0_10px_rgba(0,210,160,0.5)]"
+                                                    steps={[
+                                                        { title: t('proc_1_title'), desc: t('proc_1_desc') },
+                                                        { title: t('proc_2_title'), desc: t('proc_2_desc') },
+                                                        { title: t('proc_3_title'), desc: t('proc_3_desc') },
+                                                        { title: t('proc_4_title'), desc: t('proc_4_desc') },
+                                                    ]}
+                                                />
                                             </div>
                                         )}
                                         {activeTab === 'solution' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('sol_title')}</h3>
                                                 <div className="space-y-4">
-                                                    {/* [修改] active -> active class (CSS handled), bg-primary -> bg-lv-primary, bg-secondary -> bg-lv-secondary, bg-accent -> bg-lv-accent */}
-                                                    <button onClick={() => handleGallerySwitch(galleryImages[0])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '01' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '01' ? 'bg-lv-primary text-lv-dark' : 'bg-lv-primary/20 text-lv-primary'}`}><Icons.Game /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '01' ? 'text-white' : 'text-gray-200'}`}>{t('feat_1_title')}</h4><p className="text-xs text-gray-400 leading-relaxed">{t('feat_1_desc')}</p></div></button>
-                                                    <button onClick={() => handleGallerySwitch(galleryImages[2])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '03' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '03' ? 'bg-lv-secondary text-lv-dark' : 'bg-lv-secondary/20 text-lv-secondary'}`}><Icons.Social /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '03' ? 'text-white' : 'text-gray-200'}`}>{t('feat_2_title')}</h4><p className="text-xs text-gray-400 leading-relaxed">{t('feat_2_desc')}</p></div></button>
-                                                    <button onClick={() => handleGallerySwitch(galleryImages[1])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '02' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '02' ? 'bg-lv-accent text-white' : 'bg-lv-accent/20 text-lv-accent'}`}><Icons.Rank /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '02' ? 'text-white' : 'text-gray-200'}`}>{t('feat_3_title')}</h4><p className="text-xs text-gray-400 leading-relaxed">{t('feat_3_desc')}</p></div></button>
+                                                    <FeatureCard prefix="lv" active={activeGalleryId === '01'} onClick={() => handleGallerySwitch(galleryImages[0])} icon={<Icons.Game />} title={t('feat_1_title')} desc={t('feat_1_desc')} activeShadowClass="shadow-[0_0_15px_rgba(0,210,160,0.1)]" />
+                                                    <FeatureCard prefix="lv" active={activeGalleryId === '03'} onClick={() => handleGallerySwitch(galleryImages[2])} icon={<Icons.Social />} title={t('feat_2_title')} desc={t('feat_2_desc')} activeShadowClass="shadow-[0_0_15px_rgba(0,210,160,0.1)]" />
+                                                    <FeatureCard prefix="lv" active={activeGalleryId === '02'} onClick={() => handleGallerySwitch(galleryImages[1])} icon={<Icons.Rank />} title={t('feat_3_title')} desc={t('feat_3_desc')} activeShadowClass="shadow-[0_0_15px_rgba(0,210,160,0.1)]" />
                                                 </div>
                                             </div>
                                         )}
@@ -595,14 +578,18 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <div className="space-y-6">
                                                     {ecosystemCategories.map((category) => (
                                                         <div key={category.id} className="space-y-3">
-                                                            {/* [修改] text-primary -> text-lv-primary, bg-primary -> bg-lv-primary */}
                                                             <h4 className="text-lv-primary font-bold text-md flex items-center"><span className="w-2 h-2 rounded-full bg-lv-primary mr-2"></span>{category.title}</h4>
                                                             <div className="grid gap-3 pl-4 border-l border-white/10">
                                                                 {category.images.map((img) => (
-                                                                    /* [修改] border-primary -> !border-lv-primary (forced active style), text-primary -> text-lv-primary */
-                                                                    <button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? '!border-lv-primary bg-white/5 shadow-[0_0_15px_rgba(0,210,160,0.1)]' : 'border-white/5'}`}>
-                                                                        <div className="flex justify-between items-center"><h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}>{img.name}</h4><i className={`ph ph-caret-right transform transition-all text-xs ${activeGalleryId === img.id ? 'text-lv-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i></div>
-                                                                    </button>
+                                                                    <GalleryItemButton
+                                                                        key={img.id}
+                                                                        prefix="lv"
+                                                                        active={activeGalleryId === img.id}
+                                                                        onClick={() => handleGallerySwitch(img)}
+                                                                        id={img.id}
+                                                                        name={img.name}
+                                                                        activeShadowClass="shadow-[0_0_15px_rgba(0,210,160,0.1)]"
+                                                                    />
                                                                 ))}
                                                             </div>
                                                         </div>
@@ -611,7 +598,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                             </div>
                                         )}
                                         <div className="h-8"></div>
-                                    
+
                                     </div>
                                     {peekTab && (
                                     <div ref={peekContentRef} style={{ transform: `translateX(${dragDirRef.current * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
@@ -620,13 +607,20 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <div className="space-y-4 lg:space-y-6">
                                                     <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
                                                     <p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
-                                                    <div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-lv-primary/20 text-lv-primary border border-lv-primary/30"><span className=""></span> Adobe XD</span></div></div></div>
+                                                    <InfoGrid>
+                                                        <InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard>
+                                                            <div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                <ToolPill prefix="lv" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
+                                                                <ToolPill prefix="lv" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" />
+                                                            </div>
+                                                        </InfoCard>
+                                                    </InfoGrid>
                                                 </div>
                                                 <div className="w-full h-px bg-white/10"></div>
                                                 <div className="space-y-6">
-                                                    {/* [修改] bg-secondary -> bg-lv-secondary */}
                                                     <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-lv-secondary rounded-full mr-3"></span>{t('visual_strat_title')}</h3>
-                                                    {/* [修改] border-l-secondary -> border-l-lv-secondary */}
                                                     <div className="feature-card p-5"><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-lv-primary mr-3 mt-1"><i className="ph ph-palette"></i></span><div><strong className="text-gray-200 block text-sm">{t('visual_p1_title')}</strong>{t('visual_p1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-lv-primary mr-3 mt-1"><i className="ph ph-game-controller"></i></span><div><strong className="text-gray-200 block text-sm">{t('visual_p2_title')}</strong>{t('visual_p2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-lv-primary mr-3 mt-1"><i className="ph ph-fingerprint"></i></span><div><strong className="text-gray-200 block text-sm">{t('visual_p3_title')}</strong>{t('visual_p3_desc')}</div></li></ul></div>
                                                 </div>
                                             </div>
@@ -635,23 +629,25 @@ gsap.registerPlugin(ScrollToPlugin);
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2">{t('process_title')}</h3>
                                                 <p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p>
-                                                <div className="relative pl-4 border-l border-white/10 space-y-8">
-                                                    {/* [修改] bg-primary -> bg-lv-primary, text-primary -> text-lv-primary, bg-dark -> bg-lv-dark */}
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-lv-primary"></div><h4 className="text-sm font-bold text-lv-primary mb-1">{t('proc_1_title')}</h4><p className="text-xs text-gray-400">{t('proc_1_desc')}</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-lv-dark border border-gray-600"></div><h4 className="text-sm font-bold text-lv-primary mb-1">{t('proc_2_title')}</h4><p className="text-xs text-gray-400">{t('proc_2_desc')}</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-lv-dark border border-gray-600"></div><h4 className="text-sm font-bold text-lv-primary mb-1">{t('proc_3_title')}</h4><p className="text-xs text-gray-400">{t('proc_3_desc')}</p></div>
-                                                    <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-lv-primary shadow-[0_0_10px_rgba(0,210,160,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('proc_4_title')}</h4><p className="text-xs text-gray-400">{t('proc_4_desc')}</p></div>
-                                                </div>
+                                                <ProcessTimeline
+                                                    prefix="lv"
+                                                    glowShadowClass="shadow-[0_0_10px_rgba(0,210,160,0.5)]"
+                                                    steps={[
+                                                        { title: t('proc_1_title'), desc: t('proc_1_desc') },
+                                                        { title: t('proc_2_title'), desc: t('proc_2_desc') },
+                                                        { title: t('proc_3_title'), desc: t('proc_3_desc') },
+                                                        { title: t('proc_4_title'), desc: t('proc_4_desc') },
+                                                    ]}
+                                                />
                                             </div>
                                         )}
                                         {peekTab === 'solution' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('sol_title')}</h3>
                                                 <div className="space-y-4">
-                                                    {/* [修改] active -> active class (CSS handled), bg-primary -> bg-lv-primary, bg-secondary -> bg-lv-secondary, bg-accent -> bg-lv-accent */}
-                                                    <button onClick={() => handleGallerySwitch(galleryImages[0])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '01' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '01' ? 'bg-lv-primary text-lv-dark' : 'bg-lv-primary/20 text-lv-primary'}`}><Icons.Game /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '01' ? 'text-white' : 'text-gray-200'}`}>{t('feat_1_title')}</h4><p className="text-xs text-gray-400 leading-relaxed">{t('feat_1_desc')}</p></div></button>
-                                                    <button onClick={() => handleGallerySwitch(galleryImages[2])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '03' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '03' ? 'bg-lv-secondary text-lv-dark' : 'bg-lv-secondary/20 text-lv-secondary'}`}><Icons.Social /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '03' ? 'text-white' : 'text-gray-200'}`}>{t('feat_2_title')}</h4><p className="text-xs text-gray-400 leading-relaxed">{t('feat_2_desc')}</p></div></button>
-                                                    <button onClick={() => handleGallerySwitch(galleryImages[1])} className={`w-full text-left feature-card p-5 flex items-start space-x-4 transition-all ${activeGalleryId === '02' ? 'active' : 'hover:bg-white/5'}`}><div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeGalleryId === '02' ? 'bg-lv-accent text-white' : 'bg-lv-accent/20 text-lv-accent'}`}><Icons.Rank /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeGalleryId === '02' ? 'text-white' : 'text-gray-200'}`}>{t('feat_3_title')}</h4><p className="text-xs text-gray-400 leading-relaxed">{t('feat_3_desc')}</p></div></button>
+                                                    <FeatureCard prefix="lv" active={activeGalleryId === '01'} onClick={() => handleGallerySwitch(galleryImages[0])} icon={<Icons.Game />} title={t('feat_1_title')} desc={t('feat_1_desc')} activeShadowClass="shadow-[0_0_15px_rgba(0,210,160,0.1)]" />
+                                                    <FeatureCard prefix="lv" active={activeGalleryId === '03'} onClick={() => handleGallerySwitch(galleryImages[2])} icon={<Icons.Social />} title={t('feat_2_title')} desc={t('feat_2_desc')} activeShadowClass="shadow-[0_0_15px_rgba(0,210,160,0.1)]" />
+                                                    <FeatureCard prefix="lv" active={activeGalleryId === '02'} onClick={() => handleGallerySwitch(galleryImages[1])} icon={<Icons.Rank />} title={t('feat_3_title')} desc={t('feat_3_desc')} activeShadowClass="shadow-[0_0_15px_rgba(0,210,160,0.1)]" />
                                                 </div>
                                             </div>
                                         )}
@@ -662,14 +658,18 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <div className="space-y-6">
                                                     {ecosystemCategories.map((category) => (
                                                         <div key={category.id} className="space-y-3">
-                                                            {/* [修改] text-primary -> text-lv-primary, bg-primary -> bg-lv-primary */}
                                                             <h4 className="text-lv-primary font-bold text-md flex items-center"><span className="w-2 h-2 rounded-full bg-lv-primary mr-2"></span>{category.title}</h4>
                                                             <div className="grid gap-3 pl-4 border-l border-white/10">
                                                                 {category.images.map((img) => (
-                                                                    /* [修改] border-primary -> !border-lv-primary (forced active style), text-primary -> text-lv-primary */
-                                                                    <button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-3 hover:bg-white/10 transition-all group ${activeGalleryId === img.id ? '!border-lv-primary bg-white/5 shadow-[0_0_15px_rgba(0,210,160,0.1)]' : 'border-white/5'}`}>
-                                                                        <div className="flex justify-between items-center"><h4 className={`font-medium transition-colors text-xs lg:text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-gray-200'}`}>{img.name}</h4><i className={`ph ph-caret-right transform transition-all text-xs ${activeGalleryId === img.id ? 'text-lv-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i></div>
-                                                                    </button>
+                                                                    <GalleryItemButton
+                                                                        key={img.id}
+                                                                        prefix="lv"
+                                                                        active={activeGalleryId === img.id}
+                                                                        onClick={() => handleGallerySwitch(img)}
+                                                                        id={img.id}
+                                                                        name={img.name}
+                                                                        activeShadowClass="shadow-[0_0_15px_rgba(0,210,160,0.1)]"
+                                                                    />
                                                                 ))}
                                                             </div>
                                                         </div>
@@ -678,8 +678,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                             </div>
                                         )}
                                         <div className="h-8"></div>
-                                    
-                                    
+
+
                                     </div>
                                     )}</div>
                                 </div>

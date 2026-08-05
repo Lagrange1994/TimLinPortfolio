@@ -2,32 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
+import {
+    BackButton, ScrollTopButton, HeroCTAButton, TabNav, ToolPill,
+    InfoGrid, InfoCard, PainPointCard, ProcessTimeline, FeatureCard,
+    GalleryItemButton, BrowserFrame, ImageWithSkeleton,
+} from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
 
 // --- COMPONENTS ---
-        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
-            if (!src) return null;
-            const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
-            return (<picture style={{ display: 'contents' }}> <source srcSet={encodeURI(webpSrc)} type="image/webp" /> <img src={src} className={className} alt={alt} style={style} onLoad={onLoad} {...props} /> </picture>);
-        };
-
-        const loadedImageCache = new Set();
-
-        const ImageWithSkeleton = ({ src, className, alt, containerClassName, ...props }) => {
-            const [loaded, setLoaded] = useState(() => loadedImageCache.has(src));
-            useEffect(() => { setLoaded(loadedImageCache.has(src)); }, [src]);
-            const handleLoad = () => { loadedImageCache.add(src); setLoaded(true); };
-            const handleError = () => { console.warn("Image load failed", src); setLoaded(true); };
-
-            return (
-                <div className={`relative ${containerClassName || 'w-full h-full'}`}>
-                    {!loaded && (<div className="absolute inset-0 bg-tmu-dark-lighter rounded-lg z-10 overflow-hidden flex items-center justify-center pointer-events-none"> <div className="absolute z-10 opacity-20"> <i className="ph ph-image text-white text-3xl"></i> </div> <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent z-20"></div> </div>)}
-                    <ResponsiveImage src={src} alt={alt} className={`${className} transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`} onLoad={handleLoad} onError={handleError} {...props} />
-                </div>
-            );
-        };
-
         // Icons
         const Icons = {
             Code: () => <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>,
@@ -430,15 +413,10 @@ gsap.registerPlugin(ScrollToPlugin);
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        {/* [修改] bg-dark-lighter -> bg-tmu-dark-lighter, border-primary -> border-tmu-primary */}
-                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-tmu-primary/50 hover:bg-tmu-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
-                            {/* [修改] text-primary -> text-tmu-primary, group-hover:text-secondary -> group-hover:text-tmu-secondary */}
-                            <i className="ph ph-arrow-left text-tmu-primary group-hover:text-tmu-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
-                        </button>
+                        <BackButton prefix="tmu" label={t('back_home')} onClick={goBack} />
                     </nav>
 
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-tmu-primary hover:border-tmu-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}><i className="ph ph-arrow-up"></i></button>
+                    <ScrollTopButton prefix="tmu" visible={showBackToHero} onClick={() => scrollToSection(0)} />
 
                     <div id="main-scroller" ref={mainContainerRef}>
                         {/* [修改] bg-dark -> bg-tmu-dark */}
@@ -450,8 +428,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                     {/* [修正] 標題文字改為 text-white，不使用漸層色 */}
                                     <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br />{t('title_sub')}</h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
-                                    {/* [修改] bg-primary -> bg-tmu-primary */}
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-tmu-primary border border-tmu-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-tmu-primary transition-all shadow-[0_10px_30px_rgba(43,108,176,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>{t('btn_explore')} <i className="ph ph-arrow-down ml-2 animate-bounce"></i></button>
+                                    <HeroCTAButton prefix="tmu" shadowClass="shadow-[0_10px_30px_rgba(43,108,176,0.4)]" loading={loading} label={t('btn_explore')} onClick={() => scrollToSection(1)} />
                                 </div>
                             </div>
                         </section>
@@ -464,11 +441,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div className="flex-1 min-h-0 w-full flex items-center justify-center">
                                         {/* [修改] bg-dark-light -> bg-tmu-dark-light */}
                                         <div className={`relative transition-all duration-500 shadow-2xl rounded-xl border border-white/10 overflow-hidden flex flex-col ${showBrowserHeader ? 'w-full h-full max-w-full max-h-full lg:max-h-[90%] bg-tmu-dark-light' : 'w-auto h-auto max-w-full max-h-full lg:max-h-[90%] bg-transparent'}`}>
-                                            {showBrowserHeader && (
-                                                <div className="h-8 bg-[#334155] border-b border-white/5 flex items-center px-4 space-x-2 shrink-0">
-                                                    <div className="w-3 h-3 rounded-full bg-[#FF5F56]"></div><div className="w-3 h-3 rounded-full bg-[#FFBD2E]"></div><div className="w-3 h-3 rounded-full bg-[#27C93F]"></div>
-                                                </div>
-                                            )}
+                                            {showBrowserHeader && <BrowserFrame />}
                                             <div ref={imageScrollRef} className={`relative w-full h-full scrollable-area ${showBrowserHeader ? 'flex-1 min-h-0 block bg-white/5' : 'overflow-hidden flex items-center justify-center h-full'}`}>
                                                 <ImageWithSkeleton src={currentImage} alt="Preview" className={`transition-all duration-500 block ${showBrowserHeader ? 'w-full h-auto' : 'max-w-full max-h-full object-contain'}`} containerClassName={showBrowserHeader ? 'w-full h-auto' : 'w-full h-full flex items-center justify-center'} />
                                             </div>
@@ -487,12 +460,13 @@ gsap.registerPlugin(ScrollToPlugin);
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4">Clinical Education E-Portfolio System</p>
-                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-2 lg:mt-4 pb-2 w-full touch-pan-x">
-                                                {/* [修改] text-primary -> text-tmu-primary, border-primary -> border-tmu-primary */}
-                                                {[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors ${activeTab === tab.id ? 'text-tmu-primary border-b-2 border-tmu-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
-                                                ))}
-                                            </div>
+                                            <TabNav
+                                                prefix="tmu"
+                                                containerRef={tabsContainerRef}
+                                                activeTab={activeTab}
+                                                onChange={setActiveTab}
+                                                tabs={[{ id: 'context', label: t('tab_context') }, { id: 'process', label: t('tab_process') }, { id: 'solution', label: t('tab_solution') }, { id: 'climax', label: t('tab_climax') }]}
+                                            />
                                         </div>
                                     </div>
 
@@ -500,27 +474,20 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tmu-primary/20 text-tmu-primary border border-tmu-primary/30"><Icons.Code /> <span className="ml-1">HTML/JS</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tmu-secondary/20 text-tmu-secondary border border-tmu-secondary/30"><Icons.Browser /> <span className="ml-1">Legacy Support</span></span></div></div></div></div>
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><InfoGrid><InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard><InfoCard><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><ToolPill prefix="tmu" color="primary" icon={<Icons.Code />} label="HTML/JS" /><ToolPill prefix="tmu" color="secondary" icon={<Icons.Browser />} label="Legacy Support" /></div></InfoCard></InfoGrid></div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                {/* [修改] bg-secondary -> bg-tmu-secondary */}
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tmu-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3><div className="feature-card p-5 border-l-4 border-l-tmu-secondary"><h4 className="text-tmu-secondary font-bold text-sm mb-3">{t('conflict_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-tmu-secondary mr-3 mt-1"><i className="ph ph-x-circle"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-tmu-secondary mr-3 mt-1"><i className="ph ph-x-circle"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-tmu-secondary mr-3 mt-1"><i className="ph ph-x-circle"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tmu-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3><PainPointCard prefix="tmu" subtitle={t('conflict_sub')} items={[{ title: t('pain_1_title'), desc: t('pain_1_desc') }, { title: t('pain_2_title'), desc: t('pain_2_desc') }, { title: t('pain_3_title'), desc: t('pain_3_desc') }]} /></div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3><div className="relative pl-4 border-l border-white/10 space-y-8">
-                                                {/* [修改] bg-primary -> bg-tmu-primary, text-primary -> text-tmu-primary, bg-dark -> bg-tmu-dark */}
-                                                <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tmu-primary"></div><h4 className="text-sm font-bold text-tmu-primary mb-1">{t('step_1_title')}</h4><p className="text-xs text-gray-400">{t('step_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tmu-dark border border-gray-600"></div><h4 className="text-sm font-bold text-tmu-primary mb-1">{t('step_2_title')}</h4><p className="text-xs text-gray-400">{t('step_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tmu-dark border border-gray-600"></div><h4 className="text-sm font-bold text-tmu-primary mb-1">{t('step_3_title')}</h4><p className="text-xs text-gray-400">{t('step_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tmu-primary shadow-[0_0_10px_rgba(43,108,176,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_4_title')}</h4><p className="text-xs text-gray-400">{t('step_4_desc')}</p></div></div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3><ProcessTimeline prefix="tmu" glowShadowClass="shadow-[0_0_10px_rgba(43,108,176,0.5)]" steps={[{ title: t('step_1_title'), desc: t('step_1_desc') }, { title: t('step_2_title'), desc: t('step_2_desc') }, { title: t('step_3_title'), desc: t('step_3_desc') }, { title: t('step_4_title'), desc: t('step_4_desc') }]} /></div>
                                         )}
                                         {activeTab === 'solution' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('sol_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (
-                                                /* [修改] border-primary -> border-tmu-primary */
-                                                <button key={sol.id} onClick={() => handleSolutionSwitch(sol)} className={`w-full text-left feature-card border p-5 flex items-start space-x-4 transition-all group ${activeSolutionId === sol.id ? '!border-tmu-primary bg-white/5 shadow-[0_0_15px_rgba(43,108,176,0.1)]' : 'border-white/5 hover:bg-white/5'}`}>
-                                                    {/* [修改] bg-primary -> bg-tmu-primary, text-primary -> text-tmu-primary */}
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeSolutionId === sol.id ? 'bg-tmu-primary text-white' : 'bg-white/10 text-tmu-primary'}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeSolutionId === sol.id ? 'text-tmu-primary' : 'text-white'}`}>{sol.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{sol.benefit}</p></div></button>); })}</div></div>
+                                                <FeatureCard key={sol.id} prefix="tmu" active={activeSolutionId === sol.id} onClick={() => handleSolutionSwitch(sol)} icon={<IconComp />} title={sol.title} desc={sol.benefit} activeShadowClass="shadow-[0_0_15px_rgba(43,108,176,0.1)]" />); })}</div></div>
                                         )}
                                         {activeTab === 'climax' && (
-                                            /* [關鍵修正] 1. 藍框 (!border-tmu-primary) 2. 白字 (text-white) */
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? '!border-tmu-primary bg-white/5' : ''}`}><div className="flex justify-between items-center mb-2"><h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}><span className="text-tmu-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`ph ph-arrow-left transform transition-all ${activeGalleryId === img.id ? 'text-tmu-primary -translate-x-1' : 'text-gray-600 group-hover:text-tmu-primary group-hover:-translate-x-1'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400">{img.desc}</p></button>))}</div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (<GalleryItemButton key={img.id} prefix="tmu" active={activeGalleryId === img.id} onClick={() => handleGallerySwitch(img)} id={img.id} name={img.name} desc={img.desc} activeShadowClass="shadow-[0_0_15px_rgba(43,108,176,0.1)]" />))}</div></div>
                                         )}
                                         <div className="h-8"></div>
                                     
@@ -529,27 +496,20 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={peekContentRef} style={{ transform: `translateX(${dragDirRef.current * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
                                         {peekTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><div className="grid grid-cols-2 gap-4"><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></div><div className="p-4 bg-white/5 rounded-xl border border-white/10"><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tmu-primary/20 text-tmu-primary border border-tmu-primary/30"><Icons.Code /> <span className="ml-1">HTML/JS</span></span><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tmu-secondary/20 text-tmu-secondary border border-tmu-secondary/30"><Icons.Browser /> <span className="ml-1">Legacy Support</span></span></div></div></div></div>
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><InfoGrid><InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard><InfoCard><div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><ToolPill prefix="tmu" color="primary" icon={<Icons.Code />} label="HTML/JS" /><ToolPill prefix="tmu" color="secondary" icon={<Icons.Browser />} label="Legacy Support" /></div></InfoCard></InfoGrid></div>
                                                 <div className="w-full h-px bg-white/10"></div>
-                                                {/* [修改] bg-secondary -> bg-tmu-secondary */}
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tmu-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3><div className="feature-card p-5 border-l-4 border-l-tmu-secondary"><h4 className="text-tmu-secondary font-bold text-sm mb-3">{t('conflict_sub')}</h4><ul className="space-y-4 text-gray-300"><li className="flex items-start text-sm text-gray-400"><span className="text-tmu-secondary mr-3 mt-1"><i className="ph ph-x-circle"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-tmu-secondary mr-3 mt-1"><i className="ph ph-x-circle"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-gray-400"><span className="text-tmu-secondary mr-3 mt-1"><i className="ph ph-x-circle"></i></span><div><strong className="text-gray-200 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tmu-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3><PainPointCard prefix="tmu" subtitle={t('conflict_sub')} items={[{ title: t('pain_1_title'), desc: t('pain_1_desc') }, { title: t('pain_2_title'), desc: t('pain_2_desc') }, { title: t('pain_3_title'), desc: t('pain_3_desc') }]} /></div>
                                             </div>
                                         )}
                                         {peekTab === 'process' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3><div className="relative pl-4 border-l border-white/10 space-y-8">
-                                                {/* [修改] bg-primary -> bg-tmu-primary, text-primary -> text-tmu-primary, bg-dark -> bg-tmu-dark */}
-                                                <div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tmu-primary"></div><h4 className="text-sm font-bold text-tmu-primary mb-1">{t('step_1_title')}</h4><p className="text-xs text-gray-400">{t('step_1_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tmu-dark border border-gray-600"></div><h4 className="text-sm font-bold text-tmu-primary mb-1">{t('step_2_title')}</h4><p className="text-xs text-gray-400">{t('step_2_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tmu-dark border border-gray-600"></div><h4 className="text-sm font-bold text-tmu-primary mb-1">{t('step_3_title')}</h4><p className="text-xs text-gray-400">{t('step_3_desc')}</p></div><div className="relative"><div className="absolute -left-[21px] top-0 w-3 h-3 rounded-full bg-tmu-primary shadow-[0_0_10px_rgba(43,108,176,0.5)]"></div><h4 className="text-sm font-bold text-white mb-1">{t('step_4_title')}</h4><p className="text-xs text-gray-400">{t('step_4_desc')}</p></div></div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3><ProcessTimeline prefix="tmu" glowShadowClass="shadow-[0_0_10px_rgba(43,108,176,0.5)]" steps={[{ title: t('step_1_title'), desc: t('step_1_desc') }, { title: t('step_2_title'), desc: t('step_2_desc') }, { title: t('step_3_title'), desc: t('step_3_desc') }, { title: t('step_4_title'), desc: t('step_4_desc') }]} /></div>
                                         )}
                                         {peekTab === 'solution' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('sol_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (
-                                                /* [修改] border-primary -> border-tmu-primary */
-                                                <button key={sol.id} onClick={() => handleSolutionSwitch(sol)} className={`w-full text-left feature-card border p-5 flex items-start space-x-4 transition-all group ${activeSolutionId === sol.id ? '!border-tmu-primary bg-white/5 shadow-[0_0_15px_rgba(43,108,176,0.1)]' : 'border-white/5 hover:bg-white/5'}`}>
-                                                    {/* [修改] bg-primary -> bg-tmu-primary, text-primary -> text-tmu-primary */}
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${activeSolutionId === sol.id ? 'bg-tmu-primary text-white' : 'bg-white/10 text-tmu-primary'}`}><IconComp /></div><div><h4 className={`font-bold text-sm mb-1 transition-colors ${activeSolutionId === sol.id ? 'text-tmu-primary' : 'text-white'}`}>{sol.title}</h4><p className="text-xs text-gray-400 leading-relaxed">{sol.benefit}</p></div></button>); })}</div></div>
+                                                <FeatureCard key={sol.id} prefix="tmu" active={activeSolutionId === sol.id} onClick={() => handleSolutionSwitch(sol)} icon={<IconComp />} title={sol.title} desc={sol.benefit} activeShadowClass="shadow-[0_0_15px_rgba(43,108,176,0.1)]" />); })}</div></div>
                                         )}
                                         {peekTab === 'climax' && (
-                                            /* [關鍵修正] 1. 藍框 (!border-tmu-primary) 2. 白字 (text-white) */
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (<button key={img.id} onClick={() => handleGallerySwitch(img)} className={`text-left feature-card p-4 hover:bg-white/10 transition-colors group ${activeGalleryId === img.id ? '!border-tmu-primary bg-white/5' : ''}`}><div className="flex justify-between items-center mb-2"><h4 className={`font-bold transition-colors text-sm ${activeGalleryId === img.id ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}><span className="text-tmu-primary mr-2">{img.id}.</span>{img.name}</h4><i className={`ph ph-arrow-left transform transition-all ${activeGalleryId === img.id ? 'text-tmu-primary -translate-x-1' : 'text-gray-600 group-hover:text-tmu-primary group-hover:-translate-x-1'}`}></i></div><p className="text-xs text-gray-500 group-hover:text-gray-400">{img.desc}</p></button>))}</div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (<GalleryItemButton key={img.id} prefix="tmu" active={activeGalleryId === img.id} onClick={() => handleGallerySwitch(img)} id={img.id} name={img.name} desc={img.desc} activeShadowClass="shadow-[0_0_15px_rgba(43,108,176,0.1)]" />))}</div></div>
                                         )}
                                         <div className="h-8"></div>
                                     

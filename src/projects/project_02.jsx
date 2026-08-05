@@ -2,55 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
+import {
+    BackButton, ScrollTopButton, HeroCTAButton, TabNav,
+    InfoGrid, InfoCard, GalleryItemButton, PhoneFrame,
+    ImageWithSkeleton, ResizeHandle,
+} from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
-
-// --- HELPER COMPONENTS ---
-
-        const ResponsiveImage = ({ src, className, alt, style, onLoad, ...props }) => {
-            if (!src) return null;
-            const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
-
-            return (
-                <picture style={{ display: 'contents' }}>
-                    <source srcSet={encodeURI(webpSrc)} type="image/webp" />
-                    <img
-                        src={src}
-                        className={className}
-                        alt={alt}
-                        style={style}
-                        onLoad={onLoad}
-                        {...props}
-                    />
-                </picture>
-            );
-        };
-
-        const loadedImageCache = new Set();
-
-        const ImageWithSkeleton = ({ src, alt, className, containerClassName }) => {
-            const [loaded, setLoaded] = useState(() => loadedImageCache.has(src));
-
-            useEffect(() => {
-                setLoaded(loadedImageCache.has(src));
-            }, [src]);
-
-            const handleLoad = () => { loadedImageCache.add(src); setLoaded(true); };
-
-            return (
-                <div className={`relative w-full h-full overflow-hidden ${containerClassName || ''}`}>
-                    {!loaded && (
-                        <div className="skeleton-loader"></div>
-                    )}
-                    <ResponsiveImage
-                        src={src}
-                        alt={alt}
-                        className={`${className} transition-opacity duration-500 ease-in-out ${loaded ? 'opacity-100' : 'opacity-0'}`}
-                        onLoad={handleLoad}
-                    />
-                </div>
-            );
-        };
 
         // --- 1. 多語言資料庫與翻譯 ---
         const TRANSLATIONS = {
@@ -288,18 +246,6 @@ gsap.registerPlugin(ScrollToPlugin);
                         {/* [修改] bg-dark-light -> bg-app-dark-light */}
                         <div className="relative bg-app-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col shrink-0 animate-fadeIn w-full" style={{ maxWidth: '100%', maxHeight: '100%' }}>
                             <ImageWithSkeleton src={src} alt={alt} className="block w-full h-full object-cover" />
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const PhoneFrame = ({ src, alt }) => {
-            return (
-                <div className="flex items-center justify-center p-4 lg:p-12 w-full h-full">
-                    <div className="w-full max-w-full h-full flex items-center justify-center">
-                        <div className="relative h-full w-auto max-w-full aspect-[9/19] border-[6px] md:border-[8px] border-[#2d2d2d] rounded-[1.25rem] lg:rounded-[2.5rem] overflow-hidden shadow-2xl bg-black animate-fadeIn shrink-0">
-                            <ImageWithSkeleton src={src} alt={alt} className="w-full h-full object-cover block" />
                         </div>
                     </div>
                 </div>
@@ -653,17 +599,10 @@ gsap.registerPlugin(ScrollToPlugin);
                     <div className={`loader ${loading ? '' : 'hidden'}`}><div className="loader-animation"></div><p className="loader-text">{loaderDone ? t('loader_step4') : t(`loader_step${loaderStep + 1}`)}</p></div>
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
-                        {/* [修改] bg-dark-lighter -> bg-app-dark-lighter, border-primary -> border-app-primary */}
-                        <button onClick={goBack} className="back-btn pointer-events-auto flex items-center justify-center h-10 w-10 bg-white/10 backdrop-blur-md border border-white/10 rounded-full text-gray-300 hover:text-white hover:border-app-primary/50 hover:bg-app-dark-lighter transition-all duration-300 shadow-lg group overflow-hidden hover:w-40">
-                            {/* [修改] text-primary -> text-app-primary, group-hover:text-secondary -> group-hover:text-app-secondary */}
-                            <i className="ph ph-arrow-left text-app-primary group-hover:text-app-secondary flex-shrink-0"></i>
-                            <span className="opacity-0 group-hover:opacity-100 max-w-0 group-hover:max-w-[200px] ml-0 group-hover:ml-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-sm font-bold">{t('back_home')}</span>
-                        </button>
+                        <BackButton prefix="app" label={t('back_home')} onClick={goBack} />
                     </nav>
 
-                    <button onClick={() => scrollToSection(0)} className={`fixed bottom-8 right-8 z-[100] w-12 h-12 bg-white/10 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center text-white shadow-2xl hover:bg-app-primary hover:border-app-primary hover:scale-110 transition-all duration-300 cursor-pointer ${showBackToHero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`} title="Back to Hero Section">
-                        <i className="ph ph-arrow-up"></i>
-                    </button>
+                    <ScrollTopButton prefix="app" visible={showBackToHero} onClick={() => scrollToSection(0)} />
 
                     <div id="main-scroller" ref={mainContainerRef}>
                         {/* [修改] bg-dark -> bg-app-dark */}
@@ -677,10 +616,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                         {t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-app-primary to-app-secondary">{t('title_sub')}</span>
                                     </h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
-                                    {/* [修改] bg-primary -> bg-app-primary, border-primary -> border-app-primary, hover:text-primary -> hover:text-app-primary */}
-                                    <button onClick={() => scrollToSection(1)} className={`px-10 py-4 bg-app-primary border border-app-primary/50 rounded-full text-white font-bold text-lg hover:bg-white hover:text-app-primary transition-all shadow-[0_10px_30px_rgba(255,74,0,0.4)] transform hover:-translate-y-1 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.4s' }}>
-                                        {t('btn_explore')} <i className="ph ph-arrow-down ml-2 animate-bounce"></i>
-                                    </button>
+                                    <HeroCTAButton prefix="app" shadowClass="shadow-[0_10px_30px_rgba(255,74,0,0.4)]" loading={loading} label={t('btn_explore')} onClick={() => scrollToSection(1)} />
                                 </div>
                             </div>
                         </section>
@@ -690,12 +626,7 @@ gsap.registerPlugin(ScrollToPlugin);
                             {/* [修改] bg-dark -> bg-app-dark, bg-dark-light -> bg-app-dark-light */}
                             <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-app-dark relative border-b lg:border-b-0 lg:border-r border-white/5 flex items-center justify-center" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <div className="w-full h-full overflow-hidden flex items-center justify-center lg:pb-0">{renderLeftPanel()}</div>
-                                <div className="lg:hidden absolute bottom-0 right-6 w-12 h-12 z-50 flex items-center justify-center cursor-row-resize touch-none translate-y-1/2" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart}>
-                                    <div className="w-10 h-10 bg-app-dark-light/90 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)] border border-white/20 flex flex-col items-center justify-center transition-transform hover:scale-110 active:scale-95 group">
-                                        {/* [修改] group-hover:text-primary -> group-hover:text-app-primary */}
-                                        <i className="ph ph-caret-up text-[8px] text-gray-400 group-hover:text-app-primary mb-0.5"></i><div className="w-4 h-[2px] bg-gray-500 rounded-full"></div><i className="ph ph-caret-down text-[8px] text-gray-400 group-hover:text-app-primary mt-0.5"></i>
-                                    </div>
-                                </div>
+                                <ResizeHandle prefix="app" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
                             </div>
 
                             <div className="w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col min-h-0">
@@ -706,12 +637,13 @@ gsap.registerPlugin(ScrollToPlugin);
                                             <h2 className="text-xl lg:text-3xl font-bold mb-1 font-heading">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4">Mobile Experience Optimization</p>
 
-                                            <div ref={tabsContainerRef} className="flex space-x-6 overflow-x-auto custom-scroll mt-2 lg:mt-4 pb-2 w-full touch-pan-x">
-                                                {/* [修改] text-primary -> text-app-primary, border-primary -> border-app-primary */}
-                                                {[{ id: 'context', label: t('tab_context') }, { id: 'focus', label: t('tab_focus') }, { id: 'features', label: t('tab_features') }, { id: 'gallery', label: t('tab_gallery') }].map(tab => (
-                                                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? 'text-app-primary border-b-2 border-app-primary pb-1' : 'text-gray-500 hover:text-white pb-1'}`}>{tab.label}</button>
-                                                ))}
-                                            </div>
+                                            <TabNav
+                                                prefix="app"
+                                                containerRef={tabsContainerRef}
+                                                activeTab={activeTab}
+                                                onChange={setActiveTab}
+                                                tabs={[{ id: 'context', label: t('tab_context') }, { id: 'focus', label: t('tab_focus') }, { id: 'features', label: t('tab_features') }, { id: 'gallery', label: t('tab_gallery') }]}
+                                            />
                                         </div>
                                     </div>
 
@@ -721,11 +653,10 @@ gsap.registerPlugin(ScrollToPlugin);
                                             <div className="space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
                                                 <p className="text-gray-300 leading-relaxed text-sm">{t('context_desc')}</p>
-                                                <div className="grid grid-cols-2 gap-4 mt-6">
-                                                    {/* [修改] text-primary -> text-app-primary, text-secondary -> text-app-secondary */}
-                                                    <div className="p-4 bg-white/5 rounded-xl border border-white/10"><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-gray-400 mt-1">{t('mobile_first_sub')}</p></div>
-                                                    <div className="p-4 bg-white/5 rounded-xl border border-white/10"><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-gray-400 mt-1">{t('soft_ui_sub')}</p></div>
-                                                </div>
+                                                <InfoGrid>
+                                                    <InfoCard><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-gray-400 mt-1">{t('mobile_first_sub')}</p></InfoCard>
+                                                    <InfoCard><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-gray-400 mt-1">{t('soft_ui_sub')}</p></InfoCard>
+                                                </InfoGrid>
                                             </div>
                                         )}
 
@@ -774,12 +705,16 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
                                                 <div className="space-y-3">
                                                     {appGallery.map((img) => (
-                                                        /* [修改] border-primary -> border-app-primary */
-                                                        <button key={img.id} onClick={() => setActiveGalleryId(img.id)} className={`w-full text-left feature-card border p-4 transition-all group flex items-center justify-between ${activeGalleryId === img.id ? 'border-app-primary bg-white/5 shadow-[0_0_15px_rgba(255,74,0,0.1)]' : 'border-white/10 hover:bg-white/10'}`}>
-                                                            <div className="flex-1 min-w-0 pr-4"><div className="flex items-center mb-1"><span className={`font-bold text-sm truncate transition-colors ${activeGalleryId === img.id ? 'text-app-primary' : 'text-gray-300 group-hover:text-white'}`}>{img.title}</span></div><p className={`text-xs truncate transition-colors ${activeGalleryId === img.id ? 'text-gray-400' : 'text-gray-600 group-hover:text-gray-500'}`}>{img.desc}</p></div>
-                                                            {/* [修改] text-primary -> text-app-primary */}
-                                                            <i className={`ph ph-caret-right ml-4 transform transition-all text-xs ${activeGalleryId === img.id ? 'text-app-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
-                                                        </button>
+                                                        <GalleryItemButton
+                                                            key={img.id}
+                                                            prefix="app"
+                                                            active={activeGalleryId === img.id}
+                                                            onClick={() => setActiveGalleryId(img.id)}
+                                                            id={img.id}
+                                                            name={img.title}
+                                                            desc={img.desc}
+                                                            activeShadowClass="shadow-[0_0_15px_rgba(255,74,0,0.1)]"
+                                                        />
                                                     ))}
                                                 </div>
                                             </div>
@@ -792,11 +727,10 @@ gsap.registerPlugin(ScrollToPlugin);
                                             <div className="space-y-8 animate-fadeIn">
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
                                                 <p className="text-gray-300 leading-relaxed text-sm">{t('context_desc')}</p>
-                                                <div className="grid grid-cols-2 gap-4 mt-6">
-                                                    {/* [修改] text-primary -> text-app-primary, text-secondary -> text-app-secondary */}
-                                                    <div className="p-4 bg-white/5 rounded-xl border border-white/10"><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-gray-400 mt-1">{t('mobile_first_sub')}</p></div>
-                                                    <div className="p-4 bg-white/5 rounded-xl border border-white/10"><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-gray-400 mt-1">{t('soft_ui_sub')}</p></div>
-                                                </div>
+                                                <InfoGrid>
+                                                    <InfoCard><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-gray-400 mt-1">{t('mobile_first_sub')}</p></InfoCard>
+                                                    <InfoCard><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-gray-400 mt-1">{t('soft_ui_sub')}</p></InfoCard>
+                                                </InfoGrid>
                                             </div>
                                         )}
 
@@ -845,12 +779,16 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
                                                 <div className="space-y-3">
                                                     {appGallery.map((img) => (
-                                                        /* [修改] border-primary -> border-app-primary */
-                                                        <button key={img.id} onClick={() => setActiveGalleryId(img.id)} className={`w-full text-left feature-card border p-4 transition-all group flex items-center justify-between ${activeGalleryId === img.id ? 'border-app-primary bg-white/5 shadow-[0_0_15px_rgba(255,74,0,0.1)]' : 'border-white/10 hover:bg-white/10'}`}>
-                                                            <div className="flex-1 min-w-0 pr-4"><div className="flex items-center mb-1"><span className={`font-bold text-sm truncate transition-colors ${activeGalleryId === img.id ? 'text-app-primary' : 'text-gray-300 group-hover:text-white'}`}>{img.title}</span></div><p className={`text-xs truncate transition-colors ${activeGalleryId === img.id ? 'text-gray-400' : 'text-gray-600 group-hover:text-gray-500'}`}>{img.desc}</p></div>
-                                                            {/* [修改] text-primary -> text-app-primary */}
-                                                            <i className={`ph ph-caret-right ml-4 transform transition-all text-xs ${activeGalleryId === img.id ? 'text-app-primary translate-x-0 opacity-100' : 'text-gray-600 -translate-x-2 opacity-0 group-hover:opacity-50'}`}></i>
-                                                        </button>
+                                                        <GalleryItemButton
+                                                            key={img.id}
+                                                            prefix="app"
+                                                            active={activeGalleryId === img.id}
+                                                            onClick={() => setActiveGalleryId(img.id)}
+                                                            id={img.id}
+                                                            name={img.title}
+                                                            desc={img.desc}
+                                                            activeShadowClass="shadow-[0_0_15px_rgba(255,74,0,0.1)]"
+                                                        />
                                                     ))}
                                                 </div>
                                             </div>
