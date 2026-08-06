@@ -283,7 +283,7 @@ export default function ContactSection() {
       {/* FOOTER */}
       <footer>
         <div>
-          <div style={{ fontSize: '20px', fontWeight: 700, marginBottom: '6px' }}>
+          <div style={{ fontSize: '20px', fontWeight: 700, marginBottom: '6px', fontFamily: 'var(--font-heading)' }}>
             <span className="gradient-text-brand">Tim</span><span style={{ color: '#fff' }}>Lin</span>
           </div>
           <p>UI/UX Designer &amp; Web Developer</p>
