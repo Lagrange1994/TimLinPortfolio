@@ -2747,6 +2747,55 @@
       transform: scale(1.05);
     }
 
+    /* Ripple — the grow/fade keyframe technique copied straight from the
+       reference codepen (https://codepen.io/VladimirVaize/pen/abvPadj: a
+       circle that animates width/height from 0 to a fixed size while
+       opacity moves in the other direction). Adapted for a hover reveal
+       instead of a one-shot click flash: background-image is the project's
+       hero shot instead of solid white, opacity moves 0 -> 1 (grows IN
+       instead of fading OUT, since the point is to leave the photo visible,
+       not flash and vanish), and `forwards` holds that fully-grown/opaque
+       end state for as long as the card stays hovered. Origin is pinned to
+       the card's own center (50% 50%), not the cursor — unlike the
+       border-glow ring (.grid-card.mb-glow::after), which does track
+       --glow-x/--glow-y, this reveal should hold still regardless of where
+       the pointer moves within the card. */
+    .grid-card-ripple {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 0;
+      height: 0;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background-size: var(--card-w, 100%) var(--card-h, 100%);
+      background-position: center;
+      pointer-events: none;
+    }
+
+    .grid-card:hover .grid-card-ripple {
+      animation: grid-ripple-animate .6s cubic-bezier(.16, 1, .3, 1) forwards;
+    }
+
+    @keyframes grid-ripple-animate {
+      0% {
+        width: 0;
+        height: 0;
+        opacity: 0;
+      }
+      100% {
+        width: 300%;
+        height: 300%;
+        opacity: 1;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .grid-card:hover .grid-card-ripple {
+        animation: none;
+      }
+    }
+
     /* overlay always-visible at rest; brighter on hover */
     .grid-card .project-overlay {
       opacity: 1;

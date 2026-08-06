@@ -262,6 +262,13 @@ export default function PortfolioSection() {
         el.style.clipPath = `path('${squircleRectPath(width, height, CARD_CORNER_RADIUS)}')`;
         if (el.classList.contains('grid-card')) {
           el.style.setProperty('--ring-mask', squircleRingMaskUrl(width, height, CARD_CORNER_RADIUS, 2));
+          // The ripple span (.grid-card-ripple) grows well past the card's
+          // own size so its circle can cover every corner — background-size
+          // must stay pinned to the card's actual pixel size (not the
+          // ripple's own, ever-growing box) or the revealed photo balloons
+          // past its real dimensions as the ripple expands.
+          el.style.setProperty('--card-w', `${width}px`);
+          el.style.setProperty('--card-h', `${height}px`);
         }
       }
     });
@@ -501,6 +508,10 @@ export default function PortfolioSection() {
     const isBig = mode === 'grid' && index !== undefined && bentoBigIndices.includes(index);
     const cls = mode === 'grid' ? `grid-card${isBig ? ' mb-big' : ''}` : 'project-card';
     const categoryLabel = p.category === 'mobile' ? 'Apps Design' : p.category === 'web' ? 'Web Design' : '';
+    // Grid cards' hover ripple reveals each project's hero shot — same
+    // slug as the project's own page (project_XX.html -> project_XX/), not
+    // the curated thumbnail in p.img.
+    const heroImg = `./img/${p.link.replace('.html', '')}/hero_img.webp`;
     return (
       <a
         className={cls}
@@ -516,13 +527,30 @@ export default function PortfolioSection() {
       >
         <img src={p.img} alt={title} loading="lazy" />
         {mode === 'grid' && (
-          <div className="project-overlay">
-            <div className="project-title">{title}</div>
-            <div className="project-desc">{desc}</div>
-            <div className="project-tags">
-              {p.tags.map(tag => <span key={tag} className="project-tag">{tag}</span>)}
+          <>
+            {/* Ripple — grow/fade keyframe copied straight from the
+                reference codepen (https://codepen.io/VladimirVaize/pen/abvPadj:
+                a circle animating width/height 0 -> full size, opacity
+                fading). Adapted for a hover reveal instead of a click flash:
+                background-image is the hero shot instead of solid white,
+                and the fill direction/fill-mode hold the fully-grown,
+                fully-opaque end state instead of fading back out — origin
+                point reuses --glow-x/--glow-y, the same live cursor-tracked
+                custom properties MagicBento already keeps on every
+                .grid-card.mb-glow (see initMagicBento above). */}
+            <span
+              className="grid-card-ripple"
+              aria-hidden="true"
+              style={{ backgroundImage: `url(${heroImg})` }}
+            />
+            <div className="project-overlay">
+              <div className="project-title">{title}</div>
+              <div className="project-desc">{desc}</div>
+              <div className="project-tags">
+                {p.tags.map(tag => <span key={tag} className="project-tag">{tag}</span>)}
+              </div>
             </div>
-          </div>
+          </>
         )}
       </a>
     );
