@@ -236,7 +236,6 @@
     .glass-card {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
       backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     }
@@ -252,7 +251,6 @@
       box-sizing: border-box;
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.2);
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 0 15px rgba(255, 255, 255, 0.1);
       color: #fff;
@@ -366,7 +364,6 @@
       border-radius: 0;
       background: rgba(18, 18, 18, 0.8);
       backdrop-filter: blur(1rem);
-      -webkit-backdrop-filter: blur(1rem);
       border: none;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: none;
@@ -801,7 +798,6 @@
       white-space: nowrap;
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       transition: all 0.3s ease;
       cursor: default;
@@ -989,7 +985,6 @@
       align-items: center;
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
     }
 
     .about-sidebar {
@@ -1085,7 +1080,6 @@
       border-radius: 44px;
       corner-shape: squircle;
       backdrop-filter: blur(1rem);
-      -webkit-backdrop-filter: blur(1rem);
       box-shadow: var(--card-shadow-md), var(--card-edge);
       padding: 24px;
       display: flex;
@@ -1345,7 +1339,6 @@
       color: rgba(220, 220, 230, 0.85);
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
     }
 
@@ -1360,7 +1353,6 @@
     .process-card {
       background: rgba(30, 30, 30, 0.5);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: 44px;
       corner-shape: squircle;
@@ -1647,7 +1639,6 @@
       padding: 6px 14px;
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: 9999px;
       font-family: var(--font);
@@ -2040,7 +2031,6 @@
       padding: 7px 14px;
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: 9999px;
       font-size: 13px;
@@ -2080,7 +2070,6 @@
     .ai-usage-card {
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: 16px;
       padding: 22px;
@@ -2155,7 +2144,6 @@
     .philosophy-card {
       background: rgba(30, 30, 30, 0.5);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid rgba(108, 99, 255, 0.2);
       border-radius: 16px;
       padding: 22px;
@@ -2220,7 +2208,6 @@
       display: flex;
       flex-direction: column;
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       box-shadow: var(--card-shadow-md), var(--card-edge);
       transition: all .25s;
     }
@@ -2426,7 +2413,6 @@
       background: rgba(108, 99, 255, 0.06);
       border-radius: 0 8px 8px 0;
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
     }
 
     .tech-note strong {
@@ -2550,7 +2536,6 @@
       margin-bottom: 24px;
       background: rgba(255, 255, 255, 0.03);
       backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
       border: 1px solid var(--glass-border);
       border-radius: 9999px;
     }
@@ -2605,7 +2590,6 @@
       display: block;
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       transition: all .3s;
     }
@@ -2857,7 +2841,6 @@
       padding: 14px 22px;
       background: rgba(20, 20, 24, 0.5);
       backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 20px;
       corner-shape: squircle;
@@ -2937,7 +2920,6 @@
       position: relative;
       background: linear-gradient(135deg, rgba(6, 199, 85, 0.1), rgba(6, 199, 85, 0.04));
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: none;
       border-radius: 16px;
       corner-shape: squircle;
@@ -3070,7 +3052,6 @@
     .contact-card {
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: 16px;
       corner-shape: squircle;
@@ -3172,7 +3153,6 @@
       box-sizing: border-box;
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: 12px;
       corner-shape: squircle;
@@ -3200,7 +3180,6 @@
     .cta-strip {
       background: linear-gradient(135deg, rgba(108, 99, 255, 0.12), rgba(255, 101, 132, 0.06));
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid rgba(108, 99, 255, 0.25);
       border-radius: 14px;
       padding: 18px 22px;
@@ -4013,7 +3992,6 @@
       cursor: pointer;
       background: rgba(255, 255, 255, 0.07);
       backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.15);
       color: rgba(255, 255, 255, 0.85);
       transition: all 0.3s ease;
@@ -4044,7 +4022,6 @@
       min-width: 148px;
       background: rgba(25, 25, 25, 0.95);
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 12px;
       corner-shape: squircle;
@@ -4150,7 +4127,6 @@
     .pill,
     .domain-pills .pill {
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       background: var(--glass-bg);
       border: 1px solid var(--glass-border);
 
@@ -4943,7 +4919,6 @@
       padding: 7px 14px;
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: 9999px;
       font-size: 13px;
@@ -4983,7 +4958,6 @@
     .ai-usage-card {
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: 16px;
       padding: 22px;
@@ -5058,7 +5032,6 @@
     .philosophy-card {
       background: rgba(30, 30, 30, 0.5);
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid rgba(108, 99, 255, 0.2);
       border-radius: 16px;
       padding: 22px;
@@ -5098,7 +5071,6 @@
       display: flex;
       flex-direction: column;
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
       transition: all .25s;
     }
 
@@ -5223,7 +5195,6 @@
       background: rgba(108, 99, 255, 0.06);
       border-radius: 0 8px 8px 0;
       backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
     }
 
     .tech-note strong {
@@ -5861,7 +5832,7 @@
        .ai-card-detail (tables, nowrap rows) even while that detail is
        collapsed, blowing the card past its column and clipping it under
        body's overflow-x:hidden. */
-    .ai-card{position:relative;z-index:1;min-width:0;padding:22px 26px 22px;--ai-card-r:44px;border-radius:var(--ai-card-r);corner-shape:squircle;background-color:rgba(20,18,28,.72);background-image:radial-gradient(380px 220px at 50% 0%,rgba(108,99,255,.14),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(1rem);-webkit-backdrop-filter:blur(1rem);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .4s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08)}
+    .ai-card{position:relative;z-index:1;min-width:0;padding:22px 26px 22px;--ai-card-r:44px;border-radius:var(--ai-card-r);corner-shape:squircle;background-color:rgba(20,18,28,.72);background-image:radial-gradient(380px 220px at 50% 0%,rgba(108,99,255,.14),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(1rem);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .4s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08)}
     .ai-card::before{content:"";position:absolute;top:0;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent)}
     .ai-card:hover{border-color:rgba(108,99,255,0.4);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 60px -10px rgba(181,139,255,.35),inset 0 1px 0 rgba(255,255,255,.08)}
     /* Step badge — floats above card top-left */
