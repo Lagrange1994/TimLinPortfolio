@@ -1475,7 +1475,7 @@ export default function SkillsSection() {
                     key={slug}
                     className="process-card process-card--has-img rise-card"
                     backgroundColor="#13101c"
-                    borderRadius={44}
+                    borderRadius={48}
                     colors={['#6C63FF', '#FF6584', '#38bdf8']}
                     glowColor="264 70 75"
                     edgeSensitivity={25}
@@ -1517,7 +1517,7 @@ export default function SkillsSection() {
                     key={slug}
                     className="process-card process-card--has-img rise-card"
                     backgroundColor="#13101c"
-                    borderRadius={44}
+                    borderRadius={48}
                     colors={['#6C63FF', '#FF6584', '#38bdf8']}
                     glowColor="264 70 75"
                     edgeSensitivity={25}

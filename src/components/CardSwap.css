@@ -15,7 +15,10 @@
   left: 50%;
   border-radius: 12px;
   border: 1px solid #fff;
-  background: #000;
+  background-color: #000;
+  background-image: var(--noise-grain);
+  background-repeat: repeat;
+  background-size: 180px 180px;
 
   transform-style: preserve-3d;
   will-change: transform;

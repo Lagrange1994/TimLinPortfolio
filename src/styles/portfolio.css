@@ -444,6 +444,12 @@
       --glass-border-hov: rgba(255, 255, 255, 0.22);
       --glass-shadow: none;
       --glass-shadow-hov: none;
+
+      /* Fine film-grain texture, tiled via background-image on every glass
+         card (see UNIVERSAL GLASS CARD below). SVG feTurbulence baked to a
+         low, constant alpha (feFuncA slope) so it reads as subtle noise —
+         not the loud colorful static feTurbulence produces at full alpha. */
+      --noise-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.09'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
     /* NAV LINK — matches index.html: text-only, hover-bg handles the pill */
@@ -917,6 +923,18 @@
       border-radius: 8px;
     }
 
+    /* Photo has its own <img>, so grain can't go on the background —
+       layer it as an overlay above the image instead. */
+    .cardswap-card.domain-cover-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: var(--noise-grain);
+      background-repeat: repeat;
+      background-size: 90px 90px;
+      pointer-events: none;
+    }
+
     .domain-cover-card img {
       display: block;
       width: 100%;
@@ -1074,10 +1092,13 @@
       position: relative;
       background-color: rgba(20, 18, 28, 0.72);
       background-image:
+        var(--noise-grain),
         radial-gradient(380px 220px at 50% 0%, rgba(108, 99, 255, 0.14), transparent 65%),
         linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+      background-size: 180px 180px, auto, auto;
+      background-repeat: repeat, no-repeat, no-repeat;
       border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 44px;
+      border-radius: 48px;
       corner-shape: squircle;
       backdrop-filter: blur(1rem);
       box-shadow: var(--card-shadow-md), var(--card-edge);
@@ -1099,32 +1120,47 @@
        own glow position/size so it still reads as one consistent set. */
     .bento-card.bento-cyan {
       background-image:
+        var(--noise-grain),
         radial-gradient(380px 220px at 50% 0%, rgba(0, 212, 255, .2), transparent 65%),
         linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+      background-size: 180px 180px, auto, auto;
+      background-repeat: repeat, no-repeat, no-repeat;
       border-color: rgba(0, 212, 255, .3);
     }
     .bento-card.bento-purple {
       background-image:
+        var(--noise-grain),
         radial-gradient(380px 220px at 50% 0%, rgba(19, 159, 248, .22), transparent 65%),
         linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+      background-size: 180px 180px, auto, auto;
+      background-repeat: repeat, no-repeat, no-repeat;
       border-color: rgba(19, 159, 248, .32);
     }
     .bento-card.bento-violet {
       background-image:
+        var(--noise-grain),
         radial-gradient(380px 220px at 50% 0%, rgba(37, 102, 240, .24), transparent 65%),
         linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+      background-size: 180px 180px, auto, auto;
+      background-repeat: repeat, no-repeat, no-repeat;
       border-color: rgba(37, 102, 240, .34);
     }
     .bento-card.bento-human {
       background-image:
+        var(--noise-grain),
         radial-gradient(380px 220px at 50% 0%, rgba(123, 227, 181, .2), transparent 65%),
         linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+      background-size: 180px 180px, auto, auto;
+      background-repeat: repeat, no-repeat, no-repeat;
       border-color: rgba(123, 227, 181, .3);
     }
     .bento-card.bento-spectrum {
       background-image:
+        var(--noise-grain),
         radial-gradient(420px 260px at 50% 0%, rgba(74, 0, 224, .22), transparent 65%),
         linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+      background-size: 180px 180px, auto, auto;
+      background-repeat: repeat, no-repeat, no-repeat;
       border-color: rgba(74, 0, 224, .3);
     }
 
@@ -1354,7 +1390,7 @@
       background: rgba(30, 30, 30, 0.5);
       backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
-      border-radius: 44px;
+      border-radius: 48px;
       corner-shape: squircle;
       padding: 0;
       position: relative;
@@ -1368,8 +1404,11 @@
     .process-card.border-glow-card {
       background-color: rgba(20, 18, 28, 0.72) !important;
       background-image:
+        var(--noise-grain),
         radial-gradient(380px 220px at 50% 0%, rgba(108, 99, 255, 0.14), transparent 65%),
         linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)) !important;
+      background-size: 180px 180px, auto, auto !important;
+      background-repeat: repeat, no-repeat, no-repeat !important;
     }
 
     .process-card:hover {
@@ -1382,7 +1421,7 @@
     .process-radar {
       position: absolute;
       inset: -10px;
-      border-radius: calc(44px + 10px);
+      border-radius: calc(48px + 10px);
       corner-shape: squircle;
       border: 1px solid rgba(255, 255, 255, 0.14);
       pointer-events: none;
@@ -1507,8 +1546,8 @@
       inset: 0;
       /* .border-glow-inner (the direct parent) doesn't itself declare a
          border-radius, so `inherit` here would resolve to 0, not the
-         card's 44px — match the card's own radius/corner-shape explicitly. */
-      border-radius: 44px;
+         card's 48px — match the card's own radius/corner-shape explicitly. */
+      border-radius: 48px;
       corner-shape: squircle;
       pointer-events: none;
       /* Shadow starts at center (50%) + 25% = 75%, later than the previous
@@ -2202,7 +2241,7 @@
     .tech-item {
       position: relative;
       height: 100%;
-      border-radius: 28px;
+      border-radius: 48px;
       corner-shape: squircle;
       padding: 24px;
       display: flex;
@@ -2218,17 +2257,26 @@
     }
 
     .tech-item.html-item {
-      background: rgba(30, 30, 30, 0.5);
+      background-color: rgba(30, 30, 30, 0.5);
+      background-image: var(--noise-grain);
+      background-repeat: repeat;
+      background-size: 180px 180px;
       border: 1px solid rgba(96, 165, 250, 0.22);
     }
 
     .tech-item.js-item {
-      background: rgba(30, 30, 30, 0.5);
+      background-color: rgba(30, 30, 30, 0.5);
+      background-image: var(--noise-grain);
+      background-repeat: repeat;
+      background-size: 180px 180px;
       border: 1px solid rgba(251, 146, 60, 0.22);
     }
 
     .tech-item.react-item {
-      background: rgba(30, 30, 30, 0.5);
+      background-color: rgba(30, 30, 30, 0.5);
+      background-image: var(--noise-grain);
+      background-repeat: repeat;
+      background-size: 180px 180px;
       border: 1px solid rgba(108, 99, 255, 0.22);
     }
 
@@ -3631,12 +3679,12 @@
       --rotate-y: 0deg;
       --background-x: 50%;
       --background-y: 50%;
-      --grain: none;
+      --grain: var(--noise-grain);
       --icon: none;
       --inner-gradient: none;
       --behind-glow-color: rgba(125, 190, 255, 0.67);
       --behind-glow-size: 25%;
-      --card-radius: 30px;
+      --card-radius: 48px;
       --sunpillar-1: hsl(2, 100%, 73%);
       --sunpillar-2: hsl(53, 100%, 69%);
       --sunpillar-3: hsl(93, 100%, 69%);
@@ -4127,9 +4175,28 @@
     .pill,
     .domain-pills .pill {
       backdrop-filter: var(--glass-blur);
-      background: var(--glass-bg);
+      background-color: var(--glass-bg);
+      background-image: var(--noise-grain);
+      background-repeat: repeat;
+      background-size: 180px 180px;
       border: 1px solid var(--glass-border);
 
+    }
+
+    /* Stronger grain for everything above EXCEPT Portfolio (.project-card/
+       .grid-card) and Contact (.contact-card/.cta-strip/.line-banner) —
+       those keep the base --noise-grain level. */
+    .ai-usage-card,
+    .philosophy-card,
+    .tech-item,
+    .sidebar-block,
+    .slink,
+    .skill-pill,
+    .tag-capsule,
+    .ai-chip,
+    .pill,
+    .domain-pills .pill {
+      background-image: var(--noise-grain);
     }
 
     /* Coloured cards keep their tint but still get blur */
@@ -4922,9 +4989,6 @@
       align-items: center;
       gap: 7px;
       padding: 7px 14px;
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--glass-border);
       border-radius: 9999px;
       font-size: 13px;
       font-weight: 600;
@@ -5070,7 +5134,7 @@
     }
 
     .tech-item {
-      border-radius: 28px;
+      border-radius: 48px;
       corner-shape: squircle;
       padding: 24px;
       display: flex;
@@ -5084,17 +5148,26 @@
     }
 
     .tech-item.html-item {
-      background: rgba(30, 30, 30, 0.5);
+      background-color: rgba(30, 30, 30, 0.5);
+      background-image: var(--noise-grain);
+      background-repeat: repeat;
+      background-size: 180px 180px;
       border: 1px solid rgba(96, 165, 250, 0.22);
     }
 
     .tech-item.js-item {
-      background: rgba(30, 30, 30, 0.5);
+      background-color: rgba(30, 30, 30, 0.5);
+      background-image: var(--noise-grain);
+      background-repeat: repeat;
+      background-size: 180px 180px;
       border: 1px solid rgba(251, 146, 60, 0.22);
     }
 
     .tech-item.react-item {
-      background: rgba(30, 30, 30, 0.5);
+      background-color: rgba(30, 30, 30, 0.5);
+      background-image: var(--noise-grain);
+      background-repeat: repeat;
+      background-size: 180px 180px;
       border: 1px solid rgba(108, 99, 255, 0.22);
     }
 
@@ -5837,7 +5910,7 @@
        .ai-card-detail (tables, nowrap rows) even while that detail is
        collapsed, blowing the card past its column and clipping it under
        body's overflow-x:hidden. */
-    .ai-card{position:relative;z-index:1;min-width:0;padding:22px 26px 22px;--ai-card-r:44px;border-radius:var(--ai-card-r);corner-shape:squircle;background-color:rgba(20,18,28,.72);background-image:radial-gradient(380px 220px at 50% 0%,rgba(108,99,255,.14),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(1rem);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .4s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08)}
+    .ai-card{position:relative;z-index:1;min-width:0;padding:22px 26px 22px;--ai-card-r:48px;border-radius:var(--ai-card-r);corner-shape:squircle;background-color:rgba(20,18,28,.72);background-image:var(--noise-grain),radial-gradient(380px 220px at 50% 0%,rgba(108,99,255,.14),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(1rem);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .4s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08)}
     .ai-card::before{content:"";position:absolute;top:0;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent)}
     .ai-card:hover{border-color:rgba(108,99,255,0.4);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 60px -10px rgba(181,139,255,.35),inset 0 1px 0 rgba(255,255,255,.08)}
     /* Step badge — floats above card top-left */
@@ -5852,19 +5925,19 @@
     .ai-card:hover::after{animation:aiRingP 3s ease-out infinite}
     .ai-card.ai-focal::after{animation:aiRingP 3s ease-out infinite}
     /* AI Brief focal */
-    .ai-card.ai-focal{background-color:rgba(24,16,32,.72);background-image:radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.32),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(181,139,255,.32);box-shadow:0 60px 140px -20px rgba(0,0,0,.7),0 0 0 1px rgba(181,139,255,.1),0 0 220px -20px rgba(181,139,255,.35),0 0 360px -40px rgba(255,123,200,.25),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-focal{background-color:rgba(24,16,32,.72);background-image:var(--noise-grain),radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.32),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(181,139,255,.32);box-shadow:0 60px 140px -20px rgba(0,0,0,.7),0 0 0 1px rgba(181,139,255,.1),0 0 220px -20px rgba(181,139,255,.35),0 0 360px -40px rgba(255,123,200,.25),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-focal::before{background:linear-gradient(90deg,transparent,#FF7BC8,#B58BFF,transparent);opacity:.5}
     /* Human Review */
-    .ai-card.ai-human{background:radial-gradient(460px 280px at 70% 0%,rgba(123,227,181,.2),transparent 65%),radial-gradient(280px 200px at 30% 100%,rgba(255,255,255,.06),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));border-color:rgba(123,227,181,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(123,227,181,.22),inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.14)}
+    .ai-card.ai-human{background-image:var(--noise-grain),radial-gradient(460px 280px at 70% 0%,rgba(123,227,181,.2),transparent 65%),radial-gradient(280px 200px at 30% 100%,rgba(255,255,255,.06),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));background-size:180px 180px,auto,auto,auto;background-repeat:repeat,no-repeat,no-repeat,no-repeat;border-color:rgba(123,227,181,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(123,227,181,.22),inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.14)}
     .ai-card.ai-human::before{background:linear-gradient(90deg,transparent,#7BE3B5,transparent);opacity:.5}
     /* Logo-palette variants for the remaining (non-focal/human) cards */
-    .ai-card.ai-cyan{background-image:radial-gradient(460px 280px at 60% 0%,rgba(0,212,255,.2),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(0,212,255,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(0,212,255,.2),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-cyan{background-image:var(--noise-grain),radial-gradient(460px 280px at 60% 0%,rgba(0,212,255,.2),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(0,212,255,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(0,212,255,.2),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-cyan::before{background:linear-gradient(90deg,transparent,#00D4FF,transparent);opacity:.5}
-    .ai-card.ai-purple{background-image:radial-gradient(460px 280px at 60% 0%,rgba(19,159,248,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(19,159,248,.32);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(19,159,248,.22),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-purple{background-image:var(--noise-grain),radial-gradient(460px 280px at 60% 0%,rgba(19,159,248,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(19,159,248,.32);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(19,159,248,.22),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-purple::before{background:linear-gradient(90deg,transparent,#139FF8,transparent);opacity:.5}
-    .ai-card.ai-violet{background-image:radial-gradient(460px 280px at 60% 0%,rgba(37,102,240,.24),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(37,102,240,.34);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(37,102,240,.24),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-violet{background-image:var(--noise-grain),radial-gradient(460px 280px at 60% 0%,rgba(37,102,240,.24),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(37,102,240,.34);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(37,102,240,.24),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-violet::before{background:linear-gradient(90deg,transparent,#2566F0,transparent);opacity:.5}
-    .ai-card.ai-spectrum{background-image:radial-gradient(500px 300px at 50% 0%,rgba(74,0,224,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border-color:rgba(74,0,224,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(74,0,224,.22),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-spectrum{background-image:var(--noise-grain),radial-gradient(500px 300px at 50% 0%,rgba(74,0,224,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(74,0,224,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(74,0,224,.22),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-spectrum::before{background:linear-gradient(90deg,transparent,#4A00E0,transparent);opacity:.5}
     .ai-card-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
     .ai-glyph{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;color:#ECE9F5;flex-shrink:0}
@@ -6129,8 +6202,8 @@
     .ai-chips-label{font-family:"Geist Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.28);display:flex;align-items:center;gap:12px}
     .ai-chips-label::before,.ai-chips-label::after{content:"";width:36px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent)}
     .ai-chips-row .ai-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-    .ai-chips-row .ai-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 16px 9px 13px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px);font-size:13.5px;color:#ECE9F5;transition:all .3s;cursor:default}
-    .ai-chips-row .ai-chip:hover{background:rgba(255,255,255,.07);border-color:rgba(138,43,226,.4);transform:translateY(-2px)}
+    .ai-chips-row .ai-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 16px 9px 13px;border-radius:999px;background-color:rgba(255,255,255,.04);background-image:var(--noise-grain);background-repeat:repeat;background-size:180px 180px;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px);font-size:13.5px;color:#ECE9F5;transition:all .3s;cursor:default}
+    .ai-chips-row .ai-chip:hover{background-color:rgba(255,255,255,.07);border-color:rgba(138,43,226,.4);transform:translateY(-2px)}
     .ai-chip-dot{width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,#8A2BE2,#00D4FF);box-shadow:0 0 8px rgba(138,43,226,.5)}
     .ai-chip-count{font-family:"Geist Mono",monospace;font-size:10.5px;color:rgba(255,255,255,.3);padding-left:9px;margin-left:2px;border-left:1px solid rgba(255,255,255,.1)}
     .ai-principle{padding:28px 32px;border-radius:16px;text-align:center;background:rgba(138,43,226,.06);border:1px solid rgba(138,43,226,.18);font-size:20px;font-weight:500;letter-spacing:-.018em;color:#ECE9F5}
