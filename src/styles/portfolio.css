@@ -4819,9 +4819,14 @@
          on faqTab, so it unmounts/remounts) right where the user's thumb
          is. Mobile browsers' scroll anchoring tries to compensate for that
          DOM removal/insertion and ends up jumping the page instead of
-         holding it still — disable anchoring for the card so a tab click
-         never scrolls the page. */
-      .faq-card {
+         holding it still. `overflow-anchor` isn't inherited, so scoping it
+         to .faq-card alone left every churning descendant (the accordion
+         items actually being added/removed) still eligible as an anchor —
+         confirmed the jump persisted with only that rule. The anchor
+         selection happens against the viewport itself here (there's no
+         inner scroll container), so anchoring has to be disabled on body,
+         not the card. */
+      body {
         overflow-anchor: none;
       }
 
