@@ -319,6 +319,17 @@ export default function AboutSection() {
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro1_label}</div>
             <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p1 }} />
+            <div className="about-float" aria-hidden="true">
+              <div className="about-float-box about-float-box--center">
+                <img src="./img/others/Figma_logo.png" alt="" />
+              </div>
+              <div className="about-float-box about-float-box--left">
+                <img src="./img/others/Adobe_XD_logo.png" alt="" />
+              </div>
+              <div className="about-float-box about-float-box--right">
+                <i className="ph-bold ph-flow-arrow" />
+              </div>
+            </div>
           </div>
 
           <div className="bento-card bento-cyan card-spotlight sc-card bento-area-intro2 rise-card">
@@ -341,6 +352,14 @@ export default function AboutSection() {
                 </div>
                 <div className="about-orbit-node" style={{ ['--angle' as string]: '198deg' }}>
                   <div className="about-orbit-icon"><i className="ph-bold ph-browser" /></div>
+                </div>
+              </div>
+              <div className="about-orbit-ring about-orbit-ring--inner">
+                <div className="about-orbit-node about-orbit-node--inner" style={{ ['--angle' as string]: '45deg' }}>
+                  <div className="about-orbit-icon about-orbit-icon--inner"><i className="ph-bold ph-film-strip" /></div>
+                </div>
+                <div className="about-orbit-node about-orbit-node--inner" style={{ ['--angle' as string]: '225deg' }}>
+                  <div className="about-orbit-icon about-orbit-icon--inner"><i className="ph-bold ph-sparkle" /></div>
                 </div>
               </div>
             </div>

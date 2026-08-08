@@ -3560,7 +3560,7 @@
        this rule's higher specificity (3 :not() clauses vs. that rule's 1
        descendant class) overrides their own position/z-index and breaks
        the layering both rely on. */
-    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay):not(.domains-scrim):not(.domain-swap-stage):not(.about-orbit) {
+    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay):not(.domains-scrim):not(.domain-swap-stage):not(.about-orbit):not(.about-float) {
       position: relative;
       z-index: 2;
     }
@@ -3650,6 +3650,27 @@
       color: rgba(255, 255, 255, 0.55);
     }
 
+    /* Inner track: same ring/node mechanism, smaller and counter-rotating
+       against the outer ring for a two-layer orbit (retrograde parallax). */
+    .about-orbit-ring--inner {
+      inset: 27%;
+      border-color: rgba(255, 255, 255, 0.1);
+      animation: about-orbit-spin-rev 18s linear infinite;
+    }
+
+    .about-orbit-node--inner {
+      width: 22px;
+      height: 22px;
+    }
+
+    .about-orbit-icon--inner {
+      animation: about-orbit-spin 18s linear infinite;
+    }
+
+    .about-orbit-node--inner i {
+      font-size: 11px;
+    }
+
     @keyframes about-orbit-spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
@@ -3662,7 +3683,97 @@
 
     @media (prefers-reduced-motion: reduce) {
       .about-orbit-ring,
-      .about-orbit-icon {
+      .about-orbit-icon,
+      .about-orbit-ring--inner,
+      .about-orbit-icon--inner {
+        animation: none;
+      }
+    }
+
+    /* Systems Design card — mirrors Immersive Visuals' corner treatment
+       (reserved text width + overhanging bottom-right decoration), but the
+       decoration itself is a straight port of reactbits.dev's "Visual
+       Editors" bento card: three badges that idle-float independently via
+       looping keyframes (source uses a per-frame sine offset; a CSS
+       ease-in-out loop reads the same on a static badge cluster). */
+    .bento-area-intro1 .bento-text {
+      max-width: 75%;
+    }
+
+    .about-float {
+      position: absolute;
+      right: -10px;
+      bottom: -6px;
+      width: 150px;
+      height: 108px;
+      z-index: 0;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .about-float-box {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .about-float-box--center {
+      width: 48px;
+      height: 48px;
+      top: 2px;
+      left: 51px;
+      animation: about-float-a 5.5s ease-in-out infinite;
+    }
+
+    .about-float-box--left {
+      width: 38px;
+      height: 38px;
+      top: 58px;
+      left: 6px;
+      animation: about-float-b 6.5s ease-in-out infinite;
+    }
+
+    .about-float-box--right {
+      width: 38px;
+      height: 38px;
+      top: 58px;
+      right: 6px;
+      animation: about-float-c 6s ease-in-out infinite;
+    }
+
+    .about-float-box img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      filter: grayscale(1) brightness(1.6);
+    }
+
+    .about-float-box i {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    @keyframes about-float-a {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @keyframes about-float-b {
+      0%, 100% { transform: rotate(-12deg) translate(0, 0); }
+      50% { transform: rotate(-12deg) translate(-4px, 4px); }
+    }
+
+    @keyframes about-float-c {
+      0%, 100% { transform: rotate(12deg) translate(0, 0); }
+      50% { transform: rotate(12deg) translate(4px, 4px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .about-float-box {
         animation: none;
       }
     }
@@ -6586,6 +6697,35 @@
         bottom: -16px;
         width: 100px;
         height: 100px;
+      }
+
+      /* Systems Design float — same corner-padding match as .about-orbit
+         above. */
+      .about-float {
+        right: -4px;
+        bottom: -2px;
+        width: 110px;
+        height: 80px;
+      }
+
+      .about-float-box--center {
+        width: 36px;
+        height: 36px;
+        left: 37px;
+      }
+
+      .about-float-box--left,
+      .about-float-box--right {
+        width: 28px;
+        height: 28px;
+      }
+
+      .about-float-box--left {
+        left: 4px;
+      }
+
+      .about-float-box--right {
+        right: 4px;
       }
     }
 
