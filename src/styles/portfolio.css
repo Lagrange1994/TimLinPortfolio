@@ -905,6 +905,14 @@
       height: 75cqh;
       line-height: 1;
       font-size: 60cqh;
+      /* line-height:1 centers the *line box*, not the glyph — this font's
+         ascent/descent aren't symmetric around the em square, so the ink
+         itself sat ~25px closer to the top edge than the bottom even
+         though the box-level gaps above measured equal. Flex-centering
+         the actual text content fixes the optical (not just box) gap. */
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* .bento-caption's own margin-top (2px, shared rule) would otherwise
