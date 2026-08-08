@@ -872,6 +872,51 @@
     .bento-area-projects { grid-area: projects; }
     .bento-area-domains { grid-area: domains; min-height: 240px; }
 
+    /* Years/Projects' digit sizes off the shared vw-based clamp() (below),
+       which stays small and leaves .bento-num-center's flex:1 area mostly
+       empty — fine there since those cards have nothing else to fill it
+       with. Domains wants the opposite: keep flex:1 (so the number's box
+       still claims the leftover space between label and caption) but size
+       the digit itself off that box's actual resolved height instead of a
+       fixed clamp, so it grows/shrinks to fill whatever room the card
+       ends up with. container-type:size turns .bento-num-center into a
+       query container so cqh below can read its own height. The digit's
+       own box is sized to 75cqh (not 100) so it stays smaller than
+       .bento-num-center — the leftover 25cqh is then split evenly above
+       and below by .bento-num-center's own align-items:center (base rule),
+       keeping the label→digit and digit→caption gaps equal instead of the
+       digit touching both edges. */
+    .bento-area-domains .bento-num-center {
+      container-type: size;
+      container-name: domains-num;
+    }
+
+    .bento-area-domains .stat-num-wrap,
+    .bento-area-domains .digit-col {
+      height: 75cqh;
+    }
+
+    .bento-area-domains .digit-col-inner span {
+      /* Sized off the query container (cqh), not a % of .digit-col-inner
+         (an auto-height flex column that percentages can't resolve
+         against) — and matches .digit-col's own 75cqh exactly so the roll
+         animation's cellH (col.offsetHeight, see AboutSection.tsx) still
+         lines up with each digit's actual rendered height. */
+      height: 75cqh;
+      line-height: 1;
+      font-size: 60cqh;
+    }
+
+    /* .bento-caption's own margin-top (2px, shared rule) would otherwise
+       stack on top of .bento-card's flex gap for the digit→caption side
+       only, throwing off the equal-gap centering above by that same 2px.
+       The label→digit side has nothing else stacking on its gap, so
+       zeroing this here (not touching the shared rule other cards use) is
+       what actually makes both gaps equal instead of just close. */
+    .bento-area-domains .bento-caption {
+      margin-top: 0;
+    }
+
     /* Base (desktop): keep the inline "・" separator, hide the line break —
        overridden the other way for tablet/mobile at the 1024px breakpoint
        below. Must stay ahead of that media block in source order, since a
@@ -4895,6 +4940,40 @@
       .bento-area-domains .bento-num-center {
         flex: 0 1 auto;
         margin: 4px 0;
+        /* Reset the desktop cqh fill (see .bento-area-domains .bento-num-center
+           near the top of this file) — container-type:size needs a definite
+           height to size against, and flex:0 1 auto here makes the box's
+           own height content-driven instead, which container-type:size
+           would otherwise collapse to 0 against (containment hides the
+           span's natural size from the very calculation that's supposed to
+           produce it). Mobile drops .bento-area-domains's min-height
+           anyway, so there's no leftover space worth filling — fall back
+           to the same shared clamp() every other stat digit uses. */
+        container-type: normal;
+      }
+
+      .bento-area-domains .digit-col-inner span {
+        height: clamp(2.75rem, 6vw, 4.5rem);
+        line-height: clamp(2.75rem, 6vw, 4.5rem);
+        font-size: clamp(2.5rem, 5.6vw, 4.25rem);
+      }
+
+      /* .bento-num-center's own height is content-driven here (flex:0 1
+         auto, above), so .digit-col's height:100% (desktop rule) can't
+         resolve to a definite pixel value and falls back to auto — which
+         is the *unclipped* height of all 10 stacked digits in
+         .digit-col-inner (~440px), not a one-digit window. Pin it back to
+         the fixed clamp so overflow:hidden still masks down to a single
+         digit. */
+      .bento-area-domains .stat-num-wrap,
+      .bento-area-domains .digit-col {
+        height: clamp(2.75rem, 6vw, 4.5rem);
+      }
+
+      /* Undo the desktop-only margin-top:0 (near the top of this file) —
+         mobile keeps the shared .bento-caption 2px margin unchanged. */
+      .bento-area-domains .bento-caption {
+        margin-top: 2px;
       }
 
       .about-h2 {
