@@ -3677,8 +3677,13 @@
       width: 30px;
       height: 30px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      /* Frosted glass chip — white-only gradient (brighter top-left,
+         fading out) instead of a flat tint, so each node still reads as
+         its own glass surface. */
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06));
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
       transform: translate(-50%, -50%);
     }
 
@@ -3770,8 +3775,13 @@
       align-items: center;
       justify-content: center;
       border-radius: 14px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      /* Frosted glass chip — white-only gradient (brighter top-left,
+         fading out) instead of a flat tint, so each badge still reads as
+         its own glass surface. */
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06));
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
     }
 
     .about-float-box--center {
@@ -6152,16 +6162,28 @@
     .ai-tag{font-family:"Geist Mono",monospace;font-size:10.5px;padding:3px 10px;border-radius:999px;color:#9A93B0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);letter-spacing:.02em}
 
     /* ── Expand-on-click detail panel ── */
-    .ai-card{cursor:pointer}
-    .ai-card:focus-visible{outline:2px solid rgba(181,139,255,.6);outline-offset:2px}
-    .ai-card-toggle{margin-left:auto;flex-shrink:0;width:22px;height:22px;border-radius:7px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.03);position:relative;transition:border-color .25s,background .25s,transform .35s}
-    .ai-card-toggle::before,.ai-card-toggle::after{content:"";position:absolute;top:50%;left:50%;background:rgba(255,255,255,.5);transform:translate(-50%,-50%);transition:transform .35s,background .25s}
-    .ai-card-toggle::before{width:9px;height:1.5px}
-    .ai-card-toggle::after{width:1.5px;height:9px}
-    .ai-card:hover .ai-card-toggle{border-color:rgba(181,139,255,.4);background:rgba(181,139,255,.08)}
-    .ai-card:hover .ai-card-toggle::before,.ai-card:hover .ai-card-toggle::after{background:#ECE9F5}
-    .ai-card.is-open .ai-card-toggle{transform:rotate(180deg);border-color:rgba(181,139,255,.5);background:rgba(181,139,255,.14)}
-    .ai-card.is-open .ai-card-toggle::after{transform:translate(-50%,-50%) rotate(90deg) scaleY(0)}
+    /* Plus-to-X glass toggle — same shape reactbits.dev's Modal Cards uses for
+       its expand/close button (round, bg-white/20 + backdrop-blur-sm): a "+"
+       is just a horizontal + vertical bar, so rotating the whole button 45deg
+       turns it into an "×" for free — no separate icon swap needed. Now the
+       only clickable control on the card (a real <button>, not the whole
+       <article>), so it needs its own reset + focus-visible ring. */
+    .ai-card-toggle{margin-left:auto;flex-shrink:0;width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);position:relative;padding:0;appearance:none;cursor:pointer;transition:border-color .25s,background .25s,transform .45s cubic-bezier(.16,1,.3,1)}
+    .ai-card-toggle:focus-visible{outline:2px solid rgba(181,139,255,.6);outline-offset:2px}
+    .ai-card-toggle::before,.ai-card-toggle::after{content:"";position:absolute;top:50%;left:50%;background:rgba(255,255,255,.55);transform:translate(-50%,-50%);transition:background .25s}
+    .ai-card-toggle::before{width:10px;height:1.5px}
+    .ai-card-toggle::after{width:1.5px;height:10px}
+    /* Hovering anywhere on the card (not just the button itself) hints the
+       toggle is there — a subtler, non-tinted fill-up vs. the purple tint
+       reserved for actually hovering/focusing the button directly. */
+    .ai-card:hover .ai-card-toggle{background:rgba(255,255,255,.26);border-color:rgba(255,255,255,.22)}
+    .ai-card-toggle:hover{border-color:rgba(181,139,255,.4);background:rgba(181,139,255,.14)}
+    .ai-card-toggle:hover::before,.ai-card-toggle:hover::after{background:#ECE9F5}
+    .ai-card.is-open .ai-card-toggle{transform:rotate(45deg);border-color:rgba(181,139,255,.5);background:rgba(181,139,255,.2)}
+    /* reactbits.dev's Modal Cards close (×) button spins a further 90deg +
+       scales to 1.1 on hover (framer-motion whileHover) — same move here:
+       once open, hovering the × nudges it round another quarter-turn. */
+    .ai-card.is-open .ai-card-toggle:hover{transform:rotate(135deg) scale(1.1)}
     .ai-card.is-open{border-color:rgba(181,139,255,.4)}
     .ai-card-detail{max-height:0;opacity:0;overflow:hidden;margin-top:0;padding-top:0;border-top:1px solid transparent;transition:max-height .5s cubic-bezier(.2,.7,.2,1),opacity .35s ease,margin-top .5s cubic-bezier(.2,.7,.2,1),padding-top .5s cubic-bezier(.2,.7,.2,1),border-color .3s ease}
     .ai-card.is-open .ai-card-detail{max-height:900px;opacity:1;margin-top:14px;padding-top:14px;border-top-color:rgba(255,255,255,.08)}

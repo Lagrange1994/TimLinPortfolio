@@ -1824,18 +1824,19 @@ export default function SkillsSection() {
                 key={card.id}
                 ref={(el: HTMLElement | null) => { if (el) cardRefs.current.set(card.id, el); else cardRefs.current.delete(card.id); }}
                 className={`ai-card ai-card-glow rise-card${card.variant ? ' ' + card.variant : ''}${isOpen ? ' is-open' : ''}`}
-                onClick={toggle}
-                role="button"
-                tabIndex={0}
-                aria-expanded={isOpen}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }}
               >
                 <span className="ai-step-badge"><em>{card.step}</em></span>
                 {card.badge && <span className="ai-focal-badge">{card.badge}</span>}
                 <div className="ai-card-head">
                   <div className="ai-glyph">{card.icon}</div>
                   <h3>{card.title}</h3>
-                  <span className="ai-card-toggle" aria-hidden="true" />
+                  <button
+                    type="button"
+                    className="ai-card-toggle"
+                    aria-expanded={isOpen}
+                    aria-label={`${card.title}`}
+                    onClick={toggle}
+                  />
                 </div>
                 <p>{card.summary}</p>
                 {card.tags && (
