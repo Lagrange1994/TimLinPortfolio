@@ -48,6 +48,34 @@
   background: #E4E1FF;
 }
 
+.afs-label-sep {
+  font-family: "Geist Mono", monospace;
+  font-size: 10px;
+  color: #6A6482;
+}
+
+.afs-icon-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.afs-icon {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  opacity: .55;
+  transition: opacity .35s ease;
+}
+
+.afs-icon-active {
+  opacity: 1;
+}
+
+.afs-icon-complete {
+  opacity: .85;
+}
+
 .afs-label {
   font-family: "Geist Mono", monospace;
   font-size: 10px;

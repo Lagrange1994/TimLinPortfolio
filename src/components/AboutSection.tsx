@@ -453,7 +453,15 @@ export default function AboutSection() {
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_ai_label}</div>
             <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p3 }} />
-            <AiFlowStepper steps={['Make', 'Claude', 'Sheets', 'LINE / Email']} />
+            <AiFlowStepper
+              steps={['Make', 'Claude', 'Sheets', 'LINE / Email']}
+              icons={[
+                'https://cdn.simpleicons.org/make/ffffff',
+                'https://cdn.simpleicons.org/claude/ffffff',
+                'https://cdn.simpleicons.org/googlesheets/ffffff',
+                ['https://cdn.simpleicons.org/line/ffffff', 'https://cdn.simpleicons.org/gmail/ffffff'],
+              ]}
+            />
           </div>
 
         </div>
