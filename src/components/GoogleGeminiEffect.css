@@ -1,0 +1,15 @@
+.gemini-beams {
+  position: absolute;
+  inset: 0 10%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+.gemini-beams-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+}

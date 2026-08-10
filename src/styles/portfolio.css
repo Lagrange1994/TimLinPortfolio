@@ -6418,19 +6418,60 @@
         0 0 25px 2px var(--glow-color-20, hsl(264deg 70% 75% / 20%)),
         0 0 50px 2px var(--glow-color-10, hsl(264deg 70% 75% / 10%));
     }
-    .ai-chips-row{display:flex;flex-direction:column;align-items:center;gap:16px;margin-bottom:28px}
-    .ai-chips-label{font-family:"Geist Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.28);display:flex;align-items:center;gap:12px}
-    .ai-chips-label::before,.ai-chips-label::after{content:"";width:36px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent)}
-    .ai-chips-row .ai-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
-    .ai-chips-row .ai-chip{display:inline-flex;align-items:center;gap:8px;padding:9px 16px 9px 13px;border-radius:999px;background-color:rgba(255,255,255,.04);background-image:var(--noise-grain);background-repeat:repeat;background-size:180px 180px;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px);font-size:13.5px;color:#ECE9F5;transition:all .3s;cursor:default}
-    .ai-chips-row .ai-chip:hover{background-color:rgba(255,255,255,.07);border-color:rgba(138,43,226,.4);transform:translateY(-2px)}
-    .ai-chip-dot{width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,#8A2BE2,#00D4FF);box-shadow:0 0 8px rgba(138,43,226,.5)}
+    /* Height is explicit (not content-driven) because the 4 chips below are
+       positioned absolutely, each pinned to the y where its matching beam
+       (GEMINI_BEAM_STOPS) ends — so the beam visually threads through the
+       chip's vertical center. See GoogleGeminiEffect.tsx. */
+    .ai-chips-row{position:relative;height:340px;margin-bottom:120px}
+    /* Word cloud sits on the beams' left (input) edge, layered above the
+       beam paths (z-index 0) so the frosted chips read clearly on top of
+       the gradient lines instead of being painted over. */
+    .ai-word-cloud{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+    .ai-word-cloud span{position:absolute;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-family:"Geist Mono",monospace;color:#fff;letter-spacing:.02em;padding:4px 12px;border-radius:999px;background-color:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transform:rotate(var(--word-rotate,0deg));animation:word-float-a 6s ease-in-out infinite}
+    .ai-word-cloud span i{font-size:.9em;color:rgba(255,255,255,.85)}
+    /* Idle-float, same technique as .about-float-box (Systems Design card):
+       each word keeps its own static --word-rotate baseline and drifts a few
+       px on top via keyframes; 4 variants + staggered delays via nth-child
+       so the cloud doesn't bob in visible unison. */
+    .ai-word-cloud span:nth-child(4n+2){animation-name:word-float-b;animation-duration:7s}
+    .ai-word-cloud span:nth-child(4n+3){animation-name:word-float-c;animation-duration:5.5s}
+    .ai-word-cloud span:nth-child(4n){animation-name:word-float-d;animation-duration:6.5s}
+    .ai-word-cloud span:nth-child(2n){animation-delay:-2.2s}
+    .ai-word-cloud span:nth-child(3n){animation-delay:-4.1s}
+    @keyframes word-float-a{0%,100%{transform:rotate(var(--word-rotate,0deg)) translate(0,0)}50%{transform:rotate(var(--word-rotate,0deg)) translate(3px,-5px)}}
+    @keyframes word-float-b{0%,100%{transform:rotate(var(--word-rotate,0deg)) translate(0,0)}50%{transform:rotate(var(--word-rotate,0deg)) translate(-4px,4px)}}
+    @keyframes word-float-c{0%,100%{transform:rotate(var(--word-rotate,0deg)) translate(0,0)}50%{transform:rotate(var(--word-rotate,0deg)) translate(4px,3px)}}
+    @keyframes word-float-d{0%,100%{transform:rotate(var(--word-rotate,0deg)) translate(0,0)}50%{transform:rotate(var(--word-rotate,0deg)) translate(-3px,-4px)}}
+    @media (prefers-reduced-motion: reduce){.ai-word-cloud span{animation:none}}
+    /* Title + subtitle sit above the beam canvas (Aceternity reference layout)
+       instead of a pill mid-beam) — sized to match the reference screenshot's
+       large hero-scale title + smaller muted subtitle, scaled down to fit
+       this row's ~1180px width instead of a full page hero. */
+    .ai-chips-header{text-align:center;margin-top:120px;margin-bottom:0}
+    .ai-chips-header h3{margin:0;font-size:clamp(2.25rem,5vw,3.75rem);font-weight:100;letter-spacing:-.02em;color:#fff;line-height:1.15;font-family:'Quicksand','Noto Sans TC',sans-serif}
+    .ai-chips-header p{margin:14px auto 0;max-width:520px;font-size:clamp(1rem,1.8vw,1.25rem);font-weight:400;line-height:1.6;color:rgba(255,255,255,.55)}
+    .ai-chips-row .ai-chips{position:absolute;inset:0;z-index:1;pointer-events:none}
+    .ai-chips-row .ai-chip{position:absolute;right:28px;transform:translateY(-50%);pointer-events:auto;display:inline-flex;align-items:center;gap:8px;padding:9px 16px 9px 13px;border-radius:999px;background-color:rgba(255,255,255,.04);background-image:var(--noise-grain);background-repeat:repeat;background-size:180px 180px;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px);font-size:13.5px;color:#ECE9F5;transition:background-color .3s,border-color .3s,transform .3s;cursor:default}
+    .ai-chips-row .ai-chip:hover{background-color:rgba(255,255,255,.07);border-color:rgba(138,43,226,.4);transform:translateY(calc(-50% - 2px))}
+    /* Beam-arrival border — outline switches to the chip's own beam color
+       (--chip-glow, set inline per chip) the instant that beam's line-draw
+       reaches the right edge (see GoogleGeminiEffect's onArriveChange). */
+    .ai-chips-row .ai-chip.is-arrived{border-color:var(--chip-glow)}
+    .ai-chips-row .ai-chip.is-arrived:hover{border-color:var(--chip-glow)}
+    .ai-chip-dot{width:7px;height:7px;border-radius:50%;box-shadow:0 0 8px rgba(138,43,226,.5)}
     .ai-chip-count{font-family:"Geist Mono",monospace;font-size:10.5px;color:rgba(255,255,255,.3);padding-left:9px;margin-left:2px;border-left:1px solid rgba(255,255,255,.1)}
-    .ai-principle{padding:28px 32px;border-radius:16px;text-align:center;background:rgba(138,43,226,.06);border:1px solid rgba(138,43,226,.18);font-size:20px;font-weight:500;letter-spacing:-.018em;color:#ECE9F5}
-    .ai-principle em{font-style:italic;background:linear-gradient(135deg,#8A2BE2,#4A00E0,#00D4FF);-webkit-background-clip:text;background-clip:text;color:transparent}
-    .ai-principle-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:linear-gradient(135deg,#8A2BE2,#00D4FF);vertical-align:middle;margin:0 12px 4px}
 
-    @media(max-width:640px){.ai-principle{font-size:17px;padding:22px 20px}}
+    @media(max-width:640px){
+      .ai-chips-row{height:auto;display:flex;flex-direction:column;align-items:center;gap:20px;padding:32px 20px}
+      .ai-word-cloud{display:none}
+      .ai-chips-header h3{font-size:28px}
+      .ai-chips-header p{font-size:15px}
+      .ai-chips-row .ai-chips{position:static;inset:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+      .ai-chips-row .ai-chip{position:static;transform:none}
+      .ai-chips-row .ai-chip:hover{transform:translateY(-2px)}
+    }
+    .ai-chips-header p em{font-style:italic;background:linear-gradient(135deg,#8A2BE2,#4A00E0,#00D4FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .ai-principle-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:linear-gradient(135deg,#8A2BE2,#00D4FF);vertical-align:middle;margin:0 12px 4px}
     #chat-fab {
       position: fixed;
       bottom: 2rem;

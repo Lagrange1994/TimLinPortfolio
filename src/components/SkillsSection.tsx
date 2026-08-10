@@ -5,6 +5,36 @@ import BorderGlow from './BorderGlow';
 import TypingCode, { flatten, toRuns, type CodeVersion, type CodeToken } from './TypingCode';
 import AiFlowStepper from './AiFlowStepper';
 import PolicyPill from './PolicyPill';
+import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from './GoogleGeminiEffect';
+
+// Top-to-bottom, index-paired with GEMINI_BEAM_STOPS so each chip's vertical
+// center lands on the beam that "feeds" it.
+const AI_CHIP_CATEGORIES = [
+  { label: 'Dev Handoff', pct: '12%' },
+  { label: 'Product UI', pct: '37%' },
+  { label: 'Graphic Design', pct: '18%' },
+  { label: 'UX Review', pct: '17%' },
+  { label: 'Research Planning', pct: '16%' },
+];
+
+// Decorative word cloud on the beams' left (input) side — scattered raw data
+// sources that flow in and get sorted into AI_CHIP_CATEGORIES on the right.
+// Positions/sizes are hand-placed to spread across the left ~32% band without
+// clumping; purely illustrative, so aria-hidden in the JSX.
+const AI_SOURCE_CLOUD = [
+  { text: 'User Interviews', icon: 'fa-solid fa-comments', top: '10%', left: '2%', size: 13, opacity: 0.64, rotate: -4 },
+  { text: 'Support Tickets', icon: 'fa-solid fa-headset', top: '24%', left: '9%', size: 11, opacity: 0.52, rotate: 3 },
+  { text: 'Analytics Events', icon: 'fa-solid fa-chart-line', top: '6%', left: '11%', size: 12, opacity: 0.58, rotate: -2 },
+  { text: 'Figma Comments', icon: 'fa-brands fa-figma', top: '38%', left: '1.5%', size: 14, opacity: 0.7, rotate: 2 },
+  { text: 'Slack Threads', icon: 'fa-brands fa-slack', top: '50%', left: '10%', size: 11, opacity: 0.5, rotate: -3 },
+  { text: 'GitHub Issues', icon: 'fa-brands fa-github', top: '62%', left: '3%', size: 13, opacity: 0.62, rotate: 4 },
+  { text: 'Design Specs', icon: 'fa-solid fa-swatchbook', top: '74%', left: '11%', size: 15, opacity: 0.72, rotate: -2 },
+  { text: 'Roadmap Docs', icon: 'fa-solid fa-route', top: '86%', left: '3%', size: 11, opacity: 0.52, rotate: 3 },
+  { text: 'A/B Test Results', icon: 'fa-solid fa-flask', top: '90%', left: '12%', size: 10.5, opacity: 0.48, rotate: -5 },
+  { text: 'Survey Responses', icon: 'fa-solid fa-clipboard-list', top: '18%', left: '5%', size: 11, opacity: 0.5, rotate: 5 },
+  { text: 'Meeting Notes', icon: 'fa-solid fa-users', top: '46%', left: '3%', size: 12, opacity: 0.56, rotate: -3 },
+  { text: 'Competitor Audits', icon: 'fa-solid fa-magnifying-glass-chart', top: '68%', left: '10%', size: 10.5, opacity: 0.48, rotate: 2 },
+];
 
 const SMOOTH_TAU = 0.18;
 const AI_THINK_MS = 700;
@@ -799,6 +829,10 @@ export default function SkillsSection() {
   // Mirrors the Design Workflow card's AiFlowStepper (its "progress bar")
   // so the phase list below can cycle each row's status pill in lockstep.
   const [wfActive, setWfActive] = useState(0);
+  // Which AI_CHIP_CATEGORIES / GEMINI_BEAM_STOPS chips their beam has
+  // reached yet — drives the arrival glow on .ai-chip (see GoogleGeminiEffect's
+  // onArriveChange).
+  const [arrivedBeams, setArrivedBeams] = useState<boolean[]>([false, false, false, false, false]);
   const aiFlowGridRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
   const aiThinkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1851,18 +1885,46 @@ export default function SkillsSection() {
           })}
         </div>
 
-        <div className="ai-chips-row rise-card">
-          <div className="ai-chips-label"><span>{t.ai_chips_label}</span></div>
-          <div className="ai-chips">
-            <span className="ai-chip"><span className="ai-chip-dot"></span>Product UI<span className="ai-chip-count">42%</span></span>
-            <span className="ai-chip"><span className="ai-chip-dot"></span>Graphic Design<span className="ai-chip-count">21%</span></span>
-            <span className="ai-chip"><span className="ai-chip-dot"></span>UX Review<span className="ai-chip-count">19%</span></span>
-            <span className="ai-chip"><span className="ai-chip-dot"></span>Research Planning<span className="ai-chip-count">18%</span></span>
-          </div>
+        <div className="ai-chips-header rise-card">
+          <h3>{t.ai_chips_label}</h3>
+          <p>AI handles <em>structure</em><span className="ai-principle-dot"></span>I handle <em>judgment</em>.</p>
         </div>
 
-        <div className="ai-principle rise-card">
-          AI handles <em>structure</em><span className="ai-principle-dot"></span>I handle <em>judgment</em>.
+        <div className="ai-chips-row rise-card">
+          <div className="ai-word-cloud" aria-hidden="true">
+            {AI_SOURCE_CLOUD.map(word => (
+              <span
+                key={word.text}
+                style={{
+                  top: word.top,
+                  left: word.left,
+                  fontSize: `${word.size}px`,
+                  opacity: word.opacity,
+                  ['--word-rotate' as string]: `${word.rotate}deg`,
+                }}
+              >
+                <i className={word.icon} aria-hidden="true" />
+                {word.text}
+              </span>
+            ))}
+          </div>
+          <GoogleGeminiEffect onArriveChange={setArrivedBeams} />
+          <div className="ai-chips">
+            {AI_CHIP_CATEGORIES.map((chip, i) => {
+              const stop = GEMINI_BEAM_STOPS[i];
+              return (
+                <span
+                  key={chip.label}
+                  className={`ai-chip${arrivedBeams[i] ? ' is-arrived' : ''}`}
+                  style={{ top: `${stop.topPercent}%`, ['--chip-glow' as string]: stop.color }}
+                >
+                  <span className="ai-chip-dot" style={{ background: stop.color, boxShadow: `0 0 8px ${stop.color}` }}></span>
+                  {chip.label}
+                  <span className="ai-chip-count">{chip.pct}</span>
+                </span>
+              );
+            })}
+          </div>
         </div>
 
         <div className="skills-marquee-group">
