@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, useScroll, useTransform, useMotionValueEvent } from 'motion/react';
+import { motion } from 'motion/react';
 import './GoogleGeminiEffect.css';
 
 // Ported from Aceternity UI's Google Gemini Effect (ui.aceternity.com/components/google-gemini-effect),
@@ -46,54 +46,43 @@ export const GEMINI_BEAM_STOPS: BeamStop[] = [
 
 interface GoogleGeminiEffectProps {
   className?: string;
-  // Fires whenever a beam's line-draw crosses the "arrived at the right
-  // edge" threshold, in the same top-to-bottom order as GEMINI_BEAM_STOPS
-  // (PATHS/COLORS below run bottom-to-top, so this is index-reversed before
-  // calling out) — lets SkillsSection light up each chip's border in its
-  // own beam's color exactly when that beam reaches it.
+  // Fires whenever a beam's auto-play line-draw finishes, in the same
+  // top-to-bottom order as GEMINI_BEAM_STOPS (PATHS/COLORS below run
+  // bottom-to-top, so this is index-reversed before calling out) — lets
+  // SkillsSection light up each chip's border in its own beam's color once
+  // that beam finishes drawing.
   onArriveChange?: (arrived: boolean[]) => void;
 }
 
-const ARRIVE_THRESHOLD = 0.97;
+// Beams play top-to-bottom (index 4 = topmost/cyan first), each starting
+// slightly after the previous one, so the sweep cascades down instead of
+// all five beams drawing in lockstep.
+const BEAM_DRAW_DURATION = 1.8;
+const BEAM_STAGGER = 0.15;
+// Wait for this area's own scroll-reveal (rise-card) to finish rising into
+// view before the beams start drawing, instead of firing the instant any
+// sliver of the SVG crosses into the viewport.
+const REVEAL_DELAY = 0.2;
 
 export default function GoogleGeminiEffect({ className, onArriveChange }: GoogleGeminiEffectProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'end start'],
-  });
 
   const [reduceMotion] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
 
-  const p0 = useTransform(scrollYProgress, [0, 0.8], [0.2, 1]);
-  const p1 = useTransform(scrollYProgress, [0, 0.8], [0.15, 1]);
-  const p2 = useTransform(scrollYProgress, [0, 0.8], [0.1, 1]);
-  const p3 = useTransform(scrollYProgress, [0, 0.8], [0.05, 1]);
-  const p4 = useTransform(scrollYProgress, [0, 0.8], [0, 1]);
-  const pathLengths = [p0, p1, p2, p3, p4];
-
   const arrivedRef = useRef<boolean[]>([false, false, false, false, false]);
 
-  const reportArrive = (i: number, v: number) => {
-    const isArrived = v >= ARRIVE_THRESHOLD;
-    if (arrivedRef.current[i] !== isArrived) {
-      arrivedRef.current[i] = isArrived;
+  const reportArrive = (i: number) => {
+    if (!arrivedRef.current[i]) {
+      arrivedRef.current[i] = true;
       onArriveChange?.([...arrivedRef.current].reverse());
     }
   };
 
-  useMotionValueEvent(p0, 'change', v => reportArrive(0, v));
-  useMotionValueEvent(p1, 'change', v => reportArrive(1, v));
-  useMotionValueEvent(p2, 'change', v => reportArrive(2, v));
-  useMotionValueEvent(p3, 'change', v => reportArrive(3, v));
-  useMotionValueEvent(p4, 'change', v => reportArrive(4, v));
-
   // Under reduced motion the beams render fully drawn from the start (see
-  // the `initial`/`style` fallback below), so every chip should read as
-  // "arrived" immediately instead of waiting on a scroll-driven event that
-  // may never fire the same way.
+  // the `initial` fallback below), so every chip should read as "arrived"
+  // immediately instead of waiting on an animation that never plays.
   useEffect(() => {
     if (reduceMotion) {
       arrivedRef.current = [true, true, true, true, true];
@@ -128,8 +117,14 @@ export default function GoogleGeminiEffect({ className, onArriveChange }: Google
             strokeWidth="2"
             fill="none"
             initial={{ pathLength: reduceMotion ? 1 : 0 }}
-            style={{ pathLength: reduceMotion ? 1 : pathLengths[i] }}
-            transition={{ duration: 0, ease: 'linear' }}
+            whileInView={{ pathLength: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{
+              duration: reduceMotion ? 0 : BEAM_DRAW_DURATION,
+              delay: reduceMotion ? 0 : REVEAL_DELAY + (PATHS.length - 1 - i) * BEAM_STAGGER,
+              ease: 'easeInOut',
+            }}
+            onAnimationComplete={() => reportArrive(i)}
           />
         ))}
         <defs>
