@@ -151,7 +151,7 @@ export const translations = {
     ai_ph_completed: '已完成',
     ai_ph_upnext: '預備中',
     ai_ph_queued: '排隊中',
-    ai_chips_label: 'AI 會自動將需求歸類為',
+    ai_chips_label: 'AI 會自動歸類需求',
     ai_principle: 'AI 負責 <em>結構</em><span class="ai-principle-dot"></span>我負責 <em>判斷</em>。',
     // portfolio
     portfolio_headline_sub: '精選作品——從第一筆草圖到正式上線，<br />記錄每一次完整的設計旅程。',
