@@ -905,11 +905,15 @@ export default function PortfolioSection() {
           <button
             id="toggle-portfolio-view"
             className="btn-glass btn-grad"
-            style={{ padding: '18px 42px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '12px', border: 'none', cursor: 'pointer', fontSize: '21px' }}
+            style={{ padding: '10px 10px 10px 34px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '12px', border: 'none', cursor: 'pointer', fontSize: '21px' }}
             onClick={handleToggle}
           >
             <span id="toggle-portfolio-text">{expanded ? 'Fold' : 'View All Projects'}</span>
-            <i id="toggle-portfolio-icon" className={expanded ? 'fas fa-chevron-up' : 'fas fa-arrow-right'}></i>
+            <span className="toggle-portfolio-icon-circle">
+              <span className="toggle-portfolio-icon-spin">
+                <i id="toggle-portfolio-icon" className={expanded ? 'fas fa-chevron-up' : 'fas fa-arrow-right'}></i>
+              </span>
+            </span>
           </button>
         </div>
       </section>
