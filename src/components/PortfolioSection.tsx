@@ -848,12 +848,13 @@ export default function PortfolioSection() {
           </div>
           <svg className="portfolio-wall-outline" aria-hidden="true">
             <defs>
-              <linearGradient id="portfolio-wall-outline-grad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#6C63FF" />
-                <stop offset="100%" stopColor="#FF6584" />
+              <linearGradient id="portfolio-wall-outline-grad" x1="0" y1="1" x2="1" y2="0">
+                <stop offset="0%" stopColor="#8A2BE2" />
+                <stop offset="50%" stopColor="#4A00E0" />
+                <stop offset="100%" stopColor="#00D4FF" />
               </linearGradient>
             </defs>
-            <path ref={wallOutlinePathRef} fill="none" stroke="url(#portfolio-wall-outline-grad)" strokeWidth="2" />
+            <path ref={wallOutlinePathRef} fill="none" stroke="url(#portfolio-wall-outline-grad)" strokeWidth="3.5" />
           </svg>
         </div>
 
