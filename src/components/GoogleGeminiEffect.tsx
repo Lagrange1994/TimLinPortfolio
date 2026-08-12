@@ -22,6 +22,12 @@ const COLORS = ['#8A2BE2', '#7A3FE8', '#5A6EF0', '#2FA0FA', '#00D4FF'];
 // clear of the crop edges. GEMINI_BEAM_STOPS below is derived from this.
 const VIEWBOX_MIN_Y = 320;
 const VIEWBOX_HEIGHT = 380;
+const VIEWBOX_FULL_WIDTH = 1440;
+// On narrow screens there's no room for the left word-cloud band, so the
+// diagram is cropped to just the "beams converge, then fan out to chips"
+// portion (roughly where all 5 paths bunch together around x=480 onward),
+// instead of stretching the whole 0-1440 width into a cramped mobile column.
+const VIEWBOX_MOBILE_MIN_X = 480;
 
 interface BeamStop {
   color: string;
@@ -70,6 +76,9 @@ export default function GoogleGeminiEffect({ className, onArriveChange }: Google
   const [reduceMotion] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
+  const [isMobile] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches
+  );
 
   const arrivedRef = useRef<boolean[]>([false, false, false, false, false]);
 
@@ -93,7 +102,11 @@ export default function GoogleGeminiEffect({ className, onArriveChange }: Google
   return (
     <div ref={ref} className={`gemini-beams${className ? ` ${className}` : ''}`}>
       <svg
-        viewBox={`0 ${VIEWBOX_MIN_Y} 1440 ${VIEWBOX_HEIGHT}`}
+        viewBox={
+          isMobile
+            ? `${VIEWBOX_MOBILE_MIN_X} ${VIEWBOX_MIN_Y} ${VIEWBOX_FULL_WIDTH - VIEWBOX_MOBILE_MIN_X} ${VIEWBOX_HEIGHT}`
+            : `0 ${VIEWBOX_MIN_Y} ${VIEWBOX_FULL_WIDTH} ${VIEWBOX_HEIGHT}`
+        }
         preserveAspectRatio="none"
         xmlns="http://www.w3.org/2000/svg"
         className="gemini-beams-svg"

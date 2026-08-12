@@ -13,3 +13,13 @@
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
   mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
 }
+
+@media (max-width: 640px) {
+  /* Mobile already crops the SVG's own viewBox to just the converge-to-chips
+     region (see GoogleGeminiEffect.tsx), so the convergence point should sit
+     flush at the row's left edge instead of losing another 10% to this
+     desktop-only width trim. */
+  .gemini-beams {
+    inset: 0;
+  }
+}
