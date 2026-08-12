@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
 import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
-import { portfolioWallMaskPath, DEFAULT_RADIUS } from '../utils/portfolioMask';
+import { portfolioWallMaskPath, DEFAULT_RADIUS, computeMobileWallHeight } from '../utils/portfolioMask';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import gsap from 'gsap';
 
@@ -101,6 +101,10 @@ export default function PortfolioSection() {
   const [activeFilter, setActiveFilter] = useState('all');
   const scrollerInitRef = useRef(false);
   const wallOutlinePathRef = useRef<SVGPathElement | null>(null);
+  // Mobile's wall height is measured once (see the wall-scale effect below)
+  // and then locked — re-measuring on every resize is what caused the
+  // address-bar-driven svh jitter this replaces.
+  const mobileWallHeightLockedRef = useRef(false);
 
   // MagicBento cleanup refs
   const spotlightRef = useRef<HTMLDivElement | null>(null);
@@ -347,7 +351,17 @@ export default function PortfolioSection() {
       // and leg-bottom turns down with it (see portfolioMask.ts).
       const isMobileBreakpoint = window.matchMedia('(max-width: 767px)').matches;
       const radius = isMobileBreakpoint ? DEFAULT_RADIUS / 2 : DEFAULT_RADIUS;
-      const d = portfolioWallMaskPath(w, h, notch1W, notch1H, notch2W, notch2H, legGapH, legGapW, radius, legTopRadius);
+      // On desktop, the headline's own top-right corner (above the subtitle
+      // notch entirely) matches the shared `radius` already (40px on
+      // desktop) — see portfolioMask.ts.
+      const isDesktopBreakpoint = window.matchMedia('(min-width: 1025px)').matches;
+      // On mobile, the subtitle notch's own bottom-right corner matches
+      // legTopRadius — the same radius already used for the leg gap's
+      // top-left corner, which traces the OUTSIDE of the button's own
+      // rounded corner (button radius + LEG_GAP_PADDING), not the button's
+      // bare radius alone.
+      const notch2BottomRadius = isDesktopBreakpoint ? 40 : isMobileBreakpoint ? legTopRadius : undefined;
+      const d = portfolioWallMaskPath(w, h, notch1W, notch1H, notch2W, notch2H, legGapH, legGapW, radius, legTopRadius, undefined, notch2BottomRadius);
       pathEl!.setAttribute('d', d);
       wall!.style.clipPath = `path('${d}')`;
       // Flush the button's own bottom edge against the wall's actual bottom
@@ -398,12 +412,66 @@ export default function PortfolioSection() {
   // Scale the whole tilted row stack (cards + gaps together) to fill the
   // viewport-height .portfolio-wall, instead of stretching gaps apart via
   // flexbox — keeps the original card spacing proportions intact.
+  //
+  // Mobile skips scaling entirely: instead of forcing the natural card
+  // stack to fit a fixed svh box, the wall's own height is set to the
+  // stack's natural height (cards render at their real size, "growing"
+  // downward) capped at whatever room is actually left below the wall's
+  // own top, once the user has scrolled into the section — not at raw page
+  // mount (scrollY 0), where the navbar is still in its taller, unscrolled
+  // state and understates how much of the screen the nav actually eats
+  // once you're deep enough in the page to see this section. An
+  // IntersectionObserver (not the 'rise-settled' GSAP event other effects
+  // here use) is what triggers the one-time measurement, since
+  // prefers-reduced-motion visitors skip GSAP's ScrollTrigger setup
+  // entirely and would never dispatch 'rise-settled'. That measurement is
+  // then locked (mobileWallHeightLockedRef) — re-measuring on every resize
+  // is exactly the address-bar-driven jitter the codebase already works
+  // around elsewhere (see the svh-vs-dvh comments on .portfolio-wall in
+  // portfolio.css).
   useEffect(() => {
     const wall = document.querySelector<HTMLElement>('.portfolio-wall');
     const inner = document.querySelector<HTMLElement>('.portfolio-wall-inner');
-    if (!wall || !inner) return;
+    const section = document.getElementById('portfolio');
+    if (!wall || !inner || !section) return;
+
+    // wall.style.top (set by the geometry effect above, from
+    // labelRect.top - sectionRect.top) is the wall's own offset below the
+    // section's top edge — scroll-position-independent, since both rects
+    // shift by the same amount. Once scroll-margin-top has landed the
+    // section flush against the navbar, the wall's real distance from the
+    // viewport top is exactly var(--nav-h) + that offset. The bottom
+    // breathing room mirrors that same offset (not an independent
+    // constant), so the wall reads as evenly framed within the section —
+    // as much air below it as there already is above it.
+    function measureCapPx(): number {
+      const wallTopOffset = parseFloat(wall!.style.top) || 0;
+      const probe = document.createElement('div');
+      probe.style.cssText = `position:fixed; visibility:hidden; pointer-events:none; height:calc(100svh - var(--nav-h, 72px) - ${wallTopOffset}px - ${wallTopOffset}px - env(safe-area-inset-bottom, 0px));`;
+      document.body.appendChild(probe);
+      const capPx = probe.getBoundingClientRect().height;
+      probe.remove();
+      return capPx;
+    }
+
+    function lockMobileHeight() {
+      if (mobileWallHeightLockedRef.current) return;
+      const rows = Array.from(inner!.querySelectorAll<HTMLElement>('.portfolio-row'))
+        .filter(r => r.offsetHeight > 0);
+      if (rows.length === 0) return;
+      const gap = parseFloat(getComputedStyle(inner!).gap) || 0;
+      const contentHeight = rows.reduce((sum, r) => sum + r.offsetHeight, 0) + gap * (rows.length - 1);
+      if (contentHeight <= 0) return;
+      wall!.style.height = `${computeMobileWallHeight(contentHeight, measureCapPx())}px`;
+      inner!.style.setProperty('--wall-scale', '1');
+      mobileWallHeightLockedRef.current = true;
+    }
 
     function applyScale() {
+      // Mobile locks once, via the IntersectionObserver below — measuring
+      // here (on mount / desktop-style resize) would use the navbar's
+      // un-scrolled height and land the cap short.
+      if (window.matchMedia('(max-width: 767px)').matches) return;
       const rows = Array.from(inner!.querySelectorAll<HTMLElement>('.portfolio-row'))
         .filter(r => r.offsetHeight > 0);
       if (rows.length === 0 || wall!.offsetHeight === 0) return;
@@ -416,7 +484,19 @@ export default function PortfolioSection() {
     applyScale();
     const ro = new ResizeObserver(applyScale);
     ro.observe(wall);
-    return () => ro.disconnect();
+
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some(e => e.isIntersecting)) {
+        lockMobileHeight();
+        io.disconnect();
+      }
+    }, { threshold: 0.01 });
+    io.observe(section);
+
+    return () => {
+      ro.disconnect();
+      io.disconnect();
+    };
   }, [expanded]);
 
   // Fixed-radius squircle clip-path for project/grid cards. These cards'

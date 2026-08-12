@@ -27,6 +27,15 @@ const DEFAULT_LEG_GAP_W_RATIO = 1 - 728 / 1328;
 const DEFAULT_LEG_GAP_RATIO = 1 - 548 / 666;
 export const DEFAULT_RADIUS = 40;
 
+// Mobile's wall grows to fit its natural card-stack height instead of being
+// scaled to a fixed viewport percentage, but only up to whatever room the
+// screen actually has — past that cap it just crops (overflow: hidden),
+// same as any other natural-height box. Pulled out as pure math so the
+// clamp itself is unit-testable without a DOM.
+export function computeMobileWallHeight(contentHeight: number, capPx: number): number {
+  return Math.max(0, Math.min(contentHeight, capPx));
+}
+
 type Vertex = { x: number; y: number; r: number };
 
 // Rounds every corner of a closed orthogonal polygon (axis-aligned edges
@@ -102,6 +111,17 @@ export function portfolioWallMaskPath(
   legGapW = w * DEFAULT_LEG_GAP_W_RATIO,
   radius = DEFAULT_RADIUS,
   legTopRadius = radius,
+  // notch1's own top-right corner (where the outline starts dropping down
+  // alongside the headline title, above the subtitle notch entirely) —
+  // independent from the shared `radius` used by every other main corner,
+  // so a caller can tune the headline's own top turn without affecting the
+  // rest of the outline.
+  notch1TopRadius = radius,
+  // notch2's own bottom-right corner (where the outline turns back left
+  // below the subtitle) — independent from the shared tight-radius so a
+  // caller can tune it without affecting the leg gap's bottom-left corner,
+  // which still shares the tight-radius below.
+  notch2BottomRadius = radius / 2,
 ): string {
   const n1w = Math.max(0, Math.min(notch1W, w));
   const n1h = Math.max(0, Math.min(notch1H, h));
@@ -119,18 +139,18 @@ export function portfolioWallMaskPath(
   const legX = Math.max(0, Math.min(w, w - legGapW));
   const legY = Math.max(n1h + n2h, Math.min(h, h - legGapH));
 
-  // The subtitle-notch turn and the leg gap's bottom corner both use a
+  // notch2's own top corner and the leg gap's bottom corner both use a
   // tighter radius than the rest of the outline (see file header) — always
   // exactly half the main radius, so scaling `radius` down (e.g. the halved
-  // mobile size) scales these proportionally instead of leaving them fixed
+  // mobile size) scales them proportionally instead of leaving them fixed
   // at the desktop/tablet 20px.
   const tightRadius = radius / 2;
 
   const vertices: Vertex[] = [
-    { x: n1w, y: 0, r: radius },
+    { x: n1w, y: 0, r: notch1TopRadius },
     { x: n1w, y: n1h, r: radius },
     { x: n2w, y: n1h, r: tightRadius },
-    { x: n2w, y: n1h + n2h, r: tightRadius },
+    { x: n2w, y: n1h + n2h, r: notch2BottomRadius },
     { x: 0, y: n1h + n2h, r: radius },
     { x: 0, y: h, r: radius },
     { x: legX, y: h, r: tightRadius },

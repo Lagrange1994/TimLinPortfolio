@@ -5152,6 +5152,20 @@
         display: block;
       }
 
+      /* Mobile has no real hover state — the dimmed default (only brightened
+         on :hover) and the cursor-following title tag (PortfolioSection.tsx's
+         mousemove listener on .portfolio-wall) both depend on one. Left as-is
+         they'd either leave cards permanently dim or, on browsers that
+         simulate :hover from a tap, flash a tag stuck at the touch point.
+         Cards show at full brightness and the tag stays hidden instead. */
+      .project-card img {
+        filter: none;
+      }
+
+      .cursor-project-tag {
+        display: none;
+      }
+
       /* View All Projects — revert to its original (pre-enlargement) size on
          mobile; PortfolioSection.tsx sets the larger desktop/tablet size
          inline, so this needs !important to win. font-size falls back to
