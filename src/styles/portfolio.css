@@ -2031,7 +2031,7 @@
          bottom edge (over its mask fade), so it rides with the wall and stays
          clear of the fold. z-index 2.
        --wall-h keeps the button anchor in sync with the wall's height across
-       breakpoints (80dvh desktop / 75svh below — set in the media queries).
+       breakpoints (75dvh desktop / 75svh below — set in the media queries).
        Expanded/bento mode is untouched (normal block flow). */
     #portfolio:not(.portfolio-expanded) {
       position: relative;
@@ -2046,8 +2046,10 @@
       position: absolute;
       /* Centre via top/left offsets, NOT transform: the wall carries .rise-soft,
          so GSAP owns its inline transform (entrance translateY) and would clobber
-         a transform-based centre. left: 50% − 50vw keeps the original full-bleed
-         trick.
+         a transform-based centre. left: 50% − min(50vw, 720px) is the full-bleed
+         trick capped at 1440px total width (matching .section's own max-width),
+         so it still runs edge-to-edge below that width but stops growing past it
+         on ultrawide screens instead of stretching indefinitely.
          "50% of the section" isn't the same as "50% of the browser window":
          nav clicks land here via scrollIntoView + scroll-margin-top (var(--nav-h)),
          which stops the scroll with the section's top sitting var(--nav-h) below
@@ -2062,35 +2064,70 @@
          breathing room so the wall doesn't ride flush against the pill
          navbar — kept as an actual margin (not folded into `top`) so it
          reads as space above the wall rather than shifting its centre. */
-      top: calc((100dvh - var(--wall-h, 80dvh)) / 2 - var(--nav-h, 0px));
-      left: calc(50% - 50vw);
-      width: 100vw;
+      top: calc((100dvh - var(--wall-h, 75dvh)) / 2 - var(--nav-h, 0px));
+      /* Inset 48px each side, same as .portfolio-wall's own base rule above —
+         see that rule's comment for why (lines up with the headline's left
+         edge instead of running full-bleed past it). */
+      left: calc(50% - min(50vw, 720px) + 48px);
+      width: calc(min(100vw, 1440px) - 96px);
       margin: 1.25rem 0 0;
       z-index: 1;
     }
 
+    /* Right-aligned so the button reads as sitting inside the wall's own
+       bottom-right corner (see the Figma mask reference) instead of
+       spanning/centering across the full row. right/width/top below are
+       fallback values for the first paint only — PortfolioSection.tsx
+       overrides all three with live-measured values (button width/height,
+       wall's actual bottom edge) once mounted. right:48px (not 0) matches
+       the wall's own 48px inset (see .portfolio-wall above), since both are
+       positioned relative to #portfolio's padding box, not the wall's own
+       edge — without it the button would sit 48px past the wall's actual
+       right edge instead of flush with it. */
     #portfolio:not(.portfolio-expanded) .view-all-row {
       position: absolute;
-      left: 0;
-      right: 0;
-      top: calc((100dvh - var(--wall-h, 80dvh)) / 2 - var(--nav-h, 0px) + 1.25rem + var(--wall-h, 80dvh) - 40px);
+      left: auto;
+      right: 48px;
+      width: max-content;
+      top: calc((100dvh - var(--wall-h, 75dvh)) / 2 - var(--nav-h, 0px) + 1.25rem + var(--wall-h, 75dvh) - 40px);
       margin: 0;
       z-index: 2;
     }
 
     .portfolio-wall {
       position: relative;
-      /* Full-bleed: break out of .section's centered max-width/padding so
-         the wall spans the full browser width regardless of viewport size. */
-      width: 100vw;
-      margin-left: calc(50% - 50vw);
-      margin-right: calc(50% - 50vw);
-      /* Fixed at ~80% of viewport height, responsive to window resizing. */
-      height: 80dvh;
+      /* Capped at 1440px total width like .section's own max-width, but
+         inset 48px on each side — the same padding .section itself uses —
+         so the wall's left edge lines up with the headline's own left edge
+         (a normal-flow child of .section, inset by that same 48px) instead
+         of running full-bleed past it. */
+      width: calc(min(100vw, 1440px) - 96px);
+      margin-left: calc(50% - min(50vw, 720px) + 48px);
+      margin-right: calc(50% - min(50vw, 720px) + 48px);
+      /* Fixed at ~75% of viewport height, responsive to window resizing. */
+      height: 75dvh;
       overflow: hidden;
       margin-bottom: 14px;
-      -webkit-mask: linear-gradient(180deg, transparent, white 18%, white 82%, transparent);
-      mask: linear-gradient(180deg, transparent, white 18%, white 82%, transparent);
+      /* Base layer behind the marquee rows — without it the notched shape's
+         own cutouts and the gaps between rows show the page background
+         through instead of reading as one solid card. */
+      background: #000;
+    }
+
+    /* Stepped outline drawn ON TOP of the cards (see
+       src/utils/portfolioMask.ts) — a stroke, not a clip, so the wall's own
+       tilt (.portfolio-wall-inner's skew transform) never turns the notch
+       edges jagged. The path's `d` is computed in PortfolioSection.tsx from
+       this wall's own box plus the live measured headline title/subtitle
+       size, so it stays correct across resize, language switches, and text
+       reflow. */
+    .portfolio-wall-outline {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
     }
 
     .portfolio-wall-inner {
@@ -2612,6 +2649,12 @@
 
     .portfolio-headline-sub {
       margin: 0;
+      /* fit-content, not just max-width: as a stretched flex child (see
+         .portfolio-headline's column flex) it would otherwise fill the full
+         42ch box even when the wrapped lines don't reach that width —
+         throwing off the notch2 measurement in PortfolioSection.tsx, which
+         reads this element's own rendered right edge. */
+      width: fit-content;
       max-width: 42ch;
       font-size: 14px;
       line-height: 1.6;
@@ -4713,14 +4756,27 @@
          re-triggering the ResizeObserver-driven --wall-scale recalculation
          in PortfolioSection.tsx and making the whole card marquee visibly
          jitter/rescale mid-scroll on real touch devices. */
+      /* Tablet uses .section's own 32px side padding here (not desktop's
+         48px — see .section above), so the wall's inset needs to match:
+         64px = 2 × 32px off the capped width, same formula shape as the
+         desktop rules above. .view-all-row's right offset doesn't need a
+         matching override — PortfolioSection.tsx measures the wall's actual
+         rendered right edge live and sets it from that, not a fixed value. */
       .portfolio-wall {
-        height: 75svh;
+        height: 80svh;
+        width: calc(min(100vw, 1440px) - 64px);
+        margin-left: calc(50% - min(50vw, 720px) + 32px);
+        margin-right: calc(50% - min(50vw, 720px) + 32px);
+      }
+      #portfolio:not(.portfolio-expanded) .portfolio-wall {
+        left: calc(50% - min(50vw, 720px) + 32px);
+        width: calc(min(100vw, 1440px) - 64px);
       }
       /* Keep the button anchor (see #portfolio .view-all-row) on the same svh
          basis as the wall here, so it doesn't drift while the address bar
          shows/hides. */
       #portfolio:not(.portfolio-expanded) {
-        --wall-h: 75svh;
+        --wall-h: 80svh;
       }
     }
 
@@ -5069,12 +5125,23 @@
         aspect-ratio: 3/2;
       }
 
-      /* svh, not dvh — see the tablet breakpoint above for why. */
+      /* svh, not dvh — see the tablet breakpoint above for why. Mobile uses
+         .section's own 16px side padding here (not tablet's 32px / desktop's
+         48px — see .section above), so the wall's inset needs to match: 32px
+         = 2 × 16px off the capped width, same formula shape as the desktop/
+         tablet rules above. */
       .portfolio-wall {
-        height: 75svh;
+        height: 85svh;
+        width: calc(min(100vw, 1440px) - 32px);
+        margin-left: calc(50% - min(50vw, 720px) + 16px);
+        margin-right: calc(50% - min(50vw, 720px) + 16px);
+      }
+      #portfolio:not(.portfolio-expanded) .portfolio-wall {
+        left: calc(50% - min(50vw, 720px) + 16px);
+        width: calc(min(100vw, 1440px) - 32px);
       }
       #portfolio:not(.portfolio-expanded) {
-        --wall-h: 75svh;
+        --wall-h: 85svh;
       }
 
       .portfolio-wall-inner {
@@ -5083,6 +5150,16 @@
 
       .portfolio-row:nth-child(4) {
         display: block;
+      }
+
+      /* View All Projects — revert to its original (pre-enlargement) size on
+         mobile; PortfolioSection.tsx sets the larger desktop/tablet size
+         inline, so this needs !important to win. font-size falls back to
+         .btn-glass's own 14px (no override here), matching the original. */
+      #toggle-portfolio-view {
+        padding: 12px 28px !important;
+        gap: 8px !important;
+        font-size: 14px !important;
       }
 
       /* Contact — single column */
@@ -6462,13 +6539,17 @@
     .ai-chip-count{font-family:"Geist Mono",monospace;font-size:10.5px;color:rgba(255,255,255,.3);padding-left:9px;margin-left:2px;border-left:1px solid rgba(255,255,255,.1)}
 
     @media(max-width:640px){
-      .ai-chips-row{height:auto;display:flex;flex-direction:column;align-items:center;gap:20px;padding:32px 20px}
+      /* Same beam+chip diagram as desktop, just cropped to the "converge
+         then fan out" portion (see GoogleGeminiEffect's mobile viewBox) —
+         no room for the left word-cloud band, so it's hidden and the row
+         shrinks to match the cropped diagram's proportions. */
+      .ai-chips-row{height:230px;padding:0 4px}
       .ai-word-cloud{display:none}
       .ai-chips-header h3{font-size:28px}
       .ai-chips-header p{font-size:15px}
-      .ai-chips-row .ai-chips{position:static;inset:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-      .ai-chips-row .ai-chip{position:static;transform:none}
-      .ai-chips-row .ai-chip:hover{transform:translateY(-2px)}
+      .ai-chips-row .ai-chip{right:4px;padding:6px 11px 6px 9px;font-size:11px;gap:6px}
+      .ai-chip-dot{width:6px;height:6px}
+      .ai-chip-count{font-size:9.5px;padding-left:7px}
     }
     .ai-chips-header p em{font-style:italic;background:linear-gradient(135deg,#8A2BE2,#4A00E0,#00D4FF);-webkit-background-clip:text;background-clip:text;color:transparent}
     .ai-principle-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:linear-gradient(135deg,#8A2BE2,#00D4FF);vertical-align:middle;margin:0 12px 4px}

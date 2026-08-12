@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
 import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
+import { portfolioWallMaskPath, DEFAULT_RADIUS } from '../utils/portfolioMask';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import gsap from 'gsap';
 
@@ -12,6 +13,22 @@ const FILTER_TAB_INDICATOR_SPRING = { type: 'spring' as const, stiffness: 380, d
 // Matches How I Use AI's card corner radius (.ai-card) so the squircle reads
 // consistently across sections instead of scaling with each card's box size.
 const CARD_CORNER_RADIUS = 44;
+// Breathing room around the headline/subtitle text inside the wall outline's
+// top-left notches, so the rounded corners don't cut in right at the glyphs.
+const NOTCH_PADDING = 16;
+// Tighter padding under the subtitle specifically — that notch's bottom
+// should hug the subtitle closer than the other notch edges. Paired with
+// NOTCH2_TURN_RADIUS in portfolioMask.ts, which shrinks that turn's corner
+// radius to match so the curve itself doesn't eat into the smaller gap.
+const NOTCH2_BOTTOM_PADDING = 6;
+// Padding above and to the left of the "View All Projects" button inside the
+// bottom-right leg gap, so the notch tracks the button's own live
+// width/height instead of a fixed ratio while still leaving it room to
+// breathe. Shared by both sides (not a separate top value) so the leg gap's
+// top-left corner can be made concentric with the button's own pill corner
+// below — concentric circles only line up when the gap is equal on both
+// straight edges, not just one.
+const LEG_GAP_PADDING = 12;
 
 function createPortfolioScroller(row: HTMLElement, normalSpeed: number, hoverSpeed: number) {
   const inner = row.querySelector<HTMLElement>('.scroller-inner');
@@ -83,6 +100,7 @@ export default function PortfolioSection() {
   const [expanded, setExpanded] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
   const scrollerInitRef = useRef(false);
+  const wallOutlinePathRef = useRef<SVGPathElement | null>(null);
 
   // MagicBento cleanup refs
   const spotlightRef = useRef<HTMLDivElement | null>(null);
@@ -219,6 +237,163 @@ export default function PortfolioSection() {
     window.addEventListener('resize', initScrollers);
     return () => window.removeEventListener('resize', initScrollers);
   }, [lang]);
+
+  // Notched shape for the carousel wall (see src/utils/portfolioMask.ts) —
+  // clipped onto .portfolio-wall itself (the OUTER, untransformed box), not
+  // onto .portfolio-wall-inner (which carries the tilt). clip-path is
+  // computed in the element's own untransformed coordinate space, so
+  // clipping the tilted rows via this outer box keeps the shape's own edges
+  // straight; clipping the skewed inner element directly would drag its
+  // transform into the clip and turn straight edges diagonal. A stroked SVG
+  // path is drawn on top of the same geometry for a crisp edge. The two
+  // top-left notches and the bottom-right gap track the LIVE rendered size
+  // of the headline title/label, subtitle, and "View All Projects" button
+  // (per the Figma annotations), not a fixed ratio, so language switches,
+  // font loading, and wrapping all need a re-measure.
+  useEffect(() => {
+    const section = document.getElementById('portfolio');
+    const wall = document.getElementById('portfolio-scroller-desktop');
+    const pathEl = wallOutlinePathRef.current;
+    const label = document.querySelector<HTMLElement>('#portfolio .section-label');
+    const title = document.querySelector<HTMLElement>('.portfolio-headline-title');
+    const sub = document.querySelector<HTMLElement>('.portfolio-headline-sub');
+    const viewAllBtn = document.getElementById('toggle-portfolio-view');
+    const viewAllRow = document.querySelector<HTMLElement>('.view-all-row');
+    if (!section || !wall || !pathEl || !label || !title || !sub || !viewAllBtn || !viewAllRow) return;
+
+    function apply() {
+      // Expanded (bento grid) mode hides the wall entirely, so none of this
+      // geometry applies — .view-all-row falls back to normal document flow
+      // via the .portfolio-expanded CSS override. Clear the inline
+      // top/right/width this same function sets below, or they'd survive as
+      // leftover offsets on top of that flow position (inline styles beat
+      // any stylesheet rule regardless of selector), pushing the button off
+      // toward wherever the wall last measured before collapsing to 0.
+      if (expanded) {
+        viewAllRow!.style.top = '';
+        viewAllRow!.style.right = '';
+        viewAllRow!.style.width = '';
+        return;
+      }
+      const w = wall!.clientWidth;
+      const h = wall!.clientHeight;
+      if (w <= 0 || h <= 0) return;
+      // Pin the wall's top edge flush with the "My Portfolio" eyebrow's own
+      // live position instead of the viewport-centering CSS formula, so the
+      // notch cut for the label/title (sized right below) actually lines up
+      // with where that text sits rather than floating independently. Zero
+      // out the CSS margin-top (originally just navbar breathing room) so
+      // it doesn't push the wall below the label it's now pinned to.
+      const sectionRect = section!.getBoundingClientRect();
+      const labelRect = label!.getBoundingClientRect();
+      const wallTopPx = labelRect.top - sectionRect.top;
+      wall!.style.top = `${wallTopPx}px`;
+      wall!.style.marginTop = '0px';
+      // Measure notch extents as offsets from the wall's own top-left corner
+      // (not each text element's own width/height) so the left inset before
+      // the label/title/subtitle, and the full vertical run from the wall's
+      // top edge down through each line, are both folded in — otherwise the
+      // notch undershoots by exactly that left offset and clips the text.
+      const wallRect = wall!.getBoundingClientRect();
+      const titleRect = title!.getBoundingClientRect();
+      const subRect = sub!.getBoundingClientRect();
+      const notch1Right = Math.max(labelRect.right, titleRect.right);
+      const notch1W = (notch1Right - wallRect.left) + NOTCH_PADDING;
+      const notch1H = (titleRect.bottom - wallRect.top) + NOTCH_PADDING;
+      const notch2W = (subRect.right - wallRect.left) + NOTCH_PADDING;
+      const notch2H = (subRect.bottom - titleRect.bottom) + NOTCH2_BOTTOM_PADDING;
+      const btnRect = viewAllBtn!.getBoundingClientRect();
+      // On tablet AND mobile, the wall's bottom-right corner (where the
+      // button sits) lands under the fixed #back-to-top / #chat-fab stack
+      // (both right-anchored, stacked at the viewport's bottom-right at
+      // every width below desktop — see portfolio.css). Instead of a
+      // guessed magic-number push, measure #back-to-top's own live footprint
+      // (both share the same width/right as #chat-fab at any given
+      // breakpoint, so covering one covers both) and derive exactly how much
+      // further the notch — and the button inside it — need to move: the
+      // back-to-top button's own width plus its own live gap from the
+      // viewport edge (its rendered `right` offset). Subtracting the wall's
+      // own live side-inset (window width minus wallRect.right) cancels out
+      // that inset from the resulting gap — without it, the two buttons'
+      // gap would end up equal to the wall's own inset by coincidence, not
+      // by design — then LEG_GAP_PADDING adds back exactly the gap actually
+      // wanted: the same padding already used above the button on its own
+      // left side.
+      const needsFixedUiAvoidance = window.matchMedia('(max-width: 1024px)').matches;
+      let btnExtraPush = 0;
+      if (needsFixedUiAvoidance) {
+        const backToTop = document.getElementById('back-to-top');
+        if (backToTop) {
+          const backToTopRect = backToTop.getBoundingClientRect();
+          const backToTopRightPadding = window.innerWidth - backToTopRect.right;
+          const wallInsetPx = window.innerWidth - wallRect.right;
+          btnExtraPush = backToTopRect.width + backToTopRightPadding + LEG_GAP_PADDING - wallInsetPx;
+        }
+      }
+      const legGapH = btnRect.height + LEG_GAP_PADDING;
+      // Widened by the same push moving the button left below, so the notch
+      // still fully contains it instead of clipping its now-further-left
+      // edge — otherwise this and rowRightPx's push would disagree about
+      // where the button actually ends up.
+      const legGapW = btnRect.width + LEG_GAP_PADDING + btnExtraPush;
+      // The button is a pill (borderRadius: 9999px), so its own rendered
+      // corner radius is just half its (shorter) height. Concentric with the
+      // leg gap's top-left corner requires that corner's radius to be the
+      // button's radius plus the (now-equal) top/left gap — otherwise the
+      // two curves share a center only by coincidence, not by construction.
+      const legTopRadius = btnRect.height / 2 + LEG_GAP_PADDING;
+      // Mobile's outline reads better with a tighter corner radius than
+      // desktop/tablet share — half the default, scaling the subtitle-notch
+      // and leg-bottom turns down with it (see portfolioMask.ts).
+      const isMobileBreakpoint = window.matchMedia('(max-width: 767px)').matches;
+      const radius = isMobileBreakpoint ? DEFAULT_RADIUS / 2 : DEFAULT_RADIUS;
+      const d = portfolioWallMaskPath(w, h, notch1W, notch1H, notch2W, notch2H, legGapH, legGapW, radius, legTopRadius);
+      pathEl!.setAttribute('d', d);
+      wall!.style.clipPath = `path('${d}')`;
+      // Flush the button's own bottom edge against the wall's actual bottom
+      // edge. Built from wallTopPx + h (the same values just used to place
+      // the wall itself), not a fresh getBoundingClientRect() on the wall —
+      // .portfolio-wall carries its own .rise-soft entrance animation
+      // (translateY via GSAP), which ResizeObserver can't see since it's a
+      // transform, not a box-size change; re-reading the rect here could
+      // catch it mid-animation and freeze a stale offset (the old fixed
+      // "-40" formula this replaces was also tuned for the button's old,
+      // much smaller height and no longer lined up once it scales with
+      // btnRect.height).
+      const rowTopPx = (wallTopPx + h) - btnRect.height;
+      viewAllRow!.style.top = `${rowTopPx}px`;
+      // Flush against the wall's own right edge, hugging the button's own
+      // width instead of a fixed 40% row. Measured live from wallRect/
+      // sectionRect (both already computed above) rather than assuming the
+      // wall's static WALL_SIDE_PADDING inset — .view-all-row and the wall
+      // share the same containing block (#portfolio), so this stays flush
+      // with wherever the wall's own right edge actually lands, even if its
+      // CSS inset formula ever drifts from this constant.
+      const rowRightPx = (sectionRect.right - wallRect.right) + btnExtraPush;
+      viewAllRow!.style.right = `${rowRightPx}px`;
+      viewAllRow!.style.width = 'max-content';
+    }
+
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(section);
+    ro.observe(wall);
+    ro.observe(label);
+    ro.observe(title);
+    ro.observe(sub);
+    ro.observe(viewAllBtn);
+    // label/title/sub/wall all carry .rise-soft (see useRiseReveal.ts),
+    // which animates a GSAP translateY transform on scroll-into-view —
+    // invisible to ResizeObserver since it's not a box-size change. Without
+    // this, every measurement above can get taken mid-animation (or before
+    // it even starts, if the section hasn't scrolled into view yet at
+    // mount) and never gets recomputed once it settles.
+    section.addEventListener('rise-settled', apply);
+    return () => {
+      ro.disconnect();
+      section.removeEventListener('rise-settled', apply);
+    };
+  }, [lang, expanded]);
 
   // Scale the whole tilted row stack (cards + gaps together) to fill the
   // viewport-height .portfolio-wall, instead of stretching gaps apart via
@@ -570,7 +745,14 @@ export default function PortfolioSection() {
         </div>
 
         {/* Scroller view — tilted 3-row marquee wall */}
-        <div id="portfolio-scroller-desktop" className="rise-soft portfolio-wall" style={{ display: expanded ? 'none' : '' }}>
+        {/* No .rise-soft here: this element's top/clip-path are fully
+            JS-driven (see the effect above) to stay pinned to the eyebrow
+            label and the "View All Projects" button — a separate GSAP
+            translateY entrance on top of that would either fight the pin or
+            (if its own ScrollTrigger never settles) leave the wall stuck
+            visibly offset from the button/row, which don't carry the same
+            animation. */}
+        <div id="portfolio-scroller-desktop" className="portfolio-wall" style={{ display: expanded ? 'none' : '' }}>
           <div className="portfolio-wall-inner">
             {rowProjects.map((projects, row) => (
               <div
@@ -584,6 +766,15 @@ export default function PortfolioSection() {
               </div>
             ))}
           </div>
+          <svg className="portfolio-wall-outline" aria-hidden="true">
+            <defs>
+              <linearGradient id="portfolio-wall-outline-grad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#6C63FF" />
+                <stop offset="100%" stopColor="#FF6584" />
+              </linearGradient>
+            </defs>
+            <path ref={wallOutlinePathRef} fill="none" stroke="url(#portfolio-wall-outline-grad)" strokeWidth="2" />
+          </svg>
         </div>
 
         {/* Filter buttons */}
@@ -634,7 +825,7 @@ export default function PortfolioSection() {
           <button
             id="toggle-portfolio-view"
             className="btn-glass btn-grad"
-            style={{ padding: '12px 28px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '8px', border: 'none', cursor: 'pointer' }}
+            style={{ padding: '18px 42px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '12px', border: 'none', cursor: 'pointer', fontSize: '21px' }}
             onClick={handleToggle}
           >
             <span id="toggle-portfolio-text">{expanded ? 'Fold' : 'View All Projects'}</span>
