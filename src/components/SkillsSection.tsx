@@ -1641,7 +1641,7 @@ export default function SkillsSection() {
 
       {/* MY SKILLS + HOW I USE AI (merged) */}
       <section id="my-skills" className="section">
-        <div className="section-label rise-soft">My Skills and How I Use AI</div>
+        <div className="section-label rise-soft">How I Use AI</div>
         <h2 className="about-h2 rise-soft" style={{ letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
           AI-Assisted Design <span className="gradient-text">Intake System</span>
         </h2>
@@ -1928,6 +1928,7 @@ export default function SkillsSection() {
         </div>
 
         <div className="skills-marquee-group">
+        <div className="section-label rise-soft">My Skills</div>
         <div className="skills-outer scroller skills-scroller" data-direction="left">
           <div className="scroller-inner">
             <span className="skill-pill"><img src="./img/others/Figma_logo.png" className="skill-icon-img" alt="Figma" />Figma</span>
