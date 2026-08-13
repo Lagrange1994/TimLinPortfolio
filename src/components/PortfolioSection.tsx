@@ -257,13 +257,19 @@ export default function PortfolioSection() {
   useEffect(() => {
     const section = document.getElementById('portfolio');
     const wall = document.getElementById('portfolio-scroller-desktop');
+    // The positioned ancestor that actually carries the wall's on-page
+    // offset (see the .portfolio-wall-frame/.rise-soft split above the JSX
+    // below) — .portfolio-wall itself now just fills this at 100%, so any
+    // top/marginTop this effect writes or reads has to target the frame,
+    // not the wall.
+    const frame = document.querySelector<HTMLElement>('.portfolio-wall-frame');
     const pathEl = wallOutlinePathRef.current;
     const label = document.querySelector<HTMLElement>('#portfolio .section-label');
     const title = document.querySelector<HTMLElement>('.portfolio-headline-title');
     const sub = document.querySelector<HTMLElement>('.portfolio-headline-sub');
     const viewAllBtn = document.getElementById('toggle-portfolio-view');
     const viewAllRow = document.querySelector<HTMLElement>('.view-all-row');
-    if (!section || !wall || !pathEl || !label || !title || !sub || !viewAllBtn || !viewAllRow) return;
+    if (!section || !wall || !frame || !pathEl || !label || !title || !sub || !viewAllBtn || !viewAllRow) return;
 
     function apply() {
       // Expanded (bento grid) mode hides the wall entirely, so none of this
@@ -295,10 +301,10 @@ export default function PortfolioSection() {
       let wallTopPx: number;
       if (isMobileBreakpoint) {
         wallTopPx = labelRect.top - sectionRect.top;
-        wall!.style.top = `${wallTopPx}px`;
-        wall!.style.marginTop = '0px';
+        frame!.style.top = `${wallTopPx}px`;
+        frame!.style.marginTop = '0px';
       } else {
-        wallTopPx = parseFloat(wall!.style.top) || 0;
+        wallTopPx = parseFloat(frame!.style.top) || 0;
       }
       // Measure notch extents as offsets from the wall's own top-left corner
       // (not each text element's own width/height) so the left inset before
@@ -373,7 +379,7 @@ export default function PortfolioSection() {
       // Flush the button's own bottom edge against the wall's actual bottom
       // edge. Built from wallTopPx + h (the same values just used to place
       // the wall itself), not a fresh getBoundingClientRect() on the wall —
-      // .portfolio-wall carries its own .rise-soft entrance animation
+      // .portfolio-wall-frame carries its own .rise-soft entrance animation
       // (translateY via GSAP), which ResizeObserver can't see since it's a
       // transform, not a box-size change; re-reading the rect here could
       // catch it mid-animation and freeze a stale offset (the old fixed
@@ -402,7 +408,7 @@ export default function PortfolioSection() {
     ro.observe(title);
     ro.observe(sub);
     ro.observe(viewAllBtn);
-    // label/title/sub/wall all carry .rise-soft (see useRiseReveal.ts),
+    // label/title/sub/frame all carry .rise-soft (see useRiseReveal.ts),
     // which animates a GSAP translateY transform on scroll-into-view —
     // invisible to ResizeObserver since it's not a box-size change. Without
     // this, every measurement above can get taken mid-animation (or before
@@ -441,9 +447,13 @@ export default function PortfolioSection() {
   // comments on .portfolio-wall in portfolio.css).
   useEffect(() => {
     const wall = document.querySelector<HTMLElement>('.portfolio-wall');
+    // Owns the wall's on-page top/height now (see the .portfolio-wall-frame
+    // comment by the JSX below) — .portfolio-wall fills it at 100% instead
+    // of positioning itself.
+    const frame = document.querySelector<HTMLElement>('.portfolio-wall-frame');
     const inner = document.querySelector<HTMLElement>('.portfolio-wall-inner');
     const section = document.getElementById('portfolio');
-    if (!wall || !inner || !section) return;
+    if (!wall || !frame || !inner || !section) return;
 
     function measureContentHeight(): number {
       const rows = Array.from(inner!.querySelectorAll<HTMLElement>('.portfolio-row'))
@@ -462,11 +472,11 @@ export default function PortfolioSection() {
       return availablePx;
     }
 
-    // wall.style.top here is whatever the geometry effect above already
+    // frame.style.top here is whatever the geometry effect above already
     // pinned to the label's position — mirrored as bottom breathing room too
     // so the wall reads as evenly framed within the section.
     function measureMobileCapPx(): number {
-      const wallTopOffset = parseFloat(wall!.style.top) || 0;
+      const wallTopOffset = parseFloat(frame!.style.top) || 0;
       const probe = document.createElement('div');
       probe.style.cssText = `position:fixed; visibility:hidden; pointer-events:none; height:calc(100svh - var(--nav-h, 72px) - ${wallTopOffset}px - ${wallTopOffset}px - env(safe-area-inset-bottom, 0px));`;
       document.body.appendChild(probe);
@@ -480,14 +490,24 @@ export default function PortfolioSection() {
       const contentHeight = measureContentHeight();
       if (contentHeight <= 0) return;
       if (window.matchMedia('(max-width: 767px)').matches) {
-        wall!.style.height = `${computeWallHeight(contentHeight, measureMobileCapPx())}px`;
+        // Unlike desktop/tablet below, mobile's top is a fixed pin (to the
+        // label's position), not derived from the wall's own height — so the
+        // only way the bottom gap can come out equal to that fixed top gap
+        // is if the wall's height IS the cap, not shrunk to fit whatever
+        // content happens to render shorter than it. computeWallHeight's
+        // usual min(content, cap) clamp (see portfolioMask.ts) would leave
+        // the leftover cap space stranded below the wall instead. Content
+        // shorter than the cap just centers within the taller box via
+        // .portfolio-wall-inner's justify-content: center; content taller
+        // than the cap still gets cropped the same way, via overflow:hidden.
+        frame!.style.height = `${Math.max(0, measureMobileCapPx())}px`;
       } else {
         const availableHeight = measureAvailableHeight();
         const wallHeight = computeWallHeight(contentHeight, availableHeight);
         const topOffset = Math.max(0, (availableHeight - wallHeight) / 2);
-        wall!.style.top = `${topOffset}px`;
-        wall!.style.marginTop = '0px';
-        wall!.style.height = `${wallHeight}px`;
+        frame!.style.top = `${topOffset}px`;
+        frame!.style.marginTop = '0px';
+        frame!.style.height = `${wallHeight}px`;
       }
       inner!.style.setProperty('--wall-scale', '1');
       wallGeometryLockedRef.current = true;
@@ -832,37 +852,44 @@ export default function PortfolioSection() {
         </div>
 
         {/* Scroller view — tilted 3-row marquee wall */}
-        {/* No .rise-soft here: this element's top/clip-path are fully
-            JS-driven (see the effect above) to stay pinned to the eyebrow
-            label and the "View All Projects" button — a separate GSAP
-            translateY entrance on top of that would either fight the pin or
-            (if its own ScrollTrigger never settles) leave the wall stuck
-            visibly offset from the button/row, which don't carry the same
-            animation. */}
-        <div id="portfolio-scroller-desktop" className="portfolio-wall" style={{ display: expanded ? 'none' : '' }}>
-          <div className="portfolio-wall-inner">
-            {rowProjects.map((projects, row) => (
-              <div
-                key={row}
-                className="portfolio-row"
-                data-direction={row % 2 === 1 ? 'left' : 'right'}
-              >
-                <div className="scroller-inner" id={`track-desk-row-${row}`}>
-                  {projects.map(p => <ProjectCard key={p.id} p={p} mode="scroll" />)}
+        {/* .portfolio-wall itself can't carry .rise-soft directly: its own
+            top/height/clip-path are fully JS-driven every frame (see the two
+            effects above) to stay pinned to the eyebrow label and the "View
+            All Projects" button, and putting GSAP's translateY entrance on
+            that same element fights that JS ownership — tried once, and on
+            real devices only the inner marquee rows visibly rose while the
+            mobile height lock (lockWallGeometry) read a mid-animation offset
+            and came out wrong. This wrapper decouples the two: GSAP owns
+            the wrapper's transform/opacity (see useRiseReveal.ts), while
+            .portfolio-wall stays untouched by GSAP and just fills the
+            wrapper at width/height 100% (see portfolio.css) so its own
+            positioning math is unaffected. */}
+        <div className="portfolio-wall-frame rise-soft" style={{ display: expanded ? 'none' : '' }}>
+          <div id="portfolio-scroller-desktop" className="portfolio-wall">
+            <div className="portfolio-wall-inner">
+              {rowProjects.map((projects, row) => (
+                <div
+                  key={row}
+                  className="portfolio-row"
+                  data-direction={row % 2 === 1 ? 'left' : 'right'}
+                >
+                  <div className="scroller-inner" id={`track-desk-row-${row}`}>
+                    {projects.map(p => <ProjectCard key={p.id} p={p} mode="scroll" />)}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <svg className="portfolio-wall-outline" aria-hidden="true">
+              <defs>
+                <linearGradient id="portfolio-wall-outline-grad" x1="0" y1="1" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#8A2BE2" />
+                  <stop offset="50%" stopColor="#4A00E0" />
+                  <stop offset="100%" stopColor="#00D4FF" />
+                </linearGradient>
+              </defs>
+              <path ref={wallOutlinePathRef} fill="none" stroke="url(#portfolio-wall-outline-grad)" strokeWidth="3.5" />
+            </svg>
           </div>
-          <svg className="portfolio-wall-outline" aria-hidden="true">
-            <defs>
-              <linearGradient id="portfolio-wall-outline-grad" x1="0" y1="1" x2="1" y2="0">
-                <stop offset="0%" stopColor="#8A2BE2" />
-                <stop offset="50%" stopColor="#4A00E0" />
-                <stop offset="100%" stopColor="#00D4FF" />
-              </linearGradient>
-            </defs>
-            <path ref={wallOutlinePathRef} fill="none" stroke="url(#portfolio-wall-outline-grad)" strokeWidth="3.5" />
-          </svg>
         </div>
 
         {/* Filter buttons */}

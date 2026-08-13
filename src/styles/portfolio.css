@@ -2120,14 +2120,16 @@
       z-index: 3;
     }
 
-    #portfolio:not(.portfolio-expanded) .portfolio-wall {
+    #portfolio:not(.portfolio-expanded) .portfolio-wall-frame {
       position: absolute;
-      /* Centre via top/left offsets, NOT transform: the wall carries .rise-soft,
+      /* Centre via top/left offsets, NOT transform: the frame carries .rise-soft,
          so GSAP owns its inline transform (entrance translateY) and would clobber
-         a transform-based centre. left: 50% − min(50vw, 720px) is the full-bleed
-         trick capped at 1440px total width (matching .section's own max-width),
-         so it still runs edge-to-edge below that width but stops growing past it
-         on ultrawide screens instead of stretching indefinitely.
+         a transform-based centre — see .portfolio-wall-frame's own rise-soft
+         comment by the JSX (PortfolioSection.tsx) for why the animation lives on
+         this wrapper instead of .portfolio-wall itself. left: 50% − min(50vw, 720px)
+         is the full-bleed trick capped at 1440px total width (matching .section's
+         own max-width), so it still runs edge-to-edge below that width but stops
+         growing past it on ultrawide screens instead of stretching indefinitely.
          "50% of the section" isn't the same as "50% of the browser window":
          nav clicks land here via scrollIntoView + scroll-margin-top (var(--nav-h)),
          which stops the scroll with the section's top sitting var(--nav-h) below
@@ -2143,9 +2145,9 @@
          navbar — kept as an actual margin (not folded into `top`) so it
          reads as space above the wall rather than shifting its centre. */
       top: calc((100dvh - var(--wall-h, 75dvh)) / 2 - var(--nav-h, 0px));
-      /* Inset 48px each side, same as .portfolio-wall's own base rule above —
-         see that rule's comment for why (lines up with the headline's left
-         edge instead of running full-bleed past it). */
+      /* Inset 48px each side, same as .portfolio-wall-frame's own base rule
+         below — see that rule's comment for why (lines up with the headline's
+         left edge instead of running full-bleed past it). */
       left: calc(50% - min(50vw, 720px) + 48px);
       width: calc(min(100vw, 1440px) - 96px);
       margin: 1.25rem 0 0;
@@ -2158,8 +2160,8 @@
        fallback values for the first paint only — PortfolioSection.tsx
        overrides all three with live-measured values (button width/height,
        wall's actual bottom edge) once mounted. right:48px (not 0) matches
-       the wall's own 48px inset (see .portfolio-wall above), since both are
-       positioned relative to #portfolio's padding box, not the wall's own
+       the wall's own 48px inset (see .portfolio-wall-frame above), since both
+       are positioned relative to #portfolio's padding box, not the wall's own
        edge — without it the button would sit 48px past the wall's actual
        right edge instead of flush with it. */
     #portfolio:not(.portfolio-expanded) .view-all-row {
@@ -2172,7 +2174,11 @@
       z-index: 2;
     }
 
-    .portfolio-wall {
+    /* Positioned/sized wrapper — carries .rise-soft (see PortfolioSection.tsx)
+       so GSAP's entrance transform lands here, not on .portfolio-wall below,
+       which is fully JS-driven every frame (top/height/clip-path) and can't
+       tolerate a second system also writing its transform. */
+    .portfolio-wall-frame {
       position: relative;
       /* Capped at 1440px total width like .section's own max-width, but
          inset 48px on each side — the same padding .section itself uses —
@@ -2182,8 +2188,17 @@
       width: calc(min(100vw, 1440px) - 96px);
       margin-left: calc(50% - min(50vw, 720px) + 48px);
       margin-right: calc(50% - min(50vw, 720px) + 48px);
-      overflow: hidden;
       margin-bottom: 14px;
+    }
+
+    /* Fills .portfolio-wall-frame at 100% instead of positioning itself —
+       PortfolioSection.tsx still owns this element's top/height/clip-path
+       (via the frame) and clip-path/marquee-tilt math, untouched by GSAP. */
+    .portfolio-wall {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
       /* Base layer behind the marquee rows — without it the notched shape's
          own cutouts and the gaps between rows show the page background
          through instead of reading as one solid card. */
@@ -2880,7 +2895,7 @@
 
     .view-all-row {
       text-align: center;
-      /* Combined with .portfolio-wall's own 14px margin-bottom, this nets
+      /* Combined with .portfolio-wall-frame's own 14px margin-bottom, this nets
          a slight overlap onto the wall's bottom mask-fade — matches the
          title treatment above. Carousel mode only, see .portfolio-expanded
          override below. */
@@ -4833,12 +4848,12 @@
          desktop rules above. .view-all-row's right offset doesn't need a
          matching override — PortfolioSection.tsx measures the wall's actual
          rendered right edge live and sets it from that, not a fixed value. */
-      .portfolio-wall {
+      .portfolio-wall-frame {
         width: calc(min(100vw, 1440px) - 64px);
         margin-left: calc(50% - min(50vw, 720px) + 32px);
         margin-right: calc(50% - min(50vw, 720px) + 32px);
       }
-      #portfolio:not(.portfolio-expanded) .portfolio-wall {
+      #portfolio:not(.portfolio-expanded) .portfolio-wall-frame {
         left: calc(50% - min(50vw, 720px) + 32px);
         width: calc(min(100vw, 1440px) - 64px);
       }
@@ -5199,13 +5214,13 @@
          desktop's 48px — see .section above), so the wall's inset needs to
          match: 32px = 2 × 16px off the capped width, same formula shape as
          the desktop/tablet rules above. */
-      .portfolio-wall {
+      .portfolio-wall-frame {
         height: 85svh;
         width: calc(min(100vw, 1440px) - 32px);
         margin-left: calc(50% - min(50vw, 720px) + 16px);
         margin-right: calc(50% - min(50vw, 720px) + 16px);
       }
-      #portfolio:not(.portfolio-expanded) .portfolio-wall {
+      #portfolio:not(.portfolio-expanded) .portfolio-wall-frame {
         left: calc(50% - min(50vw, 720px) + 16px);
         width: calc(min(100vw, 1440px) - 32px);
       }
@@ -6630,13 +6645,48 @@
     .ai-chip-dot{width:7px;height:7px;border-radius:50%;box-shadow:0 0 8px rgba(138,43,226,.5)}
     .ai-chip-count{font-family:"Geist Mono",monospace;font-size:10.5px;color:rgba(255,255,255,.3);padding-left:9px;margin-left:2px;border-left:1px solid rgba(255,255,255,.1)}
 
+    /* Tablet + mobile share this: desktop's .ai-chips-header has
+       margin-bottom:0, leaving virtually no gap between the "AI handles
+       structure. I handle judgment." line and the beam/word-cloud row right
+       below it — fine at desktop scale where the row itself has plenty of
+       vertical breathing room, cramped once the row shrinks down for
+       smaller screens. */
+    @media (max-width: 1024px) {
+      .ai-chips-header{margin-bottom:32px}
+    }
+
     @media(max-width:640px){
       /* Same beam+chip diagram as desktop, just cropped to the "converge
-         then fan out" portion (see GoogleGeminiEffect's mobile viewBox) —
-         no room for the left word-cloud band, so it's hidden and the row
-         shrinks to match the cropped diagram's proportions. */
+         then fan out" portion (see GoogleGeminiEffect's mobile viewBox),
+         which leaves no dedicated left band for the word cloud like desktop
+         has — so instead of hiding it, the cloud's own box is squeezed down
+         to a narrow left sliver (word `left`/`top` percentages in the JSX
+         are relative to this box, so shrinking its width proportionally
+         compresses the whole cluster instead of just clipping it), and only
+         6 of the 12 words are kept so what's left doesn't read as crowded
+         at that size. The 6 kept (by their AI_SOURCE_CLOUD order in
+         SkillsSection.tsx: Support Tickets, Analytics Events, Figma
+         Comments, GitHub Issues, Design Specs, A/B Test Results) were
+         picked for even top% spacing across the full 6-90% spread instead
+         of just every other one — nth-child(even) left two pairs bunched
+         next to each other (e.g. 6%/10%) with a bare gap between the pairs.
+         Pill font-size/padding/gap need their own !important overrides
+         below (not a transform:scale() on the whole cloud, which was tried
+         first) because scaling shrinks the box and its pills by the same
+         factor, so a pill already wider than the box stays proportionally
+         just as wide relative to it — never actually stops clipping,
+         however small. Measured against the narrowed 40%-wide box: at these
+         sizes even the longest pill ("Analytics Events") clears its right
+         edge with ~14px to spare. */
       .ai-chips-row{height:230px;padding:0 4px}
-      .ai-word-cloud{display:none}
+      .ai-word-cloud{width:40%}
+      .ai-word-cloud span{font-size:8.5px!important;padding:3px 7px!important;gap:4px!important}
+      .ai-word-cloud span:nth-child(1),
+      .ai-word-cloud span:nth-child(5),
+      .ai-word-cloud span:nth-child(8),
+      .ai-word-cloud span:nth-child(10),
+      .ai-word-cloud span:nth-child(11),
+      .ai-word-cloud span:nth-child(12){display:none}
       .ai-chips-header h3{font-size:28px}
       .ai-chips-header p{font-size:15px}
       .ai-chips-row .ai-chip{right:4px;padding:6px 11px 6px 9px;font-size:11px;gap:6px}
