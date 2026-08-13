@@ -27,12 +27,12 @@ const DEFAULT_LEG_GAP_W_RATIO = 1 - 728 / 1328;
 const DEFAULT_LEG_GAP_RATIO = 1 - 548 / 666;
 export const DEFAULT_RADIUS = 40;
 
-// Mobile's wall grows to fit its natural card-stack height instead of being
+// The wall grows to fit its natural card-stack height instead of being
 // scaled to a fixed viewport percentage, but only up to whatever room the
 // screen actually has — past that cap it just crops (overflow: hidden),
 // same as any other natural-height box. Pulled out as pure math so the
 // clamp itself is unit-testable without a DOM.
-export function computeMobileWallHeight(contentHeight: number, capPx: number): number {
+export function computeWallHeight(contentHeight: number, capPx: number): number {
   return Math.max(0, Math.min(contentHeight, capPx));
 }
 

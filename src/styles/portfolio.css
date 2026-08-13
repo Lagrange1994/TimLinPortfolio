@@ -2112,8 +2112,18 @@
        • View All button — absolutely anchored just inside the centred wall's
          bottom edge (over its mask fade), so it rides with the wall and stays
          clear of the fold. z-index 2.
-       --wall-h keeps the button anchor in sync with the wall's height across
-       breakpoints (75dvh desktop / 75svh below — set in the media queries).
+       Desktop/tablet have no fixed height on the wall — PortfolioSection.tsx
+       sets it to the row stack's natural height (capped to available room)
+       once the section scrolls into view, so the wall is a 0-height box
+       (its own children are absolutely positioned, so it never gets height
+       from content) until that JS lock runs; never actually visible since
+       the section is off-screen at mount in the normal scroll-down layout.
+       Mobile keeps its own CSS height (85svh, in the mobile media query
+       below) as a pre-lock fallback, mirrored into --wall-h so the button
+       anchor formulas below stay in sync with it pre-lock — desktop/tablet
+       don't set --wall-h, so they fall through to this var()'s own 75dvh
+       default, which is likewise never visible pre-lock for the same
+       0-height reason.
        Expanded/bento mode is untouched (normal block flow). */
     #portfolio:not(.portfolio-expanded) {
       position: relative;
@@ -2186,8 +2196,6 @@
       width: calc(min(100vw, 1440px) - 96px);
       margin-left: calc(50% - min(50vw, 720px) + 48px);
       margin-right: calc(50% - min(50vw, 720px) + 48px);
-      /* Fixed at ~75% of viewport height, responsive to window resizing. */
-      height: 75dvh;
       overflow: hidden;
       margin-bottom: 14px;
       /* Base layer behind the marquee rows — without it the notched shape's
@@ -4833,11 +4841,6 @@
         display: block;
       }
 
-      /* svh, not dvh — the address bar hiding/showing while the user scrolls
-         the page would otherwise change the wall's height every frame,
-         re-triggering the ResizeObserver-driven --wall-scale recalculation
-         in PortfolioSection.tsx and making the whole card marquee visibly
-         jitter/rescale mid-scroll on real touch devices. */
       /* Tablet uses .section's own 32px side padding here (not desktop's
          48px — see .section above), so the wall's inset needs to match:
          64px = 2 × 32px off the capped width, same formula shape as the
@@ -4845,7 +4848,6 @@
          matching override — PortfolioSection.tsx measures the wall's actual
          rendered right edge live and sets it from that, not a fixed value. */
       .portfolio-wall {
-        height: 80svh;
         width: calc(min(100vw, 1440px) - 64px);
         margin-left: calc(50% - min(50vw, 720px) + 32px);
         margin-right: calc(50% - min(50vw, 720px) + 32px);
@@ -4853,12 +4855,6 @@
       #portfolio:not(.portfolio-expanded) .portfolio-wall {
         left: calc(50% - min(50vw, 720px) + 32px);
         width: calc(min(100vw, 1440px) - 64px);
-      }
-      /* Keep the button anchor (see #portfolio .view-all-row) on the same svh
-         basis as the wall here, so it doesn't drift while the address bar
-         shows/hides. */
-      #portfolio:not(.portfolio-expanded) {
-        --wall-h: 80svh;
       }
     }
 
@@ -5207,11 +5203,16 @@
         aspect-ratio: 3/2;
       }
 
-      /* svh, not dvh — see the tablet breakpoint above for why. Mobile uses
-         .section's own 16px side padding here (not tablet's 32px / desktop's
-         48px — see .section above), so the wall's inset needs to match: 32px
-         = 2 × 16px off the capped width, same formula shape as the desktop/
-         tablet rules above. */
+      /* svh, not dvh — the address bar hiding/showing while the user scrolls
+         the page would otherwise change the wall's height every frame,
+         re-triggering PortfolioSection.tsx's ResizeObserver and making the
+         card marquee visibly jitter mid-scroll on real touch devices — this
+         is just the pre-lock fallback height though, so it only matters for
+         the brief window before the section first scrolls into view. Mobile
+         uses .section's own 16px side padding here (not tablet's 32px /
+         desktop's 48px — see .section above), so the wall's inset needs to
+         match: 32px = 2 × 16px off the capped width, same formula shape as
+         the desktop/tablet rules above. */
       .portfolio-wall {
         height: 85svh;
         width: calc(min(100vw, 1440px) - 32px);
@@ -5222,6 +5223,9 @@
         left: calc(50% - min(50vw, 720px) + 16px);
         width: calc(min(100vw, 1440px) - 32px);
       }
+      /* Keep the button anchor (see #portfolio .view-all-row) on the same svh
+         basis as the wall here, so it doesn't drift while the address bar
+         shows/hides. */
       #portfolio:not(.portfolio-expanded) {
         --wall-h: 85svh;
       }
