@@ -1525,7 +1525,7 @@ export default function SkillsSection() {
                       </>
                     }
                   >
-                    <div className="process-num">{String(i + 1).padStart(2, '0')}</div>
+                    <span className="process-step-badge"><em>{String(i + 1).padStart(2, '0')}</em></span>
                     <div className="process-name">{t[nameKey] as string}</div>
                     <div className="process-desc">{t[descKey] as string}</div>
                   </BorderGlow>
@@ -1567,7 +1567,7 @@ export default function SkillsSection() {
                       </>
                     }
                   >
-                    <div className="process-num">{idx}</div>
+                    <span className="process-step-badge"><em>{idx}</em></span>
                     <div className="process-name">{t[nameKey] as string}</div>
                     <div className="process-desc">{t[descKey] as string}</div>
                   </BorderGlow>

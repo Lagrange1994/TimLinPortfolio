@@ -1573,11 +1573,32 @@
       padding: 20px 16px;
     }
 
-    .process-num {
-      font-size: 10px;
-      color: var(--text-30);
+    /* Step badge — same treatment as How I Use AI's .ai-step-badge: a small
+       pill that floats half outside the card's top-left corner instead of
+       sitting flush inside it. .border-glow-card sets overflow:visible and
+       the carousel track already carries 12px of padding above its flush
+       (margin-top:0) card, so the -7px protrusion has room to clear both
+       the card edge and the carousel's own clip box without being cut off. */
+    .process-step-badge {
+      position: absolute;
+      top: -7px;
+      left: 18px;
+      z-index: 2;
+      padding: 2px 7px;
       font-family: var(--mono);
-      margin-bottom: 8px;
+      font-size: 9.5px;
+      letter-spacing: .14em;
+      color: rgba(255, 255, 255, .35);
+      background: rgba(12, 9, 18, .85);
+      border: 1px solid rgba(255, 255, 255, .07);
+      border-radius: 4px;
+      backdrop-filter: blur(8px);
+      opacity: .85;
+    }
+    .process-step-badge em {
+      font-style: normal;
+      color: rgba(255, 255, 255, .55);
+      font-weight: 500;
     }
 
     .process-name {
@@ -1674,7 +1695,8 @@
       padding: 0;
     }
 
-    /* 底部漸層遮罩 — 只覆蓋文字區，起始點後移避免上下光暈不均 */
+    /* 底部漸層遮罩 — 只覆蓋文字區，說明文字恆常顯示所以固定用較深的覆蓋範圍
+       （原本只有 hover 時才套用），確保文字在插圖上一直保持可讀 */
     .process-card--has-img .border-glow-inner::before {
       content: '';
       position: absolute;
@@ -1685,35 +1707,13 @@
       border-radius: 48px;
       corner-shape: squircle;
       pointer-events: none;
-      /* Shadow starts at center (50%) + 25% = 75%, later than the previous
-         72% start, so it covers less of the illustration above it. */
-      background: linear-gradient(
-        to bottom,
-        transparent 75%,
-        rgba(13, 10, 28, 0.93) 86%,
-        rgba(13, 10, 28, 1) 100%
-      );
-      transition: background 0.35s ease;
-      z-index: 0;
-    }
-
-    .process-card--has-img:hover .border-glow-inner::before {
       background: linear-gradient(
         to bottom,
         transparent 68%,
         rgba(13, 10, 28, 0.9) 82%,
         rgba(13, 10, 28, 0.98) 100%
       );
-    }
-
-    /* 編號 — 絕對定位至左上角 */
-    .process-card--has-img .process-num {
-      position: absolute;
-      top: 14px;
-      left: 16px;
-      margin-bottom: 0;
-      color: rgba(255, 255, 255, 0.55);
-      z-index: 1;
+      z-index: 0;
     }
 
     /* 標題 */
@@ -1729,25 +1729,11 @@
       line-height: 1.3;
     }
 
-    /* 說明文字 — 預設隱藏，hover 時滑入 */
+    /* 說明文字 — 恆常顯示 */
     .process-card--has-img .process-desc {
       position: relative;
       z-index: 1;
-      padding: 0 20px;
-      padding-bottom: 0;
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
-      transform: translateY(5px);
-      transition: max-height 0.35s ease, opacity 0.28s ease,
-                  transform 0.28s ease, padding-bottom 0.28s;
-    }
-
-    .process-card--has-img:hover .process-desc {
-      max-height: 160px;
-      opacity: 1;
-      transform: translateY(0);
-      padding-bottom: 20px;
+      padding: 0 20px 20px;
     }
 
     .process-dual {
