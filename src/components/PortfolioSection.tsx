@@ -496,11 +496,20 @@ export default function PortfolioSection() {
         // is if the wall's height IS the cap, not shrunk to fit whatever
         // content happens to render shorter than it. computeWallHeight's
         // usual min(content, cap) clamp (see portfolioMask.ts) would leave
-        // the leftover cap space stranded below the wall instead. Content
-        // shorter than the cap just centers within the taller box via
-        // .portfolio-wall-inner's justify-content: center; content taller
-        // than the cap still gets cropped the same way, via overflow:hidden.
-        frame!.style.height = `${Math.max(0, measureMobileCapPx())}px`;
+        // the leftover cap space stranded below the wall instead.
+        const capPx = Math.max(0, measureMobileCapPx());
+        frame!.style.height = `${capPx}px`;
+        // The 4-row stack's natural height (fixed card height + gaps) rarely
+        // matches capPx exactly — a shorter stack would just center inside
+        // the taller box (leaving dead space above/below instead of filling
+        // it), and a taller one would clip a row via overflow:hidden instead
+        // of showing all 4 in full. --wall-scale (read by .portfolio-wall-
+        // inner's transform, transform-origin 50% 50% so it scales from the
+        // box's own center, matching the flex box's justify-content: center)
+        // stretches/shrinks the whole row stack — cards and gaps together —
+        // to exactly fill capPx, so all 4 rows are always fully visible with
+        // no leftover gap.
+        inner!.style.setProperty('--wall-scale', contentHeight > 0 ? `${capPx / contentHeight}` : '1');
       } else {
         const availableHeight = measureAvailableHeight();
         const wallHeight = computeWallHeight(contentHeight, availableHeight);
@@ -508,8 +517,11 @@ export default function PortfolioSection() {
         frame!.style.top = `${topOffset}px`;
         frame!.style.marginTop = '0px';
         frame!.style.height = `${wallHeight}px`;
+        // Desktop/tablet's wallHeight is already content-fit-capped (see
+        // computeWallHeight above), so the row stack matches the box at
+        // scale 1 by construction — no stretch/shrink needed here.
+        inner!.style.setProperty('--wall-scale', '1');
       }
-      inner!.style.setProperty('--wall-scale', '1');
       wallGeometryLockedRef.current = true;
     }
 
