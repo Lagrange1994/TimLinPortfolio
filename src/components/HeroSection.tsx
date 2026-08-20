@@ -323,16 +323,46 @@ export default function HeroSection() {
   }, []);
 
   // Hero spline desktop+tablet conditional — only load the 3D figure above
-  // mobile width. Loaded once and left alone: it used to drop its `url`
-  // (and thus its WebGL context) whenever the hero scrolled out of view,
-  // which forced a full model reload — visible pop-in/reset — every time
-  // it scrolled back. Now it just loads once and keeps its context.
+  // mobile width. Dropping the `url` (and thus the WebGL context) the
+  // instant the hero scrolled out of view caused a visible pop-in/reset
+  // every time it scrolled back, so e3e0e81 made it load once and stay.
+  // But leaving it permanently mounted means it keeps burning a WebGL
+  // context for the rest of the page's lifetime, stacked on top of the
+  // beams shader canvas — with a background Spline scene added near the
+  // top, that's up to 3 concurrent contexts, and sustained GPU contention
+  // from an always-alive hero context has been the suspect for renderer
+  // freezes (page stops responding to scroll — see homepage-webgl-stability
+  // memory) since before e3e0e81. Debouncing the drop gets both: a normal
+  // scroll-past-and-back within HERO_DROP_DELAY_MS never triggers a
+  // reload (no pop-in), but a user who actually moves on sheds the
+  // context after a few seconds instead of holding it forever.
   useEffect(() => {
     if (window.innerWidth < 768) return;
+    const heroEl = document.getElementById('home');
     const heroSpline = document.getElementById('hero-spline');
-    if (!heroSpline) return;
+    if (!heroEl || !heroSpline) return;
 
+    const HERO_DROP_DELAY_MS = 4000;
     heroSpline.setAttribute('url', './models/hero_figure.splinecode');
+
+    let dropTimer: ReturnType<typeof setTimeout> | null = null;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        if (dropTimer) { clearTimeout(dropTimer); dropTimer = null; }
+        if (!heroSpline.getAttribute('url')) heroSpline.setAttribute('url', './models/hero_figure.splinecode');
+      } else if (!dropTimer) {
+        dropTimer = setTimeout(() => {
+          heroSpline.removeAttribute('url');
+          dropTimer = null;
+        }, HERO_DROP_DELAY_MS);
+      }
+    }, { threshold: 0 });
+    observer.observe(heroEl);
+
+    return () => {
+      observer.disconnect();
+      if (dropTimer) clearTimeout(dropTimer);
+    };
   }, []);
 
   // Mobile hero layout: the image+headline+CTA group (.hero-inner) must sit
