@@ -26,7 +26,8 @@ const goHome = (e) => {
                 loader_step4: "初始化完成",
                 hero_title: "SUPER HIGH TECH",
                 hero_sub: "CNC 3D SIMULATOR v4.2",
-                hero_desc: "Tech Coordinate — 定義未來的精密加工體驗。結合六邊形結構美學與數位孿生技術，打造工程師最可靠的虛擬指揮中心。",
+                hero_desc: "CNC 數控加工模擬器介面，重塑成工業級 UI，內建可一鍵啟動的即時 3D 模擬器。",
+                hero_tags: ["個人作品", "React + GSAP", "IBM Carbon Design System", "外部服務 · 全螢幕模擬器"],
                 btn_launch: "INITIALIZE SIMULATION",
                 btn_launch_sub: "啟動即時模擬系統",
                 section_features: "核心模組 SYSTEM MODULES",
@@ -77,7 +78,8 @@ const goHome = (e) => {
                 loader_step4: "Initialization complete",
                 hero_title: "SUPER HIGH TECH",
                 hero_sub: "CNC 3D SIMULATOR v4.2",
-                hero_desc: "Tech Coordinate — Defining the future of precision machining. Combining hexagonal structural aesthetics with digital twin technology to build the most reliable virtual command center for engineers.",
+                hero_desc: "A CNC machining simulator interface, restyled into an industrial-grade UI with a live 3D simulator built in.",
+                hero_tags: ["Personal Project", "React + GSAP", "IBM Carbon Design System", "External · Fullscreen Simulator"],
                 btn_launch: "INITIALIZE SIMULATION",
                 btn_launch_sub: "Launch Real-Time Simulation",
                 section_features: "SYSTEM MODULES",
@@ -138,9 +140,11 @@ const goHome = (e) => {
                     <span className="font-mono text-xs text-tech-grey tracking-widest group-hover:text-white transition-colors">{t.back_home}</span>
                 </a>
                 <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-1.5 chamfer-btn px-2 py-1 border border-tech-primary/20 bg-tech-primary/5">
-                        <span className="font-mono text-[8px] text-tech-primary/50 tracking-widest">IBM</span>
-                        <span className="font-mono text-[8px] text-tech-primary/70 tracking-widest">CARBON_DS</span>
+                    <div className="chamfer-btn p-[1px] bg-tech-primary/20">
+                        <div className="flex items-center space-x-1.5 chamfer-btn px-2 py-1 bg-tech-primary/5">
+                            <span className="font-mono text-[8px] text-tech-primary/50 tracking-widest">IBM</span>
+                            <span className="font-mono text-[8px] text-tech-primary/70 tracking-widest">CARBON_DS</span>
+                        </div>
                     </div>
                     <div className="flex items-center space-x-2">
                         <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -151,20 +155,49 @@ const goHome = (e) => {
         );
 
         const SimulatorModal = ({ isOpen, onClose }) => {
+            const closeBtnRef = useRef(null);
+            const [iframeLoaded, setIframeLoaded] = useState(false);
+            const onCloseRef = useRef(onClose);
+            onCloseRef.current = onClose;
+
+            useEffect(() => {
+                if (!isOpen) return;
+                setIframeLoaded(false);
+                closeBtnRef.current?.focus();
+                const onKeyDown = (e) => { if (e.key === 'Escape') onCloseRef.current(); };
+                window.addEventListener('keydown', onKeyDown);
+                return () => window.removeEventListener('keydown', onKeyDown);
+            }, [isOpen]);
+
             if (!isOpen) return null;
             return (
-                <div className="fixed inset-0 z-50 bg-black flex flex-col animate-fadeIn">
+                <div className="fixed inset-0 z-50 bg-black flex flex-col animate-fadeIn" role="dialog" aria-modal="true" aria-label="CNC Simulator">
                     <div className="h-10 bg-tech-panel border-b border-white/10 flex justify-between items-center px-4 shrink-0">
                         <div className="flex items-center space-x-4">
                             <span className="font-display text-tech-primary font-bold tracking-widest text-sm">SIMULATOR_LIVE</span>
                             <span className="font-mono text-[10px] text-gray-500">1920x1080 NATIVE RES</span>
                         </div>
-                        <button onClick={onClose} className="bg-red-500/20 hover:bg-red-500 border border-red-500/50 text-red-500 hover:text-white px-4 py-1 text-xs font-mono font-bold tracking-widest chamfer-btn transition-all flex items-center">
-                            <i className="ph ph-power mr-2"></i> DISCONNECT
+                        <button ref={closeBtnRef} onClick={onClose} className="group chamfer-btn p-[1px] bg-red-500/50 hover:bg-red-500 transition-colors">
+                            <span className="chamfer-btn flex items-center bg-red-500/20 group-hover:bg-red-500 text-red-500 group-hover:text-white px-4 py-1 text-xs font-mono font-bold tracking-widest transition-colors">
+                                <i className="ph ph-power mr-2"></i> DISCONNECT
+                            </span>
                         </button>
                     </div>
                     <div className="flex-1 relative w-full h-full bg-black overflow-hidden">
-                        <iframe src={SIMULATOR_URL} className="w-full h-full border-0" allowFullScreen title="CNC Simulator"></iframe>
+                        {!iframeLoaded && (
+                            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
+                                <div className="w-10 h-10 border-2 border-tech-primary border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                        )}
+                        <iframe
+                            src={SIMULATOR_URL}
+                            className="w-full h-full border-0"
+                            allowFullScreen
+                            title="CNC Simulator"
+                            sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock"
+                            referrerPolicy="no-referrer"
+                            onLoad={() => setIframeLoaded(true)}
+                        ></iframe>
                     </div>
                 </div>
             );
@@ -181,7 +214,7 @@ const goHome = (e) => {
 
             return (
                 <header
-                    className="relative min-h-screen flex items-center justify-center bg-fixed bg-cover bg-center overflow-hidden"
+                    className="hero-bg relative min-h-screen flex items-center justify-center bg-cover bg-center overflow-hidden"
                     style={{ backgroundImage: "url('./img/project_13/CNC.webp')" }}
                 >
                     <div className="scanline"></div>
@@ -192,11 +225,19 @@ const goHome = (e) => {
                     </div>
 
                     <div ref={containerRef} className="relative z-10 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
-                        <div className="inline-block px-4 py-1 mb-6 border border-tech-primary/50 bg-tech-primary/10 text-tech-primary text-xs font-mono tracking-[0.2em] chamfer-btn backdrop-blur-sm">
-                            {t.hero_sub}
+                        <div className="inline-block mb-6 chamfer-btn p-[1px] bg-tech-primary/50">
+                            <div className="chamfer-btn px-4 py-1 bg-tech-primary/10 text-white text-xs font-mono tracking-[0.2em] backdrop-blur-sm">
+                                {t.hero_sub}
+                            </div>
                         </div>
                         <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-black text-white mb-8 tracking-tighter leading-tight drop-shadow-2xl">{t.hero_title}</h1>
-                        <p className="text-tech-grey text-lg md:text-xl font-light mb-12 max-w-2xl leading-relaxed drop-shadow-md">{t.hero_desc}</p>
+
+                        {/* Info Card: short desc, replaces the old dense paragraph */}
+                        <div className="mb-10 w-full max-w-2xl chamfer-card p-[1px] bg-white/10">
+                            <div className="chamfer-card bg-tech-panel/80 backdrop-blur-sm px-6 py-5 text-left">
+                                <p className="text-tech-grey text-sm md:text-base font-light leading-relaxed">{t.hero_desc}</p>
+                            </div>
+                        </div>
 
                         {/* Double Layer Launch Button */}
                         <button onClick={onLaunch} className="group relative inline-block p-[2px] bg-tech-primary chamfer-btn hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(24,144,255,0.3)]">
@@ -208,8 +249,13 @@ const goHome = (e) => {
                             </div>
                         </button>
 
-                        <div className="mt-16 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs font-mono text-gray-400 tracking-widest drop-shadow-sm">
-                            <span>CHAMFER GEOMETRY</span><span className="opacity-40">•</span><span>INDUSTRIAL PALETTE</span><span className="opacity-40">•</span><span>CARBON DS</span><span className="opacity-40">•</span><span>SIGNAL MOTION</span>
+                        {/* Meta tags — double-layer (Parent padding + Child) so the chamfer's short diagonal edge stays bordered */}
+                        <div className="mt-16 flex flex-wrap justify-center gap-2">
+                            {t.hero_tags.map(tag => (
+                                <span key={tag} className="inline-flex chamfer-btn p-[1px] bg-tech-primary/30">
+                                    <span className="chamfer-btn px-3 py-1 bg-tech-primary/10 font-mono text-[10px] text-tech-primary tracking-widest">{tag}</span>
+                                </span>
+                            ))}
                         </div>
                     </div>
                 </header>
@@ -351,8 +397,10 @@ const goHome = (e) => {
                             {/* Design Foundation */}
                             <div className="stage-group pt-10 border-t border-white/5">
                                 <div className="flex items-center space-x-3 mb-5">
-                                    <div className="chamfer-btn px-3 py-1.5 border border-[#66FCF1]/30 bg-[#66FCF1]/10">
-                                        <span className="font-mono text-xs text-[#66FCF1] font-bold">FD</span>
+                                    <div className="chamfer-btn p-[1px] bg-[#66FCF1]/30">
+                                        <div className="chamfer-btn px-3 py-1.5 bg-[#66FCF1]/10">
+                                            <span className="font-mono text-xs text-[#66FCF1] font-bold">FD</span>
+                                        </div>
                                     </div>
                                     <span className="font-display text-gray-400 text-sm tracking-widest">{t.foundation_label}</span>
                                     <div className="flex-1 h-px bg-white/5"></div>
@@ -444,7 +492,9 @@ const goHome = (e) => {
                                 <p className="text-gray-400 text-sm leading-relaxed lg:flex-1 lg:basis-64 min-w-0">{t.dl.carbon_desc}</p>
                                 <div className="flex flex-wrap gap-2 flex-shrink-0 -mt-3 lg:mt-0">
                                     {['Grid System','g100 Theme','BX Components','8px Scale'].map(tag => (
-                                        <span key={tag} className="chamfer-btn px-3 py-1 border border-tech-primary/30 bg-tech-primary/10 font-mono text-[9px] text-tech-primary tracking-widest">{tag}</span>
+                                        <span key={tag} className="inline-flex chamfer-btn p-[1px] bg-tech-primary/30">
+                                            <span className="chamfer-btn px-3 py-1 bg-tech-primary/10 font-mono text-[9px] text-tech-primary tracking-widest">{tag}</span>
+                                        </span>
                                     ))}
                                 </div>
                             </div>
@@ -467,8 +517,10 @@ const goHome = (e) => {
                                             <span className="font-mono text-[9px] text-gray-600">10px cut</span>
                                         </div>
                                         <div className="flex flex-col items-center space-y-2">
-                                            <div className="chamfer-card bg-tech-panel border border-white/10 flex items-center justify-center" style={{width:'96px',height:'60px'}}>
-                                                <span className="font-mono text-[9px] text-gray-500 tracking-widest">CARD</span>
+                                            <div className="chamfer-card bg-white/10 p-[1px]" style={{width:'96px',height:'60px'}}>
+                                                <div className="chamfer-card bg-tech-panel w-full h-full flex items-center justify-center">
+                                                    <span className="font-mono text-[9px] text-gray-500 tracking-widest">CARD</span>
+                                                </div>
                                             </div>
                                             <span className="font-mono text-[9px] text-gray-600">20px cut</span>
                                         </div>
@@ -492,13 +544,14 @@ const goHome = (e) => {
                                         {palette.map((c, i) => (
                                             <div key={i} className="flex items-center space-x-3 group">
                                                 <div
-                                                    className="w-7 h-7 chamfer-btn flex-shrink-0 transition-transform group-hover:scale-110"
+                                                    className="w-7 h-7 chamfer-btn p-px flex-shrink-0 transition-transform group-hover:scale-110"
                                                     style={{
-                                                        background: c.color,
-                                                        border: c.border ? '1px solid rgba(255,255,255,0.12)' : 'none',
+                                                        background: c.border ? 'rgba(255,255,255,0.35)' : c.color,
                                                         boxShadow: c.glow ? `0 0 10px ${c.glow}` : 'none'
                                                     }}
-                                                ></div>
+                                                >
+                                                    <div className="chamfer-btn w-full h-full" style={{ background: c.color }}></div>
+                                                </div>
                                                 <span className="font-mono text-[10px] w-16 flex-shrink-0" style={{color: c.border ? '#555' : c.color}}>{c.hex}</span>
                                                 <span className="font-mono text-[10px] text-gray-500 w-24 flex-shrink-0">{c.name}</span>
                                                 <span className="font-mono text-[10px] text-gray-600">{c.meaning}</span>
@@ -560,18 +613,22 @@ const goHome = (e) => {
                             <div className="font-mono text-[10px] text-gray-600 tracking-widest mb-4">{"// DESIGN_LANGUAGE IN ACTION"}</div>
                             <div className="relative group">
                                 <div className="absolute -inset-4 bg-tech-primary/5 blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
-                                <img
-                                    src="/img/project_13/display.webp"
-                                    alt="Design Language in Action"
-                                    className="w-full shadow-2xl relative z-10"
-                                    style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)', border: '1px solid rgba(255,255,255,0.06)' }}
-                                />
-                                <div className="absolute bottom-4 right-4 z-20 bg-tech-panel/90 border border-tech-primary/30 p-3 backdrop-blur-md chamfer-btn">
-                                    <div className="flex items-center space-x-2 mb-1">
-                                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                        <span className="font-mono text-[9px] text-gray-400 tracking-widest">ALL_SYSTEMS_NOMINAL</span>
+                                <div className="relative z-10 p-px" style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)', background: 'rgba(255,255,255,0.14)' }}>
+                                    <img
+                                        src="./img/project_13/display.webp"
+                                        alt="Design Language in Action"
+                                        className="w-full block shadow-2xl"
+                                        style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' }}
+                                    />
+                                </div>
+                                <div className="absolute bottom-4 right-4 z-20 chamfer-btn p-[1px] bg-tech-primary/30">
+                                    <div className="chamfer-btn bg-tech-panel/90 p-3 backdrop-blur-md">
+                                        <div className="flex items-center space-x-2 mb-1">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                            <span className="font-mono text-[9px] text-gray-400 tracking-widest">ALL_SYSTEMS_NOMINAL</span>
+                                        </div>
+                                        <div className="font-display font-bold text-white text-sm tracking-wider">DESIGN LANGUAGE v1.0</div>
                                     </div>
-                                    <div className="font-display font-bold text-white text-sm tracking-wider">DESIGN LANGUAGE v1.0</div>
                                 </div>
                             </div>
                         </div>
@@ -611,9 +668,12 @@ const goHome = (e) => {
                 Promise.race([assetsPromise, forceTimeout]).then(() => { setLoaderDone(true); setIsLoading(false); });
             }, []);
             useEffect(() => {
+                // Cycles loader_step1~3 while assets load; loaderDone switches display to loader_step4 (see JSX below).
+                // Must stop once loading finishes, or App keeps re-rendering forever and resets SimulatorModal's iframe state.
+                if (loaderDone) return;
                 const stepTimer = setInterval(() => setLoaderStep(i => (i + 1) % 3), 500);
                 return () => clearInterval(stepTimer);
-            }, []);
+            }, [loaderDone]);
             return (
                 <React.Fragment>
                     <div className={`loader-overlay ${!isLoading ? 'loader-hidden' : ''}`}>

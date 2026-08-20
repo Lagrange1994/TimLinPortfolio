@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Super High Tech | CNC 3D Simulator</title>
   <link rel="shortcut icon" type="image/ico" href="/img/favicon/favicon.ico" />
+  <link rel="canonical" href="https://timlin-design.vercel.app/project_13.html" />
+  <meta name="description" content="CNC 數控加工模擬器介面，個人作品。以 React + GSAP 打造，並以 IBM Carbon Design System 為基礎重塑成工業級 UI，內建即時 3D 加工模擬器。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Super High Tech | CNC 3D Simulator" />
+  <meta property="og:description" content="CNC 數控加工模擬器介面，個人作品。以 React + GSAP 打造，並以 IBM Carbon Design System 為基礎重塑成工業級 UI，內建即時 3D 加工模擬器。" />
+  <meta property="og:image" content="https://timlin-design.vercel.app/img/project_13/CNC.webp" />
+  <meta property="og:url" content="https://timlin-design.vercel.app/project_13.html" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Super High Tech | CNC 3D Simulator" />
+  <meta name="twitter:description" content="CNC 數控加工模擬器介面，個人作品。以 React + GSAP 打造，並以 IBM Carbon Design System 為基礎重塑成工業級 UI，內建即時 3D 加工模擬器。" />
+  <meta name="twitter:image" content="https://timlin-design.vercel.app/img/project_13/CNC.webp" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -52,6 +63,19 @@
 
         .chamfer-card {
             clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+        }
+
+        /* bg-fixed via a real class (not Tailwind's bg-fixed utility) so it can be
+           disabled on touch devices — iOS Safari mishandles fixed background-attachment
+           inside a scrolling page, causing jank/repaint bugs on the hero. */
+        .hero-bg {
+            background-attachment: fixed;
+        }
+
+        @media (max-width: 768px), (hover: none) {
+            .hero-bg {
+                background-attachment: scroll;
+            }
         }
 
         .glass-panel {
