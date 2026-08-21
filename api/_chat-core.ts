@@ -8,8 +8,12 @@ import { translations } from '../data/translations.js';
 
 // ── Daily request limit (in-memory, resets on function cold start) ──────────
 const DAILY_LIMIT = Number(process.env.CHAT_DAILY_LIMIT ?? 50);
+const RATE_LIMIT_PER_MINUTE = Math.max(1, Number(process.env.CHAT_RATE_LIMIT_PER_MINUTE) || 8);
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const MAX_RATE_LIMIT_CLIENTS = 10_000;
 let dailyCount = 0;
 let dailyDate = new Date().toDateString();
+const clientRequests = new Map<string, number[]>();
 
 function checkDailyLimit(): boolean {
   const today = new Date().toDateString();
@@ -17,6 +21,40 @@ function checkDailyLimit(): boolean {
   if (dailyCount >= DAILY_LIMIT) return false;
   dailyCount++;
   return true;
+}
+
+// Stops a single visitor from exhausting the shared Gemini quota in a burst.
+// Serverless instances do not share memory; use a shared KV-backed limiter
+// when a strict cross-instance quota becomes necessary.
+function checkClientRateLimit(clientId: string): { allowed: boolean; retryAfterSeconds: number } {
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+  const recent = (clientRequests.get(clientId) ?? []).filter(timestamp => timestamp > windowStart);
+
+  if (recent.length >= RATE_LIMIT_PER_MINUTE) {
+    const retryAfterSeconds = Math.max(1, Math.ceil((recent[0] + RATE_LIMIT_WINDOW_MS - now) / 1000));
+    clientRequests.set(clientId, recent);
+    return { allowed: false, retryAfterSeconds };
+  }
+
+  recent.push(now);
+  clientRequests.set(clientId, recent);
+  if (clientRequests.size > MAX_RATE_LIMIT_CLIENTS) {
+    const oldest = clientRequests.keys().next().value;
+    if (oldest) clientRequests.delete(oldest);
+  }
+  return { allowed: true, retryAfterSeconds: 0 };
+}
+
+export function getClientId(headers?: Record<string, string | string[] | undefined>): string {
+  const first = (value: string | string[] | undefined) => {
+    const raw = Array.isArray(value) ? value[0] : value;
+    return raw?.split(',')[0]?.trim();
+  };
+  const forwarded = first(headers?.['x-vercel-forwarded-for'])
+    ?? first(headers?.['x-forwarded-for'])
+    ?? first(headers?.['x-real-ip']);
+  return forwarded?.slice(0, 128) || 'unknown';
 }
 
 // ── Prompt injection detection ───────────────────────────────────────────────
@@ -242,15 +280,18 @@ const STRINGS: Record<ReplyLang, {
   scopeRefusal: string;
   needsContact: string;
   dailyLimit: string;
+  rateLimit: string;
   serviceUnavailable: string;
 }> = {
   zh: {
+    rateLimit: '請稍後再試。',
     scopeRefusal: '我只能回答關於 Tim Lin 的問題，其他問題請直接聯繫 Tim。',
     needsContact: '這個問題需要直接聯繫 Tim 才能回答',
     dailyLimit: '今日詢問次數已達上限，請明天再試或直接聯繫 Tim。',
     serviceUnavailable: '服務暫時無法使用，請直接透過聯絡表單聯繫 Tim。',
   },
   en: {
+    rateLimit: 'Too many requests. Please try again shortly.',
     scopeRefusal: 'I can only answer questions about Tim Lin — for anything else, please contact Tim directly.',
     needsContact: 'This question needs to be answered directly by Tim',
     dailyLimit: "Today's question limit has been reached — please try again tomorrow or contact Tim directly.",
@@ -287,9 +328,10 @@ Tim 的背景、技能、設計流程、作品專案、合作方式、工作型�
 export interface ChatResult {
   status: number;
   body: { reply?: string; error?: string };
+  headers?: Record<string, string>;
 }
 
-export async function generateReply(rawQuestion: unknown, rawLang?: unknown): Promise<ChatResult> {
+export async function generateReply(rawQuestion: unknown, rawLang?: unknown, clientId = 'unknown'): Promise<ChatResult> {
   const question = String(rawQuestion ?? '').trim().slice(0, 500);
   const lang = normalizeLang(rawLang);
   const s = STRINGS[lang];
@@ -303,6 +345,14 @@ export async function generateReply(rawQuestion: unknown, rawLang?: unknown): Pr
   // just outside the assistant's purpose, so it shouldn't burn the daily quota.
   if (looksOffTopic(question)) {
     return { status: 200, body: { reply: s.scopeRefusal } };
+  }
+  const rate = checkClientRateLimit(clientId);
+  if (!rate.allowed) {
+    return {
+      status: 429,
+      body: { error: s.rateLimit },
+      headers: { 'Retry-After': String(rate.retryAfterSeconds) },
+    };
   }
   if (!checkDailyLimit()) {
     return { status: 429, body: { error: s.dailyLimit } };

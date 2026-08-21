@@ -4,9 +4,13 @@
 // (package.json has "type": "module"), which requires extensioned relative
 // specifiers. TS resolves this to the sibling _chat-core.ts at compile time
 // and preserves the .js extension in the emitted output.
-import { generateReply } from './_chat-core.js';
+import { generateReply, getClientId } from './_chat-core.js';
 
-interface ReqLike { method?: string; body?: unknown; }
+interface ReqLike {
+  method?: string;
+  body?: unknown;
+  headers?: Record<string, string | string[] | undefined>;
+}
 interface ResLike {
   status: (code: number) => ResLike;
   json: (data: unknown) => void;
@@ -34,6 +38,7 @@ export default async function handler(req: ReqLike, res: ResLike) {
     lang = (body as Record<string, unknown>).lang;
   }
 
-  const result = await generateReply(question, lang);
+  const result = await generateReply(question, lang, getClientId(req.headers));
+  Object.entries(result.headers ?? {}).forEach(([key, value]) => res.setHeader(key, value));
   res.status(result.status).json(result.body);
 }

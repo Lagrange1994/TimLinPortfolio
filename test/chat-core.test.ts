@@ -80,4 +80,17 @@ describe('generateReply', () => {
     expect(result.status).toBe(200);
     expect(result.body.reply).toBe('Yes, this project uses Python and React.');
   });
+
+  it('limits a single client to eight model-bound requests per minute', async () => {
+    const clientId = 'rate-limit-test-client';
+    for (let i = 0; i < 8; i++) {
+      const result = await generateReply(`Does Tim use React? ${i}`, 'en', clientId);
+      expect(result.status).toBe(200);
+    }
+
+    const blocked = await generateReply('Does Tim use React again?', 'en', clientId);
+    expect(blocked.status).toBe(429);
+    expect(blocked.body.error).toBe('Too many requests. Please try again shortly.');
+    expect(blocked.headers?.['Retry-After']).toMatch(/^\d+$/);
+  });
 });

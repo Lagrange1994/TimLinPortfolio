@@ -33,7 +33,7 @@ function devChatApi() {
           res.setHeader('Content-Type', 'application/json');
           try {
             const raw = Buffer.concat(chunks).toString('utf8');
-            const { generateReply } = await server.ssrLoadModule('/api/_chat-core.ts');
+            const { generateReply, getClientId } = await server.ssrLoadModule('/api/_chat-core.ts');
             let question = '';
             let lang = '';
             try {
@@ -41,7 +41,8 @@ function devChatApi() {
               question = parsed.question;
               lang = parsed.lang;
             } catch { /* ignore */ }
-            const result = await generateReply(question, lang);
+            const result = await generateReply(question, lang, getClientId(req.headers));
+            Object.entries(result.headers ?? {}).forEach(([key, value]) => res.setHeader(key, value));
             res.statusCode = result.status;
             res.end(JSON.stringify(result.body));
           } catch (e) {
