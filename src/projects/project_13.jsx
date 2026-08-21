@@ -1,3 +1,4 @@
+import '../styles/project13-tailwind.css';
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
@@ -263,12 +264,26 @@ const goHome = (e) => {
         };
 
         // 4. Feature Grid Section (Double Layer Border for Cards & Icons)
-        const FeatureCard = ({ item, large = false }) => (
-            <div className={`feat-card group relative chamfer-card p-[1px] bg-white/10 hover:bg-tech-primary/50 transition-colors duration-500 ${large ? 'aspect-[16/9]' : 'aspect-[3/2]'}`}>
+        const FeatureCard = ({ item, large = false }) => {
+            const cardRef = useRef(null);
+            const [bgVisible, setBgVisible] = useState(false);
+
+            useEffect(() => {
+                const el = cardRef.current;
+                if (!el) return;
+                const observer = new IntersectionObserver(([entry]) => {
+                    if (entry.isIntersecting) { setBgVisible(true); observer.disconnect(); }
+                }, { rootMargin: '200px' });
+                observer.observe(el);
+                return () => observer.disconnect();
+            }, []);
+
+            return (
+            <div ref={cardRef} className={`feat-card group relative chamfer-card p-[1px] bg-white/10 hover:bg-tech-primary/50 transition-colors duration-500 ${large ? 'aspect-[16/9]' : 'aspect-[3/2]'}`}>
                 <div className="chamfer-card w-full h-full bg-tech-panel flex flex-col justify-end items-start p-6 relative overflow-hidden">
                     <div className="absolute inset-0 z-0 opacity-80 group-hover:opacity-100 transition-opacity duration-500">
                         <div className="glitch-container">
-                            {[...Array(5)].map((_, i) => (
+                            {bgVisible && [...Array(5)].map((_, i) => (
                                 <div key={i} className="glitch__img" style={{ '--bg-jpg': `url(./img/project_13/${item.img_bg}.jpg)`, '--bg-webp': `url(./img/project_13/${item.img_bg}.webp)` }}></div>
                             ))}
                         </div>
@@ -285,6 +300,7 @@ const goHome = (e) => {
                                         <source srcSet={`./img/project_13/${item.img_3d}.webp`} type="image/webp" />
                                         <img src={`./img/project_13/${item.img_3d}.png`} alt={item.title}
                                             className="relative z-10 w-full h-full object-cover transform scale-110 transition-transform duration-700"
+                                            loading="lazy" decoding="async"
                                             onError={(e) => e.target.style.display = 'none'} />
                                     </picture>
                                     <div className="absolute inset-0 bg-gradient-to-t from-tech-dark/40 to-transparent z-20 pointer-events-none"></div>
@@ -304,7 +320,8 @@ const goHome = (e) => {
                     )}
                 </div>
             </div>
-        );
+            );
+        };
 
         const Features = () => {
             const sectionRef = useRef(null);
@@ -618,6 +635,7 @@ const goHome = (e) => {
                                         src="./img/project_13/display.webp"
                                         alt="Design Language in Action"
                                         className="w-full block shadow-2xl"
+                                        loading="lazy" decoding="async"
                                         style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' }}
                                     />
                                 </div>

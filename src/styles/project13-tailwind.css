@@ -1,0 +1,16 @@
+/* Build-time replacement for project_13.html's former cdn.tailwindcss.com
+   script + inline tailwind.config — that CDN JIT-compiles every class in the
+   browser on every load, blocking first render. Full preflight is safe here:
+   project_13.html doesn't link public/style.css (unlike the other project
+   pages), so there's no reset to collide with. */
+@import "tailwindcss";
+
+@theme {
+  --color-tech-primary: #1890FF;
+  --color-tech-dark: #0B0C10;
+  --color-tech-panel: #1F2833;
+  --color-tech-accent: #66FCF1;
+  --color-tech-grey: #C5C6C7;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-display: "Orbitron", sans-serif;
+}
