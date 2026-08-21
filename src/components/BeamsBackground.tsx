@@ -63,31 +63,31 @@ float cnoise(vec3 P){
 
 export default function BeamsBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // The decorative background Spline scene (desktop/tablet — see
-  // useStaticBg below) gets fully unmounted (not just faded to opacity 0)
-  // once scrolled past the hero — see updateBg() below. Running it
-  // continuously for the rest of the page, on top of this canvas's Three.js
-  // renderer, was sustained concurrent WebGL load that correlated with
-  // intermittent tab crashes; the hero's own Spline figure stays
-  // desktop-only (see HeroSection) to keep mobile down to just this
-  // background scene plus the beams canvas — two contexts instead of three.
   const [splineBgMounted, setSplineBgMounted] = useState(true);
   const splineBgMountedRef = useRef(splineBgMounted);
   splineBgMountedRef.current = splineBgMounted;
 
+  // The decorative background used to be a live Spline scene on desktop/
+  // tablet, running concurrently with the hero figure's own Spline scene
+  // (see HeroSection). Two simultaneous Spline WebGL contexts (plus this
+  // canvas's own Three.js context) was the documented, intermittent
+  // renderer-freeze/GPU-driver-stall risk (GL_CLOSE_PATH_NV / "GPU stall
+  // due to ReadPixels" in console) that could leave the page unresponsive
+  // to scroll input — see homepage-webgl-stability memory. Always using the
+  // static image here (matching what mobile already did) removes one whole
+  // Spline runtime instance site-wide, leaving only the hero figure's scene
+  // as the one live Spline context.
+
   // Below HeroSection's own Spline breakpoint (see HERO_FIGURE_BREAKPOINT in
-  // Loader.tsx), swap this WebGL background scene for a plain jpg AND skip
-  // the beams canvas's own Three.js renderer entirely (see the early return
-  // below) — that drops mobile to zero WebGL contexts instead of one or two,
-  // removing this scene's share of the crash risk noted above entirely
-  // there instead of merely reducing it. Checked once on mount, matching the
-  // same one-shot (no resize listener) convention HeroSection uses for its
-  // own figure.
-  const [useStaticBg] = useState(() => window.innerWidth < 768);
+  // Loader.tsx), skip the beams canvas's own Three.js renderer entirely (see
+  // the early return below) too — that drops mobile to zero WebGL contexts.
+  // Checked once on mount, matching the same one-shot (no resize listener)
+  // convention HeroSection uses for its own figure.
+  const [isMobile] = useState(() => window.innerWidth < 768);
 
   useEffect(() => {
     // Mobile: jpg-only background, no beams canvas — nothing here to set up.
-    if (useStaticBg) return;
+    if (isMobile) return;
 
     let cancelled = false;
     let cleanupFn: (() => void) | null = null;
@@ -303,11 +303,11 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
       cancelled = true;
       if (cleanupFn) cleanupFn();
     };
-  }, [useStaticBg]);
+  }, [isMobile]);
 
   return (
     <>
-      {!useStaticBg && (
+      {!isMobile && (
         <canvas
           ref={canvasRef}
           id="beams-bg"
@@ -317,14 +317,10 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
         />
       )}
       {splineBgMounted && (
-        useStaticBg
-          ? (
-            <picture>
-              <source srcSet="./img/bg.webp" type="image/webp" />
-              <img id="spline-bg" src="./img/bg.jpg" alt="" aria-hidden="true" />
-            </picture>
-          )
-          : <spline-viewer id="spline-bg" url="./models/bg_scene.splinecode" />
+        <picture>
+          <source srcSet="./img/bg.webp" type="image/webp" />
+          <img id="spline-bg" src="./img/bg.jpg" alt="" aria-hidden="true" />
+        </picture>
       )}
     </>
   );
