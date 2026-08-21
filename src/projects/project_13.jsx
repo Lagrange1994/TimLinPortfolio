@@ -25,8 +25,8 @@ const goHome = (e) => {
                 loader_step2: "載入視覺素材",
                 loader_step3: "建構渲染畫布",
                 loader_step4: "初始化完成",
-                hero_title: "SUPER HIGH TECH",
-                hero_sub: "CNC 3D SIMULATOR v4.2",
+                hero_title: "CNC 3D SIMULATOR",
+                hero_sub: "SUPER HIGH TECH v4.2",
                 hero_desc: "CNC 數控加工模擬器介面，重塑成工業級 UI，內建可一鍵啟動的即時 3D 模擬器。",
                 hero_tags: ["個人作品", "React + GSAP", "IBM Carbon Design System", "外部服務 · 全螢幕模擬器"],
                 btn_launch: "INITIALIZE SIMULATION",
@@ -77,8 +77,8 @@ const goHome = (e) => {
                 loader_step2: "Loading visual assets",
                 loader_step3: "Constructing render canvas",
                 loader_step4: "Initialization complete",
-                hero_title: "SUPER HIGH TECH",
-                hero_sub: "CNC 3D SIMULATOR v4.2",
+                hero_title: "CNC 3D SIMULATOR",
+                hero_sub: "SUPER HIGH TECH v4.2",
                 hero_desc: "A CNC machining simulator interface, restyled into an industrial-grade UI with a live 3D simulator built in.",
                 hero_tags: ["Personal Project", "React + GSAP", "IBM Carbon Design System", "External · Fullscreen Simulator"],
                 btn_launch: "INITIALIZE SIMULATION",
@@ -209,7 +209,7 @@ const goHome = (e) => {
             useEffect(() => {
                 gsap.fromTo(containerRef.current.children,
                     { y: 50, opacity: 0 },
-                    { y: 0, opacity: 1, stagger: 0.2, duration: 1, ease: "power3.out" }
+                    { y: 0, opacity: 1, stagger: 0.2, duration: 1, ease: "power3.out", clearProps: "transform,opacity" }
                 );
             }, []);
 
@@ -231,17 +231,12 @@ const goHome = (e) => {
                                 {t.hero_sub}
                             </div>
                         </div>
-                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-black text-white mb-8 tracking-tighter leading-tight drop-shadow-2xl">{t.hero_title}</h1>
+                        <h1 className="text-3xl md:text-6xl lg:text-7xl font-display font-black text-white mb-8 tracking-tighter leading-tight drop-shadow-2xl whitespace-nowrap">{t.hero_title}</h1>
 
-                        {/* Info Card: short desc, replaces the old dense paragraph */}
-                        <div className="mb-10 w-full max-w-2xl chamfer-card p-[1px] bg-white/10">
-                            <div className="chamfer-card bg-tech-panel/80 backdrop-blur-sm px-6 py-5 text-left">
-                                <p className="text-tech-grey text-sm md:text-base font-light leading-relaxed">{t.hero_desc}</p>
-                            </div>
-                        </div>
+                        <p className="mb-10 max-w-2xl text-tech-grey text-sm md:text-base font-light leading-relaxed text-center">{t.hero_desc}</p>
 
                         {/* Double Layer Launch Button */}
-                        <button onClick={onLaunch} className="group relative inline-block p-[2px] bg-tech-primary chamfer-btn hover:scale-105 transition-transform duration-300 shadow-[0_0_40px_rgba(24,144,255,0.3)]">
+                        <button onClick={onLaunch} className="group relative inline-block p-[2px] bg-tech-primary chamfer-btn cursor-pointer hover:scale-105 hover:-translate-y-1 transition-transform duration-300 shadow-[0_0_40px_rgba(24,144,255,0.3)]">
                             <div className="w-full h-full chamfer-btn bg-tech-primary group-hover:bg-white px-8 py-4 md:px-12 md:py-6 flex flex-col items-center justify-center transition-colors">
                                 <span className="font-display font-bold text-base md:text-xl tracking-widest mb-1 flex items-center text-white group-hover:text-tech-dark transition-colors">
                                     <i className="ph ph-play-circle mr-2 md:mr-3"></i>{t.btn_launch}
