@@ -188,23 +188,15 @@
       overflow-x: hidden;
     }
 
-    /* Folding the portfolio grid (PortfolioSection.tsx's handleToggle)
-       drives an immediate JS scroll (scrollToSectionAligned) back up
-       toward the collapsed wall. With no overscroll-behavior set, that
-       scroll can land at/near scrollY 0 while a touch is still active on
-       mobile Chrome/Safari, which reads as a downward drag at the top of
-       the page — triggering the browser's native pull-to-refresh and
-       reloading the whole app. `contain` stops that scroll chaining
-       (blocks the native refresh/back-swipe gesture) without touching
-       normal in-page scroll or rubber-band feel. Scoped to coarse-pointer
-       (touch) devices only — pull-to-refresh is a touch-only gesture, and
-       desktop mouse/trackpad users don't need this at all. */
-    @media (pointer: coarse) {
-      html,
-      body {
-        overscroll-behavior-y: contain;
-      }
-    }
+    /* Pull-to-refresh containment for JS-driven scrolls (see navHeader.ts
+       animateScrollTo) used to live here as `@media (pointer: coarse)`.
+       Removed: that media feature reflects the PRIMARY pointing device as
+       guessed by the browser, not the device actually in use — on Windows
+       machines with a touchscreen present, Chromium/Edge can report
+       `pointer: coarse` even while the user is scrolling with a mouse,
+       which silently re-broke desktop wheel scrolling for exactly those
+       users. The fix now lives in navHeader.ts, gated on an actual recent
+       touchstart event instead of a static hardware guess. */
 
     html {
       background: #000;

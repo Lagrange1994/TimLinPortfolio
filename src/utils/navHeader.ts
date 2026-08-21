@@ -48,6 +48,15 @@ export function primeHeaderForNav() {
 // is tracked automatically, and the jump converges on the real resting spot
 // in one go.
 
+// Tracks real touch use so the pull-to-refresh containment below (see
+// animateScrollTo) can gate on an actual touch event instead of the
+// `pointer: coarse` media feature, which Windows can report true for a
+// touchscreen-equipped desktop/laptop even while the user is on a mouse —
+// that false-positive silently blocked desktop wheel scrolling when this
+// lived in CSS.
+let lastTouchAt = 0;
+window.addEventListener('touchstart', () => { lastTouchAt = performance.now(); }, { passive: true });
+
 let rafId: number | null = null;
 let cleanupInput: (() => void) | null = null;
 
@@ -109,10 +118,28 @@ function animateScrollTo(getTargetY: () => number) {
   (['wheel', 'touchstart', 'keydown'] as const).forEach(evt =>
     window.addEventListener(evt, onUserInput, { passive: true })
   );
-  cleanupInput = () =>
+
+  // Only a touch in the last 600ms is treated as "this scroll may be
+  // fighting an active drag" — see the pull-to-refresh note above
+  // lastTouchAt. Desktop mouse/trackpad users never touch this branch.
+  let restoreOverscroll: (() => void) | null = null;
+  if (performance.now() - lastTouchAt < 600) {
+    const htmlPrev = document.documentElement.style.overscrollBehaviorY;
+    const bodyPrev = document.body.style.overscrollBehaviorY;
+    document.documentElement.style.overscrollBehaviorY = 'contain';
+    document.body.style.overscrollBehaviorY = 'contain';
+    restoreOverscroll = () => {
+      document.documentElement.style.overscrollBehaviorY = htmlPrev;
+      document.body.style.overscrollBehaviorY = bodyPrev;
+    };
+  }
+
+  cleanupInput = () => {
     (['wheel', 'touchstart', 'keydown'] as const).forEach(evt =>
       window.removeEventListener(evt, onUserInput)
     );
+    restoreOverscroll?.();
+  };
 
   const step = () => {
     if (userTookOver) { stopAnimatedScroll(); return; }
