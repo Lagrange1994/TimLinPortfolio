@@ -97,7 +97,7 @@ export default function BeamsBackground() {
       else window.addEventListener('load', () => setTimeout(cb, 800), { once: true });
     }
 
-    scheduleInit(() => {
+    function doHeavyInit() {
       if (cancelled) return;
 
       const canvas = canvasRef.current;
@@ -297,10 +297,35 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
         beamMaterial.dispose();
         beamMesh.geometry.dispose();
       };
-    });
+    }
+
+    // Creating the WebGLRenderer here (not on mount) matters: the hero
+    // figure's own Spline scene is already a live WebGL context for as long
+    // as a visitor sits reading the hero, so spinning up a second, idle one
+    // immediately on mount doubled the concurrent GPU context count for
+    // that (most common, longest) idle window — reproduced live against
+    // production 2026-08-21: sitting untouched at scrollY 0 alone triggered
+    // repeated Spline context-loss/rebuild cycles, ending in a runaway
+    // "Framebuffer incomplete: zero size" error storm (1000+ messages) that
+    // pegs the renderer and reads as the page being frozen/unable to
+    // scroll. Deferring init to first scroll keeps only one context alive
+    // during that window — see homepage-webgl-stability memory.
+    let initStarted = false;
+    function initBeams() {
+      if (initStarted) return;
+      initStarted = true;
+      scheduleInit(doHeavyInit);
+    }
+
+    if (window.scrollY > 0) {
+      initBeams();
+    } else {
+      window.addEventListener('scroll', initBeams, { passive: true, once: true });
+    }
 
     return () => {
       cancelled = true;
+      window.removeEventListener('scroll', initBeams);
       if (cleanupFn) cleanupFn();
     };
   }, [isMobile]);
