@@ -21,10 +21,13 @@ import Navbar from '../src/components/Navbar';
 // Found by /qa-only on 2026-06-20, fixed via /qa on 2026-06-20.
 describe('Navbar hash-on-load deep link', () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     vi.stubGlobal('IntersectionObserver', class {
       observe() {}
       disconnect() {}
     });
+    vi.stubGlobal('matchMedia', () => ({ matches: true }));
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
     document.body.innerHTML = '<section id="portfolio"></section>';
     window.location.hash = '';
     document.body.classList.remove('hero-ready');
@@ -34,28 +37,22 @@ describe('Navbar hash-on-load deep link', () => {
   it('scrolls to the hash target immediately if the page is already hero-ready', () => {
     window.location.hash = '#portfolio';
     document.body.classList.add('hero-ready');
-    const target = document.getElementById('portfolio')!;
-    const scrollIntoView = vi.fn();
-    target.scrollIntoView = scrollIntoView;
 
     render(<LangProvider><Navbar /></LangProvider>);
 
-    expect(scrollIntoView).toHaveBeenCalled();
+    expect(window.scrollTo).toHaveBeenCalled();
   });
 
   it('scrolls to the hash target once the hero-ready event fires', () => {
     window.location.hash = '#portfolio';
-    const target = document.getElementById('portfolio')!;
-    const scrollIntoView = vi.fn();
-    target.scrollIntoView = scrollIntoView;
 
     render(<LangProvider><Navbar /></LangProvider>);
-    expect(scrollIntoView).not.toHaveBeenCalled();
+    expect(window.scrollTo).not.toHaveBeenCalled();
 
     document.body.classList.add('hero-ready');
     window.dispatchEvent(new Event('hero-ready'));
 
-    expect(scrollIntoView).toHaveBeenCalled();
+    expect(window.scrollTo).toHaveBeenCalled();
   });
 
   it('defers to PortfolioSection and never scrolls when portfolioExpanded is saved (carousel mode)', () => {
@@ -63,14 +60,11 @@ describe('Navbar hash-on-load deep link', () => {
     sessionStorage.setItem('portfolioScrollY', '3000');
     window.location.hash = '#portfolio';
     document.body.classList.add('hero-ready');
-    const target = document.getElementById('portfolio')!;
-    const scrollIntoView = vi.fn();
-    target.scrollIntoView = scrollIntoView;
 
     render(<LangProvider><Navbar /></LangProvider>);
     window.dispatchEvent(new Event('hero-ready'));
 
-    expect(scrollIntoView).not.toHaveBeenCalled();
+    expect(window.scrollTo).not.toHaveBeenCalled();
   });
 
   it('defers to PortfolioSection when portfolioExpanded is saved even if portfolioScrollY was already consumed', () => {
@@ -81,37 +75,27 @@ describe('Navbar hash-on-load deep link', () => {
     sessionStorage.setItem('portfolioExpanded', 'true');
     window.location.hash = '#portfolio';
     document.body.classList.add('hero-ready');
-    const target = document.getElementById('portfolio')!;
-    const scrollIntoView = vi.fn();
-    target.scrollIntoView = scrollIntoView;
 
     render(<LangProvider><Navbar /></LangProvider>);
     window.dispatchEvent(new Event('hero-ready'));
 
-    expect(scrollIntoView).not.toHaveBeenCalled();
+    expect(window.scrollTo).not.toHaveBeenCalled();
   });
 
   it('falls back to scrolling the #portfolio section into view when there is nothing to restore', () => {
     window.location.hash = '#portfolio';
     document.body.classList.add('hero-ready');
-    const target = document.getElementById('portfolio')!;
-    const scrollIntoView = vi.fn();
-    target.scrollIntoView = scrollIntoView;
 
     render(<LangProvider><Navbar /></LangProvider>);
 
-    expect(scrollIntoView).toHaveBeenCalled();
+    expect(window.scrollTo).toHaveBeenCalled();
   });
 
   it('does nothing when there is no hash', () => {
-    const target = document.getElementById('portfolio')!;
-    const scrollIntoView = vi.fn();
-    target.scrollIntoView = scrollIntoView;
-
     render(<LangProvider><Navbar /></LangProvider>);
     document.body.classList.add('hero-ready');
     window.dispatchEvent(new Event('hero-ready'));
 
-    expect(scrollIntoView).not.toHaveBeenCalled();
+    expect(window.scrollTo).not.toHaveBeenCalled();
   });
 });
