@@ -67,16 +67,9 @@ export default function BeamsBackground() {
   const splineBgMountedRef = useRef(splineBgMounted);
   splineBgMountedRef.current = splineBgMounted;
 
-  // The decorative background used to be a live Spline scene on desktop/
-  // tablet, running concurrently with the hero figure's own Spline scene
-  // (see HeroSection). Two simultaneous Spline WebGL contexts (plus this
-  // canvas's own Three.js context) was the documented, intermittent
-  // renderer-freeze/GPU-driver-stall risk (GL_CLOSE_PATH_NV / "GPU stall
-  // due to ReadPixels" in console) that could leave the page unresponsive
-  // to scroll input — see homepage-webgl-stability memory. Always using the
-  // static image here (matching what mobile already did) removes one whole
-  // Spline runtime instance site-wide, leaving only the hero figure's scene
-  // as the one live Spline context.
+  // The decorative background Spline scene (desktop/tablet — see isMobile
+  // below) gets fully unmounted (not just faded to opacity 0) once scrolled
+  // past the hero — see updateBg() below.
 
   // Below HeroSection's own Spline breakpoint (see HERO_FIGURE_BREAKPOINT in
   // Loader.tsx), skip the beams canvas's own Three.js renderer entirely (see
@@ -342,10 +335,14 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
         />
       )}
       {splineBgMounted && (
-        <picture>
-          <source srcSet="./img/bg.webp" type="image/webp" />
-          <img id="spline-bg" src="./img/bg.jpg" alt="" aria-hidden="true" />
-        </picture>
+        isMobile
+          ? (
+            <picture>
+              <source srcSet="./img/bg.webp" type="image/webp" />
+              <img id="spline-bg" src="./img/bg.jpg" alt="" aria-hidden="true" />
+            </picture>
+          )
+          : <spline-viewer id="spline-bg" url="./models/bg_scene.splinecode" />
       )}
     </>
   );
