@@ -24,6 +24,10 @@
 # temp
 /tmp-claude-design
 
+# unsubsetted font sources (~96MB) — only the subsetted WOFF2 output in
+# public/fonts is actually deployed; keep the raw OTFs local-only
+/fonts-source
+
 # misc
 .DS_Store
 *.pem

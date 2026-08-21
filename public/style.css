@@ -1,3 +1,47 @@
+/* ── GENSEN ROUNDED TW (self-hosted CJK font) ── */
+@font-face {
+  font-family: 'GenSen Rounded TW';
+  src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-EL.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GenSen Rounded TW';
+  src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-L.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GenSen Rounded TW';
+  src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-R.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GenSen Rounded TW';
+  src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-M.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GenSen Rounded TW';
+  src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-B.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GenSen Rounded TW';
+  src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-H.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 *, ::before, ::after {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
@@ -154,7 +198,7 @@ html,
   -o-tab-size: 4;
      tab-size: 4;
   /* 3 */
-  font-family: Quicksand, "Noto Sans TC", sans-serif;
+  font-family: Quicksand, "GenSen Rounded TW", "Noto Sans TC", sans-serif;
   /* 4 */
   font-feature-settings: normal;
   /* 5 */
@@ -2974,7 +3018,7 @@ video {
 }
 
 .font-heading {
-  font-family: "Momo Trust Display", "Noto Sans TC", sans-serif;
+  font-family: "Momo Trust Display", "GenSen Rounded TW", "Noto Sans TC", sans-serif;
 }
 
 .font-mono {
@@ -2982,7 +3026,7 @@ video {
 }
 
 .font-sans {
-  font-family: Quicksand, "Noto Sans TC", sans-serif;
+  font-family: Quicksand, "GenSen Rounded TW", "Noto Sans TC", sans-serif;
 }
 
 .text-2xl {
