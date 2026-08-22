@@ -463,9 +463,19 @@ export default function PortfolioSection() {
       return rows.reduce((sum, r) => sum + r.offsetHeight, 0) + gap * (rows.length - 1);
     }
 
+    // dvh, not svh, here — unlike the CSS pre-lock fallback (.portfolio-
+    // wall-frame's static 85svh in portfolio.css), this only ever reads the
+    // probe's height once and throws it away, so there's no live recalc to
+    // jitter. svh is pinned to the browser chrome's MOST expanded state
+    // (address bar shown) by spec, which is smaller than the actual space
+    // once the user has scrolled this far down the page and the chrome has
+    // auto-collapsed — using it here permanently undercounts the real
+    // available height, leaving the bottom gap bigger than the (correctly
+    // sized) top gap. dvh reads whatever the chrome's state actually is at
+    // the moment of this one-time measurement instead.
     function measureAvailableHeight(): number {
       const probe = document.createElement('div');
-      probe.style.cssText = 'position:fixed; visibility:hidden; pointer-events:none; height:calc(100svh - var(--nav-h, 72px) - env(safe-area-inset-bottom, 0px));';
+      probe.style.cssText = 'position:fixed; visibility:hidden; pointer-events:none; height:calc(100dvh - var(--nav-h, 72px) - env(safe-area-inset-bottom, 0px));';
       document.body.appendChild(probe);
       const availablePx = probe.getBoundingClientRect().height;
       probe.remove();
@@ -478,7 +488,7 @@ export default function PortfolioSection() {
     function measureMobileCapPx(): number {
       const wallTopOffset = parseFloat(frame!.style.top) || 0;
       const probe = document.createElement('div');
-      probe.style.cssText = `position:fixed; visibility:hidden; pointer-events:none; height:calc(100svh - var(--nav-h, 72px) - ${wallTopOffset}px - ${wallTopOffset}px - env(safe-area-inset-bottom, 0px));`;
+      probe.style.cssText = `position:fixed; visibility:hidden; pointer-events:none; height:calc(100dvh - var(--nav-h, 72px) - ${wallTopOffset}px - ${wallTopOffset}px - env(safe-area-inset-bottom, 0px));`;
       document.body.appendChild(probe);
       const capPx = probe.getBoundingClientRect().height;
       probe.remove();
