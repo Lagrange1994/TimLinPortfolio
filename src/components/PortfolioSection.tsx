@@ -535,16 +535,49 @@ export default function PortfolioSection() {
       wallGeometryLockedRef.current = true;
     }
 
+    // threshold: 0.01 fires as soon as 1% of the (tall, mobile) section is
+    // visible — well before the label/title/sub's own rise-soft entrance
+    // animation (ScrollTrigger start: 'top 70%', see useRiseReveal.ts) has
+    // settled and let the geometry effect above write the label's REAL
+    // resting position into frame.style.top. Locking on intersection alone
+    // could capture that pre-animation top and freeze an asymmetric gap
+    // forever (the bug this replaces). Wait for both: the section on
+    // screen, AND the frame's own settle — frame sits lowest of the
+    // rise-soft elements the geometry effect reads (label/title/sub/frame),
+    // so its ScrollTrigger fires last; by the time IT settles, everything
+    // above it has already settled too. prefers-reduced-motion visitors
+    // never get a 'rise-settled' event at all (useRiseReveal.ts bails out
+    // of ScrollTrigger setup for them), so they only need the intersection
+    // check.
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let sectionVisible = false;
+    let frameSettled = reducedMotion;
+
+    function tryLock() {
+      if (sectionVisible && frameSettled) lockWallGeometry();
+    }
+
     const io = new IntersectionObserver((entries) => {
       if (entries.some(e => e.isIntersecting)) {
-        lockWallGeometry();
+        sectionVisible = true;
+        tryLock();
         io.disconnect();
       }
     }, { threshold: 0.01 });
     io.observe(section);
 
+    function onRiseSettled(e: Event) {
+      if (e.target !== frame) return;
+      frameSettled = true;
+      tryLock();
+    }
+    if (!reducedMotion) {
+      section.addEventListener('rise-settled', onRiseSettled);
+    }
+
     return () => {
       io.disconnect();
+      section.removeEventListener('rise-settled', onRiseSettled);
     };
   }, [expanded]);
 
