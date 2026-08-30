@@ -4,6 +4,7 @@ import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
 import TypingCode, { flatten, toRuns, type CodeVersion, type CodeToken } from './TypingCode';
 import AiFlowStepper from './AiFlowStepper';
+import PriorityQueueFlow from './PriorityQueueFlow';
 import PolicyPill from './PolicyPill';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from './GoogleGeminiEffect';
 
@@ -210,6 +211,8 @@ function makeAiCards(t: Record<string, string>) {
       summary: t.ai_sources_sum,
       tags: ['LINE', 'Email', 'Form', 'Slack'],
       pipeline: null as string[] | null,
+      pipelineIcons: undefined as (string | string[] | null)[] | undefined,
+      flourish: null as ReactNode | null,
       detail: (
         <div className="detail-section">
           <div className="channel-loader" aria-hidden="true">
@@ -284,6 +287,8 @@ function makeAiCards(t: Record<string, string>) {
       summary: t.ai_intake_sum,
       tags: ['Make', 'Webhooks', 'Fields'],
       pipeline: null as string[] | null,
+      pipelineIcons: undefined as (string | string[] | null)[] | undefined,
+      flourish: null as ReactNode | null,
       detail: (
         <div className="detail-section">
           <div className="msg-panel">
@@ -329,6 +334,85 @@ function makeAiCards(t: Record<string, string>) {
       summary: t.ai_ai_sum,
       tags: ['Claude', 'Classify', 'Summarize', 'Gap-find'],
       pipeline: null as string[] | null,
+      pipelineIcons: undefined as (string | string[] | null)[] | undefined,
+      // Raw request docs fly in from the left, cross a pulsing transform
+      // axis, and come out the right as colorful result chips — a passive
+      // loop standing in for what this card actually does (Claude turns
+      // messy intake into a brief).
+      flourish: (
+        <div className="ai-doc-flow" aria-hidden="true">
+          <div className="ai-doc-track">
+            {/* memo: title bar over 3 paragraph lines -> resolves as an email result */}
+            <span className="ai-doc-unit">
+              <span className="ai-doc-content">
+                <span className="ai-doc-bar ai-doc-bar-head" style={{ width: '55%' }} />
+                <span className="ai-doc-bar" style={{ width: '92%' }} />
+                <span className="ai-doc-bar" style={{ width: '100%' }} />
+                <span className="ai-doc-bar" style={{ width: '58%' }} />
+              </span>
+              <span className="ai-doc-result">
+                <span className="ai-doc-result-lines">
+                  <span className="ai-doc-result-bar" style={{ width: '85%' }} />
+                  <span className="ai-doc-result-bar" style={{ width: '55%' }} />
+                </span>
+                <i className="ph-fill ph-envelope-simple ai-doc-result-icon" />
+              </span>
+            </span>
+            {/* list: short even bullet-style lines -> resolves as a total result */}
+            <span className="ai-doc-unit">
+              <span className="ai-doc-content">
+                <span className="ai-doc-bar" style={{ width: '62%' }} />
+                <span className="ai-doc-bar" style={{ width: '70%' }} />
+                <span className="ai-doc-bar" style={{ width: '52%' }} />
+                <span className="ai-doc-bar" style={{ width: '66%' }} />
+              </span>
+              <span className="ai-doc-result">
+                <span className="ai-doc-result-lines">
+                  <span className="ai-doc-result-bar" style={{ width: '90%' }} />
+                  <span className="ai-doc-result-bar" style={{ width: '45%' }} />
+                </span>
+                <i className="ph-fill ph-currency-circle-dollar ai-doc-result-icon" />
+              </span>
+            </span>
+            {/* table: a small grid of data cells -> resolves as an address result */}
+            <span className="ai-doc-unit">
+              <span className="ai-doc-content is-grid">
+                <span className="ai-doc-cell" />
+                <span className="ai-doc-cell" />
+                <span className="ai-doc-cell" />
+                <span className="ai-doc-cell" />
+                <span className="ai-doc-cell" />
+                <span className="ai-doc-cell" />
+              </span>
+              <span className="ai-doc-result">
+                <span className="ai-doc-result-lines">
+                  <span className="ai-doc-result-bar" style={{ width: '75%' }} />
+                  <span className="ai-doc-result-bar" style={{ width: '95%' }} />
+                </span>
+                <i className="ph-fill ph-map-pin ai-doc-result-icon" />
+              </span>
+            </span>
+            {/* quote: title over two long lines and a short closer -> resolves as an order result */}
+            <span className="ai-doc-unit">
+              <span className="ai-doc-content">
+                <span className="ai-doc-bar ai-doc-bar-head" style={{ width: '38%' }} />
+                <span className="ai-doc-bar" style={{ width: '100%' }} />
+                <span className="ai-doc-bar" style={{ width: '95%' }} />
+                <span className="ai-doc-bar" style={{ width: '35%' }} />
+              </span>
+              <span className="ai-doc-result">
+                <span className="ai-doc-result-lines">
+                  <span className="ai-doc-result-bar" style={{ width: '95%' }} />
+                  <span className="ai-doc-result-bar" style={{ width: '65%' }} />
+                </span>
+                <i className="ph-fill ph-package ai-doc-result-icon" />
+              </span>
+            </span>
+            <span className="ai-doc-axis-line" />
+            <span className="ai-doc-axis-hub"><i className="ph-fill ph-sparkle" /></span>
+          </div>
+        </div>
+      ) as ReactNode | null,
       detail: (
         <>
           <div className="ai-thinking-indicator" aria-hidden="true">
@@ -403,6 +487,8 @@ function makeAiCards(t: Record<string, string>) {
       summary: t.ai_tracking_sum,
       tags: ['Sheets', 'Record ID', 'History'],
       pipeline: null as string[] | null,
+      pipelineIcons: undefined as (string | string[] | null)[] | undefined,
+      flourish: null as ReactNode | null,
       detail: (
         <div className="detail-section">
           <div className="msg-panel">
@@ -471,6 +557,12 @@ function makeAiCards(t: Record<string, string>) {
       summary: t.ai_human_sum,
       tags: ['Priority', 'Strategy', 'Risk', 'Next step'],
       pipeline: null as string[] | null,
+      pipelineIcons: undefined as (string | string[] | null)[] | undefined,
+      // Rendered separately as <PriorityQueueFlow /> below (see card.pipeline
+      // for why: it needs its own advancing-index timer, same as
+      // AiFlowStepper, which a value baked into this memoized card array
+      // can't drive).
+      flourish: null as ReactNode | null,
       detail: (
         <div className="detail-section">
           <div className="msg-panel msg-panel-green">
@@ -516,6 +608,8 @@ function makeAiCards(t: Record<string, string>) {
       summary: t.ai_workflow_sum,
       tags: null as string[] | null,
       pipeline: [t.ai_ph_research, t.ai_ph_structure, t.ai_ph_design, t.ai_ph_validate, t.ai_ph_delivery],
+      pipelineIcons: ['ph-fill ph-magnifying-glass', 'ph-fill ph-tree-structure', 'ph-fill ph-palette', 'ph-fill ph-check-circle', 'ph-fill ph-rocket-launch'],
+      flourish: null as ReactNode | null,
       detail: (
         <div className="detail-section">
           <div className="msg-panel msg-panel-violet">
@@ -1878,7 +1972,9 @@ export default function SkillsSection() {
                     {card.tags.map(tag => <span key={tag} className="ai-tag">{tag}</span>)}
                   </div>
                 )}
-                {card.pipeline && <AiFlowStepper steps={card.pipeline} onActiveChange={setWfActive} />}
+                {card.flourish}
+                {card.id === 'human' && <PriorityQueueFlow />}
+                {card.pipeline && <AiFlowStepper steps={card.pipeline} icons={card.pipelineIcons} onActiveChange={setWfActive} className="ai-flow-stepper-boxed" />}
                 <div className="ai-card-detail">{card.detail}</div>
               </article>
             );

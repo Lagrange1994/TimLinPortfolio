@@ -6957,6 +6957,156 @@
     .ai-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
     .ai-tag{font-family:"Geist Mono",monospace;font-size:10.5px;padding:3px 10px;border-radius:999px;color:#9A93B0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);letter-spacing:.02em}
 
+    /* AI Brief card flourish — 4 raw request "documents" (skeleton-loader
+       pages, à la animata.design's Code skeleton, each a different layout:
+       memo/list/table/quote — standing in for the mixed inputs a real brief
+       draws from) flow in from the left, cross a central transform axis
+       (pulsing hub, echoes React Bits' Magic Transform layout), and fan out
+       into 3 vertical lanes as colorful chat-bubble result cards — each a
+       couple of skeleton lines plus a result-type icon (email/total/
+       address/order, matching Magic Transform's own documented result
+       kinds) — on the right. .ai-card's min-height (not a fixed height)
+       lets this card grow past the others' 220px floor to fit it — the
+       staggered grid already expects uneven card heights. Original CSS
+       animation, informed by Magic Transform's publicly documented props/
+       preview — not a port of its (paywalled) source. */
+    .ai-doc-flow{display:flex;align-items:center;height:56px;margin-top:auto;position:relative}
+    .ai-doc-track{position:relative;flex:1;height:100%}
+    .ai-doc-unit{position:absolute;top:50%;left:0;width:34px;height:44px;margin-top:-22px;box-sizing:border-box;border:1px solid rgba(255,255,255,.16);border-radius:4px;background:rgba(255,255,255,.06);animation-duration:3.6s;animation-timing-function:ease-in-out;animation-iteration-count:infinite;z-index:1}
+    /* Lane assignment cycles A(up) → B(center) → C(down) → A, so the 4
+       documents fan out into 3 staggered rows once they resolve. */
+    .ai-doc-unit:nth-child(1){animation-name:aiDocFlowLaneA;--doc-color:#B58BFF}
+    .ai-doc-unit:nth-child(2){animation-name:aiDocFlowLaneB;--doc-color:#FF7BC8}
+    .ai-doc-unit:nth-child(3){animation-name:aiDocFlowLaneC;--doc-color:#00D4FF}
+    .ai-doc-unit:nth-child(4){animation-name:aiDocFlowLaneA;--doc-color:#6C63FF}
+    .ai-doc-unit:nth-child(1),.ai-doc-unit:nth-child(1) .ai-doc-content,.ai-doc-unit:nth-child(1) .ai-doc-result{animation-delay:0s}
+    .ai-doc-unit:nth-child(2),.ai-doc-unit:nth-child(2) .ai-doc-content,.ai-doc-unit:nth-child(2) .ai-doc-result{animation-delay:.9s}
+    .ai-doc-unit:nth-child(3),.ai-doc-unit:nth-child(3) .ai-doc-content,.ai-doc-unit:nth-child(3) .ai-doc-result{animation-delay:1.8s}
+    .ai-doc-unit:nth-child(4),.ai-doc-unit:nth-child(4) .ai-doc-content,.ai-doc-unit:nth-child(4) .ai-doc-result{animation-delay:2.7s}
+
+    /* Document layer — one of 4 layouts per unit (see the memo/list/table/
+       quote modifiers below), centered inside the card via inset. */
+    /* flex-start (not center): real pages start their text at the top
+       margin, not floating mid-page — centering read as "unfinished". */
+    .ai-doc-content{position:absolute;inset:6px 4px 4px;display:flex;flex-direction:column;justify-content:flex-start;gap:4px;clip-path:inset(0 0 0 0);animation:aiDocContentWipe 3.6s ease-in-out infinite}
+    .ai-doc-content.is-grid{flex-direction:row;flex-wrap:wrap;align-content:flex-start;gap:3px}
+    .ai-doc-bar,.ai-doc-cell{display:block;border-radius:1px;background:rgba(255,255,255,.4)}
+    .ai-doc-bar{height:2px}
+    .ai-doc-bar-head{height:3px;margin-bottom:2px;background:rgba(255,255,255,.6)}
+    .ai-doc-cell{width:calc(50% - 1.5px);height:5px}
+
+    /* Result layer — a couple of skeleton lines plus a type icon, laid out
+       like a chat bubble, wiping in from the left as the document layer
+       wipes out — same direction as travel, like the axis line is
+       physically erasing/redrawing the unit as it slides through. */
+    .ai-doc-result{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;gap:4px;padding:0 6px;clip-path:inset(0 100% 0 0);animation:aiDocResultWipe 3.6s ease-in-out infinite;z-index:2}
+    .ai-doc-result-lines{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+    .ai-doc-result-bar{display:block;height:2px;border-radius:1px;background:rgba(255,255,255,.7)}
+    .ai-doc-result-icon{flex-shrink:0;font-size:9px;color:rgba(255,255,255,.9)}
+
+    /* Wipe window (38%–50%) matches the unit's own crossing of the axis
+       line below — starts when the box's right edge first touches the
+       line and ends once its left edge has fully passed it, so the
+       document is erased and the bubble drawn in progressively over the
+       same span the box is actually straddling the line, not the instant
+       it makes contact. */
+    @keyframes aiDocContentWipe{
+      0%{clip-path:inset(0 0 0 0)}
+      38%{clip-path:inset(0 0 0 0)}
+      50%{clip-path:inset(0 0 0 100%)}
+      100%{clip-path:inset(0 0 0 100%)}
+    }
+    @keyframes aiDocResultWipe{
+      0%{clip-path:inset(0 100% 0 0)}
+      38%{clip-path:inset(0 100% 0 0)}
+      50%{clip-path:inset(0 0 0 0)}
+      100%{clip-path:inset(0 0 0 0)}
+    }
+
+    /* Shared document phase resolves into each lane's own vertical offset
+       for the bubble phase — up (-24px), center (-10px) and down (+4px)
+       margin-top, against the bubble's own 20px height. left goes from
+       calc(46% - 34px) at 38% (unit's right edge just touching the axis
+       line) to 46% at 50% (unit's left edge has now cleared it) — the
+       same span the content/result wipe above animates over — so the
+       box's background/shape morphs, and its content is erased/redrawn,
+       gradually across the whole crossing rather than snapping the
+       instant it makes contact. */
+    @keyframes aiDocFlowLaneA{
+      0%{left:0%;opacity:0;width:34px;height:44px;margin-top:-22px;border-radius:4px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:none}
+      8%{opacity:1}
+      38%{left:calc(46% - 34px);width:34px;height:44px;margin-top:-22px;border-radius:4px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:none}
+      50%{left:46%;height:20px;margin-top:-24px;border-radius:7px 7px 7px 2px;background:var(--doc-color);border-color:transparent;box-shadow:0 0 10px -1px var(--doc-color)}
+      90%{opacity:1}
+      100%{left:96%;opacity:0;height:20px;margin-top:-24px;border-radius:7px 7px 7px 2px;background:var(--doc-color);border-color:transparent;box-shadow:0 0 10px -1px var(--doc-color)}
+    }
+    @keyframes aiDocFlowLaneB{
+      0%{left:0%;opacity:0;width:34px;height:44px;margin-top:-22px;border-radius:4px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:none}
+      8%{opacity:1}
+      38%{left:calc(46% - 34px);width:34px;height:44px;margin-top:-22px;border-radius:4px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:none}
+      50%{left:46%;height:20px;margin-top:-10px;border-radius:7px 7px 7px 2px;background:var(--doc-color);border-color:transparent;box-shadow:0 0 10px -1px var(--doc-color)}
+      90%{opacity:1}
+      100%{left:96%;opacity:0;height:20px;margin-top:-10px;border-radius:7px 7px 7px 2px;background:var(--doc-color);border-color:transparent;box-shadow:0 0 10px -1px var(--doc-color)}
+    }
+    @keyframes aiDocFlowLaneC{
+      0%{left:0%;opacity:0;width:34px;height:44px;margin-top:-22px;border-radius:4px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:none}
+      8%{opacity:1}
+      38%{left:calc(46% - 34px);width:34px;height:44px;margin-top:-22px;border-radius:4px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:none}
+      50%{left:46%;height:20px;margin-top:4px;border-radius:7px 7px 7px 2px;background:var(--doc-color);border-color:transparent;box-shadow:0 0 10px -1px var(--doc-color)}
+      90%{opacity:1}
+      100%{left:96%;opacity:0;height:20px;margin-top:4px;border-radius:7px 7px 7px 2px;background:var(--doc-color);border-color:transparent;box-shadow:0 0 10px -1px var(--doc-color)}
+    }
+    .ai-doc-axis-line{position:absolute;top:0;left:46%;width:1.5px;height:100%;background:linear-gradient(180deg,transparent,#B58BFF,transparent);opacity:.9;z-index:0}
+    /* z-index:0 (below .ai-doc-unit's 1) — a crossing unit must draw fully
+       on top of the hub, not have the hub's glow cut into its still-intact
+       document shape/content while it's mid-crossing. */
+    .ai-doc-axis-hub{position:absolute;top:50%;left:46%;width:16px;height:16px;border-radius:50%;background:#B58BFF;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);animation:aiDocPulse 1.2s ease-out infinite;z-index:0}
+    .ai-doc-axis-hub i{font-size:9px;color:#fff;line-height:1}
+    @keyframes aiDocPulse{
+      0%{box-shadow:0 0 0 0 rgba(181,139,255,.55);transform:translate(-50%,-50%) scale(1)}
+      45%{box-shadow:0 0 0 7px rgba(181,139,255,0);transform:translate(-50%,-50%) scale(1.2)}
+      100%{box-shadow:0 0 0 0 rgba(181,139,255,0);transform:translate(-50%,-50%) scale(1)}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .ai-doc-unit{animation:none;left:14%;opacity:.55;border-radius:7px 7px 7px 2px;border-color:transparent;background:var(--doc-color)}
+      .ai-doc-content{animation:none;clip-path:inset(0 0 0 100%)}
+      .ai-doc-result{animation:none;clip-path:inset(0 0 0 0)}
+      .ai-doc-axis-hub{animation:none}
+    }
+
+    /* Human Review card's flourish (<PriorityQueueFlow>): a small inbox
+       queue whose "being triaged" ticket advances one at a time — same
+       active/complete/inactive state machine as AiFlowStepper (card 06's
+       pipeline), driven by React state, not a CSS keyframe loop. A ticket
+       goes complete and *stays* complete-colored once passed; only the
+       whole pass wrapping back to ticket 1 resets everyone to inactive
+       together — no per-ticket fade-to-black on its own clock. Ticket fill/
+       radius reuses 06's boxed-capsule values verbatim (inactive #23232E →
+       active #6C63FF → complete #4A4390, 10px radius) so the two
+       flourishes read as one system. Tier glyph + label deliberately sit
+       outside that purple scale — their color marks priority, independent
+       of whichever ticket is mid-review — and the glyph shape backs up the
+       color so priority doesn't ride on hue alone. No connector between
+       tickets: independent inbox items, not stages of one pipeline. */
+    .ai-queue-flow{display:flex;gap:8px;margin-top:auto}
+    .ai-queue-item{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;padding:6px 7px 7px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#23232E;transition:background .35s ease,border-color .35s ease,box-shadow .35s ease}
+    .ai-queue-item-active{background:#6C63FF;border-color:#6C63FF;box-shadow:0 0 0 3px rgba(108,99,255,.28)}
+    .ai-queue-item-complete{background:#4A4390;border-color:#4A4390}
+    .ai-queue-head{display:flex;align-items:center;justify-content:space-between}
+    .ai-queue-check{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .35s ease}
+    .ai-queue-item-active .ai-queue-check,.ai-queue-item-complete .ai-queue-check{border-color:#fff}
+    .ai-queue-checkmark{font-size:8px;color:#fff;line-height:1;opacity:0;transform:scale(.4);transition:opacity .3s ease,transform .3s ease}
+    .ai-queue-item-active .ai-queue-checkmark,.ai-queue-item-complete .ai-queue-checkmark{opacity:1;transform:scale(1)}
+    .ai-queue-tier-group{display:flex;align-items:center;gap:3px}
+    .ai-queue-tier{font-size:11px;color:var(--tier-color);line-height:1;opacity:0;transform:scale(.5);transition:opacity .3s ease,transform .3s ease}
+    .ai-queue-tier-label{font-family:"Geist Mono",monospace;font-size:8px;color:var(--tier-color);letter-spacing:.02em;line-height:1;opacity:0;transition:opacity .3s ease}
+    .ai-queue-item-active .ai-queue-tier{opacity:1;transform:scale(1.15)}
+    .ai-queue-item-active .ai-queue-tier-label{opacity:1}
+    .ai-queue-item-complete .ai-queue-tier{opacity:.85;transform:scale(1)}
+    .ai-queue-item-complete .ai-queue-tier-label{opacity:.85}
+    .ai-queue-doc{display:flex;flex-direction:column;gap:3px}
+    .ai-queue-bar{display:block;height:2px;border-radius:1px;background:rgba(255,255,255,.4)}
+
     /* ── Expand-on-click detail panel ── */
     /* Plus-to-X glass toggle — same shape reactbits.dev's Modal Cards uses for
        its expand/close button (round, bg-white/20 + backdrop-blur-sm): a "+"
@@ -6981,6 +7131,16 @@
        once open, hovering the × nudges it round another quarter-turn. */
     .ai-card.is-open .ai-card-toggle:hover{transform:rotate(135deg) scale(1.1)}
     .ai-card.is-open{border-color:rgba(181,139,255,.4)}
+    /* AI Brief card swaps its passive doc-flow teaser for the real tags
+       once expanded — the two would be redundant clutter shown together. */
+    .ai-card.ai-focal .ai-tags{display:none}
+    .ai-card.ai-focal.is-open .ai-doc-flow{display:none}
+    .ai-card.ai-focal.is-open .ai-tags{display:flex}
+    /* Human Review card: same swap — the queue teaser stands in for the
+       tags while collapsed, tags take over once expanded. */
+    .ai-card.ai-human .ai-tags{display:none}
+    .ai-card.ai-human.is-open .ai-queue-flow{display:none}
+    .ai-card.ai-human.is-open .ai-tags{display:flex}
     .ai-card-detail{max-height:0;opacity:0;overflow:hidden;margin-top:0;padding-top:0;border-top:1px solid transparent;transition:max-height .5s cubic-bezier(.2,.7,.2,1),opacity .35s ease,margin-top .5s cubic-bezier(.2,.7,.2,1),padding-top .5s cubic-bezier(.2,.7,.2,1),border-color .3s ease}
     .ai-card.is-open .ai-card-detail{max-height:900px;opacity:1;margin-top:14px;padding-top:14px;border-top-color:rgba(255,255,255,.08)}
     /* ── Detail content atoms — ported from the AI Intake Map design ── */

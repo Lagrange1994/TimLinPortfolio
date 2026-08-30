@@ -3,17 +3,28 @@ import './AiFlowStepper.css';
 
 const STEP_INTERVAL_MS = 1800;
 
+// A brand icon is an image URL; a concept icon (e.g. a process phase with no
+// product behind it) is a Phosphor icon-font class string instead.
+function isIconFontClass(icon: string) {
+  return icon.startsWith('ph-');
+}
+
 interface AiFlowStepperProps {
   steps: string[];
   // Per-step brand icon(s) (index-aligned with steps), swapped in for the
   // dot when present — an array renders multiple icons for a step that
   // bundles more than one product (e.g. "LINE / Email"). Steps without one
-  // keep the plain dot.
+  // keep the plain dot. Each entry is either an image URL or a Phosphor
+  // icon-font class string (e.g. "ph-fill ph-magnifying-glass").
   icons?: (string | string[] | null)[];
   // Lets a caller (e.g. the Design Workflow card's phase list) mirror this
   // stepper's own timer exactly instead of running a second setInterval
   // that would slowly drift out of sync with it.
   onActiveChange?: (active: number) => void;
+  // Modifier appended to the root class — lets one caller opt into a
+  // different capsule layout (e.g. stacked icon-over-label) without
+  // affecting the other usages of this shared component.
+  className?: string;
 }
 
 // Auto-advancing progress-stepper for capsule-pipeline callouts (AI-Powered
@@ -21,7 +32,7 @@ interface AiFlowStepperProps {
 // language as React Bits' Stepper (dot + connector, active / complete /
 // inactive states) but loops on its own instead of Back/Next buttons, since
 // this is a passive illustration, not a real multi-step form.
-export default function AiFlowStepper({ steps, icons, onActiveChange }: AiFlowStepperProps) {
+export default function AiFlowStepper({ steps, icons, onActiveChange, className }: AiFlowStepperProps) {
   const [active, setActive] = useState(0);
 
   useEffect(() => {
@@ -39,7 +50,7 @@ export default function AiFlowStepper({ steps, icons, onActiveChange }: AiFlowSt
   }, [steps.length]);
 
   return (
-    <div className="ai-flow-stepper">
+    <div className={`ai-flow-stepper${className ? ' ' + className : ''}`}>
       {steps.map((label, i) => {
         const status = i === active ? 'active' : i < active ? 'complete' : 'inactive';
         const icon = icons?.[i];
@@ -56,7 +67,11 @@ export default function AiFlowStepper({ steps, icons, onActiveChange }: AiFlowSt
                 labelParts.map((part, pi) => (
                   <Fragment key={part}>
                     {pi > 0 && <span className="afs-label-sep">/</span>}
-                    <img className={`afs-icon afs-icon-${status}`} src={iconList![pi]} alt="" />
+                    {isIconFontClass(iconList![pi]) ? (
+                      <i className={`afs-icon afs-icon-${status} ${iconList![pi]}`} aria-hidden="true" />
+                    ) : (
+                      <img className={`afs-icon afs-icon-${status}`} src={iconList![pi]} alt="" />
+                    )}
                     <span className={`afs-label afs-label-${status}`}>{part}</span>
                   </Fragment>
                 ))
@@ -65,7 +80,11 @@ export default function AiFlowStepper({ steps, icons, onActiveChange }: AiFlowSt
                   {iconList ? (
                     <span className="afs-icon-group">
                       {iconList.map(src => (
-                        <img key={src} className={`afs-icon afs-icon-${status}`} src={src} alt="" />
+                        isIconFontClass(src) ? (
+                          <i key={src} className={`afs-icon afs-icon-${status} ${src}`} aria-hidden="true" />
+                        ) : (
+                          <img key={src} className={`afs-icon afs-icon-${status}`} src={src} alt="" />
+                        )
                       ))}
                     </span>
                   ) : (

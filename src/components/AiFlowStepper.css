@@ -68,6 +68,14 @@
   transition: opacity .35s ease;
 }
 
+i.afs-icon {
+  width: auto;
+  height: auto;
+  font-size: 13px;
+  line-height: 1;
+  color: #fff;
+}
+
 .afs-icon-active {
   opacity: 1;
 }
@@ -112,6 +120,82 @@
 
 @media (prefers-reduced-motion: reduce) {
   .afs-dot-active {
+    animation: none;
+  }
+}
+
+/* Boxed variant: icon stacked above a smaller label inside a rounded-rect
+   capsule, instead of the default inline pill — used by the Design Workflow
+   card so its phase icons read as the focal element. */
+.ai-flow-stepper-boxed .afs-step {
+  flex-direction: column;
+  gap: 4px;
+  min-width: 52px;
+  padding: 8px 8px 7px;
+  border-radius: 10px;
+}
+
+.ai-flow-stepper-boxed .afs-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.ai-flow-stepper-boxed i.afs-icon {
+  font-size: 18px;
+}
+
+.ai-flow-stepper-boxed .afs-dot {
+  width: 9px;
+  height: 9px;
+}
+
+.ai-flow-stepper-boxed .afs-label {
+  font-size: 8px;
+}
+
+/* Card expanded: drop the boxed teaser look and revert to the original
+   inline pill + plain dot (icons hidden, a synthesized ::before dot takes
+   their place) — the icon-forward boxed style is only for the collapsed
+   card's passive teaser row. */
+.ai-card.is-open .ai-flow-stepper-boxed .afs-step {
+  flex-direction: row;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.ai-card.is-open .ai-flow-stepper-boxed .afs-icon-group,
+.ai-card.is-open .ai-flow-stepper-boxed .afs-icon {
+  display: none;
+}
+
+.ai-card.is-open .ai-flow-stepper-boxed .afs-step::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, .3);
+  transition: background .35s ease, box-shadow .35s ease, transform .35s ease;
+}
+
+.ai-card.is-open .ai-flow-stepper-boxed .afs-step-active::before {
+  background: #fff;
+  transform: scale(1.15);
+  animation: afs-pulse 1.8s ease-in-out infinite;
+}
+
+.ai-card.is-open .ai-flow-stepper-boxed .afs-step-complete::before {
+  background: #E4E1FF;
+}
+
+.ai-card.is-open .ai-flow-stepper-boxed .afs-label {
+  font-size: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-card.is-open .ai-flow-stepper-boxed .afs-step-active::before {
     animation: none;
   }
 }
