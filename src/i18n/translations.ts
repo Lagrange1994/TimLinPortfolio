@@ -13,6 +13,15 @@ export const translations = {
     // hero
     hero_role: 'UI/UX Designer & Web Developer',
     hero_desc: '致力於打造兼具美學與功能的數位體驗<br>協助企業推動業務成長並深化用戶互動',
+    // hero ask strip — shorter labels than the chat panel's own quick
+    // questions, which have a wider panel to sit in (see HeroAskStrip).
+    hero_ask_label: '有問題？問我的 AI 分身',
+    hero_ask_q1_label: '開放機會？',
+    hero_ask_q2_label: '設計流程？',
+    hero_ask_q3_label: '如何聯繫？',
+    hero_ask_q4_label: '後台經驗？',
+    hero_ask_q5_label: '可遠端？',
+    hero_ask_q6_label: '英文能力？',
     // about
     about_headline:
       '讓複雜系統變得可被掌控的<br class="br-mobile">產品設計師<br><span class="gradient-text">兼具 3D 互動開發與 <br class="br-mobile">AI 工作流整合能力</span>',
@@ -268,6 +277,15 @@ export const translations = {
     hero_role: 'UI/UX Designer & Web Developer',
     hero_desc:
       'Dedicated to creating digital experiences that combine aesthetics and function.<br>Helping businesses drive growth and deepen user engagement.',
+    // hero ask strip — shorter labels than the chat panel's own quick
+    // questions, which have a wider panel to sit in (see HeroAskStrip).
+    hero_ask_label: 'Curious? Ask my AI bot',
+    hero_ask_q1_label: 'Available?',
+    hero_ask_q2_label: 'Process?',
+    hero_ask_q3_label: 'Contact?',
+    hero_ask_q4_label: 'Backend?',
+    hero_ask_q5_label: 'Remote?',
+    hero_ask_q6_label: 'English?',
     // about
     about_headline:
       'Product designer who tames complex systems,<br><span class="gradient-text">with 3D interactive development and AI workflow integration built in</span>',

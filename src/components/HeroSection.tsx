@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
+import HeroAskStrip from './HeroAskStrip';
 import gsap from 'gsap';
 
 const SMOOTH_TAU = 0.18;
@@ -478,6 +479,7 @@ export default function HeroSection() {
           <span className="tag-capsule" aria-hidden="true"><i className="ph-fill ph-map-pin" style={{ color: '#f87171' }}></i>Taipei, Taiwan</span>
         </div>
       </div>
+      <HeroAskStrip />
       <button
         className="hero-scroll-indicator"
         aria-label="Scroll to next section"

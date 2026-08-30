@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import * as THREE from 'three';
+import { heroFramePath, FRAME_INSET } from '../utils/heroFramePath';
 
 // ── Constants (matches the original <Beams /> usage example) ────────────────
 const BEAM_WIDTH = 2.6;
 const BEAM_HEIGHT = 15;
 const BEAM_NUMBER = 14;
-const LIGHT_COLOR = '#4A00E0';
+const LIGHT_COLOR = '#6C63FF'; // --primary in portfolio.css
 const SPEED = 2;
 const NOISE_INTENSITY = 1.35;
 const SCALE = 0.18;
@@ -66,6 +68,11 @@ export default function BeamsBackground() {
   const [splineBgMounted, setSplineBgMounted] = useState(true);
   const splineBgMountedRef = useRef(splineBgMounted);
   splineBgMountedRef.current = splineBgMounted;
+  // Written by updateBg() (runs from mount) and read by the animate loop
+  // inside doHeavyInit (only exists once the deferred WebGL setup below has
+  // run) — a ref instead of a local var so the two can share it despite
+  // starting at different times.
+  const beamsActiveRef = useRef(false);
 
   // The decorative background Spline scene (desktop/tablet — see isMobile
   // below) gets fully unmounted (not just faded to opacity 0) once scrolled
@@ -78,12 +85,128 @@ export default function BeamsBackground() {
   // convention HeroSection uses for its own figure.
   const [isMobile] = useState(() => window.innerWidth < 768);
 
+  // The desktop hero-frame pieces (spline scene + notches) are portaled into
+  // #home (see the return statement below) instead of rendered where this
+  // component sits in the tree, so their position:absolute geometry resolves
+  // against #home's own real box (border-radius/inset/etc.) rather than a
+  // viewport-height stand-in. #home doesn't exist yet on this component's
+  // first render (BeamsBackground mounts before HeroSection in App.tsx), so
+  // this is populated a tick later once it does.
+  const [heroEl, setHeroEl] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setHeroEl(document.getElementById('home'));
+  }, []);
+
+  // One shared `d` (see heroFramePath.ts) drives all three: the visible 1px
+  // border stroke, the wide blurred stroke that stands in for the inner rim
+  // light, and the <clipPath> that keeps that wide stroke's outer half off
+  // the gradient. Same pattern as the portfolio wall's outline — the shape is
+  // computed once from the live box and drawn as a stroke, so the border and
+  // its glow trace the panel's actual edge (notches included) instead of
+  // approximating it with a rounded-rect box-shadow.
+  const framePathRefs = [
+    useRef<SVGPathElement>(null),
+    useRef<SVGPathElement>(null),
+    useRef<SVGPathElement>(null),
+  ];
+  useEffect(() => {
+    if (isMobile || !heroEl) return;
+    const sync = () => {
+      // The gradient #home paints as its background, and the two notch
+      // patches that re-paint slices of it, have to be sized off the SAME
+      // rectangle or the patches sample the wrong part of it. That used to
+      // be `100vw 100vh` on all three, which is subtly wrong: 100vw includes
+      // the scrollbar (measured live at 1030 against #home's own 1026), and
+      // #bg-notch-br anchors its copy to `100% 100%` — its right edge — so
+      // the 4px difference pushed its gradient 4px sideways from #home's,
+      // leaving a visible vertical seam down the notch's straight edge.
+      // #home's real box has no such ambiguity.
+      heroEl.style.setProperty('--hero-bg-w', `${heroEl.clientWidth}px`);
+      heroEl.style.setProperty('--hero-bg-h', `${heroEl.clientHeight}px`);
+
+      const w = heroEl.clientWidth - FRAME_INSET * 2;
+      const h = heroEl.clientHeight - FRAME_INSET * 2;
+      if (w <= 0 || h <= 0) return;
+      const d = heroFramePath(w, h);
+      for (const ref of framePathRefs) ref.current?.setAttribute('d', d);
+      // viewBox matches the element's own pixel box 1:1, so path units are
+      // CSS px and the stroke width isn't scaled by the viewport.
+      document.getElementById('bg-frame-outline')?.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(heroEl);
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile, heroEl]);
+
   useEffect(() => {
     // Mobile: jpg-only background, no beams canvas — nothing here to set up.
     if (isMobile) return;
 
     let cancelled = false;
     let cleanupFn: (() => void) | null = null;
+
+    // Scroll-driven spline→beams crossfade starts tracking from mount —
+    // independent of doHeavyInit below (which only creates the WebGL
+    // renderer). The gradient frame/notches are now #home's own background
+    // plus small patches nested inside it (see portfolio.css), so they need
+    // no JS opacity fade any more — they simply exist exactly where #home's
+    // box does, same as its text/buttons. Only the spline→beams handoff
+    // (this component's own canvas fading in as the hero's spline scene
+    // fades out) and #bg-scene's unclip (the beams canvas's box, still
+    // fixed, going full-bleed once scrolled) still need JS.
+    let ticking = false;
+
+    function updateBg() {
+      const heroEl = document.getElementById('home');
+      if (!heroEl) return;
+      const heroH = heroEl.offsetHeight || window.innerHeight;
+      const fadeStart = heroH * 0.45;
+      const fadeEnd = heroH * 0.85;
+      const p = Math.max(0, Math.min(1, (window.scrollY - fadeStart) / (fadeEnd - fadeStart)));
+      // Looked up fresh each call (rather than cached once) since the
+      // element gets unmounted/remounted by the splineBgMounted toggle below.
+      const splineEl = document.getElementById('spline-bg');
+      if (splineEl) (splineEl as HTMLElement).style.opacity = (1 - p).toFixed(3);
+      const canvas = canvasRef.current;
+      if (canvas) canvas.style.opacity = p.toFixed(3);
+      beamsActiveRef.current = p > 0.02;
+
+      // #bg-scene (the fixed beams canvas box) can't wait for the p curve
+      // above to finish unclipping: #home's gradient/spline/notches are
+      // ordinary content now, confined to #home's own box, so they
+      // physically end exactly where #home ends. #bg-scene has to go
+      // full-bleed at the same moment #home starts scrolling away — not
+      // stay boxed into its small inset/rounded shape — or there's a gap
+      // between #home's real bottom edge and wherever #bg-scene's still-
+      // clipped backdrop happens to be. Tied to window.scrollY (not p) for
+      // that reason: unclipping is about whether we've started scrolling at
+      // all, not how far through the spline→beams crossfade we are.
+      // Overriding inset/borderRadius/overflow inline (not clip-path — see
+      // the overflow:hidden comment in portfolio.css for why) beats the
+      // desktop media query's own values; clearing the inline values (empty
+      // string) falls back to those CSS values again.
+      const sceneEl = document.getElementById('bg-scene');
+      if (sceneEl) {
+        const scrolled = window.scrollY > 0;
+        sceneEl.style.inset = scrolled ? '0' : '';
+        sceneEl.style.borderRadius = scrolled ? '0' : '';
+        sceneEl.style.overflow = scrolled ? 'visible' : '';
+      }
+
+      const shouldMount = p < 1;
+      if (shouldMount !== splineBgMountedRef.current) {
+        splineBgMountedRef.current = shouldMount;
+        setSplineBgMounted(shouldMount);
+      }
+    }
+
+    const onScroll = () => {
+      if (!ticking) { requestAnimationFrame(() => { updateBg(); ticking = false; }); ticking = true; }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    requestAnimationFrame(updateBg);
 
     function scheduleInit(cb: () => void) {
       if ('requestIdleCallback' in window) (window as any).requestIdleCallback(cb, { timeout: 2500 });
@@ -232,13 +355,12 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
       scene.add(new THREE.AmbientLight(0xffffff, 1));
 
       const clock = new THREE.Clock();
-      let beamsActive = false;
       let raf = 0;
 
       (function animate() {
         raf = requestAnimationFrame(animate);
         const delta = clock.getDelta();
-        if (cancelled || !beamsActive) return;
+        if (cancelled || !beamsActiveRef.current) return;
         beamMaterial.uniforms.time.value += 0.1 * delta;
         renderer.render(scene, camera);
       })();
@@ -253,39 +375,9 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
       };
       window.addEventListener('resize', onResize, { passive: true });
 
-      let ticking = false;
-
-      function updateBg() {
-        const heroEl = document.getElementById('home');
-        if (!heroEl) return;
-        const heroH = heroEl.offsetHeight || window.innerHeight;
-        const fadeStart = heroH * 0.45;
-        const fadeEnd = heroH * 0.85;
-        const p = Math.max(0, Math.min(1, (window.scrollY - fadeStart) / (fadeEnd - fadeStart)));
-        // Looked up fresh each call (rather than cached once) since the
-        // element gets unmounted/remounted by the splineBgMounted toggle below.
-        const splineEl = document.getElementById('spline-bg');
-        if (splineEl) (splineEl as HTMLElement).style.opacity = (1 - p).toFixed(3);
-        canvas.style.opacity = p.toFixed(3);
-        beamsActive = p > 0.02;
-
-        const shouldMount = p < 1;
-        if (shouldMount !== splineBgMountedRef.current) {
-          splineBgMountedRef.current = shouldMount;
-          setSplineBgMounted(shouldMount);
-        }
-      }
-
-      const onScroll = () => {
-        if (!ticking) { requestAnimationFrame(() => { updateBg(); ticking = false; }); ticking = true; }
-      };
-      window.addEventListener('scroll', onScroll, { passive: true });
-      requestAnimationFrame(updateBg);
-
       cleanupFn = () => {
         cancelAnimationFrame(raf);
         window.removeEventListener('resize', onResize);
-        window.removeEventListener('scroll', onScroll);
         renderer.dispose();
         beamMaterial.dispose();
         beamMesh.geometry.dispose();
@@ -318,32 +410,81 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
 
     return () => {
       cancelled = true;
+      window.removeEventListener('scroll', onScroll);
       window.removeEventListener('scroll', initBeams);
       if (cleanupFn) cleanupFn();
     };
   }, [isMobile]);
 
+  // Desktop-only hero-frame pieces (spline scene + its two notches) — see
+  // the heroEl comment above for why these are portaled into #home rather
+  // than rendered in place: #home is now the gradient (its own CSS
+  // background — see portfolio.css) and these need to sit inside that same
+  // box for their inset/position math to resolve against #home's real size.
+  // Mobile has no notch/frame look at all (gated by isMobile here, not a
+  // CSS media query, since the DOM structure itself differs — mobile's
+  // #bg-spline-scene, rendered further down, stays a plain top-level fixed
+  // full-bleed layer with an <img> fallback, unrelated to #home).
+  const heroFrame = !isMobile && heroEl && createPortal(
+    <>
+      <div id="bg-spline-scene" aria-hidden="true" role="presentation">
+        {splineBgMounted && <spline-viewer id="spline-bg" url="./models/bg_scene.splinecode" />}
+      </div>
+      {/* The notch cut into the frame for the logo (top-left) and its
+          180°-symmetric twin (bottom-right, over the chat FAB) — see the
+          #bg-notch-tl/#bg-notch-br comment in portfolio.css for where
+          these exact numbers come from. Pure fill: they re-paint #home's
+          gradient over the panel's two corners, and nothing else. The
+          border/glow along the seam they create belongs to the outline
+          below, which is why these must come first in DOM order — same
+          z-index, so the outline paints over them. */}
+      <div id="bg-notch-tl" aria-hidden="true" role="presentation" />
+      <div id="bg-notch-br" aria-hidden="true" role="presentation" />
+      {/* The panel's border + glow, as a stroke along its real outline —
+          see heroFramePath.ts. All three paths share one `d`, written by
+          the ResizeObserver effect above. */}
+      <svg id="bg-frame-outline" aria-hidden="true" role="presentation">
+        <defs>
+          <clipPath id="bg-frame-clip">
+            <path ref={framePathRefs[2]} />
+          </clipPath>
+        </defs>
+        {/* Stands in for #chat-fab's `inset 0 0 15px rgba(255,255,255,.1)`:
+            a stroke straddles the edge, so clipping it to the panel keeps
+            only the inner half — an inward-facing rim light. */}
+        <g clipPath="url(#bg-frame-clip)">
+          <path ref={framePathRefs[1]} className="bg-frame-rim" fill="none" />
+        </g>
+        <path ref={framePathRefs[0]} className="bg-frame-stroke" fill="none" />
+      </svg>
+    </>,
+    heroEl,
+  );
+
   return (
     <>
-      {!isMobile && (
-        <canvas
-          ref={canvasRef}
-          id="beams-bg"
-          aria-hidden="true"
-          role="presentation"
-          style={{ position: 'fixed', inset: 0, width: '100%', height: '100dvh', zIndex: -1, opacity: 0, pointerEvents: 'none' }}
-        />
-      )}
-      {splineBgMounted && (
-        isMobile
-          ? (
+      <div id="bg-scene" aria-hidden="true" role="presentation">
+        {!isMobile && (
+          <canvas
+            ref={canvasRef}
+            id="beams-bg"
+            aria-hidden="true"
+            role="presentation"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100dvh', zIndex: -1, opacity: 0, pointerEvents: 'none' }}
+          />
+        )}
+      </div>
+      {isMobile && (
+        <div id="bg-spline-scene" aria-hidden="true" role="presentation">
+          {splineBgMounted && (
             <picture>
               <source srcSet="./img/bg.webp" type="image/webp" />
               <img id="spline-bg" src="./img/bg.jpg" alt="" aria-hidden="true" />
             </picture>
-          )
-          : <spline-viewer id="spline-bg" url="./models/bg_scene.splinecode" />
+          )}
+        </div>
       )}
+      {heroFrame}
     </>
   );
 }

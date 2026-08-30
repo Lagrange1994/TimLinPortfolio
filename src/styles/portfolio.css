@@ -621,6 +621,17 @@
       justify-content: center;
       align-items: center;
       position: relative;
+      /* z-index (not just position:relative) makes #home establish its own
+         stacking context — required now that its negative z-index children
+         (#bg-spline-scene, .hero-tags, the two notches; see the desktop
+         media query further down) need to paint above #home's OWN
+         background but below its normal content. Without this, #home
+         (positioned, z-index:auto) doesn't isolate a context, so those
+         children's z-index escapes to whatever ANCESTOR context #home
+         itself belongs to — painting them behind #home's own background
+         entirely (verified live: with this missing, the gradient covered
+         the spline scene/notches/tags completely). */
+      z-index: 0;
       overflow: hidden;
       /* Mobile: same as .snap-section */
       padding-top: 5rem;
@@ -636,8 +647,68 @@
       }
     }
 
-    #spline-bg {
+    /* Viewport-sized (mobile/tablet) / inset-by-20px (desktop, see the
+       overflow:hidden rule further down) clipping container for the beams
+       canvas — this one stays position:fixed at every breakpoint (see
+       #bg-spline-scene below for the hero-scoped, scroll-away twin that
+       holds #spline-bg instead): #beams-bg is the site's permanent
+       persistent background once scrolled past the hero (see updateBg() in
+       BeamsBackground.tsx), so it can never scroll away with the hero the
+       way the gradient frame/spline scene now do. #beams-bg is absolutely
+       positioned INSIDE it (not fixed itself), sized off ITS box rather
+       than its own. */
+    #bg-scene {
       position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      /* Solid backdrop behind #beams-bg (parent background always paints
+         behind its own children, no z-index needed) — covers the gap
+         before the canvas has rendered its first frame, and gets clipped
+         to the same rounded shape as the rest of this container since it's
+         the same box. */
+      background: var(--bg);
+    }
+
+    /* #spline-bg's own clipping container — a separate box from #bg-scene
+       above (rather than a shared parent) since the two behave completely
+       differently: #bg-scene/#beams-bg stay fixed forever (the site's
+       persistent post-hero background), while this one only exists at all
+       below 1025px (mobile/tablet has no hero-frame look — see
+       BeamsBackground.tsx: below 1025px it's rendered here, at its default
+       position:fixed, full-viewport, as a plain full-bleed layer). At
+       1025px+ BeamsBackground.tsx portals this same id into #home instead
+       (see the #home rule further down), where its position turns into
+       absolute and inset/radius/z-index all come from that nested context —
+       this base rule's fixed/inset:0 values never actually apply there.
+       z-index -1 (vs #bg-scene's -2) preserves the original paint order on
+       mobile: spline still paints above the beams canvas underneath it
+       during their opacity crossfade. */
+    #bg-spline-scene {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: var(--bg);
+    }
+
+    /* Desktop-only (see the 1025px media query) — the hero panel's border and
+       glow. Below that breakpoint there's no framed panel at all, so the
+       element is still portaled into #home but paints nothing. */
+    #bg-frame-outline {
+      display: none;
+    }
+
+    /* Desktop-only for the same reason: .hero-ask lives inside the frame's
+       bottom-right notch, and below 1025px there is no frame and no notch.
+       Hidden here rather than unmounted in JS so the breakpoint stays in one
+       place (HeroSection renders it unconditionally). */
+    .hero-ask {
+      display: none;
+    }
+
+    #spline-bg {
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
@@ -664,7 +735,7 @@
     }
 
     #beams-bg {
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
@@ -674,6 +745,433 @@
       pointer-events: none;
       transition: opacity 0.7s ease;
       display: block;
+    }
+
+    /* Desktop-only, HERO-ONLY gradient look. #home itself IS the gradient
+       now (no separate #bg-gradient element to keep aligned with anything
+       else) — its own background-image, sized/positioned explicitly to
+       100vw/100vh at 0,0 rather than left to auto-size against #home's own
+       box, purely so #bg-notch-tl/br below (small patches elsewhere in
+       #home, using the same background-image/size/position) sample the
+       exact same conceptual gradient and line up with zero seam. #home is
+       forced to exactly one viewport tall at this breakpoint (height:
+       100dvh above) and sits flush at the very top of the page (#main-
+       header is position:fixed, no flow space above it), so "100vw 100vh
+       at 0,0" and "#home's own box" are the same rectangle in practice.
+       No JS/opacity-fade needed for any of this any more: it's just
+       #home's own background, so it starts and stops existing exactly
+       where #home's own box does — scrolling past the hero naturally
+       leaves it behind, the same way hero's text/buttons do, with no
+       separate crossfade timer to keep in sync. */
+    @media (min-width: 1025px) {
+      #home {
+        background-image: var(--grad-logo);
+        /* --hero-bg-w/h are #home's own measured box, written by the
+           ResizeObserver in BeamsBackground.tsx — see the comment there for
+           why the 100vw/100vh fallback isn't good enough on its own. */
+        background-size: var(--hero-bg-w, 100vw) var(--hero-bg-h, 100vh);
+        background-position: 0 0;
+      }
+
+      /* The "irregular-shape container" for the background Spline scene —
+         inset by the frame's 24px thickness with a matching 48px corner
+         radius (exact numbers pulled from the Figma file's "Subtract" node
+         via get_design_context — a boolean-subtract path, not a plain
+         rounded rect; see #bg-notch-tl/#bg-notch-br below for the two
+         notches that path actually has). Nested inside #home now (see
+         BeamsBackground.tsx's portal) so inset:24px resolves against
+         #home's own real box directly, not a guessed viewport-height
+         stand-in.
+
+         This box carries NO border and NO box-shadow — a CSS box can only
+         ever be a rounded rect, and the panel isn't one: the two notches
+         mean its real edge leaves the rounded-rect footprint entirely for
+         605px along two sides. A box-shadow there blooms around a corner
+         the eye never sees while the notch patch covers whatever part of
+         it lands inside, which is exactly the "glow is in the wrong place
+         and gets cut off" this replaced. The border and glow are drawn
+         instead as a stroke along the panel's actual outline —
+         #bg-frame-outline below, one shared path from heroFramePath.ts,
+         the same "compute the shape once, stroke it on top" approach the
+         portfolio wall uses (see .portfolio-wall-outline).
+
+         overflow:hidden (not clip-path) is still how
+         the *content* gets clipped to the rounded shape: Chromium fails to
+         apply an ancestor's clip-path over the composited layer a
+         <spline-viewer> canvas gets promoted to wherever it overlaps
+         another composited layer — here, HeroSection's own foreground
+         #hero-spline figure — so clip-path left the frame unclipped
+         (bleeding to the viewport edge) for exactly the vertical span
+         behind that figure. overflow:hidden clips via the compositor's
+         scissor rect instead of a shape mask and doesn't have this failure
+         mode. The two corners the notches eat into don't need special-
+         casing here — #bg-notch-tl/#bg-notch-br paint over them regardless
+         of what this container's own (irrelevant, hidden) corner shape
+         looks like underneath.
+
+         z-index -3 is local to #home now (a plain positioned descendant,
+         not a page-root sibling): negative z-index descendants paint above
+         their own parent's background but below normal-flow content, so
+         this sits over #home's gradient and under #home's actual text/
+         buttons without #home needing its own stacking context. -3 (most
+         negative of the three #home-nested background layers below) keeps
+         it behind .hero-tags (-2) and the notches (-1).
+
+         #spline-bg compensates the 24px shrink (top/left:-24px, size:
+         calc(100% + 48px)) so it still covers the full container instead
+         of shrinking with it — same coverage, just measured from the
+         smaller inset box instead of clipped from the full-size one.
+
+         The 24px inset / 48px radius here are FRAME_INSET / FRAME_RADIUS in
+         heroFramePath.ts — keep the two in sync, they describe the same
+         box. */
+      #bg-spline-scene {
+        position: absolute;
+        inset: 24px;
+        border-radius: 48px;
+        overflow: hidden;
+        z-index: -3;
+        pointer-events: none;
+      }
+
+      /* #bg-scene stays exactly as before — still position:fixed (see its
+         own rule further up), still the site's permanent post-hero
+         background, unaffected by any of this #home-nesting — just also
+         needs the same 24px inset/48px radius while the hero-only look is
+         up, so its own visible slice matches the frame. */
+      #bg-scene {
+        inset: 24px;
+        border-radius: 48px;
+        overflow: hidden;
+      }
+
+      #spline-bg,
+      #beams-bg {
+        top: -24px;
+        left: -24px;
+        width: calc(100% + 48px);
+        height: calc(100% + 48px);
+      }
+
+      /* The frame's two notches — plain painted shapes (a colored div with
+         clip-path), NOT a clip applied to WebGL content, so the Chromium
+         bug above doesn't apply here; they just sit on top (z-index -1,
+         above #bg-spline-scene's -3 and .hero-tags' -2) and cover whatever
+         the spline scene painted underneath. #bg-notch-br is the exact
+         same path point-reflected through its own box center — the shape
+         is genuinely 180°-symmetric between the two notches (one for the
+         logo, one for the chat FAB) — so both corners share one set of
+         numbers.
+
+         Geometry: originally the exact Figma "Subtract" boundary (144px
+         flat opening, 48px corner radius, matching the frame's own
+         24px thickness/48px radius). Rebuilt at a 100px flat opening —
+         with thickness fixed at 24px, a 48px radius makes the two
+         corner fillets alone (24+48+something+48) overshoot 100px, so
+         the fillet radius is reduced to 38px and the straight run
+         between the two S-curve fillets is dropped to 0 (24 + 38 + 38 =
+         100, exactly) — same construction, just a tighter turn.
+
+         background-size (#home's own measured box, inherited via
+         --hero-bg-w/h) + background-position makes each notch sample the
+         exact same gradient #home paints as its own background (see the
+         #home rule above): all three describe one rectangle — #home's box —
+         so a notch positioned at top:0/left:0 (or right:0/bottom:0) shows
+         precisely the slice of the gradient that would otherwise be there,
+         with no separate element to keep in sync with and no seam.
+
+         Deliberately no border/shadow/filter of their own. A patch's clip
+         silhouette is a closed box — three of its sides are the page edge,
+         only the fourth is the seam against the panel — so anything drawn
+         around it also outlines those three non-edges, and its outer glow
+         points the wrong way (out from the patch, i.e. INTO the panel,
+         where the frame's glow should be coming the other way). The seam
+         gets its border and glow from #bg-frame-outline below, which knows
+         which side is which. */
+      #bg-notch-tl,
+      #bg-notch-br {
+        position: absolute;
+        width: 629px;
+        height: 138px;
+        z-index: -1;
+        pointer-events: none;
+        background-image: var(--grad-logo);
+        background-size: var(--hero-bg-w, 100vw) var(--hero-bg-h, 100vh);
+      }
+
+      #bg-notch-tl {
+        top: 0;
+        left: 0;
+        background-position: 0 0;
+        clip-path: path(
+          "M0 0 L629 0 L629 24 C608.01 24 591 41.01 591 62 C591 82.99 573.99 100 553 100 L62 100 C41.01 100 24 117.01 24 138 L24 0 Z"
+        );
+      }
+
+      #bg-notch-br {
+        right: 0;
+        bottom: 0;
+        background-position: 100% 100%;
+        clip-path: path(
+          "M629 138 L0 138 L0 114 C20.99 114 38 96.99 38 76 C38 55.01 55.01 38 76 38 L567 38 C587.99 38 605 20.99 605 0 L605 138 Z"
+        );
+      }
+
+      /* The panel's border + glow. Boxed exactly over #bg-spline-scene (same
+         24px inset), with its path in that box's own coordinates 1:1 — the
+         viewBox is written to match the pixel size by the ResizeObserver in
+         BeamsBackground.tsx, so stroke-width stays in real px at any
+         viewport.
+
+         Same z-index as the two notch patches above and later in DOM order,
+         so it paints over them: the seam a patch creates is exactly where
+         this stroke runs, and the stroke has to win there.
+
+         overflow:visible because an SVG root clips to its viewBox by
+         default, which would cut both the drop-shadow and the outer half of
+         the 1px stroke straight off at the panel's edge. */
+      #bg-frame-outline {
+        display: block;
+        position: absolute;
+        top: 24px;
+        left: 24px;
+        width: calc(100% - 48px);
+        height: calc(100% - 48px);
+        z-index: -1;
+        pointer-events: none;
+        overflow: visible;
+      }
+
+      /* #chat-fab's `border: 1px solid rgba(255,255,255,.3)` plus its
+         `inset 0 0 0 1px rgba(255,255,255,.1)` hairline, which sits directly
+         inside that border — a single stroke at their combined alpha, since
+         at 1px the two are the same pixel.
+
+         The glow is .btn-grad's `0 4px 20px rgba(255,101,132,.35)` as a
+         drop-shadow, which takes the rendered stroke as its source and so
+         follows every curve of the outline instead of a rounded-rect
+         footprint. Split across two layers at a raised alpha: the FAB casts
+         from a filled 48px circle and this casts from a 1px line, so the
+         source alpha reproduces almost nothing here. Deliberately NOT on
+         #bg-frame-outline itself — a filter there would take the whole SVG
+         as its source, .bg-frame-rim's 30px white band included, and smear a
+         wide pink haze down the panel's inner edge. */
+      .bg-frame-stroke {
+        stroke: rgba(255, 255, 255, 0.4);
+        stroke-width: 1;
+        filter:
+          drop-shadow(0 4px 12px rgba(255, 101, 132, 0.75))
+          drop-shadow(0 2px 24px rgba(255, 101, 132, 0.45));
+      }
+
+      /* #chat-fab's `inset 0 0 15px rgba(255,255,255,.1)`. Drawn 30px wide
+         and blurred, then clipped to the panel (see the <g clip-path> in
+         BeamsBackground.tsx) so only the inner 15px survives. */
+      .bg-frame-rim {
+        stroke: rgba(255, 255, 255, 0.1);
+        stroke-width: 30;
+        filter: blur(8px);
+      }
+
+      /* Tag-capsule marquee must not visually press on top of the notch's
+         gradient shape (z:-1 above) — z:-2 keeps it above the spline scene
+         (-3) it floats over everywhere else, but tucks it underneath the
+         notch corner wherever the two overlap. 48px bottom (up from the
+         base 2rem) clears the frame's own 24px border with a real 24px gap
+         instead of floating flush against its inner edge. */
+      /* #home prefix (not bare .hero-tags) beats the later, higher-source-
+         order base .hero-tags rule below at equal specificity otherwise. */
+      #home .hero-tags {
+        z-index: -2;
+        bottom: 48px;
+      }
+
+      /* The chat's call to action, sitting in the notch cut for #chat-fab.
+
+         The notch's usable strip is fixed in px — it comes from #bg-notch-br's
+         629x138 box, not from the viewport — so this has exactly the same room
+         at 1025px as at 2560px and can be positioned off #home's bottom-right
+         corner with constants:
+
+           right  96px = the FAB's own 32px offset + its 48px width + a 16px gap
+           bottom 34px = the FAB's 32px offset + half the 4px height difference
+                         between its 48px circle and this 44px capsule, so the
+                         two share a centre line. Deliberately NOT centred in
+                         the 76px-tall notch strip (which would be 40px): the
+                         FAB isn't centred there either, and the capsule sits
+                         directly beside it, so matching the neighbour reads
+                         straight while matching the notch reads crooked.
+           width 473px = 569 - 96, where 569 is how far in from #home's right
+                         edge the capsule's left end starts: the notch's left
+                         fillet reaches its rightmost point at x=38 of
+                         #bg-notch-br's 629px box (the "L 38 76" vertex in its
+                         clip-path), i.e. 591px in, and the capsule stops 22px
+                         short of it. 22px is the same gap it leaves above
+                         itself (100 - 34 - 44), so the capsule sits the same
+                         distance from the notch's top edge as from its left
+                         curve. Fixed rather than shrink-to-fit because that
+                         distance is a property of the notch, not of how long
+                         the labels happen to be in the current language.
+
+         z-index 1 puts it above the notch patch (-1) that paints this corner;
+         without that the patch would cover it exactly as it covers the
+         .hero-tags marquee running underneath. */
+      /* One white capsule, not four floating chips: the notch is already a
+         busy silhouette, and a single solid shape reads as one object sitting
+         in it instead of competing with its curves. 44px tall to match the
+         hero's own View My Work / Contact Me buttons exactly (.btn-glass's
+         min-height), so the two button rows in the hero share one height.
+
+         Light-on-dark is inverted here on purpose — everything else in the
+         hero is translucent glass over the gradient, so the one opaque white
+         element is the thing the eye lands on, which is what a call to action
+         wants. Hence the dark ink colours below rather than the site's usual
+         rgba(255,255,255,...). */
+      #home .hero-ask {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        box-sizing: border-box;
+        height: 44px;
+        padding: 0 6px 0 16px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(10px);
+        position: absolute;
+        right: 96px;
+        bottom: 34px;
+        width: 473px;
+        z-index: 1;
+      }
+
+      /* margin-right:auto absorbs the slack the fixed width leaves over the
+         content (~45px in zh, ~66px in en), parking it between the prompt and
+         the questions — label left, actions right, rather than one lopsided
+         pad on whichever end justify-content picks. */
+      .hero-ask-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        flex-shrink: 0;
+        margin-right: auto;
+        font-family: 'Quicksand', sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        color: #5A5280;
+        white-space: nowrap;
+        user-select: none;
+      }
+
+      /* The AI mark, in the logo gradient — the capsule is white, so the brand
+         colour has to come from the icon rather than from a glass tint. */
+      .hero-ask-label i {
+        font-size: 17px;
+        line-height: 1;
+        flex-shrink: 0;
+        background: var(--grad-logo);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      /* Outlined, not filled: inside an already-solid capsule a second fill
+         would fight it. 28px tall leaves 8px of capsule showing above and
+         below, which is what makes them read as contained rather than as the
+         capsule's own segments.
+
+         Ink and outline are one desaturated violet — --grad-logo's family
+         pulled well back toward grey, so the pills tint with the theme without
+         competing with the sparkle mark (which keeps the full gradient) or
+         with the prompt beside them, itself the same hue a few steps darker.
+         #5E5590 clears 6.5:1 on white and the prompt's #5A5280 clears 7:1, so
+         the muted treatment stays legible rather than merely faint. The two
+         inks are near enough that the prompt leads on weight and size (13px
+         700 against 12px 500) rather than on contrast; the outline stays at
+         its lighter rgba so the pill shape keeps receding behind its label.
+
+         position:relative + overflow:hidden frame the roll: .hero-ask-roll
+         spans are absolutely positioned inside and animate through this box,
+         which crops them the moment they leave it. */
+      .hero-ask-btn {
+        position: relative;
+        overflow: hidden;
+        height: 28px;
+        padding: 0 11px;
+        border-radius: 9999px;
+        border: 1px solid rgba(114, 106, 160, 0.38);
+        background: transparent;
+        color: #5E5590;
+        font-family: var(--font);
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+      }
+
+      .hero-ask-btn:hover {
+        background: rgba(114, 106, 160, 0.09);
+        border-color: rgba(114, 106, 160, 0.7);
+        color: #453E70;
+      }
+
+      .hero-ask-btn:active {
+        background: rgba(114, 106, 160, 0.16);
+      }
+
+      /* One label inside a rolling pill. Absolute so the incoming and outgoing
+         labels occupy the same box instead of stacking the pill to double
+         height mid-flip. */
+      .hero-ask-roll {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: heroAskRollIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+
+      .hero-ask-roll.is-out {
+        animation-name: heroAskRollOut;
+      }
+
+      /* Upward travel in both directions — new text rises from below as the
+         old text leaves through the top, so the pill reads as one strip
+         scrolling rather than as two labels crossfading. */
+      @keyframes heroAskRollIn {
+        from { transform: translateY(105%); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+      }
+
+      @keyframes heroAskRollOut {
+        from { transform: translateY(0);     opacity: 1; }
+        to   { transform: translateY(-105%); opacity: 0; }
+      }
+
+      /* HeroAskStrip measures the pool's widest label here to give every pill
+         one width, so a roll never resizes the row. Absolutely positioned and
+         hidden: it must cost no layout and never be read out. */
+      .hero-ask-measure {
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: flex;
+        visibility: hidden;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        /* The rotation timer is skipped in JS too; this covers the language
+           swap, which re-renders the spans and would otherwise animate. */
+        .hero-ask-roll {
+          animation: none;
+        }
+      }
     }
 
     /* .container.max-w-8xl + inner flex row — combined as hero-inner */

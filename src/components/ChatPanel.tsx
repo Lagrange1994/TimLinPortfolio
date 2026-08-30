@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, Fragment } from 'react';
 import type { ReactNode } from 'react';
 import { useLang } from '../context/LangContext';
+import { ASK_TIM_EVENT } from '../utils/askTim';
+import type { AskTimDetail } from '../utils/askTim';
 
 interface Message {
   role: 'user' | 'bot';
@@ -131,6 +133,24 @@ export default function ChatPanel() {
       if (inputRef.current) inputRef.current.focus();
     }
   }
+
+  // Entry points elsewhere on the page (currently the hero's notch strip)
+  // open the panel with a question already asked — see askTim.ts. sendQuestion
+  // closes over `sending` and `lang`, so the listener reaches it through a ref
+  // that every render refreshes; binding the function itself would freeze the
+  // handler on the first render's copy and send every question in the initial
+  // language.
+  const sendRef = useRef(sendQuestion);
+  useEffect(() => { sendRef.current = sendQuestion; });
+  useEffect(() => {
+    function onAsk(e: Event) {
+      setOpen(true);
+      const q = (e as CustomEvent<AskTimDetail>).detail?.q;
+      if (q) sendRef.current(q);
+    }
+    window.addEventListener(ASK_TIM_EVENT, onAsk);
+    return () => window.removeEventListener(ASK_TIM_EVENT, onAsk);
+  }, []);
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) {
