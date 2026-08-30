@@ -490,6 +490,20 @@
       right: 0;
       z-index: 100;
       transition: all 0.3s ease-in-out;
+      /* Rises and fades in on the same 0.5s clock as the title/tags/ask-
+         strip/FAB — synced to the hero-h1 title's own GSAP entrance start
+         (350ms setTimeout + 0.15s tween delay in HeroSection.tsx).
+         #main-header is an ID selector, same specificity class as #chat-fab
+         elsewhere in this file — the body.hero-ready override below needs
+         the ID repeated to actually outrank this rule instead of tying
+         with it. */
+      opacity: 0;
+      animation: hero-btns-float-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.5s;
+      animation-play-state: paused;
+    }
+
+    body.hero-ready #main-header {
+      animation-play-state: running;
     }
 
     #nav-container {
@@ -976,14 +990,41 @@
       /* Tag-capsule marquee must not visually press on top of the notch's
          gradient shape (z:-1 above) — z:-2 keeps it above the spline scene
          (-3) it floats over everywhere else, but tucks it underneath the
-         notch corner wherever the two overlap. 48px bottom (up from the
-         base 2rem) clears the frame's own 24px border with a real 24px gap
-         instead of floating flush against its inner edge. */
+         notch corner wherever the two overlap.
+
+         bottom lines this row's TOP edge up with .hero-ask's own top
+         (822px from #home's top at 1440x900) rather than matching either
+         one's bottom or centre — the row has no explicit height (font-size
+         13px + 7px padding top/bottom on .tag-capsule, ~36px total), so
+         this is back-solved from the live measurement: bottom = #home's
+         height − .hero-ask's top − this row's own rendered height.
+         Re-measure both if .tag-capsule's font-size/padding, or .hero-ask's
+         own position, ever change.
+
+         left/right replace the base rule's calc(100% - 2rem) + max-width
+         centering with FRAME_INSET (24px, matching heroFramePath.ts and
+         #bg-spline-scene's own inset below) on both sides — the exact box
+         the panel occupies, at any viewport width, no 1440px cap. The mask
+         below fades over the last 5% of that box, so the marquee's true
+         vanishing point (where it reaches full transparency) now sits right
+         at the panel's inner edge instead of 8px outside it, under the
+         frame's own border rather than in the gap before it. */
       /* #home prefix (not bare .hero-tags) beats the later, higher-source-
          order base .hero-tags rule below at equal specificity otherwise. */
       #home .hero-tags {
         z-index: -2;
-        bottom: 48px;
+        bottom: 41.2px;
+        /* left+right+width:auto (not left+width alone) because the base
+           rule's margin:0 auto is still in effect here — with that margin
+           still auto, left+width+the base rule's right:0 would trigger the
+           equal-auto-margins centering rule instead of landing where left
+           says, splitting the difference between this 24px and the base
+           16px onto both edges (36px/12px, not 24px/24px). margin:0 turns
+           that off so left/right are used exactly as given. */
+        left: 24px;
+        right: 24px;
+        width: auto;
+        margin: 0;
       }
 
       /* The chat's call to action, sitting in the notch cut for #chat-fab.
@@ -1045,6 +1086,17 @@
         bottom: 34px;
         width: 473px;
         z-index: 1;
+        /* Rises and fades in on load, on .hero-tags' own clock — both are
+           synced to the hero-h1 title's GSAP entrance start (350ms setTimeout
+           + 0.15s tween delay in HeroSection.tsx), not to the CTA buttons a
+           beat later, so the capsule reads as part of the same first wave as
+           the headline rather than as a late add-on. Paused until
+           body.hero-ready for the same reason the loader holds every other
+           entrance: starting the clock before the loader's own reveal would
+           burn the delay while it's still covering the hero. */
+        opacity: 0;
+        animation: hero-btns-float-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.5s;
+        animation-play-state: paused;
       }
 
       /* margin-right:auto absorbs the slack the fixed width leaves over the
@@ -1300,6 +1352,14 @@
     body.hero-ready .hero-desc-wrap,
     body.hero-ready .hero-btns-seq,
     body.hero-ready .hero-tags {
+      animation-play-state: running;
+    }
+
+    /* #home .hero-ask (the paused rule) carries the #home ID, which outranks
+       a plain-class override no matter the source order — the three rules
+       above work because none of them compete with an ID selector. This one
+       needs the ID repeated to actually win. */
+    body.hero-ready #home .hero-ask {
       animation-play-state: running;
     }
 
@@ -7247,6 +7307,15 @@
     }
     .ai-chips-header p em{font-style:italic;background:linear-gradient(135deg,#8A2BE2,#4A00E0,#00D4FF);-webkit-background-clip:text;background-clip:text;color:transparent}
     .ai-principle-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:linear-gradient(135deg,#8A2BE2,#00D4FF);vertical-align:middle;margin:0 12px 4px}
+    /* Rises and fades in on load, on the same clock as .hero-ask and
+       .hero-tags — all three are synced to the hero-h1 title's GSAP entrance
+       start (350ms setTimeout + 0.15s tween delay in HeroSection.tsx). The FAB
+       and .hero-ask sit right next to each other, so entering separately would
+       read as two unrelated widgets loading rather than one control; this
+       makes them arrive as a pair. ChatPanel (and so #chat-fab) is only ever
+       mounted on the homepage — see App.tsx vs the project_XX pages, which
+       don't render it — so gating on body.hero-ready can't strand it
+       permanently invisible on a page that never sets that class. */
     #chat-fab {
       position: fixed;
       bottom: 2rem;
@@ -7258,6 +7327,17 @@
       font-size: 1rem;
       overflow: hidden;
       background: var(--grad-logo);
+      opacity: 0;
+      animation: hero-btns-float-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.5s;
+      animation-play-state: paused;
+    }
+
+    /* #chat-fab is an ID selector, same specificity class as the paused rule
+       above — a plain-class body.hero-ready override wouldn't need this
+       for .hero-tags/.hero-btns-seq (no ID involved there), but here the
+       override needs the ID repeated to actually outrank it. */
+    body.hero-ready #chat-fab {
+      animation-play-state: running;
     }
 
     @media (max-width: 767px) {
