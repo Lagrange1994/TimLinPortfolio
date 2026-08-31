@@ -40,6 +40,29 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // #main-header's entrance animation uses `animation-fill-mode: forwards`
+  // to hold its final opacity/transform, but a forwards-filling animation
+  // never detaches from the element even after it finishes — Chromium keeps
+  // treating #main-header as a live animated compositing layer for the rest
+  // of the page's life. That permanently-animated ancestor layer is what
+  // breaks #nav-container's backdrop-filter paint once the user scrolls
+  // (confirmed by A/B testing against the deployed build, which has no
+  // entrance animation on its header and never exhibits the bug — and by
+  // clearing `animation` from #main-header locally, which fixes it
+  // immediately). Adding `.entrance-done` on animationend swaps the
+  // animation out for a plain static end-state, freeing the layer.
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+    const onAnimationEnd = (e: AnimationEvent) => {
+      if (e.target === header && e.animationName === 'hero-btns-float-up') {
+        header.classList.add('entrance-done');
+      }
+    };
+    header.addEventListener('animationend', onAnimationEnd);
+    return () => header.removeEventListener('animationend', onAnimationEnd);
+  }, []);
+
   // Keep --nav-h in sync with the header's real height, incl. its
   // .scrolled compact-pill state — every `.section` uses this for
   // scroll-margin-top so menu/CTA navigation lands consistently below it.
@@ -371,39 +394,45 @@ export default function Navbar() {
     <>
       <header id="main-header" ref={headerRef}>
         <div id="nav-container">
-          <a href="#home" className="logo">
-            <span className="gradient-text-brand">Tim</span>
-            <span style={{ color: '#fff' }}>Lin</span>
-          </a>
-          <nav>
-            {NAV_ITEMS.map(item => (
-              <button
-                key={item.key}
-                className={`nav-link${item.key === 'home' ? ' active' : ''}`}
-                data-scroll-to={item.scrollTo}
-                onClick={() => scrollToSection(item.scrollTo)}
-              >
-                <span className="nav-circle" aria-hidden="true"></span>
-                <span className="nav-label-stack">
-                  <span className="nav-label">{item.label}</span>
-                  <span className="nav-label-hover" aria-hidden="true">{item.label}</span>
-                </span>
-              </button>
-            ))}
-          </nav>
-          <div style={{ position: 'relative' }}>
-            <button id="lang-menu-btn" onClick={toggleLangDropdown}>
-              <i className="fas fa-globe"></i>
-              <span id="lang-label">{lang === 'zh' ? '繁體中文' : 'English'}</span>
-              <i className="fas fa-chevron-down" id="lang-chevron" style={{ fontSize: '10px', opacity: 0.7, transition: 'transform 0.2s' }}></i>
-            </button>
-            <div id="lang-dropdown">
-              <button className={`lang-opt${lang === 'zh' ? ' active' : ''}`} onClick={() => handleLangSelect('zh')}>
-                <i className="fas fa-check" id="check-zh"></i>繁體中文
-              </button>
-              <button className={`lang-opt${lang === 'en' ? ' active' : ''}`} onClick={() => handleLangSelect('en')}>
-                <i className="fas fa-check" id="check-en"></i>English
-              </button>
+          <div className="navbar-shape">
+            <div className="navbar-brand">
+              <a href="#home" className="logo">
+                <span className="gradient-text-brand">Tim</span>
+                <span style={{ color: '#fff' }}>Lin</span>
+              </a>
+            </div>
+            <div className="navbar-menu">
+              <nav>
+                {NAV_ITEMS.map(item => (
+                  <button
+                    key={item.key}
+                    className={`nav-link${item.key === 'home' ? ' active' : ''}`}
+                    data-scroll-to={item.scrollTo}
+                    onClick={() => scrollToSection(item.scrollTo)}
+                  >
+                    <span className="nav-circle" aria-hidden="true"></span>
+                    <span className="nav-label-stack">
+                      <span className="nav-label">{item.label}</span>
+                      <span className="nav-label-hover" aria-hidden="true">{item.label}</span>
+                    </span>
+                  </button>
+                ))}
+              </nav>
+              <div className="navbar-lang" style={{ position: 'relative' }}>
+                <button id="lang-menu-btn" onClick={toggleLangDropdown}>
+                  <i className="fas fa-globe"></i>
+                  <span id="lang-label">{lang === 'zh' ? '繁體中文' : 'English'}</span>
+                  <i className="fas fa-chevron-down" id="lang-chevron" style={{ fontSize: '10px', opacity: 0.7, transition: 'transform 0.2s' }}></i>
+                </button>
+                <div id="lang-dropdown">
+                  <button className={`lang-opt${lang === 'zh' ? ' active' : ''}`} onClick={() => handleLangSelect('zh')}>
+                    <i className="fas fa-check" id="check-zh"></i>繁體中文
+                  </button>
+                  <button className={`lang-opt${lang === 'en' ? ' active' : ''}`} onClick={() => handleLangSelect('en')}>
+                    <i className="fas fa-check" id="check-en"></i>English
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           <button id="sm-toggle-btn" aria-label="Open menu" aria-expanded="false">

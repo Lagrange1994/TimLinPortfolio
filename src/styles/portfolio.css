@@ -500,35 +500,66 @@
       opacity: 0;
       animation: hero-btns-float-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.5s;
       animation-play-state: paused;
+      /* will-change (not a plain transform) because the animation already
+         owns `transform` for its translateY float; an animated property's
+         keyframe values always win over a static declaration for that same
+         property, so a plain `transform: translateZ(0)` here would just get
+         silently discarded. will-change is a separate property, so it hints
+         layer promotion without competing for the animated one. */
+      will-change: opacity, transform;
     }
 
     body.hero-ready #main-header {
       animation-play-state: running;
     }
 
+    /* Navbar.tsx adds this once the entrance animation's `animationend`
+       fires — see its comment for why a forwards-filling animation must be
+       fully detached (not just settled) to stop breaking #nav-container's
+       backdrop-filter paint on scroll. */
+    #main-header.entrance-done {
+      animation: none;
+      opacity: 1;
+      will-change: auto;
+    }
+
+    /* Glass panel lives directly on #nav-container (background +
+       backdrop-filter), matching the deployed reference build — no ::before
+       pseudo-element, no contain:paint. An earlier attempt moved the panel
+       onto a ::before to sandbox a suspected WebGL/backdrop-filter
+       compositing bug, but the reference build proves that bug isn't real:
+       it keeps the same persistently-mounted #hero-spline (see
+       HeroSection.tsx's HERO_DROP_DELAY_MS comment) and still blurs
+       correctly with backdrop-filter direct on #nav-container, no
+       containment at all. The ::before/contain:paint architecture was
+       itself the regression — position:absolute + z-index:-1 pseudo-element
+       backdrop-filters are more compositing-fragile in Chromium than a real
+       element's. */
     #nav-container {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin: 0 auto;
       border-radius: 0;
-      background: rgba(18, 18, 18, 0.8);
-      backdrop-filter: blur(1rem);
       border: none;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: none;
       width: 100%;
       padding: 0.5rem 1.5rem;
+      background: rgba(18, 18, 18, 0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       transition: all 0.3s ease-in-out;
     }
 
     #main-header.scrolled #nav-container {
       margin: 1.25rem auto 0;
       border-radius: 9999px;
-      background: rgba(30, 30, 30, 0.5);
       border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 0.25rem 0.375rem rgba(0, 0, 0, 0.1);
       width: min(calc(100% - 2rem), 1440px);
+      background: rgba(30, 30, 30, 0.5);
+      border-bottom: none;
     }
 
     .logo {
@@ -542,6 +573,114 @@
          of layout flow so the header's visual height is unchanged. */
       padding: 5px 0;
       margin: -5px 0;
+    }
+
+    /* Structural passthrough by default (mobile + scrolled desktop):
+       display:contents removes .navbar-shape/.navbar-brand/.navbar-menu
+       from the box model entirely, so their children (.logo, nav,
+       .navbar-lang) become direct flex items of #nav-container — exactly
+       the original flat structure, so #nav-container's own
+       justify-content:space-between still spaces those 3 items the same
+       way production always has. Only the unscrolled desktop media query
+       below turns these back into real boxes, to sit in the frame's
+       top-left notch (see #bg-notch-tl in the background-layer section)
+       instead. */
+    .navbar-shape,
+    .navbar-brand,
+    .navbar-menu {
+      display: contents;
+    }
+
+    .navbar-lang {
+      position: relative;
+    }
+
+    /* Fits exactly inside the notch #bg-notch-tl cuts into the frame —
+       same numbers, pulled from the Figma "Subtract" node (fileKey
+       H94cQ9wrWHdL2tAJU2o726, node 19:30): a 629px-wide, 144px-tall flap
+       for the logo (left transparent — the notch's own gradient shows
+       through behind it, no separate fill needed here), then a glass
+       pill for the nav links + lang switcher spanning the rest of the
+       header out to the frame's 24px right margin. */
+    @media (min-width: 1025px) {
+      #main-header:not(.scrolled) #nav-container {
+        padding: 0;
+        background: transparent;
+        border-bottom: none;
+        backdrop-filter: none;
+      }
+
+      #main-header:not(.scrolled) .logo {
+        font-size: 40px;
+      }
+
+      /* Plain white here, not the shared .gradient-text-brand gradient —
+         against the notch's own bold --grad-logo fill behind it, the
+         gradient text nearly disappeared (same colors on both). Scoped
+         to the navbar only; ContactSection's own brand mark keeps the
+         gradient. */
+      #main-header:not(.scrolled) .navbar-brand .gradient-text-brand {
+        background: none;
+        -webkit-text-fill-color: #fff;
+        color: #fff;
+      }
+
+      #main-header:not(.scrolled) .navbar-shape {
+        position: relative;
+        flex: 1 1 auto;
+        height: 100px;
+      }
+
+      /* Positioned to match #bg-notch-tl's box, minus the 24px on the
+         right that's really the frame's own border thickness — the
+         notch is only a full 629px wide at its very top edge (y:0-24);
+         everywhere below that the S-curve immediately starts eating into
+         that last 24px, so it's not usable flat width. Centering against
+         605 (629-24) instead of the full 629 centers the logo against
+         the block's actual content width, not its momentary top-edge
+         width. No border sits above/left of this block (the notch opens
+         straight to the page edge there), so vertical centering needs no
+         equivalent adjustment. */
+      #main-header:not(.scrolled) .navbar-brand {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 605px;
+        height: 100px;
+      }
+
+      /* left:614px, not 629 (the notch box's own width) — the notch's
+         right boundary is a diagonal S-curve, not a vertical line, so at
+         629 the pill's rounded left cap cleared it by ~39px at the
+         closest point (solved numerically: the cap's nearest approach to
+         the curve is at y~68.7 within the pill's 48-98px band). 614 pulls
+         that closest-approach gap down to the requested 24px; every other
+         point along the cap has more clearance, never less. */
+      #main-header:not(.scrolled) .navbar-menu {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.85rem;
+        position: absolute;
+        left: 614px;
+        /* 24px (frame's own right border) + a real 24px gap past it —
+           right:24px landed the pill's edge exactly on the border's inner
+           edge, flush against it, same bug as the top offset. */
+        right: 48px;
+        top: 48px;
+        height: 50px;
+        padding: 0 2.5rem;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      #main-header:not(.scrolled) .navbar-menu .navbar-lang {
+        margin-left: auto;
+      }
     }
 
     nav {
