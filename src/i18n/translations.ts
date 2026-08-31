@@ -5,6 +5,8 @@ export const translations = {
     nav_about: 'About',
     nav_portfolio: 'Portfolio',
     nav_contact: 'Contact',
+    nav_tagline_l1: 'UI/UX Designer',
+    nav_tagline_l2: '& Web Developer',
     // loader
     loader_step1: '讀取專案中繼資料',
     loader_step2: '載入視覺素材',
@@ -268,6 +270,8 @@ export const translations = {
     nav_about: 'About',
     nav_portfolio: 'Portfolio',
     nav_contact: 'Contact',
+    nav_tagline_l1: 'UI/UX Designer',
+    nav_tagline_l2: '& Web Developer',
     // loader
     loader_step1: 'Reading project metadata',
     loader_step2: 'Loading visual assets',

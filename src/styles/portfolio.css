@@ -595,6 +595,14 @@
       position: relative;
     }
 
+    /* Only meaningful in the notch's own flap — hidden everywhere else
+       (mobile/tablet/scrolled desktop) since there's no spare width there
+       for a tagline next to the logo. */
+    .navbar-brand-divider,
+    .navbar-brand-tagline {
+      display: none;
+    }
+
     /* Fits exactly inside the notch #bg-notch-tl cuts into the frame —
        same numbers, pulled from the Figma "Subtract" node (fileKey
        H94cQ9wrWHdL2tAJU2o726, node 19:30): a 629px-wide, 144px-tall flap
@@ -645,11 +653,32 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        gap: 14px;
         position: absolute;
         left: 0;
         top: 0;
         width: 605px;
         height: 100px;
+      }
+
+      /* Thin vertical rule between the logo and the tagline — fixed height
+         (not 100%) so it reads as a short divider next to the text rather
+         than spanning the whole flap. */
+      #main-header:not(.scrolled) .navbar-brand-divider {
+        display: block;
+        width: 1px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      #main-header:not(.scrolled) .navbar-brand-tagline {
+        display: flex;
+        flex-direction: column;
+        font-size: 13px;
+        line-height: 1.4;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.75);
+        white-space: nowrap;
       }
 
       /* left:614px, not 629 (the notch box's own width) — the notch's

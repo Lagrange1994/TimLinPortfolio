@@ -22,7 +22,7 @@ function scrollToSection(id: string) {
 }
 
 export default function Navbar() {
-  const { lang, setLang } = useLang();
+  const { lang, setLang, t } = useLang();
   const headerRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
@@ -400,6 +400,11 @@ export default function Navbar() {
                 <span className="gradient-text-brand">Tim</span>
                 <span style={{ color: '#fff' }}>Lin</span>
               </a>
+              <span className="navbar-brand-divider" aria-hidden="true"></span>
+              <span className="navbar-brand-tagline">
+                <span>{t.nav_tagline_l1}</span>
+                <span>{t.nav_tagline_l2}</span>
+              </span>
             </div>
             <div className="navbar-menu">
               <nav>
