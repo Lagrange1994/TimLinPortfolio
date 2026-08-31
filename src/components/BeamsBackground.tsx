@@ -197,20 +197,21 @@ export default function BeamsBackground() {
       }
     };
     sync();
-    // The ask-strip's pills re-measure themselves once the webfont lands
-    // (HeroAskStrip.tsx's own document.fonts.ready.then(measure)) and that
-    // resize does reach the ResizeObserver below — but only after the font
-    // finishes downloading, which can land after the hero's entrance reveal
-    // has already faded the strip in at its pre-font (narrower/wider
-    // fallback-face) width. Re-syncing on the same fonts.ready checkpoint
-    // closes that gap instead of waiting on the resize round-trip.
-    let cancelled = false;
-    document.fonts?.ready.then(() => { if (!cancelled) sync(); });
+    // Deliberately the ONLY trigger for re-measuring .navbar-brand/.hero-ask:
+    // each notch's flat width locks in at whatever it measured on this first
+    // sync() and stays there — through scrolling, webfont swaps, the ask-
+    // strip's pill rotation, anything — and only moves again when the
+    // viewport itself is resized (heroEl's own box changing size). Earlier
+    // versions also re-synced on ResizeObserver-for-content, fonts.ready, and
+    // #main-header's `.scrolled` class (to chase the notch to content that
+    // could change size after mount), but each of those was its own source
+    // of a mismeasurement mid-transition/mid-load that then froze in as a
+    // visibly wrong notch — see this file's git history for the specific
+    // failures. A width fixed at first paint, touched only by real resize,
+    // has no such window to get caught in.
     const ro = new ResizeObserver(sync);
     ro.observe(heroEl);
-    if (navbarBrandEl) ro.observe(navbarBrandEl);
-    if (heroAskEl) ro.observe(heroAskEl);
-    return () => { cancelled = true; ro.disconnect(); };
+    return () => { ro.disconnect(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, heroEl]);
 
