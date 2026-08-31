@@ -3,8 +3,8 @@ import { useEffect, useState, type CSSProperties } from 'react';
 const STEP_INTERVAL_MS = 1800;
 
 const TIERS = [
-  { color: '#FF6B6B', icon: 'ph-warning', label: 'Tier 1' },
-  { color: '#FFB74D', icon: 'ph-diamond', label: 'Tier 2' },
+  { color: '#F97316', icon: 'ph-warning', label: 'Tier 1' },
+  { color: '#4A9EFF', icon: 'ph-diamond', label: 'Tier 2' },
   { color: '#7BE3B5', icon: 'ph-circle', label: 'Tier 3' },
 ];
 

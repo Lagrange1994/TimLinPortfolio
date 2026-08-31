@@ -7283,18 +7283,19 @@
        pipeline), driven by React state, not a CSS keyframe loop. A ticket
        goes complete and *stays* complete-colored once passed; only the
        whole pass wrapping back to ticket 1 resets everyone to inactive
-       together — no per-ticket fade-to-black on its own clock. Ticket fill/
-       radius reuses 06's boxed-capsule values verbatim (inactive #23232E →
-       active #6C63FF → complete #4A4390, 10px radius) so the two
-       flourishes read as one system. Tier glyph + label deliberately sit
-       outside that purple scale — their color marks priority, independent
+       together — no per-ticket fade-to-black on its own clock. Ticket
+       radius matches 06's boxed capsule (10px), but the active/complete
+       fill is this card's own mint-green accent (see .ai-card.ai-human's
+       #7BE3B5 top glow/glyph above) darkened enough for a white checkmark
+       to stay legible, not 06's purple. Tier glyph + label deliberately
+       sit off that green scale — their color marks priority, independent
        of whichever ticket is mid-review — and the glyph shape backs up the
        color so priority doesn't ride on hue alone. No connector between
        tickets: independent inbox items, not stages of one pipeline. */
     .ai-queue-flow{display:flex;gap:8px;margin-top:auto}
     .ai-queue-item{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;padding:6px 7px 7px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#23232E;transition:background .35s ease,border-color .35s ease,box-shadow .35s ease}
-    .ai-queue-item-active{background:#6C63FF;border-color:#6C63FF;box-shadow:0 0 0 3px rgba(108,99,255,.28)}
-    .ai-queue-item-complete{background:#4A4390;border-color:#4A4390}
+    .ai-queue-item-active{background:#1F9D6B;border-color:#1F9D6B;box-shadow:0 0 0 3px rgba(31,157,107,.32)}
+    .ai-queue-item-complete{background:#215B45;border-color:#215B45}
     .ai-queue-head{display:flex;align-items:center;justify-content:space-between}
     .ai-queue-check{width:12px;height:12px;border-radius:50%;border:1.5px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .35s ease}
     .ai-queue-item-active .ai-queue-check,.ai-queue-item-complete .ai-queue-check{border-color:#fff}
