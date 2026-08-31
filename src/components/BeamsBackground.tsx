@@ -1,7 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import * as THREE from 'three';
-import { heroFramePath, FRAME_INSET } from '../utils/heroFramePath';
+import { heroFramePath, notchPatchPath, FRAME_INSET, FRAME_RADIUS, NOTCH_FLAT, NOTCH_RADIUS } from '../utils/heroFramePath';
+
+// Fixed gap between a notch's content and its reference point on the S-bend
+// (NOTCH_CURVE_CLEARANCE below) — same 26px used for .navbar-brand's own
+// left/top in portfolio.css, so all three sides read as one consistent gap
+// instead of three unrelated numbers.
+const NOTCH_CONTENT_GAP = 26;
+
+// The right-side S-bend is two quarter-circle fillets back to back — see
+// NOTCH_RADIUS's own comment in heroFramePath.ts. NOTCH_RADIUS (not
+// 2*NOTCH_RADIUS) reaches only the seam where those two fillets meet, not
+// all the way to the flat-depth plateau past the second one — a shallower,
+// visually tighter reference point than the plateau, at the cost of the
+// row's tallest content (the "TimLin" wordmark) having less curve depth to
+// spare than it would against the plateau. The ask-strip's own shorter
+// content (well under the wordmark's height) clears it with more room.
+const NOTCH_CURVE_CLEARANCE = NOTCH_RADIUS;
 
 // ── Constants (matches the original <Beams /> usage example) ────────────────
 const BEAM_WIDTH = 2.6;
@@ -109,8 +125,16 @@ export default function BeamsBackground() {
     useRef<SVGPathElement>(null),
     useRef<SVGPathElement>(null),
   ];
+  const notchTLRef = useRef<HTMLDivElement>(null);
+  const notchBRRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (isMobile || !heroEl) return;
+    // Queried once per effect run (not per sync() call) — .navbar-brand and
+    // #home .hero-ask are siblings mounted in the same initial commit as
+    // #home itself, so they already exist by the time heroEl is set.
+    const navbarBrandEl = document.querySelector<HTMLElement>('.navbar-brand');
+    const heroAskEl = document.querySelector<HTMLElement>('#home .hero-ask');
+
     const sync = () => {
       // The gradient #home paints as its background, and the two notch
       // patches that re-paint slices of it, have to be sized off the SAME
@@ -127,16 +151,66 @@ export default function BeamsBackground() {
       const w = heroEl.clientWidth - FRAME_INSET * 2;
       const h = heroEl.clientHeight - FRAME_INSET * 2;
       if (w <= 0 || h <= 0) return;
-      const d = heroFramePath(w, h);
+
+      // Each notch's flat width = the distance from the panel's own corner
+      // to its content's far edge, plus NOTCH_CURVE_CLEARANCE (the S-bend's
+      // own run — without it the content's far edge lands mid-curve, not on
+      // open floor) plus a further 24px gap past that — the notch
+      // shrink-wraps to whatever's actually sitting in it (the navbar
+      // tagline, the ask-strip capsule) instead of content being sized to
+      // fit a fixed notch. Falls back to the old fixed NOTCH_FLAT if a
+      // notch's content isn't in the DOM for some reason.
+      const heroRect = heroEl.getBoundingClientRect();
+      const panelLeft = heroRect.left + FRAME_INSET;
+      const panelRight = heroRect.right - FRAME_INSET;
+      const flatTL = navbarBrandEl
+        ? navbarBrandEl.getBoundingClientRect().right - panelLeft + NOTCH_CURVE_CLEARANCE + NOTCH_CONTENT_GAP
+        : NOTCH_FLAT;
+      const flatBR = heroAskEl
+        ? panelRight - heroAskEl.getBoundingClientRect().left + NOTCH_CURVE_CLEARANCE + NOTCH_CONTENT_GAP
+        : NOTCH_FLAT;
+
+      const d = heroFramePath(w, h, FRAME_RADIUS, flatTL, flatBR);
       for (const ref of framePathRefs) ref.current?.setAttribute('d', d);
       // viewBox matches the element's own pixel box 1:1, so path units are
       // CSS px and the stroke width isn't scaled by the viewport.
       document.getElementById('bg-frame-outline')?.setAttribute('viewBox', `0 0 ${w} ${h}`);
+
+      // The two notch patches share the exact same flat-width math the
+      // outline above just used — see notchPatchPath's own comment for why
+      // patch-space and panel-space have to trace the identical curve.
+      const tl = notchTLRef.current;
+      if (tl) {
+        tl.style.width = `${flatTL + FRAME_INSET}px`;
+        tl.style.clipPath = `path("${notchPatchPath(flatTL, 'tl')}")`;
+      }
+      // .navbar-menu (Navbar.tsx, not a descendant of #home) reads this to
+      // sit right after the tl notch's flap instead of at a fixed offset —
+      // set on :root, same pattern as --nav-h, since a custom property only
+      // inherits down the DOM tree and #main-header is #home's sibling, not
+      // its descendant.
+      document.documentElement.style.setProperty('--notch-tl-flat', `${flatTL}px`);
+      const br = notchBRRef.current;
+      if (br) {
+        br.style.width = `${flatBR + FRAME_INSET}px`;
+        br.style.clipPath = `path("${notchPatchPath(flatBR, 'br')}")`;
+      }
     };
     sync();
+    // The ask-strip's pills re-measure themselves once the webfont lands
+    // (HeroAskStrip.tsx's own document.fonts.ready.then(measure)) and that
+    // resize does reach the ResizeObserver below — but only after the font
+    // finishes downloading, which can land after the hero's entrance reveal
+    // has already faded the strip in at its pre-font (narrower/wider
+    // fallback-face) width. Re-syncing on the same fonts.ready checkpoint
+    // closes that gap instead of waiting on the resize round-trip.
+    let cancelled = false;
+    document.fonts?.ready.then(() => { if (!cancelled) sync(); });
     const ro = new ResizeObserver(sync);
     ro.observe(heroEl);
-    return () => ro.disconnect();
+    if (navbarBrandEl) ro.observe(navbarBrandEl);
+    if (heroAskEl) ro.observe(heroAskEl);
+    return () => { cancelled = true; ro.disconnect(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, heroEl]);
 
@@ -438,8 +512,8 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
           border/glow along the seam they create belongs to the outline
           below, which is why these must come first in DOM order — same
           z-index, so the outline paints over them. */}
-      <div id="bg-notch-tl" aria-hidden="true" role="presentation" />
-      <div id="bg-notch-br" aria-hidden="true" role="presentation" />
+      <div id="bg-notch-tl" ref={notchTLRef} aria-hidden="true" role="presentation" />
+      <div id="bg-notch-br" ref={notchBRRef} aria-hidden="true" role="presentation" />
       {/* The panel's border + glow, as a stroke along its real outline —
           see heroFramePath.ts. All three paths share one `d`, written by
           the ResizeObserver effect above. */}
