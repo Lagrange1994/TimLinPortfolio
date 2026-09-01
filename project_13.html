@@ -20,6 +20,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
   <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Warm the simulator iframe's origins ahead of the launch click: it's a separate
+       Vercel deployment that also pulls React/ReactDOM from esm.sh via an import map,
+       so a cold click pays DNS+TLS for both origins before any bytes of the app load.
+       preconnect starts that handshake in the background the moment this page loads. -->
+  <link rel="preconnect" href="https://cnc-simulator-sable.vercel.app" />
+  <link rel="preconnect" href="https://esm.sh" crossorigin />
   <style>
         body {
             background-color: #0B0C10;

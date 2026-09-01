@@ -7,7 +7,12 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollToPlugin, ScrollTrigger);
 
-const SIMULATOR_URL = "https://cnc-simulator-sable.vercel.app/";
+// Dev: hit the simulator's own local dev server (npm run dev in that repo, port 5175)
+// so iframe changes there are visible without a deploy. Build: always the deployed
+// Vercel URL, since a build artifact can't assume localhost:5175 is running.
+const SIMULATOR_URL = import.meta.env.DEV
+    ? "http://localhost:5175/"
+    : "https://cnc-simulator-sable.vercel.app/";
 
 const goHome = (e) => {
     if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
@@ -31,6 +36,8 @@ const goHome = (e) => {
                 hero_tags: ["個人作品", "React + GSAP", "IBM Carbon Design System", "外部服務 · 全螢幕模擬器"],
                 btn_launch: "INITIALIZE SIMULATION",
                 btn_launch_sub: "啟動即時模擬系統",
+                sim_slow_msg: "載入時間較長，可能是瀏覽器隱私保護或廣告攔截器擋掉了外部模擬器。",
+                sim_slow_open_new: "在新分頁開啟模擬器",
                 section_features: "核心模組 SYSTEM MODULES",
                 section_lang: "設計語言 DESIGN LANGUAGE",
                 back_home: "Back to Portfolio",
@@ -83,6 +90,8 @@ const goHome = (e) => {
                 hero_tags: ["Personal Project", "React + GSAP", "IBM Carbon Design System", "External · Fullscreen Simulator"],
                 btn_launch: "INITIALIZE SIMULATION",
                 btn_launch_sub: "Launch Real-Time Simulation",
+                sim_slow_msg: "Taking longer than usual — a privacy extension or ad blocker may be blocking the external simulator.",
+                sim_slow_open_new: "Open simulator in a new tab",
                 section_features: "SYSTEM MODULES",
                 section_lang: "DESIGN LANGUAGE",
                 back_home: "Back to Portfolio",
@@ -155,24 +164,39 @@ const goHome = (e) => {
             </nav>
         );
 
-        const SimulatorModal = ({ isOpen, onClose }) => {
+        const SimulatorModal = ({ isOpen, primed, onClose }) => {
             const closeBtnRef = useRef(null);
             const [iframeLoaded, setIframeLoaded] = useState(false);
+            const [showSlowNotice, setShowSlowNotice] = useState(false);
             const onCloseRef = useRef(onClose);
             onCloseRef.current = onClose;
 
             useEffect(() => {
                 if (!isOpen) return;
-                setIframeLoaded(false);
                 closeBtnRef.current?.focus();
                 const onKeyDown = (e) => { if (e.key === 'Escape') onCloseRef.current(); };
                 window.addEventListener('keydown', onKeyDown);
                 return () => window.removeEventListener('keydown', onKeyDown);
             }, [isOpen]);
 
-            if (!isOpen) return null;
+            useEffect(() => {
+                if (!isOpen || iframeLoaded) { setShowSlowNotice(false); return; }
+                // Some ad blockers / strict privacy modes (e.g. Brave Shields) silently
+                // drop the iframe navigation to the external simulator while a direct,
+                // same-URL top-level visit works fine — no error, no load event, just an
+                // indefinite spinner. Surface an escape hatch after a reasonable wait.
+                const slowTimer = setTimeout(() => setShowSlowNotice(true), 8000);
+                return () => clearTimeout(slowTimer);
+            }, [isOpen, iframeLoaded]);
+
+            // Not primed yet (button never hovered/focused/clicked) — don't even mount
+            // the iframe. Once primed, keep it mounted permanently (hidden via CSS, not
+            // unmounted) so the simulator's own JS/fonts/3D init that started loading
+            // during the hover head-start survive being closed and relaunched.
+            if (!primed) return null;
             return (
-                <div className="fixed inset-0 z-50 bg-black flex flex-col animate-fadeIn" role="dialog" aria-modal="true" aria-label="CNC Simulator">
+                <div className={`fixed inset-0 z-50 bg-black flex-col animate-fadeIn ${isOpen ? 'flex' : 'hidden'}`}
+                    role="dialog" aria-modal="true" aria-label="CNC Simulator" aria-hidden={!isOpen}>
                     <div className="h-10 bg-tech-panel border-b border-white/10 flex justify-between items-center px-4 shrink-0">
                         <div className="flex items-center space-x-4">
                             <span className="font-display text-tech-primary font-bold tracking-widest text-sm">SIMULATOR_LIVE</span>
@@ -186,8 +210,17 @@ const goHome = (e) => {
                     </div>
                     <div className="flex-1 relative w-full h-full bg-black overflow-hidden">
                         {!iframeLoaded && (
-                            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
+                            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black gap-4 px-6">
                                 <div className="w-10 h-10 border-2 border-tech-primary border-t-transparent rounded-full animate-spin"></div>
+                                {showSlowNotice && (
+                                    <div className="flex flex-col items-center gap-3 text-center max-w-sm">
+                                        <p className="font-mono text-xs text-tech-grey">{t.sim_slow_msg}</p>
+                                        <a href={SIMULATOR_URL} target="_blank" rel="noopener noreferrer"
+                                            className="chamfer-btn px-4 py-2 bg-tech-primary/20 border border-tech-primary/50 text-tech-primary font-mono text-[10px] tracking-widest hover:bg-tech-primary/30 transition-colors">
+                                            {t.sim_slow_open_new}
+                                        </a>
+                                    </div>
+                                )}
                             </div>
                         )}
                         <iframe
@@ -204,7 +237,7 @@ const goHome = (e) => {
             );
         };
 
-        const Hero = ({ onLaunch }) => {
+        const Hero = ({ onLaunch, onPrimeSimulator }) => {
             const containerRef = useRef(null);
             useEffect(() => {
                 gsap.fromTo(containerRef.current.children,
@@ -236,7 +269,8 @@ const goHome = (e) => {
                         <p className="mb-10 max-w-2xl text-tech-grey text-sm md:text-base font-light leading-relaxed text-center">{t.hero_desc}</p>
 
                         {/* Double Layer Launch Button */}
-                        <button onClick={onLaunch} className="group relative inline-block p-[2px] bg-tech-primary chamfer-btn cursor-pointer hover:scale-105 hover:-translate-y-1 transition-transform duration-300 shadow-[0_0_40px_rgba(24,144,255,0.3)]">
+                        <button onClick={onLaunch} onMouseEnter={onPrimeSimulator} onFocus={onPrimeSimulator}
+                            className="group relative inline-block p-[2px] bg-tech-primary chamfer-btn cursor-pointer hover:scale-105 hover:-translate-y-1 transition-transform duration-300 shadow-[0_0_40px_rgba(24,144,255,0.3)]">
                             <div className="w-full h-full chamfer-btn bg-tech-primary group-hover:bg-white px-8 py-4 md:px-12 md:py-6 flex flex-col items-center justify-center transition-colors">
                                 <span className="font-display font-bold text-base md:text-xl tracking-widest mb-1 flex items-center text-white group-hover:text-tech-dark transition-colors">
                                     <i className="ph ph-play-circle mr-2 md:mr-3"></i>{t.btn_launch}
@@ -667,6 +701,7 @@ const goHome = (e) => {
         const App = () => {
             const [isLoading, setIsLoading] = useState(true);
             const [isSimOpen, setIsSimOpen] = useState(false);
+            const [simPrimed, setSimPrimed] = useState(false);
             const [loaderStep, setLoaderStep] = useState(0);
             const [loaderDone, setLoaderDone] = useState(false);
             useEffect(() => {
@@ -693,9 +728,9 @@ const goHome = (e) => {
                         <div className="flex flex-col items-center"><div className="w-16 h-16 border-4 border-tech-primary border-t-transparent rounded-full animate-spin mb-4"></div><div className="font-mono text-tech-primary text-xs tracking-[0.3em] animate-pulse">{loaderDone ? t.loader_step4 : t[`loader_step${loaderStep + 1}`]}</div></div>
                     </div>
                     <Navbar />
-                    <main><Hero onLaunch={() => setIsSimOpen(true)} /><Features /><DesignLanguage /></main>
+                    <main><Hero onLaunch={() => { setSimPrimed(true); setIsSimOpen(true); }} onPrimeSimulator={() => setSimPrimed(true)} /><Features /><DesignLanguage /></main>
                     <Footer />
-                    <SimulatorModal isOpen={isSimOpen} onClose={() => setIsSimOpen(false)} />
+                    <SimulatorModal isOpen={isSimOpen} primed={simPrimed} onClose={() => setIsSimOpen(false)} />
                 </React.Fragment>
             );
         };
