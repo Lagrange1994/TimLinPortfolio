@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import * as THREE from 'three';
-import { heroFramePath, notchPatchPath, FRAME_INSET, FRAME_RADIUS, NOTCH_FLAT, NOTCH_RADIUS } from '../utils/heroFramePath';
+import { heroFramePath, FRAME_INSET, FRAME_RADIUS, NOTCH_FLAT, NOTCH_RADIUS } from '../utils/heroFramePath';
 
 // Fixed gap between a notch's content and its reference point on the S-bend
 // (NOTCH_CURVE_CLEARANCE below) — same 26px used for .navbar-brand's own
@@ -113,20 +113,14 @@ export default function BeamsBackground() {
     setHeroEl(document.getElementById('home'));
   }, []);
 
-  // One shared `d` (see heroFramePath.ts) drives all three: the visible 1px
-  // border stroke, the wide blurred stroke that stands in for the inner rim
-  // light, and the <clipPath> that keeps that wide stroke's outer half off
-  // the gradient. Same pattern as the portfolio wall's outline — the shape is
-  // computed once from the live box and drawn as a stroke, so the border and
-  // its glow trace the panel's actual edge (notches included) instead of
-  // approximating it with a rounded-rect box-shadow.
-  const framePathRefs = [
-    useRef<SVGPathElement>(null),
-    useRef<SVGPathElement>(null),
-    useRef<SVGPathElement>(null),
-  ];
-  const notchTLRef = useRef<HTMLDivElement>(null);
-  const notchBRRef = useRef<HTMLDivElement>(null);
+  // Drives the visible 1px border stroke — see heroFramePath.ts. Same
+  // pattern as the portfolio wall's outline — the shape is computed once
+  // from the live box and drawn as a stroke, so the border traces the
+  // panel's actual edge (notches included) instead of approximating it
+  // with a rounded-rect box-shadow.
+  const framePathRef = useRef<SVGPathElement>(null);
+  const frameGlowRef = useRef<SVGPathElement>(null);
+  const splineSceneRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (isMobile || !heroEl) return;
     // Queried once per effect run (not per sync() call) — .navbar-brand and
@@ -136,15 +130,6 @@ export default function BeamsBackground() {
     const heroAskEl = document.querySelector<HTMLElement>('#home .hero-ask');
 
     const sync = () => {
-      // The gradient #home paints as its background, and the two notch
-      // patches that re-paint slices of it, have to be sized off the SAME
-      // rectangle or the patches sample the wrong part of it. That used to
-      // be `100vw 100vh` on all three, which is subtly wrong: 100vw includes
-      // the scrollbar (measured live at 1030 against #home's own 1026), and
-      // #bg-notch-br anchors its copy to `100% 100%` — its right edge — so
-      // the 4px difference pushed its gradient 4px sideways from #home's,
-      // leaving a visible vertical seam down the notch's straight edge.
-      // #home's real box has no such ambiguity.
       heroEl.style.setProperty('--hero-bg-w', `${heroEl.clientWidth}px`);
       heroEl.style.setProperty('--hero-bg-h', `${heroEl.clientHeight}px`);
 
@@ -171,30 +156,35 @@ export default function BeamsBackground() {
         : NOTCH_FLAT;
 
       const d = heroFramePath(w, h, FRAME_RADIUS, flatTL, flatBR);
-      for (const ref of framePathRefs) ref.current?.setAttribute('d', d);
+      // Single source of truth for the panel's actual shape: the same `d`
+      // clips the real #bg-spline-scene box (the WebGL content itself),
+      // the border stroke, and the glow fill below. Previously the panel
+      // was left a plain rounded rect and the two notches were faked by a
+      // separate pair of patch elements (clip-path: notchPatchPath(...))
+      // painted over its corners — a second, independently-computed curve
+      // that only approximately agreed with this one, and the seam between
+      // them was exactly where a visible gap showed up once the border/glow
+      // made that seam load-bearing instead of merely cosmetic. Clipping
+      // the real container to this path removes the second curve (and the
+      // patches) entirely — there's nothing left to disagree with.
+      splineSceneRef.current?.style.setProperty('clip-path', `path("${d}")`);
+      // Same box, same `d` — the tag-capsule marquee is a plain rectangle
+      // with no curve of its own, so it needs the identical clip to taper
+      // off at the notches instead of spilling into them.
+      document.getElementById('hero-tags-clip')?.style.setProperty('clip-path', `path("${d}")`);
+      framePathRef.current?.setAttribute('d', d);
+      frameGlowRef.current?.setAttribute('d', d);
       // viewBox matches the element's own pixel box 1:1, so path units are
       // CSS px and the stroke width isn't scaled by the viewport.
       document.getElementById('bg-frame-outline')?.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      document.getElementById('bg-frame-glow')?.setAttribute('viewBox', `0 0 ${w} ${h}`);
 
-      // The two notch patches share the exact same flat-width math the
-      // outline above just used — see notchPatchPath's own comment for why
-      // patch-space and panel-space have to trace the identical curve.
-      const tl = notchTLRef.current;
-      if (tl) {
-        tl.style.width = `${flatTL + FRAME_INSET}px`;
-        tl.style.clipPath = `path("${notchPatchPath(flatTL, 'tl')}")`;
-      }
       // .navbar-menu (Navbar.tsx, not a descendant of #home) reads this to
       // sit right after the tl notch's flap instead of at a fixed offset —
       // set on :root, same pattern as --nav-h, since a custom property only
       // inherits down the DOM tree and #main-header is #home's sibling, not
       // its descendant.
       document.documentElement.style.setProperty('--notch-tl-flat', `${flatTL}px`);
-      const br = notchBRRef.current;
-      if (br) {
-        br.style.width = `${flatBR + FRAME_INSET}px`;
-        br.style.clipPath = `path("${notchPatchPath(flatBR, 'br')}")`;
-      }
     };
     sync();
     // Deliberately the ONLY trigger for re-measuring .navbar-brand/.hero-ask:
@@ -247,28 +237,6 @@ export default function BeamsBackground() {
       const canvas = canvasRef.current;
       if (canvas) canvas.style.opacity = p.toFixed(3);
       beamsActiveRef.current = p > 0.02;
-
-      // #bg-scene (the fixed beams canvas box) can't wait for the p curve
-      // above to finish unclipping: #home's gradient/spline/notches are
-      // ordinary content now, confined to #home's own box, so they
-      // physically end exactly where #home ends. #bg-scene has to go
-      // full-bleed at the same moment #home starts scrolling away — not
-      // stay boxed into its small inset/rounded shape — or there's a gap
-      // between #home's real bottom edge and wherever #bg-scene's still-
-      // clipped backdrop happens to be. Tied to window.scrollY (not p) for
-      // that reason: unclipping is about whether we've started scrolling at
-      // all, not how far through the spline→beams crossfade we are.
-      // Overriding inset/borderRadius/overflow inline (not clip-path — see
-      // the overflow:hidden comment in portfolio.css for why) beats the
-      // desktop media query's own values; clearing the inline values (empty
-      // string) falls back to those CSS values again.
-      const sceneEl = document.getElementById('bg-scene');
-      if (sceneEl) {
-        const scrolled = window.scrollY > 0;
-        sceneEl.style.inset = scrolled ? '0' : '';
-        sceneEl.style.borderRadius = scrolled ? '0' : '';
-        sceneEl.style.overflow = scrolled ? 'visible' : '';
-      }
 
       const shouldMount = p < 1;
       if (shouldMount !== splineBgMountedRef.current) {
@@ -502,35 +470,45 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
   // full-bleed layer with an <img> fallback, unrelated to #home).
   const heroFrame = !isMobile && heroEl && createPortal(
     <>
-      <div id="bg-spline-scene" aria-hidden="true" role="presentation">
-        {splineBgMounted && <spline-viewer id="spline-bg" url="./models/bg_scene.splinecode" />}
-      </div>
-      {/* The notch cut into the frame for the logo (top-left) and its
-          180°-symmetric twin (bottom-right, over the chat FAB) — see the
-          #bg-notch-tl/#bg-notch-br comment in portfolio.css for where
-          these exact numbers come from. Pure fill: they re-paint #home's
-          gradient over the panel's two corners, and nothing else. The
-          border/glow along the seam they create belongs to the outline
-          below, which is why these must come first in DOM order — same
-          z-index, so the outline paints over them. */}
-      <div id="bg-notch-tl" ref={notchTLRef} aria-hidden="true" role="presentation" />
-      <div id="bg-notch-br" ref={notchBRRef} aria-hidden="true" role="presentation" />
-      {/* The panel's border + glow, as a stroke along its real outline —
-          see heroFramePath.ts. All three paths share one `d`, written by
-          the ResizeObserver effect above. */}
-      <svg id="bg-frame-outline" aria-hidden="true" role="presentation">
+      {/* Outer ambient glow — stacked at z-index -4, below #bg-spline-scene
+          (-3), so the panel (now clipped to this identical shape, notches
+          included) paints over it entirely; only the blurred edge spilling
+          past the panel's real edge into the 24px frame band actually
+          shows — see the #bg-frame-glow/.bg-frame-glow-fill comment in
+          portfolio.css. Traces the identical `d` as #bg-frame-outline's
+          border below (one heroFramePath() call in sync() feeds both). */}
+      <svg id="bg-frame-glow" aria-hidden="true" role="presentation">
         <defs>
-          <clipPath id="bg-frame-clip">
-            <path ref={framePathRefs[2]} />
-          </clipPath>
+          <linearGradient id="bg-frame-glow-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#8A2BE2" />
+            <stop offset="50%" stopColor="#4A00E0" />
+            <stop offset="100%" stopColor="#00D4FF" />
+          </linearGradient>
         </defs>
-        {/* Stands in for #chat-fab's `inset 0 0 15px rgba(255,255,255,.1)`:
-            a stroke straddles the edge, so clipping it to the panel keeps
-            only the inner half — an inward-facing rim light. */}
-        <g clipPath="url(#bg-frame-clip)">
-          <path ref={framePathRefs[1]} className="bg-frame-rim" fill="none" />
-        </g>
-        <path ref={framePathRefs[0]} className="bg-frame-stroke" fill="none" />
+        <path ref={frameGlowRef} className="bg-frame-glow-fill" />
+      </svg>
+      {/* clip-path (set in sync(), same `d` as the border/glow paths below)
+          IS the notch now — no separate patch elements repainting the two
+          corners. See the clip-path comment in sync() for why that's the
+          fix, not just a simplification.
+
+          #bg-panel-shadow wraps it (rather than putting filter:drop-shadow
+          directly on #bg-spline-scene) because clip-path and filter don't
+          coexist on the same element here — confirmed live previously (see
+          the #bg-panel-shadow comment in portfolio.css) that a filter
+          silently fails to render at all on an element that also carries an
+          imperative clip-path. The wrapper has no clip-path of its own, so
+          its filter traces whatever shape its already-clipped child
+          rendered — the exact notch silhouette, for free. */}
+      <div id="bg-panel-shadow" aria-hidden="true" role="presentation">
+        <div id="bg-spline-scene" ref={splineSceneRef} aria-hidden="true" role="presentation">
+          {splineBgMounted && <spline-viewer id="spline-bg" url="./models/bg_scene.splinecode" />}
+        </div>
+      </div>
+      {/* The panel's crisp border, as a stroke along its real outline — see
+          heroFramePath.ts. */}
+      <svg id="bg-frame-outline" aria-hidden="true" role="presentation">
+        <path ref={framePathRef} className="bg-frame-stroke" fill="none" />
       </svg>
     </>,
     heroEl,

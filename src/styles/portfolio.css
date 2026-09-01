@@ -583,8 +583,7 @@
        justify-content:space-between still spaces those 3 items the same
        way production always has. Only the unscrolled desktop media query
        below turns these back into real boxes, to sit in the frame's
-       top-left notch (see #bg-notch-tl in the background-layer section)
-       instead. */
+       top-left notch (see heroFramePath.ts) instead. */
     .navbar-shape,
     .navbar-brand,
     .navbar-menu {
@@ -603,7 +602,7 @@
       display: none;
     }
 
-    /* Fits exactly inside the notch #bg-notch-tl cuts into the frame —
+    /* Fits exactly inside the notch cut into the frame's clip-path —
        same numbers, pulled from the Figma "Subtract" node (fileKey
        H94cQ9wrWHdL2tAJU2o726, node 19:30): a 629px-wide, 144px-tall flap
        for the logo (left transparent — the notch's own gradient shows
@@ -640,9 +639,9 @@
       }
 
       /* No explicit width: BeamsBackground.tsx's sync() effect measures
-         this element's own rendered width and sizes the notch (#bg-notch-tl
-         + the frame outline's cut) to match it plus clearance for the
-         notch's own S-bend, not the other way around —
+         this element's own rendered width and sizes the notch (the panel's
+         clip-path + the frame outline's cut) to match it plus clearance for
+         the notch's own S-bend, not the other way around —
          position:absolute with only `left` set already shrinks the box to
          its content's intrinsic width.
 
@@ -870,16 +869,26 @@
       }
     }
 
-    /* Viewport-sized (mobile/tablet) / inset-by-20px (desktop, see the
-       overflow:hidden rule further down) clipping container for the beams
-       canvas — this one stays position:fixed at every breakpoint (see
-       #bg-spline-scene below for the hero-scoped, scroll-away twin that
-       holds #spline-bg instead): #beams-bg is the site's permanent
-       persistent background once scrolled past the hero (see updateBg() in
+    /* Full-viewport, full-bleed clipping container for the beams canvas at
+       every breakpoint, hero included — this one stays position:fixed
+       forever (see #bg-spline-scene below for the hero-scoped, scroll-away
+       twin that holds #spline-bg instead): #beams-bg is the site's
+       permanent persistent background (see updateBg() in
        BeamsBackground.tsx), so it can never scroll away with the hero the
        way the gradient frame/spline scene now do. #beams-bg is absolutely
        positioned INSIDE it (not fixed itself), sized off ITS box rather
-       than its own. */
+       than its own.
+
+       Used to be inset-by-24px/rounded to the frame's own shape while the
+       hero panel look was up (#home painted a flat --bg surface over the
+       gap, so the mismatch never showed). Now that #home has no
+       background-color of its own, that clipped rounded-rect box was
+       narrower than the panel's own notch cutouts — the two areas fell
+       outside its rounded corners entirely, so at scroll 0 they showed
+       nothing from this layer at all, a visible gap exactly where the
+       notches are. Full-bleed at every scroll position removes the
+       mismatch instead of matching it to a shape that would just be wrong
+       again the next time the frame's geometry changes. */
     #bg-scene {
       position: fixed;
       inset: 0;
@@ -887,9 +896,7 @@
       pointer-events: none;
       /* Solid backdrop behind #beams-bg (parent background always paints
          behind its own children, no z-index needed) — covers the gap
-         before the canvas has rendered its first frame, and gets clipped
-         to the same rounded shape as the rest of this container since it's
-         the same box. */
+         before the canvas has rendered its first frame. */
       background: var(--bg);
     }
 
@@ -915,11 +922,24 @@
       background: var(--bg);
     }
 
-    /* Desktop-only (see the 1025px media query) — the hero panel's border and
-       glow. Below that breakpoint there's no framed panel at all, so the
-       element is still portaled into #home but paints nothing. */
+    /* Desktop-only (see the 1025px media query) — the hero panel's border.
+       Below that breakpoint there's no framed panel at all, so the element
+       is still portaled into #home but paints nothing. */
     #bg-frame-outline {
       display: none;
+    }
+
+    /* Desktop-only outer glow, same reasoning as #bg-frame-outline above. */
+    #bg-frame-glow {
+      display: none;
+    }
+
+    /* Below 1025px this is a structural no-op — .hero-tags positions itself
+       against #home directly (the base .hero-tags rule further down), same
+       as before this wrapper existed. Only the desktop media query below
+       turns it into a real, clipped box. */
+    #hero-tags-clip {
+      display: contents;
     }
 
     /* Desktop-only for the same reason: .hero-ask lives inside the frame's
@@ -970,75 +990,84 @@
       display: block;
     }
 
-    /* Desktop-only, HERO-ONLY gradient look. #home itself IS the gradient
-       now (no separate #bg-gradient element to keep aligned with anything
-       else) — its own background-image, sized/positioned explicitly to
-       100vw/100vh at 0,0 rather than left to auto-size against #home's own
-       box, purely so #bg-notch-tl/br below (small patches elsewhere in
-       #home, using the same background-image/size/position) sample the
-       exact same conceptual gradient and line up with zero seam. #home is
-       forced to exactly one viewport tall at this breakpoint (height:
-       100dvh above) and sits flush at the very top of the page (#main-
-       header is position:fixed, no flow space above it), so "100vw 100vh
-       at 0,0" and "#home's own box" are the same rectangle in practice.
-       No JS/opacity-fade needed for any of this any more: it's just
-       #home's own background, so it starts and stops existing exactly
-       where #home's own box does — scrolling past the hero naturally
-       leaves it behind, the same way hero's text/buttons do, with no
-       separate crossfade timer to keep in sync. */
+    /* Desktop-only, HERO-ONLY panel look. #home used to BE the gradient
+       (--grad-logo painted flat across its own box), then a flat --bg
+       surface once the gradient moved to the panel's own outer glow
+       (#bg-frame-glow/.bg-frame-glow-fill below). Neither is painted here
+       any more — #home has no background-color of its own now, so the same
+       fixed #bg-scene/#beams-bg every other section sits on shows through
+       the 24px frame band around the panel too, instead of the hero
+       reading as its own flat-dark surface. */
     @media (min-width: 1025px) {
+      /* overflow:visible overrides the base #home rule's overflow:hidden
+         (mobile/tablet still need that — no glow/shadow exist below this
+         breakpoint to bleed anywhere). At this width #bg-panel-shadow's
+         drop-shadow and #bg-frame-glow's blur are both designed to spill
+         past #home's own edge (see their comments below) — clipping them
+         here cut that spill off in a straight line exactly at the
+         hero/next-section boundary, reading as a hard seam instead of a
+         fade. #about (and every section after it) has no background of its
+         own — the fixed #bg-scene shows through — so the spill just
+         continues fading over it instead of being hidden. Safe to open up:
+         #bg-spline-scene keeps its own overflow:hidden + clip-path, so the
+         actual WebGL content still clips to the panel shape regardless of
+         this. */
       #home {
-        background-image: var(--grad-logo);
-        /* --hero-bg-w/h are #home's own measured box, written by the
-           ResizeObserver in BeamsBackground.tsx — see the comment there for
-           why the 100vw/100vh fallback isn't good enough on its own. */
-        background-size: var(--hero-bg-w, 100vw) var(--hero-bg-h, 100vh);
-        background-position: 0 0;
+        overflow: visible;
       }
 
       /* The "irregular-shape container" for the background Spline scene —
          inset by the frame's 24px thickness with a matching 48px corner
          radius (exact numbers pulled from the Figma file's "Subtract" node
          via get_design_context — a boolean-subtract path, not a plain
-         rounded rect; see #bg-notch-tl/#bg-notch-br below for the two
-         notches that path actually has). Nested inside #home now (see
-         BeamsBackground.tsx's portal) so inset:24px resolves against
-         #home's own real box directly, not a guessed viewport-height
-         stand-in.
+         rounded rect). Nested inside #home now (see BeamsBackground.tsx's
+         portal) so inset:24px resolves against #home's own real box
+         directly, not a guessed viewport-height stand-in.
 
          This box carries NO border and NO box-shadow — a CSS box can only
          ever be a rounded rect, and the panel isn't one: the two notches
          mean its real edge leaves the rounded-rect footprint entirely for
-         605px along two sides. A box-shadow there blooms around a corner
-         the eye never sees while the notch patch covers whatever part of
-         it lands inside, which is exactly the "glow is in the wrong place
-         and gets cut off" this replaced. The border and glow are drawn
-         instead as a stroke along the panel's actual outline —
-         #bg-frame-outline below, one shared path from heroFramePath.ts,
-         the same "compute the shape once, stroke it on top" approach the
+         ~600px along two sides. The border and glow are drawn instead as a
+         stroke/fill along the panel's actual outline — #bg-frame-outline
+         and #bg-frame-glow below, both fed the one shared path
+         BeamsBackground.tsx's sync() computes from heroFramePath.ts, the
+         same "compute the shape once, stroke it on top" approach the
          portfolio wall uses (see .portfolio-wall-outline).
 
-         overflow:hidden (not clip-path) is still how
-         the *content* gets clipped to the rounded shape: Chromium fails to
-         apply an ancestor's clip-path over the composited layer a
-         <spline-viewer> canvas gets promoted to wherever it overlaps
-         another composited layer — here, HeroSection's own foreground
-         #hero-spline figure — so clip-path left the frame unclipped
-         (bleeding to the viewport edge) for exactly the vertical span
-         behind that figure. overflow:hidden clips via the compositor's
-         scissor rect instead of a shape mask and doesn't have this failure
-         mode. The two corners the notches eat into don't need special-
-         casing here — #bg-notch-tl/#bg-notch-br paint over them regardless
-         of what this container's own (irrelevant, hidden) corner shape
-         looks like underneath.
+         The container's own clip-path — set inline by that same sync(), the
+         identical `d` — is what actually cuts the two notches out of the
+         WebGL content now, single source of truth with the border/glow.
+         This used to be faked instead: the container stayed a plain
+         rounded rect, and two separate patch elements (their own
+         independently-computed curve, notchPatchPath in heroFramePath.ts)
+         painted flat --bg over its corners to fake the cut. That second
+         curve only approximately agreed with this one, and the seam
+         between them was exactly where a visible gap showed up once the
+         border/glow made the seam load-bearing instead of merely cosmetic
+         — clip-path on the real container removes the second curve (and
+         the patches) entirely, so there's nothing left to disagree with.
 
-         z-index -3 is local to #home now (a plain positioned descendant,
-         not a page-root sibling): negative z-index descendants paint above
-         their own parent's background but below normal-flow content, so
-         this sits over #home's gradient and under #home's actual text/
-         buttons without #home needing its own stacking context. -3 (most
-         negative of the three #home-nested background layers below) keeps
-         it behind .hero-tags (-2) and the notches (-1).
+         This does reopen a real risk noted here previously: Chromium can
+         fail to apply an ancestor's clip-path over the composited layer a
+         <spline-viewer> canvas gets promoted to wherever it overlaps
+         another composited layer (here, HeroSection's own foreground
+         #hero-spline figure), leaving the frame unclipped for the vertical
+         span behind that figure. overflow:hidden below is kept as the
+         fallback shape for exactly that failure mode — if clip-path ever
+         doesn't apply, the content still clips to the plain rounded rect
+         instead of bleeding to the viewport edge; it just loses the notch
+         cutouts, not the whole frame. Re-check this live in a real browser
+         (not just this repo's own preview pane) after any change near here.
+
+         z-index -3 (on #bg-panel-shadow, the wrapper below — see its own
+         comment for why the wrapper carries it and not this element) is
+         local to #home now (a plain positioned descendant, not a page-root
+         sibling): negative z-index descendants paint above their own
+         parent's background but below normal-flow content, so this sits
+         over #home's gradient and under #home's actual text/buttons
+         without #home needing its own stacking context. -3 (most negative
+         of the four #home-nested background layers below) keeps it behind
+         .hero-tags (-2) and the border outline (-1).
 
          #spline-bg compensates the 24px shrink (top/left:-24px, size:
          calc(100% + 48px)) so it still covers the full container instead
@@ -1048,24 +1077,43 @@
          The 24px inset / 48px radius here are FRAME_INSET / FRAME_RADIUS in
          heroFramePath.ts — keep the two in sync, they describe the same
          box. */
-      #bg-spline-scene {
+      /* Wraps #bg-spline-scene to carry the panel's drop shadow — pressed
+         down onto #bg-frame-glow behind it, per the brief. filter:
+         drop-shadow HAS to live on a different element than the imperative
+         clip-path: confirmed live previously (see the old #bg-notch-tl
+         patch, back when that existed) that Chromium silently drops a
+         filter entirely on any element that also carries a JS-set
+         clip-path. Putting the shadow here instead works around that for
+         free — this wrapper has no clip-path of its own, so its filter just
+         traces whatever shape its clipped child (#bg-spline-scene) already
+         rendered: the exact notch silhouette, no separate geometry needed.
+         filter also makes this the element that establishes a stacking
+         context, which is why z-index -3 (the panel's slot, see the #home
+         comment above) moved here instead of staying on the child. Same
+         24px inset/48px-radius box as before — #bg-spline-scene itself
+         drops to inset:0 below since it's now measured from this wrapper. */
+      #bg-panel-shadow {
         position: absolute;
         inset: 24px;
-        border-radius: 48px;
-        overflow: hidden;
         z-index: -3;
         pointer-events: none;
+        filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.65));
       }
 
-      /* #bg-scene stays exactly as before — still position:fixed (see its
-         own rule further up), still the site's permanent post-hero
-         background, unaffected by any of this #home-nesting — just also
-         needs the same 24px inset/48px radius while the hero-only look is
-         up, so its own visible slice matches the frame. */
-      #bg-scene {
-        inset: 24px;
+      /* clip-path (set inline by BeamsBackground.tsx's sync(), the same `d`
+         as #bg-frame-outline/#bg-frame-glow below) is what actually cuts
+         the two notches now — border-radius+overflow:hidden here are just
+         the plain-rounded-rect base shape underneath it, kept for the same
+         Chromium/composited-canvas reason the #home comment above
+         describes (overflow:hidden, not clip-path, is what survives that
+         bug for the base shape) rather than to draw the notches
+         themselves. */
+      #bg-spline-scene {
+        position: absolute;
+        inset: 0;
         border-radius: 48px;
         overflow: hidden;
+        pointer-events: none;
       }
 
       #spline-bg,
@@ -1076,84 +1124,20 @@
         height: calc(100% + 48px);
       }
 
-      /* The frame's two notches — plain painted shapes (a colored div with
-         clip-path), NOT a clip applied to WebGL content, so the Chromium
-         bug above doesn't apply here; they just sit on top (z-index -1,
-         above #bg-spline-scene's -3 and .hero-tags' -2) and cover whatever
-         the spline scene painted underneath. #bg-notch-br is the exact
-         same path point-reflected through its own box center — the shape
-         is genuinely 180°-symmetric between the two notches (one for the
-         logo, one for the chat FAB) — so both corners share one set of
-         numbers.
-
-         Geometry: originally the exact Figma "Subtract" boundary (144px
-         flat opening, 48px corner radius, matching the frame's own
-         24px thickness/48px radius). Rebuilt at a 100px flat opening —
-         with thickness fixed at 24px, a 48px radius makes the two
-         corner fillets alone (24+48+something+48) overshoot 100px, so
-         the fillet radius is reduced to 38px and the straight run
-         between the two S-curve fillets is dropped to 0 (24 + 38 + 38 =
-         100, exactly) — same construction, just a tighter turn.
-
-         width and clip-path are no longer set here — BeamsBackground.tsx's
-         sync() effect writes both inline, per notch, from that notch's own
-         measured content width (.navbar-brand / #home .hero-ask) plus a
-         fixed 24px gap (notchPatchPath in heroFramePath.ts). Kept as plain
-         CSS only for the properties that never change per-content: height
-         (depth is fixed, only width adapts), the two anchor corners, and
-         the shared background-image/size.
-
-         background-size (#home's own measured box, inherited via
-         --hero-bg-w/h) + background-position makes each notch sample the
-         exact same gradient #home paints as its own background (see the
-         #home rule above): all three describe one rectangle — #home's box —
-         so a notch positioned at top:0/left:0 (or right:0/bottom:0) shows
-         precisely the slice of the gradient that would otherwise be there,
-         with no separate element to keep in sync with and no seam.
-
-         Deliberately no border/shadow/filter of their own. A patch's clip
-         silhouette is a closed box — three of its sides are the page edge,
-         only the fourth is the seam against the panel — so anything drawn
-         around it also outlines those three non-edges, and its outer glow
-         points the wrong way (out from the patch, i.e. INTO the panel,
-         where the frame's glow should be coming the other way). The seam
-         gets its border and glow from #bg-frame-outline below, which knows
-         which side is which. */
-      #bg-notch-tl,
-      #bg-notch-br {
-        position: absolute;
-        height: 138px;
-        z-index: -1;
-        pointer-events: none;
-        background-image: var(--grad-logo);
-        background-size: var(--hero-bg-w, 100vw) var(--hero-bg-h, 100vh);
-      }
-
-      #bg-notch-tl {
-        top: 0;
-        left: 0;
-        background-position: 0 0;
-      }
-
-      #bg-notch-br {
-        right: 0;
-        bottom: 0;
-        background-position: 100% 100%;
-      }
-
-      /* The panel's border + glow. Boxed exactly over #bg-spline-scene (same
+      /* The panel's crisp border. Boxed exactly over #bg-spline-scene (same
          24px inset), with its path in that box's own coordinates 1:1 — the
          viewBox is written to match the pixel size by the ResizeObserver in
          BeamsBackground.tsx, so stroke-width stays in real px at any
          viewport.
 
-         Same z-index as the two notch patches above and later in DOM order,
-         so it paints over them: the seam a patch creates is exactly where
-         this stroke runs, and the stroke has to win there.
+         z-index -1 keeps it above #bg-spline-scene's own -3 (and the glow's
+         -4 below), so the line traces cleanly on top of both — same `d` as
+         the container's own clip-path, so there's no separate seam to win
+         against any more.
 
          overflow:visible because an SVG root clips to its viewBox by
-         default, which would cut both the drop-shadow and the outer half of
-         the 1px stroke straight off at the panel's edge. */
+         default, which would cut the outer half of the 1px stroke straight
+         off at the panel's edge. */
       #bg-frame-outline {
         display: block;
         position: absolute;
@@ -1166,73 +1150,132 @@
         overflow: visible;
       }
 
-      /* #chat-fab's `border: 1px solid rgba(255,255,255,.3)` plus its
-         `inset 0 0 0 1px rgba(255,255,255,.1)` hairline, which sits directly
-         inside that border — a single stroke at their combined alpha, since
-         at 1px the two are the same pixel.
-
-         The glow is .btn-grad's `0 4px 20px rgba(255,101,132,.35)` as a
-         drop-shadow, which takes the rendered stroke as its source and so
-         follows every curve of the outline instead of a rounded-rect
-         footprint. Split across two layers at a raised alpha: the FAB casts
-         from a filled 48px circle and this casts from a 1px line, so the
-         source alpha reproduces almost nothing here. Deliberately NOT on
-         #bg-frame-outline itself — a filter there would take the whole SVG
-         as its source, .bg-frame-rim's 30px white band included, and smear a
-         wide pink haze down the panel's inner edge. */
+      /* Plain crisp border — same job as #chat-fab's own `border: 1px solid
+         rgba(255,255,255,.3)` + its inset hairline (at 1px the two are the
+         same pixel, hence one single stroke here). No blur/color of its
+         own — that's #bg-frame-glow below, a separate layer stacked behind
+         this one so the line on top stays crisp. */
       .bg-frame-stroke {
         stroke: rgba(255, 255, 255, 0.4);
         stroke-width: 1;
-        filter:
-          drop-shadow(0 4px 12px rgba(255, 101, 132, 0.75))
-          drop-shadow(0 2px 24px rgba(255, 101, 132, 0.45));
       }
 
-      /* #chat-fab's `inset 0 0 15px rgba(255,255,255,.1)`. Drawn 30px wide
-         and blurred, then clipped to the panel (see the <g clip-path> in
-         BeamsBackground.tsx) so only the inner 15px survives. */
-      .bg-frame-rim {
-        stroke: rgba(255, 255, 255, 0.1);
-        stroke-width: 30;
-        filter: blur(8px);
+      /* Outer ambient glow — YouTube "ambient mode" style light bleeding
+         out from behind the panel's own edge, tinted with the site's brand
+         gradient (--grad-logo's literal stops; fill:url() can't take a CSS
+         gradient, only an SVG paint server, hence the <linearGradient>
+         defined alongside this path in BeamsBackground.tsx instead of a
+         var() here).
+
+         Same box/path as #bg-frame-outline above (identical viewBox, same
+         `d` — BeamsBackground.tsx's sync() writes both from one
+         heroFramePath() call), but z-index -4 — BELOW #bg-spline-scene's
+         -3, i.e. behind the panel, not layered over it. */
+      #bg-frame-glow {
+        display: block;
+        position: absolute;
+        top: 24px;
+        left: 24px;
+        width: calc(100% - 48px);
+        height: calc(100% - 48px);
+        z-index: -4;
+        pointer-events: none;
+        overflow: visible;
       }
 
-      /* Tag-capsule marquee must not visually press on top of the notch's
-         gradient shape (z:-1 above) — z:-2 keeps it above the spline scene
-         (-3) it floats over everywhere else, but tucks it underneath the
-         notch corner wherever the two overlap.
+      /* A FILLED copy of the panel's own silhouette, blurred — not a thick
+         stroke along the outline. A stroke has to offset the path by half
+         its width on both sides, and at the notch's tight S-bend (three
+         38px-radius fillets stacked back to back — see NOTCH_RADIUS in
+         heroFramePath.ts) a stroke anywhere near that width self-
+         intersects, pinching down to a visible gap right where the notch
+         is — confirmed live, that's exactly the "notch has a hole" bug a
+         64px stroke produced here. Blurring a filled shape has no such
+         failure mode at concave corners: blur only softens the boundary in
+         place, it never offsets/self-intersects, so the same silhouette
+         blurs cleanly all the way around the notch. The filled interior
+         stays fully saturated (blur barely touches it, and the opaque
+         panel sitting on top hides it anyway) — only the blurred edge,
+         spilling outward into the 24px frame band between this outline and
+         #home's own edge, actually reads as visible light. */
+      /* Breathing pulse — the YouTube-ambient-mode brief asked for the
+         glow's rhythm to track the Spline scene's own animation, but
+         reading motion data back out of it means touching the Spline
+         runtime's internals (the same `_spline`/getAllObjects() API a
+         previous change here used and was told, explicitly, never to
+         touch again), so this is a plain CSS breathing cycle instead —
+         slow and even rather than reactive to any specific scene event.
+         6s (not a snappier 2-3s) reads as ambient/atmospheric rather than
+         as an alert or a loading spinner. */
+      @keyframes bg-frame-glow-breathe {
+        0%, 100% { opacity: 0.55; }
+        50% { opacity: 0.95; }
+      }
 
-         bottom lines this row's TOP edge up with .hero-ask's own top
-         (822px from #home's top at 1440x900) rather than matching either
-         one's bottom or centre — the row has no explicit height (font-size
-         13px + 7px padding top/bottom on .tag-capsule, ~36px total), so
-         this is back-solved from the live measurement: bottom = #home's
-         height − .hero-ask's top − this row's own rendered height.
+      .bg-frame-glow-fill {
+        fill: url(#bg-frame-glow-grad);
+        opacity: 0.85;
+        filter: blur(40px);
+        animation: bg-frame-glow-breathe 6s ease-in-out infinite;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .bg-frame-glow-fill {
+          animation: none;
+        }
+      }
+
+      /* #hero-tags-clip shares the panel's exact box (same top/left/size as
+         #bg-spline-scene, #bg-frame-outline, #bg-frame-glow) and gets the
+         identical clip-path in sync() — the marquee is a plain horizontal
+         strip with no curve of its own, so without this it doesn't taper
+         off at the notches, it just keeps going straight through the
+         rectangular area the ask-strip/navbar logo actually occupy. z-index
+         -2 keeps the whole wrapper above the spline scene (-3) it floats
+         over everywhere else and below the border/glow paint order for the
+         notch seam it now shares with them. */
+      #hero-tags-clip {
+        display: block;
+        position: absolute;
+        top: 24px;
+        left: 24px;
+        width: calc(100% - 48px);
+        height: calc(100% - 48px);
+        z-index: -2;
+        pointer-events: none;
+      }
+
+      /* bottom lines this row's TOP edge up with .hero-ask's own top (822px
+         from #home's top at 1440x900) rather than matching either one's
+         bottom or centre — the row has no explicit height (font-size 13px +
+         7px padding top/bottom on .tag-capsule, ~36px total), so this is
+         back-solved from the live measurement: bottom = #home's height −
+         .hero-ask's top − this row's own rendered height, then re-based
+         from #home's bottom onto #hero-tags-clip's own (24px higher, since
+         the clip box is inset by FRAME_INSET) — 41.2 − 24 = 17.2.
          Re-measure both if .tag-capsule's font-size/padding, or .hero-ask's
          own position, ever change.
 
-         left/right replace the base rule's calc(100% - 2rem) + max-width
-         centering with FRAME_INSET (24px, matching heroFramePath.ts and
-         #bg-spline-scene's own inset below) on both sides — the exact box
-         the panel occupies, at any viewport width, no 1440px cap. The mask
-         below fades over the last 5% of that box, so the marquee's true
-         vanishing point (where it reaches full transparency) now sits right
-         at the panel's inner edge instead of 8px outside it, under the
-         frame's own border rather than in the gap before it. */
+         left/right:0 (not the base rule's calc(100% - 2rem) + max-width
+         centering) fill the clip box's own width exactly — that box already
+         IS the panel's inset/no-1440px-cap box, so there's nothing left to
+         replicate here. The mask below fades over the last 5% of that box,
+         so the marquee's true vanishing point (where it reaches full
+         transparency) sits right at the panel's inner edge instead of 8px
+         outside it, under the frame's own border rather than in the gap
+         before it. */
       /* #home prefix (not bare .hero-tags) beats the later, higher-source-
          order base .hero-tags rule below at equal specificity otherwise. */
       #home .hero-tags {
-        z-index: -2;
-        bottom: 41.2px;
+        bottom: 17.2px;
         /* left+right+width:auto (not left+width alone) because the base
            rule's margin:0 auto is still in effect here — with that margin
            still auto, left+width+the base rule's right:0 would trigger the
            equal-auto-margins centering rule instead of landing where left
-           says, splitting the difference between this 24px and the base
-           16px onto both edges (36px/12px, not 24px/24px). margin:0 turns
-           that off so left/right are used exactly as given. */
-        left: 24px;
-        right: 24px;
+           says, splitting the difference onto both edges instead of using
+           0/0 exactly as given. margin:0 turns that off. */
+        left: 0;
+        right: 0;
         width: auto;
         margin: 0;
       }
@@ -1253,14 +1296,14 @@
          No explicit width any more: BeamsBackground.tsx's sync() effect
          measures THIS element's own rendered width (position:absolute with
          only `right` set already shrinks it to intrinsic content width) and
-         sizes the notch (#bg-notch-br + the frame outline's cut) to match
-         it plus a 24px gap — the notch shrink-wraps to however long the
-         labels happen to be in the current language, not the other way
-         around.
+         sizes the notch (the panel's clip-path + the frame outline's cut)
+         to match it plus a 24px gap — the notch shrink-wraps to however
+         long the labels happen to be in the current language, not the
+         other way around.
 
-         z-index 1 puts it above the notch patch (-1) that paints this corner;
-         without that the patch would cover it exactly as it covers the
-         .hero-tags marquee running underneath. */
+         z-index 1 puts it above the panel/border/glow stack (all negative)
+         sitting behind this corner — without it those would cover this
+         element exactly as they cover the .hero-tags marquee underneath. */
       /* One white capsule, not four floating chips: the notch is already a
          busy silhouette, and a single solid shape reads as one object sitting
          in it instead of competing with its curves. 44px tall to match the

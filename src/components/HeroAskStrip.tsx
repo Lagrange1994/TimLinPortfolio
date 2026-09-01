@@ -5,7 +5,7 @@ import { pickReplacement } from '../utils/heroAskRotation';
 
 /**
  * Fills the hero frame's bottom-right notch — the cut made for #chat-fab (see
- * #bg-notch-br in portfolio.css) — with the chat's own call to action: one
+ * heroFramePath.ts) — with the chat's own call to action: one
  * white capsule, button-height, holding the AI mark, the prompt, and three
  * small outlined question pills.
  *

@@ -459,24 +459,32 @@ export default function HeroSection() {
           </div>
         </div>
       </div>
-      <div className="hero-tags scroller hero-scroller" data-direction="left" data-animated="true">
-        <div className="scroller-inner">
-          <span className="tag-capsule"><i className="fas fa-rocket" style={{ color: '#4ade80' }}></i>Open for Opportunities</span>
-          <span className="tag-capsule"><i className="fas fa-sitemap" style={{ color: '#60a5fa' }}></i>Complex System UX</span>
-          <span className="tag-capsule"><i className="fas fa-cube" style={{ color: '#c084fc' }}></i>3D Web Experience</span>
-          <span className="tag-capsule"><i className="fas fa-robot" style={{ color: '#67e8f9' }}></i>AI-Powered Workflow</span>
-          <span className="tag-capsule"><i className="fas fa-mobile-alt" style={{ color: '#fb923c' }}></i>Mobile App UI</span>
-          <span className="tag-capsule"><i className="fas fa-landmark" style={{ color: '#4ade80' }}></i>Gov &amp; Enterprise Projects</span>
-          <span className="tag-capsule"><i className="fas fa-puzzle-piece" style={{ color: '#facc15' }}></i>Problem Solver</span>
-          <span className="tag-capsule"><i className="ph-fill ph-map-pin" style={{ color: '#f87171' }}></i>Taipei, Taiwan</span>
-          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-rocket" style={{ color: '#4ade80' }}></i>Open for Opportunities</span>
-          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-sitemap" style={{ color: '#60a5fa' }}></i>Complex System UX</span>
-          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-cube" style={{ color: '#c084fc' }}></i>3D Web Experience</span>
-          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-robot" style={{ color: '#67e8f9' }}></i>AI-Powered Workflow</span>
-          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-mobile-alt" style={{ color: '#fb923c' }}></i>Mobile App UI</span>
-          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-landmark" style={{ color: '#4ade80' }}></i>Gov &amp; Enterprise Projects</span>
-          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-puzzle-piece" style={{ color: '#facc15' }}></i>Problem Solver</span>
-          <span className="tag-capsule" aria-hidden="true"><i className="ph-fill ph-map-pin" style={{ color: '#f87171' }}></i>Taipei, Taiwan</span>
+      {/* Desktop-only clip box (display:contents below 1025px — see
+          portfolio.css): shares the panel's exact box and clip-path
+          (BeamsBackground.tsx's sync() writes both from the same
+          heroFramePath() `d` as the border/glow), so the marquee gets cut
+          off wherever it crosses into either notch instead of spilling
+          into the space the ask-strip/navbar logo actually occupies. */}
+      <div id="hero-tags-clip">
+        <div className="hero-tags scroller hero-scroller" data-direction="left" data-animated="true">
+          <div className="scroller-inner">
+            <span className="tag-capsule"><i className="fas fa-rocket" style={{ color: '#4ade80' }}></i>Open for Opportunities</span>
+            <span className="tag-capsule"><i className="fas fa-sitemap" style={{ color: '#60a5fa' }}></i>Complex System UX</span>
+            <span className="tag-capsule"><i className="fas fa-cube" style={{ color: '#c084fc' }}></i>3D Web Experience</span>
+            <span className="tag-capsule"><i className="fas fa-robot" style={{ color: '#67e8f9' }}></i>AI-Powered Workflow</span>
+            <span className="tag-capsule"><i className="fas fa-mobile-alt" style={{ color: '#fb923c' }}></i>Mobile App UI</span>
+            <span className="tag-capsule"><i className="fas fa-landmark" style={{ color: '#4ade80' }}></i>Gov &amp; Enterprise Projects</span>
+            <span className="tag-capsule"><i className="fas fa-puzzle-piece" style={{ color: '#facc15' }}></i>Problem Solver</span>
+            <span className="tag-capsule"><i className="ph-fill ph-map-pin" style={{ color: '#f87171' }}></i>Taipei, Taiwan</span>
+            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-rocket" style={{ color: '#4ade80' }}></i>Open for Opportunities</span>
+            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-sitemap" style={{ color: '#60a5fa' }}></i>Complex System UX</span>
+            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-cube" style={{ color: '#c084fc' }}></i>3D Web Experience</span>
+            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-robot" style={{ color: '#67e8f9' }}></i>AI-Powered Workflow</span>
+            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-mobile-alt" style={{ color: '#fb923c' }}></i>Mobile App UI</span>
+            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-landmark" style={{ color: '#4ade80' }}></i>Gov &amp; Enterprise Projects</span>
+            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-puzzle-piece" style={{ color: '#facc15' }}></i>Problem Solver</span>
+            <span className="tag-capsule" aria-hidden="true"><i className="ph-fill ph-map-pin" style={{ color: '#f87171' }}></i>Taipei, Taiwan</span>
+          </div>
         </div>
       </div>
       <HeroAskStrip />
