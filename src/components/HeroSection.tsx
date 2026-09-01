@@ -329,9 +329,9 @@ export default function HeroSection() {
   // every time it scrolled back, so e3e0e81 made it load once and stay.
   // But leaving it permanently mounted means it keeps burning a WebGL
   // context for the rest of the page's lifetime, stacked on top of the
-  // beams shader canvas — with a background Spline scene added near the
-  // top, that's up to 3 concurrent contexts, and sustained GPU contention
-  // from an always-alive hero context has been the suspect for renderer
+  // background Spline scene near the top — up to 2 concurrent contexts,
+  // and sustained GPU contention from an always-alive hero context has
+  // been the suspect for renderer
   // freezes (page stops responding to scroll — see homepage-webgl-stability
   // memory) since before e3e0e81. Debouncing the drop gets both: a normal
   // scroll-past-and-back within HERO_DROP_DELAY_MS never triggers a

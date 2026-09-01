@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import * as THREE from 'three';
 import { heroFramePath, FRAME_INSET, FRAME_RADIUS, NOTCH_FLAT, NOTCH_RADIUS } from '../utils/heroFramePath';
 
 // Fixed gap between a notch's content and its reference point on the S-bend
@@ -19,84 +18,15 @@ const NOTCH_CONTENT_GAP = 26;
 // content (well under the wordmark's height) clears it with more room.
 const NOTCH_CURVE_CLEARANCE = NOTCH_RADIUS;
 
-// ── Constants (matches the original <Beams /> usage example) ────────────────
-const BEAM_WIDTH = 2.6;
-const BEAM_HEIGHT = 15;
-const BEAM_NUMBER = 14;
-const LIGHT_COLOR = '#6C63FF'; // --primary in portfolio.css
-const SPEED = 2;
-const NOISE_INTENSITY = 1.35;
-const SCALE = 0.18;
-const ROTATION = 150;
-
-function hexToRGB01(hex: string): [number, number, number] {
-  const c = hex.replace('#', '');
-  return [parseInt(c.slice(0, 2), 16) / 255, parseInt(c.slice(2, 4), 16) / 255, parseInt(c.slice(4, 6), 16) / 255];
-}
-
-// ── GLSL noise (Classic Perlin 3D + value noise 2D) — identical to original ──
-const NOISE_GLSL = `
-float random(in vec2 st){return fract(sin(dot(st.xy,vec2(12.9898,78.233)))*43758.5453123);}
-float noise(in vec2 st){
-  vec2 i=floor(st),f=fract(st);
-  float a=random(i),b=random(i+vec2(1.,0.)),c=random(i+vec2(0.,1.)),d=random(i+vec2(1.,1.));
-  vec2 u=f*f*(3.-2.*f);
-  return mix(a,b,u.x)+(c-a)*u.y*(1.-u.x)+(d-b)*u.x*u.y;
-}
-vec4 permute(vec4 x){return mod(((x*34.)+1.)*x,289.);}
-vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
-vec3 fade(vec3 t){return t*t*t*(t*(t*6.-15.)+10.);}
-float cnoise(vec3 P){
-  vec3 Pi0=floor(P),Pi1=Pi0+vec3(1.);
-  Pi0=mod(Pi0,289.);Pi1=mod(Pi1,289.);
-  vec3 Pf0=fract(P),Pf1=Pf0-vec3(1.);
-  vec4 ix=vec4(Pi0.x,Pi1.x,Pi0.x,Pi1.x),iy=vec4(Pi0.yy,Pi1.yy);
-  vec4 iz0=Pi0.zzzz,iz1=Pi1.zzzz;
-  vec4 ixy=permute(permute(ix)+iy);
-  vec4 ixy0=permute(ixy+iz0),ixy1=permute(ixy+iz1);
-  vec4 gx0=ixy0/7.,gy0=fract(floor(gx0)/7.)-.5;gx0=fract(gx0);
-  vec4 gz0=vec4(.5)-abs(gx0)-abs(gy0),sz0=step(gz0,vec4(0.));
-  gx0-=sz0*(step(0.,gx0)-.5);gy0-=sz0*(step(0.,gy0)-.5);
-  vec4 gx1=ixy1/7.,gy1=fract(floor(gx1)/7.)-.5;gx1=fract(gx1);
-  vec4 gz1=vec4(.5)-abs(gx1)-abs(gy1),sz1=step(gz1,vec4(0.));
-  gx1-=sz1*(step(0.,gx1)-.5);gy1-=sz1*(step(0.,gy1)-.5);
-  vec3 g000=vec3(gx0.x,gy0.x,gz0.x),g100=vec3(gx0.y,gy0.y,gz0.y);
-  vec3 g010=vec3(gx0.z,gy0.z,gz0.z),g110=vec3(gx0.w,gy0.w,gz0.w);
-  vec3 g001=vec3(gx1.x,gy1.x,gz1.x),g101=vec3(gx1.y,gy1.y,gz1.y);
-  vec3 g011=vec3(gx1.z,gy1.z,gz1.z),g111=vec3(gx1.w,gy1.w,gz1.w);
-  vec4 norm0=taylorInvSqrt(vec4(dot(g000,g000),dot(g010,g010),dot(g100,g100),dot(g110,g110)));
-  g000*=norm0.x;g010*=norm0.y;g100*=norm0.z;g110*=norm0.w;
-  vec4 norm1=taylorInvSqrt(vec4(dot(g001,g001),dot(g011,g011),dot(g101,g101),dot(g111,g111)));
-  g001*=norm1.x;g011*=norm1.y;g101*=norm1.z;g111*=norm1.w;
-  float n000=dot(g000,Pf0),n100=dot(g100,vec3(Pf1.x,Pf0.yz));
-  float n010=dot(g010,vec3(Pf0.x,Pf1.y,Pf0.z)),n110=dot(g110,vec3(Pf1.xy,Pf0.z));
-  float n001=dot(g001,vec3(Pf0.xy,Pf1.z)),n101=dot(g101,vec3(Pf1.x,Pf0.y,Pf1.z));
-  float n011=dot(g011,vec3(Pf0.x,Pf1.yz)),n111=dot(g111,Pf1);
-  vec3 fade_xyz=fade(Pf0);
-  vec4 n_z=mix(vec4(n000,n100,n010,n110),vec4(n001,n101,n011,n111),fade_xyz.z);
-  vec2 n_yz=mix(n_z.xy,n_z.zw,fade_xyz.y);
-  return 2.2*mix(n_yz.x,n_yz.y,fade_xyz.x);
-}`;
-
-
 export default function BeamsBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [splineBgMounted, setSplineBgMounted] = useState(true);
   const splineBgMountedRef = useRef(splineBgMounted);
   splineBgMountedRef.current = splineBgMounted;
-  // Written by updateBg() (runs from mount) and read by the animate loop
-  // inside doHeavyInit (only exists once the deferred WebGL setup below has
-  // run) — a ref instead of a local var so the two can share it despite
-  // starting at different times.
-  const beamsActiveRef = useRef(false);
 
   // The decorative background Spline scene (desktop/tablet — see isMobile
   // below) gets fully unmounted (not just faded to opacity 0) once scrolled
   // past the hero — see updateBg() below.
 
-  // Below HeroSection's own Spline breakpoint (see HERO_FIGURE_BREAKPOINT in
-  // Loader.tsx), skip the beams canvas's own Three.js renderer entirely (see
-  // the early return below) too — that drops mobile to zero WebGL contexts.
   // Checked once on mount, matching the same one-shot (no resize listener)
   // convention HeroSection uses for its own figure.
   const [isMobile] = useState(() => window.innerWidth < 768);
@@ -148,9 +78,22 @@ export default function BeamsBackground() {
       const heroRect = heroEl.getBoundingClientRect();
       const panelLeft = heroRect.left + FRAME_INSET;
       const panelRight = heroRect.right - FRAME_INSET;
+      // A reload restored to a scrolled position can already carry
+      // #main-header's .scrolled class on this first sync() — under that
+      // class .navbar-brand is display:contents (portfolio.css) and its
+      // tagline/divider are hidden, so its getBoundingClientRect() comes
+      // back zero-size and the notch locks in collapsed even once the user
+      // scrolls back to top. Measuring is a one-shot (see the "pin to first
+      // paint" comment below), so it must read the unscrolled box the notch
+      // is actually sized for, regardless of the real scroll position at
+      // mount — strip the class for the read, then restore it.
+      const headerEl = document.getElementById('main-header');
+      const wasScrolled = headerEl?.classList.contains('scrolled') ?? false;
+      if (wasScrolled) headerEl!.classList.remove('scrolled');
       const flatTL = navbarBrandEl
         ? navbarBrandEl.getBoundingClientRect().right - panelLeft + NOTCH_CURVE_CLEARANCE + NOTCH_CONTENT_GAP
         : NOTCH_FLAT;
+      if (wasScrolled) headerEl!.classList.add('scrolled');
       const flatBR = heroAskEl
         ? panelRight - heroAskEl.getBoundingClientRect().left + NOTCH_CURVE_CLEARANCE + NOTCH_CONTENT_GAP
         : NOTCH_FLAT;
@@ -206,21 +149,16 @@ export default function BeamsBackground() {
   }, [isMobile, heroEl]);
 
   useEffect(() => {
-    // Mobile: jpg-only background, no beams canvas — nothing here to set up.
+    // Mobile: jpg-only background — nothing here to set up.
     if (isMobile) return;
 
-    let cancelled = false;
-    let cleanupFn: (() => void) | null = null;
-
-    // Scroll-driven spline→beams crossfade starts tracking from mount —
-    // independent of doHeavyInit below (which only creates the WebGL
-    // renderer). The gradient frame/notches are now #home's own background
-    // plus small patches nested inside it (see portfolio.css), so they need
-    // no JS opacity fade any more — they simply exist exactly where #home's
-    // box does, same as its text/buttons. Only the spline→beams handoff
-    // (this component's own canvas fading in as the hero's spline scene
-    // fades out) and #bg-scene's unclip (the beams canvas's box, still
-    // fixed, going full-bleed once scrolled) still need JS.
+    // The gradient frame/notches are #home's own background plus small
+    // patches nested inside it (see portfolio.css), so they need no JS
+    // opacity fade — they simply exist exactly where #home's box does, same
+    // as its text/buttons. The one thing still needing JS: fading the hero's
+    // background Spline scene out (and unmounting it once fully past) as the
+    // user scrolls, so the sections below settle onto #bg-scene's flat
+    // backdrop instead of carrying a live WebGL context down the whole page.
     let ticking = false;
 
     function updateBg() {
@@ -234,9 +172,6 @@ export default function BeamsBackground() {
       // element gets unmounted/remounted by the splineBgMounted toggle below.
       const splineEl = document.getElementById('spline-bg');
       if (splineEl) (splineEl as HTMLElement).style.opacity = (1 - p).toFixed(3);
-      const canvas = canvasRef.current;
-      if (canvas) canvas.style.opacity = p.toFixed(3);
-      beamsActiveRef.current = p > 0.02;
 
       const shouldMount = p < 1;
       if (shouldMount !== splineBgMountedRef.current) {
@@ -251,211 +186,8 @@ export default function BeamsBackground() {
     window.addEventListener('scroll', onScroll, { passive: true });
     requestAnimationFrame(updateBg);
 
-    function scheduleInit(cb: () => void) {
-      if ('requestIdleCallback' in window) (window as any).requestIdleCallback(cb, { timeout: 2500 });
-      else window.addEventListener('load', () => setTimeout(cb, 800), { once: true });
-    }
-
-    function doHeavyInit() {
-      if (cancelled) return;
-
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      function extendMaterial(BaseMaterial: any, cfg: any) {
-        const physical = THREE.ShaderLib.physical;
-        const uniforms = THREE.UniformsUtils.clone(physical.uniforms);
-        const defaults = new BaseMaterial(cfg.material || {});
-        if (defaults.color) uniforms.diffuse.value = defaults.color.clone();
-        if ('roughness' in defaults) uniforms.roughness.value = defaults.roughness;
-        if ('metalness' in defaults) uniforms.metalness.value = defaults.metalness;
-        if ('envMapIntensity' in defaults) uniforms.envMapIntensity.value = defaults.envMapIntensity;
-        Object.entries(cfg.uniforms ?? {}).forEach(([k, u]: [string, any]) => {
-          uniforms[k] = (u !== null && typeof u === 'object' && 'value' in u) ? u : { value: u };
-        });
-        let vert = `${cfg.header}\n${cfg.vertexHeader ?? ''}\n${physical.vertexShader}`;
-        let frag = `${cfg.header}\n${cfg.fragmentHeader ?? ''}\n${physical.fragmentShader}`;
-        for (const [inc, code] of Object.entries(cfg.vertex ?? {})) vert = vert.replace(inc as string, `${inc}\n${code}`);
-        for (const [inc, code] of Object.entries(cfg.fragment ?? {})) frag = frag.replace(inc as string, `${inc}\n${code}`);
-        return new THREE.ShaderMaterial({
-          defines: { ...(physical.defines ?? {}) },
-          uniforms, vertexShader: vert, fragmentShader: frag,
-          lights: true, fog: !!cfg.material?.fog,
-        });
-      }
-
-      function createBeamGeometry(n: number, width: number, height: number, heightSegments: number) {
-        const geo = new THREE.BufferGeometry();
-        const spacing = 0;
-        const nV = n * (heightSegments + 1) * 2;
-        const nF = n * heightSegments * 2;
-        const pos = new Float32Array(nV * 3);
-        const idx = new Uint32Array(nF * 3);
-        const uvs = new Float32Array(nV * 2);
-        let vi = 0, ii = 0, ui = 0;
-        const totalW = n * width + (n - 1) * spacing;
-        const xBase = -totalW / 2;
-        for (let i = 0; i < n; i++) {
-          const xOff = xBase + i * (width + spacing);
-          const uvXOff = Math.random() * 300;
-          const uvYOff = Math.random() * 300;
-          for (let j = 0; j <= heightSegments; j++) {
-            const y = height * (j / heightSegments - 0.5);
-            pos.set([xOff, y, 0, xOff + width, y, 0], vi * 3);
-            const uvY = j / heightSegments;
-            uvs.set([uvXOff, uvY + uvYOff, uvXOff + 1, uvY + uvYOff], ui);
-            if (j < heightSegments) {
-              const a = vi, b = vi + 1, c = vi + 2, d = vi + 3;
-              idx.set([a, b, c, c, b, d], ii); ii += 6;
-            }
-            vi += 2; ui += 4;
-          }
-        }
-        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-        geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-        geo.setIndex(new THREE.BufferAttribute(idx, 1));
-        geo.computeVertexNormals();
-        return geo;
-      }
-
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.shadowMap.enabled = true;
-
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color('#000000');
-
-      const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 0, 20);
-
-      const beamMaterial = extendMaterial(THREE.MeshStandardMaterial, {
-        header: `
-varying vec3  vEye;
-varying float vNoise;
-varying vec2  vUv;
-varying vec3  vPosition;
-uniform float time;
-uniform float uSpeed;
-uniform float uNoiseIntensity;
-uniform float uScale;
-${NOISE_GLSL}`,
-        vertexHeader: `
-float getPos(vec3 pos) {
-  vec3 noisePos = vec3(pos.x * 0., pos.y - uv.y, pos.z + time * uSpeed * 3.) * uScale;
-  return cnoise(noisePos);
-}
-vec3 getCurrentPos(vec3 pos) { vec3 np = pos; np.z += getPos(pos); return np; }
-vec3 getNormal(vec3 pos) {
-  vec3 curpos   = getCurrentPos(pos);
-  vec3 nextposX = getCurrentPos(pos + vec3(0.01, 0.0,  0.0));
-  vec3 nextposZ = getCurrentPos(pos + vec3(0.0,  -0.01, 0.0));
-  vec3 tangentX = normalize(nextposX - curpos);
-  vec3 tangentZ = normalize(nextposZ - curpos);
-  return normalize(cross(tangentZ, tangentX));
-}`,
-        fragmentHeader: '',
-        vertex: {
-          '#include <begin_vertex>': `transformed.z += getPos(transformed.xyz);`,
-          '#include <beginnormal_vertex>': `objectNormal = getNormal(position.xyz);`,
-        },
-        fragment: {
-          '#include <dithering_fragment>': `
-float randomNoise = noise(gl_FragCoord.xy);
-gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
-        },
-        material: { fog: false },
-        uniforms: {
-          diffuse: { value: new THREE.Color(...hexToRGB01('#000000')) },
-          time: { value: 0 },
-          roughness: { value: 0.3 },
-          metalness: { value: 0.3 },
-          uSpeed: { value: SPEED },
-          envMapIntensity: { value: 10 },
-          uNoiseIntensity: { value: NOISE_INTENSITY },
-          uScale: { value: SCALE },
-        },
-      });
-
-      const beamMesh = new THREE.Mesh(createBeamGeometry(BEAM_NUMBER, BEAM_WIDTH, BEAM_HEIGHT, 100), beamMaterial);
-
-      const group = new THREE.Group();
-      group.rotation.z = THREE.MathUtils.degToRad(ROTATION);
-      group.add(beamMesh);
-
-      const dirLight = new THREE.DirectionalLight(LIGHT_COLOR, 1);
-      dirLight.position.set(0, 3, 10);
-      dirLight.castShadow = true;
-      dirLight.shadow.camera.top = 24;
-      dirLight.shadow.camera.bottom = -24;
-      dirLight.shadow.camera.left = -24;
-      dirLight.shadow.camera.right = 24;
-      dirLight.shadow.camera.far = 64;
-      dirLight.shadow.bias = -0.004;
-      group.add(dirLight);
-
-      scene.add(group);
-      scene.add(new THREE.AmbientLight(0xffffff, 1));
-
-      const clock = new THREE.Clock();
-      let raf = 0;
-
-      (function animate() {
-        raf = requestAnimationFrame(animate);
-        const delta = clock.getDelta();
-        if (cancelled || !beamsActiveRef.current) return;
-        beamMaterial.uniforms.time.value += 0.1 * delta;
-        renderer.render(scene, camera);
-      })();
-
-      const onResize = () => {
-        const w = window.innerWidth;
-        const h = window.innerHeight;
-        if (!w || !h) return; // guard against a transient zero-size viewport during resize
-        renderer.setSize(w, h);
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-      };
-      window.addEventListener('resize', onResize, { passive: true });
-
-      cleanupFn = () => {
-        cancelAnimationFrame(raf);
-        window.removeEventListener('resize', onResize);
-        renderer.dispose();
-        beamMaterial.dispose();
-        beamMesh.geometry.dispose();
-      };
-    }
-
-    // Creating the WebGLRenderer here (not on mount) matters: the hero
-    // figure's own Spline scene is already a live WebGL context for as long
-    // as a visitor sits reading the hero, so spinning up a second, idle one
-    // immediately on mount doubled the concurrent GPU context count for
-    // that (most common, longest) idle window — reproduced live against
-    // production 2026-08-21: sitting untouched at scrollY 0 alone triggered
-    // repeated Spline context-loss/rebuild cycles, ending in a runaway
-    // "Framebuffer incomplete: zero size" error storm (1000+ messages) that
-    // pegs the renderer and reads as the page being frozen/unable to
-    // scroll. Deferring init to first scroll keeps only one context alive
-    // during that window — see homepage-webgl-stability memory.
-    let initStarted = false;
-    function initBeams() {
-      if (initStarted) return;
-      initStarted = true;
-      scheduleInit(doHeavyInit);
-    }
-
-    if (window.scrollY > 0) {
-      initBeams();
-    } else {
-      window.addEventListener('scroll', initBeams, { passive: true, once: true });
-    }
-
     return () => {
-      cancelled = true;
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('scroll', initBeams);
-      if (cleanupFn) cleanupFn();
     };
   }, [isMobile]);
 
@@ -468,6 +200,13 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
   // CSS media query, since the DOM structure itself differs — mobile's
   // #bg-spline-scene, rendered further down, stays a plain top-level fixed
   // full-bleed layer with an <img> fallback, unrelated to #home).
+  // Checked directly at render time (not a state/effect pair) same as
+  // HeroAskStrip's own rotation timer check — SMIL's <animateTransform>
+  // below isn't a CSS animation, so it can't be paused through the
+  // @media(prefers-reduced-motion) rule .bg-frame-glow-fill already has;
+  // this is what keeps it off for that preference instead.
+  const prefersReducedMotion = typeof window !== 'undefined'
+    && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const heroFrame = !isMobile && heroEl && createPortal(
     <>
       {/* Outer ambient glow — stacked at z-index -4, below #bg-spline-scene
@@ -476,13 +215,39 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
           past the panel's real edge into the 24px frame band actually
           shows — see the #bg-frame-glow/.bg-frame-glow-fill comment in
           portfolio.css. Traces the identical `d` as #bg-frame-outline's
-          border below (one heroFramePath() call in sync() feeds both). */}
+          border below (one heroFramePath() call in sync() feeds both).
+
+          The gradient itself is a 4-colour hard-edged "flow" blend (an
+          external blend-tool spec the brief handed over directly: 4 stops,
+          3 divider offsets, soften:0). soften:0 means no interpolation
+          between bands at all, hence each divider offset below is written
+          twice — once for the band ending there, once for the band
+          starting there — the standard SVG trick for a hard color cut
+          instead of a smooth one. spreadMethod="repeat" + the
+          <animateTransform> sliding the gradient by exactly its own (1,1)
+          vector is what makes it "flow": one full slide is one full
+          period, so the repeat tiles seamlessly with no visible jump. */}
       <svg id="bg-frame-glow" aria-hidden="true" role="presentation">
         <defs>
-          <linearGradient id="bg-frame-glow-grad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#8A2BE2" />
-            <stop offset="50%" stopColor="#4A00E0" />
-            <stop offset="100%" stopColor="#00D4FF" />
+          <linearGradient id="bg-frame-glow-grad" x1="0" y1="0" x2="1" y2="1" spreadMethod="repeat">
+            <stop offset="0%" stopColor="#1C1C1C" />
+            <stop offset="39.6967%" stopColor="#1C1C1C" />
+            <stop offset="39.6967%" stopColor="#4A00E0" />
+            <stop offset="70.3616%" stopColor="#4A00E0" />
+            <stop offset="70.3616%" stopColor="#8A2BE2" />
+            <stop offset="87.9173%" stopColor="#8A2BE2" />
+            <stop offset="87.9173%" stopColor="#E620EC" />
+            <stop offset="100%" stopColor="#E620EC" />
+            {!prefersReducedMotion && (
+              <animateTransform
+                attributeName="gradientTransform"
+                type="translate"
+                from="0 0"
+                to="1 1"
+                dur="10s"
+                repeatCount="indefinite"
+              />
+            )}
           </linearGradient>
         </defs>
         <path ref={frameGlowRef} className="bg-frame-glow-fill" />
@@ -516,17 +281,7 @@ gl_FragColor.rgb -= randomNoise / 15. * uNoiseIntensity;`,
 
   return (
     <>
-      <div id="bg-scene" aria-hidden="true" role="presentation">
-        {!isMobile && (
-          <canvas
-            ref={canvasRef}
-            id="beams-bg"
-            aria-hidden="true"
-            role="presentation"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100dvh', zIndex: -1, opacity: 0, pointerEvents: 'none' }}
-          />
-        )}
-      </div>
+      <div id="bg-scene" aria-hidden="true" role="presentation" />
       {isMobile && (
         <div id="bg-spline-scene" aria-hidden="true" role="presentation">
           {splineBgMounted && (

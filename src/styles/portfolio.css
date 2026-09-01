@@ -141,7 +141,7 @@
        secondary : #FF6584
        gradient  : linear-gradient(to right, #6C63FF, #FF6584)
        logo      : linear-gradient(45deg, #8A2BE2, #4A00E0, #00D4FF)
-       bg        : #121212
+       bg        : #0A0912
        bg-card   : #1E1E1E
        bg-hover  : #2D2D2D
        card glass: rgba(255,255,255,0.1) + blur
@@ -153,7 +153,7 @@
     :root {
       --primary: #6C63FF;
       --secondary: #FF6584;
-      --bg: #121212;
+      --bg: #0A0912;
       --bg-card: #1E1E1E;
       --bg-hover: #2D2D2D;
       --border: rgba(255, 255, 255, 0.1);
@@ -869,15 +869,14 @@
       }
     }
 
-    /* Full-viewport, full-bleed clipping container for the beams canvas at
-       every breakpoint, hero included — this one stays position:fixed
-       forever (see #bg-spline-scene below for the hero-scoped, scroll-away
-       twin that holds #spline-bg instead): #beams-bg is the site's
-       permanent persistent background (see updateBg() in
-       BeamsBackground.tsx), so it can never scroll away with the hero the
-       way the gradient frame/spline scene now do. #beams-bg is absolutely
-       positioned INSIDE it (not fixed itself), sized off ITS box rather
-       than its own.
+    /* Full-viewport, full-bleed flat backdrop at every breakpoint, hero
+       included — position:fixed forever (see #bg-spline-scene below for the
+       hero-scoped, scroll-away twin that holds #spline-bg instead), so it
+       never scrolls away with the hero the way the gradient frame/spline
+       scene now do. This is what every section below the hero actually
+       sits on once the hero's own background Spline scene has faded/
+       unmounted (see updateBg() in BeamsBackground.tsx) — a plain flat
+       color, no animated background of its own.
 
        Used to be inset-by-24px/rounded to the frame's own shape while the
        hero panel look was up (#home painted a flat --bg surface over the
@@ -894,26 +893,20 @@
       inset: 0;
       z-index: -2;
       pointer-events: none;
-      /* Solid backdrop behind #beams-bg (parent background always paints
-         behind its own children, no z-index needed) — covers the gap
-         before the canvas has rendered its first frame. */
       background: var(--bg);
     }
 
     /* #spline-bg's own clipping container — a separate box from #bg-scene
        above (rather than a shared parent) since the two behave completely
-       differently: #bg-scene/#beams-bg stay fixed forever (the site's
-       persistent post-hero background), while this one only exists at all
-       below 1025px (mobile/tablet has no hero-frame look — see
+       differently: #bg-scene stays fixed forever (the site's persistent
+       post-hero background), while this one only exists at all below
+       1025px (mobile/tablet has no hero-frame look — see
        BeamsBackground.tsx: below 1025px it's rendered here, at its default
        position:fixed, full-viewport, as a plain full-bleed layer). At
        1025px+ BeamsBackground.tsx portals this same id into #home instead
        (see the #home rule further down), where its position turns into
        absolute and inset/radius/z-index all come from that nested context —
-       this base rule's fixed/inset:0 values never actually apply there.
-       z-index -1 (vs #bg-scene's -2) preserves the original paint order on
-       mobile: spline still paints above the beams canvas underneath it
-       during their opacity crossfade. */
+       this base rule's fixed/inset:0 values never actually apply there. */
     #bg-spline-scene {
       position: fixed;
       inset: 0;
@@ -977,27 +970,14 @@
       }
     }
 
-    #beams-bg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -2;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.7s ease;
-      display: block;
-    }
-
     /* Desktop-only, HERO-ONLY panel look. #home used to BE the gradient
        (--grad-logo painted flat across its own box), then a flat --bg
        surface once the gradient moved to the panel's own outer glow
        (#bg-frame-glow/.bg-frame-glow-fill below). Neither is painted here
        any more — #home has no background-color of its own now, so the same
-       fixed #bg-scene/#beams-bg every other section sits on shows through
-       the 24px frame band around the panel too, instead of the hero
-       reading as its own flat-dark surface. */
+       fixed #bg-scene every other section sits on shows through the 24px
+       frame band around the panel too, instead of the hero reading as its
+       own flat-dark surface. */
     @media (min-width: 1025px) {
       /* overflow:visible overrides the base #home rule's overflow:hidden
          (mobile/tablet still need that — no glow/shadow exist below this
@@ -1116,8 +1096,7 @@
         pointer-events: none;
       }
 
-      #spline-bg,
-      #beams-bg {
+      #spline-bg {
         top: -24px;
         left: -24px;
         width: calc(100% + 48px);
