@@ -111,7 +111,19 @@ export function useRiseReveal() {
             const naturalLH = parseFloat(getComputedStyle(el).lineHeight);
             if (!Number.isNaN(naturalLH)) {
               gsap.set(el, { lineHeight: (naturalLH * 0.6) + 'px' });
-              tl.to(el, { lineHeight: naturalLH + 'px', duration: DUR * 1.15, ease: STRETCH_EASE }, 0);
+              // Unlike scaleY (a transform, GPU-composited), line-height is a
+              // layout property — every tick forces a reflow. `contain:
+              // layout` scopes that reflow to just this element's own
+              // subtree instead of cascading through the whole document, so
+              // a fast scroll that brings a section's whole batch of
+              // rise-soft text into view at once (10+ concurrent tweens)
+              // doesn't thrash full-page layout. Cleared once the tween
+              // settles — nothing after this needs the isolation.
+              el.style.contain = 'layout';
+              tl.to(el, {
+                lineHeight: naturalLH + 'px', duration: DUR * 1.15, ease: STRETCH_EASE,
+                onComplete: () => { el.style.contain = ''; },
+              }, 0);
             }
           }
 
