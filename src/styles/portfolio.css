@@ -314,6 +314,31 @@
       --glass-bg-premium: rgba(255, 255, 255, 0.82);
       --glass-border: rgba(23, 15, 45, 0.10);
       --glass-border-hov: rgba(23, 15, 45, 0.22);
+
+      /* Neumorphism (soft UI) tokens for light-mode cards — algorithm
+         matches neumorphism.io: one solid surface color, a dark shadow cast
+         away from a top-left light source, a white highlight on the
+         opposite edge, no border. --neu-bg is an opaque near-white/lavender
+         (close to --bg-hover) so cards read as raised from the same page
+         surface rather than floating glass panels. Two shadow scales:
+         default for bento/ai/process/line-banner sized cards, -sm for
+         small chips (tech-item, tag-capsule, slink). -hover lifts higher
+         (bigger offset/blur) on interactive hover instead of a colored glow. */
+      --neu-bg: #EDEBF6;
+      --neu-shadow-dark: rgba(23, 15, 45, 0.18);
+      --neu-shadow-light: rgba(255, 255, 255, 0.9);
+      --neu-raised:
+        8px 8px 18px var(--neu-shadow-dark),
+        -8px -8px 18px var(--neu-shadow-light);
+      --neu-raised-hover:
+        11px 11px 24px var(--neu-shadow-dark),
+        -11px -11px 24px var(--neu-shadow-light);
+      --neu-raised-sm:
+        4px 4px 10px var(--neu-shadow-dark),
+        -4px -4px 10px var(--neu-shadow-light);
+      --neu-raised-sm-hover:
+        6px 6px 14px var(--neu-shadow-dark),
+        -6px -6px 14px var(--neu-shadow-light);
       --card-shadow-selected:
         0 8px 18px rgba(var(--shadow-near), 0.24),
         12px 40px 90px rgba(var(--shadow-far), 0.22),
@@ -8943,15 +8968,20 @@
       }
     }
 
-    /* ── 淺色模式：全站卡片特效關閉，只留單色卡片 ──
+    /* ── 淺色模式：全站卡片改用 Neumorphism 陰影與卡片色系統 ──
        所有卡片家族（.bento-card、.tech-item、.contact-card/.cta-strip/
-       .faq-card、.ai-card、.process-card/.border-glow-card）在深色模式下都疊了
-       滑鼠追蹤光暈（.sc-overlay/.card-spotlight::before/.bg-spotlight）、邊框
-       特效（.sc-card::after 光環、.border-glow-card 的滑鼠描邊+外光暈、.ai-card
-       雷達環與各變體彩色頂邊線）、hover 光暈陰影（.card-hover-shadow 家族），以及
-       每個變體自己的彩色 mesh 漸層背景/邊框色。淺色模式維持同一張玻璃質感底色
-       （--glass-bg 系列，本檔案開頭已依主題定義），拿掉所有互動特效與彩色漸層，
-       只留素色卡片。深色模式完全不受影響。
+       .faq-card、.tag-capsule、.slink、.ai-card、.process-card/.border-glow-card、
+       .line-banner）在深色模式下都疊了滑鼠追蹤光暈（.sc-overlay/
+       .card-spotlight::before/.bg-spotlight）、邊框特效（.sc-card::after 光環、
+       .border-glow-card 的滑鼠描邊+外光暈、.ai-card 雷達環與各變體彩色頂邊線）、
+       hover 光暈陰影（.card-hover-shadow 家族），以及每個變體自己的彩色 mesh
+       漸層背景/邊框色。淺色模式先關掉所有這些互動特效與彩色漸層（第 1～3 段），
+       再把卡片本體換成 neumorphism.io 那套「單一不透明底色 + 雙重陰影」做法
+       （第 4 段，token 定義在檔案開頭 :root[data-theme="light"] 的 --neu-* 系列）：
+       同一個 --neu-bg 底色，右下角一道暗陰影、左上角一道白色亮部，模擬單一
+       光源下從同一片表面擠壓浮凸出來的立體感；邊框整個關閉，立體感完全交給
+       陰影負責。互動卡片 hover 時陰影位移/模糊量加大（--neu-raised-hover /
+       --neu-raised-sm-hover），模擬「浮得更高」。深色模式完全不受影響。
        附加在檔案最尾端，靠特異度（多數規則疊到 3～4 層 class）加上原生的「同特異度
        時後出現者勝出」規則，蓋過前面各家族自己的 !important 規則（.border-glow-card
        強制背景、.process-card.border-glow-card 的彩色 mesh、各 .ai-card/.bento-card
@@ -8981,7 +9011,9 @@
       border-color: var(--glass-border) !important;
     }
 
-    /* 3) hover 光暈陰影全部關閉 */
+    /* 3) 原本的 hover 光暈陰影（.card-hover-shadow 家族）全部關閉——
+       neumorphism 的立體感改由第 4 段的雙重陰影負責，這些疊加用的彩色光暈
+       元素不再需要 */
     :root[data-theme="light"] .ai-card > .card-hover-shadow,
     :root[data-theme="light"] .process-card > .card-hover-shadow,
     :root[data-theme="light"] .bento-shadow,
@@ -8991,19 +9023,21 @@
       opacity: 0 !important;
     }
 
-    /* 4) 卡片本體：拿掉每個變體自己的彩色 mesh 漸層，只留單一玻璃色 + 既有噪點
-       材質；邊框與 hover 邊框統一為中性色，不再依變體/mouse-hover 換色 */
+    /* 4) 卡片本體：Neumorphism 陰影＋卡片色系統。拿掉彩色 mesh 漸層與邊框，
+       改成單一不透明底色（--neu-bg）+ 雙重陰影（左上亮、右下暗，模擬單一
+       光源下的擠壓浮雕感）。邊框整個關閉（border-color 透明），立體感完全
+       交給陰影負責——這是 neumorphism.io 的核心作法。互動卡片 hover 時陰影
+       位移/模糊量加大，模擬「浮得更高」，取代原本的彩色 hover 光暈。 */
     :root[data-theme="light"] .bento-card,
     :root[data-theme="light"] .bento-card.bento-cyan,
     :root[data-theme="light"] .bento-card.bento-purple,
     :root[data-theme="light"] .bento-card.bento-violet,
     :root[data-theme="light"] .bento-card.bento-human,
     :root[data-theme="light"] .bento-card.bento-spectrum {
-      background-color: var(--glass-bg-premium) !important;
-      background-image: var(--noise-grain) !important;
-      background-size: 180px 180px !important;
-      background-repeat: repeat !important;
-      border-color: var(--glass-border) !important;
+      background-color: var(--neu-bg) !important;
+      background-image: none !important;
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised) !important;
     }
 
     :root[data-theme="light"] .ai-card,
@@ -9012,68 +9046,92 @@
     :root[data-theme="light"] .ai-card.ai-cyan,
     :root[data-theme="light"] .ai-card.ai-purple,
     :root[data-theme="light"] .ai-card.ai-violet,
-    :root[data-theme="light"] .ai-card.ai-spectrum {
-      background-color: var(--glass-bg-premium) !important;
-      background-image: var(--noise-grain) !important;
-      background-size: 180px 180px !important;
-      background-repeat: repeat !important;
-      border-color: var(--glass-border) !important;
-      box-shadow: var(--card-shadow-md), var(--card-edge) !important;
+    :root[data-theme="light"] .ai-card.ai-spectrum,
+    :root[data-theme="light"] .process-card.border-glow-card {
+      background-color: var(--neu-bg) !important;
+      background-image: none !important;
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised) !important;
     }
 
     :root[data-theme="light"] .ai-card:hover,
     :root[data-theme="light"] .process-card:hover {
-      border-color: var(--glass-border-hov) !important;
-    }
-
-    :root[data-theme="light"] .process-card.border-glow-card {
-      background-color: var(--glass-bg-premium) !important;
-      background-image: var(--noise-grain) !important;
-      background-size: 180px 180px !important;
-      background-repeat: repeat !important;
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised-hover) !important;
     }
 
     :root[data-theme="light"] .tech-item.html-item,
     :root[data-theme="light"] .tech-item.js-item,
     :root[data-theme="light"] .tech-item.react-item {
-      background: var(--glass-bg) !important;
-      background-image: var(--noise-grain) !important;
-      background-repeat: repeat !important;
-      background-size: 180px 180px !important;
-      border-color: var(--glass-border) !important;
+      background: var(--neu-bg) !important;
+      background-image: none !important;
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised-sm) !important;
     }
 
     :root[data-theme="light"] .tech-item:hover {
-      border-color: var(--glass-border-hov) !important;
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised-sm-hover) !important;
     }
 
     :root[data-theme="light"] .cta-strip {
-      background: var(--glass-bg) !important;
-      border-color: var(--glass-border) !important;
+      background: var(--neu-bg) !important;
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised) !important;
     }
 
     :root[data-theme="light"] .cta-strip:hover {
-      border-color: var(--glass-border-hov) !important;
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised-hover) !important;
+    }
+
+    :root[data-theme="light"] .slink {
+      box-shadow: var(--neu-raised-sm) !important;
     }
 
     :root[data-theme="light"] .slink:hover {
-      border-color: var(--glass-border-hov) !important;
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised-sm-hover) !important;
     }
 
-    /* .line-banner（Contact 的 LINE CTA）在深色模式下也疊了同一套彩色漸層背景、
-       ::before 描邊環與 hover 彩色光暈陰影——淺色模式下比照其他卡片一併關閉，
-       只留單色玻璃底。 */
+    /* .line-banner（Contact 的 LINE CTA）比照其他卡片換成同一套 neumorphism
+       底色＋陰影，拿掉彩色漸層背景與 ::before 描邊環。 */
     :root[data-theme="light"] .line-banner {
-      background: var(--glass-bg) !important;
-      border-color: var(--glass-border) !important;
-      box-shadow: var(--card-shadow-md), var(--card-edge) !important;
+      background: var(--neu-bg) !important;
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised) !important;
     }
 
     :root[data-theme="light"] .line-banner:hover {
-      box-shadow: var(--card-shadow-md), var(--card-edge) !important;
+      box-shadow: var(--neu-raised-hover) !important;
     }
 
     :root[data-theme="light"] .line-banner::before {
       opacity: 0 !important;
+    }
+
+    /* .contact-card / .faq-card（faq-card 直接複用 .contact-card class）
+       原本走 --glass-bg 系列，一併換成 neumorphism 底色＋陰影，維持跟其他
+       卡片一致的立體語言。 */
+    :root[data-theme="light"] .contact-card {
+      background: var(--neu-bg) !important;
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised) !important;
+    }
+
+    :root[data-theme="light"] .contact-card:hover {
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised-hover) !important;
+    }
+
+    :root[data-theme="light"] .tag-capsule {
+      background: var(--neu-bg) !important;
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised-sm) !important;
+    }
+
+    :root[data-theme="light"] .tag-capsule:hover {
+      border-color: transparent !important;
+      box-shadow: var(--neu-raised-sm-hover) !important;
     }
 
