@@ -165,15 +165,17 @@ function ProjectCard({ p, mode, index, t, expanded, activeFilter }: {
       )}
     </a>
   );
-  if (mode !== 'grid') return card;
-  // .grid-card carries a JS clip-path (the squircle shape — see the
-  // squircle-measurement effect below), and box-shadow silently fails to
-  // render past the edge of an element that also carries an imperative
+  // Both .grid-card and .project-card carry a JS squircle clip-path (see
+  // the squircle-measurement effect below), and box-shadow silently fails
+  // to render past the edge of an element that also carries an imperative
   // clip-path (same failure mode as filter:drop-shadow — see
-  // #bg-panel-shadow's comment in portfolio.css). This wrapper carries no
-  // clip-path of its own, so its box-shadow traces the card's plain
+  // #bg-panel-shadow's comment in portfolio.css). These wrappers carry no
+  // clip-path of their own, so their box-shadow traces the card's plain
   // rectangular footprint instead of chasing the squircle exactly, same
   // trade-off already made for the hero panel/portfolio wall shadows.
+  if (mode !== 'grid') {
+    return <div className="project-card-shadow">{card}</div>;
+  }
   return (
     <div className={`grid-card-shadow${isBig ? ' mb-big' : ''}`}>
       {card}
@@ -246,8 +248,18 @@ export default function PortfolioSection() {
       card.style.setProperty('--glow-radius', `${MB_RADIUS}px`);
     }
 
+    // .grid-card-shadow (see that class's own comment in portfolio.css) is
+    // what actually carries the card's box-shadow, since .grid-card itself
+    // can't (its JS clip-path silently clips box-shadow away, same failure
+    // mode as filter:drop-shadow elsewhere in this file). The magnetic
+    // pull/tilt below has to move THAT wrapper, not .grid-card, or the
+    // image visibly drifts out from under its own shadow on every hover.
+    function shadowTargetOf(card: HTMLElement) {
+      return card.closest<HTMLElement>('.grid-card-shadow') || card;
+    }
+
     function resetCard(card: HTMLElement) {
-      gsap.to(card, { rotateX: 0, rotateY: 0, x: 0, y: 0, duration: 0.4, ease: 'power3.out', overwrite: 'auto' });
+      gsap.to(shadowTargetOf(card), { rotateX: 0, rotateY: 0, x: 0, y: 0, duration: 0.4, ease: 'power3.out', overwrite: 'auto' });
       card.style.setProperty('--glow-intensity', '0');
     }
 
@@ -287,7 +299,7 @@ export default function PortfolioSection() {
         const r = hovered.getBoundingClientRect();
         const lx = e.clientX - r.left, ly = e.clientY - r.top;
         const cx = r.width / 2, cy = r.height / 2;
-        gsap.to(hovered, {
+        gsap.to(shadowTargetOf(hovered), {
           x: (lx - cx) * 0.05,
           y: (ly - cy) * 0.05,
           duration: 0.3,

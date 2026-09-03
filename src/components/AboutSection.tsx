@@ -323,6 +323,7 @@ export default function AboutSection() {
               </div>
             </div>
           </div>
+          <span className="bento-shadow bento-area-intro1" aria-hidden="true" />
 
           <div className="bento-card bento-cyan card-spotlight sc-card bento-area-intro2 rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
@@ -356,6 +357,7 @@ export default function AboutSection() {
               </div>
             </div>
           </div>
+          <span className="bento-shadow bento-area-intro2" aria-hidden="true" />
 
           <div className="bento-card card-spotlight sc-card bento-area-years rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
@@ -371,6 +373,7 @@ export default function AboutSection() {
               </div>
             </div>
           </div>
+          <span className="bento-shadow bento-area-years" aria-hidden="true" />
 
           <div className="bento-card bento-human card-spotlight sc-card bento-area-projects rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
@@ -391,6 +394,7 @@ export default function AboutSection() {
               </div>
             </div>
           </div>
+          <span className="bento-shadow bento-area-projects" aria-hidden="true" />
 
           <div className="bento-card bento-purple card-spotlight sc-card bento-area-domains rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
@@ -421,6 +425,7 @@ export default function AboutSection() {
             </div>
             <span className="domains-scrim" aria-hidden="true" />
           </div>
+          <span className="bento-shadow bento-area-domains" aria-hidden="true" />
 
           <div className="bento-card bento-violet card-spotlight sc-card bento-area-industry rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
@@ -440,6 +445,7 @@ export default function AboutSection() {
               </div>
             </div>
           </div>
+          <span className="bento-shadow bento-area-industry" aria-hidden="true" />
 
           <div className="bento-card bento-spectrum card-spotlight sc-card bento-card--wide bento-area-workflow rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
@@ -455,6 +461,7 @@ export default function AboutSection() {
               ]}
             />
           </div>
+          <span className="bento-shadow bento-area-workflow" aria-hidden="true" />
 
         </div>
       </section>

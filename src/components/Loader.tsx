@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLang } from '../context/LangContext';
 
 // Must match HeroSection's "Hero spline desktop+tablet conditional" effect —
@@ -13,12 +13,15 @@ export default function Loader() {
   const { t } = useLang();
   const [stepIndex, setStepIndex] = useState(0);
   const [done, setDone] = useState(false);
+  const stepTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    const stepTimer = setInterval(() => {
+    stepTimerRef.current = setInterval(() => {
       setStepIndex(i => (i + 1) % STEP_KEYS.length);
     }, STEP_INTERVAL_MS);
-    return () => clearInterval(stepTimer);
+    return () => {
+      if (stepTimerRef.current) clearInterval(stepTimerRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -29,6 +32,11 @@ export default function Loader() {
     function hideLoader() {
       if (dismissed) return;
       dismissed = true;
+      // The loader stays mounted (just hidden via the "hidden" class) rather
+      // than unmounting, so its own effect cleanup never runs — without
+      // this, stepTimer above would keep re-rendering this hidden component
+      // every second for the rest of the page's lifetime.
+      if (stepTimerRef.current) clearInterval(stepTimerRef.current);
       setDone(true);
       loader!.classList.add('hidden');
       document.body.classList.add('hero-ready');

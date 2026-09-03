@@ -130,31 +130,34 @@ export default function ContactSection() {
 
           <div className="contact-faq-layout">
             <div className="contact-left-panel">
-              <div className="contact-card sc-card rise-card">
-                <div className="card-title">Contact Info</div>
-                <div className="crow">
-                  <div className="icon-circle"><i className="ph-fill ph-map-pin" style={{ fontSize: '18px' }}></i></div>
-                  <div>
-                    <div className="rl">Location</div>
-                    <div className="rv">Taipei, Taiwan</div>
+              <div className="card-shadow-wrap">
+                <div className="contact-card sc-card rise-card">
+                  <div className="card-title">Contact Info</div>
+                  <div className="crow">
+                    <div className="icon-circle"><i className="ph-fill ph-map-pin" style={{ fontSize: '18px' }}></i></div>
+                    <div>
+                      <div className="rl">Location</div>
+                      <div className="rv">Taipei, Taiwan</div>
+                    </div>
                   </div>
-                </div>
-                <div className="crow">
-                  <div className="icon-circle"><i className="ph-fill ph-envelope-simple" style={{ fontSize: '18px' }}></i></div>
-                  <div>
-                    <div className="rl">Email</div>
-                    <div className="rv"><a href="mailto:lyfun0202@gmail.com">lyfun0202@gmail.com</a></div>
+                  <div className="crow">
+                    <div className="icon-circle"><i className="ph-fill ph-envelope-simple" style={{ fontSize: '18px' }}></i></div>
+                    <div>
+                      <div className="rl">Email</div>
+                      <div className="rv"><a href="mailto:lyfun0202@gmail.com">lyfun0202@gmail.com</a></div>
+                    </div>
                   </div>
-                </div>
-                <div className="crow">
-                  <div className="icon-circle"><i className="ph-fill ph-phone" style={{ fontSize: '18px' }}></i></div>
-                  <div>
-                    <div className="rl">Phone</div>
-                    <div className="rv">+886-928051947</div>
+                  <div className="crow">
+                    <div className="icon-circle"><i className="ph-fill ph-phone" style={{ fontSize: '18px' }}></i></div>
+                    <div>
+                      <div className="rl">Phone</div>
+                      <div className="rv">+886-928051947</div>
+                    </div>
                   </div>
                 </div>
               </div>
 
+              <div className="card-shadow-wrap">
               <div className="contact-card sc-card rise-card">
                 <div className="card-title">Follow Me</div>
                 <div className="social-links">
@@ -173,7 +176,9 @@ export default function ContactSection() {
                   </a>
                 </div>
               </div>
+              </div>
 
+              <div className="card-shadow-wrap">
               <div className="cta-strip sc-card rise-card">
                 <div className="cta-txt">
                   <strong>{t.open_for_work}</strong><br />
@@ -198,9 +203,11 @@ export default function ContactSection() {
                   proximity={220}
                 />
               </div>
+              </div>
             </div>
 
             <div className="faq-panel">
+              <div className="card-shadow-wrap">
               <div className="faq-card contact-card sc-card rise-card">
                 <div className="card-title">FAQ</div>
                 <div className="faq-tabs" role="tablist" ref={faqTabsRef}>
@@ -269,6 +276,7 @@ export default function ContactSection() {
                     </AccordionItem>
                   ))}
                 </Accordion>
+              </div>
               </div>
             </div>
           </div>

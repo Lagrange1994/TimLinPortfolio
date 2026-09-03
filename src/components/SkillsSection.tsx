@@ -1142,6 +1142,14 @@ export default function SkillsSection() {
       el.className = 'edge-light';
       card.insertBefore(el, card.firstChild);
 
+      // Carries the big-blur hover shadow as a static value that only ever
+      // crossfades via opacity (see .card-hover-shadow's own comment in
+      // portfolio.css) — animating box-shadow's blur/spread directly was
+      // the laggy-on-hover version this replaces.
+      const shadowEl = document.createElement('span');
+      shadowEl.className = 'card-hover-shadow';
+      card.insertBefore(shadowEl, card.firstChild);
+
       card.classList.add('ai-card-glow');
       setGlowVars(card, GLOW_COLOR, INTENSITY);
 
@@ -1166,6 +1174,7 @@ export default function SkillsSection() {
         card.removeEventListener('pointermove', handler);
         card.classList.remove('border-glow-card');
         card.querySelector('.edge-light')?.remove();
+        card.querySelector('.card-hover-shadow')?.remove();
         const inner = card.querySelector<HTMLElement>('.border-glow-inner');
         if (inner) {
           Array.from(inner.children).forEach(c => card.insertBefore(c, inner));

@@ -158,6 +158,11 @@ const BorderGlow = ({
         className="bg-spotlight"
         style={{ '--spotlight-color': spotlightColor }}
       />
+      {/* Opacity-crossfade hover shadow, same technique as .ai-card's
+          .card-hover-shadow (see that rule's comment in portfolio.css) —
+          this card's ::before/::after are already the colored mesh
+          gradient, so it needs a real element too. */}
+      <span className="card-hover-shadow" />
     </div>
   );
 };

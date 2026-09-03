@@ -78,6 +78,14 @@
       pointer-events: none;
     }
 
+    /* --bg is the w_bg.svg texture in light mode (see the token's own
+       comment below) — the loader itself wants a flat color, not that
+       image, since it's gone before the page bg is even visible underneath
+       it. Matches .portfolio-wall's light-mode flat color. */
+    :root[data-theme="light"] .loader {
+      background: #EBEFF1;
+    }
+
     .loader-animation {
       width: 65px;
       aspect-ratio: 1;
@@ -214,6 +222,23 @@
         0 0 0 1px rgba(108, 99, 255, 0.16);
       --card-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
+      /* .ai-card's own hover treatment (see that rule directly) — much
+         bigger blur than --card-shadow-hover plus a colored ambient ring
+         instead of just deepening. Tokenized so any card can borrow this
+         exact "hover" look while keeping --card-shadow-sm/md for its own
+         rest state. */
+      --card-shadow-ai-hover:
+        0 40px 100px -20px rgba(0, 0, 0, 0.7),
+        0 0 60px -10px rgba(181, 139, 255, 0.35);
+      /* Same look, scaled down for cards that sit inside an
+         overflow:hidden strip (.process-scroll-wrap's swipe track,
+         .portfolio-wall's marquee) — the full-size version's 100px blur
+         gets hard-clipped there into a visible box edge (see
+         .process-card's own shadow comment for the same failure mode). */
+      --card-shadow-ai-hover-tight:
+        0 10px 24px -6px rgba(0, 0, 0, 0.55),
+        0 0 16px -4px rgba(181, 139, 255, 0.4);
+
       /* AI Brief card's document-flow flourish (.ai-doc-*) — the idle
          "raw document" phase sits directly on the card background (unlike
          the resolved result chips, which sit on their own solid
@@ -319,6 +344,26 @@
     :root[data-theme="light"] .process-card--has-img .process-name,
     :root[data-theme="light"] .portfolio-headline-title {
       color: var(--primary);
+    }
+
+    /* Hero text (h1/h2/desc) is pinned white/light-gray for dark mode's own
+       dark Spline backdrop (see .hero-h1's comment below) — but that panel
+       itself goes light/lavender in light mode, so the same pinned white
+       reads as nearly invisible there. Light-only override: the name goes
+       to the logo gradient (reads fine on a light panel, same treatment as
+       .gradient-text-brand), the role/desc go to a plain mid-gray instead
+       of --text-70/--text-50 (those are tuned for the page's own light-mode
+       background, not this specific lavender/white hero gradient). */
+    :root[data-theme="light"] .hero-h1 {
+      background: var(--grad-logo);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    :root[data-theme="light"] .hero-h2,
+    :root[data-theme="light"] .hero-desc {
+      color: #6b7280;
     }
 
     html,
@@ -2297,6 +2342,7 @@
       align-items: center;
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
+      box-shadow: var(--card-shadow-sm), var(--card-edge);
     }
 
     .about-sidebar {
@@ -2406,12 +2452,43 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      transition: transform .25s ease, box-shadow .25s ease, border-color .3s, background .3s;
+      transition: transform .25s ease, border-color .3s, background .3s;
     }
 
     .bento-card:hover {
       transform: translateY(-4px);
-      box-shadow: var(--card-shadow-hover), var(--card-edge);
+    }
+
+    /* Hover shadow lives on a SEPARATE sibling (.bento-shadow, see
+       AboutSection.tsx), not a child ::after inside .bento-card — every
+       real .bento-card is also .sc-card, which sets overflow:hidden on
+       itself (needed to contain its own squircle corner-shape + spotlight
+       glow), and that clips any box-shadow painted by a descendant down
+       to nothing, no matter how the descendant is positioned. .sc-card's
+       ::after is also separately claimed by its own border-glow ring
+       effect (with a clipping mask that would chop the shadow to a 1px
+       sliver even if overflow weren't the issue).
+       .bento-shadow shares the card's own bento-area-* class, so CSS
+       Grid places both in the identical cell — same trick used to size
+       #bg-panel-shadow/.portfolio-wall-frame against elements they can't
+       be nested inside. z-index:-1 paints it behind the card; the
+       adjacent-sibling selector below (relying on it following the card
+       in DOM order) drives the hover crossfade instead of :hover on the
+       shadow element itself, since the two are siblings, not parent/child. */
+    .bento-shadow {
+      position: relative;
+      border-radius: 48px;
+      corner-shape: squircle;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .3s ease;
+      box-shadow: var(--card-shadow-ai-hover);
+      will-change: opacity;
+    }
+
+    .bento-card:hover + .bento-shadow {
+      opacity: 1;
     }
 
     /* Per-card colored gradient backgrounds — same palette as the How I Use
@@ -2700,7 +2777,13 @@
       corner-shape: squircle;
       padding: 0;
       position: relative;
-      box-shadow: none;
+      /* Not --card-shadow-md: these cards sit in .process-scroll-wrap
+         (overflow:hidden for the swipe carousel) with only 12px of padding
+         around them, far short of md's 56px ambient-bloom layer — that
+         layer was getting hard-clipped at the wrap's edge, reading as a
+         square box behind the card instead of a soft glow. Contact-shadow
+         layer only, sized to fit inside that 12px. */
+      box-shadow: 0 4px 10px rgba(var(--shadow-near), 0.18), var(--card-edge);
       transition: border-color .25s, transform .25s, background .25s;
     }
 
@@ -2721,6 +2804,18 @@
       border-color: rgba(108, 99, 255, 0.4);
       background: var(--glass-bg-hov);
       transform: translateY(-3px);
+    }
+
+    /* .card-hover-shadow here is JS-injected (see SkillsSection.tsx's
+       process-card border-glow effect) rather than a ::before/::after —
+       .process-card's own ::before/::after are already claimed by
+       .border-glow-card's colored mesh gradient. */
+    .process-card > .card-hover-shadow {
+      box-shadow: var(--card-shadow-ai-hover-tight);
+    }
+
+    .process-card:hover > .card-hover-shadow {
+      opacity: 1;
     }
 
     /* Radar ring injected by JS — reuses aiRingP keyframe from AI section */
@@ -2794,10 +2889,13 @@
     }
 
 
-    /* 移除方向陰影，邊框沿用 border-glow-card 預設（與 freelance 相同），
-       但保留頂部玻璃高光 inset，與其餘卡片一致 */
+    /* .border-glow-card's own !important box-shadow (its 3-layer directional
+       drop) would otherwise win here over .process-card's own shadow (same
+       specificity, source order) — pin this variant to match .process-card's
+       own contact-only shadow instead (see that rule's comment: the
+       overflow:hidden swipe wrap has no room for a bigger ambient layer). */
     .process-card--has-img.border-glow-card {
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08) !important;
+      box-shadow: 0 4px 10px rgba(var(--shadow-near), 0.18), var(--card-edge) !important;
     }
 
     /* 關閉彩色描邊 ::before 跟蓋圖層 ::after——這兩個用 colors prop 算出來的
@@ -3442,7 +3540,7 @@
     }
 
     :root[data-theme="light"] .portfolio-wall {
-      background: #D7E0E6;
+      background: #EBEFF1;
     }
 
     /* Stepped outline drawn ON TOP of the cards (see
@@ -3610,6 +3708,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: var(--card-shadow-md), var(--card-edge);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .philosophy-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-ai-hover), var(--card-edge);
     }
 
     .philosophy-quote {
@@ -3665,6 +3770,32 @@
       transform: translateY(var(--stagger-y, 0px));
     }
 
+    /* Hover shadow lives on this wrapper, not a ::after/child inside
+       .tech-item itself — .tech-item is also .sc-card, which sets
+       overflow:hidden on itself (needed to contain its own squircle
+       corner-shape + spotlight glow), clipping any box-shadow painted by
+       a descendant down to nothing regardless of how that descendant is
+       positioned. .tech-item-wrap already exists unclipped for exactly
+       this reason (see its own comment above, re: .tech-level-badge), so
+       it's reused here instead of adding another wrapper. */
+    .tech-item-wrap::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 48px;
+      corner-shape: squircle;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .3s ease;
+      box-shadow: var(--card-shadow-ai-hover);
+      will-change: opacity;
+    }
+
+    .tech-item-wrap:hover::after {
+      opacity: 1;
+    }
+
     .tech-item {
       position: relative;
       height: 100%;
@@ -3680,7 +3811,6 @@
 
     .tech-item:hover {
       border-color: rgba(108, 99, 255, 0.4);
-      box-shadow: var(--card-shadow-hover), var(--card-edge);
     }
 
     .tech-item.html-item {
@@ -4042,13 +4172,57 @@
 
     /* portfolio scroller */
 
-    .project-card {
+    /* .project-card carries the same JS squircle clip-path as .grid-card
+       (see the ResizeObserver effect in PortfolioSection.tsx that targets
+       ".project-card, .grid-card" together), so box-shadow can't live on it
+       directly — same failure mode as .grid-card-shadow, same fix: a
+       clip-path-free wrapper carries size/shadow/hover-lift, .project-card
+       just fills it and keeps its own border-color hover response. */
+    .project-card-shadow {
+      position: relative;
       width: 300px;
       aspect-ratio: 3 / 2;
+      flex-shrink: 0;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow-md), var(--card-edge);
+      transition: transform .3s ease;
+    }
+
+    .project-card-shadow:hover {
+      transform: translateY(-5px) scale(1.015);
+    }
+
+    /* Opacity-crossfade hover shadow — see .bento-card::after's comment.
+       Tight tier, not --card-shadow-ai-hover: .portfolio-wall clips
+       (overflow:hidden) and neighboring rows sit only 16px away — the
+       full-size ai-hover blur would bleed into them or hit the wall's
+       own edge, same clipping failure .process-card hit. */
+    .project-card-shadow::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .3s ease;
+      box-shadow: var(--card-shadow-ai-hover-tight);
+      will-change: opacity;
+    }
+
+    .project-card-shadow:hover::after {
+      opacity: 1;
+    }
+
+    .project-card-shadow > .project-card {
+      width: 100%;
+      height: 100%;
+    }
+
+    .project-card {
       border-radius: 16px;
       overflow: hidden;
       position: relative;
-      flex-shrink: 0;
       cursor: pointer;
       text-decoration: none;
       display: block;
@@ -4059,7 +4233,6 @@
     }
 
     .project-card:hover {
-      transform: translateY(-5px) scale(1.015);
       border-color: var(--glass-border-hov);
     }
 
@@ -4189,7 +4362,7 @@
       aspect-ratio: 3/2;
       border-radius: 16px;
       box-shadow: var(--card-shadow-md), var(--card-edge);
-      transition: box-shadow .3s ease;
+      transition: transform .3s ease;
     }
 
     .grid-card-shadow.mb-big {
@@ -4198,8 +4371,30 @@
       aspect-ratio: unset;
     }
 
+    /* The lift-on-hover transform lives here (not on .grid-card below) so
+       the shadow moves WITH the card instead of staying pinned underneath
+       it — same reason MagicBento's magnetic pull/tilt (see
+       PortfolioSection.tsx's shadowTargetOf) animates this wrapper too. */
     .grid-card-shadow:hover {
-      box-shadow: var(--card-shadow-hover), var(--card-edge);
+      transform: translateY(-5px) scale(1.015);
+    }
+
+    /* Opacity-crossfade hover shadow — see .bento-card::after's comment. */
+    .grid-card-shadow::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .3s ease;
+      box-shadow: var(--card-shadow-ai-hover);
+      will-change: opacity;
+    }
+
+    .grid-card-shadow:hover::after {
+      opacity: 1;
     }
 
     .grid-card-shadow > .grid-card {
@@ -4222,7 +4417,6 @@
     }
 
     .grid-card:hover {
-      transform: translateY(-5px) scale(1.015);
       border-color: var(--glass-border-hov);
     }
 
@@ -4572,6 +4766,7 @@
     }
 
     .contact-card {
+      position: relative;
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
@@ -4579,13 +4774,43 @@
       corner-shape: squircle;
       padding: 22px;
       box-shadow: var(--card-shadow-md), var(--card-edge);
-      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+      transition: transform .25s ease, border-color .25s ease;
     }
 
     .contact-card:hover {
       transform: translateY(-4px);
       border-color: var(--border-hi);
-      box-shadow: var(--card-shadow-hover), var(--card-edge);
+    }
+
+    /* .card-shadow-wrap wraps .contact-card/.cta-strip/.faq-card in
+       ContactSection.tsx — same reasoning as .bento-shadow/
+       .tech-item-wrap above: these are all also .sc-card, whose own
+       overflow:hidden (needed for squircle corner-shape + spotlight glow
+       containment) clips any box-shadow painted by a descendant to
+       nothing. Unlike bento-card's grid, these are plain flex children
+       with no shared grid-area to piggyback on, so a plain wrapper div
+       (no overflow of its own) is the simplest fix — same pattern as
+       .grid-card-shadow/.project-card-shadow in the Portfolio section. */
+    .card-shadow-wrap {
+      position: relative;
+    }
+
+    .card-shadow-wrap::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      corner-shape: squircle;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .3s ease;
+      box-shadow: var(--card-shadow-ai-hover);
+      will-change: opacity;
+    }
+
+    .card-shadow-wrap:hover::after {
+      opacity: 1;
     }
 
     .card-title {
@@ -4710,14 +4935,14 @@
       justify-content: space-between;
       gap: 12px;
       gap: 16px;
+      position: relative;
       box-shadow: var(--card-shadow-sm), var(--card-edge);
-      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+      transition: transform .25s ease, border-color .25s ease;
     }
 
     .cta-strip:hover {
       transform: translateY(-3px);
       border-color: rgba(108, 99, 255, 0.4);
-      box-shadow: var(--card-shadow-md), var(--card-edge);
     }
 
     .cta-txt {
@@ -6855,6 +7080,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: var(--card-shadow-md), var(--card-edge);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+
+    .philosophy-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-shadow-ai-hover), var(--card-edge);
     }
 
     .philosophy-quote {
@@ -7687,9 +7919,18 @@
        .ai-card-detail (tables, nowrap rows) even while that detail is
        collapsed, blowing the card past its column and clipping it under
        body's overflow-x:hidden. */
-    .ai-card{position:relative;z-index:1;min-width:0;padding:22px 26px 22px;--ai-card-r:48px;border-radius:var(--ai-card-r);corner-shape:squircle;background-color:var(--glass-bg-premium);background-image:var(--noise-grain),radial-gradient(380px 220px at 50% 0%,rgba(108,99,255,.14),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(1rem);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .4s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08)}
+    .ai-card{position:relative;z-index:1;min-width:0;padding:22px 26px 22px;--ai-card-r:48px;border-radius:var(--ai-card-r);corner-shape:squircle;background-color:var(--glass-bg-premium);background-image:var(--noise-grain),radial-gradient(380px 220px at 50% 0%,rgba(108,99,255,.14),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(1rem);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:var(--card-shadow-md),var(--card-edge)}
     .ai-card::before{content:"";position:absolute;top:0;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent)}
-    .ai-card:hover{border-color:rgba(108,99,255,0.4);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 60px -10px rgba(181,139,255,.35),inset 0 1px 0 rgba(255,255,255,.08)}
+    .ai-card:hover{border-color:rgba(108,99,255,0.4)}
+    /* .card-hover-shadow (JS-injected, see SkillsSection.tsx's ai-card
+       effect — ::before/::after are both already taken on .ai-card) carries
+       the big-blur hover shadow as a STATIC value and only ever transitions
+       opacity. Animating box-shadow's blur/spread numbers directly (the
+       previous approach) forces the browser to re-rasterize that huge blur
+       every frame of the transition, which read as laggy/late on hover;
+       opacity is compositor-only, so this crossfades instantly. */
+    .card-hover-shadow{content:"";position:absolute;inset:0;border-radius:inherit;corner-shape:squircle;z-index:-1;pointer-events:none;opacity:0;transition:opacity .3s ease;box-shadow:var(--card-shadow-ai-hover);will-change:opacity}
+    .ai-card:hover>.card-hover-shadow{opacity:1}
     /* Step badge — floats above card top-left */
     .ai-step-badge{position:absolute;top:-7px;left:18px;padding:2px 7px;font-family:"Geist Mono",monospace;font-size:9.5px;letter-spacing:.14em;color:rgba(255,255,255,.35);background:rgba(12,9,18,.85);border:1px solid rgba(255,255,255,.07);border-radius:4px;backdrop-filter:blur(8px);opacity:.85}
     .ai-step-badge em{font-style:normal;color:rgba(255,255,255,.55);font-weight:500}
@@ -7713,16 +7954,21 @@
     :root[data-theme="light"] .ai-card.ai-focal{background-color:var(--glass-bg-premium);background-image:var(--noise-grain),radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.15));border-color:rgba(181,139,255,.38);box-shadow:0 30px 80px -25px rgba(90,60,150,.28),0 0 0 1px rgba(181,139,255,.14),0 0 140px -30px rgba(181,139,255,.3),inset 0 1px 0 rgba(255,255,255,.6)}
     :root[data-theme="light"] .ai-focal .ai-glyph{background:linear-gradient(135deg,#8A6FFF,#FF6FB8);border-color:rgba(138,111,255,.5);color:#fff}
     /* Human Review */
-    .ai-card.ai-human{background-image:var(--noise-grain),radial-gradient(460px 280px at 70% 0%,rgba(123,227,181,.2),transparent 65%),radial-gradient(280px 200px at 30% 100%,rgba(255,255,255,.06),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));background-size:180px 180px,auto,auto,auto;background-repeat:repeat,no-repeat,no-repeat,no-repeat;border-color:rgba(123,227,181,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(123,227,181,.22),inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.14)}
+    .ai-card.ai-human{background-image:var(--noise-grain),radial-gradient(460px 280px at 70% 0%,rgba(123,227,181,.2),transparent 65%),radial-gradient(280px 200px at 30% 100%,rgba(255,255,255,.06),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));background-size:180px 180px,auto,auto,auto;background-repeat:repeat,no-repeat,no-repeat,no-repeat;border-color:rgba(123,227,181,.3)}
+    .ai-card.ai-human>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(123,227,181,.22),inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.14)}
     .ai-card.ai-human::before{background:linear-gradient(90deg,transparent,#7BE3B5,transparent);opacity:.5}
     /* Logo-palette variants for the remaining (non-focal/human) cards */
-    .ai-card.ai-cyan{background-image:var(--noise-grain),radial-gradient(460px 280px at 60% 0%,rgba(0,212,255,.2),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(0,212,255,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(0,212,255,.2),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-cyan{background-image:var(--noise-grain),radial-gradient(460px 280px at 60% 0%,rgba(0,212,255,.2),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(0,212,255,.3)}
+    .ai-card.ai-cyan>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(0,212,255,.2),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-cyan::before{background:linear-gradient(90deg,transparent,#00D4FF,transparent);opacity:.5}
-    .ai-card.ai-purple{background-image:var(--noise-grain),radial-gradient(460px 280px at 60% 0%,rgba(19,159,248,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(19,159,248,.32);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(19,159,248,.22),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-purple{background-image:var(--noise-grain),radial-gradient(460px 280px at 60% 0%,rgba(19,159,248,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(19,159,248,.32)}
+    .ai-card.ai-purple>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(19,159,248,.22),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-purple::before{background:linear-gradient(90deg,transparent,#139FF8,transparent);opacity:.5}
-    .ai-card.ai-violet{background-image:var(--noise-grain),radial-gradient(460px 280px at 60% 0%,rgba(37,102,240,.24),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(37,102,240,.34);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(37,102,240,.24),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-violet{background-image:var(--noise-grain),radial-gradient(460px 280px at 60% 0%,rgba(37,102,240,.24),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(37,102,240,.34)}
+    .ai-card.ai-violet>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(37,102,240,.24),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-violet::before{background:linear-gradient(90deg,transparent,#2566F0,transparent);opacity:.5}
-    .ai-card.ai-spectrum{background-image:var(--noise-grain),radial-gradient(500px 300px at 50% 0%,rgba(74,0,224,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(74,0,224,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(74,0,224,.22),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-spectrum{background-image:var(--noise-grain),radial-gradient(500px 300px at 50% 0%,rgba(74,0,224,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(74,0,224,.3)}
+    .ai-card.ai-spectrum>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(74,0,224,.22),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-spectrum::before{background:linear-gradient(90deg,transparent,#4A00E0,transparent);opacity:.5}
     .ai-card-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
     .ai-glyph{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;color:var(--text);flex-shrink:0}
@@ -8696,5 +8942,139 @@
       #about .pc-card-wrapper:hover {
         --card-opacity: 0;
       }
+    }
+
+    /* ── 淺色模式：全站卡片特效關閉，只留單色卡片 ──
+       所有卡片家族（.bento-card、.tech-item、.contact-card/.cta-strip/
+       .faq-card、.ai-card、.process-card/.border-glow-card）在深色模式下都疊了
+       滑鼠追蹤光暈（.sc-overlay/.card-spotlight::before/.bg-spotlight）、邊框
+       特效（.sc-card::after 光環、.border-glow-card 的滑鼠描邊+外光暈、.ai-card
+       雷達環與各變體彩色頂邊線）、hover 光暈陰影（.card-hover-shadow 家族），以及
+       每個變體自己的彩色 mesh 漸層背景/邊框色。淺色模式維持同一張玻璃質感底色
+       （--glass-bg 系列，本檔案開頭已依主題定義），拿掉所有互動特效與彩色漸層，
+       只留素色卡片。深色模式完全不受影響。
+       附加在檔案最尾端，靠特異度（多數規則疊到 3～4 層 class）加上原生的「同特異度
+       時後出現者勝出」規則，蓋過前面各家族自己的 !important 規則（.border-glow-card
+       強制背景、.process-card.border-glow-card 的彩色 mesh、各 .ai-card/.bento-card
+       變體背景）。 */
+
+    /* 1) 滑鼠追蹤光暈 overlay 全部關閉 */
+    :root[data-theme="light"] .sc-overlay,
+    :root[data-theme="light"] .card-spotlight::before,
+    :root[data-theme="light"] .bg-spotlight {
+      opacity: 0 !important;
+    }
+
+    /* 2) 邊框特效：sc-card 光環、border-glow-card 滑鼠描邊/外光暈、ai-card 雷達環
+       與彩色頂邊線，全部關閉 */
+    :root[data-theme="light"] .sc-card::after,
+    :root[data-theme="light"] .border-glow-card::before,
+    :root[data-theme="light"] .border-glow-card::after,
+    :root[data-theme="light"] .border-glow-card > .edge-light,
+    :root[data-theme="light"] .ai-card::after,
+    :root[data-theme="light"] .ai-card::before {
+      opacity: 0 !important;
+      animation: none !important;
+    }
+
+    :root[data-theme="light"] .border-glow-card,
+    :root[data-theme="light"] .border-glow-card:hover {
+      border-color: var(--glass-border) !important;
+    }
+
+    /* 3) hover 光暈陰影全部關閉 */
+    :root[data-theme="light"] .ai-card > .card-hover-shadow,
+    :root[data-theme="light"] .process-card > .card-hover-shadow,
+    :root[data-theme="light"] .bento-shadow,
+    :root[data-theme="light"] .tech-item-wrap::after,
+    :root[data-theme="light"] .card-shadow-wrap::after {
+      box-shadow: none !important;
+      opacity: 0 !important;
+    }
+
+    /* 4) 卡片本體：拿掉每個變體自己的彩色 mesh 漸層，只留單一玻璃色 + 既有噪點
+       材質；邊框與 hover 邊框統一為中性色，不再依變體/mouse-hover 換色 */
+    :root[data-theme="light"] .bento-card,
+    :root[data-theme="light"] .bento-card.bento-cyan,
+    :root[data-theme="light"] .bento-card.bento-purple,
+    :root[data-theme="light"] .bento-card.bento-violet,
+    :root[data-theme="light"] .bento-card.bento-human,
+    :root[data-theme="light"] .bento-card.bento-spectrum {
+      background-color: var(--glass-bg-premium) !important;
+      background-image: var(--noise-grain) !important;
+      background-size: 180px 180px !important;
+      background-repeat: repeat !important;
+      border-color: var(--glass-border) !important;
+    }
+
+    :root[data-theme="light"] .ai-card,
+    :root[data-theme="light"] .ai-card.ai-focal,
+    :root[data-theme="light"] .ai-card.ai-human,
+    :root[data-theme="light"] .ai-card.ai-cyan,
+    :root[data-theme="light"] .ai-card.ai-purple,
+    :root[data-theme="light"] .ai-card.ai-violet,
+    :root[data-theme="light"] .ai-card.ai-spectrum {
+      background-color: var(--glass-bg-premium) !important;
+      background-image: var(--noise-grain) !important;
+      background-size: 180px 180px !important;
+      background-repeat: repeat !important;
+      border-color: var(--glass-border) !important;
+      box-shadow: var(--card-shadow-md), var(--card-edge) !important;
+    }
+
+    :root[data-theme="light"] .ai-card:hover,
+    :root[data-theme="light"] .process-card:hover {
+      border-color: var(--glass-border-hov) !important;
+    }
+
+    :root[data-theme="light"] .process-card.border-glow-card {
+      background-color: var(--glass-bg-premium) !important;
+      background-image: var(--noise-grain) !important;
+      background-size: 180px 180px !important;
+      background-repeat: repeat !important;
+    }
+
+    :root[data-theme="light"] .tech-item.html-item,
+    :root[data-theme="light"] .tech-item.js-item,
+    :root[data-theme="light"] .tech-item.react-item {
+      background: var(--glass-bg) !important;
+      background-image: var(--noise-grain) !important;
+      background-repeat: repeat !important;
+      background-size: 180px 180px !important;
+      border-color: var(--glass-border) !important;
+    }
+
+    :root[data-theme="light"] .tech-item:hover {
+      border-color: var(--glass-border-hov) !important;
+    }
+
+    :root[data-theme="light"] .cta-strip {
+      background: var(--glass-bg) !important;
+      border-color: var(--glass-border) !important;
+    }
+
+    :root[data-theme="light"] .cta-strip:hover {
+      border-color: var(--glass-border-hov) !important;
+    }
+
+    :root[data-theme="light"] .slink:hover {
+      border-color: var(--glass-border-hov) !important;
+    }
+
+    /* .line-banner（Contact 的 LINE CTA）在深色模式下也疊了同一套彩色漸層背景、
+       ::before 描邊環與 hover 彩色光暈陰影——淺色模式下比照其他卡片一併關閉，
+       只留單色玻璃底。 */
+    :root[data-theme="light"] .line-banner {
+      background: var(--glass-bg) !important;
+      border-color: var(--glass-border) !important;
+      box-shadow: var(--card-shadow-md), var(--card-edge) !important;
+    }
+
+    :root[data-theme="light"] .line-banner:hover {
+      box-shadow: var(--card-shadow-md), var(--card-edge) !important;
+    }
+
+    :root[data-theme="light"] .line-banner::before {
+      opacity: 0 !important;
     }
 
