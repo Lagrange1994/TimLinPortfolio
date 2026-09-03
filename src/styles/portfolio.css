@@ -1219,7 +1219,12 @@
       display: none;
     }
 
-    #spline-bg {
+    /* Shared by the mobile <img> (a single always-active layer) and both
+       desktop spline-viewer scenes (BeamsBackground.tsx keeps one per theme
+       permanently mounted, stacked in the same box, so a toggle only needs
+       to crossfade opacity between two already-loaded layers instead of
+       swapping a url and re-loading). */
+    .spline-bg-layer {
       position: absolute;
       top: 0;
       left: 0;
@@ -1227,6 +1232,7 @@
       height: 100dvh;
       z-index: -1;
       pointer-events: none;
+      opacity: 0;
       transition: opacity 0.7s ease;
       /* No-op on spline-viewer (not a replaced element); covers the mobile
          jpg fallback (BeamsBackground.tsx) edge-to-edge without stretching. */
@@ -1234,12 +1240,16 @@
       object-position: center;
     }
 
+    .spline-bg-layer.is-active {
+      opacity: 1;
+    }
+
     /* 直向（portrait）視口比 16:9 更窄時，橫向拉寬 spline-viewer
        確保景象填滿全螢幕高度，不出現上下黑邊 — tag-qualified so it only
-       targets the WebGL scene; the mobile <img> fallback already covers via
+       targets the WebGL scenes; the mobile <img> fallback already covers via
        object-fit above and doesn't need the extra width. */
     @media (max-aspect-ratio: 16/9) {
-      spline-viewer#spline-bg {
+      spline-viewer.spline-bg-layer {
         width: calc(100dvh * 16 / 9);
         left: 50%;
         transform: translateX(-50%);
@@ -1391,7 +1401,7 @@
         background: var(--frame-glow-base);
       }
 
-      #spline-bg {
+      .spline-bg-layer {
         top: -24px;
         left: -24px;
         width: calc(100% + 48px);
@@ -3370,6 +3380,51 @@
       margin-left: calc(50% - min(50vw, 720px) + 48px);
       margin-right: calc(50% - min(50vw, 720px) + 48px);
       margin-bottom: 14px;
+      /* Same outer drop-shadow treatment as the hero panel's
+         #bg-panel-shadow (see that rule's comment). .portfolio-wall itself
+         carries a JS clip-path (the notched wall shape — see
+         PortfolioSection.tsx), and filter silently fails to render on an
+         element that also carries an imperative clip-path, so the shadow
+         has to live on this clip-path-free wrapper instead; with no
+         background of its own, its filter traces whatever shape the
+         clipped wall child actually rendered. Dark/light values match
+         #bg-panel-shadow's own split exactly. */
+      filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.65));
+    }
+
+    :root[data-theme="light"] .portfolio-wall-frame {
+      filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.5));
+    }
+
+    /* Outer ambient glow — same box as .portfolio-wall (JSX puts this SVG
+       right before it inside .portfolio-wall-frame), overflow:visible so the
+       blurred edge can bleed past .portfolio-wall's own opaque #000
+       background into the frame's surroundings. z-index -1 keeps it behind
+       .portfolio-wall (default stacking order, painted after) and behind
+       .portfolio-wall-outline's z-index:2 stroke. See the JSX comment in
+       PortfolioSection.tsx and #bg-frame-glow/.bg-frame-glow-fill above for
+       the full gradient/blur reasoning — this reuses both verbatim. */
+    .portfolio-wall-glow {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .portfolio-wall-glow-fill {
+      fill: url(#portfolio-wall-glow-grad);
+      opacity: 0.85;
+      filter: blur(40px);
+      animation: bg-frame-glow-breathe 6s ease-in-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .portfolio-wall-glow-fill {
+        animation: none;
+      }
     }
 
     /* Fills .portfolio-wall-frame at 100% instead of positioning itself —

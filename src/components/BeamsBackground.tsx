@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { heroFramePath, FRAME_INSET, FRAME_RADIUS, NOTCH_FLAT, NOTCH_RADIUS } from '../utils/heroFramePath';
 
@@ -41,6 +41,84 @@ export default function BeamsBackground() {
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     return () => observer.disconnect();
   }, []);
+
+  // The inactive theme's scene only gets a `url` (and so only starts
+  // loading) once the page's own priority content has already loaded —
+  // Loader.tsx fires 'hero-ready' once the ACTIVE scene and the hero figure
+  // are both up. Giving both scenes a real url from first paint made them
+  // load concurrently, competing with the active one for bandwidth/GPU on
+  // first load; this way first load only ever prioritizes one, and the
+  // other's preload (for a later toggle's crossfade — see the render below)
+  // starts only once there's nothing more urgent left to load.
+  const [preloadOtherTheme, setPreloadOtherTheme] = useState(false);
+  useEffect(() => {
+    if (document.body.classList.contains('hero-ready')) {
+      setPreloadOtherTheme(true);
+      return;
+    }
+    const onHeroReady = () => setPreloadOtherTheme(true);
+    window.addEventListener('hero-ready', onHeroReady, { once: true });
+    return () => window.removeEventListener('hero-ready', onHeroReady);
+  }, []);
+
+  // Both background scenes' `url` is managed imperatively (refs, not a JSX
+  // prop) for the same reason HeroSection.tsx's #hero-spline is: it needs to
+  // be droppable/restorable from an IntersectionObserver without fighting
+  // React's own diffing. Dropped whenever #home has been out of view for
+  // HERO_DROP_DELAY_MS straight — same debounced pattern and delay as the
+  // hero figure (see that comment), applied here because a scrolled-past
+  // hero was otherwise left running up to 3 concurrent WebGL contexts (hero
+  // figure + both preloaded theme scenes) for the rest of the page's
+  // lifetime, exactly the sustained-GPU-contention setup blamed for the
+  // renderer freezes in homepage-webgl-stability. Restored immediately (no
+  // delay) once #home scrolls back into view.
+  const splineDarkRef = useRef<HTMLElement>(null);
+  const splineLightRef = useRef<HTMLElement>(null);
+  const inHeroViewRef = useRef(true);
+  const applyDesiredSplineUrls = useCallback(() => {
+    const dark = splineDarkRef.current;
+    const light = splineLightRef.current;
+    if (!dark || !light || !inHeroViewRef.current) return;
+    const wantDark = theme === 'dark' || preloadOtherTheme;
+    const wantLight = theme === 'light' || preloadOtherTheme;
+    if (wantDark) { if (!dark.getAttribute('url')) dark.setAttribute('url', './models/bg_scene.splinecode'); }
+    else dark.removeAttribute('url');
+    if (wantLight) { if (!light.getAttribute('url')) light.setAttribute('url', './models/bg_scene_w.splinecode'); }
+    else light.removeAttribute('url');
+  }, [theme, preloadOtherTheme]);
+
+  useEffect(() => {
+    applyDesiredSplineUrls();
+  }, [applyDesiredSplineUrls]);
+
+  useEffect(() => {
+    if (isMobile) return;
+    const heroEl = document.getElementById('home');
+    if (!heroEl) return;
+
+    const BG_DROP_DELAY_MS = 4000;
+    let dropTimer: ReturnType<typeof setTimeout> | null = null;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        if (dropTimer) { clearTimeout(dropTimer); dropTimer = null; }
+        inHeroViewRef.current = true;
+        applyDesiredSplineUrls();
+      } else if (!dropTimer) {
+        dropTimer = setTimeout(() => {
+          inHeroViewRef.current = false;
+          splineDarkRef.current?.removeAttribute('url');
+          splineLightRef.current?.removeAttribute('url');
+          dropTimer = null;
+        }, BG_DROP_DELAY_MS);
+      }
+    }, { threshold: 0 });
+    observer.observe(heroEl);
+
+    return () => {
+      observer.disconnect();
+      if (dropTimer) clearTimeout(dropTimer);
+    };
+  }, [isMobile, applyDesiredSplineUrls]);
 
   // The desktop hero-frame pieces (spline scene + notches) are portaled into
   // #home (see the return statement below) instead of rendered where this
@@ -234,11 +312,25 @@ export default function BeamsBackground() {
           its filter traces whatever shape its already-clipped child
           rendered — the exact notch silhouette, for free. */}
       <div id="bg-panel-shadow" aria-hidden="true" role="presentation">
+        {/* Both theme scenes stay mounted permanently (no key-remount) and
+            stacked in the same box, so a theme toggle just crossfades opacity
+            between two already-ready WebGL contexts instead of tearing one
+            down and re-fetching/re-initializing the other from scratch,
+            which is what caused the visible stutter a single swapped-`url`
+            element had. `url` itself is left unset here — the
+            applyDesiredSplineUrls effect above owns it imperatively, so it
+            can also drop/restore it on scroll without React fighting that
+            write back on the next render. */}
         <div id="bg-spline-scene" ref={splineSceneRef} aria-hidden="true" role="presentation">
           <spline-viewer
-            key={theme}
-            id="spline-bg"
-            url={theme === 'light' ? './models/bg_scene_w.splinecode' : './models/bg_scene.splinecode'}
+            id="spline-bg-dark"
+            ref={splineDarkRef}
+            className={`spline-bg-layer${theme === 'dark' ? ' is-active' : ''}`}
+          />
+          <spline-viewer
+            id="spline-bg-light"
+            ref={splineLightRef}
+            className={`spline-bg-layer${theme === 'light' ? ' is-active' : ''}`}
           />
         </div>
       </div>
@@ -258,7 +350,7 @@ export default function BeamsBackground() {
         <div id="bg-spline-scene" aria-hidden="true" role="presentation">
           <picture>
             <source srcSet="./img/bg.webp" type="image/webp" />
-            <img id="spline-bg" src="./img/bg.jpg" alt="" aria-hidden="true" />
+            <img id="spline-bg" className="spline-bg-layer is-active" src="./img/bg.jpg" alt="" aria-hidden="true" />
           </picture>
         </div>
       )}
