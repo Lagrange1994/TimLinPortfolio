@@ -14,6 +14,22 @@
       } catch (e) {}
     })();
   </script>
+  <!-- portfolio.css only applies once main.tsx's module graph finishes
+       loading and React mounts #root — in dev especially, that's a real
+       gap after this HTML paints. Without this, html's own `background:
+       var(--bg)` (from portfolio.css) isn't active yet, so the browser's
+       default blank canvas shows... except a returning light-mode visitor
+       has data-theme="light" set by the script above before that CSS ever
+       loads, and --bg in light mode is the w_bg.svg photo backdrop — once
+       that stylesheet DOES land a beat later, the image flashes in before
+       the Loader component (which paints a flat, matching #EBEFF1 over
+       everything) has mounted to cover it. Pin the exact flat color the
+       Loader itself will show, for both themes, so there's nothing to
+       flash regardless of how long the JS graph takes. */
+  <style>
+    html { background: #0A0912; }
+    html[data-theme="light"] { background: #EBEFF1; }
+  </style>
   <title>Tim Lin - Product Designer</title>
   <link rel="icon" type="image/x-icon" href="/img/favicon/favicon.ico" />
   <meta name="description" content="Tim Lin 的個人作品集。資深 UI/UX 設計師，專精企業後台系統設計、3D 互動體驗與 AI 工作流整合。" />

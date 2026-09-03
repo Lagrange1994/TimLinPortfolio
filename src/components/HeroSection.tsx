@@ -106,19 +106,38 @@ export default function HeroSection() {
     // splitWords/splitChars hardcode will-change:transform,opacity on every
     // word/char span so this one-shot entrance tween stays smooth, but
     // nothing ever clears it afterward — the spans keep their own
-    // compositing layer for the rest of the page's life. Beyond the
-    // pointless GPU cost, a stray promoted layer among an ancestor's text
-    // runs is exactly what breaks `background-clip: text` gradients (see
-    // .hero-h1's light-mode gradient in portfolio.css) — the browser can
-    // paint the gradient-clipped glyphs in the wrong place once a child is
-    // on its own layer. Clearing will-change once the tween settles fixes
-    // both.
+    // compositing layer for the rest of the page's life for no reason
+    // once the tween is done. Used for h2Chars below; h1Words gets a
+    // stronger fix (unsplitH1) since its parent also has a
+    // background-clip:text gradient in light mode — see that comment.
     function clearWillChange(el: HTMLElement) { el.style.willChange = 'auto'; }
+
+    // Clearing will-change alone isn't enough — reproduced live (including
+    // via a plain light/dark theme toggle, with no re-animation involved
+    // at all): as long as .hero-h1's word spans exist in the DOM, ANY
+    // repaint of the `-webkit-background-clip: text` gradient (see
+    // .hero-h1.grad-settled in portfolio.css) can render overlapping
+    // "ghost" strokes instead of clean glyphs. A one-time forced repaint
+    // right after the entrance tween (tried first, via a self-assigned
+    // outerHTML) fixed the very next paint but not later ones — e.g. the
+    // theme toggle re-triggers the gradient clip long after entrance and
+    // hit the same corruption again. The word spans themselves are the
+    // trigger (a background-clip:text ancestor with descendants that were
+    // ever independently composited), so the real fix is to remove them:
+    // once the tween is done, collapse .hero-h1 back to the exact plain
+    // markup it started as. No split spans left behind means nothing left
+    // to ever mis-paint, on this repaint or any future theme switch.
+    function unsplitH1(el: HTMLElement) {
+      el.innerHTML = 'Hi, I\'m <span>Tim Lin</span>';
+      delete el.dataset.split;
+    }
 
     function animate() {
       setTimeout(() => {
         if (heroFig) gsap.to(heroFig, { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out' });
-        if (h1Words.length) gsap.to(h1Words, { opacity: 1, y: 0, rotation: 0, duration: 1.0, ease: 'power3.out', stagger: 0.11, delay: 0.15, onComplete: () => h1Words.forEach(clearWillChange) });
+        if (h1Words.length) gsap.to(h1Words, { opacity: 1, y: 0, rotation: 0, duration: 1.0, ease: 'power3.out', stagger: 0.11, delay: 0.15, onComplete: () => {
+          if (h1) { h1.classList.add('grad-settled'); unsplitH1(h1); }
+        } });
         if (h2Chars.length) gsap.to(h2Chars, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.035, delay: 0.6, onComplete: () => h2Chars.forEach(clearWillChange) });
       }, 350);
     }

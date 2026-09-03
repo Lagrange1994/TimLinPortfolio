@@ -288,7 +288,7 @@
          fixed full-viewport layer, which risks the same stale-paint/
          repaint issues already fought elsewhere in this file. */
       --bg: url('/img/w_bg.svg') center / cover no-repeat;
-      --bg-card: #FFFFFF;
+      --bg-card: #F7FAFC;
       --bg-hover: #EFEDF7;
       --border: rgba(23, 15, 45, 0.10);
       --border-hi: rgba(23, 15, 45, 0.20);
@@ -309,24 +309,22 @@
          frosted dark glass; light mode swaps to frosted white so the same
          cards read as raised white surfaces on the lavender page bg instead
          of staying dark islands. */
-      --glass-bg: rgba(255, 255, 255, 0.72);
-      --glass-bg-hov: rgba(255, 255, 255, 0.92);
-      --glass-bg-premium: rgba(255, 255, 255, 0.82);
+      --glass-bg: rgba(247, 250, 252, 0.72);
+      --glass-bg-hov: rgba(247, 250, 252, 0.92);
+      --glass-bg-premium: rgba(247, 250, 252, 0.82);
       --glass-border: rgba(23, 15, 45, 0.10);
       --glass-border-hov: rgba(23, 15, 45, 0.22);
 
-      /* Neumorphism (soft UI) tokens for light-mode cards — algorithm
-         matches neumorphism.io: one solid surface color, a dark shadow cast
-         away from a top-left light source, a white highlight on the
-         opposite edge, no border. --neu-bg is an opaque near-white/lavender
-         (close to --bg-hover) so cards read as raised from the same page
-         surface rather than floating glass panels. Two shadow scales:
-         default for bento/ai/process/line-banner sized cards, -sm for
-         small chips (tech-item, tag-capsule, slink). -hover lifts higher
-         (bigger offset/blur) on interactive hover instead of a colored glow. */
-      --neu-bg: #EDEBF6;
-      --neu-shadow-dark: rgba(23, 15, 45, 0.18);
-      --neu-shadow-light: rgba(255, 255, 255, 0.9);
+      /* Neumorphism (soft UI) tokens for light-mode cards — base color and
+         both shadow tones straight from neumorphism.io's own generator for
+         #F7FAFC (dark #D2D5D6 / light #FFFFFF at its default distance 20 /
+         intensity), not an approximation. Two shadow scales: default for
+         bento/ai/process/line-banner sized cards, -sm for small chips
+         (tech-item, tag-capsule, slink). -hover lifts higher (bigger
+         offset/blur) on interactive hover instead of a colored glow. */
+      --neu-bg: #F7FAFC;
+      --neu-shadow-dark: #D2D5D6;
+      --neu-shadow-light: #FFFFFF;
       --neu-raised:
         8px 8px 18px var(--neu-shadow-dark),
         -8px -8px 18px var(--neu-shadow-light);
@@ -379,16 +377,31 @@
        .gradient-text-brand), the role/desc go to a plain mid-gray instead
        of --text-70/--text-50 (those are tuned for the page's own light-mode
        background, not this specific lavender/white hero gradient). */
+    /* Plain solid color while the entrance tween is still running (word
+       spans carry will-change:transform,opacity — see HeroSection.tsx).
+       Chromium mis-paints a background-clip:text gradient on a parent
+       whose children are independently composited/transformed: the glyph
+       mask goes stale and renders overlapping "ghost" strokes instead of
+       clean gradient text (reproduced live — not just a theory). The
+       .grad-settled variant below only applies once HeroSection adds that
+       class in the tween's onComplete, after will-change is cleared and
+       nothing under the h1 is animating anymore. */
     :root[data-theme="light"] .hero-h1 {
+      color: var(--primary);
+    }
+
+    :root[data-theme="light"] .hero-h1.grad-settled {
       background: var(--grad-logo);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
+    /* Lighter than .navbar-brand-tagline's var(--text-50) — user asked for
+       an even fainter gray than the navbar-matched tone. */
     :root[data-theme="light"] .hero-h2,
     :root[data-theme="light"] .hero-desc {
-      color: #6b7280;
+      color: var(--text-30);
     }
 
     html,
@@ -4591,7 +4604,7 @@
        (light mode's own gray, not a one-off hex) so it stays in step with
        the rest of the page's light-mode type color. */
     :root[data-theme="light"] .cursor-project-tag {
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(247, 250, 252, 0.7);
       border-color: rgba(0, 0, 0, 0.08);
     }
 
@@ -5313,7 +5326,7 @@
        here just reads as an unnatural dark smear across the card — swap it
        for the same fade in white instead, still legible over the photos. */
     :root[data-theme="light"] .domains-scrim {
-      background: linear-gradient(to top right, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0) 65%);
+      background: linear-gradient(to top right, rgba(247, 250, 252, 0.82) 0%, rgba(247, 250, 252, 0) 65%);
     }
 
     /* Immersive Visuals card — bio text keeps to 3/4 width, leaving the
@@ -5883,7 +5896,7 @@
        multiply/soft-light/normal, which read against a light base the way
        color-dodge/luminosity do against a dark one. */
     :root[data-theme="light"] .pc-card-wrapper {
-      --inner-gradient: linear-gradient(145deg, #FFFFFF99 0%, #FFFFFF22 100%);
+      --inner-gradient: linear-gradient(145deg, #F7FAFC99 0%, #F7FAFC22 100%);
       --behind-glow-color: rgba(91, 79, 224, 0.35);
       --behind-glow-size: 55%;
     }
@@ -5894,7 +5907,7 @@
     }
 
     :root[data-theme="light"] .pc-inside {
-      background-color: rgba(255, 255, 255, 0.88);
+      background-color: rgba(247, 250, 252, 0.88);
     }
 
     /* Rainbow holo sheen dropped entirely for light mode, not just frozen
@@ -7975,7 +7988,7 @@
        it stayed a dark island regardless of theme. Swaps to the same
        glass-premium surface every other .ai-card variant already gets,
        with the purple/pink identity kept as a tint instead of the base. */
-    :root[data-theme="light"] .ai-card.ai-focal{background-color:var(--glass-bg-premium);background-image:var(--noise-grain),radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.15));border-color:rgba(181,139,255,.38);box-shadow:0 30px 80px -25px rgba(90,60,150,.28),0 0 0 1px rgba(181,139,255,.14),0 0 140px -30px rgba(181,139,255,.3),inset 0 1px 0 rgba(255,255,255,.6)}
+    :root[data-theme="light"] .ai-card.ai-focal{background-color:var(--glass-bg-premium);background-image:var(--noise-grain),radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.22),transparent 65%),linear-gradient(180deg,rgba(247,250,252,.5),rgba(247,250,252,.15));border-color:rgba(181,139,255,.38);box-shadow:0 30px 80px -25px rgba(90,60,150,.28),0 0 0 1px rgba(181,139,255,.14),0 0 140px -30px rgba(181,139,255,.3),inset 0 1px 0 rgba(247,250,252,.6)}
     :root[data-theme="light"] .ai-focal .ai-glyph{background:linear-gradient(135deg,#8A6FFF,#FF6FB8);border-color:rgba(138,111,255,.5);color:#fff}
     /* Human Review */
     .ai-card.ai-human{background-image:var(--noise-grain),radial-gradient(460px 280px at 70% 0%,rgba(123,227,181,.2),transparent 65%),radial-gradient(280px 200px at 30% 100%,rgba(255,255,255,.06),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));background-size:180px 180px,auto,auto,auto;background-repeat:repeat,no-repeat,no-repeat,no-repeat;border-color:rgba(123,227,181,.3)}
