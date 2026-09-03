@@ -103,7 +103,37 @@ export function useRiseReveal() {
           tl.to(el, { y: restY, autoAlpha: 1, duration: DUR, ease: POS_EASE }, 0);
 
           if (isCard) {
-            tl.to(el, { scaleY: 1, duration: DUR * 1.15, ease: STRETCH_EASE }, 0);
+            // Many .rise-card elements (process-card, ai-card, tech-item-wrap)
+            // also carry backdrop-filter: blur() — animating a transform
+            // (scaleY) on an element with an active backdrop-filter forces
+            // Chromium to resample the blurred backdrop every frame, and a
+            // section scrolling into view can stagger 10+ of these at once.
+            // The blur adds nothing visible while the card is still scaling
+            // up from 0.82 and fading in (autoAlpha 0→1 on the same
+            // timeline), so it's dropped for just the tween's duration and
+            // restored once the card settles.
+            //
+            // Uses gsap.set (not a raw el.style write) so ctx.revert() can
+            // undo it — this file's effect runs under React StrictMode,
+            // which double-invokes on mount; a plain DOM mutation made
+            // outside GSAP's tracking survives the first mount's cleanup,
+            // so the second mount's "did this card have a backdrop-filter
+            // to restore later" check reads back its own leftover `none`
+            // and concludes there's nothing to restore — the blur then
+            // never comes back. gsap.set()'s writes are reverted alongside
+            // every other property this effect touches, so the check
+            // starts clean on every (re)mount.
+            let hadBackdropFilter = false;
+            tl.call(() => {
+              hadBackdropFilter = getComputedStyle(el).backdropFilter !== 'none';
+              if (hadBackdropFilter) gsap.set(el, { backdropFilter: 'none' });
+            }, undefined, 0);
+            tl.to(el, {
+              scaleY: 1, duration: DUR * 1.15, ease: STRETCH_EASE,
+              onComplete: () => {
+                if (hadBackdropFilter) gsap.set(el, { clearProps: 'backdropFilter' });
+              },
+            }, 0);
           } else {
             // Must carry the 'px' unit explicitly — GSAP writes bare numbers
             // for lineHeight as-is, and unitless CSS line-height is a
