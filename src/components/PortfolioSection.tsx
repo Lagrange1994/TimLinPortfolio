@@ -277,7 +277,12 @@ export default function PortfolioSection() {
         return;
       }
 
-      gsap.to(sl, { left: e.clientX, top: e.clientY, duration: 0.12, ease: 'power2.out' });
+      // x/y (not left/top) — left/top are layout properties, so animating
+      // them forced a full-page reflow on every mousemove tick while the
+      // spotlight tracked the cursor. x/y write a GPU-composited transform
+      // instead, matching xPercent/yPercent below for the -50%/-50% centering
+      // .mb-spotlight used to get from a static CSS transform.
+      gsap.to(sl, { x: e.clientX, y: e.clientY, xPercent: -50, yPercent: -50, duration: 0.12, ease: 'power2.out' });
 
       let minDist = Infinity;
       cards.forEach(card => {
