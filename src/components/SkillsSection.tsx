@@ -135,7 +135,7 @@ function runsToHtml(runs: { text: string; cls?: string }[]) {
 type HColor = 'neutral' | 'purple' | 'cyan' | 'warning' | 'danger' | 'success' | 'info' | 'primary' | 'brand';
 
 const BADGE_COLORS: Record<HColor, { solid: string; outline: string }> = {
-  neutral: { solid: 'bg-white/10 text-white/70', outline: 'border border-white/25 text-white/70' },
+  neutral: { solid: 'badge-neutral bg-white/10 text-white/70', outline: 'badge-neutral border border-white/25 text-white/70' },
   purple: { solid: 'bg-violet-400/15 text-violet-300', outline: 'border border-violet-400/40 text-violet-300' },
   // Matches AiFlowStepper's own solid "active step" fill (#6C63FF) exactly,
   // for the phase badge that mirrors it — a fully opaque pill, not the
@@ -939,6 +939,31 @@ export default function SkillsSection() {
     aiFlowGridRef.current?.classList.toggle('has-expanded', !!expandedAiCard);
   }, [expandedAiCard]);
 
+  // .ai-card-toggle's rotate(45deg) (from the .is-open class this render
+  // just applied/removed) is a transform change on a descendant of
+  // .ai-card, which has its own backdrop-filter — Chromium leaves that
+  // transform painted at its old value there (confirmed the same bug
+  // family as the theme toggle's backdrop-filter background-color
+  // staleness in useTheme.ts, and the FAQ/portfolio-filter sliding
+  // indicators in useSlidingIndicator.ts; a CSS class swap triggers it
+  // exactly like an inline style write does). A synchronous display:none/
+  // reflow/restore on the card busts the stale paint; scoped to just the
+  // affected card, not document.body, so it can't disturb page scroll.
+  // Runs on both the opening AND closing card — prevExpandedRef keeps the
+  // just-closed id available for one more run after expandedAiCard goes null.
+  const prevExpandedAiCardRef = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    const targetId = expandedAiCard ?? prevExpandedAiCardRef.current;
+    prevExpandedAiCardRef.current = expandedAiCard;
+    if (!targetId) return;
+    const el = cardRefs.current.get(targetId);
+    if (!el) return;
+    const prevDisplay = el.style.display;
+    el.style.display = 'none';
+    void el.offsetHeight;
+    el.style.display = prevDisplay;
+  }, [expandedAiCard]);
+
   // Design Workflow card — mirror the AiFlowStepper's active step into the
   // phase list below it. A phase that has already had its turn as "in
   // progress" stays marked in-progress from then on (workflow phases keep
@@ -1408,6 +1433,10 @@ export default function SkillsSection() {
         const el = cardRefs.current.get('tracking')?.querySelector<HTMLElement>('.tracking-chart-container');
         if (!el) return;
         const chart = echarts.init(el, undefined, { renderer: 'svg' });
+        // Read the live --text-50 token instead of hardcoding white — this
+        // canvas paints its own pixels, so it doesn't pick up var(--text-50)
+        // the way the rest of the card's DOM text does when the theme toggles.
+        const axisLabelColor = getComputedStyle(document.documentElement).getPropertyValue('--text-50').trim() || 'rgba(255,255,255,0.45)';
         chart.setOption({
           backgroundColor: 'transparent',
           grid: { top: 6, bottom: 6, left: 56, right: 48, containLabel: false },
@@ -1415,7 +1444,7 @@ export default function SkillsSection() {
           yAxis: {
             type: 'category',
             data: ['Backlog', 'Done', 'Review', 'Active'],
-            axisLabel: { color: 'rgba(255,255,255,0.45)', fontSize: 10, fontFamily: 'inherit' },
+            axisLabel: { color: axisLabelColor, fontSize: 10, fontFamily: 'inherit' },
             axisLine: { show: false },
             axisTick: { show: false },
           },
@@ -1427,7 +1456,7 @@ export default function SkillsSection() {
               { value: 38, itemStyle: { color: '#0269d0' } },
               { value: 18, itemStyle: { color: '#0e7c3d' } },
             ],
-            label: { show: true, position: 'right', color: 'rgba(255,255,255,0.45)', fontSize: 10, formatter: '{c}' },
+            label: { show: true, position: 'right', color: axisLabelColor, fontSize: 10, formatter: '{c}' },
             barMaxWidth: 10,
             itemStyle: { borderRadius: [0, 4, 4, 0] },
           }],
@@ -1741,7 +1770,7 @@ export default function SkillsSection() {
         </h2>
         <p
           className="ai-sub rise-soft"
-          style={{ color: 'rgba(255,255,255,0.55)', fontSize: '14px', marginBottom: '-32px', maxWidth: 392 }}
+          style={{ fontSize: '14px', marginBottom: '-32px', maxWidth: 392 }}
           dangerouslySetInnerHTML={{ __html: t.ai_sub }}
         />
 

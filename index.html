@@ -3,6 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- Sets data-theme before portfolio.css's :root[data-theme="light"] block
+       is even parsed, so a returning light-mode visitor never flashes dark
+       first. No stored value = dark, the site's original/default look. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+      } catch (e) {}
+    })();
+  </script>
   <title>Tim Lin - Product Designer</title>
   <link rel="icon" type="image/x-icon" href="/img/favicon/favicon.ico" />
   <meta name="description" content="Tim Lin 的個人作品集。資深 UI/UX 設計師，專精企業後台系統設計、3D 互動體驗與 AI 工作流整合。" />

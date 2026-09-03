@@ -55,7 +55,7 @@
     .loader {
       position: fixed;
       inset: 0;
-      background: #121212;
+      background: var(--bg);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -66,7 +66,7 @@
     }
 
     .loader-text {
-      color: #fff;
+      color: var(--text);
       opacity: 0.7;
       font-size: 14px;
       letter-spacing: 0.02em;
@@ -89,7 +89,7 @@
       content: '';
       position: absolute;
       border-radius: 50px;
-      box-shadow: 0 0 0 3px inset #fff;
+      box-shadow: 0 0 0 3px inset var(--text);
       animation: l4 2.5s infinite;
     }
 
@@ -164,6 +164,14 @@
       --text-30: rgba(255, 255, 255, 0.45);
       --grad: linear-gradient(to right, #6C63FF, #FF6584);
       --grad-logo: linear-gradient(45deg, #8A2BE2, #4A00E0, #00D4FF);
+      /* The 4 hard-cut bands of #bg-frame-glow-grad (BeamsBackground.tsx)'s
+         flow blend — offsets 0/39.6967/70.3616/87.9173/100%, each variable
+         covering one band's start+end stop pair (see the comment above the
+         <linearGradient> itself for why each offset appears twice). */
+      --frame-glow-base: #1C1C1C;
+      --frame-glow-2: #4A00E0;
+      --frame-glow-3: #8A2BE2;
+      --frame-glow-4: #E620EC;
       --line: #06C755;
       --line-dim: rgba(6, 199, 85, 0.12);
       --line-bdr: rgba(6, 199, 85, 0.35);
@@ -206,24 +214,111 @@
         0 0 0 1px rgba(108, 99, 255, 0.16);
       --card-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
-      /* Same near+far, dark-not-black, down-right logic as the card
-         shadows above, re-expressed as filter:drop-shadow for gradient
-         headline text. Must be drop-shadow, not text-shadow: gradient
-         text fills via background-clip:text with a transparent glyph
-         fill, so a text-shadow shows straight THROUGH the letters instead
-         of sitting behind them — drop-shadow traces the actual rendered
-         pixels and paints behind. Opacity is higher than the card tiers
-         because it's only carrying a thin glyph stroke, not a filled box. */
-      --text-shadow-md:
-        drop-shadow(0 2px 6px rgba(var(--shadow-near), 0.35))
-        drop-shadow(6px 14px 28px rgba(var(--shadow-far), 0.25));
-      /* Stronger tier for headline text that overlaps busy imagery (e.g.
-         Portfolio's title sits over the scrolling project-wall collage,
-         not a plain dark background) — same near+far logic, higher
-         opacity so the glyphs stay legible against whatever's behind them. */
-      --text-shadow-emphasis:
-        drop-shadow(0 3px 8px rgba(var(--shadow-near), 0.45))
-        drop-shadow(8px 20px 40px rgba(var(--shadow-far), 0.35));
+      /* AI Brief card's document-flow flourish (.ai-doc-*) — the idle
+         "raw document" phase sits directly on the card background (unlike
+         the resolved result chips, which sit on their own solid
+         --doc-color and don't need theming), so its white tints need a
+         light-mode counterpart or they vanish on a light card. */
+      --ai-doc-idle-bg: rgba(255, 255, 255, 0.06);
+      --ai-doc-idle-border: rgba(255, 255, 255, 0.16);
+      --ai-doc-bar: rgba(255, 255, 255, 0.4);
+      --ai-doc-bar-head: rgba(255, 255, 255, 0.6);
+    }
+
+    /* ── LIGHT MODE (Variant A — "紫調延伸") ──
+       Overrides only the tokens that actually change; --grad-logo, the
+       shadow system, and everything else stay shared with dark mode. Both
+       consumers of --grad-logo (the always-dark navbar chrome pill and the
+       always-white hero-ask capsule) sit on backgrounds that don't move
+       with this toggle, so the value that already works for both stays put.
+       The desktop hero panel (BeamsBackground.tsx's Spline scene + frame
+       glow) and the whole navbar/staggered-menu chrome are still mostly
+       excluded from theming — self-contained dark showcase/chrome
+       surfaces, not page content, the same way a video player's chrome
+       doesn't invert for a light-mode article around it — except
+       the --frame-glow-* set below, themed on explicit request. */
+    :root[data-theme="light"] {
+      --primary: #5B4FE0;
+      --secondary: #E8496B;
+      /* Glass Indigo / Fuji Dusk / Fuji Dusk / Violet Haze — a 4-stop pastel
+         palette from the same blend tool as w_bg.svg, replacing the earlier
+         ad-hoc #F0EAD6 base guess with a real matched set. */
+      --frame-glow-base: #F8FBFD;
+      --frame-glow-2: #BA99FF;
+      --frame-glow-3: #D5ACFB;
+      --frame-glow-4: #FECEFF;
+      /* Was a flat #F7F5FB. Three CSS-only attempts to recreate the user's
+         "glassy" blend preset (linear wash, hard-cut wash, a hand-rolled
+         SVG tile grid) all missed the real thing — the user then supplied
+         the tool's own export directly: public/img/w_bg.svg, a 3840x2160
+         render of the actual blend (mint/indigo radial wash + tile grid +
+         grain, all baked into one image, its own `grainp` pattern already
+         covering the preset's `noise:20`). Using that asset outright
+         instead of reverse-engineering it. `background: var(--bg)` is used
+         as a full shorthand everywhere this token is consumed (.loader,
+         html, #bg-scene, #bg-spline-scene), so position/size/repeat all
+         need to live in this one value — plain `url(...)` alone would tile
+         a 3840px image at 1:1 instead of covering the viewport. Static, not
+         animated — the preset's `speed` field would mean animating this
+         fixed full-viewport layer, which risks the same stale-paint/
+         repaint issues already fought elsewhere in this file. */
+      --bg: url('/img/w_bg.svg') center / cover no-repeat;
+      --bg-card: #FFFFFF;
+      --bg-hover: #EFEDF7;
+      --border: rgba(23, 15, 45, 0.10);
+      --border-hi: rgba(23, 15, 45, 0.20);
+      /* Neutral charcoal, not near-black: body copy and unstyled icons
+         inherit this, and a purple-black base read as "pure black" against
+         the light bg. -70/-50/-30 fade the same gray toward the page bg
+         instead of toward a tinted dark. */
+      --text: #3A3A42;
+      --text-70: rgba(58, 58, 66, 0.72);
+      --text-50: rgba(58, 58, 66, 0.52);
+      --text-30: rgba(58, 58, 66, 0.35);
+      --grad: linear-gradient(to right, #5B4FE0, #E8496B);
+      --line: #059C48;
+      --line-dim: rgba(5, 156, 72, 0.12);
+      --line-bdr: rgba(5, 156, 72, 0.35);
+      /* Content-card glass tiers (.process-card, .tech-item, .bento-card,
+         .ai-card, .philosophy-card, .pill) — the dark versions read as
+         frosted dark glass; light mode swaps to frosted white so the same
+         cards read as raised white surfaces on the lavender page bg instead
+         of staying dark islands. */
+      --glass-bg: rgba(255, 255, 255, 0.72);
+      --glass-bg-hov: rgba(255, 255, 255, 0.92);
+      --glass-bg-premium: rgba(255, 255, 255, 0.82);
+      --glass-border: rgba(23, 15, 45, 0.10);
+      --glass-border-hov: rgba(23, 15, 45, 0.22);
+      --card-shadow-selected:
+        0 8px 18px rgba(var(--shadow-near), 0.24),
+        12px 40px 90px rgba(var(--shadow-far), 0.22),
+        0 0 0 1px rgba(91, 79, 224, 0.16);
+
+      --ai-doc-idle-bg: rgba(23, 15, 45, 0.05);
+      --ai-doc-idle-border: rgba(23, 15, 45, 0.16);
+      --ai-doc-bar: rgba(58, 58, 66, 0.4);
+      --ai-doc-bar-head: rgba(58, 58, 66, 0.62);
+    }
+
+    /* Big section headlines (About, Tech Stack, How I Use AI, Contact) sit on
+       the plain page background — not an image collage like Portfolio's — so
+       their plain-text lead can follow the theme. In light mode it goes
+       primary blue instead of the default gray body-text color, echoing the
+       --grad accent every one of these headlines already carries in its
+       .gradient-text suffix. Dark mode keeps its own white unchanged.
+       Same light-only blue treatment extends to every card-level title
+       (.bento-label, .tech-name, .ai-card h3), the In-house/Freelance column
+       headers, each process card's photo-scrim title, and Portfolio's own
+       headline lead — all of them stay exactly as they were in dark mode. */
+    :root[data-theme="light"] .about-h2,
+    :root[data-theme="light"] .contact-headline,
+    :root[data-theme="light"] .bento-label,
+    :root[data-theme="light"] .tech-name,
+    :root[data-theme="light"] .ai-card h3,
+    :root[data-theme="light"] .process-column-header,
+    :root[data-theme="light"] .process-card--has-img .process-name,
+    :root[data-theme="light"] .portfolio-headline-title {
+      color: var(--primary);
     }
 
     html,
@@ -243,7 +338,7 @@
        touchstart event instead of a static hardware guess. */
 
     html {
-      background: #000;
+      background: var(--bg);
     }
 
     body {
@@ -284,6 +379,21 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+    }
+
+    /* "Lin" half of the wordmark (Navbar's logo, ContactSection's footer) —
+       was inline style={{color:'var(--text)'}} on each span; moved to a
+       shared class so the light-mode override below can target both at
+       once. Dark mode: var(--text) — same full color the digit-wheel
+       numbers (.digit-col-inner span) use there. Light mode overrides to
+       var(--text-30) to match those same numbers' own light-mode override,
+       two breakpoints down. */
+    .brand-lin {
+      color: var(--text);
+    }
+
+    :root[data-theme="light"] .brand-lin {
+      color: var(--text-30);
     }
 
     /* ── GLASS CARD (matches index.html .card) ── */
@@ -562,6 +672,52 @@
       border-bottom: none;
     }
 
+    /* Light mode: the scrolled pill AND the unscrolled desktop notch pill
+       (.navbar-menu below) both get the light glass look — same tokens,
+       just a different selector root, so the two states read as one
+       consistent chrome instead of the notch staying dark against the now-
+       light hero panel behind it. */
+    :root[data-theme="light"] #main-header.scrolled #nav-container {
+      background: var(--glass-bg);
+      border-color: var(--glass-border);
+    }
+
+    :root[data-theme="light"] #main-header.scrolled .nav-link,
+    :root[data-theme="light"] #main-header:not(.scrolled) .nav-link {
+      color: var(--text-70);
+    }
+
+    :root[data-theme="light"] #main-header.scrolled .nav-link.active,
+    :root[data-theme="light"] #main-header.scrolled .nav-link:hover,
+    :root[data-theme="light"] #main-header:not(.scrolled) .nav-link.active,
+    :root[data-theme="light"] #main-header:not(.scrolled) .nav-link:hover {
+      color: var(--text);
+    }
+
+    :root[data-theme="light"] #main-header.scrolled #lang-menu-btn,
+    :root[data-theme="light"] #main-header:not(.scrolled) #lang-menu-btn {
+      background: var(--glass-bg);
+      border-color: var(--glass-border);
+      color: var(--text-70);
+    }
+
+    :root[data-theme="light"] #main-header.scrolled #lang-menu-btn i,
+    :root[data-theme="light"] #main-header:not(.scrolled) #lang-menu-btn i {
+      color: var(--text-70);
+    }
+
+    :root[data-theme="light"] #main-header.scrolled #lang-menu-btn:hover,
+    :root[data-theme="light"] #main-header:not(.scrolled) #lang-menu-btn:hover {
+      background: var(--glass-bg-hov);
+      border-color: var(--glass-border-hov);
+      color: var(--text);
+    }
+
+    :root[data-theme="light"] #main-header.scrolled #lang-menu-btn:hover i,
+    :root[data-theme="light"] #main-header:not(.scrolled) #lang-menu-btn:hover i {
+      color: var(--text);
+    }
+
     .logo {
       display: inline-block;
       font-size: 22px;
@@ -592,6 +748,131 @@
 
     .navbar-lang {
       position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Sun/moon pill switch — self-colored by the theme-switch--light/dark
+       modifier class (set from React state in Navbar.tsx), not by the
+       data-theme attribute, so it reads the same way in every navbar
+       context (dark notch, scrolled light glass bar) without separate
+       per-context overrides. One shared pill background (not a track +
+       separate outside label): the knob slides between the two ends of
+       THIS SAME pill via a plain CSS transform transition.
+
+       Motion (the 'motion' npm package) was tried here twice — once as a
+       persistent `animate={{x}}` span, once as a layoutId shared between
+       two fixed anchors (ContactSection's .faq-tab-indicator technique).
+       Both landed the knob at a fixed, theme-independent screen position
+       that never updated after the first render. To make sure this wasn't
+       something specific to this component, the SAME check was run
+       directly against the live .faq-tab-indicator this technique was
+       copied from — clicking its tabs also does not move it. So Motion's
+       layout-animation feature is not currently functioning in this
+       project's setup at all (independent of anything in this file); it
+       isn't a bug in this component's markup. A plain CSS transition
+       doesn't depend on that feature and is what's actually verified
+       working here across repeated toggles.
+
+       Knob geometry: the pill's rounded ends are semicircles of radius
+       = inner height / 2. Using the SAME inset (6.5px) for top and for
+       each resting left/right position makes the knob's center land
+       exactly on that radius, so it sits centered in the cap instead of
+       just "near" the edge — see PILL_H/PILL_BORDER/KNOB_D below.
+       PILL_H: 35 (border-box, matches #lang-menu-btn's rendered height)
+       PILL_BORDER: 1  → inner height = 35 - 2*1 = 33
+       KNOB_D: 20       → inset m = (33 - 20) / 2 = 6.5
+       PILL_W: 76 (border-box) → inner width = 74
+       right-rest left = 74 - 20 - 6.5 = 47.5 → travel = 47.5 - 6.5 = 41 */
+    #theme-toggle-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      width: 76px;
+      height: 35px;
+      border-radius: 9999px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.35s ease, border-color 0.35s ease;
+    }
+
+    #theme-toggle-btn.theme-switch--dark {
+      background: #1c1a29;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    #theme-toggle-btn.theme-switch--light {
+      background: #ECECF1;
+      border: 1px solid rgba(58, 58, 66, 0.18);
+    }
+
+    .theme-switch-knob {
+      position: absolute;
+      top: 6.5px;
+      left: 6.5px;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      font-size: 10px;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.35s ease, border-color 0.35s ease;
+    }
+
+    #theme-toggle-btn.theme-switch--dark .theme-switch-knob {
+      transform: translateX(0);
+      /* Was backdrop-filter: blur(6px) — dropped. That's the one property
+         only the dark-state knob carried (light-state has none), so every
+         toggle simultaneously flipped the knob's own backdrop-filter layer
+         on/off AND animated its transform on the same element — see
+         feralui.dev/gradients's own theme switch (.jg-theme-knob) for a
+         working reference: same transform-transition-on-attribute-toggle
+         approach, but its knob never carries backdrop-filter at all. That
+         lines up with every other stale-paint bug fought in this file
+         (useTheme.ts, useSlidingIndicator.ts) — backdrop-filter appearing/
+         disappearing on an element mid-transform-transition is what stalls
+         Chromium's compositor. Frosted-glass dark knob look approximated
+         instead with a plain translucent fill, no filter. */
+      background: rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+    }
+
+    #theme-toggle-btn.theme-switch--light .theme-switch-knob {
+      transform: translateX(41px);
+      background: #ffffff;
+      color: #3A3A42;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+
+    .theme-switch-label {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Dark: knob rests left, so the label owns the right half. */
+    #theme-toggle-btn.theme-switch--dark .theme-switch-label {
+      left: 33px;
+      right: 7px;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    /* Light: knob slides to the right, so the label owns the left half,
+       right-aligned to sit flush against the knob's new position. */
+    #theme-toggle-btn.theme-switch--light .theme-switch-label {
+      left: 7px;
+      right: 33px;
+      justify-content: flex-end;
+      color: #3A3A42;
     }
 
     /* Only meaningful in the notch's own flap — hidden everywhere else
@@ -619,17 +900,6 @@
 
       #main-header:not(.scrolled) .logo {
         font-size: 40px;
-      }
-
-      /* Plain white here, not the shared .gradient-text-brand gradient —
-         against the notch's own bold --grad-logo fill behind it, the
-         gradient text nearly disappeared (same colors on both). Scoped
-         to the navbar only; ContactSection's own brand mark keeps the
-         gradient. */
-      #main-header:not(.scrolled) .navbar-brand .gradient-text-brand {
-        background: none;
-        -webkit-text-fill-color: #fff;
-        color: #fff;
       }
 
       #main-header:not(.scrolled) .navbar-shape {
@@ -674,7 +944,7 @@
         display: block;
         width: 1px;
         height: 32px;
-        background: rgba(255, 255, 255, 0.3);
+        background: var(--text-30);
       }
 
       #main-header:not(.scrolled) .navbar-brand-tagline {
@@ -683,7 +953,7 @@
         font-size: 13px;
         line-height: 1.4;
         font-weight: 500;
-        color: rgba(255, 255, 255, 0.75);
+        color: var(--text-50);
         white-space: nowrap;
       }
 
@@ -710,6 +980,11 @@
         border-radius: 9999px;
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      :root[data-theme="light"] #main-header:not(.scrolled) .navbar-menu {
+        background: var(--glass-bg);
+        border-color: var(--glass-border);
       }
 
       #main-header:not(.scrolled) .navbar-menu .navbar-lang {
@@ -797,6 +1072,7 @@
     :root {
       --glass-bg: rgba(30, 30, 30, 0.5);
       --glass-bg-hov: rgba(42, 42, 42, 0.65);
+      --glass-bg-premium: rgba(20, 18, 28, 0.72);
       --glass-blur: blur(16px);
       --glass-border: rgba(255, 255, 255, 0.1);
       --glass-border-hov: rgba(255, 255, 255, 0.22);
@@ -1080,6 +1356,14 @@
         filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.65));
       }
 
+      /* Light mode's panel sits on a pale page, not the dark default — the
+         same 0.65 alpha reads as a much harder, more visible edge against
+         light surroundings than it does against dark, so light gets a
+         lighter touch. */
+      :root[data-theme="light"] #bg-panel-shadow {
+        filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.25));
+      }
+
       /* clip-path (set inline by BeamsBackground.tsx's sync(), the same `d`
          as #bg-frame-outline/#bg-frame-glow below) is what actually cuts
          the two notches now — border-radius+overflow:hidden here are just
@@ -1094,6 +1378,17 @@
         border-radius: 48px;
         overflow: hidden;
         pointer-events: none;
+      }
+
+      /* Solid backdrop behind the WebGL canvas for the light Spline scene
+         (bg_scene_w.splinecode — see BeamsBackground.tsx) — same Glass
+         Indigo tone as --frame-glow-base's light value, so the panel reads
+         as one consistent surface instead of canvas margins/loading gaps
+         showing whatever's behind. Only overrides light mode; dark mode
+         still falls through to the base #bg-spline-scene rule's
+         `background: var(--bg)` above, unchanged by this. */
+      :root[data-theme="light"] #bg-spline-scene {
+        background: var(--frame-glow-base);
       }
 
       #spline-bg {
@@ -1520,6 +1815,12 @@
       letter-spacing: -.03em;
       line-height: 1.1;
       margin-bottom: 1rem;
+      /* Pinned white like .hero-h2/.hero-desc below, not inherited from
+         body's var(--text) — it sits on the hero's own Spline/image
+         backdrop, which (like the rest of the hero panel) stays dark
+         regardless of site theme, so its text can't follow --text into a
+         dark-on-dark light-mode render. */
+      color: #fff;
     }
 
     .hero-h2 {
@@ -1736,6 +2037,21 @@
       background: rgba(255, 255, 255, 0.1);
     }
 
+    /* Light mode: match .skill-pill's glass style instead of the
+       dark-only translucent-white look above. */
+    :root[data-theme="light"] .tag-capsule {
+      color: var(--text-70);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      border-color: var(--glass-border);
+    }
+
+    :root[data-theme="light"] .tag-capsule:hover {
+      color: var(--text);
+      background: var(--glass-bg-hov);
+      border-color: var(--glass-border-hov);
+    }
+
     .tag-capsule i {
       font-size: 14px;
       flex-shrink: 0;
@@ -1924,14 +2240,10 @@
 
     /* Shared by About's own headline, the How I Use AI headline, and Tech
        Stack's headline (all three use .about-h2 — see comment near the
-       mobile .gradient-text display:block rule below). Same drop-shadow
-       logic as the card shadow system (near+far, dark-not-black). */
-    .about-h2 .gradient-text {
-      filter: var(--text-shadow-md);
-    }
+       mobile .gradient-text display:block rule below). */
 
     .about-lead {
-      color: rgba(255, 255, 255, 0.65);
+      color: var(--text-70);
       margin-bottom: 14px;
       font-size: 14px;
       line-height: 1.8;
@@ -1970,7 +2282,7 @@
       padding: 5px 14px;
       font-size: 12px;
       font-weight: 500;
-      color: rgba(255, 255, 255, 0.85);
+      color: var(--text);
       display: inline-flex;
       align-items: center;
       background: var(--glass-bg);
@@ -2023,6 +2335,12 @@
       color: var(--text);
     }
 
+    /* Light mode only: the big stat digits (5+/10+/4) read as near-black
+       at full var(--text) — lighten to the palest gray tier instead. */
+    :root[data-theme="light"] .digit-col-inner span {
+      color: var(--text-30);
+    }
+
     .stat-suffix {
       font-size: clamp(2.5rem, 5.6vw, 4.25rem);
       font-weight: 700;
@@ -2062,7 +2380,7 @@
        Grid's default align-items:stretch. */
     .bento-card {
       position: relative;
-      background-color: rgba(20, 18, 28, 0.72);
+      background-color: var(--glass-bg-premium);
       background-image:
         var(--noise-grain),
         radial-gradient(380px 220px at 50% 0%, rgba(108, 99, 255, 0.14), transparent 65%),
@@ -2227,6 +2545,12 @@
       background-clip: text;
     }
 
+    :root[data-theme="light"] .stat-suffix.bento-accent {
+      background: none;
+      -webkit-text-fill-color: var(--text-30);
+      color: var(--text-30);
+    }
+
     .ai-flow-mini {
       display: flex;
       flex-wrap: wrap;
@@ -2359,7 +2683,7 @@
 
     /* ── FREELANCE process cards (border-glow-card 包覆) ── */
     .process-card {
-      background: rgba(30, 30, 30, 0.5);
+      background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       border-radius: 48px;
@@ -2374,7 +2698,7 @@
        .border-glow-card 強制的純色 background（!important + 兩個 class
        的特異度蓋過原本單一 class 的規則）。 */
     .process-card.border-glow-card {
-      background-color: rgba(20, 18, 28, 0.72) !important;
+      background-color: var(--glass-bg-premium) !important;
       background-image:
         var(--noise-grain),
         radial-gradient(380px 220px at 50% 0%, rgba(108, 99, 255, 0.14), transparent 65%),
@@ -2385,7 +2709,7 @@
 
     .process-card:hover {
       border-color: rgba(108, 99, 255, 0.4);
-      background: rgba(42, 42, 42, 0.65);
+      background: var(--glass-bg-hov);
       transform: translateY(-3px);
     }
 
@@ -2425,7 +2749,7 @@
       font-family: var(--mono);
       font-size: 9.5px;
       letter-spacing: .14em;
-      color: rgba(255, 255, 255, .35);
+      color: var(--text-30);
       background: rgba(12, 9, 18, .85);
       border: 1px solid rgba(255, 255, 255, .07);
       border-radius: 4px;
@@ -2434,7 +2758,7 @@
     }
     .process-step-badge em {
       font-style: normal;
-      color: rgba(255, 255, 255, .55);
+      color: var(--text-50);
       font-weight: 500;
     }
 
@@ -2447,7 +2771,7 @@
 
     .process-desc {
       font-size: 12px;
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--text-50);
       line-height: 1.55;
     }
 
@@ -2564,6 +2888,13 @@
       margin-bottom: 0;
       text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
       line-height: 1.3;
+      /* Pinned white, not var(--text): this variant sits on its own permanent
+         dark photo scrim (.border-glow-inner's gradient above), not on
+         --glass-bg, so it can't follow --text into a dark-on-dark render
+         once light mode makes the base .process-name/.process-desc dark.
+         Light mode swaps this to brand blue — see :root[data-theme="light"]
+         override below — dark mode keeps the original white. */
+      color: #fff;
     }
 
     /* 說明文字 — 恆常顯示 */
@@ -2571,6 +2902,19 @@
       position: relative;
       z-index: 1;
       padding: 0 20px 20px;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    /* Same reasoning as .process-name/.process-desc above — the step badge
+       floats over this variant's full-bleed dark-vignetted illustration
+       too, so it keeps its original light values instead of following
+       --text-30/--text-50 into light mode's dark ink. */
+    .process-card--has-img .process-step-badge {
+      color: rgba(255, 255, 255, .35);
+    }
+
+    .process-card--has-img .process-step-badge em {
+      color: rgba(255, 255, 255, .55);
     }
 
     .process-dual {
@@ -2877,7 +3221,7 @@
       border-radius: 9999px;
       border: 1px solid var(--glass-border);
       background: rgba(255, 255, 255, 0.06);
-      color: var(--text-100, #fff);
+      color: var(--text);
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
@@ -3185,7 +3529,7 @@
 
     .ai-bullets li {
       font-size: 13px;
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-70);
       padding-left: 14px;
       position: relative;
       line-height: 1.55;
@@ -3199,7 +3543,7 @@
     }
 
     .philosophy-card {
-      background: rgba(30, 30, 30, 0.5);
+      background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
       border: 1px solid rgba(108, 99, 255, 0.2);
       border-radius: 16px;
@@ -3221,10 +3565,16 @@
 
     /* TECH STACK */
     .tech-sub {
-      color: rgba(255, 255, 255, 0.55);
+      color: var(--text-50);
       font-size: 14px;
       margin-bottom: -32px;
       max-width: 392px;
+    }
+
+    /* Was a per-element inline color in SkillsSection.tsx (rgba(255,255,255,.55),
+       never updated for light mode) — moved here as a real theme-aware rule. */
+    .ai-sub {
+      color: var(--text-50);
     }
 
     .tech-items {
@@ -3275,7 +3625,7 @@
     }
 
     .tech-item.html-item {
-      background-color: rgba(30, 30, 30, 0.5);
+      background-color: var(--glass-bg);
       background-image: var(--noise-grain);
       background-repeat: repeat;
       background-size: 180px 180px;
@@ -3283,7 +3633,7 @@
     }
 
     .tech-item.js-item {
-      background-color: rgba(30, 30, 30, 0.5);
+      background-color: var(--glass-bg);
       background-image: var(--noise-grain);
       background-repeat: repeat;
       background-size: 180px 180px;
@@ -3291,7 +3641,7 @@
     }
 
     .tech-item.react-item {
-      background-color: rgba(30, 30, 30, 0.5);
+      background-color: var(--glass-bg);
       background-image: var(--noise-grain);
       background-repeat: repeat;
       background-size: 180px 180px;
@@ -3474,7 +3824,7 @@
       border-left: 3px solid var(--primary);
       padding: 12px 16px;
       font-size: 13px;
-      color: rgba(255, 255, 255, 0.55);
+      color: var(--text-50);
       line-height: 1.7;
       background: rgba(108, 99, 255, 0.06);
       border-radius: 0 8px 8px 0;
@@ -3539,28 +3889,14 @@
       font-weight: 700;
       line-height: 1.15;
       letter-spacing: -.02em;
-      color: var(--text);
+      /* Pinned white, not var(--text): this title overlays the scrolling
+         project-wall thumbnails (see .portfolio-headline's comment), an
+         always-dark image collage that doesn't move with the theme toggle.
+         Light mode swaps this to brand blue — see :root[data-theme="light"]
+         override below — dark mode keeps the original white. */
+      color: #fff;
     }
 
-    /* Every shadow in this headline uses filter:drop-shadow (not text-shadow)
-       so it renders behind the glyphs and reads as a true drop shadow. On the
-       white lead it's the dark readability halo; kept on the .headline-lead
-       span (not the h2) so it doesn't compound onto the gradient suffix, which
-       carries its own coloured drop-shadow. */
-    .portfolio-headline-title .headline-lead {
-      /* Single-layer, matching the View All Projects button's own shadow
-         formula (.btn-grad: 0 4px 20px COLOR) instead of the previous
-         3-layer halo — same offset/blur, own original black. */
-      filter: drop-shadow(0 6px 22px rgba(0, 0, 0, .9));
-    }
-
-    /* Coloured suffix casts a shadow BELOW the glyphs in the gradient's own
-       hues, just darker — deepened #6C63FF and #FF6584. MUST use drop-shadow,
-       not text-shadow: the glyphs have a transparent fill (background-clip:text),
-       so a text-shadow shows THROUGH them and lands over the letters instead of
-       under. drop-shadow traces the rendered gradient pixels and paints behind,
-       so only the downward-offset part shows. text-shadow:none clears the white
-       readability shadow the title sets, which would otherwise smudge through. */
     .portfolio-headline-title .gradient-text {
       /* Same --grad used by every other section's headline (About, Contact,
          etc.) — Portfolio no longer carries its own one-off hue. */
@@ -3568,11 +3904,6 @@
       -webkit-background-clip: text;
       background-clip: text;
       text-shadow: none;
-      /* Same card-shadow-system logic as .about-h2/.contact-headline's
-         gradient text, but the emphasis tier — this title overlaps the
-         scrolling project-wall collage below it, not a plain background,
-         so it needs the stronger pass to stay legible. */
-      filter: var(--text-shadow-emphasis);
     }
 
     .portfolio-headline-sub {
@@ -3587,20 +3918,21 @@
       font-size: 14px;
       line-height: 1.6;
       color: var(--text-70);
-      /* drop-shadow, matching the rest of the headline (see .headline-lead). */
-      filter:
-        drop-shadow(0 0 2px rgba(0, 0, 0, .6))
-        drop-shadow(0 1px 6px rgba(0, 0, 0, .55))
-        drop-shadow(0 6px 28px rgba(0, 0, 0, .45));
     }
 
     /* PORTFOLIO FILTER BUTTONS — btn-glass style */
 
     /* Fluid Tabs track (same technique as .faq-tabs in ContactSection):
-       one glass pill shell holds flat tab buttons, and a single
-       motion.span with a shared layoutId slides between them instead of
-       each button carrying its own active background. */
+       one glass pill shell holds flat tab buttons, and a single indicator
+       span (positioned/sized by the useSlidingIndicator hook, animated by
+       this CSS transition) slides between them instead of each button
+       carrying its own active background. Was a Motion layoutId-shared
+       motion.span; Motion's shared-layout animation is non-functional in
+       this project's setup (froze at the first-rendered position on every
+       later activation) so this uses plain measured geometry + transition
+       instead — see useSlidingIndicator.ts. */
     .portfolio-filter-tabs {
+      position: relative;
       display: flex;
       gap: 4px;
       padding: 4px;
@@ -3636,11 +3968,12 @@
 
     .portfolio-filter-indicator {
       position: absolute;
-      inset: 0;
+      left: 0;
       z-index: 0;
       border-radius: 9999px;
       background: var(--primary);
       box-shadow: 0 2px 10px color-mix(in oklab, var(--primary) 45%, transparent);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .portfolio-filter-label {
@@ -3976,11 +4309,6 @@
       margin-bottom: 10px;
     }
 
-    /* Same drop-shadow logic as the card shadow system and .about-h2
-       .gradient-text above. */
-    .contact-headline .gradient-text {
-      filter: var(--text-shadow-md);
-    }
 
     .contact-sub {
       color: var(--text-70);
@@ -4331,6 +4659,7 @@
        own Accordion demo (border-b last:border-b-0, py-4, gap-4, text-sm,
        items-start, hover:underline, size-4 muted chevron). */
     .faq-tabs {
+      position: relative;
       display: flex;
       gap: 4px;
       padding: 4px;
@@ -4363,17 +4692,22 @@
       color: #fff;
     }
 
-    /* Sliding pill indicator, same technique as animata.design's Fluid
-       Tabs: a single motion.span shares one layoutId across both buttons,
-       so Motion animates it between them instead of cross-fading a
-       background on each button individually. */
+    /* Sliding pill indicator: geometry comes from useSlidingIndicator
+       (measures the active .faq-tab's own box), this transition animates
+       it. Used to be a Motion layoutId shared between two conditionally-
+       mounted motion.span instances (animata.design's Fluid Tabs
+       technique) — Motion's shared-layout animation turned out to be
+       non-functional in this project's setup (froze at the first-rendered
+       position on every later activation), so this no longer depends on
+       it at all. */
     .faq-tab-indicator {
       position: absolute;
-      inset: 0;
+      left: 0;
       z-index: 0;
       border-radius: 9999px;
       background: var(--primary);
       box-shadow: 0 2px 10px color-mix(in oklab, var(--primary) 45%, transparent);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .faq-tab-label {
@@ -4603,6 +4937,14 @@
       background: linear-gradient(to top right, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 65%);
     }
 
+    /* Light mode: the card's own background is near-white and its number/
+       label/caption are light-gray text now (not white), so a black scrim
+       here just reads as an unnatural dark smear across the card — swap it
+       for the same fade in white instead, still legible over the photos. */
+    :root[data-theme="light"] .domains-scrim {
+      background: linear-gradient(to top right, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0) 65%);
+    }
+
     /* Immersive Visuals card — bio text keeps to 3/4 width, leaving the
        right-hand quarter as breathing room for the orbit. The orbit itself
        is sized bigger than that reserved quarter and anchored past the
@@ -4826,9 +5168,14 @@
       --background-y: 50%;
       --grain: var(--noise-grain);
       --icon: none;
-      --inner-gradient: none;
-      --behind-glow-color: rgba(125, 190, 255, 0.67);
-      --behind-glow-size: 25%;
+      /* Tuned dark-mode values — used to be set inline on the wrapper in
+         AboutSection.tsx instead, moved here so a data-theme="light"
+         override (below the light-mode block, past .pc-holo-bg) can win on
+         the same property without fighting an inline style, matching how
+         every other themed value on this site works. */
+      --inner-gradient: linear-gradient(145deg, #60496e8c 0%, #71C4FF44 100%);
+      --behind-glow-color: rgba(108, 99, 255, 0.55);
+      --behind-glow-size: 50%;
       --card-radius: 48px;
       --sunpillar-1: hsl(2, 100%, 73%);
       --sunpillar-2: hsl(53, 100%, 69%);
@@ -4990,7 +5337,7 @@
 
     .pc-avatar-content .avatar {
       width: 100%;
-      height: 85%;
+      height: 78%;
       object-fit: cover;
       object-position: center top;
       position: absolute;
@@ -5155,6 +5502,56 @@
       100% {
         background-position: 0 var(--background-y), 90% 90%, center;
       }
+    }
+
+    /* PROFILE CARD — light mode ("pearl"). Same structure, different
+       palette + blend modes — color-dodge/luminosity are what make the
+       dark card's holo sheen and avatar tint work (they brighten toward
+       white against a near-black card), but against a pale pearl card they
+       just blow out to solid white/invisible instead. Swapped for
+       multiply/soft-light/normal, which read against a light base the way
+       color-dodge/luminosity do against a dark one. */
+    :root[data-theme="light"] .pc-card-wrapper {
+      --inner-gradient: linear-gradient(145deg, #FFFFFF99 0%, #FFFFFF22 100%);
+      --behind-glow-color: rgba(91, 79, 224, 0.35);
+      --behind-glow-size: 55%;
+    }
+
+    :root[data-theme="light"] .pc-card {
+      background: linear-gradient(160deg, #FEFDFA 0%, #F1EDE4 100%);
+      box-shadow: rgba(var(--shadow-near), 0.18) calc((var(--pointer-from-left)*10px) - 3px) calc((var(--pointer-from-top)*20px) - 6px) 20px -5px;
+    }
+
+    :root[data-theme="light"] .pc-inside {
+      background-color: rgba(255, 255, 255, 0.88);
+    }
+
+    /* Rainbow holo sheen dropped entirely for light mode, not just frozen
+       — hides ::before/::after with it since they're pseudo-elements of
+       this same node. */
+    :root[data-theme="light"] .pc-shine {
+      display: none;
+    }
+
+    :root[data-theme="light"] .pc-avatar-content,
+    :root[data-theme="light"] .pc-content:not(.pc-avatar-content) {
+      mix-blend-mode: normal;
+    }
+
+    /* Solid gray, not a gradient-clip fill — override both the gradient
+       and the transparent text-fill-color the base rule pairs it with.
+       --text-30 matches the big stat digits (.digit-col-inner span, e.g.
+       "5+") — same gray tier, not just "some gray". */
+    :root[data-theme="light"] .pc-details h3 {
+      background-image: none;
+      -webkit-text-fill-color: var(--text-30);
+      color: var(--text-30);
+    }
+
+    :root[data-theme="light"] .pc-details p {
+      background-image: none;
+      -webkit-text-fill-color: var(--text-30);
+      color: var(--text-30);
     }
 
     /* FONT HEADING */
@@ -5358,7 +5755,7 @@
     }
 
     .philosophy-card {
-      background: rgba(30, 30, 30, 0.5);
+      background: var(--glass-bg);
       border-color: rgba(108, 99, 255, 0.2);
     }
 
@@ -6314,7 +6711,7 @@
 
     .ai-bullets li {
       font-size: 13px;
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-70);
       padding-left: 14px;
       position: relative;
       line-height: 1.55;
@@ -6328,7 +6725,7 @@
     }
 
     .philosophy-card {
-      background: rgba(30, 30, 30, 0.5);
+      background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
       border: 1px solid rgba(108, 99, 255, 0.2);
       border-radius: 16px;
@@ -6350,10 +6747,16 @@
 
     /* TECH STACK */
     .tech-sub {
-      color: rgba(255, 255, 255, 0.55);
+      color: var(--text-50);
       font-size: 14px;
       margin-bottom: -32px;
       max-width: 392px;
+    }
+
+    /* Was a per-element inline color in SkillsSection.tsx (rgba(255,255,255,.55),
+       never updated for light mode) — moved here as a real theme-aware rule. */
+    .ai-sub {
+      color: var(--text-50);
     }
 
     .tech-items {
@@ -6377,7 +6780,7 @@
     }
 
     .tech-item.html-item {
-      background-color: rgba(30, 30, 30, 0.5);
+      background-color: var(--glass-bg);
       background-image: var(--noise-grain);
       background-repeat: repeat;
       background-size: 180px 180px;
@@ -6385,7 +6788,7 @@
     }
 
     .tech-item.js-item {
-      background-color: rgba(30, 30, 30, 0.5);
+      background-color: var(--glass-bg);
       background-image: var(--noise-grain);
       background-repeat: repeat;
       background-size: 180px 180px;
@@ -6393,7 +6796,7 @@
     }
 
     .tech-item.react-item {
-      background-color: rgba(30, 30, 30, 0.5);
+      background-color: var(--glass-bg);
       background-image: var(--noise-grain);
       background-repeat: repeat;
       background-size: 180px 180px;
@@ -6497,7 +6900,7 @@
       border-left: 3px solid var(--primary);
       padding: 12px 16px;
       font-size: 13px;
-      color: rgba(255, 255, 255, 0.55);
+      color: var(--text-50);
       line-height: 1.7;
       background: rgba(108, 99, 255, 0.06);
       border-radius: 0 8px 8px 0;
@@ -6742,7 +7145,8 @@
 
       nav,
       #lang-menu-btn,
-      #lang-menu-btn+div {
+      #lang-menu-btn+div,
+      #theme-toggle-btn {
         display: none !important;
       }
 
@@ -6787,6 +7191,28 @@
 
     #main-header {
       transition: opacity 0.25s ease;
+    }
+
+    .sm-theme-toggle {
+      position: absolute;
+      top: 1.25rem;
+      left: 1.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 9999px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 13px;
+    }
+
+    .sm-theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
     }
 
     .sm-panel-close {
@@ -7139,7 +7565,7 @@
        .ai-card-detail (tables, nowrap rows) even while that detail is
        collapsed, blowing the card past its column and clipping it under
        body's overflow-x:hidden. */
-    .ai-card{position:relative;z-index:1;min-width:0;padding:22px 26px 22px;--ai-card-r:48px;border-radius:var(--ai-card-r);corner-shape:squircle;background-color:rgba(20,18,28,.72);background-image:var(--noise-grain),radial-gradient(380px 220px at 50% 0%,rgba(108,99,255,.14),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(1rem);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .4s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08)}
+    .ai-card{position:relative;z-index:1;min-width:0;padding:22px 26px 22px;--ai-card-r:48px;border-radius:var(--ai-card-r);corner-shape:squircle;background-color:var(--glass-bg-premium);background-image:var(--noise-grain),radial-gradient(380px 220px at 50% 0%,rgba(108,99,255,.14),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(1rem);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,box-shadow .4s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:0 30px 80px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.08)}
     .ai-card::before{content:"";position:absolute;top:0;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent)}
     .ai-card:hover{border-color:rgba(108,99,255,0.4);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 60px -10px rgba(181,139,255,.35),inset 0 1px 0 rgba(255,255,255,.08)}
     /* Step badge — floats above card top-left */
@@ -7156,6 +7582,14 @@
     /* AI Brief focal */
     .ai-card.ai-focal{background-color:rgba(24,16,32,.72);background-image:var(--noise-grain),radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.32),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(181,139,255,.32);box-shadow:0 60px 140px -20px rgba(0,0,0,.7),0 0 0 1px rgba(181,139,255,.1),0 0 220px -20px rgba(181,139,255,.35),0 0 360px -40px rgba(255,123,200,.25),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-focal::before{background:linear-gradient(90deg,transparent,#FF7BC8,#B58BFF,transparent);opacity:.5}
+    /* AI Brief focal card, light mode — the dark-purple background above is
+       a deliberate always-dark focal treatment that never picked up a
+       light counterpart when the rest of the theme system was built, so
+       it stayed a dark island regardless of theme. Swaps to the same
+       glass-premium surface every other .ai-card variant already gets,
+       with the purple/pink identity kept as a tint instead of the base. */
+    :root[data-theme="light"] .ai-card.ai-focal{background-color:var(--glass-bg-premium);background-image:var(--noise-grain),radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.15));border-color:rgba(181,139,255,.38);box-shadow:0 30px 80px -25px rgba(90,60,150,.28),0 0 0 1px rgba(181,139,255,.14),0 0 140px -30px rgba(181,139,255,.3),inset 0 1px 0 rgba(255,255,255,.6)}
+    :root[data-theme="light"] .ai-focal .ai-glyph{background:linear-gradient(135deg,#8A6FFF,#FF6FB8);border-color:rgba(138,111,255,.5);color:#fff}
     /* Human Review */
     .ai-card.ai-human{background-image:var(--noise-grain),radial-gradient(460px 280px at 70% 0%,rgba(123,227,181,.2),transparent 65%),radial-gradient(280px 200px at 30% 100%,rgba(255,255,255,.06),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));background-size:180px 180px,auto,auto,auto;background-repeat:repeat,no-repeat,no-repeat,no-repeat;border-color:rgba(123,227,181,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(123,227,181,.22),inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.14)}
     .ai-card.ai-human::before{background:linear-gradient(90deg,transparent,#7BE3B5,transparent);opacity:.5}
@@ -7169,18 +7603,23 @@
     .ai-card.ai-spectrum{background-image:var(--noise-grain),radial-gradient(500px 300px at 50% 0%,rgba(74,0,224,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(74,0,224,.3);box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(74,0,224,.22),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-spectrum::before{background:linear-gradient(90deg,transparent,#4A00E0,transparent);opacity:.5}
     .ai-card-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
-    .ai-glyph{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;color:#ECE9F5;flex-shrink:0}
+    .ai-glyph{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);display:grid;place-items:center;color:var(--text);flex-shrink:0}
     .ai-focal .ai-glyph{background:linear-gradient(135deg,rgba(181,139,255,.32),rgba(255,123,200,.22));border-color:rgba(181,139,255,.42);color:#fff}
     .ai-human .ai-glyph{background:rgba(123,227,181,.14);border-color:rgba(123,227,181,.38);color:#7BE3B5}
     .ai-cyan .ai-glyph{background:rgba(0,212,255,.14);border-color:rgba(0,212,255,.4);color:#00D4FF}
     .ai-purple .ai-glyph{background:rgba(19,159,248,.16);border-color:rgba(19,159,248,.42);color:#7CC4FF}
     .ai-violet .ai-glyph{background:rgba(37,102,240,.18);border-color:rgba(37,102,240,.44);color:#6FA8FF}
     .ai-spectrum .ai-glyph{background:linear-gradient(135deg,rgba(138,43,226,.3),rgba(0,212,255,.22));border-color:rgba(74,0,224,.42);color:#fff}
-    .ai-card h3{margin:0;font-size:20px;font-weight:500;letter-spacing:-.01em;color:#ECE9F5;line-height:1.1;font-family:var(--font-heading)}
+    .ai-card h3{margin:0;font-size:20px;font-weight:500;letter-spacing:-.01em;color:var(--text);line-height:1.1;font-family:var(--font-heading)}
     .ai-focal h3{font-size:24px}
     .ai-card>p{margin:10px 0 14px;font-size:13.5px;line-height:1.55;color:var(--text-50);flex:1;font-family:var(--font)}
     .ai-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
     .ai-tag{font-family:"Geist Mono",monospace;font-size:10.5px;padding:3px 10px;border-radius:999px;color:#9A93B0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);letter-spacing:.02em}
+    :root[data-theme="light"] .ai-tag{color:var(--text-70);border-color:var(--glass-border)}
+    /* HBadge's "neutral" variant (SkillsSection.tsx BADGE_COLORS) — Tailwind's
+       white/N utilities can't read CSS vars, so this is a plain class swap
+       instead of an arbitrary-value class, scoped to light mode only. */
+    :root[data-theme="light"] .badge-neutral{background-color:var(--glass-bg) !important;color:var(--text-70) !important;border-color:var(--glass-border) !important}
 
     /* AI Brief card flourish — 4 raw request "documents" (skeleton-loader
        pages, à la animata.design's Code skeleton, each a different layout:
@@ -7197,7 +7636,7 @@
        preview — not a port of its (paywalled) source. */
     .ai-doc-flow{display:flex;align-items:center;height:56px;margin-top:auto;position:relative}
     .ai-doc-track{position:relative;flex:1;height:100%}
-    .ai-doc-unit{position:absolute;top:50%;left:0;width:34px;height:44px;margin-top:-22px;box-sizing:border-box;border:1px solid rgba(255,255,255,.16);border-radius:4px;background:rgba(255,255,255,.06);animation-duration:3.6s;animation-timing-function:ease-in-out;animation-iteration-count:infinite;z-index:1}
+    .ai-doc-unit{position:absolute;top:50%;left:0;width:34px;height:44px;margin-top:-22px;box-sizing:border-box;border:1px solid var(--ai-doc-idle-border);border-radius:4px;background:var(--ai-doc-idle-bg);animation-duration:3.6s;animation-timing-function:ease-in-out;animation-iteration-count:infinite;z-index:1}
     /* Lane assignment cycles A(up) → B(center) → C(down) → A, so the 4
        documents fan out into 3 staggered rows once they resolve. */
     .ai-doc-unit:nth-child(1){animation-name:aiDocFlowLaneA;--doc-color:#B58BFF}
@@ -7215,9 +7654,9 @@
        margin, not floating mid-page — centering read as "unfinished". */
     .ai-doc-content{position:absolute;inset:6px 4px 4px;display:flex;flex-direction:column;justify-content:flex-start;gap:4px;clip-path:inset(0 0 0 0);animation:aiDocContentWipe 3.6s ease-in-out infinite}
     .ai-doc-content.is-grid{flex-direction:row;flex-wrap:wrap;align-content:flex-start;gap:3px}
-    .ai-doc-bar,.ai-doc-cell{display:block;border-radius:1px;background:rgba(255,255,255,.4)}
+    .ai-doc-bar,.ai-doc-cell{display:block;border-radius:1px;background:var(--ai-doc-bar)}
     .ai-doc-bar{height:2px}
-    .ai-doc-bar-head{height:3px;margin-bottom:2px;background:rgba(255,255,255,.6)}
+    .ai-doc-bar-head{height:3px;margin-bottom:2px;background:var(--ai-doc-bar-head)}
     .ai-doc-cell{width:calc(50% - 1.5px);height:5px}
 
     /* Result layer — a couple of skeleton lines plus a type icon, laid out
@@ -7258,25 +7697,25 @@
        gradually across the whole crossing rather than snapping the
        instant it makes contact. */
     @keyframes aiDocFlowLaneA{
-      0%{left:0%;opacity:0;width:34px;height:44px;margin-top:-22px;border-radius:4px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:none}
+      0%{left:0%;opacity:0;width:34px;height:44px;margin-top:-22px;border-radius:4px;background:var(--ai-doc-idle-bg);border-color:var(--ai-doc-idle-border);box-shadow:none}
       8%{opacity:1}
-      38%{left:calc(46% - 34px);width:34px;height:44px;margin-top:-22px;border-radius:4px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:none}
+      38%{left:calc(46% - 34px);width:34px;height:44px;margin-top:-22px;border-radius:4px;background:var(--ai-doc-idle-bg);border-color:var(--ai-doc-idle-border);box-shadow:none}
       50%{left:46%;height:20px;margin-top:-24px;border-radius:7px 7px 7px 2px;background:var(--doc-color);border-color:transparent;box-shadow:0 0 10px -1px var(--doc-color)}
       90%{opacity:1}
       100%{left:96%;opacity:0;height:20px;margin-top:-24px;border-radius:7px 7px 7px 2px;background:var(--doc-color);border-color:transparent;box-shadow:0 0 10px -1px var(--doc-color)}
     }
     @keyframes aiDocFlowLaneB{
-      0%{left:0%;opacity:0;width:34px;height:44px;margin-top:-22px;border-radius:4px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:none}
+      0%{left:0%;opacity:0;width:34px;height:44px;margin-top:-22px;border-radius:4px;background:var(--ai-doc-idle-bg);border-color:var(--ai-doc-idle-border);box-shadow:none}
       8%{opacity:1}
-      38%{left:calc(46% - 34px);width:34px;height:44px;margin-top:-22px;border-radius:4px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:none}
+      38%{left:calc(46% - 34px);width:34px;height:44px;margin-top:-22px;border-radius:4px;background:var(--ai-doc-idle-bg);border-color:var(--ai-doc-idle-border);box-shadow:none}
       50%{left:46%;height:20px;margin-top:-10px;border-radius:7px 7px 7px 2px;background:var(--doc-color);border-color:transparent;box-shadow:0 0 10px -1px var(--doc-color)}
       90%{opacity:1}
       100%{left:96%;opacity:0;height:20px;margin-top:-10px;border-radius:7px 7px 7px 2px;background:var(--doc-color);border-color:transparent;box-shadow:0 0 10px -1px var(--doc-color)}
     }
     @keyframes aiDocFlowLaneC{
-      0%{left:0%;opacity:0;width:34px;height:44px;margin-top:-22px;border-radius:4px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:none}
+      0%{left:0%;opacity:0;width:34px;height:44px;margin-top:-22px;border-radius:4px;background:var(--ai-doc-idle-bg);border-color:var(--ai-doc-idle-border);box-shadow:none}
       8%{opacity:1}
-      38%{left:calc(46% - 34px);width:34px;height:44px;margin-top:-22px;border-radius:4px;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.16);box-shadow:none}
+      38%{left:calc(46% - 34px);width:34px;height:44px;margin-top:-22px;border-radius:4px;background:var(--ai-doc-idle-bg);border-color:var(--ai-doc-idle-border);box-shadow:none}
       50%{left:46%;height:20px;margin-top:4px;border-radius:7px 7px 7px 2px;background:var(--doc-color);border-color:transparent;box-shadow:0 0 10px -1px var(--doc-color)}
       90%{opacity:1}
       100%{left:96%;opacity:0;height:20px;margin-top:4px;border-radius:7px 7px 7px 2px;background:var(--doc-color);border-color:transparent;box-shadow:0 0 10px -1px var(--doc-color)}
@@ -7342,7 +7781,7 @@
        <article>), so it needs its own reset + focus-visible ring. */
     .ai-card-toggle{margin-left:auto;flex-shrink:0;width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);position:relative;padding:0;appearance:none;cursor:pointer;transition:border-color .25s,background .25s,transform .45s cubic-bezier(.16,1,.3,1)}
     .ai-card-toggle:focus-visible{outline:2px solid rgba(181,139,255,.6);outline-offset:2px}
-    .ai-card-toggle::before,.ai-card-toggle::after{content:"";position:absolute;top:50%;left:50%;background:rgba(255,255,255,.55);transform:translate(-50%,-50%);transition:background .25s}
+    .ai-card-toggle::before,.ai-card-toggle::after{content:"";position:absolute;top:50%;left:50%;background:var(--text-50);transform:translate(-50%,-50%);transition:background .25s}
     .ai-card-toggle::before{width:10px;height:1.5px}
     .ai-card-toggle::after{width:1.5px;height:10px}
     /* Hovering anywhere on the card (not just the button itself) hints the
@@ -7350,7 +7789,7 @@
        reserved for actually hovering/focusing the button directly. */
     .ai-card:hover .ai-card-toggle{background:rgba(255,255,255,.26);border-color:rgba(255,255,255,.22)}
     .ai-card-toggle:hover{border-color:rgba(181,139,255,.4);background:rgba(181,139,255,.14)}
-    .ai-card-toggle:hover::before,.ai-card-toggle:hover::after{background:#ECE9F5}
+    .ai-card-toggle:hover::before,.ai-card-toggle:hover::after{background:var(--text)}
     .ai-card.is-open .ai-card-toggle{transform:rotate(45deg);border-color:rgba(181,139,255,.5);background:rgba(181,139,255,.2)}
     /* reactbits.dev's Modal Cards close (×) button spins a further 90deg +
        scales to 1.1 on hover (framer-motion whileHover) — same move here:
@@ -7609,8 +8048,9 @@
        beam paths (z-index 0) so the frosted chips read clearly on top of
        the gradient lines instead of being painted over. */
     .ai-word-cloud{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
-    .ai-word-cloud span{position:absolute;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-family:"Geist Mono",monospace;color:#fff;letter-spacing:.02em;padding:4px 12px;border-radius:999px;background-color:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transform:rotate(var(--word-rotate,0deg));animation:word-float-a 6s ease-in-out infinite}
-    .ai-word-cloud span i{font-size:.9em;color:rgba(255,255,255,.85)}
+    .ai-word-cloud span{position:absolute;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-family:"Geist Mono",monospace;color:var(--text);letter-spacing:.02em;padding:4px 12px;border-radius:999px;background-color:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transform:rotate(var(--word-rotate,0deg));animation:word-float-a 6s ease-in-out infinite}
+    .ai-word-cloud span i{font-size:.9em;color:var(--text-70)}
+    :root[data-theme="light"] .ai-word-cloud span{border-color:var(--glass-border)}
     /* Idle-float, same technique as .about-float-box (Systems Design card):
        each word keeps its own static --word-rotate baseline and drifts a few
        px on top via keyframes; 4 variants + staggered delays via nth-child
@@ -7630,10 +8070,11 @@
        large hero-scale title + smaller muted subtitle, scaled down to fit
        this row's ~1180px width instead of a full page hero. */
     .ai-chips-header{text-align:center;margin-top:120px;margin-bottom:0}
-    .ai-chips-header h3{margin:0;font-size:clamp(2.25rem,5vw,3.75rem);font-weight:100;letter-spacing:-.02em;color:#fff;line-height:1.15;font-family:'Quicksand','GenSen Rounded TW','Noto Sans TC',sans-serif}
-    .ai-chips-header p{margin:14px auto 0;max-width:520px;font-size:clamp(1rem,1.8vw,1.25rem);font-weight:400;line-height:1.6;color:rgba(255,255,255,.55)}
+    .ai-chips-header h3{margin:0;font-size:clamp(2.25rem,5vw,3.75rem);font-weight:100;letter-spacing:-.02em;color:var(--text);line-height:1.15;font-family:'Quicksand','GenSen Rounded TW','Noto Sans TC',sans-serif}
+    .ai-chips-header p{margin:14px auto 0;max-width:520px;font-size:clamp(1rem,1.8vw,1.25rem);font-weight:400;line-height:1.6;color:var(--text-50)}
     .ai-chips-row .ai-chips{position:absolute;inset:0;z-index:1;pointer-events:none}
-    .ai-chips-row .ai-chip{position:absolute;right:28px;transform:translateY(-50%);pointer-events:auto;display:inline-flex;align-items:center;gap:8px;padding:9px 16px 9px 13px;border-radius:999px;background-color:rgba(255,255,255,.04);background-image:var(--noise-grain);background-repeat:repeat;background-size:180px 180px;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px);font-size:13.5px;color:#ECE9F5;transition:background-color .3s,border-color .3s,transform .3s;cursor:default}
+    .ai-chips-row .ai-chip{position:absolute;right:28px;transform:translateY(-50%);pointer-events:auto;display:inline-flex;align-items:center;gap:8px;padding:9px 16px 9px 13px;border-radius:999px;background-color:rgba(255,255,255,.04);background-image:var(--noise-grain);background-repeat:repeat;background-size:180px 180px;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px);font-size:13.5px;color:var(--text);transition:background-color .3s,border-color .3s,transform .3s;cursor:default}
+    :root[data-theme="light"] .ai-chips-row .ai-chip{border-color:var(--glass-border)}
     .ai-chips-row .ai-chip:hover{background-color:rgba(255,255,255,.07);border-color:rgba(138,43,226,.4);transform:translateY(calc(-50% - 2px))}
     /* Beam-arrival border — outline switches to the chip's own beam color
        (--chip-glow, set inline per chip) the instant that beam's line-draw
@@ -7641,7 +8082,7 @@
     .ai-chips-row .ai-chip.is-arrived{border-color:var(--chip-glow)}
     .ai-chips-row .ai-chip.is-arrived:hover{border-color:var(--chip-glow)}
     .ai-chip-dot{width:7px;height:7px;border-radius:50%;box-shadow:0 0 8px rgba(138,43,226,.5)}
-    .ai-chip-count{font-family:"Geist Mono",monospace;font-size:10.5px;color:rgba(255,255,255,.3);padding-left:9px;margin-left:2px;border-left:1px solid rgba(255,255,255,.1)}
+    .ai-chip-count{font-family:"Geist Mono",monospace;font-size:10.5px;color:var(--text-30);padding-left:9px;margin-left:2px;border-left:1px solid rgba(255,255,255,.1)}
 
     /* Tablet + mobile share this: desktop's .ai-chips-header has
        margin-bottom:0, leaving virtually no gap between the "AI handles

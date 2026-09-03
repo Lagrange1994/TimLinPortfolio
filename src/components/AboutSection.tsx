@@ -286,15 +286,7 @@ export default function AboutSection() {
           </div>
 
           <div className="about-photo rise-card">
-            <div
-              className="pc-card-wrapper"
-              id="profile-card-wrap"
-              style={{
-                ['--inner-gradient' as string]: 'linear-gradient(145deg,#60496e8c 0%,#71C4FF44 100%)',
-                ['--behind-glow-color' as string]: 'rgba(108,99,255,0.55)',
-                ['--behind-glow-size' as string]: '50%',
-              }}
-            >
+            <div className="pc-card-wrapper" id="profile-card-wrap">
               <div className="pc-behind"></div>
               <div className="pc-card-shell" id="profile-card-shell">
                 <section className="pc-card" id="profile-card-el">

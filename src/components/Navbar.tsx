@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
+import { useTheme } from '../utils/useTheme';
 import gsap from 'gsap';
 
 declare global {
@@ -23,11 +24,25 @@ function scrollToSection(id: string) {
 
 export default function Navbar() {
   const { lang, setLang, t } = useLang();
+  const { theme, toggleTheme } = useTheme();
   const headerRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const isOpenRef = useRef(false);
   const busyRef = useRef(false);
+
+  // .theme-switch-knob used to need a display:none/reflow/restore hack here
+  // to unstick its transform transition — root cause turned out to be
+  // portfolio.css's dark-state knob rule carrying its own conditional
+  // backdrop-filter (present in dark, absent in light), so every toggle
+  // flipped the knob's own compositing-layer promotion at the same instant
+  // it animated transform. Dropping that backdrop-filter (see the knob's
+  // CSS comment) fixed the transition at the source — confirmed with real
+  // interpolated intermediate values, overshoot included, not just an
+  // instant snap — so this component no longer needs to fight it after the
+  // fact. Reference: feralui.dev/gradients's own theme switch uses the same
+  // transform-on-attribute-toggle approach with no backdrop-filter on its
+  // knob at all.
 
   // Nav shrink on scroll
   useEffect(() => {
@@ -398,7 +413,7 @@ export default function Navbar() {
             <div className="navbar-brand">
               <a href="#home" className="logo">
                 <span className="gradient-text-brand">Tim</span>
-                <span style={{ color: '#fff' }}>Lin</span>
+                <span className="brand-lin">Lin</span>
               </a>
               <span className="navbar-brand-divider" aria-hidden="true"></span>
               <span className="navbar-brand-tagline">
@@ -424,6 +439,17 @@ export default function Navbar() {
                 ))}
               </nav>
               <div className="navbar-lang" style={{ position: 'relative' }}>
+                <button
+                  id="theme-toggle-btn"
+                  className={`theme-switch--${theme}`}
+                  onClick={toggleTheme}
+                  aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                  <span className="theme-switch-label" aria-hidden="true">{theme === 'light' ? 'Light' : 'Dark'}</span>
+                  <span className="theme-switch-knob" aria-hidden="true">
+                    <i className={`fas ${theme === 'light' ? 'fa-sun' : 'fa-moon'}`}></i>
+                  </span>
+                </button>
                 <button id="lang-menu-btn" onClick={toggleLangDropdown}>
                   <i className="fas fa-globe"></i>
                   <span id="lang-label">{lang === 'zh' ? '繁體中文' : 'English'}</span>
@@ -461,6 +487,13 @@ export default function Navbar() {
           <div className="sm-prelayer" style={{ background: '#6C63FF' }}></div>
         </div>
         <aside id="sm-panel" className="sm-panel" aria-hidden="true" ref={panelRef}>
+          <button
+            className="sm-theme-toggle"
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            <i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
+          </button>
           <button className="sm-panel-close" id="sm-panel-close-btn" aria-label="Close menu">
             Close
             <span className="sm-panel-close-icon"><span></span><span></span></span>

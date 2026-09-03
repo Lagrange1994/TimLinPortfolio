@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import SpecularOverlay from './SpecularOverlay';
+import { useSlidingIndicator } from '../utils/useSlidingIndicator';
 import {
   Accordion,
   AccordionItem,
@@ -9,13 +9,12 @@ import {
   AccordionPanel,
 } from './animate-ui/components/headless/accordion';
 
-// Spring tuning matches animata.design's Fluid Tabs indicator.
-const FAQ_TAB_INDICATOR_SPRING = { type: 'spring' as const, stiffness: 380, damping: 34, mass: 0.75 };
-
 export default function ContactSection() {
   const { t } = useLang();
   const sendEmailRef = useRef(null);
+  const faqTabsRef = useRef<HTMLDivElement>(null);
   const [faqTab, setFaqTab] = useState<'experience' | 'freelance'>('experience');
+  const faqIndicator = useSlidingIndicator(faqTabsRef, '.faq-tab', faqTab === 'experience' ? 0 : 1);
   // Single-open accordion: starts fully collapsed (-1 = none open).
   // Clicking an open item toggles it closed again. Headless UI's Disclosure
   // has no controlled `open` prop, so exclusivity used to be enforced by
@@ -204,7 +203,19 @@ export default function ContactSection() {
             <div className="faq-panel">
               <div className="faq-card contact-card sc-card rise-card">
                 <div className="card-title">FAQ</div>
-                <div className="faq-tabs" role="tablist">
+                <div className="faq-tabs" role="tablist" ref={faqTabsRef}>
+                  {faqIndicator && (
+                    <span
+                      className="faq-tab-indicator"
+                      style={{
+                        transform: faqIndicator.transform,
+                        width: faqIndicator.width,
+                        height: faqIndicator.height,
+                        top: faqIndicator.top,
+                      }}
+                      aria-hidden="true"
+                    />
+                  )}
                   <button
                     type="button"
                     role="tab"
@@ -212,14 +223,6 @@ export default function ContactSection() {
                     className={`faq-tab${faqTab === 'experience' ? ' active' : ''}`}
                     onClick={() => { setFaqTab('experience'); setOpenFaqIndex(-1); }}
                   >
-                    {faqTab === 'experience' && (
-                      <motion.span
-                        layoutId="faq-tab-indicator"
-                        className="faq-tab-indicator"
-                        transition={FAQ_TAB_INDICATOR_SPRING}
-                        aria-hidden="true"
-                      />
-                    )}
                     <span className="faq-tab-label">{t.faq_tab_experience}</span>
                   </button>
                   <button
@@ -229,14 +232,6 @@ export default function ContactSection() {
                     className={`faq-tab${faqTab === 'freelance' ? ' active' : ''}`}
                     onClick={() => { setFaqTab('freelance'); setOpenFaqIndex(-1); }}
                   >
-                    {faqTab === 'freelance' && (
-                      <motion.span
-                        layoutId="faq-tab-indicator"
-                        className="faq-tab-indicator"
-                        transition={FAQ_TAB_INDICATOR_SPRING}
-                        aria-hidden="true"
-                      />
-                    )}
                     <span className="faq-tab-label">{t.faq_tab_freelance}</span>
                   </button>
                 </div>
@@ -284,7 +279,7 @@ export default function ContactSection() {
       <footer>
         <div>
           <div style={{ fontSize: '20px', fontWeight: 700, marginBottom: '6px', fontFamily: 'var(--font-heading)' }}>
-            <span className="gradient-text-brand">Tim</span><span style={{ color: '#fff' }}>Lin</span>
+            <span className="gradient-text-brand">Tim</span><span className="brand-lin">Lin</span>
           </div>
           <p>UI/UX Designer &amp; Web Developer</p>
         </div>

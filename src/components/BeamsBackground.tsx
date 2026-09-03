@@ -19,17 +19,28 @@ const NOTCH_CONTENT_GAP = 26;
 const NOTCH_CURVE_CLEARANCE = NOTCH_RADIUS;
 
 export default function BeamsBackground() {
-  const [splineBgMounted, setSplineBgMounted] = useState(true);
-  const splineBgMountedRef = useRef(splineBgMounted);
-  splineBgMountedRef.current = splineBgMounted;
-
-  // The decorative background Spline scene (desktop/tablet — see isMobile
-  // below) gets fully unmounted (not just faded to opacity 0) once scrolled
-  // past the hero — see updateBg() below.
+  // The decorative background Spline scene stays mounted and fully opaque
+  // at every scroll position (both themes) — no scroll-driven fade/unmount.
 
   // Checked once on mount, matching the same one-shot (no resize listener)
   // convention HeroSection uses for its own figure.
   const [isMobile] = useState(() => window.innerWidth < 768);
+
+  // useTheme (Navbar's instance) owns data-theme as its own component
+  // state, so its toggles aren't visible to any other component's props —
+  // only the DOM attribute it writes is shared. The desktop Spline scene's
+  // url can't switch via CSS the way every other theme swap in this file
+  // does, so it watches that attribute directly instead.
+  const [theme, setTheme] = useState<'dark' | 'light'>(
+    () => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'),
+  );
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setTheme(document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark');
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
 
   // The desktop hero-frame pieces (spline scene + notches) are portaled into
   // #home (see the return statement below) instead of rendered where this
@@ -148,49 +159,6 @@ export default function BeamsBackground() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, heroEl]);
 
-  useEffect(() => {
-    // Mobile: jpg-only background — nothing here to set up.
-    if (isMobile) return;
-
-    // The gradient frame/notches are #home's own background plus small
-    // patches nested inside it (see portfolio.css), so they need no JS
-    // opacity fade — they simply exist exactly where #home's box does, same
-    // as its text/buttons. The one thing still needing JS: fading the hero's
-    // background Spline scene out (and unmounting it once fully past) as the
-    // user scrolls, so the sections below settle onto #bg-scene's flat
-    // backdrop instead of carrying a live WebGL context down the whole page.
-    let ticking = false;
-
-    function updateBg() {
-      const heroEl = document.getElementById('home');
-      if (!heroEl) return;
-      const heroH = heroEl.offsetHeight || window.innerHeight;
-      const fadeStart = heroH * 0.45;
-      const fadeEnd = heroH * 0.85;
-      const p = Math.max(0, Math.min(1, (window.scrollY - fadeStart) / (fadeEnd - fadeStart)));
-      // Looked up fresh each call (rather than cached once) since the
-      // element gets unmounted/remounted by the splineBgMounted toggle below.
-      const splineEl = document.getElementById('spline-bg');
-      if (splineEl) (splineEl as HTMLElement).style.opacity = (1 - p).toFixed(3);
-
-      const shouldMount = p < 1;
-      if (shouldMount !== splineBgMountedRef.current) {
-        splineBgMountedRef.current = shouldMount;
-        setSplineBgMounted(shouldMount);
-      }
-    }
-
-    const onScroll = () => {
-      if (!ticking) { requestAnimationFrame(() => { updateBg(); ticking = false; }); ticking = true; }
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    requestAnimationFrame(updateBg);
-
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-    };
-  }, [isMobile]);
-
   // Desktop-only hero-frame pieces (spline scene + its two notches) — see
   // the heroEl comment above for why these are portaled into #home rather
   // than rendered in place: #home is now the gradient (its own CSS
@@ -230,14 +198,14 @@ export default function BeamsBackground() {
       <svg id="bg-frame-glow" aria-hidden="true" role="presentation">
         <defs>
           <linearGradient id="bg-frame-glow-grad" x1="0" y1="0" x2="1" y2="1" spreadMethod="repeat">
-            <stop offset="0%" stopColor="#1C1C1C" />
-            <stop offset="39.6967%" stopColor="#1C1C1C" />
-            <stop offset="39.6967%" stopColor="#4A00E0" />
-            <stop offset="70.3616%" stopColor="#4A00E0" />
-            <stop offset="70.3616%" stopColor="#8A2BE2" />
-            <stop offset="87.9173%" stopColor="#8A2BE2" />
-            <stop offset="87.9173%" stopColor="#E620EC" />
-            <stop offset="100%" stopColor="#E620EC" />
+            <stop offset="0%" style={{ stopColor: 'var(--frame-glow-base)' }} />
+            <stop offset="39.6967%" style={{ stopColor: 'var(--frame-glow-base)' }} />
+            <stop offset="39.6967%" style={{ stopColor: 'var(--frame-glow-2)' }} />
+            <stop offset="70.3616%" style={{ stopColor: 'var(--frame-glow-2)' }} />
+            <stop offset="70.3616%" style={{ stopColor: 'var(--frame-glow-3)' }} />
+            <stop offset="87.9173%" style={{ stopColor: 'var(--frame-glow-3)' }} />
+            <stop offset="87.9173%" style={{ stopColor: 'var(--frame-glow-4)' }} />
+            <stop offset="100%" style={{ stopColor: 'var(--frame-glow-4)' }} />
             {!prefersReducedMotion && (
               <animateTransform
                 attributeName="gradientTransform"
@@ -267,7 +235,11 @@ export default function BeamsBackground() {
           rendered — the exact notch silhouette, for free. */}
       <div id="bg-panel-shadow" aria-hidden="true" role="presentation">
         <div id="bg-spline-scene" ref={splineSceneRef} aria-hidden="true" role="presentation">
-          {splineBgMounted && <spline-viewer id="spline-bg" url="./models/bg_scene.splinecode" />}
+          <spline-viewer
+            key={theme}
+            id="spline-bg"
+            url={theme === 'light' ? './models/bg_scene_w.splinecode' : './models/bg_scene.splinecode'}
+          />
         </div>
       </div>
       {/* The panel's crisp border, as a stroke along its real outline — see
@@ -284,12 +256,10 @@ export default function BeamsBackground() {
       <div id="bg-scene" aria-hidden="true" role="presentation" />
       {isMobile && (
         <div id="bg-spline-scene" aria-hidden="true" role="presentation">
-          {splineBgMounted && (
-            <picture>
-              <source srcSet="./img/bg.webp" type="image/webp" />
-              <img id="spline-bg" src="./img/bg.jpg" alt="" aria-hidden="true" />
-            </picture>
-          )}
+          <picture>
+            <source srcSet="./img/bg.webp" type="image/webp" />
+            <img id="spline-bg" src="./img/bg.jpg" alt="" aria-hidden="true" />
+          </picture>
         </div>
       )}
       {heroFrame}
