@@ -54,8 +54,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
 
-  <!-- Spline viewer (web component) -->
-  <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.96/build/spline-viewer.js"></script>
+  <!-- Spline viewer (web component). Pinned version must stay >= the
+       .splinecode files' own export version (see /models/*.splinecode) — an
+       older viewer silently runtime-migrates a newer file on every load
+       (console: "Your .splinecode file is more recent than the library"),
+       which is extra parse/convert work stacked right on top of the hero's
+       GSAP entrance tween and reads as animation jank on load. -->
+  <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.98/build/spline-viewer.js"></script>
 </head>
 <body>
   <div id="root"></div>
