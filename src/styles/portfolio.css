@@ -3441,6 +3441,10 @@
       background: #000;
     }
 
+    :root[data-theme="light"] .portfolio-wall {
+      background: #D7E0E6;
+    }
+
     /* Stepped outline drawn ON TOP of the cards (see
        src/utils/portfolioMask.ts) — a stroke, not a clip, so the wall's own
        tilt (.portfolio-wall-inner's skew transform) never turns the notch
@@ -4072,6 +4076,22 @@
       filter: brightness(1);
     }
 
+    /* Dark mode dims unhovered cards toward black via the img filter above
+       so the hovered one reads as focused; against a light page that same
+       dimming reads as muddy, so light mode drops the img filter entirely
+       and fades the whole card to 90% opacity in the same spot instead. */
+    :root[data-theme="light"] .project-card img {
+      filter: none;
+    }
+
+    :root[data-theme="light"] .project-card {
+      opacity: .9;
+    }
+
+    :root[data-theme="light"] .project-card:hover {
+      opacity: 1;
+    }
+
     .project-overlay {
       position: absolute;
       inset: 0;
@@ -4152,6 +4172,41 @@
       margin-bottom: 28px;
     }
 
+    /* Shadow wrapper — same reasoning as the hero panel's #bg-panel-shadow
+       and .portfolio-wall-frame: .grid-card carries a JS clip-path (the
+       squircle shape, see the squircle-measurement effect in
+       PortfolioSection.tsx), and box-shadow silently fails to render past
+       the edge of an element that also carries an imperative clip-path,
+       same failure mode as filter:drop-shadow there. This is now the
+       actual #portfolio-grid item (grid-column/row span for .mb-big lives
+       here, not on .grid-card below), with no clip-path of its own so its
+       box-shadow traces the plain rectangular footprint instead of
+       chasing the squircle exactly — same trade-off already made for
+       those other two shadows. Values match .bento-card's own tokens
+       (About Me cards) so all three shadow tiers read as one system. */
+    .grid-card-shadow {
+      position: relative;
+      aspect-ratio: 3/2;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow-md), var(--card-edge);
+      transition: box-shadow .3s ease;
+    }
+
+    .grid-card-shadow.mb-big {
+      grid-column: span 2;
+      grid-row: span 2;
+      aspect-ratio: unset;
+    }
+
+    .grid-card-shadow:hover {
+      box-shadow: var(--card-shadow-hover), var(--card-edge);
+    }
+
+    .grid-card-shadow > .grid-card {
+      width: 100%;
+      height: 100%;
+    }
+
     .grid-card {
       border-radius: 16px;
       overflow: hidden;
@@ -4164,13 +4219,6 @@
       backdrop-filter: var(--glass-blur);
       border: 1px solid var(--glass-border);
       transition: all .3s;
-    }
-
-    /* Big bento card — 2×2 */
-    .grid-card.mb-big {
-      grid-column: span 2;
-      grid-row: span 2;
-      aspect-ratio: unset;
     }
 
     .grid-card:hover {
@@ -4317,11 +4365,26 @@
       opacity: 1;
     }
 
+    /* Dark-glass reads fine on dark mode's own dimmed cards; light mode
+       dims toward white instead (see .project-card img above), so the tag
+       flips to a matching white-glass card instead of floating a dark chip
+       over an already-light scene. Text uses the shared --text tokens
+       (light mode's own gray, not a one-off hex) so it stays in step with
+       the rest of the page's light-mode type color. */
+    :root[data-theme="light"] .cursor-project-tag {
+      background: rgba(255, 255, 255, 0.7);
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+
     .cursor-project-tag-text {
       font-size: 13px;
       font-weight: 600;
       color: #fff;
       letter-spacing: -.01em;
+    }
+
+    :root[data-theme="light"] .cursor-project-tag-text {
+      color: var(--text);
     }
 
     .cursor-project-tag-sub {
@@ -4330,6 +4393,10 @@
       color: rgba(255, 255, 255, .6);
       text-transform: uppercase;
       letter-spacing: .04em;
+    }
+
+    :root[data-theme="light"] .cursor-project-tag-sub {
+      color: var(--text-70);
     }
 
     /* global cursor-spotlight */

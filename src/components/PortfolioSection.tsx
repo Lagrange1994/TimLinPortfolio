@@ -117,13 +117,13 @@ function ProjectCard({ p, mode, index, t, expanded, activeFilter }: {
   const title = t[p.id + '_title'] || p.id;
   const desc = t[p.id + '_desc'] || '';
   const isBig = mode === 'grid' && index !== undefined && bentoBigIndices.includes(index);
-  const cls = mode === 'grid' ? `grid-card${isBig ? ' mb-big' : ''}` : 'project-card';
+  const cls = mode === 'grid' ? 'grid-card' : 'project-card';
   const categoryLabel = p.category === 'mobile' ? 'Apps Design' : p.category === 'web' ? 'Web Design' : '';
   // Grid cards' hover ripple reveals each project's hero shot — same
   // slug as the project's own page (project_XX.html -> project_XX/), not
   // the curated thumbnail in p.img.
   const heroImg = `./img/${p.link.replace('.html', '')}/hero_img.webp`;
-  return (
+  const card = (
     <a
       className={cls}
       href={p.link}
@@ -164,6 +164,20 @@ function ProjectCard({ p, mode, index, t, expanded, activeFilter }: {
         </>
       )}
     </a>
+  );
+  if (mode !== 'grid') return card;
+  // .grid-card carries a JS clip-path (the squircle shape — see the
+  // squircle-measurement effect below), and box-shadow silently fails to
+  // render past the edge of an element that also carries an imperative
+  // clip-path (same failure mode as filter:drop-shadow — see
+  // #bg-panel-shadow's comment in portfolio.css). This wrapper carries no
+  // clip-path of its own, so its box-shadow traces the card's plain
+  // rectangular footprint instead of chasing the squircle exactly, same
+  // trade-off already made for the hero panel/portfolio wall shadows.
+  return (
+    <div className={`grid-card-shadow${isBig ? ' mb-big' : ''}`}>
+      {card}
+    </div>
   );
 }
 
