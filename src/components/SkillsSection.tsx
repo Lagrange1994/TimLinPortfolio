@@ -1556,6 +1556,9 @@ export default function SkillsSection() {
       card.insertBefore(ov, card.firstChild);
 
       const onMove = (e: MouseEvent) => {
+        // .sc-overlay/.card-spotlight::before are opacity:0 !important in
+        // light mode's neumorphism block (portfolio.css) — nothing to paint.
+        if (document.documentElement.getAttribute('data-theme') === 'light') return;
         const r = card.getBoundingClientRect();
         const x = (e.clientX - r.left) + 'px';
         const y = (e.clientY - r.top) + 'px';

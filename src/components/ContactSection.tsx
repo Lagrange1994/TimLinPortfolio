@@ -78,6 +78,9 @@ export default function ContactSection() {
       card.insertBefore(ov, card.firstChild);
 
       const onMove = (e: MouseEvent) => {
+        // .sc-overlay/.card-spotlight::before are opacity:0 !important in
+        // light mode's neumorphism block (portfolio.css) — nothing to paint.
+        if (document.documentElement.getAttribute('data-theme') === 'light') return;
         const r = card.getBoundingClientRect();
         card.style.setProperty('--sc-x', (e.clientX - r.left) + 'px');
         card.style.setProperty('--sc-y', (e.clientY - r.top) + 'px');

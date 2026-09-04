@@ -218,6 +218,10 @@ export default function AboutSection() {
     function initSpotlightCardEffect() {
       document.querySelectorAll<HTMLElement>('.card-spotlight, .sidebar-block').forEach(card => {
         const onMove = (e: MouseEvent) => {
+          // Light mode's neumorphism swap forces .card-spotlight::before to
+          // opacity:0 !important (portfolio.css) — skip the reflow-triggering
+          // getBoundingClientRect() for an effect that can't paint.
+          if (document.documentElement.getAttribute('data-theme') === 'light') return;
           const rect = card.getBoundingClientRect();
           card.style.setProperty('--mouse-x', (e.clientX - rect.left) + 'px');
           card.style.setProperty('--mouse-y', (e.clientY - rect.top) + 'px');
@@ -242,6 +246,9 @@ export default function AboutSection() {
       card.insertBefore(ov, card.firstChild);
 
       const onMove = (e: MouseEvent) => {
+        // .sc-overlay/.card-spotlight::before are opacity:0 !important in
+        // light mode's neumorphism block (portfolio.css) — nothing to paint.
+        if (document.documentElement.getAttribute('data-theme') === 'light') return;
         const r = card.getBoundingClientRect();
         const x = (e.clientX - r.left) + 'px';
         const y = (e.clientY - r.top) + 'px';
