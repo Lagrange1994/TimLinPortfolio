@@ -916,7 +916,15 @@ export default function PortfolioSection() {
 
     const cards = Array.from(grid.querySelectorAll<HTMLElement>('.grid-card')).filter(c => {
       const show = activeFilter === 'all' || c.dataset.category === activeFilter;
-      c.style.display = show ? '' : 'none';
+      // #portfolio-grid is auto-placed (grid-auto-flow: dense, no per-card
+      // grid-area), so display:none has to land on .grid-card-shadow — the
+      // actual grid item — for the remaining cards to reflow into its spot.
+      // Hiding only the inner .grid-card (the old code) left its
+      // .grid-card-shadow wrapper sitting in the grid at full size with
+      // nothing rendered inside, i.e. exactly the blank boxes switching
+      // filters produced.
+      const wrapper = c.parentElement as HTMLElement | null;
+      if (wrapper) wrapper.style.display = show ? '' : 'none';
       return show;
     });
 
@@ -927,17 +935,28 @@ export default function PortfolioSection() {
         { y: 60, opacity: 0, filter: 'blur(8px)', scale: 0.95 },
         {
           y: 0, opacity: 1, filter: 'blur(0px)', scale: 1,
-          duration: 0.65, ease: 'power3.out', stagger: 0.045,
-          clearProps: 'transform,opacity,filter',
-          // clearProps above resets each card's FULL inline style attribute,
+          duration: 0.65, ease: 'power3.out',
+          // clearProps below resets each card's FULL inline style attribute,
           // not just transform/opacity/filter — see the squircle effect's
-          // own comment on reapplySquircleRef for why. Re-running it here
-          // restores clip-path/--card-w/--card-h/--ring-mask as the last
-          // write, after GSAP is done touching these elements.
-          onComplete() {
-            cards.forEach(c => { c.style.transition = ''; });
-            reapplySquircleRef.current?.();
-          }
+          // own comment on reapplySquircleRef for why — so every card needs
+          // its clip-path/--card-w/--card-h/--ring-mask restored right after
+          // ITS OWN clearProps fires. A top-level `onComplete` only fires
+          // once, for the LAST staggered target (documented GSAP behavior),
+          // so with a plain `stagger: 0.045` every card except the last sat
+          // with its clip-path wiped — image corners square, unclipped —
+          // for up to (cards.length - 1) * 0.045s after its own tween
+          // finished: the crop/flash the entrance was producing. The object
+          // form of `stagger` fires `onComplete` per target instead, so each
+          // card gets reapplySquircleRef the instant it actually needs it.
+          stagger: {
+            each: 0.045,
+            onComplete(this: gsap.core.Tween) {
+              const el = this.targets()[0] as HTMLElement;
+              el.style.transition = '';
+              reapplySquircleRef.current?.();
+            },
+          },
+          clearProps: 'transform,opacity,filter',
         }
       );
     }, 120);
