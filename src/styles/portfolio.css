@@ -399,14 +399,27 @@
 
     /* Hero panel stays dark regardless of site theme (see .hero-h1's own
        comment below), so these can't follow --text into a dark-on-dark
-       render — hero-h2 picks the lightest stop of --grad-logo (its cyan
-       end), hero-desc goes plain white. */
+       render — hero-desc goes back to the original faint gray, hero-h2
+       gets the same button-gradient (--grad) treatment as .hero-h1's own
+       name gradient, gated on .grad-settled for the identical reason: see
+       the entrance effect's unsplitH1/unsplitH2 comment in HeroSection.tsx
+       for why a background-clip:text gradient can't be applied while its
+       split char spans are still in the DOM. var(--primary) is --grad's
+       own start color, so the plain-color interim state before settling
+       reads as a static frame of the same gradient rather than a jump. */
     :root[data-theme="light"] .hero-h2 {
-      color: #00D4FF;
+      color: var(--primary);
+    }
+
+    :root[data-theme="light"] .hero-h2.grad-settled {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     :root[data-theme="light"] .hero-desc {
-      color: #fff;
+      color: var(--text-30);
     }
 
     html,

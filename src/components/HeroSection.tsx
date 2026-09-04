@@ -90,6 +90,10 @@ export default function HeroSection() {
     const heroFig = document.querySelector<HTMLElement>('#home .hero-fig');
     const h1 = document.querySelector<HTMLElement>('#home .hero-h1');
     const h2 = document.querySelector<HTMLElement>('#home .hero-h2');
+    // Captured before splitChars mutates h2's children — h2's text is
+    // t.hero_role (translated, unlike h1's hardcoded name), so unsplitH2
+    // below restores this snapshot rather than a hardcoded string.
+    const h2OriginalText = h2?.textContent ?? '';
 
     bypass(h1); bypass(h2);
     if (heroFig) gsap.set(heroFig, { opacity: 0, y: 70 });
@@ -107,10 +111,9 @@ export default function HeroSection() {
     // word/char span so this one-shot entrance tween stays smooth, but
     // nothing ever clears it afterward — the spans keep their own
     // compositing layer for the rest of the page's life for no reason
-    // once the tween is done. Used for h2Chars below; h1Words gets a
-    // stronger fix (unsplitH1) since its parent also has a
-    // background-clip:text gradient in light mode — see that comment.
-    function clearWillChange(el: HTMLElement) { el.style.willChange = 'auto'; }
+    // once the tween is done. h1Words/h2Chars both now get the stronger
+    // fix (unsplit) since both parents carry a background-clip:text
+    // gradient in light mode — see that comment.
 
     // Clearing will-change alone isn't enough — reproduced live (including
     // via a plain light/dark theme toggle, with no re-animation involved
@@ -132,13 +135,24 @@ export default function HeroSection() {
       delete el.dataset.split;
     }
 
+    // Same fix as unsplitH1, for .hero-h2's own gradient (see
+    // .hero-h2.grad-settled in portfolio.css). h2's text is plain (no
+    // nested markup like h1's name span), so restoring the pre-split
+    // snapshot is enough — no hardcoded string needed.
+    function unsplitH2(el: HTMLElement) {
+      el.textContent = h2OriginalText;
+      delete el.dataset.split;
+    }
+
     function animate() {
       setTimeout(() => {
         if (heroFig) gsap.to(heroFig, { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out' });
         if (h1Words.length) gsap.to(h1Words, { opacity: 1, y: 0, rotation: 0, duration: 1.0, ease: 'power3.out', stagger: 0.11, delay: 0.15, onComplete: () => {
           if (h1) { h1.classList.add('grad-settled'); unsplitH1(h1); }
         } });
-        if (h2Chars.length) gsap.to(h2Chars, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.035, delay: 0.6, onComplete: () => h2Chars.forEach(clearWillChange) });
+        if (h2Chars.length) gsap.to(h2Chars, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.035, delay: 0.6, onComplete: () => {
+          if (h2) { h2.classList.add('grad-settled'); unsplitH2(h2); }
+        } });
       }, 350);
     }
 
