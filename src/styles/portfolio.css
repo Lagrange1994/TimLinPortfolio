@@ -3124,6 +3124,26 @@
       color: rgba(255, 255, 255, .55);
     }
 
+    /* The badge's own chip (background/border, set on the base rule above)
+       is hardcoded near-black regardless of --has-img — fine when the
+       whole card stayed a permanent dark photo card, but .border-glow-card
+       itself DOES theme its own --card-bg to light mode's --bg-card, and
+       the badge's -7px top offset lets that light corner peek out from
+       under the (still-always-dark) illustration layers. Swap the chip to
+       the same light-glass treatment every other floating pill uses. */
+    :root[data-theme="light"] .process-step-badge {
+      background: var(--glass-bg);
+      border-color: var(--glass-border);
+    }
+
+    :root[data-theme="light"] .process-card--has-img .process-step-badge {
+      color: var(--text-50);
+    }
+
+    :root[data-theme="light"] .process-card--has-img .process-step-badge em {
+      color: var(--text);
+    }
+
     .process-dual {
       display: flex;
       flex-direction: column;
@@ -8087,6 +8107,11 @@
     /* Step badge — floats above card top-left */
     .ai-step-badge{position:absolute;top:-7px;left:18px;padding:2px 7px;font-family:"Geist Mono",monospace;font-size:9.5px;letter-spacing:.14em;color:rgba(255,255,255,.35);background:rgba(12,9,18,.85);border:1px solid rgba(255,255,255,.07);border-radius:4px;backdrop-filter:blur(8px);opacity:.85}
     .ai-step-badge em{font-style:normal;color:rgba(255,255,255,.55);font-weight:500}
+    /* .ai-card itself already themes to var(--glass-bg-premium) in light
+       mode — this badge's near-black chip never followed, same fix as
+       .process-step-badge above. */
+    :root[data-theme="light"] .ai-step-badge{color:var(--text-50);background:var(--glass-bg);border-color:var(--glass-border)}
+    :root[data-theme="light"] .ai-step-badge em{color:var(--text)}
     /* Focal badge — gradient pill top-right */
     .ai-focal-badge{position:absolute;top:-13px;right:22px;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:linear-gradient(135deg,#B58BFF,#FF7BC8);color:#1a0a20;font-family:"Geist Mono",monospace;font-size:10px;letter-spacing:.14em;font-weight:600;box-shadow:0 10px 30px -6px rgba(255,123,200,.5);white-space:nowrap}
     .ai-focal-badge::before{content:"";width:5px;height:5px;border-radius:50%;background:#1a0a20}
