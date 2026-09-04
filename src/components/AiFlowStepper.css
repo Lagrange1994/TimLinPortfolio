@@ -199,3 +199,76 @@ i.afs-icon {
     animation: none;
   }
 }
+
+/* Light mode — this whole file was written dark-only (flat #23232E/#38325C
+   chips on the AI Brief cards, which DO theme via --glass-bg-premium). Active
+   keeps the same solid --primary purple in both themes (it already reads
+   fine on a light card); inactive/complete get a light counterpart instead
+   of staying stuck dark inside an otherwise-light card. */
+:root[data-theme="light"] .afs-step {
+  background: var(--bg-hover);
+  border-color: var(--border);
+}
+
+:root[data-theme="light"] .afs-step-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(91, 79, 224, .24);
+}
+
+:root[data-theme="light"] .afs-step-complete {
+  background: rgba(91, 79, 224, .14);
+  border-color: rgba(91, 79, 224, .3);
+}
+
+:root[data-theme="light"] .afs-dot {
+  background: rgba(23, 15, 45, .25);
+}
+
+:root[data-theme="light"] .afs-dot-complete {
+  background: var(--primary);
+}
+
+:root[data-theme="light"] i.afs-icon {
+  color: var(--text-50);
+}
+
+:root[data-theme="light"] .afs-step-active i.afs-icon {
+  color: #fff;
+}
+
+:root[data-theme="light"] .afs-step-complete i.afs-icon {
+  color: var(--primary);
+}
+
+:root[data-theme="light"] .afs-label-sep {
+  color: var(--text-50);
+}
+
+:root[data-theme="light"] .afs-label {
+  color: var(--text-50);
+}
+
+:root[data-theme="light"] .afs-label-active {
+  color: #fff;
+}
+
+:root[data-theme="light"] .afs-label-complete {
+  color: var(--primary);
+}
+
+:root[data-theme="light"] .afs-connector {
+  background: var(--border-hi);
+}
+
+:root[data-theme="light"] .afs-connector-filled {
+  background: var(--primary);
+}
+
+:root[data-theme="light"] .ai-card.is-open .ai-flow-stepper-boxed .afs-step::before {
+  background: rgba(23, 15, 45, .25);
+}
+
+:root[data-theme="light"] .ai-card.is-open .ai-flow-stepper-boxed .afs-step-complete::before {
+  background: var(--primary);
+}

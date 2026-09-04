@@ -3238,6 +3238,11 @@
       pointer-events: none;
     }
 
+    .policy-popover-path {
+      fill: #13101c;
+      stroke: rgba(255, 255, 255, 0.1);
+    }
+
     .policy-popover {
       position: relative;
       z-index: 2;
@@ -3276,6 +3281,26 @@
     .policy-popover-close:hover {
       color: var(--text);
       background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* This popover (bubble fill, close button, title/body ink) stays a
+       fixed dark surface in dark mode, same "chrome, not page content"
+       treatment #lang-dropdown gets below — but unlike that dropdown it
+       DOES need a light-mode swap: its title/body already use --text/
+       --text-70, which flip to dark ink in light mode and would go
+       near-invisible on the still-dark SVG bubble underneath. */
+    :root[data-theme="light"] .policy-popover-path {
+      fill: var(--bg-card);
+      stroke: var(--glass-border);
+    }
+
+    :root[data-theme="light"] .policy-popover-close {
+      background: rgba(23, 15, 45, 0.05);
+      border-color: var(--glass-border);
+    }
+
+    :root[data-theme="light"] .policy-popover-close:hover {
+      background: rgba(23, 15, 45, 0.1);
     }
 
     .policy-popover-title {
@@ -6121,6 +6146,25 @@
       flex-shrink: 0;
     }
 
+    /* #lang-menu-btn (the closed pill) already swaps to var(--glass-bg) in
+       light mode above — the dropdown it opens never got the same
+       treatment, so it stayed a fixed dark panel with white text that read
+       fine in dark mode but not light. */
+    :root[data-theme="light"] #lang-dropdown {
+      background: var(--glass-bg-hov);
+      border-color: var(--glass-border-hov);
+      box-shadow: 0 8px 24px rgba(23, 15, 45, 0.14);
+    }
+
+    :root[data-theme="light"] .lang-opt {
+      color: var(--text-70);
+    }
+
+    :root[data-theme="light"] .lang-opt:hover {
+      background: rgba(23, 15, 45, 0.06);
+      color: var(--text);
+    }
+
     .lang-opt.active i {
       opacity: 1;
     }
@@ -8248,6 +8292,23 @@
     .ai-queue-item-complete .ai-queue-tier-label{opacity:.85}
     .ai-queue-doc{display:flex;flex-direction:column;gap:3px}
     .ai-queue-bar{display:block;height:2px;border-radius:1px;background:rgba(255,255,255,.4)}
+
+    /* Light mode — only the resting/inactive ticket (flat dark #23232E)
+       needs a swap; active/complete keep their own solid green (#1F9D6B/
+       #215B45), which already contrasts fine against a light card in
+       either theme, so the white check/checkmark on THOSE stay put. (The
+       :not() guards matter: an unqualified override here would outrank
+       .ai-queue-item-active/-complete on specificity alone and strip their
+       green fill even though this selector never names those classes.) */
+    :root[data-theme="light"] .ai-queue-item:not(.ai-queue-item-active):not(.ai-queue-item-complete){background:var(--bg-hover);border-color:var(--border)}
+    :root[data-theme="light"] .ai-queue-item:not(.ai-queue-item-active):not(.ai-queue-item-complete) .ai-queue-check{border-color:rgba(23,15,45,.28)}
+    :root[data-theme="light"] .ai-queue-item:not(.ai-queue-item-active):not(.ai-queue-item-complete) .ai-queue-bar{background:rgba(23,15,45,.22)}
+    /* Completed/active tickets: white bars (fine on dark mode's solid
+       green fill) wash out to near-invisible once light mode's own bg
+       sits underneath at low alpha — swap to each ticket's own tier
+       color instead, echoing the tier glyph/label already on that scale. */
+    :root[data-theme="light"] .ai-queue-item-active .ai-queue-bar,
+    :root[data-theme="light"] .ai-queue-item-complete .ai-queue-bar{background:var(--tier-color)}
 
     /* ── Expand-on-click detail panel ── */
     /* Plus-to-X glass toggle — same shape reactbits.dev's Modal Cards uses for

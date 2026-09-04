@@ -89,7 +89,7 @@ export default function PolicyPill({ icon, label, body }: { icon: string; label:
               viewBox={`0 0 ${bubble.w} ${bubble.h}`}
               aria-hidden="true"
             >
-              <path d={bubble.d} fill="#13101c" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+              <path className="policy-popover-path" d={bubble.d} strokeWidth="1" />
             </svg>
           )}
           <div className="policy-popover" role="dialog" aria-label={label} ref={contentRef}>
