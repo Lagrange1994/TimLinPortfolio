@@ -201,7 +201,7 @@ export default function PortfolioSection() {
   // Lets the "Animate grid cards in" GSAP entrance effect re-trigger the
   // squircle-measurement effect's own apply logic once its animation
   // finishes — see that effect's onComplete for why this is needed.
-  const reapplySquircleRef = useRef<(() => void) | null>(null);
+  const reapplySquircleRef = useRef<((el: HTMLElement) => void) | null>(null);
 
   // MagicBento cleanup refs
   const spotlightRef = useRef<HTMLDivElement | null>(null);
@@ -751,10 +751,24 @@ export default function PortfolioSection() {
     // attribute for each card — not just the properties it animated —
     // wiping the clip-path/--card-w/--card-h/--ring-mask this effect just
     // set, permanently (nothing about that GSAP write is a real box
-    // resize, so RO never fires again to repair it). Exposing applyAll lets
-    // that effect's onComplete re-run it once the tween is done clobbering
-    // styles, so our values are the last ones written.
-    reapplySquircleRef.current = applyAll;
+    // resize, so RO never fires again to repair it). Exposing applyOne lets
+    // that effect's per-card onComplete re-run it once THAT card's tween is
+    // done clobbering styles, so our values are the last ones written.
+    // Deliberately scoped to one element, not applyAll: measuring via
+    // getBoundingClientRect() mid-tween includes the entrance tween's own
+    // scale()/translate3d() transform, so re-measuring every card on every
+    // other card's onComplete was writing a transform-shrunk (undersized)
+    // clip-path onto every card still animating — up to ~5% smaller than
+    // its true size, since GSAP's stagger fires each target's onComplete
+    // while later-staggered cards are still mid-flight. That's what the
+    // squircle clip-path snapping back to the wrong size as each entrance
+    // wrapped up actually was: cards briefly clipped to a too-small path,
+    // "recovering" only once their OWN onComplete finally corrected it.
+    const applyOne = (el: HTMLElement) => {
+      const r = el.getBoundingClientRect();
+      applySquircle(el, r.width, r.height);
+    };
+    reapplySquircleRef.current = applyOne;
     return () => { ro.disconnect(); reapplySquircleRef.current = null; };
   }, [lang, expanded, activeFilter]);
 
@@ -953,7 +967,7 @@ export default function PortfolioSection() {
             onComplete(this: gsap.core.Tween) {
               const el = this.targets()[0] as HTMLElement;
               el.style.transition = '';
-              reapplySquircleRef.current?.();
+              reapplySquircleRef.current?.(el);
             },
           },
           clearProps: 'transform,opacity,filter',
