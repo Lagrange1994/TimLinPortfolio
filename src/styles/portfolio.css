@@ -397,11 +397,16 @@
       background-clip: text;
     }
 
-    /* Lighter than .navbar-brand-tagline's var(--text-50) — user asked for
-       an even fainter gray than the navbar-matched tone. */
-    :root[data-theme="light"] .hero-h2,
+    /* Hero panel stays dark regardless of site theme (see .hero-h1's own
+       comment below), so these can't follow --text into a dark-on-dark
+       render — hero-h2 picks the lightest stop of --grad-logo (its cyan
+       end), hero-desc goes plain white. */
+    :root[data-theme="light"] .hero-h2 {
+      color: #00D4FF;
+    }
+
     :root[data-theme="light"] .hero-desc {
-      color: var(--text-30);
+      color: #fff;
     }
 
     html,
@@ -546,6 +551,24 @@
 
     .btn-grad:hover {
       box-shadow: 0 6px 25px rgba(255, 101, 132, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Contact Me (.btn-glass alone, no .btn-grad — the only bare .btn-glass
+       in the site) switches to the neumorphism system in light mode, same
+       as #home .hero-ask right next to it: an opaque near-white pill on the
+       hero's own always-dark backdrop, so its text needs the light-theme
+       dark ink instead of the base rule's white. */
+    :root[data-theme="light"] .btn-glass:not(.btn-grad) {
+      background: var(--neu-bg);
+      border-color: transparent;
+      box-shadow: var(--neu-raised-sm);
+      color: var(--text);
+    }
+
+    :root[data-theme="light"] .btn-glass:not(.btn-grad):hover {
+      border-color: transparent;
+      box-shadow: var(--neu-raised-sm-hover);
+      color: var(--text);
     }
 
     /* View All Projects — arrow sits in its own white circular badge, flush
@@ -1725,6 +1748,17 @@
         opacity: 0;
         animation: hero-btns-float-up 1.0s cubic-bezier(0.16, 1, 0.3, 1) forwards 0.5s;
         animation-play-state: paused;
+      }
+
+      /* Light mode: swap the drop-shadow for the same neumorphism system
+         every other card uses. Still an opaque near-white pill (--neu-bg is
+         #F7FAFC, close enough to the base rule's rgba(255,255,255,0.94) that
+         .hero-ask-label/.hero-ask-btn's existing dark-ink colors stay
+         legible without their own override) — only the shadow/border
+         language changes, not the light-on-dark-backdrop concept itself. */
+      :root[data-theme="light"] #home .hero-ask {
+        border-color: transparent;
+        box-shadow: var(--neu-raised-sm);
       }
 
       /* margin-right:auto absorbs the slack the fixed width leaves over the
@@ -9009,7 +9043,7 @@
 
     /* ── 淺色模式：全站卡片改用 Neumorphism 陰影與卡片色系統 ──
        所有卡片家族（.bento-card、.tech-item、.contact-card/.cta-strip/
-       .faq-card、.tag-capsule、.slink、.ai-card、.process-card/.border-glow-card、
+       .faq-card、.slink、.ai-card、.process-card/.border-glow-card、
        .line-banner）在深色模式下都疊了滑鼠追蹤光暈（.sc-overlay/
        .card-spotlight::before/.bg-spotlight）、邊框特效（.sc-card::after 光環、
        .border-glow-card 的滑鼠描邊+外光暈、.ai-card 雷達環與各變體彩色頂邊線）、
@@ -9163,14 +9197,8 @@
       box-shadow: var(--neu-raised-hover) !important;
     }
 
-    :root[data-theme="light"] .tag-capsule {
-      background: var(--neu-bg) !important;
-      border-color: transparent !important;
-      box-shadow: var(--neu-raised-sm) !important;
-    }
-
-    :root[data-theme="light"] .tag-capsule:hover {
-      border-color: transparent !important;
-      box-shadow: var(--neu-raised-sm-hover) !important;
-    }
+    /* .tag-capsule (hero marquee pills) deliberately excluded from this
+       neumorphism pass — stays on the glass style defined next to it
+       (:root[data-theme="light"] .tag-capsule up above), matching
+       .skill-pill instead of getting the card treatment. */
 
