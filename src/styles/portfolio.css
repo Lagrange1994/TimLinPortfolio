@@ -174,7 +174,7 @@
       --grad-logo: linear-gradient(45deg, #8A2BE2, #4A00E0, #00D4FF);
       /* Role line only (hero-h2, light mode) — --grad-logo's own last two
          stops extended one step paler, not a --grad-logo reuse. */
-      --grad-role: linear-gradient(45deg, #4A00E0, #00D4FF, #B8ECFF);
+      --grad-role: linear-gradient(45deg, #4A00E0, #00D4FF, #5AC8FF);
       /* The 4 hard-cut bands of #bg-frame-glow-grad (BeamsBackground.tsx)'s
          flow blend — offsets 0/39.6967/70.3616/87.9173/100%, each variable
          covering one band's start+end stop pair (see the comment above the
