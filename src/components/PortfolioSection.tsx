@@ -857,9 +857,13 @@ export default function PortfolioSection() {
     if (!expanded) return;
     const grid = document.getElementById('portfolio-grid');
     if (!grid) return;
-    grid.querySelectorAll<HTMLElement>('.grid-card').forEach(c => {
-      const show = activeFilter === 'all' || c.dataset.category === activeFilter;
-      if (show) c.style.opacity = '0';
+    // Targets .grid-card-shadow (see the entrance effect below for why) —
+    // .grid-card itself carries no opacity/transform of its own during
+    // entrance, so hiding it here instead of its wrapper would do nothing.
+    grid.querySelectorAll<HTMLElement>('.grid-card-shadow').forEach(wrapper => {
+      const card = wrapper.querySelector<HTMLElement>('.grid-card');
+      const show = activeFilter === 'all' || card?.dataset.category === activeFilter;
+      if (show) wrapper.style.opacity = '0';
     });
   }, [expanded, activeFilter]);
 
@@ -869,30 +873,35 @@ export default function PortfolioSection() {
     const grid = document.getElementById('portfolio-grid');
     if (!grid) return;
 
-    const cards = Array.from(grid.querySelectorAll<HTMLElement>('.grid-card')).filter(c => {
-      const show = activeFilter === 'all' || c.dataset.category === activeFilter;
+    // Animates .grid-card-shadow (the wrapper), not .grid-card (the photo)
+    // — box-shadow lives on the wrapper (see its comment in portfolio.css:
+    // .grid-card's own JS squircle clip-path silently clips away any
+    // box-shadow placed directly on it), so animating only the inner photo
+    // left the shadow sitting fully visible in its final position/opacity
+    // the instant a filter switch revealed it, while the photo itself flew
+    // up into place below/inside it — shadow and image visibly out of sync.
+    // Animating the wrapper instead carries the photo along for free (it's
+    // a child), and the shadow now fades/moves/blurs as one unit with it.
+    const wrappers = Array.from(grid.querySelectorAll<HTMLElement>('.grid-card-shadow')).filter(wrapper => {
+      const card = wrapper.querySelector<HTMLElement>('.grid-card');
+      const show = activeFilter === 'all' || card?.dataset.category === activeFilter;
       // #portfolio-grid is auto-placed (grid-auto-flow: dense, no per-card
       // grid-area), so display:none has to land on .grid-card-shadow — the
       // actual grid item — for the remaining cards to reflow into its spot.
-      // Hiding only the inner .grid-card (the old code) left its
-      // .grid-card-shadow wrapper sitting in the grid at full size with
-      // nothing rendered inside, i.e. exactly the blank boxes switching
-      // filters produced.
-      const wrapper = c.parentElement as HTMLElement | null;
-      if (wrapper) wrapper.style.display = show ? '' : 'none';
+      wrapper.style.display = show ? '' : 'none';
       return show;
     });
 
     setTimeout(() => {
-      gsap.killTweensOf('#portfolio-grid .grid-card');
-      cards.forEach(c => { c.style.transition = 'none'; });
-      gsap.fromTo(cards,
+      gsap.killTweensOf('#portfolio-grid .grid-card-shadow');
+      wrappers.forEach(w => { w.style.transition = 'none'; });
+      gsap.fromTo(wrappers,
         { y: 60, opacity: 0, filter: 'blur(8px)', scale: 0.95 },
         {
           y: 0, opacity: 1, filter: 'blur(0px)', scale: 1,
           duration: 0.65, ease: 'power3.out', stagger: 0.045,
           clearProps: 'transform,opacity,filter',
-          onComplete() { cards.forEach(c => { c.style.transition = ''; }); }
+          onComplete() { wrappers.forEach(w => { w.style.transition = ''; }); }
         }
       );
     }, 120);
