@@ -8293,20 +8293,20 @@
     .ai-queue-doc{display:flex;flex-direction:column;gap:3px}
     .ai-queue-bar{display:block;height:2px;border-radius:1px;background:rgba(255,255,255,.4)}
 
-    /* Light mode — only the resting/inactive ticket (flat dark #23232E)
-       needs a swap; active/complete keep their own solid green (#1F9D6B/
-       #215B45), which already contrasts fine against a light card in
-       either theme, so the white check/checkmark on THOSE stay put. (The
-       :not() guards matter: an unqualified override here would outrank
-       .ai-queue-item-active/-complete on specificity alone and strip their
-       green fill even though this selector never names those classes.) */
-    :root[data-theme="light"] .ai-queue-item:not(.ai-queue-item-active):not(.ai-queue-item-complete){background:var(--bg-hover);border-color:var(--border)}
+    /* Light mode — every ticket (inactive/active/complete alike) uses the
+       same light card fill; no solid-green fill swap for active/complete
+       like dark mode has, per explicit request. Active still reads as
+       "currently mid-review" via its own box-shadow ring (untouched,
+       already theme-agnostic); check ring + checkmark + skeleton bars on
+       active/complete switch to that ticket's own --tier-color instead of
+       white, since white on this light fill would be invisible. */
+    :root[data-theme="light"] .ai-queue-item{background:var(--bg-hover);border-color:var(--border)}
     :root[data-theme="light"] .ai-queue-item:not(.ai-queue-item-active):not(.ai-queue-item-complete) .ai-queue-check{border-color:rgba(23,15,45,.28)}
     :root[data-theme="light"] .ai-queue-item:not(.ai-queue-item-active):not(.ai-queue-item-complete) .ai-queue-bar{background:rgba(23,15,45,.22)}
-    /* Completed/active tickets: white bars (fine on dark mode's solid
-       green fill) wash out to near-invisible once light mode's own bg
-       sits underneath at low alpha — swap to each ticket's own tier
-       color instead, echoing the tier glyph/label already on that scale. */
+    :root[data-theme="light"] .ai-queue-item-active .ai-queue-check,
+    :root[data-theme="light"] .ai-queue-item-complete .ai-queue-check{border-color:var(--tier-color)}
+    :root[data-theme="light"] .ai-queue-item-active .ai-queue-checkmark,
+    :root[data-theme="light"] .ai-queue-item-complete .ai-queue-checkmark{color:var(--tier-color)}
     :root[data-theme="light"] .ai-queue-item-active .ai-queue-bar,
     :root[data-theme="light"] .ai-queue-item-complete .ai-queue-bar{background:var(--tier-color)}
 
