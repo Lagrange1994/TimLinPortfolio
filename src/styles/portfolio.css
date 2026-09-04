@@ -172,6 +172,9 @@
       --text-30: rgba(255, 255, 255, 0.45);
       --grad: linear-gradient(to right, #6C63FF, #FF6584);
       --grad-logo: linear-gradient(45deg, #8A2BE2, #4A00E0, #00D4FF);
+      /* Role line only (hero-h2, light mode) — --grad-logo's own last two
+         stops extended one step paler, not a --grad-logo reuse. */
+      --grad-role: linear-gradient(45deg, #4A00E0, #00D4FF, #B8ECFF);
       /* The 4 hard-cut bands of #bg-frame-glow-grad (BeamsBackground.tsx)'s
          flow blend — offsets 0/39.6967/70.3616/87.9173/100%, each variable
          covering one band's start+end stop pair (see the comment above the
@@ -399,12 +402,19 @@
 
     /* Hero panel stays dark regardless of site theme (see .hero-h1's own
        comment below), so these can't follow --text into a dark-on-dark
-       render — hero-h2 goes solid magenta (--grad's own end stop), plain
-       color rather than a background-clip:text gradient so it doesn't need
-       the .grad-settled/unsplit treatment .hero-h1's name gradient does.
-       hero-desc goes back to the original faint gray. */
+       render. hero-h2 now gets its own --grad-role gradient, same
+       .grad-settled/unsplit ghosting-safe treatment as .hero-h1 above
+       (see that comment) since HeroSection.tsx splits it into per-char
+       spans too. hero-desc goes back to the original faint gray. */
     :root[data-theme="light"] .hero-h2 {
-      color: #E8496B;
+      color: var(--primary);
+    }
+
+    :root[data-theme="light"] .hero-h2.grad-settled {
+      background: var(--grad-role);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     :root[data-theme="light"] .hero-desc {
