@@ -2,6 +2,28 @@
 
 記錄重大 bug 修復與其根因，方便之後回頭查。日常小改動看 `git log` 即可，這裡只放值得留存脈絡的項目。
 
+## 2026-09-03
+
+### 修復：主標 `.hero-h1` gradient-clip 文字偶發疊字殘影
+
+**根因：** `background-clip:text` 漸層文字的祖先元素，只要子節點（split word spans）曾經被獨立 GPU 合成過（進場動畫用 `will-change:transform,opacity`），之後任何一次該漸層的重繪——包含跟動畫完全無關的淺色/深色主題切換——都可能讓字形遮罩失效，畫出重疊殘影。單純清掉 `will-change` 或強制 reflow 只能修好下一次繪製，換主題又會重現。
+
+**修復：** 進場動畫 `onComplete` 時把 `.hero-h1` 的 split-word span 結構整個拆掉，還原成最初的純文字 markup（`unsplitH1()`，見 `HeroSection.tsx`）——沒有曾被合成過的子節點留在 DOM 裡，之後不管重繪幾次都沒有東西可以錯繪。
+
+**Commits：** `cd61956`
+
+---
+
+### 修復：Loading 畫面顯示前，淺色模式先閃一下背景圖
+
+**根因：** `portfolio.css` 要等 `main.tsx` 的 module graph 載完、React 掛載才生效，這段空窗期間 `html` 沒有任何背景色。若使用者上次選的是淺色模式，`data-theme="light"` 在 CSS 載入前就已經被 `index.html` 內的腳本設好，而淺色模式的 `--bg` 是整張 `w_bg.svg` 背景圖——CSS 一到位，圖片先閃入，蓋過它的 Loader 元件卻還沒掛載。
+
+**修復：** `index.html` 加一段 critical inline `<style>`，直接把 `html` 背景釘死成 Loader 本身會用的那個純色（深色 `#0A0912`／淺色 `#EBEFF1`），不管 JS 圖載多久都沒有東西可以閃。
+
+**Commits：** `cd61956`
+
+---
+
 ## 2026-06-20
 
 ### 修復：AI 聊天 widget（Ask Tim Anything）未跟隨語言切換

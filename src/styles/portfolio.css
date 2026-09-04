@@ -1449,12 +1449,19 @@
         filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.65));
       }
 
-      /* Light mode's panel sits on a pale page, not the dark default — the
-         same 0.65 alpha reads as a much harder, more visible edge against
-         light surroundings than it does against dark, so light gets a
-         lighter touch. */
+      /* Light mode drops the plain dark drop-shadow for the same soft-UI
+         pair every neumorphism card uses (--neu-raised, see the light
+         theme var block) — a dark cast + a white highlight instead of one
+         flat black shadow, so the panel reads as part of the same
+         neumorphism system as the cards below it. drop-shadow()'s syntax
+         (offset-x offset-y blur-radius color, no spread) happens to match
+         --neu-raised's own values exactly, so these are the identical
+         numbers just re-expressed as two chained filters instead of one
+         box-shadow. */
       :root[data-theme="light"] #bg-panel-shadow {
-        filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.25));
+        filter:
+          drop-shadow(8px 8px 18px var(--neu-shadow-dark))
+          drop-shadow(-8px -8px 18px var(--neu-shadow-light));
       }
 
       /* clip-path (set inline by BeamsBackground.tsx's sync(), the same `d`
@@ -1548,6 +1555,14 @@
         z-index: -4;
         pointer-events: none;
         overflow: visible;
+      }
+
+      /* Light mode drops the brand-gradient ambient bleed entirely — the
+         panel's depth now comes from #bg-panel-shadow's neumorphism pair
+         above instead, and a colored glow behind a light neumorphism
+         surface read muddy rather than ambient. */
+      :root[data-theme="light"] #bg-frame-glow {
+        display: none;
       }
 
       /* A FILLED copy of the panel's own silhouette, blurred — not a thick
@@ -3528,8 +3543,12 @@
       filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.65));
     }
 
+    /* Same neumorphism drop-shadow pair as the hero panel's
+       #bg-panel-shadow — see that rule's comment. */
     :root[data-theme="light"] .portfolio-wall-frame {
-      filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.5));
+      filter:
+        drop-shadow(8px 8px 18px var(--neu-shadow-dark))
+        drop-shadow(-8px -8px 18px var(--neu-shadow-light));
     }
 
     /* Outer ambient glow — same box as .portfolio-wall (JSX puts this SVG
@@ -3548,6 +3567,13 @@
       z-index: -1;
       pointer-events: none;
       overflow: visible;
+    }
+
+    /* Same reasoning as :root[data-theme="light"] #bg-frame-glow — the
+       neumorphism drop-shadow pair on .portfolio-wall-frame now carries the
+       depth, so the colored ambient bleed is dropped in light mode. */
+    :root[data-theme="light"] .portfolio-wall-glow {
+      display: none;
     }
 
     .portfolio-wall-glow-fill {
