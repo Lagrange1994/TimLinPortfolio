@@ -558,19 +558,20 @@
     /* Contact Me (.btn-glass alone, no .btn-grad — the only bare .btn-glass
        in the site) switches to the neumorphism system in light mode, same
        as #home .hero-ask right next to it: an opaque near-white pill on the
-       hero's own always-dark backdrop, so its text needs the light-theme
-       dark ink instead of the base rule's white. */
+       hero's own always-dark backdrop. Text is var(--text-30) — the same
+       faint gray as .hero-desc right above it — a deliberate low-contrast
+       choice against the near-white --neu-bg pill, not an oversight. */
     :root[data-theme="light"] .btn-glass:not(.btn-grad) {
       background: var(--neu-bg);
       border-color: transparent;
       box-shadow: var(--neu-raised-sm);
-      color: var(--text);
+      color: var(--text-30);
     }
 
     :root[data-theme="light"] .btn-glass:not(.btn-grad):hover {
       border-color: transparent;
       box-shadow: var(--neu-raised-sm-hover);
-      color: var(--text);
+      color: var(--text-30);
     }
 
     /* View All Projects — arrow sits in its own white circular badge, flush
