@@ -1,15 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
-import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
 import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
 import { portfolioWallMaskPath, DEFAULT_RADIUS, computeWallHeight } from '../utils/portfolioMask';
 import { scrollToSectionAligned } from '../utils/navHeader';
+import { useSlidingIndicator } from '../utils/useSlidingIndicator';
 import gsap from 'gsap';
 
 const SMOOTH_TAU = 0.18;
-// Spring tuning matches animata.design's Fluid Tabs indicator (see the FAQ tabs in ContactSection.tsx).
-const FILTER_TAB_INDICATOR_SPRING = { type: 'spring' as const, stiffness: 380, damping: 34, mass: 0.75 };
 // Matches How I Use AI's card corner radius (.ai-card) so the squircle reads
 // consistently across sections instead of scaling with each card's box size.
 const CARD_CORNER_RADIUS = 44;
@@ -95,10 +93,102 @@ const bentoBigIndices = getBentoBigIndices(PROJECTS.length);
 // re-derived from the live translation table instead of a stale attribute.
 const projectsByLink = new Map(PROJECTS.map(p => [p.link, p]));
 
+// Module-level (not nested inside PortfolioSection) so its function identity
+// stays stable across PortfolioSection's own re-renders — nested here, a
+// fresh ProjectCard reference on every render made React treat every
+// <ProjectCard> as a brand-new component type each time, fully unmounting
+// and remounting every project/grid card's real DOM node on ANY unrelated
+// PortfolioSection re-render (activeFilter/expanded changes, even
+// useSlidingIndicator's own setRect once the grid's filter tabs first
+// mount). That silently wiped every imperative style written onto those
+// nodes elsewhere (clip-path, --card-w/--card-h, MagicBento's --glow-*) the
+// moment a remount landed, which is what broke the grid cards' hover ripple
+// reveal and rounded corners. t/expanded/activeFilter are passed as props
+// instead of closed over for the same reason: closing over them would still
+// require PortfolioSection's own body to redefine this function each render.
+function ProjectCard({ p, mode, index, t, expanded, activeFilter }: {
+  p: typeof PROJECTS[0];
+  mode: 'scroll' | 'grid';
+  index?: number;
+  t: Record<string, string>;
+  expanded: boolean;
+  activeFilter: string;
+}) {
+  const title = t[p.id + '_title'] || p.id;
+  const desc = t[p.id + '_desc'] || '';
+  const isBig = mode === 'grid' && index !== undefined && bentoBigIndices.includes(index);
+  const cls = mode === 'grid' ? 'grid-card' : 'project-card';
+  const categoryLabel = p.category === 'mobile' ? 'Apps Design' : p.category === 'web' ? 'Web Design' : '';
+  // Grid cards' hover ripple reveals each project's hero shot — same
+  // slug as the project's own page (project_XX.html -> project_XX/), not
+  // the curated thumbnail in p.img.
+  const heroImg = `./img/${p.link.replace('.html', '')}/hero_img.webp`;
+  const card = (
+    <a
+      className={cls}
+      href={p.link}
+      data-category={p.category}
+      data-title={title}
+      data-sub={categoryLabel}
+      onClick={() => {
+        sessionStorage.setItem('portfolioScrollY', String(window.scrollY));
+        sessionStorage.setItem('portfolioExpanded', expanded ? 'true' : 'false');
+        sessionStorage.setItem('portfolioActiveFilter', activeFilter);
+      }}
+    >
+      <img src={p.img} alt={title} loading="lazy" />
+      {mode === 'grid' && (
+        <>
+          {/* Ripple — grow/fade keyframe copied straight from the
+              reference codepen (https://codepen.io/VladimirVaize/pen/abvPadj:
+              a circle animating width/height 0 -> full size, opacity
+              fading). Adapted for a hover reveal instead of a click flash:
+              background-image is the hero shot instead of solid white,
+              and the fill direction/fill-mode hold the fully-grown,
+              fully-opaque end state instead of fading back out — origin
+              point reuses --glow-x/--glow-y, the same live cursor-tracked
+              custom properties MagicBento already keeps on every
+              .grid-card.mb-glow (see initMagicBento above). */}
+          <span
+            className="grid-card-ripple"
+            aria-hidden="true"
+            style={{ backgroundImage: `url(${heroImg})` }}
+          />
+          <div className="project-overlay">
+            <div className="project-title">{title}</div>
+            <div className="project-desc">{desc}</div>
+            <div className="project-tags">
+              {p.tags.map(tag => <span key={tag} className="project-tag">{tag}</span>)}
+            </div>
+          </div>
+        </>
+      )}
+    </a>
+  );
+  // Both .grid-card and .project-card carry a JS squircle clip-path (see
+  // the squircle-measurement effect below), and box-shadow silently fails
+  // to render past the edge of an element that also carries an imperative
+  // clip-path (same failure mode as filter:drop-shadow — see
+  // #bg-panel-shadow's comment in portfolio.css). These wrappers carry no
+  // clip-path of their own, so their box-shadow traces the card's plain
+  // rectangular footprint instead of chasing the squircle exactly, same
+  // trade-off already made for the hero panel/portfolio wall shadows.
+  if (mode !== 'grid') {
+    return <div className="project-card-shadow">{card}</div>;
+  }
+  return (
+    <div className={`grid-card-shadow${isBig ? ' mb-big' : ''}`}>
+      {card}
+    </div>
+  );
+}
+
 export default function PortfolioSection() {
   const { t, lang } = useLang();
   const [expanded, setExpanded] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
+  const filterTabsRef = useRef<HTMLDivElement>(null);
+  const filterIndicator = useSlidingIndicator(filterTabsRef, '.portfolio-filter-tab', ['all', 'mobile', 'web'].indexOf(activeFilter));
   const scrollerInitRef = useRef(false);
   const wallOutlinePathRef = useRef<SVGPathElement | null>(null);
   // The wall's top/height are measured once (see the wall-geometry effect
@@ -151,8 +241,18 @@ export default function PortfolioSection() {
       card.style.setProperty('--glow-radius', `${MB_RADIUS}px`);
     }
 
+    // .grid-card-shadow (see that class's own comment in portfolio.css) is
+    // what actually carries the card's box-shadow, since .grid-card itself
+    // can't (its JS clip-path silently clips box-shadow away, same failure
+    // mode as filter:drop-shadow elsewhere in this file). The magnetic
+    // pull/tilt below has to move THAT wrapper, not .grid-card, or the
+    // image visibly drifts out from under its own shadow on every hover.
+    function shadowTargetOf(card: HTMLElement) {
+      return card.closest<HTMLElement>('.grid-card-shadow') || card;
+    }
+
     function resetCard(card: HTMLElement) {
-      gsap.to(card, { rotateX: 0, rotateY: 0, x: 0, y: 0, duration: 0.4, ease: 'power3.out', overwrite: 'auto' });
+      gsap.to(shadowTargetOf(card), { rotateX: 0, rotateY: 0, x: 0, y: 0, duration: 0.4, ease: 'power3.out', overwrite: 'auto' });
       card.style.setProperty('--glow-intensity', '0');
     }
 
@@ -192,7 +292,7 @@ export default function PortfolioSection() {
         const r = hovered.getBoundingClientRect();
         const lx = e.clientX - r.left, ly = e.clientY - r.top;
         const cx = r.width / 2, cy = r.height / 2;
-        gsap.to(hovered, {
+        gsap.to(shadowTargetOf(hovered), {
           x: (lx - cx) * 0.05,
           y: (ly - cy) * 0.05,
           duration: 0.3,
@@ -771,7 +871,15 @@ export default function PortfolioSection() {
 
     const cards = Array.from(grid.querySelectorAll<HTMLElement>('.grid-card')).filter(c => {
       const show = activeFilter === 'all' || c.dataset.category === activeFilter;
-      c.style.display = show ? '' : 'none';
+      // #portfolio-grid is auto-placed (grid-auto-flow: dense, no per-card
+      // grid-area), so display:none has to land on .grid-card-shadow — the
+      // actual grid item — for the remaining cards to reflow into its spot.
+      // Hiding only the inner .grid-card (the old code) left its
+      // .grid-card-shadow wrapper sitting in the grid at full size with
+      // nothing rendered inside, i.e. exactly the blank boxes switching
+      // filters produced.
+      const wrapper = c.parentElement as HTMLElement | null;
+      if (wrapper) wrapper.style.display = show ? '' : 'none';
       return show;
     });
 
@@ -838,61 +946,6 @@ export default function PortfolioSection() {
     sessionStorage.setItem('portfolioActiveFilter', filter);
   }
 
-  // Render project card
-  function ProjectCard({ p, mode, index }: { p: typeof PROJECTS[0]; mode: 'scroll' | 'grid'; index?: number }) {
-    const title = (t as Record<string, string>)[p.id + '_title'] || p.id;
-    const desc = (t as Record<string, string>)[p.id + '_desc'] || '';
-    const isBig = mode === 'grid' && index !== undefined && bentoBigIndices.includes(index);
-    const cls = mode === 'grid' ? `grid-card${isBig ? ' mb-big' : ''}` : 'project-card';
-    const categoryLabel = p.category === 'mobile' ? 'Apps Design' : p.category === 'web' ? 'Web Design' : '';
-    // Grid cards' hover ripple reveals each project's hero shot — same
-    // slug as the project's own page (project_XX.html -> project_XX/), not
-    // the curated thumbnail in p.img.
-    const heroImg = `./img/${p.link.replace('.html', '')}/hero_img.webp`;
-    return (
-      <a
-        className={cls}
-        href={p.link}
-        data-category={p.category}
-        data-title={title}
-        data-sub={categoryLabel}
-        onClick={() => {
-          sessionStorage.setItem('portfolioScrollY', String(window.scrollY));
-          sessionStorage.setItem('portfolioExpanded', expanded ? 'true' : 'false');
-          sessionStorage.setItem('portfolioActiveFilter', activeFilter);
-        }}
-      >
-        <img src={p.img} alt={title} loading="lazy" />
-        {mode === 'grid' && (
-          <>
-            {/* Ripple — grow/fade keyframe copied straight from the
-                reference codepen (https://codepen.io/VladimirVaize/pen/abvPadj:
-                a circle animating width/height 0 -> full size, opacity
-                fading). Adapted for a hover reveal instead of a click flash:
-                background-image is the hero shot instead of solid white,
-                and the fill direction/fill-mode hold the fully-grown,
-                fully-opaque end state instead of fading back out — origin
-                point reuses --glow-x/--glow-y, the same live cursor-tracked
-                custom properties MagicBento already keeps on every
-                .grid-card.mb-glow (see initMagicBento above). */}
-            <span
-              className="grid-card-ripple"
-              aria-hidden="true"
-              style={{ backgroundImage: `url(${heroImg})` }}
-            />
-            <div className="project-overlay">
-              <div className="project-title">{title}</div>
-              <div className="project-desc">{desc}</div>
-              <div className="project-tags">
-                {p.tags.map(tag => <span key={tag} className="project-tag">{tag}</span>)}
-              </div>
-            </div>
-          </>
-        )}
-      </a>
-    );
-  }
-
   const rowProjects = [0, 1, 2, 3].map(row => PROJECTS.filter((_, i) => i % 4 === row));
 
   return (
@@ -929,7 +982,16 @@ export default function PortfolioSection() {
                   data-direction={row % 2 === 1 ? 'left' : 'right'}
                 >
                   <div className="scroller-inner" id={`track-desk-row-${row}`}>
-                    {projects.map(p => <ProjectCard key={p.id} p={p} mode="scroll" />)}
+                    {projects.map(p => (
+                      <ProjectCard
+                        key={p.id}
+                        p={p}
+                        mode="scroll"
+                        t={t as Record<string, string>}
+                        expanded={expanded}
+                        activeFilter={activeFilter}
+                      />
+                    ))}
                   </div>
                 </div>
               ))}
@@ -949,7 +1011,19 @@ export default function PortfolioSection() {
 
         {/* Filter buttons */}
         {expanded && (
-          <div id="portfolio-filters" className="portfolio-filter-tabs" role="tablist">
+          <div id="portfolio-filters" className="portfolio-filter-tabs" role="tablist" ref={filterTabsRef}>
+            {filterIndicator && (
+              <span
+                className="portfolio-filter-indicator"
+                style={{
+                  transform: filterIndicator.transform,
+                  width: filterIndicator.width,
+                  height: filterIndicator.height,
+                  top: filterIndicator.top,
+                }}
+                aria-hidden="true"
+              />
+            )}
             {['all', 'mobile', 'web'].map(f => (
               <button
                 key={f}
@@ -960,14 +1034,6 @@ export default function PortfolioSection() {
                 data-filter={f}
                 onClick={() => handleFilter(f)}
               >
-                {activeFilter === f && (
-                  <motion.span
-                    layoutId="portfolio-filter-indicator"
-                    className="portfolio-filter-indicator"
-                    transition={FILTER_TAB_INDICATOR_SPRING}
-                    aria-hidden="true"
-                  />
-                )}
                 <span className="portfolio-filter-label">
                   {f === 'all' ? 'All' : f === 'mobile' ? 'Apps Design' : 'Web Design'}
                 </span>
@@ -987,6 +1053,9 @@ export default function PortfolioSection() {
               p={p}
               mode="grid"
               index={i}
+              t={t as Record<string, string>}
+              expanded={expanded}
+              activeFilter={activeFilter}
             />
           ))}
         </div>
