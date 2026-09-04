@@ -212,6 +212,32 @@ export default function PortfolioSection() {
 
   const MB_RADIUS = 170;
 
+  // Preload every grid image ahead of the user ever clicking "View All
+  // Projects". #portfolio-grid is always mounted (just display:none), and
+  // its <img loading="lazy"> tags defer their actual fetch until they
+  // start intersecting the viewport — which a display:none element never
+  // does. So the very first expand was the very first time all ~13 images
+  // started fetching+decoding, all at once, at the exact moment the
+  // entrance tween needed a free frame — the pop-in as each one finished
+  // decoding read as jitter independent of (and in addition to) the
+  // filter:blur jank fixed above. Warms the browser's HTTP+decode cache
+  // early instead; the <img> tags stay loading="lazy" (harmless once the
+  // resource is already cached — no extra request, no decode stall) and
+  // this list-position/scroll code is untouched. Runs once on mount via
+  // requestIdleCallback so it never competes with the hero/above-the-fold
+  // load; Safari has no requestIdleCallback, hence the setTimeout fallback.
+  useEffect(() => {
+    const schedule = window.requestIdleCallback || ((cb: () => void) => window.setTimeout(cb, 1000));
+    const cancel = window.cancelIdleCallback || window.clearTimeout;
+    const id = schedule(() => {
+      PROJECTS.forEach(p => {
+        const img = new Image();
+        img.src = p.img;
+      });
+    });
+    return () => cancel(id as number);
+  }, []);
+
   function destroyMagicBento() {
     if (spotlightRef.current) { spotlightRef.current.remove(); spotlightRef.current = null; }
     if (moveHandlerRef.current) { document.removeEventListener('mousemove', moveHandlerRef.current); moveHandlerRef.current = null; }
