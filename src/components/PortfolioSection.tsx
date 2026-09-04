@@ -946,12 +946,26 @@ export default function PortfolioSection() {
       gsap.killTweensOf('#portfolio-grid .grid-card');
       cards.forEach(c => { c.style.transition = 'none'; });
       gsap.fromTo(cards,
-        { y: 60, opacity: 0, filter: 'blur(8px)', scale: 0.95 },
+        { y: 60, opacity: 0, scale: 0.95 },
         {
-          y: 0, opacity: 1, filter: 'blur(0px)', scale: 1,
+          y: 0, opacity: 1, scale: 1,
           duration: 0.65, ease: 'power3.out',
+          // No filter:blur here (there used to be one, animated 8px->0px
+          // alongside scale/y) — same jank this codebase already diagnosed
+          // and fixed for rise-card (see useRiseReveal's backdrop-filter
+          // drop, commit 3af35be): animating a transform on an element
+          // that ALSO carries a per-frame-repainting filter forces the
+          // browser to resample it every frame. Here it's worse — a live
+          // filter:blur on the element itself (not just an incidental
+          // backdrop-filter), stacked with each card's own path() clip-path
+          // (CPU-rasterized, not GPU-composited like a rect clip), staggered
+          // across up to 13 cards animating at once. That combination is
+          // what "still jitters" survived the earlier size-correctness
+          // fixes below — those fixed the clip-path snapping to the WRONG
+          // size, not the frame drops from this per-frame repaint cost.
+          //
           // clearProps below resets each card's FULL inline style attribute,
-          // not just transform/opacity/filter — see the squircle effect's
+          // not just transform/opacity — see the squircle effect's
           // own comment on reapplySquircleRef for why — so every card needs
           // its clip-path/--card-w/--card-h/--ring-mask restored right after
           // ITS OWN clearProps fires. A top-level `onComplete` only fires
@@ -970,7 +984,7 @@ export default function PortfolioSection() {
               reapplySquircleRef.current?.(el);
             },
           },
-          clearProps: 'transform,opacity,filter',
+          clearProps: 'transform,opacity',
         }
       );
     }, 120);
