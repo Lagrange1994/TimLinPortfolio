@@ -542,21 +542,16 @@ export default function PortfolioSection() {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let ro: ResizeObserver | null = null;
 
-    function onFrameTransitionEnd(e: TransitionEvent) {
-      if (e.target !== frame || e.propertyName !== 'transform') return;
-      frame!.removeEventListener('transitionend', onFrameTransitionEnd);
-      frame!.style.willChange = 'auto';
-    }
-
-    // Nothing here is correct to compute or show before label/title/sub
-    // have actually finished their own entrance (see the effect's own
-    // top-level comment for why) — reveal() is the single point where both
-    // happen together, once that's guaranteed true. wallMaskEntranceSettledRef
-    // makes it idempotent (a later lang/expanded re-run of this effect, or
-    // frame's own transitionend bubbling 'rise-settled' back into
-    // onRiseSettled below, must not run this twice) and remembers past the
-    // very first mount, since useRiseReveal only ever fires 'rise-settled'
-    // once per page load.
+    // The wall-frame's own entrance animation is pulled out entirely for
+    // now (pending a redesign) — .portfolio-wall-frame just renders at its
+    // final state, no fade/rise, no transition, see portfolio.css. This
+    // effect still only computes the notch once label/title/sub have
+    // actually settled, though: that's not about animating anything, it's
+    // that the notch math needs their true resting rects (see the effect's
+    // own top-level comment for the whole history of why reading their
+    // still-animating geometry breaks it). wallMaskEntranceSettledRef makes
+    // this idempotent across lang/expanded-driven re-runs of this effect,
+    // since useRiseReveal only ever fires 'rise-settled' once per page load.
     function reveal() {
       if (wallMaskEntranceSettledRef.current) return;
       wallMaskEntranceSettledRef.current = true;
@@ -568,22 +563,14 @@ export default function PortfolioSection() {
       ro.observe(label!);
       ro.observe(title!);
       ro.observe(sub!);
-      if (reducedMotion) return;
-      frame!.addEventListener('transitionend', onFrameTransitionEnd);
-      frame!.classList.add('wall-frame-in');
     }
 
     if (reducedMotion) {
-      // portfolio.css's own reduced-motion block already pins the frame to
-      // its resting state with no transition — useRiseReveal also never
-      // dispatches 'rise-settled' for reduced-motion visitors, so this is
-      // the only way reveal() would ever run for them.
+      // useRiseReveal never dispatches 'rise-settled' for reduced-motion
+      // visitors (it skips ScrollTrigger setup for them), so this is the
+      // only way reveal() would ever run.
       reveal();
     }
-    // Only label/title/sub dispatch 'rise-settled' now — the wall-frame's
-    // own transition no longer needs to (nothing downstream reads it;
-    // lockWallGeometry waits on the label directly, see the geometry-lock
-    // effect below), so no e.target filtering is needed here.
     function onRiseSettled() {
       reveal();
     }
@@ -591,7 +578,6 @@ export default function PortfolioSection() {
     return () => {
       ro?.disconnect();
       section!.removeEventListener('rise-settled', onRiseSettled);
-      frame!.removeEventListener('transitionend', onFrameTransitionEnd);
     };
   }, [lang, expanded]);
 

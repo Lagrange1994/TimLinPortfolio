@@ -3620,20 +3620,11 @@
       z-index: 2;
     }
 
-    /* Positioned/sized wrapper — carries its own bespoke entrance (see the
-       IntersectionObserver effect in PortfolioSection.tsx), not the shared
-       useRiseReveal system every other .rise-soft/.rise-card element uses.
-       That hook's non-card branch also squeezes line-height every tick (a
-       layout property, forces a reflow) — fine for a small text node, but
-       this wrapper is a huge (~600-800px) box holding 3 continuously
-       RAF-scrolling marquee rows, a JS-recomputed clip-path, and
-       MagicBento's cursor-tracked glow underneath it; reflowing that whole
-       subtree every animation frame read as visible jank. A plain
-       transform/opacity CSS transition — no JS ticking, no layout
-       properties — is the cheapest entrance the browser has for something
-       this heavy. .portfolio-wall below is fully JS-driven every frame
-       (top/height/clip-path) and can't tolerate a second system also
-       writing its transform, so the transition stays on this wrapper. */
+    /* Positioned/sized wrapper. Entrance animation pulled out entirely for
+       now (pending a redesign — see PortfolioSection.tsx's wall-mask effect
+       for what's still in place: the notch computation still waits for
+       label/title/sub to settle, that's a correctness thing, not
+       animation) — this just renders at its final state, no fade/rise. */
     .portfolio-wall-frame {
       position: relative;
       /* Capped at 1440px total width like .section's own max-width, but
@@ -3655,29 +3646,6 @@
          clipped wall child actually rendered. Dark/light values match
          #bg-panel-shadow's own split exactly. */
       filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.65));
-      opacity: 0;
-      transform: translateY(90px);
-      transition: opacity .7s cubic-bezier(.16, 1, .3, 1), transform .7s cubic-bezier(.16, 1, .3, 1);
-      will-change: opacity, transform;
-    }
-
-    /* Added once the entrance IntersectionObserver fires (see
-       PortfolioSection.tsx) — transitions to its resting state, then the
-       transitionend handler drops will-change and dispatches the same
-       'rise-settled' event the shared useRiseReveal system used, so
-       everything downstream that listens for it (the wall-mask/geometry-
-       lock effects) keeps working unchanged. */
-    .portfolio-wall-frame.wall-frame-in {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .portfolio-wall-frame {
-        opacity: 1;
-        transform: none;
-        transition: none;
-      }
     }
 
     /* Same neumorphism drop-shadow pair as the hero panel's
