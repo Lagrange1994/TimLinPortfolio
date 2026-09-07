@@ -195,6 +195,13 @@ export default function PortfolioSection() {
   // below) and then locked — re-measuring on every resize is what caused the
   // address-bar-driven svh jitter this replaces.
   const wallGeometryLockedRef = useRef(false);
+  // Set once the initial label/title/sub entrance has settled — see the
+  // wall-mask effect's own comment for why this gates its ResizeObserver.
+  // A ref (not a plain effect-local flag) so a later re-run of that effect
+  // (lang/expanded change) remembers the entrance already happened once and
+  // doesn't re-gate itself forever waiting for a 'rise-settled' event that
+  // useRiseReveal (a one-time, empty-deps effect) will never fire again.
+  const wallMaskEntranceSettledRef = useRef(false);
 
   // MagicBento cleanup refs
   const spotlightRef = useRef<HTMLDivElement | null>(null);
@@ -501,23 +508,62 @@ export default function PortfolioSection() {
     }
 
     apply();
+    // section/wall/viewAllBtn's box-size changes are always real geometry
+    // updates (the wall's own height lock, a window resize) — react to
+    // them immediately, same as before.
     const ro = new ResizeObserver(apply);
     ro.observe(section);
     ro.observe(wall);
-    ro.observe(label);
-    ro.observe(title);
-    ro.observe(sub);
     ro.observe(viewAllBtn);
-    // label/title/sub/frame all carry .rise-soft (see useRiseReveal.ts),
-    // which animates a GSAP translateY transform on scroll-into-view —
-    // invisible to ResizeObserver since it's not a box-size change. Without
-    // this, every measurement above can get taken mid-animation (or before
-    // it even starts, if the section hasn't scrolled into view yet at
-    // mount) and never gets recomputed once it settles.
-    section.addEventListener('rise-settled', apply);
+
+    // label/title/sub are separate: they carry .rise-soft (see
+    // useRiseReveal.ts), whose non-card branch springs their line-height
+    // from a squeezed 0.6x back to natural via an actually-elastic ease
+    // (STRETCH_EASE) that deliberately overshoots before settling — a real
+    // box-size change (unlike the translateY/opacity part, invisible to
+    // ResizeObserver), so observing them raw fires on dozens of
+    // intermediate sizes across that overshoot-and-settle, not just the
+    // final one. Recomputing the wall's notch mask on every one of those
+    // mid-wobble sizes made the whole wall visibly stretch out and pull
+    // back in sync with the label's overshoot, the instant the wall itself
+    // became visible early enough to expose it (see the wall-frame's own
+    // entrance rewrite — it used to be invisible/0-height for this entire
+    // window). textRo only starts observing them once the entrance has
+    // actually settled once, so the notch only ever computes against their
+    // RESTING sizes — matching what the original 'rise-settled' listener
+    // below already intended ("recomputed once it settles"), just closing
+    // the gap raw ResizeObserver's continuous firing would have left open.
+    // wallMaskEntranceSettledRef (not a plain local flag) remembers this
+    // across lang/expanded-driven re-runs of this effect, since
+    // useRiseReveal only ever fires 'rise-settled' once per page load and a
+    // later re-run would otherwise wait forever.
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const textRo = new ResizeObserver(apply);
+    function beginObservingText() {
+      textRo.observe(label!);
+      textRo.observe(title!);
+      textRo.observe(sub!);
+      apply();
+    }
+    if (reducedMotion || wallMaskEntranceSettledRef.current) {
+      wallMaskEntranceSettledRef.current = true;
+      beginObservingText();
+    }
+    // frame's own 'rise-settled' also bubbles here now (its entrance is a
+    // separate, faster CSS transition — see PortfolioSection's other rise
+    // effect), but this only cares about label/title/sub's slower elastic
+    // settle, so it's explicitly excluded — reacting to frame's would start
+    // observing label/title/sub before they've actually finished wobbling.
+    function onRiseSettled(e: Event) {
+      if (e.target === frame || wallMaskEntranceSettledRef.current) return;
+      wallMaskEntranceSettledRef.current = true;
+      beginObservingText();
+    }
+    section.addEventListener('rise-settled', onRiseSettled);
     return () => {
       ro.disconnect();
-      section.removeEventListener('rise-settled', apply);
+      textRo.disconnect();
+      section.removeEventListener('rise-settled', onRiseSettled);
     };
   }, [lang, expanded]);
 
