@@ -4333,19 +4333,23 @@
        directly — same failure mode as .grid-card-shadow, same fix: a
        clip-path-free wrapper carries size/shadow/hover-lift, .project-card
        just fills it and keeps its own border-color hover response.
-       border-radius here matches CARD_CORNER_RADIUS (44px) in
-       PortfolioSection.tsx — box-shadow only ever follows a circular
-       border-radius arc, not the JS clip-path's actual squircle curve, but
-       16px (a plain-card value, unrelated to the squircle) rounded far less
-       than the clipped photo inside it, so the shadow's corner visibly
-       peeked out past the photo's own much rounder corner. 44px isn't a
-       pixel-exact match to the squircle curve either, but reads aligned. */
+       box-shadow only ever follows a circular border-radius arc, not the JS
+       clip-path's actual squircle curve (squircleRectPath, CARD_CORNER_RADIUS
+       = 44px, superellipse exponent n=5 in squircle.ts) — those two curves
+       cut into the corner by different amounts at the same radius value, so
+       matching border-radius to 44px 1:1 overshoots badly (a n=5 superellipse
+       insets only ~13% of r at the 45° point vs a circle's ~29%, so it reads
+       far SQUARER than a circle of the same r; 44px here looked far ROUNDER
+       than the photo's actual corner instead). Solving
+       r_circle * (1-cos45) = 44 * (1-0.7071^0.4) for equal inset depth at
+       the diagonal gives ~20px — that's the value that visually tracks the
+       squircle curve, not 44 or the old plain-card 16px. */
     .project-card-shadow {
       position: relative;
       width: 300px;
       aspect-ratio: 3 / 2;
       flex-shrink: 0;
-      border-radius: 44px;
+      border-radius: 20px;
       box-shadow: var(--card-shadow-md), var(--card-edge);
       transition: transform .3s ease;
     }
@@ -4363,7 +4367,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      border-radius: 44px;
+      border-radius: 20px;
       z-index: -1;
       pointer-events: none;
       opacity: 0;
@@ -4519,17 +4523,19 @@
        chasing the squircle exactly — same trade-off already made for
        those other two shadows. Values match .bento-card's own tokens
        (About Me cards) so all three shadow tiers read as one system.
-       border-radius matches CARD_CORNER_RADIUS (44px) in
-       PortfolioSection.tsx instead of .bento-card's plain 16px — that 16px
-       is a circular-border-radius value, rounded far less than the JS
-       squircle clip-path on .grid-card inside it, so the shadow's own
-       corner visibly stuck out past the clipped photo's much rounder
-       corner. 44px isn't a pixel-exact match to the squircle curve either
-       (box-shadow only ever follows a circular arc), but reads aligned. */
+       border-radius does NOT match CARD_CORNER_RADIUS (44px) in
+       PortfolioSection.tsx 1:1 — box-shadow only ever follows a circular
+       arc, and a circle cuts into its corner far more per pixel of radius
+       than the JS clip-path's n=5 superellipse does (squircleRectPath in
+       squircle.ts): at the 45° point a circle insets ~29% of r, the
+       squircle only ~13%. Matching that inset depth instead of the raw
+       radius value (r_circle*(1-cos45) = 44*(1-0.7071^0.4)) gives ~20px —
+       44px read far rounder than the actual clipped photo corner, and
+       .bento-card's plain 16px read slightly squarer than it. */
     .grid-card-shadow {
       position: relative;
       aspect-ratio: 3/2;
-      border-radius: 44px;
+      border-radius: 20px;
       box-shadow: var(--card-shadow-md), var(--card-edge);
       transition: transform .3s ease;
     }
@@ -4553,7 +4559,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      border-radius: 44px;
+      border-radius: 20px;
       z-index: -1;
       pointer-events: none;
       opacity: 0;
