@@ -3578,6 +3578,19 @@
          navbar — kept as an actual margin (not folded into `top`) so it
          reads as space above the wall rather than shifting its centre. */
       top: calc((100dvh - var(--wall-h, 75dvh)) / 2 - var(--nav-h, 0px));
+      /* Same pre-lock fallback pattern mobile already uses (see its own
+         85svh + --wall-h mirror below): without an explicit height here,
+         this absolutely-positioned box has none of its own and its only
+         child (.portfolio-wall) is height:100% of it, so both collapse to
+         0 until PortfolioSection.tsx's lockWallGeometry() sets a real
+         inline height. That lock deliberately waits for THIS element's own
+         rise-soft entrance to finish (see lockWallGeometry's comment), so
+         without a fallback the entrance animates a 0-height, invisible box
+         for its entire duration — the wall then just snaps to full size the
+         instant the lock runs, reading as an instant pop-in with no visible
+         rise. Matches the var()'s own 75dvh fallback already used for
+         `top` above, so the box is centred consistently pre- and post-lock. */
+      height: var(--wall-h, 75dvh);
       /* Inset 48px each side, same as .portfolio-wall-frame's own base rule
          below — see that rule's comment for why (lines up with the headline's
          left edge instead of running full-bleed past it). */
