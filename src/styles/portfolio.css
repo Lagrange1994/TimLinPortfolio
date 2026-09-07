@@ -3727,29 +3727,21 @@
     }
 
     /* Fills .portfolio-wall-frame at 100% instead of positioning itself —
-       PortfolioSection.tsx still owns this element's top/height (via the
-       frame) and marquee-tilt math, untouched by GSAP. Now the <svg> root
-       itself (see the JSX comment in PortfolioSection.tsx) — the notched
-       shape is real path geometry drawn by .portfolio-wall-fill/-outline
-       and a <clipPath>, not a CSS clip-path masking a rectangle, so this
-       element carries no background/clip of its own anymore. */
+       PortfolioSection.tsx still owns this element's top/height/clip-path
+       (via the frame) and clip-path/marquee-tilt math, untouched by GSAP. */
     .portfolio-wall {
       position: relative;
       width: 100%;
       height: 100%;
       overflow: hidden;
+      /* Base layer behind the marquee rows — without it the notched shape's
+         own cutouts and the gaps between rows show the page background
+         through instead of reading as one solid card. */
+      background: #000;
     }
 
-    /* The wall's actual visible background — a filled <path> using the same
-       notched `d` as the clipPath/outline (see PortfolioSection.tsx's
-       apply()), so the cutouts and the gaps between marquee rows read as
-       real negative space instead of a rectangle with a mask cut into it. */
-    .portfolio-wall-fill {
-      fill: #000;
-    }
-
-    :root[data-theme="light"] .portfolio-wall-fill {
-      fill: #EBEFF1;
+    :root[data-theme="light"] .portfolio-wall {
+      background: #EBEFF1;
     }
 
     /* Stepped outline drawn ON TOP of the cards (see
@@ -3758,11 +3750,14 @@
        edges jagged. The path's `d` is computed in PortfolioSection.tsx from
        this wall's own box plus the live measured headline title/subtitle
        size, so it stays correct across resize, language switches, and text
-       reflow. Just a <path> inside the same <svg> now (not a separate
-       absolutely-positioned overlay svg), painted after the foreignObject
-       in document order so it still lands on top of the cards. */
+       reflow. */
     .portfolio-wall-outline {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       pointer-events: none;
+      z-index: 2;
     }
 
     .portfolio-wall-inner {

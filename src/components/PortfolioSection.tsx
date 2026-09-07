@@ -190,18 +190,7 @@ export default function PortfolioSection() {
   const filterTabsRef = useRef<HTMLDivElement>(null);
   const filterIndicator = useSlidingIndicator(filterTabsRef, '.portfolio-filter-tab', ['all', 'mobile', 'web'].indexOf(activeFilter));
   const scrollerInitRef = useRef(false);
-  // Three <path> elements share the same `d` (see the wall-mask effect's
-  // apply()): wallFillPathRef paints the wall's own background (replacing
-  // the old .portfolio-wall CSS background), wallClipPathRef lives inside a
-  // <clipPath> def and shapes the foreignObject holding the marquee cards
-  // (replacing the old CSS clip-path on that div), and wallOutlinePathRef
-  // is the stroke-only outline already drawn on top. See the JSX comment
-  // by <svg id="portfolio-scroller-desktop"> for why this replaced CSS
-  // clip-path entirely.
-  const wallFillPathRef = useRef<SVGPathElement | null>(null);
-  const wallClipPathRef = useRef<SVGPathElement | null>(null);
   const wallOutlinePathRef = useRef<SVGPathElement | null>(null);
-  const wallForeignObjectRef = useRef<SVGForeignObjectElement | null>(null);
   // The wall's top/height are measured once (see the wall-geometry effect
   // below) and then locked — re-measuring on every resize is what caused the
   // address-bar-driven svh jitter this replaces.
@@ -410,16 +399,13 @@ export default function PortfolioSection() {
     // top/marginTop this effect writes or reads has to target the frame,
     // not the wall.
     const frame = document.querySelector<HTMLElement>('.portfolio-wall-frame');
-    const outlinePathEl = wallOutlinePathRef.current;
-    const fillPathEl = wallFillPathRef.current;
-    const clipPathEl = wallClipPathRef.current;
-    const foreignObjectEl = wallForeignObjectRef.current;
+    const pathEl = wallOutlinePathRef.current;
     const label = document.querySelector<HTMLElement>('#portfolio .section-label');
     const title = document.querySelector<HTMLElement>('.portfolio-headline-title');
     const sub = document.querySelector<HTMLElement>('.portfolio-headline-sub');
     const viewAllBtn = document.getElementById('toggle-portfolio-view');
     const viewAllRow = document.querySelector<HTMLElement>('.view-all-row');
-    if (!section || !wall || !frame || !outlinePathEl || !fillPathEl || !clipPathEl || !foreignObjectEl || !label || !title || !sub || !viewAllBtn || !viewAllRow) return;
+    if (!section || !wall || !frame || !pathEl || !label || !title || !sub || !viewAllBtn || !viewAllRow) return;
 
     function apply() {
       // Expanded (bento grid) mode hides the wall entirely, so none of this
@@ -527,15 +513,8 @@ export default function PortfolioSection() {
       // bare radius alone.
       const notch2BottomRadius = isDesktopBreakpoint ? 40 : isMobileBreakpoint ? legTopRadius : undefined;
       const d = portfolioWallMaskPath(w, h, notch1W, notch1H, notch2W, notch2H, legGapH, legGapW, radius, legTopRadius, undefined, notch2BottomRadius);
-      // Same `d` drives all three: the fill paints the real notched
-      // background, the clipPath shapes the foreignObject holding the
-      // marquee cards to match, and the outline strokes the same outline
-      // on top — see the JSX comment by <svg id="portfolio-scroller-desktop">.
-      fillPathEl!.setAttribute('d', d);
-      clipPathEl!.setAttribute('d', d);
-      outlinePathEl!.setAttribute('d', d);
-      foreignObjectEl!.setAttribute('width', String(w));
-      foreignObjectEl!.setAttribute('height', String(h));
+      pathEl!.setAttribute('d', d);
+      wall!.style.clipPath = `path('${d}')`;
       // Flush the button's own bottom edge against the wall's actual bottom
       // edge. Built from wallTopPx + h (the same values just used to place
       // the wall itself), not a fresh getBoundingClientRect() on the wall —
@@ -1077,72 +1056,55 @@ export default function PortfolioSection() {
 
         {/* Scroller view — tilted 3-row marquee wall */}
         {/* .portfolio-wall itself can't carry the entrance transition
-            directly: its own top/height are fully JS-driven every frame
-            (see the two effects above) to stay pinned to the eyebrow label
-            and the "View All Projects" button, and a second system also
-            writing its transform fights that JS ownership — tried once, and
-            on real devices only the inner marquee rows visibly rose while
-            the mobile height lock (lockWallGeometry) read a mid-animation
-            offset and came out wrong. This wrapper decouples the two: a
-            plain CSS transition owns the wrapper's transform/opacity (see
-            the IntersectionObserver effect below and .wall-frame-in in
-            portfolio.css — NOT the shared useRiseReveal system every other
-            .rise-soft element uses, see that effect's comment for why),
-            while .portfolio-wall stays untouched and just fills the wrapper
-            at width/height 100% (see portfolio.css) so its own positioning
-            math is unaffected.
-
-            .portfolio-wall is now the <svg> itself, not a div with a CSS
-            clip-path — the notch shape (see src/utils/portfolioMask.ts) is
-            drawn directly as real path geometry instead of masking a
-            rectangle: wallFillPathRef paints the actual notched background
-            (replacing the old div's flat-rect background), a <clipPath>
-            built from the same `d` shapes the <foreignObject> holding the
-            marquee cards (replacing the old CSS clip-path on that div —
-            SVG's native clip-path primitive, not a CSS clip-path property
-            clipping a rectangular DOM element), and wallOutlinePathRef
-            draws the stroke on top, same as before. All three share one
-            `d` (set together in the wall-mask effect's apply()), so the
-            fill/clip/stroke can never disagree about the shape. */}
+            directly: its own top/height/clip-path are fully JS-driven every
+            frame (see the two effects above) to stay pinned to the eyebrow
+            label and the "View All Projects" button, and a second system
+            also writing its transform fights that JS ownership — tried
+            once, and on real devices only the inner marquee rows visibly
+            rose while the mobile height lock (lockWallGeometry) read a
+            mid-animation offset and came out wrong. This wrapper decouples
+            the two: a plain CSS transition owns the wrapper's
+            transform/opacity (see the IntersectionObserver effect below
+            and .wall-frame-in in portfolio.css — NOT the shared
+            useRiseReveal system every other .rise-soft element uses, see
+            that effect's comment for why), while .portfolio-wall stays
+            untouched and just fills the wrapper at width/height 100% (see
+            portfolio.css) so its own positioning math is unaffected. */}
         <div className="portfolio-wall-frame" style={{ display: expanded ? 'none' : '' }}>
-          <svg id="portfolio-scroller-desktop" className="portfolio-wall" aria-hidden="true">
-            <defs>
-              <linearGradient id="portfolio-wall-outline-grad" x1="0" y1="1" x2="1" y2="0">
-                <stop offset="0%" stopColor="#8A2BE2" />
-                <stop offset="50%" stopColor="#4A00E0" />
-                <stop offset="100%" stopColor="#00D4FF" />
-              </linearGradient>
-              <clipPath id="portfolio-wall-clip" clipPathUnits="userSpaceOnUse">
-                <path ref={wallClipPathRef} />
-              </clipPath>
-            </defs>
-            <path ref={wallFillPathRef} className="portfolio-wall-fill" stroke="none" />
-            <foreignObject ref={wallForeignObjectRef} x="0" y="0" width="100%" height="100%" clipPath="url(#portfolio-wall-clip)">
-              <div {...({ xmlns: 'http://www.w3.org/1999/xhtml' } as React.HTMLAttributes<HTMLDivElement>)} className="portfolio-wall-inner">
-                {rowProjects.map((projects, row) => (
-                  <div
-                    key={row}
-                    className="portfolio-row"
-                    data-direction={row % 2 === 1 ? 'left' : 'right'}
-                  >
-                    <div className="scroller-inner" id={`track-desk-row-${row}`}>
-                      {projects.map(p => (
-                        <ProjectCard
-                          key={p.id}
-                          p={p}
-                          mode="scroll"
-                          t={t as Record<string, string>}
-                          expanded={expanded}
-                          activeFilter={activeFilter}
-                        />
-                      ))}
-                    </div>
+          <div id="portfolio-scroller-desktop" className="portfolio-wall">
+            <div className="portfolio-wall-inner">
+              {rowProjects.map((projects, row) => (
+                <div
+                  key={row}
+                  className="portfolio-row"
+                  data-direction={row % 2 === 1 ? 'left' : 'right'}
+                >
+                  <div className="scroller-inner" id={`track-desk-row-${row}`}>
+                    {projects.map(p => (
+                      <ProjectCard
+                        key={p.id}
+                        p={p}
+                        mode="scroll"
+                        t={t as Record<string, string>}
+                        expanded={expanded}
+                        activeFilter={activeFilter}
+                      />
+                    ))}
                   </div>
-                ))}
-              </div>
-            </foreignObject>
-            <path ref={wallOutlinePathRef} className="portfolio-wall-outline" fill="none" stroke="url(#portfolio-wall-outline-grad)" strokeWidth="3.5" />
-          </svg>
+                </div>
+              ))}
+            </div>
+            <svg className="portfolio-wall-outline" aria-hidden="true">
+              <defs>
+                <linearGradient id="portfolio-wall-outline-grad" x1="0" y1="1" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#8A2BE2" />
+                  <stop offset="50%" stopColor="#4A00E0" />
+                  <stop offset="100%" stopColor="#00D4FF" />
+                </linearGradient>
+              </defs>
+              <path ref={wallOutlinePathRef} fill="none" stroke="url(#portfolio-wall-outline-grad)" strokeWidth="3.5" />
+            </svg>
+          </div>
         </div>
 
         {/* Filter buttons */}
