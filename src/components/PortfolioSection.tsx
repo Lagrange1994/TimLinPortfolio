@@ -521,6 +521,49 @@ export default function PortfolioSection() {
     };
   }, [lang, expanded]);
 
+  // Bespoke, cheap entrance for .portfolio-wall-frame — see that element's
+  // own JSX comment and its CSS rule in portfolio.css for why this replaced
+  // the shared useRiseReveal system (GSAP + a per-tick line-height reflow
+  // was visibly janky on a box this large and this JS-heavy). Plain
+  // transform/opacity transition instead: rootMargin's -30% bottom trim
+  // makes the IntersectionObserver fire at the same "top 70% of viewport"
+  // point useRiseReveal's ScrollTrigger used, so the timing still matches
+  // the rest of the section. Runs once ever (disconnects after firing),
+  // same as the ScrollTrigger `once: true` it replaces — toggling expanded
+  // afterward just shows/hides the already-settled element, no replay.
+  useEffect(() => {
+    const frame = document.querySelector<HTMLElement>('.portfolio-wall-frame');
+    if (!frame) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // portfolio.css's own reduced-motion block already pins this to its
+      // resting state with no transition — just unblock lockWallGeometry
+      // below, which waits on this event regardless of motion preference.
+      frame.dispatchEvent(new CustomEvent('rise-settled', { bubbles: true }));
+      return;
+    }
+
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some(e => e.isIntersecting)) return;
+      io.disconnect();
+      frame.classList.add('wall-frame-in');
+    }, { rootMargin: '0px 0px -30% 0px' });
+    io.observe(frame);
+
+    function onTransitionEnd(e: TransitionEvent) {
+      if (e.target !== frame || e.propertyName !== 'transform') return;
+      frame!.removeEventListener('transitionend', onTransitionEnd);
+      frame!.style.willChange = 'auto';
+      frame!.dispatchEvent(new CustomEvent('rise-settled', { bubbles: true }));
+    }
+    frame.addEventListener('transitionend', onTransitionEnd);
+
+    return () => {
+      io.disconnect();
+      frame.removeEventListener('transitionend', onTransitionEnd);
+    };
+  }, []);
+
   // Desktop/tablet: vertically centres the wall in the space below the fixed
   // navbar (and above any safe-area inset) — the gap from the navbar down to
   // the wall's top edge and the gap from the wall's bottom edge down to the
@@ -969,22 +1012,22 @@ export default function PortfolioSection() {
         </div>
 
         {/* Scroller view — tilted 3-row marquee wall */}
-        {/* .portfolio-wall itself can't carry .rise-soft directly: its own
-            top/height/clip-path are fully JS-driven every frame (see the two
-            effects above) to stay pinned to the eyebrow label and the "View
-            All Projects" button, and putting GSAP's translateY entrance on
-            that same element fights that JS ownership — tried once, and on
-            real devices only the inner marquee rows visibly rose while the
-            mobile height lock (lockWallGeometry) read a mid-animation offset
-            and came out wrong. This wrapper decouples the two: GSAP owns
-            the wrapper's transform/opacity (see useRiseReveal.ts), while
-            .portfolio-wall stays untouched by GSAP and just fills the
-            wrapper at width/height 100% (see portfolio.css) so its own
-            positioning math is unaffected. data-rise-distance opts into a
-            bigger throw than useRiseReveal's 28px default — this wrapper
-            can run 600-800px tall, where 28px is too small a fraction of
-            its own height to read as a rise instead of a plain fade. */}
-        <div className="portfolio-wall-frame rise-soft" data-rise-distance="110" style={{ display: expanded ? 'none' : '' }}>
+        {/* .portfolio-wall itself can't carry the entrance transition
+            directly: its own top/height/clip-path are fully JS-driven every
+            frame (see the two effects above) to stay pinned to the eyebrow
+            label and the "View All Projects" button, and a second system
+            also writing its transform fights that JS ownership — tried
+            once, and on real devices only the inner marquee rows visibly
+            rose while the mobile height lock (lockWallGeometry) read a
+            mid-animation offset and came out wrong. This wrapper decouples
+            the two: a plain CSS transition owns the wrapper's
+            transform/opacity (see the IntersectionObserver effect below
+            and .wall-frame-in in portfolio.css — NOT the shared
+            useRiseReveal system every other .rise-soft element uses, see
+            that effect's comment for why), while .portfolio-wall stays
+            untouched and just fills the wrapper at width/height 100% (see
+            portfolio.css) so its own positioning math is unaffected. */}
+        <div className="portfolio-wall-frame" style={{ display: expanded ? 'none' : '' }}>
           <div id="portfolio-scroller-desktop" className="portfolio-wall">
             <div className="portfolio-wall-inner">
               {rowProjects.map((projects, row) => (

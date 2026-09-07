@@ -17,13 +17,6 @@ gsap.registerPlugin(ScrollTrigger);
 // section's items independently, mirroring the row/column bucketing
 // previously done per-section by SkillsSection's IntersectionObserver.
 const ROW_BAND = 40;
-// Default rise distance. A flat 28px reads as an obvious "rise from below"
-// on text lines and cards (a large fraction of their own height), but is
-// visually imperceptible on something far taller (e.g. the Portfolio
-// carousel's ~600-800px wall) — it just looks like a plain fade-in.
-// Elements that need a bigger, proportional throw opt in via
-// `data-rise-distance` (see .portfolio-wall-frame in PortfolioSection.tsx).
-const RISE_DISTANCE = 28;
 const COL_DELAY = 0.28; // seconds between columns, left fastest — widened so each card's entrance reads as a distinct beat instead of bunching together
 const DUR = 1.05;
 const POS_EASE = 'elastic.out(0.8, 0.75)'; // soft single-bounce rise
@@ -97,9 +90,8 @@ export function useRiseReveal() {
           if (key !== baseRowKey) { baseRowKey = key; colIdx = 0; } else colIdx++;
           const delay = colIdx * COL_DELAY;
           const isCard = el.classList.contains('rise-card');
-          const riseDistance = parseFloat(el.dataset.riseDistance || '') || RISE_DISTANCE;
 
-          gsap.set(el, { autoAlpha: 0, y: restY + riseDistance });
+          gsap.set(el, { autoAlpha: 0, y: restY + 28 });
           if (isCard) {
             gsap.set(el, { scaleY: 0.82, transformOrigin: 'center bottom' });
           }
