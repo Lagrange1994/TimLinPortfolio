@@ -361,7 +361,19 @@ export default function PortfolioSection() {
   // of the headline title/label, subtitle, and "View All Projects" button
   // (per the Figma annotations), not a fixed ratio, so language switches,
   // font loading, and wrapping all need a re-measure.
-  useEffect(() => {
+  // useLayoutEffect, not useEffect: React guarantees every useLayoutEffect
+  // in the whole tree fires before any useEffect in the whole tree, so this
+  // is guaranteed to run — and take its first, synchronous label/title/sub
+  // measurement — before useRiseReveal's plain useEffect (in App.tsx, a
+  // parent) has touched them at all. Their entrance squeezes line-height
+  // from natural down to 0.6x before animating it back open (see that
+  // hook's STRETCH_EASE) — if this ran as a regular useEffect and happened
+  // to fire after that squeeze landed (ordering that isn't actually
+  // guaranteed across separate effects/components), the very first notch
+  // computed here would use the squeezed, wrong size and only correct
+  // itself once label/title/sub settle, which read as the notch visibly
+  // snapping into place instead of being right from the first frame.
+  useLayoutEffect(() => {
     const section = document.getElementById('portfolio');
     const wall = document.getElementById('portfolio-scroller-desktop');
     // The positioned ancestor that actually carries the wall's on-page
