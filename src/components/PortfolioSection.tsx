@@ -202,6 +202,17 @@ export default function PortfolioSection() {
   // doesn't re-gate itself forever waiting for a 'rise-settled' event that
   // useRiseReveal (a one-time, empty-deps effect) will never fire again.
   const wallMaskEntranceSettledRef = useRef(false);
+  // label/title/sub's true resting geometry, captured once pre-GSAP (see
+  // the wall-mask useLayoutEffect). Not observing their box size until
+  // settled (wallMaskEntranceSettledRef) only stops THEIR OWN resize from
+  // triggering a recompute — apply() can still run from other triggers
+  // meanwhile (wall's real height landing from lockWallGeometry, a window
+  // resize), and it unconditionally re-reads whatever rect it's given, so
+  // without this it would still mix a now-correct wall size with
+  // label/title/sub's still-squeezed live rect, deforming the notch right
+  // around whenever wall's geometry happens to lock. apply() uses this
+  // frozen snapshot instead of a live rect for all three until settled.
+  const restingTextRectsRef = useRef<{ label: DOMRect; title: DOMRect; sub: DOMRect } | null>(null);
 
   // MagicBento cleanup refs
   const spotlightRef = useRef<HTMLDivElement | null>(null);
@@ -390,6 +401,14 @@ export default function PortfolioSection() {
     const viewAllRow = document.querySelector<HTMLElement>('.view-all-row');
     if (!section || !wall || !frame || !pathEl || !label || !title || !sub || !viewAllBtn || !viewAllRow) return;
 
+    // Runs synchronously here (useLayoutEffect, before any useEffect has
+    // touched these nodes) — see restingTextRectsRef's own comment.
+    restingTextRectsRef.current = {
+      label: label.getBoundingClientRect(),
+      title: title.getBoundingClientRect(),
+      sub: sub.getBoundingClientRect(),
+    };
+
     function apply() {
       // Expanded (bento grid) mode hides the wall entirely, so none of this
       // geometry applies — .view-all-row falls back to normal document flow
@@ -408,7 +427,14 @@ export default function PortfolioSection() {
       const h = wall!.clientHeight;
       if (w <= 0 || h <= 0) return;
       const sectionRect = section!.getBoundingClientRect();
-      const labelRect = label!.getBoundingClientRect();
+      // Use the frozen pre-GSAP snapshot until the entrance has settled —
+      // see restingTextRectsRef's own comment for why a live rect here can
+      // still be mid-squeeze/mid-translate even when this apply() call
+      // itself was triggered by something unrelated (the wall's own real
+      // height landing, a window resize).
+      const resting = restingTextRectsRef.current;
+      const settled = wallMaskEntranceSettledRef.current;
+      const labelRect = (!settled && resting) ? resting.label : label!.getBoundingClientRect();
       // Mobile pins the wall's top edge flush with the "My Portfolio"
       // eyebrow's own live position instead of the position/height-lock
       // effect's symmetric viewport-centering formula, so the notch cut for
@@ -431,8 +457,8 @@ export default function PortfolioSection() {
       // top edge down through each line, are both folded in — otherwise the
       // notch undershoots by exactly that left offset and clips the text.
       const wallRect = wall!.getBoundingClientRect();
-      const titleRect = title!.getBoundingClientRect();
-      const subRect = sub!.getBoundingClientRect();
+      const titleRect = (!settled && resting) ? resting.title : title!.getBoundingClientRect();
+      const subRect = (!settled && resting) ? resting.sub : sub!.getBoundingClientRect();
       const notch1Right = Math.max(labelRect.right, titleRect.right);
       const notch1W = (notch1Right - wallRect.left) + NOTCH_PADDING;
       const notch1H = (titleRect.bottom - wallRect.top) + NOTCH_PADDING;
