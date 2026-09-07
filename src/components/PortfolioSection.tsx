@@ -195,24 +195,16 @@ export default function PortfolioSection() {
   // below) and then locked — re-measuring on every resize is what caused the
   // address-bar-driven svh jitter this replaces.
   const wallGeometryLockedRef = useRef(false);
-  // Set once the initial label/title/sub entrance has settled — see the
-  // wall-mask effect's own comment for why this gates its ResizeObserver.
-  // A ref (not a plain effect-local flag) so a later re-run of that effect
-  // (lang/expanded change) remembers the entrance already happened once and
-  // doesn't re-gate itself forever waiting for a 'rise-settled' event that
-  // useRiseReveal (a one-time, empty-deps effect) will never fire again.
+  // Set once label/title/sub's own entrance has actually finished — see
+  // the wall-mask effect's own comment for the full history of why this
+  // gates BOTH the notch computation and the wall-frame's own fade-in
+  // behind it, rather than computing/showing anything against their
+  // still-animating geometry. A ref (not a plain effect-local flag) so a
+  // later re-run of that effect (lang/expanded change) remembers the
+  // entrance already happened once and doesn't re-gate itself forever
+  // waiting for a 'rise-settled' event that useRiseReveal (a one-time,
+  // empty-deps effect) will never fire again.
   const wallMaskEntranceSettledRef = useRef(false);
-  // label/title/sub's true resting geometry, captured once pre-GSAP (see
-  // the wall-mask useLayoutEffect). Not observing their box size until
-  // settled (wallMaskEntranceSettledRef) only stops THEIR OWN resize from
-  // triggering a recompute — apply() can still run from other triggers
-  // meanwhile (wall's real height landing from lockWallGeometry, a window
-  // resize), and it unconditionally re-reads whatever rect it's given, so
-  // without this it would still mix a now-correct wall size with
-  // label/title/sub's still-squeezed live rect, deforming the notch right
-  // around whenever wall's geometry happens to lock. apply() uses this
-  // frozen snapshot instead of a live rect for all three until settled.
-  const restingTextRectsRef = useRef<{ label: DOMRect; title: DOMRect; sub: DOMRect } | null>(null);
 
   // MagicBento cleanup refs
   const spotlightRef = useRef<HTMLDivElement | null>(null);
@@ -372,18 +364,32 @@ export default function PortfolioSection() {
   // of the headline title/label, subtitle, and "View All Projects" button
   // (per the Figma annotations), not a fixed ratio, so language switches,
   // font loading, and wrapping all need a re-measure.
-  // useLayoutEffect, not useEffect: React guarantees every useLayoutEffect
-  // in the whole tree fires before any useEffect in the whole tree, so this
-  // is guaranteed to run — and take its first, synchronous label/title/sub
-  // measurement — before useRiseReveal's plain useEffect (in App.tsx, a
-  // parent) has touched them at all. Their entrance squeezes line-height
-  // from natural down to 0.6x before animating it back open (see that
-  // hook's STRETCH_EASE) — if this ran as a regular useEffect and happened
-  // to fire after that squeeze landed (ordering that isn't actually
-  // guaranteed across separate effects/components), the very first notch
-  // computed here would use the squeezed, wrong size and only correct
-  // itself once label/title/sub settle, which read as the notch visibly
-  // snapping into place instead of being right from the first frame.
+  //
+  // This also owns the wall-frame's own entrance now (adding .wall-frame-in
+  // — see portfolio.css — and disconnecting a bit of bookkeeping once its
+  // transition ends). Went through three narrower fixes before landing
+  // here: (1) computing the notch as soon as the wall-frame's own fade
+  // started, which read label/title/sub's box mid-animation (their
+  // useRiseReveal entrance springs line-height from a squeezed 0.6x back to
+  // natural via an actually-elastic ease that overshoots before settling —
+  // a real box-size change) and made the notch visibly deform in sync with
+  // their overshoot; (2) gating ONLY their ResizeObserver behind a settled
+  // flag, which just froze the notch at whatever apply()'s first call
+  // happened to read, still wrong if that landed before or during the
+  // squeeze; (3) a useLayoutEffect-ordering trick to guarantee that first
+  // read was pre-squeeze, combined with freezing label/title/sub's rect in
+  // a ref — closer, but apply() could still be triggered by something else
+  // (the wall's own real height landing from lockWallGeometry) while
+  // label/title/sub were still mid-spring, mixing a correct wall size with
+  // a frozen-but-still-momentarily-wrong text rect.
+  // The actual fix: don't compute the notch, and don't even start the
+  // wall-frame's own fade, until label/title/sub have verifiably finished
+  // — there is nothing correct to show before that, so don't show or
+  // compute anything. Once their 'rise-settled' event fires (useRiseReveal
+  // dispatches it once their whole timeline, including the spring, is
+  // done), both happen together: apply() runs once against their now-
+  // guaranteed resting geometry, and .wall-frame-in starts the wall's own
+  // fade — so there is nothing left to snap or deform into afterward.
   useLayoutEffect(() => {
     const section = document.getElementById('portfolio');
     const wall = document.getElementById('portfolio-scroller-desktop');
@@ -400,14 +406,6 @@ export default function PortfolioSection() {
     const viewAllBtn = document.getElementById('toggle-portfolio-view');
     const viewAllRow = document.querySelector<HTMLElement>('.view-all-row');
     if (!section || !wall || !frame || !pathEl || !label || !title || !sub || !viewAllBtn || !viewAllRow) return;
-
-    // Runs synchronously here (useLayoutEffect, before any useEffect has
-    // touched these nodes) — see restingTextRectsRef's own comment.
-    restingTextRectsRef.current = {
-      label: label.getBoundingClientRect(),
-      title: title.getBoundingClientRect(),
-      sub: sub.getBoundingClientRect(),
-    };
 
     function apply() {
       // Expanded (bento grid) mode hides the wall entirely, so none of this
@@ -427,14 +425,10 @@ export default function PortfolioSection() {
       const h = wall!.clientHeight;
       if (w <= 0 || h <= 0) return;
       const sectionRect = section!.getBoundingClientRect();
-      // Use the frozen pre-GSAP snapshot until the entrance has settled —
-      // see restingTextRectsRef's own comment for why a live rect here can
-      // still be mid-squeeze/mid-translate even when this apply() call
-      // itself was triggered by something unrelated (the wall's own real
-      // height landing, a window resize).
-      const resting = restingTextRectsRef.current;
-      const settled = wallMaskEntranceSettledRef.current;
-      const labelRect = (!settled && resting) ? resting.label : label!.getBoundingClientRect();
+      // Safe to read live: apply() is never called until label/title/sub
+      // have actually settled (see reveal() below), so this is always
+      // their true resting rect, never mid-animation.
+      const labelRect = label!.getBoundingClientRect();
       // Mobile pins the wall's top edge flush with the "My Portfolio"
       // eyebrow's own live position instead of the position/height-lock
       // effect's symmetric viewport-centering formula, so the notch cut for
@@ -457,8 +451,8 @@ export default function PortfolioSection() {
       // top edge down through each line, are both folded in — otherwise the
       // notch undershoots by exactly that left offset and clips the text.
       const wallRect = wall!.getBoundingClientRect();
-      const titleRect = (!settled && resting) ? resting.title : title!.getBoundingClientRect();
-      const subRect = (!settled && resting) ? resting.sub : sub!.getBoundingClientRect();
+      const titleRect = title!.getBoundingClientRect();
+      const subRect = sub!.getBoundingClientRect();
       const notch1Right = Math.max(labelRect.right, titleRect.right);
       const notch1W = (notch1Right - wallRect.left) + NOTCH_PADDING;
       const notch1H = (titleRect.bottom - wallRect.top) + NOTCH_PADDING;
@@ -545,108 +539,61 @@ export default function PortfolioSection() {
       viewAllRow!.style.width = 'max-content';
     }
 
-    apply();
-    // section/wall/viewAllBtn's box-size changes are always real geometry
-    // updates (the wall's own height lock, a window resize) — react to
-    // them immediately, same as before.
-    const ro = new ResizeObserver(apply);
-    ro.observe(section);
-    ro.observe(wall);
-    ro.observe(viewAllBtn);
-
-    // label/title/sub are separate: they carry .rise-soft (see
-    // useRiseReveal.ts), whose non-card branch springs their line-height
-    // from a squeezed 0.6x back to natural via an actually-elastic ease
-    // (STRETCH_EASE) that deliberately overshoots before settling — a real
-    // box-size change (unlike the translateY/opacity part, invisible to
-    // ResizeObserver), so observing them raw fires on dozens of
-    // intermediate sizes across that overshoot-and-settle, not just the
-    // final one. Recomputing the wall's notch mask on every one of those
-    // mid-wobble sizes made the whole wall visibly stretch out and pull
-    // back in sync with the label's overshoot, the instant the wall itself
-    // became visible early enough to expose it (see the wall-frame's own
-    // entrance rewrite — it used to be invisible/0-height for this entire
-    // window). textRo only starts observing them once the entrance has
-    // actually settled once, so the notch only ever computes against their
-    // RESTING sizes — matching what the original 'rise-settled' listener
-    // below already intended ("recomputed once it settles"), just closing
-    // the gap raw ResizeObserver's continuous firing would have left open.
-    // wallMaskEntranceSettledRef (not a plain local flag) remembers this
-    // across lang/expanded-driven re-runs of this effect, since
-    // useRiseReveal only ever fires 'rise-settled' once per page load and a
-    // later re-run would otherwise wait forever.
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const textRo = new ResizeObserver(apply);
-    function beginObservingText() {
-      textRo.observe(label!);
-      textRo.observe(title!);
-      textRo.observe(sub!);
+    let ro: ResizeObserver | null = null;
+
+    function onFrameTransitionEnd(e: TransitionEvent) {
+      if (e.target !== frame || e.propertyName !== 'transform') return;
+      frame!.removeEventListener('transitionend', onFrameTransitionEnd);
+      frame!.style.willChange = 'auto';
+    }
+
+    // Nothing here is correct to compute or show before label/title/sub
+    // have actually finished their own entrance (see the effect's own
+    // top-level comment for why) — reveal() is the single point where both
+    // happen together, once that's guaranteed true. wallMaskEntranceSettledRef
+    // makes it idempotent (a later lang/expanded re-run of this effect, or
+    // frame's own transitionend bubbling 'rise-settled' back into
+    // onRiseSettled below, must not run this twice) and remembers past the
+    // very first mount, since useRiseReveal only ever fires 'rise-settled'
+    // once per page load.
+    function reveal() {
+      if (wallMaskEntranceSettledRef.current) return;
+      wallMaskEntranceSettledRef.current = true;
       apply();
+      ro = new ResizeObserver(apply);
+      ro.observe(section!);
+      ro.observe(wall!);
+      ro.observe(viewAllBtn!);
+      ro.observe(label!);
+      ro.observe(title!);
+      ro.observe(sub!);
+      if (reducedMotion) return;
+      frame!.addEventListener('transitionend', onFrameTransitionEnd);
+      frame!.classList.add('wall-frame-in');
     }
-    if (reducedMotion || wallMaskEntranceSettledRef.current) {
-      wallMaskEntranceSettledRef.current = true;
-      beginObservingText();
+
+    if (reducedMotion) {
+      // portfolio.css's own reduced-motion block already pins the frame to
+      // its resting state with no transition — useRiseReveal also never
+      // dispatches 'rise-settled' for reduced-motion visitors, so this is
+      // the only way reveal() would ever run for them.
+      reveal();
     }
-    // frame's own 'rise-settled' also bubbles here now (its entrance is a
-    // separate, faster CSS transition — see PortfolioSection's other rise
-    // effect), but this only cares about label/title/sub's slower elastic
-    // settle, so it's explicitly excluded — reacting to frame's would start
-    // observing label/title/sub before they've actually finished wobbling.
-    function onRiseSettled(e: Event) {
-      if (e.target === frame || wallMaskEntranceSettledRef.current) return;
-      wallMaskEntranceSettledRef.current = true;
-      beginObservingText();
+    // Only label/title/sub dispatch 'rise-settled' now — the wall-frame's
+    // own transition no longer needs to (nothing downstream reads it;
+    // lockWallGeometry waits on the label directly, see the geometry-lock
+    // effect below), so no e.target filtering is needed here.
+    function onRiseSettled() {
+      reveal();
     }
     section.addEventListener('rise-settled', onRiseSettled);
     return () => {
-      ro.disconnect();
-      textRo.disconnect();
-      section.removeEventListener('rise-settled', onRiseSettled);
+      ro?.disconnect();
+      section!.removeEventListener('rise-settled', onRiseSettled);
+      frame!.removeEventListener('transitionend', onFrameTransitionEnd);
     };
   }, [lang, expanded]);
-
-  // Bespoke, cheap entrance for .portfolio-wall-frame — see that element's
-  // own JSX comment and its CSS rule in portfolio.css for why this replaced
-  // the shared useRiseReveal system (GSAP + a per-tick line-height reflow
-  // was visibly janky on a box this large and this JS-heavy). Plain
-  // transform/opacity transition instead: rootMargin's -30% bottom trim
-  // makes the IntersectionObserver fire at the same "top 70% of viewport"
-  // point useRiseReveal's ScrollTrigger used, so the timing still matches
-  // the rest of the section. Runs once ever (disconnects after firing),
-  // same as the ScrollTrigger `once: true` it replaces — toggling expanded
-  // afterward just shows/hides the already-settled element, no replay.
-  useEffect(() => {
-    const frame = document.querySelector<HTMLElement>('.portfolio-wall-frame');
-    if (!frame) return;
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      // portfolio.css's own reduced-motion block already pins this to its
-      // resting state with no transition — just unblock lockWallGeometry
-      // below, which waits on this event regardless of motion preference.
-      frame.dispatchEvent(new CustomEvent('rise-settled', { bubbles: true }));
-      return;
-    }
-
-    const io = new IntersectionObserver((entries) => {
-      if (!entries.some(e => e.isIntersecting)) return;
-      io.disconnect();
-      frame.classList.add('wall-frame-in');
-    }, { rootMargin: '0px 0px -30% 0px' });
-    io.observe(frame);
-
-    function onTransitionEnd(e: TransitionEvent) {
-      if (e.target !== frame || e.propertyName !== 'transform') return;
-      frame!.removeEventListener('transitionend', onTransitionEnd);
-      frame!.style.willChange = 'auto';
-      frame!.dispatchEvent(new CustomEvent('rise-settled', { bubbles: true }));
-    }
-    frame.addEventListener('transitionend', onTransitionEnd);
-
-    return () => {
-      io.disconnect();
-      frame.removeEventListener('transitionend', onTransitionEnd);
-    };
-  }, []);
 
   // Desktop/tablet: vertically centres the wall in the space below the fixed
   // navbar (and above any safe-area inset) — the gap from the navbar down to
