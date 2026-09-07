@@ -596,7 +596,9 @@ export default function PortfolioSection() {
     const frame = document.querySelector<HTMLElement>('.portfolio-wall-frame');
     const inner = document.querySelector<HTMLElement>('.portfolio-wall-inner');
     const section = document.getElementById('portfolio');
-    if (!wall || !frame || !inner || !section) return;
+    // Only mobile's branch below actually needs this (see tryLock).
+    const label = document.querySelector<HTMLElement>('#portfolio .section-label');
+    if (!wall || !frame || !inner || !section || !label) return;
 
     function measureContentHeight(): number {
       const rows = Array.from(inner!.querySelectorAll<HTMLElement>('.portfolio-row'))
@@ -679,25 +681,35 @@ export default function PortfolioSection() {
     }
 
     // threshold: 0.01 fires as soon as 1% of the (tall, mobile) section is
-    // visible — well before the label/title/sub's own rise-soft entrance
-    // animation (ScrollTrigger start: 'top 70%', see useRiseReveal.ts) has
-    // settled and let the geometry effect above write the label's REAL
-    // resting position into frame.style.top. Locking on intersection alone
-    // could capture that pre-animation top and freeze an asymmetric gap
-    // forever (the bug this replaces). Wait for both: the section on
-    // screen, AND the frame's own settle — frame sits lowest of the
-    // rise-soft elements the geometry effect reads (label/title/sub/frame),
-    // so its ScrollTrigger fires last; by the time IT settles, everything
-    // above it has already settled too. prefers-reduced-motion visitors
+    // visible. Desktop/tablet's branch above computes top/height purely
+    // from measureAvailableHeight() (dvh + --nav-h) and the row stack's own
+    // static content height — neither reads anything about the entrance
+    // animation's progress — so it can lock the instant the section is
+    // visible, no wait needed. Locking it late used to mean the CSS pre-lock
+    // fallback height (var(--wall-h, 75dvh) in portfolio.css) stayed applied
+    // for the entrance's whole duration, then snapped to the real computed
+    // height the moment the wait ended — an abrupt, untransitioned resize
+    // landing right as the fade/rise settled read as a rubbery "stretch".
+    // Locking immediately means the real height is already in place before
+    // the entrance even starts, so there's nothing left to snap.
+    // Mobile is different: its top is pinned to the *label's own live
+    // position* (see the geometry effect above), which is only correct
+    // once the label's separate rise-soft entrance (useRiseReveal.ts) has
+    // actually settled — locking on intersection alone there could still
+    // capture a pre-animation label position and freeze an asymmetric gap
+    // forever (the bug this replaces). prefers-reduced-motion visitors
     // never get a 'rise-settled' event at all (useRiseReveal.ts bails out
     // of ScrollTrigger setup for them), so they only need the intersection
     // check.
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
     let sectionVisible = false;
-    let frameSettled = reducedMotion;
+    let labelSettled = reducedMotion;
 
     function tryLock() {
-      if (sectionVisible && frameSettled) lockWallGeometry();
+      if (!sectionVisible) return;
+      if (isMobile && !labelSettled) return;
+      lockWallGeometry();
     }
 
     const io = new IntersectionObserver((entries) => {
@@ -710,11 +722,11 @@ export default function PortfolioSection() {
     io.observe(section);
 
     function onRiseSettled(e: Event) {
-      if (e.target !== frame) return;
-      frameSettled = true;
+      if (e.target !== label) return;
+      labelSettled = true;
       tryLock();
     }
-    if (!reducedMotion) {
+    if (isMobile && !reducedMotion) {
       section.addEventListener('rise-settled', onRiseSettled);
     }
 
