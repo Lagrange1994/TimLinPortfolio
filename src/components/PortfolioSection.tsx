@@ -980,8 +980,11 @@ export default function PortfolioSection() {
             the wrapper's transform/opacity (see useRiseReveal.ts), while
             .portfolio-wall stays untouched by GSAP and just fills the
             wrapper at width/height 100% (see portfolio.css) so its own
-            positioning math is unaffected. */}
-        <div className="portfolio-wall-frame rise-soft" style={{ display: expanded ? 'none' : '' }}>
+            positioning math is unaffected. data-rise-distance opts into a
+            bigger throw than useRiseReveal's 28px default — this wrapper
+            can run 600-800px tall, where 28px is too small a fraction of
+            its own height to read as a rise instead of a plain fade. */}
+        <div className="portfolio-wall-frame rise-soft" data-rise-distance="110" style={{ display: expanded ? 'none' : '' }}>
           <div id="portfolio-scroller-desktop" className="portfolio-wall">
             <div className="portfolio-wall-inner">
               {rowProjects.map((projects, row) => (
