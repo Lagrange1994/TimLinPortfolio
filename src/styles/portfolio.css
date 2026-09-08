@@ -2641,6 +2641,15 @@
       color: rgba(74, 222, 128, 0.85);
     }
 
+    /* Light mode: this mint green at dark-mode opacities nearly disappears
+       against the now-light bento card. Same hue, darker/more saturated so
+       border+text hold contrast on white. */
+    :root[data-theme="light"] .domain-chip {
+      border-color: rgba(22, 163, 74, 0.35);
+      background: rgba(22, 163, 74, 0.1);
+      color: #15803D;
+    }
+
     /* ── Bento card styling ── padding/gap lifted from inpublic.studio's
        "Our focus is simple" section; corner shape + border background
        match the How I Use AI cards (.ai-card in the section above), minus
@@ -3436,6 +3445,16 @@
 
     :root[data-theme="light"] .policy-popover-close:hover {
       background: rgba(23, 15, 45, 0.1);
+    }
+
+    /* Title/body still read as harsh near-black-on-white at full --text/
+       --text-70 — step both down for a softer light-mode ink. */
+    :root[data-theme="light"] .policy-popover-title {
+      color: var(--text-50);
+    }
+
+    :root[data-theme="light"] .policy-popover-body {
+      color: var(--text-50);
     }
 
     .policy-popover-title {
@@ -4357,6 +4376,42 @@
        panel accent) so it reads distinct from the AI Brief summary's
        cursor, even though both reuse the same .tcp-cursor mechanics. */
     .tcp-cursor-human { background: var(--a4, #7BE3B5); width: 2px; }
+
+    /* Light mode: this code-editor mockup was a straight dark-IDE look
+       (black panel, white-on-dark syntax tokens) baked in as the only
+       version — give it a light-IDE palette instead of leaving a dark
+       window floating in an otherwise light card. */
+    :root[data-theme="light"] .tech-code-preview {
+      background: var(--bg-hover);
+      border-color: var(--border);
+    }
+    :root[data-theme="light"] .tech-code-preview::after {
+      background: linear-gradient(to bottom, transparent, rgba(239, 237, 247, 0.9));
+    }
+    :root[data-theme="light"] .tcp-bar {
+      background: rgba(58, 58, 66, 0.04);
+      border-bottom-color: var(--border);
+    }
+    :root[data-theme="light"] .tcp-dot {
+      background: rgba(58, 58, 66, 0.18);
+    }
+    :root[data-theme="light"] .tcp-filename {
+      color: var(--text-30);
+    }
+    :root[data-theme="light"] .tcp-code {
+      color: var(--text-70);
+    }
+    :root[data-theme="light"] .tok-sel   { color: #1D4ED8; }
+    :root[data-theme="light"] .tok-prop  { color: #0369A1; }
+    :root[data-theme="light"] .tok-val   { color: #15803D; }
+    :root[data-theme="light"] .tok-num   { color: #7C3AED; }
+    :root[data-theme="light"] .tok-kw    { color: #C2410C; }
+    :root[data-theme="light"] .tok-fn    { color: #A16207; }
+    :root[data-theme="light"] .tok-pink  { color: #BE185D; }
+    :root[data-theme="light"] .tok-muted { color: var(--text-30); }
+    :root[data-theme="light"] .tcp-cursor {
+      background: var(--text-50);
+    }
 
     .tech-note {
       margin-top: 24px;
@@ -5777,6 +5832,39 @@
       }
     }
 
+    /* Light mode: same problem as .about-float-box above — the white ring
+       border, white glass nodes, and grayscale-then-brightened (near-white)
+       icons were tuned for a dark card and wash out on the now-light
+       bento card. Dark-tinted ring/glass, and invert(1) on top of the same
+       base filter to flip the icon silhouette dark. */
+    :root[data-theme="light"] .about-orbit-ring {
+      border-color: rgba(58, 58, 66, 0.16);
+    }
+
+    :root[data-theme="light"] .about-orbit-ring--inner {
+      border-color: rgba(58, 58, 66, 0.12);
+    }
+
+    :root[data-theme="light"] .about-orbit-node {
+      background: linear-gradient(135deg, rgba(58, 58, 66, 0.1), rgba(58, 58, 66, 0.03));
+      border-color: rgba(58, 58, 66, 0.14);
+    }
+
+    /* The brand logos (Blender/Spline/Dora) have much larger solid-fill
+       areas than the Phosphor line icons sharing this ring, so the same
+       invert(1) treatment reads as a heavy dark blob next to the light,
+       thin-stroke icons. Cut opacity so its "ink" roughly matches the
+       Phosphor icons' var(--text-50) alpha instead of sitting fully
+       opaque. */
+    :root[data-theme="light"] .about-orbit-node img {
+      filter: grayscale(1) brightness(1.6) invert(1);
+      opacity: 0.45;
+    }
+
+    :root[data-theme="light"] .about-orbit-node i {
+      color: var(--text-50);
+    }
+
     /* Systems Design card — mirrors Immersive Visuals' corner treatment
        (reserved text width + overhanging bottom-right decoration), but the
        decoration itself is a straight port of reactbits.dev's "Visual
@@ -5868,6 +5956,24 @@
       .about-float-box {
         animation: none;
       }
+    }
+
+    /* Light mode: the white-tinted glass chip + grayscale-then-brightened
+       (near-white) icon were tuned for a dark card — both wash out to
+       invisible against the now-light bento card. Dark-tinted glass
+       instead, and invert(1) on top of the same base filter (which is
+       already a flattened near-white silhouette) to flip it dark. */
+    :root[data-theme="light"] .about-float-box {
+      background: linear-gradient(135deg, rgba(58, 58, 66, 0.1), rgba(58, 58, 66, 0.03));
+      border-color: rgba(58, 58, 66, 0.14);
+    }
+
+    :root[data-theme="light"] .about-float-box img {
+      filter: grayscale(1) brightness(1.6) invert(1);
+    }
+
+    :root[data-theme="light"] .about-float-box i {
+      color: var(--text-50);
     }
 
     /* ── PROFILE CARD (React Bits) ── */
@@ -8346,6 +8452,15 @@
        with the purple/pink identity kept as a tint instead of the base. */
     :root[data-theme="light"] .ai-card.ai-focal{background-color:var(--glass-bg-premium);background-image:var(--noise-grain),radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.22),transparent 65%),linear-gradient(180deg,rgba(247,250,252,.5),rgba(247,250,252,.15));border-color:rgba(181,139,255,.38);box-shadow:0 30px 80px -25px rgba(90,60,150,.28),0 0 0 1px rgba(181,139,255,.14),0 0 140px -30px rgba(181,139,255,.3),inset 0 1px 0 rgba(247,250,252,.6)}
     :root[data-theme="light"] .ai-focal .ai-glyph{background:linear-gradient(135deg,#8A6FFF,#FF6FB8);border-color:rgba(138,111,255,.5);color:#fff}
+    /* Every other variant's glyph was still the dark-mode flat, low-alpha
+       tint (e.g. rgba(0,212,255,.14)) — nearly invisible on a light card,
+       and inconsistent next to .ai-focal's solid gradient above. Same
+       solid-gradient treatment, each in its own variant hue. */
+    :root[data-theme="light"] .ai-cyan .ai-glyph{background:linear-gradient(135deg,#00D4FF,#0EA5E9);border-color:rgba(0,212,255,.5);color:#fff}
+    :root[data-theme="light"] .ai-purple .ai-glyph{background:linear-gradient(135deg,#139FF8,#2566F0);border-color:rgba(19,159,248,.5);color:#fff}
+    :root[data-theme="light"] .ai-violet .ai-glyph{background:linear-gradient(135deg,#2566F0,#4A00E0);border-color:rgba(37,102,240,.5);color:#fff}
+    :root[data-theme="light"] .ai-human .ai-glyph{background:linear-gradient(135deg,#34D399,#059669);border-color:rgba(52,211,153,.5);color:#fff}
+    :root[data-theme="light"] .ai-spectrum .ai-glyph{background:linear-gradient(135deg,#8A2BE2,#00D4FF);border-color:rgba(138,43,226,.5);color:#fff}
     /* Human Review */
     .ai-card.ai-human{background-image:var(--noise-grain),radial-gradient(460px 280px at 70% 0%,rgba(123,227,181,.2),transparent 65%),radial-gradient(280px 200px at 30% 100%,rgba(255,255,255,.06),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));background-size:180px 180px,auto,auto,auto;background-repeat:repeat,no-repeat,no-repeat,no-repeat;border-color:rgba(123,227,181,.3)}
     .ai-card.ai-human>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(123,227,181,.22),inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.14)}
@@ -8377,10 +8492,23 @@
     .ai-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
     .ai-tag{font-family:"Geist Mono",monospace;font-size:10.5px;padding:3px 10px;border-radius:999px;color:#9A93B0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);letter-spacing:.02em}
     :root[data-theme="light"] .ai-tag{color:var(--text-70);border-color:var(--glass-border)}
-    /* HBadge's "neutral" variant (SkillsSection.tsx BADGE_COLORS) — Tailwind's
-       white/N utilities can't read CSS vars, so this is a plain class swap
-       instead of an arbitrary-value class, scoped to light mode only. */
-    :root[data-theme="light"] .badge-neutral{background-color:var(--glass-bg) !important;color:var(--text-70) !important;border-color:var(--glass-border) !important}
+    /* HBadge (SkillsSection.tsx BADGE_COLORS) — every variant is a literal
+       Tailwind utility string (bg-*-400/15, text-*-300, or plain white/N for
+       neutral) tuned to sit on a dark card; none of it reads CSS vars, so
+       each variant gets a class hook here instead of an arbitrary-value
+       class. Per the "no fills in expanded content" rule, solid and outline
+       collapse to the same look in light mode: transparent fill, colored
+       border, and a darker in-brand text shade for contrast on the light
+       card (the "-300" text tones read fine on dark but wash out on white). */
+    :root[data-theme="light"] .badge-neutral{background-color:transparent !important;color:var(--text-70) !important;border:1px solid var(--glass-border) !important}
+    :root[data-theme="light"] .badge-purple{background-color:transparent !important;color:#7C3AED !important;border:1px solid rgba(124,58,237,.45) !important}
+    :root[data-theme="light"] .badge-brand{background-color:transparent !important;color:var(--primary) !important;border:1px solid rgba(91,79,224,.5) !important}
+    :root[data-theme="light"] .badge-cyan{background-color:transparent !important;color:#0E7490 !important;border:1px solid rgba(6,182,212,.45) !important}
+    :root[data-theme="light"] .badge-warning{background-color:transparent !important;color:#B45309 !important;border:1px solid rgba(217,119,6,.45) !important}
+    :root[data-theme="light"] .badge-danger{background-color:transparent !important;color:#DC2626 !important;border:1px solid rgba(220,38,38,.45) !important}
+    :root[data-theme="light"] .badge-success{background-color:transparent !important;color:#059669 !important;border:1px solid rgba(5,150,105,.45) !important}
+    :root[data-theme="light"] .badge-info{background-color:transparent !important;color:#2563EB !important;border:1px solid rgba(37,99,235,.45) !important}
+    :root[data-theme="light"] .badge-primary{background-color:transparent !important;color:#4F46E5 !important;border:1px solid rgba(79,70,229,.45) !important}
 
     /* AI Brief card flourish — 4 raw request "documents" (skeleton-loader
        pages, à la animata.design's Code skeleton, each a different layout:
@@ -8828,7 +8956,14 @@
     .ai-word-cloud{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
     .ai-word-cloud span{position:absolute;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-family:"Geist Mono",monospace;color:var(--text);letter-spacing:.02em;padding:4px 12px;border-radius:999px;background-color:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transform:rotate(var(--word-rotate,0deg));animation:word-float-a 6s ease-in-out infinite}
     .ai-word-cloud span i{font-size:.9em;color:var(--text-70)}
-    :root[data-theme="light"] .ai-word-cloud span{border-color:var(--glass-border)}
+    /* Base .ai-word-cloud span is a white-tinted glass pill (bg/border both
+       literal rgba(255,255,255,...)) tuned for a dark card — on the light
+       card it's a near-invisible white-on-white smudge, and stacked with
+       each word's own low inline opacity (0.48-0.72, for a dark-mode ambient
+       depth effect) it reads as almost nothing. Light mode: match
+       .skill-pill's fully-opaque glass treatment (own opacity, not the
+       dark-mode ambient fade) so the word cloud stays legible. */
+    :root[data-theme="light"] .ai-word-cloud span{background-color:var(--glass-bg);border-color:var(--glass-border);opacity:1 !important}
     /* Idle-float, same technique as .about-float-box (Systems Design card):
        each word keeps its own static --word-rotate baseline and drifts a few
        px on top via keyframes; 4 variants + staggered delays via nth-child
@@ -8853,6 +8988,8 @@
     .ai-chips-row .ai-chips{position:absolute;inset:0;z-index:1;pointer-events:none}
     .ai-chips-row .ai-chip{position:absolute;right:28px;transform:translateY(-50%);pointer-events:auto;display:inline-flex;align-items:center;gap:8px;padding:9px 16px 9px 13px;border-radius:999px;background-color:rgba(255,255,255,.04);background-image:var(--noise-grain);background-repeat:repeat;background-size:180px 180px;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px);font-size:13.5px;color:var(--text);transition:background-color .3s,border-color .3s,transform .3s;cursor:default}
     :root[data-theme="light"] .ai-chips-row .ai-chip{border-color:var(--glass-border)}
+    :root[data-theme="light"] .ai-chips-row .ai-chip.is-arrived,
+    :root[data-theme="light"] .ai-chips-row .ai-chip.is-arrived:hover{border-color:var(--chip-glow)}
     .ai-chips-row .ai-chip:hover{background-color:rgba(255,255,255,.07);border-color:rgba(138,43,226,.4);transform:translateY(calc(-50% - 2px))}
     /* Beam-arrival border — outline switches to the chip's own beam color
        (--chip-glow, set inline per chip) the instant that beam's line-draw
@@ -9444,6 +9581,122 @@
     :root[data-theme="light"] .process-card:hover {
       border-color: transparent !important;
       box-shadow: var(--neu-raised-hover) !important;
+    }
+
+    /* Expanded card detail content (.ai-card-detail, cards 01-06): --line/
+       --line-strong and a handful of hardcoded rgba(255,255,255,...)
+       dividers/backgrounds were tuned for the dark card and nearly
+       disappear on the now-light --neu-bg card above. Same dark-ink flip
+       used for --border/--border-hi (rgba(23,15,45,...)) elsewhere in
+       light mode. var(--ink)/color-mix(...,var(--aX),...) content already
+       themes correctly and isn't touched here. */
+    :root[data-theme="light"] .ai-card-detail {
+      --line: rgba(23, 15, 45, 0.12);
+      --line-strong: rgba(23, 15, 45, 0.22);
+    }
+    :root[data-theme="light"] .ai-card.is-open .ai-card-detail {
+      border-top-color: rgba(23, 15, 45, 0.12);
+    }
+    :root[data-theme="light"] .sheet {
+      background: transparent;
+    }
+    :root[data-theme="light"] .sheet-tabs {
+      background: transparent;
+    }
+    :root[data-theme="light"] .sheet-tabs .tab.active {
+      background: transparent;
+      border: 1px solid rgba(23, 15, 45, 0.18);
+    }
+    :root[data-theme="light"] .sheet th {
+      background: transparent;
+    }
+    :root[data-theme="light"] .sheet-foot {
+      background: transparent;
+    }
+    :root[data-theme="light"] .st.queue {
+      background: transparent;
+      border: 1px solid rgba(23, 15, 45, 0.18);
+    }
+    :root[data-theme="light"] .rrow {
+      background: transparent;
+    }
+    :root[data-theme="light"] .phase .ps {
+      background: transparent;
+    }
+    :root[data-theme="light"] .form-status {
+      background: transparent;
+      border-color: rgba(23, 15, 45, 0.14);
+    }
+    :root[data-theme="light"] .form-status.is-filling {
+      background: transparent;
+      border-color: rgba(217, 119, 6, 0.45);
+      color: #B45309;
+    }
+    :root[data-theme="light"] .form-status.is-filling .pdot {
+      background: #B45309;
+    }
+    :root[data-theme="light"] .form-status.is-complete {
+      background: transparent;
+      border-color: rgba(5, 150, 105, 0.45);
+      color: #059669;
+    }
+    :root[data-theme="light"] .form-status.is-complete .pdot {
+      background: #059669;
+    }
+    :root[data-theme="light"] .form-status .pdot {
+      background: rgba(23, 15, 45, 0.16);
+    }
+    :root[data-theme="light"] .msg-panel {
+      background: transparent;
+    }
+    :root[data-theme="light"] .form-mini .field .val {
+      background: transparent;
+      border-color: rgba(23, 15, 45, 0.16);
+    }
+    :root[data-theme="light"] .priority-pill {
+      background: transparent;
+    }
+
+    /* Tracking's table header/cell borders are plain Tailwind border-white/N
+       utilities (unconditional), not var(--line) — same white-on-white
+       problem, fixed by scoping to this specific table instead of touching
+       the global Tailwind utility class. */
+    :root[data-theme="light"] .ai-violet .ai-card-detail th {
+      color: var(--text-30);
+      border-color: rgba(23, 15, 45, 0.15) !important;
+    }
+    :root[data-theme="light"] .ai-violet .ai-card-detail td {
+      border-color: rgba(23, 15, 45, 0.1) !important;
+    }
+
+    /* HAlert's "neutral" variant (AI Brief's summary/tasktype blocks) and
+       HRow (Human Review's priority/strategy/risks/nextstep rows) are also
+       plain Tailwind white/N utilities with no theme awareness — same fix
+       pattern as HBadge's 'badge-neutral' class above: an extra class hook
+       added alongside the literal Tailwind classes in SkillsSection.tsx. */
+    :root[data-theme="light"] .h-alert-neutral {
+      border-color: var(--border) !important;
+      background: transparent !important;
+    }
+    :root[data-theme="light"] .h-alert-icon-neutral {
+      background: transparent !important;
+      border: 1px solid var(--border) !important;
+      color: var(--text-70) !important;
+    }
+    :root[data-theme="light"] .h-alert-title {
+      color: var(--text-70) !important;
+    }
+    :root[data-theme="light"] .h-alert-body {
+      color: var(--text-70) !important;
+    }
+    :root[data-theme="light"] .h-row {
+      border-bottom-color: var(--border) !important;
+    }
+    :root[data-theme="light"] .h-row-label {
+      color: var(--text-50) !important;
+    }
+    :root[data-theme="light"] .h-row-value {
+      color: var(--text) !important;
     }
 
     :root[data-theme="light"] .tech-item.html-item,

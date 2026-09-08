@@ -145,17 +145,17 @@ type HColor = 'neutral' | 'purple' | 'cyan' | 'warning' | 'danger' | 'success' |
 
 const BADGE_COLORS: Record<HColor, { solid: string; outline: string }> = {
   neutral: { solid: 'badge-neutral bg-white/10 text-white/70', outline: 'badge-neutral border border-white/25 text-white/70' },
-  purple: { solid: 'bg-violet-400/15 text-violet-300', outline: 'border border-violet-400/40 text-violet-300' },
+  purple: { solid: 'badge-purple bg-violet-400/15 text-violet-300', outline: 'badge-purple border border-violet-400/40 text-violet-300' },
   // Matches AiFlowStepper's own solid "active step" fill (#6C63FF) exactly,
   // for the phase badge that mirrors it — a fully opaque pill, not the
   // usual translucent 15%-tint "solid" look every other variant uses.
-  brand: { solid: 'bg-[#6C63FF] text-white', outline: 'border border-[#6C63FF]/60 text-[#6C63FF]' },
-  cyan: { solid: 'bg-cyan-400/15 text-cyan-300', outline: 'border border-cyan-400/40 text-cyan-300' },
-  warning: { solid: 'bg-amber-400/15 text-amber-300', outline: 'border border-amber-400/40 text-amber-300' },
-  danger: { solid: 'bg-red-400/15 text-red-300', outline: 'border border-red-400/40 text-red-300' },
-  success: { solid: 'bg-emerald-400/15 text-emerald-300', outline: 'border border-emerald-400/40 text-emerald-300' },
-  info: { solid: 'bg-blue-400/15 text-blue-300', outline: 'border border-blue-400/40 text-blue-300' },
-  primary: { solid: 'bg-indigo-400/15 text-indigo-300', outline: 'border border-indigo-400/40 text-indigo-300' },
+  brand: { solid: 'badge-brand bg-[#6C63FF] text-white', outline: 'badge-brand border border-[#6C63FF]/60 text-[#6C63FF]' },
+  cyan: { solid: 'badge-cyan bg-cyan-400/15 text-cyan-300', outline: 'badge-cyan border border-cyan-400/40 text-cyan-300' },
+  warning: { solid: 'badge-warning bg-amber-400/15 text-amber-300', outline: 'badge-warning border border-amber-400/40 text-amber-300' },
+  danger: { solid: 'badge-danger bg-red-400/15 text-red-300', outline: 'badge-danger border border-red-400/40 text-red-300' },
+  success: { solid: 'badge-success bg-emerald-400/15 text-emerald-300', outline: 'badge-success border border-emerald-400/40 text-emerald-300' },
+  info: { solid: 'badge-info bg-blue-400/15 text-blue-300', outline: 'badge-info border border-blue-400/40 text-blue-300' },
+  primary: { solid: 'badge-primary bg-indigo-400/15 text-indigo-300', outline: 'badge-primary border border-indigo-400/40 text-indigo-300' },
 };
 
 function HBadge({ variant = 'neutral', outline = false, style, className, children }: { variant?: HColor; outline?: boolean; style?: CSSProperties; className?: string; children: ReactNode }) {
@@ -168,13 +168,17 @@ function HBadge({ variant = 'neutral', outline = false, style, className, childr
 }
 
 const ALERT_COLORS: Record<string, string> = {
-  neutral: 'border-white/15 bg-white/[0.04]',
+  // Only 'neutral' is plain white/N — the other variants are already their
+  // own saturated hue, which reads fine on a light card without a class
+  // hook. 'h-alert-neutral' is the light-mode override target below (same
+  // pattern as HBadge's 'badge-neutral').
+  neutral: 'h-alert-neutral border-white/15 bg-white/[0.04]',
   warning: 'border-amber-400/25 bg-amber-400/[0.06]',
   info: 'border-blue-400/25 bg-blue-400/[0.06]',
   success: 'border-emerald-400/25 bg-emerald-400/[0.06]',
 };
 const ALERT_ICON_COLORS: Record<string, string> = {
-  neutral: 'bg-white/10 text-white/70',
+  neutral: 'h-alert-icon-neutral bg-white/10 text-white/70',
   warning: 'bg-amber-400/15 text-amber-300',
   info: 'bg-blue-400/15 text-blue-300',
   success: 'bg-emerald-400/15 text-emerald-300',
@@ -187,18 +191,18 @@ function HAlert({ variant = 'neutral', icon, title, children }: { variant?: 'neu
         <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-sm ${ALERT_ICON_COLORS[variant] ?? ALERT_ICON_COLORS.neutral}`}>
           {icon}
         </span>
-        <span className="text-xs font-semibold uppercase tracking-wide text-white/80">{title}</span>
+        <span className="h-alert-title text-xs font-semibold uppercase tracking-wide text-white/80">{title}</span>
       </div>
-      <div className="text-[13px] leading-relaxed text-white/70">{children}</div>
+      <div className="h-alert-body text-[13px] leading-relaxed text-white/70">{children}</div>
     </div>
   );
 }
 
 function HRow({ label, className, children }: { label: ReactNode; className?: string; children: ReactNode }) {
   return (
-    <div className={`flex items-start justify-between gap-3 border-b border-white/10 py-2 text-[12.5px] last:border-0${className ? ' ' + className : ''}`}>
-      <span className="text-white/50">{label}</span>
-      <span className="text-right font-medium text-white/85">{children}</span>
+    <div className={`h-row flex items-start justify-between gap-3 border-b border-white/10 py-2 text-[12.5px] last:border-0${className ? ' ' + className : ''}`}>
+      <span className="h-row-label text-white/50">{label}</span>
+      <span className="h-row-value text-right font-medium text-white/85">{children}</span>
     </div>
   );
 }

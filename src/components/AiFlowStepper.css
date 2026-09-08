@@ -241,6 +241,15 @@ i.afs-icon {
   color: var(--primary);
 }
 
+/* Brand logos (img.afs-icon) are pre-tinted white PNGs/SVGs from the CDN —
+   fine on the dark theme's dark chip background, but invisible on the
+   light theme's pale inactive/complete chips. Recolor the white silhouette
+   to --primary via filter (can't retint a raster <img> with `color`). */
+:root[data-theme="light"] img.afs-icon.afs-icon-inactive,
+:root[data-theme="light"] img.afs-icon.afs-icon-complete {
+  filter: brightness(0) saturate(100%) invert(48%) sepia(75%) saturate(3207%) hue-rotate(226deg) brightness(101%) contrast(101%);
+}
+
 :root[data-theme="light"] .afs-label-sep {
   color: var(--text-50);
 }
