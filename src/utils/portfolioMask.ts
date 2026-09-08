@@ -161,3 +161,4 @@ export function portfolioWallMaskPath(
 
   return roundedOrthogonalPath(vertices);
 }
+

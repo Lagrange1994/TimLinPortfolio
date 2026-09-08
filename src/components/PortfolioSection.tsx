@@ -191,6 +191,14 @@ export default function PortfolioSection() {
   const filterIndicator = useSlidingIndicator(filterTabsRef, '.portfolio-filter-tab', ['all', 'mobile', 'web'].indexOf(activeFilter));
   const scrollerInitRef = useRef(false);
   const wallOutlinePathRef = useRef<SVGPathElement | null>(null);
+  // .portfolio-wall-clip holds the clip-path that contains the marquee
+  // cards (see the JSX comment by <div className="portfolio-wall"> for why
+  // this stays separate from .portfolio-wall-fill below). wallFillRef is
+  // the wall's own visible background — clipped with the exact same `d`
+  // string as wallOutlinePathRef, so the fill's edge and the outline stroke
+  // can never drift apart.
+  const wallClipRef = useRef<HTMLDivElement | null>(null);
+  const wallFillRef = useRef<HTMLDivElement | null>(null);
   // The wall's top/height are measured once (see the wall-geometry effect
   // below) and then locked — re-measuring on every resize is what caused the
   // address-bar-driven svh jitter this replaces.
@@ -400,12 +408,14 @@ export default function PortfolioSection() {
     // not the wall.
     const frame = document.querySelector<HTMLElement>('.portfolio-wall-frame');
     const pathEl = wallOutlinePathRef.current;
+    const clipEl = wallClipRef.current;
+    const fillEl = wallFillRef.current;
     const label = document.querySelector<HTMLElement>('#portfolio .section-label');
     const title = document.querySelector<HTMLElement>('.portfolio-headline-title');
     const sub = document.querySelector<HTMLElement>('.portfolio-headline-sub');
     const viewAllBtn = document.getElementById('toggle-portfolio-view');
     const viewAllRow = document.querySelector<HTMLElement>('.view-all-row');
-    if (!section || !wall || !frame || !pathEl || !label || !title || !sub || !viewAllBtn || !viewAllRow) return;
+    if (!section || !wall || !frame || !pathEl || !clipEl || !fillEl || !label || !title || !sub || !viewAllBtn || !viewAllRow) return;
 
     function apply() {
       // Expanded (bento grid) mode hides the wall entirely, so none of this
@@ -514,7 +524,12 @@ export default function PortfolioSection() {
       const notch2BottomRadius = isDesktopBreakpoint ? 40 : isMobileBreakpoint ? legTopRadius : undefined;
       const d = portfolioWallMaskPath(w, h, notch1W, notch1H, notch2W, notch2H, legGapH, legGapW, radius, legTopRadius, undefined, notch2BottomRadius);
       pathEl!.setAttribute('d', d);
-      wall!.style.clipPath = `path('${d}')`;
+      // Contains the marquee cards (see .portfolio-wall-clip's own comment
+      // in the JSX below). fillEl uses this exact same `d` string, not a
+      // separately-computed approximation — see .portfolio-wall-fill in
+      // portfolio.css for why that match has to be exact, not just close.
+      clipEl!.style.clipPath = `path('${d}')`;
+      fillEl!.style.clipPath = `path('${d}')`;
       // Flush the button's own bottom edge against the wall's actual bottom
       // edge. Built from wallTopPx + h (the same values just used to place
       // the wall itself), not a fresh getBoundingClientRect() on the wall —
@@ -549,13 +564,21 @@ export default function PortfolioSection() {
     // actually settled, though: that's not about animating anything, it's
     // that the notch math needs their true resting rects (see the effect's
     // own top-level comment for the whole history of why reading their
-    // still-animating geometry breaks it). wallMaskEntranceSettledRef makes
-    // this idempotent across lang/expanded-driven re-runs of this effect,
-    // since useRiseReveal only ever fires 'rise-settled' once per page load.
-    function reveal() {
-      if (wallMaskEntranceSettledRef.current) return;
-      wallMaskEntranceSettledRef.current = true;
+    // still-animating geometry breaks it).
+    //
+    // Splits the actual measure-and-apply work out from the settle gate:
+    // measureAndObserve() does the work (and (re)attaches the
+    // ResizeObserver), called either the first time settling actually
+    // happens OR on every later re-run of this effect (lang/expanded
+    // changes) once that's already happened once. Previously the gate
+    // treated "already settled once" as "never do this again" instead of
+    // "safe to do this immediately" — a language switch reruns this whole
+    // effect (tearing down the old ResizeObserver in cleanup) but never got
+    // a replacement observer, silently freezing the notch at its pre-switch
+    // size instead of tracking the new text's width/height.
+    function measureAndObserve() {
       apply();
+      ro?.disconnect();
       ro = new ResizeObserver(apply);
       ro.observe(section!);
       ro.observe(wall!);
@@ -565,14 +588,20 @@ export default function PortfolioSection() {
       ro.observe(sub!);
     }
 
-    if (reducedMotion) {
-      // useRiseReveal never dispatches 'rise-settled' for reduced-motion
-      // visitors (it skips ScrollTrigger setup for them), so this is the
-      // only way reveal() would ever run.
-      reveal();
+    if (wallMaskEntranceSettledRef.current || reducedMotion) {
+      // Either a re-run after the one-time entrance already settled on a
+      // prior mount (label/title/sub are already resting — nothing left to
+      // wait for), or useRiseReveal never dispatches 'rise-settled' at all
+      // for reduced-motion visitors (it skips ScrollTrigger setup for
+      // them) — either way, safe to measure now instead of waiting for an
+      // event that may never come again.
+      wallMaskEntranceSettledRef.current = true;
+      measureAndObserve();
     }
     function onRiseSettled() {
-      reveal();
+      if (wallMaskEntranceSettledRef.current) return;
+      wallMaskEntranceSettledRef.current = true;
+      measureAndObserve();
     }
     section.addEventListener('rise-settled', onRiseSettled);
     return () => {
@@ -1055,30 +1084,46 @@ export default function PortfolioSection() {
             useRiseReveal system every other .rise-soft element uses, see
             that effect's comment for why), while .portfolio-wall stays
             untouched and just fills the wrapper at width/height 100% (see
-            portfolio.css) so its own positioning math is unaffected. */}
+            portfolio.css) so its own positioning math is unaffected.
+
+            .portfolio-wall itself splits into three layers instead of one
+            clipped div: .portfolio-wall-fill paints the panel's actual
+            visible background, .portfolio-wall-clip holds the clip-path
+            that contains the marquee cards, and the outline svg draws the
+            stroke on top. The fill and the outline share the exact same `d`
+            string (set together in apply() above) so their edges can never
+            drift apart. The fill can't be merged into .portfolio-wall-clip:
+            the cards live inside .portfolio-wall-inner's skewed 3D
+            transform, and clipping has to happen in this untransformed box
+            (not the skewed one) for the notch edges to stay straight
+            instead of following the skew — see apply() in the effect
+            above. */}
         <div className="portfolio-wall-frame" style={{ display: expanded ? 'none' : '' }}>
           <div id="portfolio-scroller-desktop" className="portfolio-wall">
-            <div className="portfolio-wall-inner">
-              {rowProjects.map((projects, row) => (
-                <div
-                  key={row}
-                  className="portfolio-row"
-                  data-direction={row % 2 === 1 ? 'left' : 'right'}
-                >
-                  <div className="scroller-inner" id={`track-desk-row-${row}`}>
-                    {projects.map(p => (
-                      <ProjectCard
-                        key={p.id}
-                        p={p}
-                        mode="scroll"
-                        t={t as Record<string, string>}
-                        expanded={expanded}
-                        activeFilter={activeFilter}
-                      />
-                    ))}
+            <div className="portfolio-wall-fill" aria-hidden="true" ref={wallFillRef} />
+            <div className="portfolio-wall-clip" ref={wallClipRef}>
+              <div className="portfolio-wall-inner">
+                {rowProjects.map((projects, row) => (
+                  <div
+                    key={row}
+                    className="portfolio-row"
+                    data-direction={row % 2 === 1 ? 'left' : 'right'}
+                  >
+                    <div className="scroller-inner" id={`track-desk-row-${row}`}>
+                      {projects.map(p => (
+                        <ProjectCard
+                          key={p.id}
+                          p={p}
+                          mode="scroll"
+                          t={t as Record<string, string>}
+                          expanded={expanded}
+                          activeFilter={activeFilter}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
             <svg className="portfolio-wall-outline" aria-hidden="true">
               <defs>

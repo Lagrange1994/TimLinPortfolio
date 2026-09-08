@@ -143,10 +143,16 @@ export default function HeroSection() {
       setTimeout(() => {
         if (heroFig) gsap.to(heroFig, { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out' });
         if (h1Words.length) gsap.to(h1Words, { opacity: 1, y: 0, rotation: 0, duration: 1.0, ease: 'power3.out', stagger: 0.11, delay: 0.15, onComplete: () => {
-          if (h1) { h1.classList.add('grad-settled'); unsplitH1(h1); }
+          // bypass() above left an inline transition:none on h1 itself (not
+          // the word spans it was actually meant to bypass) — harmless while
+          // .grad-settled had no transition of its own, but an inline style
+          // always beats a stylesheet rule, so it would silently swallow
+          // .hero-h1.grad-settled's own -webkit-text-fill-color transition
+          // (the fade from solid to gradient) the moment that class lands.
+          if (h1) { h1.style.transition = ''; h1.classList.add('grad-settled'); unsplitH1(h1); }
         } });
         if (h2Chars.length) gsap.to(h2Chars, { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.035, delay: 0.6, onComplete: () => {
-          if (h2) { h2.classList.add('grad-settled'); unsplitH2(h2); }
+          if (h2) { h2.style.transition = ''; h2.classList.add('grad-settled'); unsplitH2(h2); }
         } });
       }, 350);
     }

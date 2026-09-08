@@ -162,6 +162,12 @@
       --primary: #6C63FF;
       --secondary: #FF6584;
       --bg: #0A0912;
+      /* Flat stand-in for --bg used everywhere the real value would trigger
+         an image fetch/decode/paint before it's safe to show one — see
+         #bg-scene's own comment. Same flat value as --bg in dark mode
+         (nothing to swap out here), overridden to light mode's own pinned
+         color below. */
+      --bg-safe: #0A0912;
       --bg-card: #1E1E1E;
       --bg-hover: #2D2D2D;
       --border: rgba(255, 255, 255, 0.1);
@@ -172,9 +178,20 @@
       --text-30: rgba(255, 255, 255, 0.45);
       --grad: linear-gradient(to right, #6C63FF, #FF6584);
       --grad-logo: linear-gradient(45deg, #8A2BE2, #4A00E0, #00D4FF);
-      /* Role line only (hero-h2, light mode) — --grad-logo's own last two
-         stops extended one step paler, not a --grad-logo reuse. */
-      --grad-role: linear-gradient(45deg, #4A00E0, #00D4FF, #5AC8FF);
+      /* --grad-logo's own middle (50%) stop — used as .hero-h1's pre-settle
+         solid color (see .hero-h1.grad-settled below) so the fade-in lands
+         on a color already inside the gradient it's fading into, instead of
+         starting from --primary (a different hue entirely) and having to
+         shift hue AND fade alpha at once. */
+      --grad-logo-mid: #4A00E0;
+      /* Role line only (hero-h2, light mode). */
+      --grad-role: linear-gradient(45deg, #256AF0, #00D4FF);
+      /* Same reasoning as --grad-logo-mid above, for --grad-role's own
+         middle — a 2-stop gradient with no explicit middle stop of its own,
+         so this is the plain sRGB average of #256AF0 and #00D4FF
+         (19,159,248 — matches what linear-gradient itself paints at the
+         50% mark by default), not a picked color. */
+      --grad-role-mid: #139FF8;
       /* The 4 hard-cut bands of #bg-frame-glow-grad (BeamsBackground.tsx)'s
          flow blend — offsets 0/39.6967/70.3616/87.9173/100%, each variable
          covering one band's start+end stop pair (see the comment above the
@@ -291,6 +308,12 @@
          fixed full-viewport layer, which risks the same stale-paint/
          repaint issues already fought elsewhere in this file. */
       --bg: url('/img/w_bg.svg') center / cover no-repeat;
+      /* Flat stand-in for --bg — see the base :root's own comment on this
+         token. This is the one theme where it actually differs from --bg:
+         matches the flat color index.html's inline pre-hydration <style>
+         and .loader already pin light mode to, so nothing on screen ever
+         requests w_bg.svg until body.hero-ready explicitly swaps it in. */
+      --bg-safe: #EBEFF1;
       --bg-card: #F7FAFC;
       --bg-hover: #EFEDF7;
       --border: rgba(23, 15, 45, 0.10);
@@ -388,16 +411,33 @@
        clean gradient text (reproduced live — not just a theory). The
        .grad-settled variant below only applies once HeroSection adds that
        class in the tween's onComplete, after will-change is cleared and
-       nothing under the h1 is animating anymore. */
+       nothing under the h1 is animating anymore — background-clip:text
+       still never touches this element before that point, so the bug's
+       precondition (composited/transformed descendants under a live
+       text-clip) never recurs. Uses --grad-logo-mid (the gradient's own
+       middle stop), not --primary — a different hue entirely — so the
+       fade-in below only has to dissolve alpha, not also shift hue. */
     :root[data-theme="light"] .hero-h1 {
-      color: var(--primary);
+      color: var(--grad-logo-mid);
     }
 
+    /* Solid color glyphs dissolve into the gradient underneath instead of
+       snapping to it: -webkit-text-fill-color is what actually paints the
+       glyphs, and (unlike background-image) it's a plain <color> the
+       browser can interpolate, so transitioning it from opaque
+       --grad-logo-mid to a 0-alpha version of that SAME hue reads as the
+       gradient fading in through the glyphs rather than a color hue-
+       shifting through browser-default transparent (=rgba(0,0,0,0), which
+       would flash grey/black on the way). background-clip:text/the
+       gradient background only get declared here, once .grad-settled is
+       already safe to add (see .hero-h1's own comment) — nothing about the
+       risky pre-settle period changes. */
     :root[data-theme="light"] .hero-h1.grad-settled {
       background: var(--grad-logo);
       -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
       background-clip: text;
+      -webkit-text-fill-color: rgb(from var(--grad-logo-mid) r g b / 0);
+      transition: -webkit-text-fill-color 0.6s ease-out;
     }
 
     /* Hero panel stays dark regardless of site theme (see .hero-h1's own
@@ -405,20 +445,24 @@
        render. hero-h2 now gets its own --grad-role gradient, same
        .grad-settled/unsplit ghosting-safe treatment as .hero-h1 above
        (see that comment) since HeroSection.tsx splits it into per-char
-       spans too. hero-desc goes back to the original faint gray. */
+       spans too. hero-desc goes back to the original faint gray. Uses
+       --grad-role-mid (that gradient's own middle stop), same reasoning as
+       --grad-logo-mid on .hero-h1 above. */
     :root[data-theme="light"] .hero-h2 {
-      color: var(--primary);
+      color: var(--grad-role-mid);
     }
 
+    /* Same fade-in-place technique as .hero-h1.grad-settled above. */
     :root[data-theme="light"] .hero-h2.grad-settled {
       background: var(--grad-role);
       -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
       background-clip: text;
+      -webkit-text-fill-color: rgb(from var(--grad-role-mid) r g b / 0);
+      transition: -webkit-text-fill-color 0.6s ease-out;
     }
 
     :root[data-theme="light"] .hero-desc {
-      color: var(--text-30);
+      color: var(--text-70);
     }
 
     html,
@@ -437,8 +481,17 @@
        users. The fix now lives in navHeader.ts, gated on an actual recent
        touchstart event instead of a static hardware guess. */
 
+    /* --bg-safe (a flat color), not --bg — see that token's own comment.
+       Once this stylesheet loads, this rule outranks index.html's inline
+       pre-hydration pin (same specificity, later in source order), so
+       pointing it at --bg directly reopened the exact flash that pin exists
+       to prevent, worse in dev where the gap between this stylesheet
+       loading and Loader.tsx actually mounting its own opaque cover is
+       largest. #bg-scene is the one layer that actually swaps to the real
+       --bg, gated on body.hero-ready — this stays flat forever, matching
+       what's already visible underneath it by then anyway. */
     html {
-      background: var(--bg);
+      background: var(--bg-safe);
     }
 
     body {
@@ -566,21 +619,15 @@
     }
 
     /* Contact Me (.btn-glass alone, no .btn-grad — the only bare .btn-glass
-       in the site) switches to the neumorphism system in light mode, same
-       as #home .hero-ask right next to it: an opaque near-white pill on the
-       hero's own always-dark backdrop, so its text needs the light-theme
-       dark ink instead of the base rule's white. */
+       in the site): semi-transparent glass fill in light mode, with
+       --text-70 for the label instead of the base rule's white text. */
     :root[data-theme="light"] .btn-glass:not(.btn-grad) {
-      background: var(--neu-bg);
-      border-color: transparent;
-      box-shadow: var(--neu-raised-sm);
-      color: var(--text);
+      background: rgb(from var(--glass-bg) r g b / 0.8);
+      color: var(--text-70);
     }
 
     :root[data-theme="light"] .btn-glass:not(.btn-grad):hover {
-      border-color: transparent;
-      box-shadow: var(--neu-raised-sm-hover);
-      color: var(--text);
+      color: var(--text-70);
     }
 
     /* View All Projects — arrow sits in its own white circular badge, flush
@@ -1186,6 +1233,18 @@
       will-change: transform, opacity;
     }
 
+    /* Light theme: the hover circle's white fill + near-black label blend
+       into the already-light navbar, so the reveal barely reads. Swap to
+       the same gray as the "Lin" half of the logo (.brand-lin), with a
+       white label. */
+    :root[data-theme="light"] .nav-circle {
+      background: var(--text-30);
+    }
+
+    :root[data-theme="light"] .nav-label-hover {
+      color: #fff;
+    }
+
     /* ══ GLASSMORPHISM SYSTEM ══ */
     :root {
       --glass-bg: rgba(30, 30, 30, 0.5);
@@ -1287,7 +1346,37 @@
       inset: 0;
       z-index: -2;
       pointer-events: none;
+      /* --bg-safe (flat), not --bg, until body.hero-ready below swaps it —
+         an opacity fade alone (an earlier version of this rule) can only
+         hide an already-decoded layer; it can't stop the browser from
+         fetching/decoding/painting url('/img/w_bg.svg') a beat early, since
+         that happens whenever a background-image property resolves to a
+         rendered box, regardless of that box's opacity or of anything
+         covering it. Not referencing the real image at all until hero-ready
+         removes the race instead of racing to cover its result. */
+      background: var(--bg-safe);
+      /* Starts semi-transparent and fades to full once the loader hands off
+         — matches HeroSection.tsx's own hero-figure fade (350ms delay after
+         'hero-ready', then a 1.1s power3.out tween) so the page background
+         eases in alongside it instead of snapping to full opacity the
+         instant .loader's own 0.1s fade finishes (the loader fully covers
+         this layer until then, so nothing shows early). cubic-bezier here
+         approximates power3.out since GSAP's own easing isn't available to
+         a plain CSS transition. */
+      opacity: 0.35;
+      transition: opacity 1.1s cubic-bezier(0.215, 0.61, 0.355, 1) 0.35s;
+    }
+
+    body.hero-ready #bg-scene {
       background: var(--bg);
+      opacity: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #bg-scene {
+        opacity: 1;
+        transition: none;
+      }
     }
 
     /* #spline-bg's own clipping container — a separate box from #bg-scene
@@ -1306,6 +1395,16 @@
       inset: 0;
       z-index: -1;
       pointer-events: none;
+      /* --bg-safe, not --bg, until ready — same reasoning as #bg-scene's own
+         comment: this is also a fixed, full-viewport box from first mount,
+         so pointing it at the real w_bg.svg unconditionally raced the exact
+         same early fetch/paint on mobile (no Spline canvas there to cover
+         it, and the light-mode desktop override below only kicks in at
+         1025px+). */
+      background: var(--bg-safe);
+    }
+
+    body.hero-ready #bg-spline-scene {
       background: var(--bg);
     }
 
@@ -2156,6 +2255,22 @@
       margin-top: -4px;
       animation-delay: .3s;
       animation-direction: alternate;
+    }
+
+    /* Light mode: the white outline/dot/chevrons barely read against the
+       now-light hero panel. Same logo "Lin" gray (--text-30) as the other
+       hero-panel light-mode overrides. */
+    :root[data-theme="light"] .hero-scroll-indicator .mouse {
+      border-color: var(--text-30);
+    }
+
+    :root[data-theme="light"] .hero-scroll-indicator .wheel {
+      border-color: var(--text-30);
+    }
+
+    :root[data-theme="light"] .hero-scroll-indicator .m_scroll_arrows {
+      border-right-color: var(--text-30);
+      border-bottom-color: var(--text-30);
     }
 
     @media (max-width: 1024px) {
@@ -3695,21 +3810,74 @@
     }
 
     /* Fills .portfolio-wall-frame at 100% instead of positioning itself —
-       PortfolioSection.tsx still owns this element's top/height/clip-path
-       (via the frame) and clip-path/marquee-tilt math, untouched by GSAP. */
+       PortfolioSection.tsx still owns this element's top/height (via the
+       frame) and marquee-tilt math, untouched by GSAP. Own background/clip
+       moved to the .portfolio-wall-fill/.portfolio-wall-clip children
+       below. overflow stays visible (not hidden) so the outline stroke
+       below can bleed its outer half past this box on the notch's plain
+       (unrounded) sides — see .portfolio-wall-outline's own comment for
+       why that half would otherwise get clipped away. Nothing else needs
+       hiding here: .portfolio-wall-fill/-clip each carry their own
+       clip-path at all times (see their comments), so neither ever paints
+       past the real notch shape even without a container-level clip. */
     .portfolio-wall {
       position: relative;
       width: 100%;
       height: 100%;
-      overflow: hidden;
-      /* Base layer behind the marquee rows — without it the notched shape's
-         own cutouts and the gaps between rows show the page background
-         through instead of reading as one solid card. */
-      background: #000;
+      overflow: visible;
     }
 
-    :root[data-theme="light"] .portfolio-wall {
+    /* The wall's actual visible surface — a single flat rect clipped with
+       the EXACT same `d` string PortfolioSection.tsx's apply() also sets on
+       the outline <path> below (same variable, two consumers), not an
+       independently-rounded approximation of it. An earlier version painted
+       this as up to 4 separate rects (one per notch segment, each rounded
+       on its own via CSS/its own local corner math) — every rect's corners
+       that didn't land on that rect's own edges (e.g. a reflex corner
+       sitting mid-span of a neighbouring rect's straight edge) rounded the
+       wrong way or by the wrong amount, since a segment's own bounding-rect
+       corners aren't always the same as the true notch outline's corners.
+       That showed up as inconsistent stroke thickness/radius against the
+       outline. One shared path string for both fill and stroke can't drift
+       from itself.
+
+       Starts fully clipped away (zero area, clip-path: inset(100%) below)
+       instead of defaulting to no clip-path at all. apply() in
+       PortfolioSection.tsx doesn't compute and set the real notch path
+       until the headline's entrance settles (see that effect's own comment
+       for why) — with no clip-path set in the meantime, this element's
+       inset:0 rect paints as a plain solid rectangle for that entire
+       stretch, which flashed as a full-box color block (near-white in
+       light theme) right before the real notched shape snapped in on
+       scroll-into-view. */
+    .portfolio-wall-fill {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: #000;
+      clip-path: inset(100%);
+    }
+
+    :root[data-theme="light"] .portfolio-wall-fill {
       background: #EBEFF1;
+    }
+
+    /* Contains the marquee cards to the same notched shape — kept as its
+       own clip-path (not merged into .portfolio-wall-fill) because the
+       cards live inside .portfolio-wall-inner's skewed 3D transform, and
+       clipping has to happen in this untransformed box for the notch edges
+       to stay straight instead of following the skew (see the JSX comment
+       by .portfolio-wall for the full reasoning). */
+    .portfolio-wall-clip {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      /* Same reasoning as .portfolio-wall-fill's default clip-path — without
+         it the unclipped marquee cards show as a plain rectangular block for
+         however long apply() is gated behind the headline's own entrance
+         settling. */
+      clip-path: inset(100%);
     }
 
     /* Stepped outline drawn ON TOP of the cards (see
@@ -3718,12 +3886,25 @@
        edges jagged. The path's `d` is computed in PortfolioSection.tsx from
        this wall's own box plus the live measured headline title/subtitle
        size, so it stays correct across resize, language switches, and text
-       reflow. */
+       reflow.
+
+       overflow: visible overrides the <svg> UA default of overflow:hidden,
+       which otherwise clips this element's content to its own 0/0/100%/100%
+       viewport — the exact same box the path's plain (unrounded) sides run
+       flush along (left/right/top/bottom, wherever the notch isn't cut).
+       An SVG stroke is centred on the path, so half its width normally
+       falls outside that path; on the notch's curved/cut corners the curve
+       sits inset from the box edge (by that corner's radius) so the full
+       stroke fits inside the viewport fine, but on the plain sides the
+       outer half has nowhere to go and was getting silently clipped away —
+       reading as a full-width stroke around every notch/corner but only a
+       half-width sliver along the plain edges. */
     .portfolio-wall-outline {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
+      overflow: visible;
       pointer-events: none;
       z-index: 2;
     }
