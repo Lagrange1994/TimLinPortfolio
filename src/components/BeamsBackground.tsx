@@ -366,7 +366,23 @@ export default function BeamsBackground() {
         <div id="bg-spline-scene" aria-hidden="true" role="presentation">
           <picture>
             <source srcSet="./img/bg.webp" type="image/webp" />
-            <img id="spline-bg" className="spline-bg-layer is-active" src="./img/bg.jpg" alt="" aria-hidden="true" />
+            <img
+              id="spline-bg"
+              className={`spline-bg-layer${theme === 'dark' ? ' is-active' : ''}`}
+              src="./img/bg.jpg"
+              alt=""
+              aria-hidden="true"
+            />
+          </picture>
+          <picture>
+            <source srcSet="./img/bg_w.webp" type="image/webp" />
+            <img
+              id="spline-bg-light"
+              className={`spline-bg-layer${theme === 'light' ? ' is-active' : ''}`}
+              src="./img/bg_w.jpg"
+              alt=""
+              aria-hidden="true"
+            />
           </picture>
         </div>
       )}

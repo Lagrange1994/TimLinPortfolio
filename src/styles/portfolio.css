@@ -8235,13 +8235,22 @@
       color: var(--primary);
     }
 
-    /* .active is untouched here — a solid #6C63FF fill with white text
-       already has enough contrast on both themes. */
-
     /* Selected state is a solid fill (same #6C63FF accent as the theme
        switch's knob), not the translucent hover tint — active should read
        as "chosen", not just "hovered". */
     .sm-lang-btn.active {
+      background: #6C63FF;
+      border-color: #6C63FF;
+      color: #ffffff;
+    }
+
+    /* :root[data-theme="light"] .sm-lang-btn above is 3 selectors deep
+       (:root + [data-theme] + .sm-lang-btn) vs. .active's 2 (.sm-lang-btn +
+       .active), so without this it wins the specificity fight and the
+       light-mode gray tint silently overrides the solid fill — the "already
+       enough contrast on both themes" comment this replaced was never true
+       in light mode, just untested. */
+    :root[data-theme="light"] .sm-lang-btn.active {
       background: #6C63FF;
       border-color: #6C63FF;
       color: #ffffff;
