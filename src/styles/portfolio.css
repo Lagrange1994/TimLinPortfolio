@@ -5336,6 +5336,14 @@
       border-color: rgba(108, 99, 255, 0.5);
     }
 
+    /* SVGs carry currentColor instead of a hardcoded fill/stroke so this
+       can theme them — without it they stayed translucent white and went
+       nearly invisible on the light card background. */
+    .slink svg {
+      color: rgba(255, 255, 255, 0.5);
+      flex-shrink: 0;
+    }
+
     .sn {
       font-size: 12px;
       color: var(--text-50);
@@ -9414,6 +9422,7 @@
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       font-size: 15px;
+      color: #ffffff;
       transition: opacity 0.2s;
       flex-shrink: 0;
     }
@@ -9913,6 +9922,14 @@
     :root[data-theme="light"] .slink:hover {
       border-color: transparent !important;
       box-shadow: var(--neu-raised-sm-hover) !important;
+    }
+
+    :root[data-theme="light"] .slink svg {
+      color: var(--text-50);
+    }
+
+    :root[data-theme="light"] .process-swipe-dot {
+      background: rgba(23, 15, 45, 0.16);
     }
 
     /* .line-banner（Contact 的 LINE CTA）比照其他卡片換成同一套 neumorphism
