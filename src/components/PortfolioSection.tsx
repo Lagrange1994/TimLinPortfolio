@@ -863,7 +863,9 @@ export default function PortfolioSection() {
   // Always-current translation table for the mount-once listener below —
   // its closure is fixed at mount, so it can't see later `t` values itself.
   const tRef = useRef(t);
-  tRef.current = t;
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
 
   const getCardTitle = useCallback((card: HTMLElement) => {
     const proj = projectsByLink.get(card.getAttribute('href') || '');

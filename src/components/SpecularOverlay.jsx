@@ -80,8 +80,11 @@ const SpecularOverlay = ({
   proximity = 250,
   autoAnimate = false,
 }) => {
-  const propsRef = useRef({});
-  propsRef.current = { lineColor, baseColor, intensity, shineSize, shineFade, thickness, speed, followMouse, proximity, autoAnimate };
+  const propsRef = useRef({ lineColor, baseColor, intensity, shineSize, shineFade, thickness, speed, followMouse, proximity, autoAnimate });
+
+  useEffect(() => {
+    propsRef.current = { lineColor, baseColor, intensity, shineSize, shineFade, thickness, speed, followMouse, proximity, autoAnimate };
+  }, [lineColor, baseColor, intensity, shineSize, shineFade, thickness, speed, followMouse, proximity, autoAnimate]);
 
   useEffect(() => {
     const target = targetRef.current;

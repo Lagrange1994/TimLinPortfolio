@@ -17,7 +17,7 @@ const SIMULATOR_URL = import.meta.env.DEV
 const goHome = (e) => {
     if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
     let sameOrigin = false;
-    try { sameOrigin = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (err) {}
+    try { sameOrigin = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch { /* Cross-origin referrer is unavailable. */ }
     if (sameOrigin && window.history.length > 1) {
         e.preventDefault();
         history.back();
@@ -169,7 +169,9 @@ const goHome = (e) => {
             const [iframeLoaded, setIframeLoaded] = useState(false);
             const [showSlowNotice, setShowSlowNotice] = useState(false);
             const onCloseRef = useRef(onClose);
-            onCloseRef.current = onClose;
+            useEffect(() => {
+                onCloseRef.current = onClose;
+            }, [onClose]);
 
             useEffect(() => {
                 if (!isOpen) return;

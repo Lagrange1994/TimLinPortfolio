@@ -150,6 +150,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const isDraggingRef = useRef(false);
             const dragDirRef = useRef(0);
             const [peekTab, setPeekTab] = useState(null);
+            const [peekDragDirection, setPeekDragDirection] = useState(0);
             const TAB_ORDER = ['context', 'process', 'solution', 'climax'];
             const handleTabTouchStart = (e) => {
                 if (e.target.closest('.overflow-x-auto')) { touchStartRef.current = null; return; }
@@ -173,6 +174,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 const threshold = Math.min(100, width * 0.22);
                 const dir = dragDirRef.current;
                 dragDirRef.current = 0;
+                setPeekDragDirection(0);
                 if (dir === 1 && dx <= -threshold && idx < TAB_ORDER.length - 1) {
                     const nextId = TAB_ORDER[idx + 1];
                     gsap.to(el, { x: -width, duration: 0.24, ease: 'power2.out' });
@@ -227,6 +229,7 @@ gsap.registerPlugin(ScrollToPlugin);
                             const dir = dx < 0 ? 1 : -1;
                             const peekId = dir === 1 ? TAB_ORDER[idx + 1] : TAB_ORDER[idx - 1];
                             dragDirRef.current = peekId ? dir : 0;
+                            setPeekDragDirection(peekId ? dir : 0);
                             if (peekId) setPeekTab(peekId);
                         } else if (Math.abs(dy) > 10) {
                             touchStartRef.current = null;
@@ -438,7 +441,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
             const goBack = () => {
                 let sameOrigin = false;
-                try { sameOrigin = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) {}
+                try { sameOrigin = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch { /* Cross-origin referrer is unavailable. */ }
                 if (sameOrigin && window.history.length > 1) history.back();
                 else location.href = '/#portfolio';
             };
@@ -608,7 +611,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                                     </div>
                                     {peekTab && (
-                                    <div ref={peekContentRef} style={{ transform: `translateX(${dragDirRef.current * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
+                                    <div ref={peekContentRef} style={{ transform: `translateX(${peekDragDirection * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
                                         {peekTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
                                                 <div className="space-y-4 lg:space-y-6">
