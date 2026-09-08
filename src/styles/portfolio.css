@@ -7906,6 +7906,15 @@
       border-left: 1px solid rgba(108, 99, 255, 0.2);
     }
 
+    /* Mobile staggered menu panel — was permanently dark regardless of the
+       site's own theme toggle. Reskin it to the light palette (--bg-card
+       instead of the near-black #141414) so opening the nav in light mode
+       doesn't drop back into a dark surface. */
+    :root[data-theme="light"] .sm-panel {
+      background: var(--bg-card);
+      border-left-color: rgba(91, 79, 224, 0.25);
+    }
+
     /* Narrow phones: PORTFOLIO already nearly fills the panel's full text
        width at the base 2.5rem side padding — shave it down so the
        left-side number gutter doesn't push that label past the right edge. */
@@ -7975,6 +7984,14 @@
     }
 
     .sm-panel-item:hover {
+      color: var(--sm-accent, #6C63FF);
+    }
+
+    :root[data-theme="light"] .sm-panel-item {
+      color: var(--text);
+    }
+
+    :root[data-theme="light"] .sm-panel-item:hover {
       color: var(--sm-accent, #6C63FF);
     }
 
@@ -8093,6 +8110,14 @@
       color: #ffffff;
     }
 
+    :root[data-theme="light"] .sm-panel-close {
+      color: var(--text-70);
+    }
+
+    :root[data-theme="light"] .sm-panel-close:hover {
+      color: var(--text);
+    }
+
     .sm-panel-close-icon {
       position: relative;
       width: 14px;
@@ -8134,6 +8159,10 @@
       border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
+    :root[data-theme="light"] .sm-theme {
+      border-top-color: var(--border);
+    }
+
     .sm-lang {
       margin-top: 1.5rem;
       padding-top: 1.5rem;
@@ -8141,6 +8170,10 @@
       flex-direction: column;
       gap: 0.75rem;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    :root[data-theme="light"] .sm-lang {
+      border-top-color: var(--border);
     }
 
     .sm-lang-title {
@@ -8174,10 +8207,35 @@
       transition: all 0.2s;
     }
 
-    .sm-lang-btn:hover,
-    .sm-lang-btn.active {
+    .sm-lang-btn:hover {
       background: rgba(108, 99, 255, 0.2);
       border-color: rgba(108, 99, 255, 0.5);
+      color: #ffffff;
+    }
+
+    :root[data-theme="light"] .sm-lang-btn {
+      background: rgba(23, 15, 45, 0.05);
+      border-color: var(--border-hi);
+      color: var(--text-50);
+    }
+
+    /* White hover text (above) only reads on a dark tint — on the light
+       panel the tint stays pale, so hover text needs to stay dark too. */
+    :root[data-theme="light"] .sm-lang-btn:hover {
+      background: rgba(91, 79, 224, 0.15);
+      border-color: rgba(91, 79, 224, 0.45);
+      color: var(--primary);
+    }
+
+    /* .active is untouched here — a solid #6C63FF fill with white text
+       already has enough contrast on both themes. */
+
+    /* Selected state is a solid fill (same #6C63FF accent as the theme
+       switch's knob), not the translucent hover tint — active should read
+       as "chosen", not just "hovered". */
+    .sm-lang-btn.active {
+      background: #6C63FF;
+      border-color: #6C63FF;
       color: #ffffff;
     }
 
@@ -8191,7 +8249,7 @@
       position: relative;
       display: inline-flex;
       align-items: center;
-      width: 88px;
+      width: 116px;
       height: 44px;
       border-radius: 9999px;
       cursor: pointer;
@@ -8204,6 +8262,16 @@
     .sm-theme-switch:hover {
       background: rgba(255, 255, 255, 0.1);
       border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    :root[data-theme="light"] .sm-theme-switch {
+      background: rgba(23, 15, 45, 0.05);
+      border-color: var(--border-hi);
+    }
+
+    :root[data-theme="light"] .sm-theme-switch:hover {
+      background: rgba(23, 15, 45, 0.08);
+      border-color: var(--glass-border-hov);
     }
 
     .sm-theme-switch-knob {
@@ -8229,7 +8297,11 @@
     }
 
     .sm-theme-switch--light .sm-theme-switch-knob {
-      transform: translateX(42px);
+      /* Track 116px, 4px knob margin both sides, 34px knob: resting right
+         edge = 116 - 4 - 34 = 78, minus the knob's own left:4 rest position
+         = 74px of travel — same 4px inset on both ends of its swing, not
+         just the dark/rest side. */
+      transform: translateX(74px);
     }
 
     .sm-theme-switch-label {
@@ -8244,15 +8316,33 @@
       color: rgba(255, 255, 255, 0.5);
     }
 
+    /* Same translucent-white problem .sm-lang-btn had — on the light
+       panel background this label goes almost invisible. */
+    :root[data-theme="light"] .sm-theme-switch-label {
+      color: var(--text-50);
+    }
+
+    /* Label box edges are the same two reference points as the knob's own
+       geometry: the 42px gutter is knob margin + knob width + knob margin
+       (4 + 34 + 4) — flush against the knob's far edge — and the 4px on the
+       opposite side matches the knob's own 4px margin against the track.
+       True center (justify-content:center) split the leftover room evenly
+       and read as too far off the icon; flex-start with a 4px gap read as
+       stranded against the opposite edge. 14px lands the text closer to the
+       icon it labels than dead-center, while still clearing more than the
+       knob's own bare 4px margin. */
     .sm-theme-switch--dark .sm-theme-switch-label {
       left: 42px;
-      right: 8px;
+      right: 4px;
+      justify-content: flex-start;
+      padding-left: 14px;
     }
 
     .sm-theme-switch--light .sm-theme-switch-label {
-      left: 8px;
+      left: 4px;
       right: 42px;
       justify-content: flex-end;
+      padding-right: 14px;
     }
 
     /* ── Responsive overrides (must be AFTER the base rules above) ── */

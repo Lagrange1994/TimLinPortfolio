@@ -152,6 +152,22 @@ export default function BeamsBackground() {
       heroEl.style.setProperty('--hero-bg-w', `${heroEl.clientWidth}px`);
       heroEl.style.setProperty('--hero-bg-h', `${heroEl.clientHeight}px`);
 
+      // The notched panel look is desktop-only in portfolio.css (gated to
+      // min-width:1025px — #bg-frame-outline/#bg-frame-glow display:none and
+      // #bg-spline-scene falls back to a plain fixed/full-bleed box below
+      // that). isMobile above only gates 768px (raster-vs-Spline choice), so
+      // without this check tablet (768-1024px) still fell into the notch
+      // math below and got an inline clip-path the CSS never asked for,
+      // carving corners out of what should read as a plain 100%-height
+      // background. Clearing it here instead of leaving a stale clip from a
+      // previous desktop-width sync matters too — the ResizeObserver below
+      // re-runs sync() on every resize, including desktop-to-tablet.
+      if (window.innerWidth < 1025) {
+        splineSceneRef.current?.style.removeProperty('clip-path');
+        document.getElementById('hero-tags-clip')?.style.removeProperty('clip-path');
+        return;
+      }
+
       const w = heroEl.clientWidth - FRAME_INSET * 2;
       const h = heroEl.clientHeight - FRAME_INSET * 2;
       if (w <= 0 || h <= 0) return;
