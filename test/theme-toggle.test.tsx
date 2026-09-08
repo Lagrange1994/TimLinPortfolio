@@ -3,10 +3,14 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { LangProvider } from '../src/context/LangContext';
 import Navbar from '../src/components/Navbar';
 
-// useTheme (src/utils/useTheme.ts) backs the navbar's sun/moon toggle — dark
-// is the default (no stored preference), switching persists to localStorage
-// and flips <html data-theme>, which is what portfolio.css's
-// :root[data-theme="light"] block keys off.
+// useTheme (src/utils/useTheme.ts) backs both the desktop sun/moon switch
+// (#theme-toggle-btn, .theme-switch) and a separately-styled mobile-panel
+// switch (.sm-theme-switch, own class family sized/colored like .sm-lang-btn)
+// sitting right above the Language pills — dark is the default (no stored
+// preference), switching
+// persists to localStorage and flips <html data-theme>, which is what
+// portfolio.css's :root[data-theme="light"] block keys off. Both switches
+// must stay in sync since they're driven by the same toggleTheme().
 describe('theme toggle', () => {
   beforeEach(() => {
     vi.stubGlobal('IntersectionObserver', class {
@@ -50,7 +54,7 @@ describe('theme toggle', () => {
     expect(localStorage.getItem('theme')).toBe('dark');
   });
 
-  it('keeps the mobile panel toggle in sync with the desktop one', () => {
+  it('keeps the mobile panel switch in sync with the desktop one', () => {
     render(<LangProvider><Navbar /></LangProvider>);
 
     expect(screen.getAllByLabelText('Switch to light mode')).toHaveLength(2);

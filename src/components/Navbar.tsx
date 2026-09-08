@@ -441,7 +441,7 @@ export default function Navbar() {
               <div className="navbar-lang" style={{ position: 'relative' }}>
                 <button
                   id="theme-toggle-btn"
-                  className={`theme-switch--${theme}`}
+                  className={`theme-switch theme-switch--${theme}`}
                   onClick={toggleTheme}
                   aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
@@ -487,13 +487,6 @@ export default function Navbar() {
           <div className="sm-prelayer" style={{ background: '#6C63FF' }}></div>
         </div>
         <aside id="sm-panel" className="sm-panel" aria-hidden="true" ref={panelRef}>
-          <button
-            className="sm-theme-toggle"
-            onClick={toggleTheme}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            <i className={`fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'}`}></i>
-          </button>
           <button className="sm-panel-close" id="sm-panel-close-btn" aria-label="Close menu">
             Close
             <span className="sm-panel-close-icon"><span></span><span></span></span>
@@ -511,6 +504,19 @@ export default function Navbar() {
                 </li>
               ))}
             </ul>
+            <div className="sm-theme">
+              <h3 className="sm-lang-title">Theme</h3>
+              <button
+                className={`sm-theme-switch sm-theme-switch--${theme}`}
+                onClick={toggleTheme}
+                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                <span className="sm-theme-switch-label" aria-hidden="true">{theme === 'light' ? 'Light' : 'Dark'}</span>
+                <span className="sm-theme-switch-knob" aria-hidden="true">
+                  <i className={`fas ${theme === 'light' ? 'fa-sun' : 'fa-moon'}`}></i>
+                </span>
+              </button>
+            </div>
             <div className="sm-lang">
               <h3 className="sm-lang-title">Language</h3>
               <div className="sm-lang-btns">

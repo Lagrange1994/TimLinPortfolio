@@ -950,7 +950,7 @@
        KNOB_D: 20       → inset m = (33 - 20) / 2 = 6.5
        PILL_W: 76 (border-box) → inner width = 74
        right-rest left = 74 - 20 - 6.5 = 47.5 → travel = 47.5 - 6.5 = 41 */
-    #theme-toggle-btn {
+    .theme-switch {
       position: relative;
       display: inline-flex;
       align-items: center;
@@ -962,12 +962,12 @@
       transition: background 0.35s ease, border-color 0.35s ease;
     }
 
-    #theme-toggle-btn.theme-switch--dark {
+    .theme-switch.theme-switch--dark {
       background: #1c1a29;
       border: 1px solid rgba(255, 255, 255, 0.4);
     }
 
-    #theme-toggle-btn.theme-switch--light {
+    .theme-switch.theme-switch--light {
       background: #ECECF1;
       border: 1px solid rgba(58, 58, 66, 0.18);
     }
@@ -987,7 +987,7 @@
       transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.35s ease, border-color 0.35s ease;
     }
 
-    #theme-toggle-btn.theme-switch--dark .theme-switch-knob {
+    .theme-switch.theme-switch--dark .theme-switch-knob {
       transform: translateX(0);
       /* Was backdrop-filter: blur(6px) — dropped. That's the one property
          only the dark-state knob carried (light-state has none), so every
@@ -1006,7 +1006,7 @@
       color: #ffffff;
     }
 
-    #theme-toggle-btn.theme-switch--light .theme-switch-knob {
+    .theme-switch.theme-switch--light .theme-switch-knob {
       transform: translateX(41px);
       background: #ffffff;
       color: #3A3A42;
@@ -1025,7 +1025,7 @@
     }
 
     /* Dark: knob rests left, so the label owns the right half. */
-    #theme-toggle-btn.theme-switch--dark .theme-switch-label {
+    .theme-switch.theme-switch--dark .theme-switch-label {
       left: 33px;
       right: 7px;
       color: rgba(255, 255, 255, 0.85);
@@ -1033,7 +1033,7 @@
 
     /* Light: knob slides to the right, so the label owns the left half,
        right-aligned to sit flush against the knob's new position. */
-    #theme-toggle-btn.theme-switch--light .theme-switch-label {
+    .theme-switch.theme-switch--light .theme-switch-label {
       left: 7px;
       right: 33px;
       justify-content: flex-end;
@@ -7786,6 +7786,21 @@
       border-radius: 4px;
     }
 
+    /* Mobile/tablet nav bar (<=1024px): .navbar-shape/.navbar-brand/
+       .navbar-menu stay display:contents at this width (see the comment
+       above them), so #nav-container's own background is the actual
+       visible bar — its scrolled state already gets a light override
+       above, but the unscrolled/top-of-page state (the plain full-width
+       bar, not the floating pill) never did, leaving it stuck on the
+       dark rgba(18,18,18,.8) base. #sm-toggle-btn's "Menu" label/icon
+       lines are similarly hardcoded white. */
+    :root[data-theme="light"] #sm-toggle-btn {
+      color: var(--text-30);
+    }
+    :root[data-theme="light"] #sm-toggle-btn:focus-visible {
+      outline-color: var(--glass-border-hov);
+    }
+
     .sm-toggle-textWrap {
       position: relative;
       display: inline-block;
@@ -8035,32 +8050,22 @@
       .process-column-grid--inhouse .process-swipe-slot {
         margin-top: 0 !important;
       }
+
+      /* Scoped to mobile/tablet only — desktop's unscrolled state turns
+         .navbar-shape back into a real box to draw the hero-frame notch
+         pill (heroFramePath.ts), and #nav-container itself must stay
+         transparent there so the notch's cut-out reads correctly. At this
+         width .navbar-shape is display:contents (see comment above it), so
+         #nav-container's own background IS the visible bar in both scroll
+         states — only .scrolled had a light override before. */
+      :root[data-theme="light"] #main-header:not(.scrolled) #nav-container {
+        background: var(--glass-bg);
+        border-bottom-color: var(--glass-border);
+      }
     }
 
     #main-header {
       transition: opacity 0.25s ease;
-    }
-
-    .sm-theme-toggle {
-      position: absolute;
-      top: 1.25rem;
-      left: 1.5rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 9999px;
-      cursor: pointer;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      color: rgba(255, 255, 255, 0.85);
-      font-size: 13px;
-    }
-
-    .sm-theme-toggle:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: #ffffff;
     }
 
     .sm-panel-close {
@@ -8116,8 +8121,21 @@
       transform: translate(-50%, -50%) rotate(-45deg);
     }
 
-    .sm-lang {
+    /* .sm-theme (Light/Dark) sits directly above .sm-lang (Language),
+       same pill styling reused via .sm-lang-title/.sm-lang-btns/.sm-lang-btn
+       — this block carries the margin-top:auto that pushes the pair to the
+       bottom of the panel; .sm-lang below it just stacks normally after. */
+    .sm-theme {
       margin-top: auto;
+      padding-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .sm-lang {
+      margin-top: 1.5rem;
       padding-top: 1.5rem;
       display: flex;
       flex-direction: column;
@@ -8161,6 +8179,80 @@
       background: rgba(108, 99, 255, 0.2);
       border-color: rgba(108, 99, 255, 0.5);
       color: #ffffff;
+    }
+
+    /* Mobile panel's theme switch — its own spec, not a reuse of the
+       desktop pill (#theme-toggle-btn/.theme-switch, 76x35px, dark-mode-
+       tuned #1c1a29/#ECECF1 track fills). Track color/size instead match
+       .sm-lang-btn right below it: same 44px touch height, same idle
+       rgba(255,255,255,.06)/.15 track, same #6C63FF accent — carried by the
+       sliding knob (the "selected" indicator) instead of the whole track. */
+    .sm-theme-switch {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      width: 88px;
+      height: 44px;
+      border-radius: 9999px;
+      cursor: pointer;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .sm-theme-switch:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    .sm-theme-switch-knob {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-size: 13px;
+      background: #6C63FF;
+      border: 1px solid rgba(108, 99, 255, 0.6);
+      color: #ffffff;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .sm-theme-switch--dark .sm-theme-switch-knob {
+      transform: translateX(0);
+    }
+
+    .sm-theme-switch--light .sm-theme-switch-knob {
+      transform: translateX(42px);
+    }
+
+    .sm-theme-switch-label {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .sm-theme-switch--dark .sm-theme-switch-label {
+      left: 42px;
+      right: 8px;
+    }
+
+    .sm-theme-switch--light .sm-theme-switch-label {
+      left: 8px;
+      right: 42px;
+      justify-content: flex-end;
     }
 
     /* ── Responsive overrides (must be AFTER the base rules above) ── */
