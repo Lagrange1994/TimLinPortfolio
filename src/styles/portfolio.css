@@ -436,29 +436,31 @@
        primary blue instead of the default gray body-text color, echoing the
        --grad accent every one of these headlines already carries in its
        .gradient-text suffix. Dark mode keeps its own white unchanged.
-       Same light-only blue treatment extends to every card-level title
-       (.bento-label, .tech-name, .ai-card h3), the In-house/Freelance column
-       headers, each process card's photo-scrim title, and Portfolio's own
-       headline lead — all of them stay exactly as they were in dark mode. */
+       Deliberately does NOT extend to card-level titles (.bento-label,
+       .tech-name, .ai-card h3) — see the comment below those keep. The
+       In-house/Freelance column headers, each process card's photo-scrim
+       title, and Portfolio's own headline lead still get the same
+       light-only blue as the section headlines above. */
     :root[data-theme="light"] .about-h2,
     :root[data-theme="light"] .contact-headline,
-    :root[data-theme="light"] .bento-label,
-    :root[data-theme="light"] .tech-name,
     :root[data-theme="light"] .process-column-header,
     :root[data-theme="light"] .process-card--has-img .process-name,
     :root[data-theme="light"] .portfolio-headline-title {
       color: var(--primary);
     }
 
-    /* .ai-card h3 deliberately excluded from the shared light-mode headline
-       rule above: each AI card already carries its own accent hue on its
-       glyph/border (ai-cyan/ai-purple/ai-focal/ai-violet/ai-human/
-       ai-spectrum) to tell the 6 pipeline steps apart. Forcing every title
-       to the same --primary purple on top of that fought the per-card
-       accent instead of reading as its own category — cyan and green cards
-       got a mismatched purple title, and the already-purple/blue cards
-       (purple/focal/violet/spectrum, 4 of 6) doubled down on it. Titles stay
-       neutral in both themes; the accent color does the differentiating. */
+    /* .bento-label, .tech-name and .ai-card h3 are deliberately excluded from
+       the shared light-mode headline rule above: each of their cards already
+       carries its own accent hue on its glyph/icon/border (About's bento-
+       violet/cyan/human/purple/spectrum, Skills' tech-item icon colors, and
+       the ai-card variants) to tell same-section cards apart. Forcing every
+       title to the same --primary purple on top of that fought the per-card
+       accent instead of reading as its own category — a card whose accent
+       already IS purple doubled down on it, while a cyan/green card's title
+       fought its own icon. Titles stay neutral in both themes; the
+       glyph/icon/border accent does the differentiating. */
+    :root[data-theme="light"] .bento-label,
+    :root[data-theme="light"] .tech-name,
     :root[data-theme="light"] .ai-card h3 {
       color: var(--text);
     }
