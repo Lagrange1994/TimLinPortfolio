@@ -17,7 +17,7 @@ export default function ImageWithSkeleton({ src, alt, containerClassName, classN
         <div className={`relative overflow-hidden ${containerClassName || 'w-full h-full'}`}>
             {!loaded && (
                 <div className="absolute inset-0 skeleton z-10 flex items-center justify-center">
-                    <i className="ph ph-image text-white/10 text-3xl"></i>
+                    <i className="ph ph-image text-text/10 text-3xl"></i>
                 </div>
             )}
             <ResponsiveImage src={src} alt={alt} className={className} onLoad={() => setLoaded(true)} {...props} />

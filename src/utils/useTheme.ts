@@ -44,8 +44,18 @@ export function useTheme() {
     // page — the "refresh" the user was seeing wasn't imagined, it was
     // this. Naming only the actual content-card classes keeps this to the
     // ~28 elements that actually need it.
+    // Project pages (project_01–12) hit the same stuck-paint bug on any
+    // bg-{prefix}-dark/-dark-light/-dark-lighter background — not just the
+    // panel/card tiers: the split-view device-mockup column also sits on a
+    // bare bg-{prefix}-dark and was found stuck too. [class*="-dark"]
+    // catches all three (and their hover: variants) without enumerating all
+    // 12 prefixes. :not(.snap-section) excludes only the top-level hero/
+    // split-view *section* wrappers themselves — toggling display:none on
+    // those replays their descendants' .fade-in-up entrance animation on
+    // every theme flip — while still matching bare bg-{prefix}-dark
+    // elements nested inside them (they aren't .snap-section themselves).
     const affected = Array.from(
-      document.querySelectorAll<HTMLElement>('.bento-card, .ai-card, .tech-item, .process-card, .philosophy-card, .pill')
+      document.querySelectorAll<HTMLElement>('.bento-card, .ai-card, .tech-item, .process-card, .philosophy-card, .pill, [class*="-dark"]:not(.snap-section)')
     );
     const prevDisplays = affected.map(el => el.style.display);
     affected.forEach(el => { el.style.display = 'none'; });

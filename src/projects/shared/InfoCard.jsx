@@ -5,5 +5,5 @@ export function InfoGrid({ children }) {
 }
 
 export function InfoCard({ children }) {
-    return <div className="p-4 bg-white/5 rounded-xl border border-white/10">{children}</div>;
+    return <div className="p-4 bg-border/5 rounded-xl border border-border/10">{children}</div>;
 }

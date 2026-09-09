@@ -1,0 +1,515 @@
+/* Build-time replacement for public/style.css, the frozen Tailwind CLI
+   output project_01–12 used to share (checked in before the Vite/React
+   migration, never rebuilt since — new classes had to be hand-patched in).
+   This mirrors project13-tailwind.css: Tailwind v4 CSS-first config,
+   compiled live per page by @tailwindcss/postcss, so every class actually
+   used in a project_XX.jsx/shared component just works with no manual sync.
+
+   Each project case study has its own accent palette (prefix-scoped: e.g.
+   police-primary/secondary/dark). Values below were reverse-engineered from
+   the compiled rules in public/style.css, since no source config for them
+   exists anywhere in the repo. */
+@import "tailwindcss";
+
+/* ── GENSEN ROUNDED TW (self-hosted CJK font) ──
+   Lived at the top of the old public/style.css and got dropped in the Phase 1
+   migration — nothing else in the repo declares this @font-face, so every
+   project page silently fell through to Noto Sans TC/sans-serif for all body
+   copy and headings (see the font-family stacks further down: `Quicksand,
+   "GenSen Rounded TW", "Noto Sans TC", sans-serif` and `"Momo Trust Display",
+   "GenSen Rounded TW", "Noto Sans TC", sans-serif`) with no error, just a
+   visibly different typeface. Files themselves are untouched — only
+   public/style.css (the CSS that pointed at them) was removed. */
+@font-face {
+  font-family: 'GenSen Rounded TW';
+  src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-EL.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GenSen Rounded TW';
+  src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-L.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GenSen Rounded TW';
+  src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-R.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GenSen Rounded TW';
+  src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-M.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GenSen Rounded TW';
+  src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-B.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'GenSen Rounded TW';
+  src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-H.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Every project accent class above only exists as a static string SOMEWHERE
+   in the codebase because Tailwind's scanner needs to see the literal
+   candidate to generate it — and 10 of the shared/ components (HeroCTAButton,
+   BackButton, FeatureCard, ToolPill, ProcessTimeline, TabNav, ResizeHandle,
+   ScrollTopButton, GalleryItemButton, PainPointCard) build their color class
+   with `bg-${prefix}-primary`-style template interpolation instead, which the
+   scanner can never see as a concrete string. Under the old frozen
+   public/style.css this was invisible: someone had hand-patched the missing
+   classes in directly (see git history — "auto-added: missing per-project
+   theme-token utilities for shared/ components"), papering over the same gap
+   this @source inline safelist now covers properly. Without it, buttons/tabs/
+   pills render with no accent color at all — no build error, just a missing
+   rule, exactly the "颜色丢失" symptom this was added to fix. Safelists every
+   {utility}-{project prefix}-{role} combination (plus hover:/group-hover: and
+   common opacity suffixes) actually referenced across those components, so
+   Tailwind generates the rule regardless of which page happens to also spell
+   it out literally elsewhere. */
+@source inline("{hover:,group-hover:,}{bg,text,border}-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-{primary,secondary,dark,dark-light,dark-lighter,accent}{/10,/20,/30,/40,/50,/60,/70,/80,/90,}");
+
+@theme {
+  --color-app-primary: #FF4A00;
+  --color-app-secondary: #FFD700;
+  --color-app-dark: #080201;
+  --color-app-dark-light: #140502;
+  --color-app-dark-lighter: #240A05;
+
+  --color-epb-primary: #0071B8;
+  --color-epb-secondary: #FF6584;
+  --color-epb-dark: #121212;
+  --color-epb-dark-light: #1E1E1E;
+  --color-epb-dark-lighter: #2D2D2D;
+  --color-epb-accent: #00D4FF;
+
+  --color-gh-primary: #EAC435;
+  --color-gh-secondary: #FF6584;
+  --color-gh-dark: #121212;
+  --color-gh-dark-light: #1E1E1E;
+  --color-gh-dark-lighter: #2D2D2D;
+
+  --color-hc-primary: #00D4FF;
+  --color-hc-secondary: #0072CE;
+  --color-hc-dark: #121212;
+  --color-hc-dark-light: #1E1E1E;
+  --color-hc-dark-lighter: #2D2D2D;
+
+  --color-kh-primary: #00A8E8;
+  --color-kh-secondary: #FF9F1C;
+  --color-kh-dark: #0F172A;
+  --color-kh-dark-light: #1E293B;
+  --color-kh-dark-lighter: #334155;
+
+  --color-lv-primary: #00D2A0;
+  --color-lv-secondary: #FFB800;
+  --color-lv-dark: #0F1115;
+  --color-lv-dark-light: #1A1D24;
+  --color-lv-dark-lighter: #252932;
+  --color-lv-accent: #FF4757;
+
+  --color-police-primary: #00D4FF;
+  --color-police-secondary: #FF6584;
+  --color-police-dark: #0F172A;
+  --color-police-dark-light: #1E293B;
+  --color-police-dark-lighter: #334155;
+
+  --color-sm-primary: #00A0E9;
+  --color-sm-secondary: #FFB800;
+  --color-sm-dark: #0F172A;
+  --color-sm-dark-light: #1E1E1E;
+  --color-sm-dark-lighter: #334155;
+  --color-sm-accent: #22D3EE;
+
+  --color-tmu-primary: #2B6CB0;
+  --color-tmu-secondary: #C53030;
+  --color-tmu-dark: #121212;
+  --color-tmu-dark-light: #1E1E1E;
+  --color-tmu-dark-lighter: #2D2D2D;
+
+  --color-tn-primary: #2DD4BF;
+  --color-tn-secondary: #F87171;
+  --color-tn-dark: #0F1115;
+  --color-tn-dark-light: #1A1D24;
+  --color-tn-dark-lighter: #252932;
+  --color-tn-accent: #38BDF8;
+
+  --color-tym-primary: #7F3F98;
+  --color-tym-secondary: #00A0E9;
+  --color-tym-dark: #121212;
+  --color-tym-dark-light: #1E1E1E;
+  --color-tym-dark-lighter: #2D2D2D;
+
+  --color-zoo-primary: #86C232;
+  --color-zoo-secondary: #FF9671;
+  --color-zoo-dark: #0F1115;
+  --color-zoo-dark-light: #1A1D24;
+  --color-zoo-dark-lighter: #252932;
+  --color-zoo-accent: #FFC75F;
+
+  /* Neutral chrome (light-mode foundation) — the piece these pages never
+     had. Everything above is per-project brand color and stays put; these
+     two are the only neutrals project_01–12 actually use (text-white,
+     text-gray-300/400/500, border-white, bg-white, bg-black), so instead
+     of discrete text-primary/secondary/tertiary tokens, one solid base
+     per role plus
+     Tailwind's own /NN opacity modifier reproduces every existing tier —
+     text-text, text-text/70, text-text/50 — exactly the fade approach
+     already validated in portfolio.css's --text/-70/-50/-30. Same trick
+     for --color-border: it doubles as the translucent surface-fill basis
+     (bg-border/5, bg-border/10 replace bg-white/5, bg-white/10), since a
+     card fill and its border are literally the same tint at a different
+     alpha, not two separate concepts. */
+  --color-text: #FFFFFF;
+  --color-border: #FFFFFF;
+
+  /* Generic (non-prefixed) accent — police/kh's hero gradient subtitles use
+     bare `to-accent`, matching the exact class Vercel prod ships (confirmed
+     via getComputedStyle on timlin-design.vercel.app: rgb(108, 99, 255)).
+     Missed in the Phase 1 migration since it isn't tied to any one prefix.
+     Only ever used in that fixed-dark hero-photo context (like the hero
+     text itself), so — same reasoning as text-white on the hero — no
+     light-mode override: there's no light-mode prod reference to match,
+     and it never sits on a light panel. */
+  --color-accent: #6C63FF;
+}
+
+/* Light-mode overrides. Keyed off the same [data-theme="light"] attribute
+   useTheme.ts (src/utils/useTheme.ts) sets on <html> for the homepage, so
+   the same toggle mechanism drives these pages once Phase 4 wires in a
+   switch. --text value matches portfolio.css's light --text (#3A3A42,
+   neutral charcoal chosen there specifically so body copy doesn't read as
+   pure black on a light page); --border is a plain near-black instead of
+   portfolio.css's violet-tinted rgba(23,15,45,...) — these pages have no
+   ambient purple hue to echo, each project's own accent prefix already
+   carries its color identity.
+
+   The {prefix}-dark/-dark-light/-dark-lighter panel backgrounds ALSO need
+   overrides here, not just --text/--border: every tabbed content panel
+   (Context/Pain Points/Process/...) is wrapped in a bg-{prefix}-dark-light
+   container, not the adaptive bg-border/N system — without a light value
+   for that specific container, --color-text still flips to dark charcoal
+   but has nothing but the unchanged dark panel to sit on, which is
+   how this was first caught: text quietly went unreadable dark-on-dark
+   the moment data-theme="light" was set, even though the CSS itself
+   compiled cleanly with no error. Values are a fixed-recipe HSL tint
+   (S 35–45%, L 90–97%) borrowed from each prefix's own --primary hue —
+   dark(lightest, page canvas) → dark-light(card surface) → dark-lighter
+   (elevated/hover) — so every project keeps a faint brand tint instead of
+   a flat neutral white, without hand-picking 36 one-off colors.
+   Hero titles/descriptions (project_XX.jsx's <h1>/<h2>) were deliberately
+   NOT switched to these tokens — they sit on a fixed hero photo that never
+   changes between themes, same reasoning as the "GOV. INTELLIGENCE SYSTEM"
+   eyebrow badges (bare border-white/text-white, also intentionally static).
+
+   Accent colors ({prefix}-primary/-secondary/-accent) ARE also re-tuned
+   below, for the same reason the panels needed it: colors like
+   police-primary #00D4FF were designed for contrast against a near-black
+   panel and measure under 2:1 against their own pale light-mode panel tint
+   above (WCAG AA needs 4.5:1) — nearly invisible, not just "a bit low".
+   Each override keeps the source color's hue, reduces lightness and nudges
+   saturation up ~10% (so darkening doesn't read as desaturated/muddy),
+   solved iteratively per color until it clears 4.5:1 against its own
+   :root[data-theme="light"] panel background above — not a flat formula,
+   since each prefix's starting hue/panel pairing needed a different amount
+   of darkening. Dark mode is untouched; these are overrides only. */
+:root[data-theme="light"] {
+  --color-text: #3A3A42;
+  --color-border: #171717;
+
+  --color-app-primary: #C93A00;
+  --color-app-secondary: #857000;
+  --color-app-dark: #FAF6F5;
+  --color-app-dark-light: #F6EDEA;
+  --color-app-dark-lighter: #F1E1DA;
+
+  --color-epb-primary: #0071B8;
+  --color-epb-secondary: #DA002C;
+  --color-epb-accent: #00758C;
+  --color-epb-dark: #F5F8FA;
+  --color-epb-dark-light: #EAF1F6;
+  --color-epb-dark-lighter: #DAE8F1;
+
+  --color-gh-primary: #866C08;
+  --color-gh-secondary: #DA002C;
+  --color-gh-dark: #FAF9F5;
+  --color-gh-dark-light: #F6F3EA;
+  --color-gh-dark-lighter: #F1ECDA;
+
+  --color-hc-primary: #00758C;
+  --color-hc-secondary: #006EC6;
+  --color-hc-dark: #F5F9FA;
+  --color-hc-dark-light: #EAF4F6;
+  --color-hc-dark-lighter: #DAEDF1;
+
+  --color-kh-primary: #00719C;
+  --color-kh-secondary: #A15D00;
+  --color-kh-dark: #F5F9FA;
+  --color-kh-dark-light: #EAF2F6;
+  --color-kh-dark-lighter: #DAEBF1;
+
+  --color-lv-primary: #007E60;
+  --color-lv-secondary: #8C6500;
+  --color-lv-accent: #DB0013;
+  --color-lv-dark: #F5FAF9;
+  --color-lv-dark-light: #EAF6F3;
+  --color-lv-dark-lighter: #DAF1EC;
+
+  --color-police-primary: #00758C;
+  --color-police-secondary: #DA002C;
+  --color-police-dark: #F5F9FA;
+  --color-police-dark-light: #EAF4F6;
+  --color-police-dark-lighter: #DAEDF1;
+
+  --color-sm-primary: #0071A4;
+  --color-sm-secondary: #8C6500;
+  --color-sm-accent: #04788A;
+  --color-sm-dark: #F5F8FA;
+  --color-sm-dark-light: #EAF2F6;
+  --color-sm-dark-lighter: #DAEAF1;
+
+  --color-tmu-primary: #2B6CB0;
+  --color-tmu-secondary: #C53030;
+  --color-tmu-dark: #F5F7FA;
+  --color-tmu-dark-light: #EAF0F6;
+  --color-tmu-dark-lighter: #DAE5F1;
+
+  --color-tn-primary: #137B6E;
+  --color-tn-secondary: #DF0000;
+  --color-tn-accent: #0073A6;
+  --color-tn-dark: #F5FAF9;
+  --color-tn-dark-light: #EAF6F4;
+  --color-tn-dark-lighter: #DAF1EE;
+
+  --color-tym-primary: #7F3F98;
+  --color-tym-secondary: #0071A4;
+  --color-tym-dark: #F9F5FA;
+  --color-tym-dark-light: #F2EAF6;
+  --color-tym-dark-lighter: #EBDAF1;
+
+  --color-zoo-primary: #507719;
+  --color-zoo-secondary: #CF3600;
+  --color-zoo-accent: #976200;
+  --color-zoo-dark: #F8FAF5;
+  --color-zoo-dark-light: #F1F6EA;
+  --color-zoo-dark-lighter: #E7F1DA;
+}
+
+/* Split-view "device mockup showcase" panels (the left-hand column that
+   holds the screenshot/phone/browser preview) were hand-authored as flat
+   arbitrary-value grays (bg-[#1a1a1a] etc.) instead of a per-prefix token —
+   deliberately neutral so the brand hue doesn't color-cast the screenshots
+   sitting on top of them, unlike bg-{prefix}-dark elsewhere. That means they
+   were invisible to the :root[data-theme="light"] block above and stayed
+   frozen dark after every other area of the page switched. Kept as their
+   own literal-class overrides (not folded into the token system) so dark
+   mode's exact existing hex is untouched; only a light-mode value is added.
+   #split-section (project_10) is handled the same way via its element id,
+   since that page's bg-black used here would otherwise collide with the
+   phone-mockup bezel's bg-black (which must stay black in both themes). */
+:root[data-theme="light"] .bg-\[\#1a1a1a\] {
+  background-color: #ECECEC;
+}
+:root[data-theme="light"] .bg-\[\#1e293b\] {
+  background-color: #E4E9F0;
+}
+:root[data-theme="light"] .bg-\[\#050505\] {
+  background-color: var(--color-hc-dark);
+}
+:root[data-theme="light"] .bg-\[\#0f0402\] {
+  background-color: var(--color-app-dark-light);
+}
+:root[data-theme="light"] .bg-\[\#252525\] {
+  background-color: #E0E0E0;
+}
+:root[data-theme="light"] #split-section {
+  background-color: var(--color-hc-dark);
+}
+:root[data-theme="light"] #split-panel-header {
+  background-color: var(--color-hc-dark);
+}
+
+/* ===================================
+   Project Pages – Shared Styles
+   (project_01 ~ project_12 共用)
+   =================================== */
+
+#main-scroller {
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+    position: relative;
+}
+
+.snap-section {
+    width: 100vw !important;
+    height: 100vh !important;
+    position: relative;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: opacity 1s ease-in-out;
+}
+
+.snap-section.active-section {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.scroll-content {
+    overflow-y: auto !important;
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    height: 100%;
+}
+
+.feature-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+}
+
+/* Hero h1 on every project page uses Tailwind's .text-5xl (48px) below the
+   lg: breakpoint — sized for CJK titles, which pack the same meaning into
+   far fewer characters. English titles at the same 48px wrap onto several
+   more lines inside the fixed 100vh hero section, pushing the CTA button
+   below the viewport. .text-5xl appears exactly once per project page (the
+   hero h1), so it's safe to target directly; clamp() instead of a fixed
+   px so the very longest English titles (e.g. project_11's) still shrink
+   further on the narrowest phones instead of overflowing again. */
+@media (max-width: 767px) {
+    html[lang="en"] .text-5xl {
+        font-size: clamp(1.5rem, 8vw, 2.25rem);
+    }
+}
+
+.custom-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: #3D3D3D;
+    border-radius: 10px;
+}
+
+.loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 9999;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.loader-text {
+    color: #fff;
+    opacity: 0.7;
+    font-size: 14px;
+    letter-spacing: 0.02em;
+}
+
+.loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loader-animation {
+    width: 65px;
+    aspect-ratio: 1;
+    position: relative;
+}
+
+.loader-animation:before,
+.loader-animation:after {
+    content: "";
+    position: absolute;
+    border-radius: 50px;
+    box-shadow: 0 0 0 3px inset #fff;
+    animation: l4 2.5s infinite;
+}
+
+.loader-animation:after {
+    animation-delay: -1.25s;
+}
+
+@keyframes l4 {
+    0%    { inset: 0 35px 35px 0; }
+    12.5% { inset: 0 35px 0 0; }
+    25%   { inset: 35px 35px 0 0; }
+    37.5% { inset: 35px 0 0 0; }
+    50%   { inset: 35px 0 0 35px; }
+    62.5% { inset: 0 0 0 35px; }
+    75%   { inset: 0 0 35px 35px; }
+    87.5% { inset: 0 0 35px 0; }
+    100%  { inset: 0 35px 35px 0; }
+}
+
+.skeleton {
+    background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+}
+
+/* ImageWithSkeleton.jsx has no prefix prop (it's used before any per-project
+   token would apply), so this stays one shared neutral gradient rather than
+   12 per-prefix versions — same reasoning as the showcase-panel grays above. */
+:root[data-theme="light"] .skeleton {
+    background: linear-gradient(110deg, #ECECEC 8%, #DADADA 18%, #ECECEC 33%);
+}
+
+@keyframes shimmer {
+    to { background-position-x: -200%; }
+}
+
+.fade-in-up {
+    animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(40px);
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.back-btn i {
+    transition: transform 0.3s ease;
+}
+
+.back-btn:hover i {
+    transform: translateX(-4px);
+}

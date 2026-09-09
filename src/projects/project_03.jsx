@@ -1,9 +1,10 @@
+import '../styles/projects-tailwind.css';
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
-    SharedIcons, BackButton, ScrollTopButton, HeroCTAButton, TabNav, ToolPill,
+    SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, PainPointCard, ProcessTimeline, FeatureCard,
     GalleryItemButton, BrowserFrame, ImageWithSkeleton,
 } from './shared/index.js';
@@ -435,6 +436,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <BackButton prefix="kh" label={t('back_home')} onClick={goBack} />
+                        <ThemeToggle prefix="kh" />
                     </nav>
 
                     <ScrollTopButton prefix="kh" visible={showBackToHero} onClick={() => scrollToSection(0)} />
@@ -457,12 +459,12 @@ gsap.registerPlugin(ScrollToPlugin);
 
                         {/* [修改] bg-dark -> bg-kh-dark */}
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-kh-dark overflow-hidden">
-                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl">
+                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl">
                                 <div className="w-full h-[35vh] lg:h-full flex items-center justify-center">
                                     {/* [修改] bg-dark-light -> bg-kh-dark-light */}
-                                    <div className="relative w-full max-w-full max-h-full lg:max-h-[90%] bg-kh-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col">
+                                    <div className="relative w-full max-w-full max-h-full lg:max-h-[90%] bg-kh-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col">
                                         {(activeTab === 'solution' || activeTab === 'climax') && <BrowserFrame />}
-                                        <ImageWithSkeleton src={currentImage} alt="Preview" containerClassName="relative bg-white/5 group h-full w-full" className="w-full h-full object-cover" />
+                                        <ImageWithSkeleton src={currentImage} alt="Preview" containerClassName="relative bg-border/5 group h-full w-full" className="w-full h-full object-cover" />
                                     </div>
                                 </div>
                             </div>
@@ -470,10 +472,10 @@ gsap.registerPlugin(ScrollToPlugin);
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     {/* [修改] bg-dark/95 -> bg-kh-dark/95 */}
-                                    <div className="sticky top-0 bg-kh-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                    <div className="sticky top-0 bg-kh-dark/95 backdrop-blur-xl z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4">New Generation Smart Technology Investigation System</p>
+                                            <h2 className="text-xl lg:text-3xl font-bold text-text font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
+                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">New Generation Smart Technology Investigation System</p>
 
                                             <TabNav
                                                 prefix="kh"
@@ -490,12 +492,12 @@ gsap.registerPlugin(ScrollToPlugin);
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
                                                 <div className="space-y-4 lg:space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
-                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3>
+                                                    <p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
                                                     <InfoGrid>
-                                                        <InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
                                                         <InfoCard>
-                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
+                                                            <div className="text-xs text-text/45 uppercase mb-2">Tools</div>
                                                             <div className="flex flex-wrap gap-2">
                                                                 <ToolPill prefix="kh" color="primary" icon={<SharedIcons.Figma />} label="Figma" />
                                                                 <ToolPill prefix="kh" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" />
@@ -503,9 +505,9 @@ gsap.registerPlugin(ScrollToPlugin);
                                                         </InfoCard>
                                                     </InfoGrid>
                                                 </div>
-                                                <div className="w-full h-px bg-white/10"></div>
+                                                <div className="w-full h-px bg-border/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-kh-secondary rounded-full mr-3"></span>{t('pain_title')}</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-kh-secondary rounded-full mr-3"></span>{t('pain_title')}</h3>
                                                     <PainPointCard
                                                         prefix="kh"
                                                         subtitle={t('pain_sub')}
@@ -521,8 +523,8 @@ gsap.registerPlugin(ScrollToPlugin);
 
                                         {activeTab === 'process' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3>
-                                                <p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('process_title')}</h3>
+                                                <p className="text-xs text-text/60 mb-6">{t('process_sub')}</p>
                                                 <ProcessTimeline
                                                     prefix="kh"
                                                     glowShadowClass="shadow-[0_0_10px_rgba(0,168,232,0.5)]"
@@ -538,7 +540,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                                         {activeTab === 'solution' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('solution_title')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('solution_title')}</h3>
                                                 <div className="space-y-4">
                                                     {solutionFeatures.map((sol) => {
                                                         const IconComp = Icons[sol.icon];
@@ -562,13 +564,13 @@ gsap.registerPlugin(ScrollToPlugin);
 
                                         {activeTab === 'climax' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn pb-12">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
-                                                <p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('gallery_title')}</h3>
+                                                <p className="text-text/60 mb-8 text-sm">{t('gallery_desc')}</p>
                                                 <div className="space-y-6">
                                                     {galleryCategories.map((category) => (
                                                         <div key={category.id} className="space-y-3">
                                                             <h4 className="text-kh-primary font-bold text-md flex items-center"><span className="w-2 h-2 rounded-full bg-kh-primary mr-2"></span>{category.title}</h4>
-                                                            <div className="grid gap-3 pl-4 border-l border-white/10">
+                                                            <div className="grid gap-3 pl-4 border-l border-border/10">
                                                                 {category.images.map((img) => (
                                                                     <GalleryItemButton
                                                                         key={img.id}
@@ -594,12 +596,12 @@ gsap.registerPlugin(ScrollToPlugin);
                                         {peekTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
                                                 <div className="space-y-4 lg:space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
-                                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3>
+                                                    <p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
                                                     <InfoGrid>
-                                                        <InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
                                                         <InfoCard>
-                                                            <div className="text-xs text-gray-500 uppercase mb-2">Tools</div>
+                                                            <div className="text-xs text-text/45 uppercase mb-2">Tools</div>
                                                             <div className="flex flex-wrap gap-2">
                                                                 <ToolPill prefix="kh" color="primary" icon={<SharedIcons.Figma />} label="Figma" />
                                                                 <ToolPill prefix="kh" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" />
@@ -607,9 +609,9 @@ gsap.registerPlugin(ScrollToPlugin);
                                                         </InfoCard>
                                                     </InfoGrid>
                                                 </div>
-                                                <div className="w-full h-px bg-white/10"></div>
+                                                <div className="w-full h-px bg-border/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-kh-secondary rounded-full mr-3"></span>{t('pain_title')}</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-kh-secondary rounded-full mr-3"></span>{t('pain_title')}</h3>
                                                     <PainPointCard
                                                         prefix="kh"
                                                         subtitle={t('pain_sub')}
@@ -625,8 +627,8 @@ gsap.registerPlugin(ScrollToPlugin);
 
                                         {peekTab === 'process' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3>
-                                                <p className="text-xs text-gray-400 mb-6">{t('process_sub')}</p>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('process_title')}</h3>
+                                                <p className="text-xs text-text/60 mb-6">{t('process_sub')}</p>
                                                 <ProcessTimeline
                                                     prefix="kh"
                                                     glowShadowClass="shadow-[0_0_10px_rgba(0,168,232,0.5)]"
@@ -642,7 +644,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                                         {peekTab === 'solution' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('solution_title')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('solution_title')}</h3>
                                                 <div className="space-y-4">
                                                     {solutionFeatures.map((sol) => {
                                                         const IconComp = Icons[sol.icon];
@@ -666,13 +668,13 @@ gsap.registerPlugin(ScrollToPlugin);
 
                                         {peekTab === 'climax' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn pb-12">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
-                                                <p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('gallery_title')}</h3>
+                                                <p className="text-text/60 mb-8 text-sm">{t('gallery_desc')}</p>
                                                 <div className="space-y-6">
                                                     {galleryCategories.map((category) => (
                                                         <div key={category.id} className="space-y-3">
                                                             <h4 className="text-kh-primary font-bold text-md flex items-center"><span className="w-2 h-2 rounded-full bg-kh-primary mr-2"></span>{category.title}</h4>
-                                                            <div className="grid gap-3 pl-4 border-l border-white/10">
+                                                            <div className="grid gap-3 pl-4 border-l border-border/10">
                                                                 {category.images.map((img) => (
                                                                     <GalleryItemButton
                                                                         key={img.id}

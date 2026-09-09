@@ -1,9 +1,10 @@
+import '../styles/projects-tailwind.css';
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
-    SharedIcons, BackButton, ScrollTopButton, HeroCTAButton, TabNav, ToolPill,
+    SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, PainPointCard, ProcessTimeline, FeatureCard,
     GalleryItemButton, BrowserFrame, ImageWithSkeleton,
 } from './shared/index.js';
@@ -404,6 +405,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <BackButton prefix="epb" label={t('back_home')} onClick={goBack} />
+                        <ThemeToggle prefix="epb" />
                     </nav>
 
                     <ScrollTopButton prefix="epb" visible={showBackToHero} onClick={() => scrollToSection(0)} />
@@ -425,19 +427,19 @@ gsap.registerPlugin(ScrollToPlugin);
                         {/* [修改] bg-dark -> bg-epb-dark */}
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-epb-dark overflow-hidden">
                             {/* [修改] bg-[#1e293b] (保留原色碼) */}
-                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl">
+                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl">
                                 <div className="w-full h-[35vh] lg:h-full flex flex-col items-center justify-center">
                                     <div className="flex-1 min-h-0 w-full flex items-center justify-center">
                                         {/* [修改] bg-dark-light -> bg-epb-dark-light */}
-                                        <div className={`relative transition-all duration-500 shadow-2xl rounded-xl border border-white/10 overflow-hidden flex flex-col ${showBrowserHeader ? 'w-full h-full max-w-full max-h-full lg:max-h-[90%] bg-epb-dark-light' : 'w-auto h-auto max-w-full max-h-full lg:max-h-[90%] bg-transparent'}`}>
+                                        <div className={`relative transition-all duration-500 shadow-2xl rounded-xl border border-border/10 overflow-hidden flex flex-col ${showBrowserHeader ? 'w-full h-full max-w-full max-h-full lg:max-h-[90%] bg-epb-dark-light' : 'w-auto h-auto max-w-full max-h-full lg:max-h-[90%] bg-transparent'}`}>
                                             {showBrowserHeader && <BrowserFrame />}
-                                            <div ref={imageScrollRef} className={`relative w-full h-full scrollable-area ${showBrowserHeader ? 'flex-1 min-h-0 block bg-white/5' : 'overflow-hidden flex items-center justify-center h-full'}`}>
+                                            <div ref={imageScrollRef} className={`relative w-full h-full scrollable-area ${showBrowserHeader ? 'flex-1 min-h-0 block bg-border/5' : 'overflow-hidden flex items-center justify-center h-full'}`}>
                                                 <ImageWithSkeleton src={currentImage} alt="Preview" className={`transition-all duration-500 block ${showBrowserHeader ? 'w-full h-auto' : 'max-w-full max-h-full object-contain'}`} containerClassName={showBrowserHeader ? 'w-full h-auto' : 'w-full h-full flex items-center justify-center'} />
                                             </div>
                                         </div>
                                     </div>
                                     {showBrowserHeader && (
-                                        <div className="text-center mt-2 text-xs text-gray-500 shrink-0"><i className="ph ph-arrows-down-up mr-2"></i>{t('scroll_hint')}</div>
+                                        <div className="text-center mt-2 text-xs text-text/45 shrink-0"><i className="ph ph-arrows-down-up mr-2"></i>{t('scroll_hint')}</div>
                                     )}
                                 </div>
                             </div>
@@ -445,10 +447,10 @@ gsap.registerPlugin(ScrollToPlugin);
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     {/* [修改] bg-dark/95 -> bg-epb-dark/95 */}
-                                    <div className="sticky top-0 bg-epb-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                    <div className="sticky top-0 bg-epb-dark/95 backdrop-blur-xl z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4">UI/UX Design Audit Report</p>
+                                            <h2 className="text-xl lg:text-3xl font-bold text-text font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
+                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">UI/UX Design Audit Report</p>
                                             <TabNav
                                                 prefix="epb"
                                                 containerRef={tabsContainerRef}
@@ -463,11 +465,11 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
                                                     <InfoGrid>
-                                                        <InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
                                                         <InfoCard>
-                                                            <div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div>
+                                                            <div className="text-xs text-text/45 uppercase mb-2">{t('tools')}</div>
                                                             <div className="flex flex-wrap gap-2">
                                                                 <ToolPill prefix="epb" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
                                                                 <ToolPill prefix="epb" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" />
@@ -475,9 +477,9 @@ gsap.registerPlugin(ScrollToPlugin);
                                                         </InfoCard>
                                                     </InfoGrid>
                                                 </div>
-                                                <div className="w-full h-px bg-white/10"></div>
+                                                <div className="w-full h-px bg-border/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-epb-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-epb-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3>
                                                     <PainPointCard
                                                         prefix="epb"
                                                         subtitle={t('conflict_sub')}
@@ -491,7 +493,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('process_title')}</h3>
                                                 <ProcessTimeline
                                                     prefix="epb"
                                                     glowShadowClass="shadow-[0_0_10px_rgba(0,113,184,0.5)]"
@@ -505,7 +507,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                             </div>
                                         )}
                                         {activeTab === 'solution' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('sol_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('sol_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (
                                                 <FeatureCard
                                                     key={sol.id}
                                                     prefix="epb"
@@ -520,7 +522,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                             ); })}</div></div>
                                         )}
                                         {activeTab === 'climax' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-text/60 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (
                                                 <GalleryItemButton
                                                     key={img.id}
                                                     prefix="epb"
@@ -540,11 +542,11 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={peekContentRef} style={{ transform: `translateX(${peekDragDirection * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
                                         {peekTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
                                                     <InfoGrid>
-                                                        <InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
                                                         <InfoCard>
-                                                            <div className="text-xs text-gray-500 uppercase mb-2">{t('tools')}</div>
+                                                            <div className="text-xs text-text/45 uppercase mb-2">{t('tools')}</div>
                                                             <div className="flex flex-wrap gap-2">
                                                                 <ToolPill prefix="epb" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
                                                                 <ToolPill prefix="epb" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" />
@@ -552,9 +554,9 @@ gsap.registerPlugin(ScrollToPlugin);
                                                         </InfoCard>
                                                     </InfoGrid>
                                                 </div>
-                                                <div className="w-full h-px bg-white/10"></div>
+                                                <div className="w-full h-px bg-border/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-epb-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-epb-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3>
                                                     <PainPointCard
                                                         prefix="epb"
                                                         subtitle={t('conflict_sub')}
@@ -568,7 +570,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                             </div>
                                         )}
                                         {peekTab === 'process' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('process_title')}</h3>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('process_title')}</h3>
                                                 <ProcessTimeline
                                                     prefix="epb"
                                                     glowShadowClass="shadow-[0_0_10px_rgba(0,113,184,0.5)]"
@@ -582,7 +584,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                             </div>
                                         )}
                                         {peekTab === 'solution' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('sol_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('sol_title')}</h3><div className="space-y-4">{solutionFeatures.map((sol) => { const IconComp = Icons[sol.icon]; return (
                                                 <FeatureCard
                                                     key={sol.id}
                                                     prefix="epb"
@@ -597,7 +599,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                             ); })}</div></div>
                                         )}
                                         {peekTab === 'climax' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-gray-400 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-text/60 mb-6 text-sm">{t('gallery_desc')}</p><div className="grid gap-4">{galleryImages.map((img) => (
                                                 <GalleryItemButton
                                                     key={img.id}
                                                     prefix="epb"

@@ -24,11 +24,11 @@
 
 **主頁：** `index.html`（root）只有 `<div id="root">`，由 `/src/main.tsx` 掛載 `src/App.tsx`（React SPA）。版面組件在 `src/components/`（Loader、BeamsBackground、Navbar、HeroSection、AboutSection、SkillsSection、PortfolioSection、ContactSection、ChatPanel），i18n 在 `src/context/LangContext`。reactbits 風格效果（Beams、Spotlight cards、Magic Bento 等）都已用 React + GSAP 重寫進這些元件——**不是純靜態 HTML，不要當成靜態頁面去改。**
 
-**專案頁：** `project_01.html`～`project_13.html`（root）是 Vite MPA entry，對應 `src/projects/project_XX.jsx`（React + GSAP）。這些頁面額外用 `<link rel="stylesheet" href="/style.css" />` 載入 `public/style.css`，跟主頁的 `src/styles/portfolio.css` 是兩套獨立樣式。
+**專案頁：** `project_01.html`～`project_13.html`（root）是 Vite MPA entry，對應 `src/projects/project_XX.jsx`（React + GSAP）。project_01～12 由 `project_XX.jsx` 開頭 `import '../styles/projects-tailwind.css'` 載入樣式（Tailwind v4 CSS-first、即時編譯，2026-09 遷移前是靜態 `public/style.css`），project_13 則 import 自己的 `src/styles/project13-tailwind.css`；跟主頁的 `src/styles/portfolio.css` 是三套獨立樣式。
 
 **Build：** `npm run build` 用 `vite.config.js`，輸出到 `dist/`。`vercel.json` 設定 `outputDirectory: dist`。
 
-**`public/` 資料夾：** 純靜態資源（img/、models/、style.css），不含 index.html。
+**`public/` 資料夾：** 純靜態資源（img/、models/），不含 index.html、不含任何 CSS——樣式全部改由 `src/styles/*.css` 經 Vite/PostCSS 即時編譯。
 
 **不再使用：** Next.js、`app/layout.tsx`、`app/route.ts`、`app/globals.css`（已確認 repo 內無 `app/`、無 `next.config.*`、package.json 無 `next` 依賴，勿重新引入）。
 

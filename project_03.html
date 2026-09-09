@@ -16,7 +16,6 @@
   <meta name="twitter:title" content="高雄市警察局 | 新世代智慧科技辦案系統 - UI/UX Case Study" />
   <meta name="twitter:description" content="高雄市警察局新世代智慧科技辦案系統介面設計，個人作品。以 Figma + React 打造，聚焦設備妥善率管理，確保攝影機與伺服器等辦案工具隨時可用。" />
   <meta name="twitter:image" content="https://timlin-design.vercel.app/img/my_portfolio/police.webp" />
-  <link rel="stylesheet" href="/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet" />
@@ -70,6 +69,29 @@
         }
 
         .loader { background: #0F172A; transition: opacity 0.1s ease, visibility 0.1s ease; }
+
+        /* Light-mode overrides for this file's own hand-authored bootstrap CSS.
+           hero-bg-custom/::before and .loader deliberately excluded — fixed
+           photo + vignette, same reasoning as the always-white hero text. */
+        html[data-theme="light"],
+        html[data-theme="light"] body {
+            background-color: var(--color-kh-dark);
+            color: var(--color-text);
+        }
+
+        :root[data-theme="light"] .glass-panel {
+            background: linear-gradient(135deg, color-mix(in srgb, var(--color-kh-dark-light) 95%, transparent), color-mix(in srgb, var(--color-kh-dark) 98%, transparent));
+            border-left-color: color-mix(in srgb, var(--color-border) 8%, transparent);
+        }
+
+        :root[data-theme="light"] .feature-card:hover {
+            border-color: color-mix(in srgb, var(--color-kh-primary) 40%, transparent);
+            box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--color-kh-primary) 20%, transparent);
+        }
+
+        :root[data-theme="light"] .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--color-kh-primary);
+        }
     </style>
 </head>
 <body>

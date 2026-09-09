@@ -16,7 +16,6 @@
   <meta name="twitter:title" content="Love Two live app | 互動式直播社群設計" />
   <meta name="twitter:description" content="Love Two live app 直播社群介面設計，個人作品。以 Adobe XD 打造青綠色科技感視覺與遊戲化任務機制，解決用戶留存痛點，塑造差異化品牌識別。" />
   <meta name="twitter:image" content="https://timlin-design.vercel.app/img/my_portfolio/stream.webp" />
-  <link rel="stylesheet" href="/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet" />
@@ -102,6 +101,40 @@
         }
 
         .loader { background: #0F1115; transition: opacity 0.1s ease, visibility 0.1s ease; }
+
+        /* Light-mode overrides for this file's own hand-authored bootstrap CSS.
+           hero-bg-custom/::before and .loader deliberately excluded — fixed
+           photo + vignette, same reasoning as the always-white hero text. */
+        html[data-theme="light"],
+        html[data-theme="light"] body {
+            background-color: var(--color-lv-dark);
+            color: var(--color-text);
+        }
+
+        :root[data-theme="light"] .glass-panel {
+            background: linear-gradient(135deg, color-mix(in srgb, var(--color-lv-dark-light) 95%, transparent), color-mix(in srgb, var(--color-lv-dark) 98%, transparent));
+            border-left-color: color-mix(in srgb, var(--color-border) 8%, transparent);
+        }
+
+        :root[data-theme="light"] .feature-card {
+            background: linear-gradient(135deg, color-mix(in srgb, var(--color-border) 5%, transparent), color-mix(in srgb, var(--color-border) 1%, transparent));
+            border-color: color-mix(in srgb, var(--color-border) 10%, transparent);
+        }
+
+        :root[data-theme="light"] .feature-card:hover {
+            border-color: color-mix(in srgb, var(--color-lv-primary) 40%, transparent);
+            box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--color-lv-primary) 20%, transparent);
+        }
+
+        :root[data-theme="light"] .feature-card.active {
+            border-color: color-mix(in srgb, var(--color-lv-primary) 80%, transparent);
+            background: linear-gradient(135deg, color-mix(in srgb, var(--color-border) 10%, transparent), color-mix(in srgb, var(--color-border) 2%, transparent));
+            box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--color-lv-primary) 30%, transparent);
+        }
+
+        :root[data-theme="light"] .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--color-lv-primary);
+        }
     </style>
 </head>
 <body>

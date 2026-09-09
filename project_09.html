@@ -16,7 +16,6 @@
   <meta name="twitter:title" content="新竹縣環保局 | 內部整合資訊系統 - UX Case Study" />
   <meta name="twitter:description" content="新竹縣環保局內部整合資訊系統介面設計，個人作品。以 HTML/CSS 打造，集中通訊錄查找、會議室預約與公文下載，取代分散的行政流程入口。" />
   <meta name="twitter:image" content="https://timlin-design.vercel.app/img/my_portfolio/enviroment.webp" />
-  <link rel="stylesheet" href="/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet" />
@@ -95,6 +94,34 @@
         }
 
         .loader { background: #121212; transition: opacity 0.1s ease, visibility 0.1s ease; }
+
+        /* Light-mode overrides for this file's own hand-authored bootstrap CSS.
+           hero-bg-custom/::before and .loader deliberately excluded — fixed
+           photo + vignette, same reasoning as the always-white hero text. */
+        html[data-theme="light"],
+        html[data-theme="light"] body {
+            background-color: var(--color-epb-dark);
+            color: var(--color-text);
+        }
+
+        :root[data-theme="light"] .glass-panel {
+            background: linear-gradient(135deg, color-mix(in srgb, var(--color-epb-dark-light) 95%, transparent), color-mix(in srgb, var(--color-epb-dark) 98%, transparent));
+            border-left-color: color-mix(in srgb, var(--color-border) 8%, transparent);
+        }
+
+        :root[data-theme="light"] .feature-card {
+            background: linear-gradient(135deg, color-mix(in srgb, var(--color-border) 5%, transparent), color-mix(in srgb, var(--color-border) 1%, transparent));
+            border-color: color-mix(in srgb, var(--color-border) 10%, transparent);
+        }
+
+        :root[data-theme="light"] .feature-card:hover {
+            border-color: color-mix(in srgb, var(--color-epb-primary) 40%, transparent);
+            box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--color-epb-primary) 20%, transparent);
+        }
+
+        :root[data-theme="light"] .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--color-epb-primary);
+        }
     </style>
 </head>
 <body>

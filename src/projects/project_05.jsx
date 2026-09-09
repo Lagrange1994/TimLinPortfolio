@@ -1,9 +1,10 @@
+import '../styles/projects-tailwind.css';
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
-    SharedIcons, BackButton, ScrollTopButton, HeroCTAButton, TabNav,
+    SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav,
     ToolPill, InfoGrid, InfoCard, PainPointCard, FeatureCard,
     GalleryItemButton, BrowserFrame, ImageWithSkeleton, ResizeHandle,
 } from './shared/index.js';
@@ -14,9 +15,9 @@ gsap.registerPlugin(ScrollToPlugin);
 
         const WebFrame = ({ src }) => (
             <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
+                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
                     <BrowserFrame />
-                    <div className="w-full h-full bg-white/5 flex items-center justify-center overflow-hidden relative group">
+                    <div className="w-full h-full bg-border/5 flex items-center justify-center overflow-hidden relative group">
                         <ImageWithSkeleton src={src} alt="Web View" className="w-full h-full object-contain" />
                     </div>
                 </div>
@@ -25,8 +26,8 @@ gsap.registerPlugin(ScrollToPlugin);
 
         const SimpleRoundedFrame = ({ src }) => (
             <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
-                    <div className="w-full h-full bg-white/5 flex items-center justify-center overflow-hidden relative group">
+                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
+                    <div className="w-full h-full bg-border/5 flex items-center justify-center overflow-hidden relative group">
                         <ImageWithSkeleton src={src} alt="Context View" className="w-full h-full object-contain" />
                     </div>
                 </div>
@@ -476,6 +477,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <BackButton prefix="zoo" label={t('back_home')} onClick={goBack} />
+                        <ThemeToggle prefix="zoo" />
                     </nav>
 
                     <ScrollTopButton prefix="zoo" visible={showBackToHero} onClick={() => scrollToSection(0)} />
@@ -493,17 +495,17 @@ gsap.registerPlugin(ScrollToPlugin);
                         </section>
 
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-zoo-dark h-screen overflow-hidden relative">
-                            <div ref={imageScrollRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-black flex items-center justify-center border-b lg:border-b-0 lg:border-r border-white/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div ref={imageScrollRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 {renderPreview()}
                                 <ResizeHandle prefix="zoo" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
                             </div>
 
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
-                                    <div className="sticky top-0 bg-zoo-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                    <div className="sticky top-0 bg-zoo-dark/95 backdrop-blur-xl z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold text-white font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4">Internal Management & Mobile Response</p>
+                                            <h2 className="text-xl lg:text-3xl font-bold text-text font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
+                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">Internal Management & Mobile Response</p>
                                             <TabNav
                                                 prefix="zoo"
                                                 containerRef={tabsContainerRef}
@@ -518,17 +520,17 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><InfoGrid><InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard><InfoCard><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><ToolPill prefix="zoo" color="primary" icon={<SharedIcons.Figma />} label="Figma" /><ToolPill prefix="zoo" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" /></div></InfoCard></InfoGrid></div>
-                                                <div className="w-full h-px bg-white/10"></div>
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><PainPointCard prefix="zoo" subtitle={t('pain_sub')} items={[{ title: t('pain_1_title'), desc: t('pain_1_desc') }, { title: t('pain_2_title'), desc: t('pain_2_desc') }, { title: t('pain_3_title'), desc: t('pain_3_desc') }]} /></div>
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p><InfoGrid><InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard><InfoCard><div className="text-xs text-text/45 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><ToolPill prefix="zoo" color="primary" icon={<SharedIcons.Figma />} label="Figma" /><ToolPill prefix="zoo" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" /></div></InfoCard></InfoGrid></div>
+                                                <div className="w-full h-px bg-border/10"></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><PainPointCard prefix="zoo" subtitle={t('pain_sub')} items={[{ title: t('pain_1_title'), desc: t('pain_1_desc') }, { title: t('pain_2_title'), desc: t('pain_2_desc') }, { title: t('pain_3_title'), desc: t('pain_3_desc') }]} /></div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('web_title')}</h3>
-                                                <div className="feature-card feature-card-primary p-5 mb-8"><h4 className="text-zoo-primary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">♜</span> {t('web_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p3')}</span></li></ul></div>
-                                                <div className="w-full h-px bg-white/10 mb-8"></div>
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-primary rounded-full mr-3"></span>{t('web_core')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-6">{t('web_title')}</h3>
+                                                <div className="feature-card feature-card-primary p-5 mb-8"><h4 className="text-zoo-primary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">♜</span> {t('web_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-text/80"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p1')}</span></li><li className="flex items-start text-sm text-text/80"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p2')}</span></li><li className="flex items-start text-sm text-text/80"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p3')}</span></li></ul></div>
+                                                <div className="w-full h-px bg-border/10 mb-8"></div>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-primary rounded-full mr-3"></span>{t('web_core')}</h3>
                                                 <div className="space-y-4">{webFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
                                                     return (
@@ -548,10 +550,10 @@ gsap.registerPlugin(ScrollToPlugin);
                                         )}
                                         {activeTab === 'solution' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('app_title')}</h3>
-                                                <div className="feature-card feature-card-secondary p-5 mb-8"><h4 className="text-zoo-secondary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">⚡</span> {t('app_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p3')}</span></li></ul></div>
-                                                <div className="w-full h-px bg-white/10 mb-8"></div>
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('app_core')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-6">{t('app_title')}</h3>
+                                                <div className="feature-card feature-card-secondary p-5 mb-8"><h4 className="text-zoo-secondary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">⚡</span> {t('app_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-text/80"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p1')}</span></li><li className="flex items-start text-sm text-text/80"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p2')}</span></li><li className="flex items-start text-sm text-text/80"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p3')}</span></li></ul></div>
+                                                <div className="w-full h-px bg-border/10 mb-8"></div>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('app_core')}</h3>
                                                 <div className="space-y-4">{appFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
                                                     return (
@@ -571,8 +573,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                         )}
                                         {activeTab === 'climax' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn pb-12">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
-                                                <p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('gallery_title')}</h3>
+                                                <p className="text-text/60 mb-8 text-sm">{t('gallery_desc')}</p>
                                                 <div className="space-y-6">
                                                     {galleryCategories.map(category => (
                                                         <div key={category.id} className="space-y-3">
@@ -580,7 +582,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                                 <span className={`w-2 h-2 rounded-full mr-2 ${category.type === 'web' ? 'bg-zoo-primary' : 'bg-zoo-secondary'}`}></span>
                                                                 {category.title}
                                                             </h4>
-                                                            <div className="grid gap-3 pl-4 border-l border-white/10">
+                                                            <div className="grid gap-3 pl-4 border-l border-border/10">
                                                                 {category.images.map(img => (
                                                                     <GalleryItemButton
                                                                         key={img.id}
@@ -605,17 +607,17 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={peekContentRef} style={{ transform: `translateX(${peekDragDirection * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
                                         {peekTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-gray-300 text-sm leading-relaxed mb-4">{t('context_desc')}</p><InfoGrid><InfoCard><div className="text-xs text-gray-500 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-white">{t('role_name')}</div></InfoCard><InfoCard><div className="text-xs text-gray-500 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><ToolPill prefix="zoo" color="primary" icon={<SharedIcons.Figma />} label="Figma" /><ToolPill prefix="zoo" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" /></div></InfoCard></InfoGrid></div>
-                                                <div className="w-full h-px bg-white/10"></div>
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><PainPointCard prefix="zoo" subtitle={t('pain_sub')} items={[{ title: t('pain_1_title'), desc: t('pain_1_desc') }, { title: t('pain_2_title'), desc: t('pain_2_desc') }, { title: t('pain_3_title'), desc: t('pain_3_desc') }]} /></div>
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p><InfoGrid><InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard><InfoCard><div className="text-xs text-text/45 uppercase mb-2">Tools</div><div className="flex flex-wrap gap-2"><ToolPill prefix="zoo" color="primary" icon={<SharedIcons.Figma />} label="Figma" /><ToolPill prefix="zoo" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" /></div></InfoCard></InfoGrid></div>
+                                                <div className="w-full h-px bg-border/10"></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('pain_title')}</h3><PainPointCard prefix="zoo" subtitle={t('pain_sub')} items={[{ title: t('pain_1_title'), desc: t('pain_1_desc') }, { title: t('pain_2_title'), desc: t('pain_2_desc') }, { title: t('pain_3_title'), desc: t('pain_3_desc') }]} /></div>
                                             </div>
                                         )}
                                         {peekTab === 'process' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('web_title')}</h3>
-                                                <div className="feature-card feature-card-primary p-5 mb-8"><h4 className="text-zoo-primary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">♜</span> {t('web_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p3')}</span></li></ul></div>
-                                                <div className="w-full h-px bg-white/10 mb-8"></div>
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-primary rounded-full mr-3"></span>{t('web_core')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-6">{t('web_title')}</h3>
+                                                <div className="feature-card feature-card-primary p-5 mb-8"><h4 className="text-zoo-primary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">♜</span> {t('web_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-text/80"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p1')}</span></li><li className="flex items-start text-sm text-text/80"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p2')}</span></li><li className="flex items-start text-sm text-text/80"><span className="text-zoo-primary mr-2">•</span><span>{t('web_p3')}</span></li></ul></div>
+                                                <div className="w-full h-px bg-border/10 mb-8"></div>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-primary rounded-full mr-3"></span>{t('web_core')}</h3>
                                                 <div className="space-y-4">{webFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
                                                     return (
@@ -635,10 +637,10 @@ gsap.registerPlugin(ScrollToPlugin);
                                         )}
                                         {peekTab === 'solution' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-6">{t('app_title')}</h3>
-                                                <div className="feature-card feature-card-secondary p-5 mb-8"><h4 className="text-zoo-secondary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">⚡</span> {t('app_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p1')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p2')}</span></li><li className="flex items-start text-sm text-gray-300"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p3')}</span></li></ul></div>
-                                                <div className="w-full h-px bg-white/10 mb-8"></div>
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('app_core')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-6">{t('app_title')}</h3>
+                                                <div className="feature-card feature-card-secondary p-5 mb-8"><h4 className="text-zoo-secondary font-bold text-lg mb-3 flex items-center"><span className="text-2xl mr-2">⚡</span> {t('app_summary')}</h4><ul className="space-y-3"><li className="flex items-start text-sm text-text/80"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p1')}</span></li><li className="flex items-start text-sm text-text/80"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p2')}</span></li><li className="flex items-start text-sm text-text/80"><span className="text-zoo-secondary mr-2">•</span><span>{t('app_p3')}</span></li></ul></div>
+                                                <div className="w-full h-px bg-border/10 mb-8"></div>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-zoo-secondary rounded-full mr-3"></span>{t('app_core')}</h3>
                                                 <div className="space-y-4">{appFeatures.map(feat => {
                                                     const IconComp = Icons[feat.icon];
                                                     return (
@@ -658,8 +660,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                         )}
                                         {peekTab === 'climax' && (
                                             <div className="space-y-6 lg:space-y-8 animate-fadeIn pb-12">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
-                                                <p className="text-gray-400 mb-8 text-sm">{t('gallery_desc')}</p>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('gallery_title')}</h3>
+                                                <p className="text-text/60 mb-8 text-sm">{t('gallery_desc')}</p>
                                                 <div className="space-y-6">
                                                     {galleryCategories.map(category => (
                                                         <div key={category.id} className="space-y-3">
@@ -667,7 +669,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                                 <span className={`w-2 h-2 rounded-full mr-2 ${category.type === 'web' ? 'bg-zoo-primary' : 'bg-zoo-secondary'}`}></span>
                                                                 {category.title}
                                                             </h4>
-                                                            <div className="grid gap-3 pl-4 border-l border-white/10">
+                                                            <div className="grid gap-3 pl-4 border-l border-border/10">
                                                                 {category.images.map(img => (
                                                                     <GalleryItemButton
                                                                         key={img.id}

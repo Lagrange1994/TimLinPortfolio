@@ -16,7 +16,6 @@
   <meta name="twitter:title" content="臺南市政府警察局 | 臺南智慧巡簽系統 - UI/UX Case Study" />
   <meta name="twitter:description" content="臺南市政府警察局智慧巡簽系統 App 介面設計，個人作品。以 Figma 打造，結合 GPS 導航與緊急互助功能，取代紙本簽章，提升員警巡邏效率與執勤安全。" />
   <meta name="twitter:image" content="https://timlin-design.vercel.app/img/my_portfolio/Tainan%20Police.webp" />
-  <link rel="stylesheet" href="/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet" />
@@ -70,6 +69,29 @@
         }
 
         .loader { background: #0F1115; transition: opacity 0.1s ease, visibility 0.1s ease; }
+
+        /* Light-mode overrides for this file's own hand-authored bootstrap CSS.
+           hero-bg-custom/::before and .loader deliberately excluded — fixed
+           photo + vignette, same reasoning as the always-white hero text. */
+        html[data-theme="light"],
+        html[data-theme="light"] body {
+            background-color: var(--color-tn-dark);
+            color: var(--color-text);
+        }
+
+        :root[data-theme="light"] .glass-panel {
+            background: linear-gradient(135deg, color-mix(in srgb, var(--color-tn-dark-light) 95%, transparent), color-mix(in srgb, var(--color-tn-dark) 98%, transparent));
+            border-left-color: color-mix(in srgb, var(--color-border) 8%, transparent);
+        }
+
+        :root[data-theme="light"] .feature-card:hover {
+            border-color: color-mix(in srgb, var(--color-tn-primary) 40%, transparent);
+            box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--color-tn-primary) 20%, transparent);
+        }
+
+        :root[data-theme="light"] .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--color-tn-primary);
+        }
     </style>
 </head>
 <body>

@@ -1,9 +1,10 @@
+import '../styles/projects-tailwind.css';
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
-    BackButton, ScrollTopButton, HeroCTAButton, TabNav,
+    BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav,
     InfoGrid, InfoCard, GalleryItemButton, PhoneFrame,
     ImageWithSkeleton, ResizeHandle,
 } from './shared/index.js';
@@ -214,7 +215,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 // [修改] bg-dark-light -> bg-app-dark-light
                 <div
                     ref={containerRef}
-                    className="comparison-container w-full h-full relative select-none cursor-ew-resize bg-app-dark-light rounded-xl overflow-hidden border border-white/10"
+                    className="comparison-container w-full h-full relative select-none cursor-ew-resize bg-app-dark-light rounded-xl overflow-hidden border border-border/10"
                     onMouseMove={handleMouseMove}
                     onTouchMove={handleTouchMove}
                     onMouseDown={handleMouseDown}
@@ -233,7 +234,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         </div>
                     </div>
                     <div className="comparison-slider" style={{ left: `${sliderPosition}%` }}>
-                        <div className="comparison-handle"><i className="ph ph-arrows-left-right text-white text-xs"></i></div>
+                        <div className="comparison-handle"><i className="ph ph-arrows-left-right text-text text-xs"></i></div>
                     </div>
                 </div>
             );
@@ -244,7 +245,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 <div className="flex items-center justify-center p-4 lg:p-12 w-full h-full">
                     <div className="w-full max-w-full h-full flex items-center justify-center">
                         {/* [修改] bg-dark-light -> bg-app-dark-light */}
-                        <div className="relative bg-app-dark-light rounded-xl border border-white/10 shadow-2xl overflow-hidden flex flex-col shrink-0 animate-fadeIn w-full" style={{ maxWidth: '100%', maxHeight: '100%' }}>
+                        <div className="relative bg-app-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col shrink-0 animate-fadeIn w-full" style={{ maxWidth: '100%', maxHeight: '100%' }}>
                             <ImageWithSkeleton src={src} alt={alt} className="block w-full h-full object-cover" />
                         </div>
                     </div>
@@ -588,7 +589,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                 <div className="flex-1 w-full relative min-h-0">
                                     <ComparisonSlider beforeImage={activeFeature.beforeImg} afterImage={activeFeature.afterImg} />
                                 </div>
-                                <div className="text-center mt-2 text-xs text-gray-500 shrink-0"><i className="ph ph-arrows-left-right mr-2"></i>{t('drag_hint')}</div>
+                                <div className="text-center mt-2 text-xs text-text/45 shrink-0"><i className="ph ph-arrows-left-right mr-2"></i>{t('drag_hint')}</div>
                             </div>
                         </div>
                     );
@@ -603,6 +604,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                     <nav className="fixed top-0 left-0 w-full z-50 px-6 py-6 flex justify-between items-center pointer-events-none">
                         <BackButton prefix="app" label={t('back_home')} onClick={goBack} />
+                        <ThemeToggle prefix="app" />
                     </nav>
 
                     <ScrollTopButton prefix="app" visible={showBackToHero} onClick={() => scrollToSection(0)} />
@@ -627,7 +629,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         {/* [修改] bg-dark -> bg-app-dark */}
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-app-dark overflow-hidden">
                             {/* [修改] bg-dark -> bg-app-dark, bg-dark-light -> bg-app-dark-light */}
-                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-app-dark relative border-b lg:border-b-0 lg:border-r border-white/5 flex items-center justify-center" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-app-dark relative border-b lg:border-b-0 lg:border-r border-border/5 flex items-center justify-center" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <div className="w-full h-full overflow-hidden flex items-center justify-center lg:pb-0">{renderLeftPanel()}</div>
                                 <ResizeHandle prefix="app" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
                             </div>
@@ -635,10 +637,10 @@ gsap.registerPlugin(ScrollToPlugin);
                             <div className="w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col min-h-0">
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     {/* [修改] bg-dark/95 -> bg-app-dark/95 */}
-                                    <div className="sticky top-0 bg-app-dark/95 backdrop-blur-xl z-30 border-b border-white/10 shrink-0">
+                                    <div className="sticky top-0 bg-app-dark/95 backdrop-blur-xl z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold mb-1 font-heading">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-gray-400 text-xs lg:text-sm mb-2 lg:mb-4">Mobile Experience Optimization</p>
+                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">Mobile Experience Optimization</p>
 
                                             <TabNav
                                                 prefix="app"
@@ -654,31 +656,31 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
-                                                <p className="text-gray-300 leading-relaxed text-sm">{t('context_desc')}</p>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3>
+                                                <p className="text-text/80 leading-relaxed text-sm">{t('context_desc')}</p>
                                                 <InfoGrid>
-                                                    <InfoCard><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-gray-400 mt-1">{t('mobile_first_sub')}</p></InfoCard>
-                                                    <InfoCard><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-gray-400 mt-1">{t('soft_ui_sub')}</p></InfoCard>
+                                                    <InfoCard><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-text/60 mt-1">{t('mobile_first_sub')}</p></InfoCard>
+                                                    <InfoCard><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-text/60 mt-1">{t('soft_ui_sub')}</p></InfoCard>
                                                 </InfoGrid>
                                             </div>
                                         )}
 
                                         {activeTab === 'focus' && (
                                             <div className="space-y-6 animate-fadeIn">
-                                                <div className="mb-4"><h3 className="text-lg md:text-2xl font-bold text-white">{t('focus_title')}</h3><p className="text-xs text-gray-400 mt-1">{t('focus_sub')}</p></div>
+                                                <div className="mb-4"><h3 className="text-lg md:text-2xl font-bold text-text">{t('focus_title')}</h3><p className="text-xs text-text/60 mt-1">{t('focus_sub')}</p></div>
                                                 <div className="space-y-4">
                                                     {simplificationPoints.map((point) => (
                                                         /* [修改] border-l-primary -> border-l-app-primary */
-                                                        <div key={point.id} className="feature-card border border-white/10 bg-white/5 p-5 border-l-4 border-l-app-primary hover:translate-x-1 transition-all duration-300 group">
+                                                        <div key={point.id} className="feature-card border border-border/10 bg-border/5 p-5 border-l-4 border-l-app-primary hover:translate-x-1 transition-all duration-300 group">
                                                             {/* [修改] bg-secondary/20 -> bg-app-secondary/20, text-secondary -> text-app-secondary */}
-                                                            <div className="flex items-center mb-3"><div className="w-8 h-8 rounded-full bg-app-secondary/20 flex items-center justify-center text-app-secondary mr-3"><i className={`ph ${point.icon}`}></i></div><h4 className="font-bold text-white">{point.title}</h4></div>
-                                                            <div className="flex items-center justify-between text-xs mb-3 bg-black/20 p-2 rounded-lg border border-white/10">
-                                                                <div className="text-gray-500 w-1/2 pr-2 border-r border-gray-700"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('web_complex')}</span>{point.web.desc}</div>
+                                                            <div className="flex items-center mb-3"><div className="w-8 h-8 rounded-full bg-app-secondary/20 flex items-center justify-center text-app-secondary mr-3"><i className={`ph ${point.icon}`}></i></div><h4 className="font-bold text-text">{point.title}</h4></div>
+                                                            <div className="flex items-center justify-between text-xs mb-3 bg-app-dark/20 p-2 rounded-lg border border-border/10">
+                                                                <div className="text-text/45 w-1/2 pr-2 border-r border-border/30"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('web_complex')}</span>{point.web.desc}</div>
                                                                 {/* [修改] text-secondary -> text-app-secondary */}
                                                                 <div className="text-app-secondary w-1/2 pl-2"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('app_simple')}</span>{point.app.desc}</div>
                                                             </div>
                                                             {/* [修改] border-secondary -> border-app-secondary */}
-                                                            <div className="text-xs text-gray-300 italic border-l-2 border-app-secondary pl-3">&quot;{point.insight}&quot;</div>
+                                                            <div className="text-xs text-text/80 italic border-l-2 border-app-secondary pl-3">&quot;{point.insight}&quot;</div>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -687,16 +689,16 @@ gsap.registerPlugin(ScrollToPlugin);
 
                                         {activeTab === 'features' && (
                                             <div className="space-y-6 animate-fadeIn">
-                                                <div className="mb-4"><h3 className="text-lg md:text-2xl font-bold text-white">{t('features_title')}</h3><p className="text-xs text-gray-400 mt-1">{t('features_sub')}</p></div>
+                                                <div className="mb-4"><h3 className="text-lg md:text-2xl font-bold text-text">{t('features_title')}</h3><p className="text-xs text-text/60 mt-1">{t('features_sub')}</p></div>
                                                 <div className="space-y-3">
                                                     {appFeatures.map((feat) => (
                                                         /* [修改] bg-primary/10 -> bg-app-primary/10, border-primary -> border-app-primary */
-                                                        <button key={feat.id} onClick={() => setActiveFeatureId(feat.id)} className={`w-full text-left p-4 rounded-xl border transition-all ${activeFeatureId === feat.id ? 'bg-app-primary/10 border-app-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
+                                                        <button key={feat.id} onClick={() => setActiveFeatureId(feat.id)} className={`w-full text-left p-4 rounded-xl border transition-all ${activeFeatureId === feat.id ? 'bg-app-primary/10 border-app-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-border/5 border-border/10 hover:bg-border/10'}`}>
                                                             {/* [修改] text-primary -> text-app-primary */}
-                                                            <h4 className={`font-bold text-sm mb-1 ${activeFeatureId === feat.id ? 'text-app-primary' : 'text-white'}`}>{feat.title}</h4>
-                                                            <p className="text-xs text-gray-400 mb-2">{feat.desc}</p>
+                                                            <h4 className={`font-bold text-sm mb-1 ${activeFeatureId === feat.id ? 'text-app-primary' : 'text-text'}`}>{feat.title}</h4>
+                                                            <p className="text-xs text-text/60 mb-2">{feat.desc}</p>
                                                             {/* [修改] bg-dark/50 -> bg-app-dark/50, border-secondary -> border-app-secondary */}
-                                                            {activeFeatureId === feat.id && <div className="text-xs text-white bg-app-dark/50 p-2 rounded mt-2 border-l-2 border-app-secondary animate-fadeIn"><i className="ph ph-lightbulb text-yellow-400 mr-1"></i> {feat.point}</div>}
+                                                            {activeFeatureId === feat.id && <div className="text-xs text-text bg-app-dark/50 p-2 rounded mt-2 border-l-2 border-app-secondary animate-fadeIn"><i className="ph ph-lightbulb text-yellow-400 mr-1"></i> {feat.point}</div>}
                                                         </button>
                                                     ))}
                                                 </div>
@@ -705,7 +707,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                                         {activeTab === 'gallery' && (
                                             <div className="space-y-6 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('gallery_title')}</h3>
                                                 <div className="space-y-3">
                                                     {appGallery.map((img) => (
                                                         <GalleryItemButton
@@ -728,31 +730,31 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={peekContentRef} style={{ transform: `translateX(${peekDragDirection * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
                                         {peekTab === 'context' && (
                                             <div className="space-y-8 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('context_title')}</h3>
-                                                <p className="text-gray-300 leading-relaxed text-sm">{t('context_desc')}</p>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3>
+                                                <p className="text-text/80 leading-relaxed text-sm">{t('context_desc')}</p>
                                                 <InfoGrid>
-                                                    <InfoCard><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-gray-400 mt-1">{t('mobile_first_sub')}</p></InfoCard>
-                                                    <InfoCard><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-gray-400 mt-1">{t('soft_ui_sub')}</p></InfoCard>
+                                                    <InfoCard><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-text/60 mt-1">{t('mobile_first_sub')}</p></InfoCard>
+                                                    <InfoCard><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-text/60 mt-1">{t('soft_ui_sub')}</p></InfoCard>
                                                 </InfoGrid>
                                             </div>
                                         )}
 
                                         {peekTab === 'focus' && (
                                             <div className="space-y-6 animate-fadeIn">
-                                                <div className="mb-4"><h3 className="text-lg md:text-2xl font-bold text-white">{t('focus_title')}</h3><p className="text-xs text-gray-400 mt-1">{t('focus_sub')}</p></div>
+                                                <div className="mb-4"><h3 className="text-lg md:text-2xl font-bold text-text">{t('focus_title')}</h3><p className="text-xs text-text/60 mt-1">{t('focus_sub')}</p></div>
                                                 <div className="space-y-4">
                                                     {simplificationPoints.map((point) => (
                                                         /* [修改] border-l-primary -> border-l-app-primary */
-                                                        <div key={point.id} className="feature-card border border-white/10 bg-white/5 p-5 border-l-4 border-l-app-primary hover:translate-x-1 transition-all duration-300 group">
+                                                        <div key={point.id} className="feature-card border border-border/10 bg-border/5 p-5 border-l-4 border-l-app-primary hover:translate-x-1 transition-all duration-300 group">
                                                             {/* [修改] bg-secondary/20 -> bg-app-secondary/20, text-secondary -> text-app-secondary */}
-                                                            <div className="flex items-center mb-3"><div className="w-8 h-8 rounded-full bg-app-secondary/20 flex items-center justify-center text-app-secondary mr-3"><i className={`ph ${point.icon}`}></i></div><h4 className="font-bold text-white">{point.title}</h4></div>
-                                                            <div className="flex items-center justify-between text-xs mb-3 bg-black/20 p-2 rounded-lg border border-white/10">
-                                                                <div className="text-gray-500 w-1/2 pr-2 border-r border-gray-700"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('web_complex')}</span>{point.web.desc}</div>
+                                                            <div className="flex items-center mb-3"><div className="w-8 h-8 rounded-full bg-app-secondary/20 flex items-center justify-center text-app-secondary mr-3"><i className={`ph ${point.icon}`}></i></div><h4 className="font-bold text-text">{point.title}</h4></div>
+                                                            <div className="flex items-center justify-between text-xs mb-3 bg-app-dark/20 p-2 rounded-lg border border-border/10">
+                                                                <div className="text-text/45 w-1/2 pr-2 border-r border-border/30"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('web_complex')}</span>{point.web.desc}</div>
                                                                 {/* [修改] text-secondary -> text-app-secondary */}
                                                                 <div className="text-app-secondary w-1/2 pl-2"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('app_simple')}</span>{point.app.desc}</div>
                                                             </div>
                                                             {/* [修改] border-secondary -> border-app-secondary */}
-                                                            <div className="text-xs text-gray-300 italic border-l-2 border-app-secondary pl-3">&quot;{point.insight}&quot;</div>
+                                                            <div className="text-xs text-text/80 italic border-l-2 border-app-secondary pl-3">&quot;{point.insight}&quot;</div>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -761,16 +763,16 @@ gsap.registerPlugin(ScrollToPlugin);
 
                                         {peekTab === 'features' && (
                                             <div className="space-y-6 animate-fadeIn">
-                                                <div className="mb-4"><h3 className="text-lg md:text-2xl font-bold text-white">{t('features_title')}</h3><p className="text-xs text-gray-400 mt-1">{t('features_sub')}</p></div>
+                                                <div className="mb-4"><h3 className="text-lg md:text-2xl font-bold text-text">{t('features_title')}</h3><p className="text-xs text-text/60 mt-1">{t('features_sub')}</p></div>
                                                 <div className="space-y-3">
                                                     {appFeatures.map((feat) => (
                                                         /* [修改] bg-primary/10 -> bg-app-primary/10, border-primary -> border-app-primary */
-                                                        <button key={feat.id} onClick={() => setActiveFeatureId(feat.id)} className={`w-full text-left p-4 rounded-xl border transition-all ${activeFeatureId === feat.id ? 'bg-app-primary/10 border-app-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
+                                                        <button key={feat.id} onClick={() => setActiveFeatureId(feat.id)} className={`w-full text-left p-4 rounded-xl border transition-all ${activeFeatureId === feat.id ? 'bg-app-primary/10 border-app-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-border/5 border-border/10 hover:bg-border/10'}`}>
                                                             {/* [修改] text-primary -> text-app-primary */}
-                                                            <h4 className={`font-bold text-sm mb-1 ${activeFeatureId === feat.id ? 'text-app-primary' : 'text-white'}`}>{feat.title}</h4>
-                                                            <p className="text-xs text-gray-400 mb-2">{feat.desc}</p>
+                                                            <h4 className={`font-bold text-sm mb-1 ${activeFeatureId === feat.id ? 'text-app-primary' : 'text-text'}`}>{feat.title}</h4>
+                                                            <p className="text-xs text-text/60 mb-2">{feat.desc}</p>
                                                             {/* [修改] bg-dark/50 -> bg-app-dark/50, border-secondary -> border-app-secondary */}
-                                                            {activeFeatureId === feat.id && <div className="text-xs text-white bg-app-dark/50 p-2 rounded mt-2 border-l-2 border-app-secondary animate-fadeIn"><i className="ph ph-lightbulb text-yellow-400 mr-1"></i> {feat.point}</div>}
+                                                            {activeFeatureId === feat.id && <div className="text-xs text-text bg-app-dark/50 p-2 rounded mt-2 border-l-2 border-app-secondary animate-fadeIn"><i className="ph ph-lightbulb text-yellow-400 mr-1"></i> {feat.point}</div>}
                                                         </button>
                                                     ))}
                                                 </div>
@@ -779,7 +781,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                                         {peekTab === 'gallery' && (
                                             <div className="space-y-6 animate-fadeIn">
-                                                <h3 className="text-lg md:text-2xl font-bold text-white mb-2 lg:mb-4">{t('gallery_title')}</h3>
+                                                <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('gallery_title')}</h3>
                                                 <div className="space-y-3">
                                                     {appGallery.map((img) => (
                                                         <GalleryItemButton

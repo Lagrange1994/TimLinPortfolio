@@ -7,7 +7,7 @@ export default function TabNav({ prefix, tabs, activeTab, onChange, containerRef
                 <button
                     key={tab.id}
                     onClick={() => onChange(tab.id)}
-                    className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? `text-${prefix}-primary border-b-2 border-${prefix}-primary pb-1` : 'text-gray-500 hover:text-white pb-1'}`}
+                    className={`text-sm font-bold whitespace-nowrap transition-colors flex-shrink-0 ${activeTab === tab.id ? `text-${prefix}-primary border-b-2 border-${prefix}-primary pb-1` : 'text-text/45 hover:text-text pb-1'}`}
                 >
                     {tab.label}
                 </button>

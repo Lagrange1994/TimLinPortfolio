@@ -16,7 +16,6 @@
   <meta name="twitter:title" content="恆春航空站 | 國境之南的蔚藍門戶 - Case Study" />
   <meta name="twitter:description" content="恆春航空站官網設計提案，個人作品。以 Adobe XD 打造，在政府預算與法規限制下重塑公部門網站視覺形象，呈現「衝出畫框」的飛機動態視覺。" />
   <meta name="twitter:image" content="https://timlin-design.vercel.app/img/my_portfolio/aviation.webp" />
-  <link rel="stylesheet" href="/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet" />
@@ -97,6 +96,42 @@
         }
 
         .loader { background: #000000; transition: opacity 0.1s ease, visibility 0.1s ease; }
+
+        /* Light-mode overrides for this file's own hand-authored bootstrap CSS.
+           This page's dark palette (#000/#111/#161/#333) is a bespoke near-black
+           scale, not the shared hc-dark/-dark-light/-dark-lighter hex — reused
+           here as the closest role match (canvas/card/hover-card/scrollbar) so
+           this page still gets the same hc light identity as the rest of the
+           hc-branded UI. hero-bg-custom/::before and .loader excluded — fixed
+           photo + vignette, same reasoning as the always-white hero text. */
+        html[data-theme="light"],
+        html[data-theme="light"] body {
+            background-color: var(--color-hc-dark);
+            color: var(--color-text);
+        }
+
+        :root[data-theme="light"] .content-panel {
+            background: var(--color-hc-dark);
+            border-left-color: color-mix(in srgb, var(--color-border) 10%, transparent);
+        }
+
+        :root[data-theme="light"] .feature-card {
+            background: var(--color-hc-dark-light);
+        }
+
+        :root[data-theme="light"] .feature-card:hover {
+            border-color: color-mix(in srgb, var(--color-hc-primary) 40%, transparent);
+            box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--color-hc-primary) 20%, transparent);
+            background: var(--color-hc-dark-lighter);
+        }
+
+        :root[data-theme="light"] .custom-scroll::-webkit-scrollbar-thumb {
+            background: var(--color-hc-dark-lighter);
+        }
+
+        :root[data-theme="light"] .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: var(--color-hc-primary);
+        }
     </style>
 </head>
 <body>
