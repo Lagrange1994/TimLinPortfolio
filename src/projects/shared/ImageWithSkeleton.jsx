@@ -1,18 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 export function ResponsiveImage({ src, alt, className, onLoad, ...props }) {
     const webpSrc = encodeURI(src.replace(/\.(jpg|jpeg|png)$/i, '.webp'));
     return (
         <picture style={{ display: 'contents' }}>
             <source srcSet={webpSrc} type="image/webp" />
-            <img src={src} alt={alt} className={className} onLoad={onLoad} {...props} />
+            <img src={src} alt={alt} className={className} onLoad={onLoad} decoding="async" {...props} />
         </picture>
     );
 }
 
 export default function ImageWithSkeleton({ src, alt, containerClassName, className, ...props }) {
     const [loaded, setLoaded] = useState(false);
-    useEffect(() => setLoaded(false), [src]);
+    // Reset synchronously during render (not in a useEffect) when src changes.
+    // An effect-based reset races the <img>'s native onLoad: for a cached
+    // image the browser can fire onLoad before the effect runs, so the
+    // late setLoaded(false) clobbers the already-correct loaded state and
+    // the skeleton is stuck covering a fully-loaded image forever.
+    const [trackedSrc, setTrackedSrc] = useState(src);
+    if (src !== trackedSrc) {
+        setTrackedSrc(src);
+        setLoaded(false);
+    }
     return (
         <div className={`relative overflow-hidden ${containerClassName || 'w-full h-full'}`}>
             {!loaded && (

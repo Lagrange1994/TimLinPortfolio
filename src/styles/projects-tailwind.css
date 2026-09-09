@@ -83,6 +83,18 @@
 @source inline("{hover:,group-hover:,}{bg,text,border}-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-{primary,secondary,dark,dark-light,dark-lighter,accent}{/10,/20,/30,/40,/50,/60,/70,/80,/90,}");
 
 @theme {
+  /* Also dropped in the Phase 1 migration alongside the GenSen @font-face
+     above — the old public/style.css compiled a `.font-heading` utility
+     pinning every heading to Momo Trust Display; without it `font-heading`
+     silently no-ops and headings fall through to the browser default. */
+  --font-heading: 'Momo Trust Display', 'GenSen Rounded TW', 'Noto Sans TC', sans-serif;
+
+  /* Same gap for body copy: old public/style.css set this as the base
+     (preflight) font-family, so every element without an explicit
+     font-* class inherited Quicksand. Restoring --font-sans here does
+     both — feeds Tailwind v4 preflight's default AND the font-sans utility. */
+  --font-sans: 'Quicksand', 'GenSen Rounded TW', 'Noto Sans TC', sans-serif;
+
   --color-app-primary: #FF4A00;
   --color-app-secondary: #FFD700;
   --color-app-dark: #080201;
