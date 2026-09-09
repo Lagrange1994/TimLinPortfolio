@@ -144,7 +144,7 @@ function runsToHtml(runs: { text: string; cls?: string }[]) {
 type HColor = 'neutral' | 'purple' | 'cyan' | 'warning' | 'danger' | 'success' | 'info' | 'primary' | 'brand';
 
 const BADGE_COLORS: Record<HColor, { solid: string; outline: string }> = {
-  neutral: { solid: 'badge-neutral bg-white/10 text-white/70', outline: 'badge-neutral border border-white/25 text-white/70' },
+  neutral: { solid: 'badge-neutral bg-white/10 text-[var(--text-70)]', outline: 'badge-neutral border border-white/25 text-[var(--text-70)]' },
   purple: { solid: 'badge-purple bg-violet-400/15 text-violet-300', outline: 'badge-purple border border-violet-400/40 text-violet-300' },
   // Matches AiFlowStepper's own solid "active step" fill (#6C63FF) exactly,
   // for the phase badge that mirrors it — a fully opaque pill, not the
@@ -178,7 +178,7 @@ const ALERT_COLORS: Record<string, string> = {
   success: 'border-emerald-400/25 bg-emerald-400/[0.06]',
 };
 const ALERT_ICON_COLORS: Record<string, string> = {
-  neutral: 'h-alert-icon-neutral bg-white/10 text-white/70',
+  neutral: 'h-alert-icon-neutral bg-white/10 text-[var(--text-70)]',
   warning: 'bg-amber-400/15 text-amber-300',
   info: 'bg-blue-400/15 text-blue-300',
   success: 'bg-emerald-400/15 text-emerald-300',
@@ -191,9 +191,9 @@ function HAlert({ variant = 'neutral', icon, title, children }: { variant?: 'neu
         <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-sm ${ALERT_ICON_COLORS[variant] ?? ALERT_ICON_COLORS.neutral}`}>
           {icon}
         </span>
-        <span className="h-alert-title text-xs font-semibold uppercase tracking-wide text-white/80">{title}</span>
+        <span className="h-alert-title text-xs font-semibold uppercase tracking-wide text-[var(--text-70)]">{title}</span>
       </div>
-      <div className="h-alert-body text-[13px] leading-relaxed text-white/70">{children}</div>
+      <div className="h-alert-body text-[13px] leading-relaxed text-[var(--text-70)]">{children}</div>
     </div>
   );
 }
@@ -201,8 +201,8 @@ function HAlert({ variant = 'neutral', icon, title, children }: { variant?: 'neu
 function HRow({ label, className, children }: { label: ReactNode; className?: string; children: ReactNode }) {
   return (
     <div className={`h-row flex items-start justify-between gap-3 border-b border-white/10 py-2 text-[12.5px] last:border-0${className ? ' ' + className : ''}`}>
-      <span className="h-row-label text-white/50">{label}</span>
-      <span className="h-row-value text-right font-medium text-white/85">{children}</span>
+      <span className="h-row-label text-[var(--text-50)]">{label}</span>
+      <span className="h-row-value text-right font-medium text-[var(--text)]">{children}</span>
     </div>
   );
 }
@@ -515,10 +515,10 @@ function makeAiCards(t: Record<string, string>) {
           <table className="w-full border-collapse text-left">
             <thead>
               <tr>
-                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">ID</th>
-                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">Source</th>
-                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">Type</th>
-                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-white/40">Status</th>
+                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-30)]">ID</th>
+                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-30)]">Source</th>
+                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-30)]">Type</th>
+                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-30)]">Status</th>
               </tr>
             </thead>
             <tbody>
