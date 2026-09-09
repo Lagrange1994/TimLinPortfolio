@@ -4200,7 +4200,7 @@
 
     /* TECH STACK */
     .tech-sub {
-      color: var(--text-50);
+      color: var(--text-70);
       font-size: 14px;
       margin-bottom: -32px;
       max-width: 392px;
@@ -4209,7 +4209,7 @@
     /* Was a per-element inline color in SkillsSection.tsx (rgba(255,255,255,.55),
        never updated for light mode) — moved here as a real theme-aware rule. */
     .ai-sub {
-      color: var(--text-50);
+      color: var(--text-70);
     }
 
     .tech-items {
@@ -7698,7 +7698,7 @@
 
     /* TECH STACK */
     .tech-sub {
-      color: var(--text-50);
+      color: var(--text-70);
       font-size: 14px;
       margin-bottom: -32px;
       max-width: 392px;
@@ -7707,7 +7707,7 @@
     /* Was a per-element inline color in SkillsSection.tsx (rgba(255,255,255,.55),
        never updated for light mode) — moved here as a real theme-aware rule. */
     .ai-sub {
-      color: var(--text-50);
+      color: var(--text-70);
     }
 
     .tech-items {
