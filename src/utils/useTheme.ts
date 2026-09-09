@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export type Theme = 'dark' | 'light';
 
@@ -6,61 +6,131 @@ function getInitialTheme(): Theme {
   return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
 }
 
+const STALE_PAINT_SELECTOR = '.bento-card, .ai-card, .tech-item, .process-card, .philosophy-card, .pill, [class*="-dark"]:not(.snap-section):not(.theme-switch):not(.sm-theme-switch)';
+
+function bustStalePaint(el: HTMLElement) {
+  const prevDisplay = el.style.display;
+  el.style.display = 'none';
+  void el.offsetHeight;
+  el.style.display = prevDisplay;
+}
+
+// How long to hold the bust off after a toggle. It display:none's ~28
+// backdrop-filter elements at once and forces a layout — one heavy
+// composited-layer teardown/rebuild. requestIdleCallback alone wasn't
+// enough separation: its 500ms timeout fires while the switch knob's Motion
+// spring (~400ms to settle) and the color crossfade (280ms) are still
+// running, so on a phone that block landed mid-animation and the knob
+// visibly stopped partway across before finishing ("卡在路上"). Waiting
+// past both, and only then asking for idle time, keeps the repair
+// completely outside the window where anything is animating.
+const BUST_DELAY_MS = 700;
+
+// requestIdleCallback lets the forced-layout bust below wait for genuine
+// spare main-thread time instead of competing with whatever frame it lands
+// on. Falls back to setTimeout (Safari has no rIC).
+function onIdle(cb: () => void): number {
+  const w = window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number };
+  return w.requestIdleCallback ? w.requestIdleCallback(cb, { timeout: 500 }) : window.setTimeout(cb, 100);
+}
+function cancelIdle(id: number) {
+  const w = window as Window & { cancelIdleCallback?: (id: number) => void };
+  if (w.cancelIdleCallback) w.cancelIdleCallback(id);
+  else window.clearTimeout(id);
+}
+
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const isFirstRun = useRef(true);
+  const lazyObserverRef = useRef<IntersectionObserver | null>(null);
+  const idleIdRef = useRef<number | null>(null);
 
-  useEffect(() => {
+  // Layout effect, not a passive one: the attribute flip is what every
+  // themed rule keys off, so it should land in the same commit as the
+  // render that changed `theme`, before the browser paints — not a frame
+  // later, which shows up as the switch knob moving before the colors do.
+  useLayoutEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     try {
       localStorage.setItem('theme', theme);
     } catch {
       // Private-mode/storage-disabled: theme still applies for this load, just doesn't persist.
     }
+  }, [theme]);
 
+  useEffect(() => {
     if (isFirstRun.current) {
       isFirstRun.current = false;
       return;
     }
 
-    // Chromium leaves backdrop-filter content cards (.bento-card, .ai-card,
-    // .tech-item, .process-card, .philosophy-card, .pill) painted with
-    // their old background after a custom-property-only change like this
-    // one — the property itself updates (confirmed via getPropertyValue)
-    // but the composited layer's paint doesn't invalidate, so those cards
-    // stay visually stuck in the previous theme until something forces
-    // their layers to be torn down and rebuilt. A display:none/reflow/
-    // restore does that.
+    // Arms portfolio.css's html.theme-transitioning rule for just this
+    // window, so the color crossfade is scoped to an actual toggle instead
+    // of sitting on every element permanently (a bare `*` transition was
+    // tried first and made the mobile menu and every hover ease too).
     //
-    // This used to scan the WHOLE document for any backdrop-filter element
-    // (document.querySelectorAll('*'), 224+ matches on this page) — that
-    // caught things far outside "content cards that need their background
-    // fixed": the hero tag-capsule pills (which only gain backdrop-filter
-    // in light mode, per :root[data-theme="light"] .tag-capsule in
-    // portfolio.css) among them. Toggling display on an element resets
-    // whatever IntersectionObserver-driven state it has (its intersection
-    // ratio drops to 0, then back), so that broad scan was re-triggering
-    // scroll-reveal/typewriter/carousel effects across large parts of the
-    // page — the "refresh" the user was seeing wasn't imagined, it was
-    // this. Naming only the actual content-card classes keeps this to the
-    // ~28 elements that actually need it.
-    // Project pages (project_01–12) hit the same stuck-paint bug on any
-    // bg-{prefix}-dark/-dark-light/-dark-lighter background — not just the
-    // panel/card tiers: the split-view device-mockup column also sits on a
-    // bare bg-{prefix}-dark and was found stuck too. [class*="-dark"]
-    // catches all three (and their hover: variants) without enumerating all
-    // 12 prefixes. :not(.snap-section) excludes only the top-level hero/
-    // split-view *section* wrappers themselves — toggling display:none on
-    // those replays their descendants' .fade-in-up entrance animation on
-    // every theme flip — while still matching bare bg-{prefix}-dark
-    // elements nested inside them (they aren't .snap-section themselves).
-    const affected = Array.from(
-      document.querySelectorAll<HTMLElement>('.bento-card, .ai-card, .tech-item, .process-card, .philosophy-card, .pill, [class*="-dark"]:not(.snap-section)')
-    );
-    const prevDisplays = affected.map(el => el.style.display);
-    affected.forEach(el => { el.style.display = 'none'; });
-    void document.body.offsetHeight;
-    affected.forEach((el, i) => { el.style.display = prevDisplays[i]; });
+    // document.startViewTransition was also tried here, to cross-fade the
+    // whole page as one compositor blend. Removed: a view transition hides
+    // the LIVE DOM for the length of its animation and shows static
+    // before/after snapshots instead, but the switch knob's position is a
+    // live Motion spring (motion.span animate={{x}}, Navbar.tsx) running
+    // underneath, unseen — so the knob appeared frozen for the transition's
+    // duration and then jumped to wherever the hidden spring had already
+    // reached ("卡在中間才到另一端"). Its one real advantage — cross-fading
+    // light mode's background-IMAGE against dark mode's flat color, which a
+    // background-color transition genuinely cannot interpolate — went away
+    // once both page-background layers became flat colors on mobile (see
+    // #bg-scene in portfolio.css).
+    document.documentElement.classList.add('theme-transitioning');
+    const transitionTimeoutId = window.setTimeout(() => {
+      document.documentElement.classList.remove('theme-transitioning');
+    }, 300);
+
+    // Chromium can leave an already-rendered node pinned to its pre-toggle
+    // background even though the custom property it's built from has
+    // already updated — verified by comparing a mounted .bento-card against
+    // a freshly created one with the same classes, which resolved correctly
+    // straight away. Forcing the stuck node through display:none/reflow/
+    // restore is what clears it.
+    lazyObserverRef.current?.disconnect();
+    if (idleIdRef.current !== null) cancelIdle(idleIdRef.current);
+    const bustDelayId = window.setTimeout(() => {
+      idleIdRef.current = onIdle(() => {
+        const affected = Array.from(document.querySelectorAll<HTMLElement>(STALE_PAINT_SELECTOR));
+        const vh = window.innerHeight;
+        const near: HTMLElement[] = [];
+        const far: HTMLElement[] = [];
+        affected.forEach(el => {
+          const r = el.getBoundingClientRect();
+          (r.bottom > -vh && r.top < vh * 2 ? near : far).push(el);
+        });
+
+        const prevDisplays = near.map(el => el.style.display);
+        near.forEach(el => { el.style.display = 'none'; });
+        void document.body.offsetHeight;
+        near.forEach((el, i) => { el.style.display = prevDisplays[i]; });
+
+        if (far.length) {
+          const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                bustStalePaint(entry.target as HTMLElement);
+                obs.unobserve(entry.target);
+              }
+            });
+          }, { rootMargin: '200px' });
+          far.forEach(el => observer.observe(el));
+          lazyObserverRef.current = observer;
+        }
+      });
+    }, BUST_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(bustDelayId);
+      if (idleIdRef.current !== null) cancelIdle(idleIdRef.current);
+      lazyObserverRef.current?.disconnect();
+      window.clearTimeout(transitionTimeoutId);
+    };
   }, [theme]);
 
   const toggleTheme = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'));

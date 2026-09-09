@@ -280,6 +280,38 @@
       --ai-doc-bar-head: rgba(255, 255, 255, 0.6);
     }
 
+    /* Site-wide theme-color crossfade — flipping data-theme on <html> swaps
+       dozens of CSS custom properties (--bg-card, --text, --border, ...) at
+       once with nothing of its own to ease them, so every consumer snapped
+       to its new color in the same frame the switch was clicked. Giving the
+       actual color-bearing properties a shared curve (--switch-ease, same
+       one the switch track/label already use) spreads those repaints across
+       ~0.28s instead of one frame. transform/opacity/layout properties are
+       deliberately left out — this is a paint-only crossfade, not a layout
+       animation, so it can't fight Motion's own inline-style writes (knob
+       position, sliding-tab indicators) the way a broader `all` transition
+       would. Excludes the backdrop-filter card classes useTheme.ts's
+       reflow-bust targets (.bento-card, .ai-card, .tech-item, .process-card,
+       .philosophy-card, .pill) — that bust does a display:none/reflow/
+       restore right after the theme flips to fix a separate Chromium
+       stale-paint bug, and (the same display:none-cancels-transitions issue
+       that broke the old sliding-pill indicator, see tabIndicator.ts) would
+       cancel a transition on those elements mid-flight and snap them anyway
+       — so they keep their existing instant-snap-then-bust behavior instead
+       of fighting it.
+       Scoped to html.theme-transitioning, NOT a bare `*` — useTheme.ts adds
+       that class only for the ~0.28s window right after a toggle and removes
+       it once the crossfade is done (see its own comment). A permanently-on
+       `*` transition was tried first and made everything ELSE that changes
+       any of these same properties — the mobile menu opening/closing, any
+       hover state, any class swap — ease instead of snap too, all the time,
+       which read as the whole menu UI turning sluggish. Scoping to this
+       class keeps the crossfade limited to the moment a theme switch is
+       actually in flight. */
+    html.theme-transitioning *:not(.bento-card):not(.ai-card):not(.tech-item):not(.process-card):not(.philosophy-card):not(.pill) {
+      transition: background-color 0.28s var(--switch-ease), border-color 0.28s var(--switch-ease), color 0.28s var(--switch-ease);
+    }
+
     /* ── LIGHT MODE (Variant A — "紫調延伸") ──
        Overrides only the tokens that actually change; --grad-logo, the
        shadow system, and everything else stay shared with dark mode. Both
@@ -1379,8 +1411,23 @@
       transition: opacity 1.1s cubic-bezier(0.215, 0.61, 0.355, 1) 0.35s;
     }
 
+    /* --bg-safe (flat in both themes), NOT --bg. Light mode's --bg is
+       url(w_bg.svg) — 3840x2160 of vector: 265 <use> tiles each on their own
+       clipPath, plus a pattern, a filter and 7 gradients. Chromium
+       rasterizes that on the CPU, and swapping this property between a flat
+       color and that image made every theme toggle pay the full
+       rasterization again, on the main thread, mid-interaction. On a phone
+       that's the freeze — the whole screen AND the switch knob, since it
+       blocks the same thread Motion's spring runs on.
+       Phones don't need that texture at all (it's a subtle wash + tile grid
+       that's barely legible at phone scale, and the hero already has its own
+       bg_w.webp raster layer on top of it — see BeamsBackground.tsx), so
+       mobile just gets the flat tone instead: no 440KB download, no
+       rasterization, and the toggle becomes a plain color change the scoped
+       crossfade above can animate for free. Desktop keeps the real thing —
+       see the 1025px media query, where this is pointed back at --bg. */
     body.hero-ready #bg-scene {
-      background: var(--bg);
+      background: var(--bg-safe);
       opacity: 1;
     }
 
@@ -1416,8 +1463,15 @@
       background: var(--bg-safe);
     }
 
+    /* Same flat-instead-of-w_bg.svg swap as #bg-scene above, and for the
+       same reason — this is the second full-viewport fixed layer a phone
+       would otherwise have to re-rasterize that SVG into on every toggle.
+       Desktop is unaffected either way: above 1025px this box turns into the
+       hero panel, where dark falls through to --bg's own flat color (same
+       value as --bg-safe there) and light already has its own
+       --frame-glow-base override further down. */
     body.hero-ready #bg-spline-scene {
-      background: var(--bg);
+      background: var(--bg-safe);
     }
 
     /* Desktop-only (see the 1025px media query) — the hero panel's border.
@@ -1509,6 +1563,14 @@
          this. */
       #home {
         overflow: visible;
+      }
+
+      /* Desktop keeps w_bg.svg as the real page background — the base rule
+         drops it to a flat tone for phones only (see that rule's comment for
+         the rasterization cost that forced it). A desktop CPU rasterizes it
+         without trouble, and at this width the texture is actually legible. */
+      body.hero-ready #bg-scene {
+        background: var(--bg);
       }
 
       /* The "irregular-shape container" for the background Spline scene —
