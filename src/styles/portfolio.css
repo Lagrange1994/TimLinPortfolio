@@ -8787,7 +8787,7 @@
        collapse to the same look in light mode: transparent fill, colored
        border, and a darker in-brand text shade for contrast on the light
        card (the "-300" text tones read fine on dark but wash out on white). */
-    :root[data-theme="light"] .badge-neutral{background-color:transparent !important;color:var(--text-70) !important;border:1px solid var(--glass-border) !important}
+    :root[data-theme="light"] .badge-neutral{background-color:transparent !important;border:1px solid var(--glass-border) !important}
     :root[data-theme="light"] .badge-purple{background-color:transparent !important;color:var(--badge-purple) !important;border:1px solid rgba(124,58,237,.45) !important}
     :root[data-theme="light"] .badge-brand{background-color:transparent !important;color:var(--primary) !important;border:1px solid rgba(91,79,224,.5) !important}
     :root[data-theme="light"] .badge-cyan{background-color:transparent !important;color:var(--badge-cyan) !important;border:1px solid rgba(6,182,212,.45) !important}
@@ -9958,10 +9958,12 @@
     }
 
     /* HAlert's "neutral" variant (AI Brief's summary/tasktype blocks) and
-       HRow (Human Review's priority/strategy/risks/nextstep rows) are also
-       plain Tailwind white/N utilities with no theme awareness — same fix
-       pattern as HBadge's 'badge-neutral' class above: an extra class hook
-       added alongside the literal Tailwind classes in SkillsSection.tsx. */
+       HRow (Human Review's priority/strategy/risks/nextstep rows) still need
+       a border/background fix here — those stay plain Tailwind white/N
+       utilities with no theme awareness. Their text color no longer does:
+       SkillsSection.tsx reads --text-70/--text-50/--text directly via
+       Tailwind arbitrary-value classes (text-[var(--text-70)] etc.) now, so
+       there's nothing left for a light-mode override to do. */
     :root[data-theme="light"] .h-alert-neutral {
       border-color: var(--border) !important;
       background: transparent !important;
@@ -9969,22 +9971,9 @@
     :root[data-theme="light"] .h-alert-icon-neutral {
       background: transparent !important;
       border: 1px solid var(--border) !important;
-      color: var(--text-70) !important;
-    }
-    :root[data-theme="light"] .h-alert-title {
-      color: var(--text-70) !important;
-    }
-    :root[data-theme="light"] .h-alert-body {
-      color: var(--text-70) !important;
     }
     :root[data-theme="light"] .h-row {
       border-bottom-color: var(--border) !important;
-    }
-    :root[data-theme="light"] .h-row-label {
-      color: var(--text-50) !important;
-    }
-    :root[data-theme="light"] .h-row-value {
-      color: var(--text) !important;
     }
 
     :root[data-theme="light"] .tech-item.html-item,
