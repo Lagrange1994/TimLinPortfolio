@@ -444,11 +444,23 @@
     :root[data-theme="light"] .contact-headline,
     :root[data-theme="light"] .bento-label,
     :root[data-theme="light"] .tech-name,
-    :root[data-theme="light"] .ai-card h3,
     :root[data-theme="light"] .process-column-header,
     :root[data-theme="light"] .process-card--has-img .process-name,
     :root[data-theme="light"] .portfolio-headline-title {
       color: var(--primary);
+    }
+
+    /* .ai-card h3 deliberately excluded from the shared light-mode headline
+       rule above: each AI card already carries its own accent hue on its
+       glyph/border (ai-cyan/ai-purple/ai-focal/ai-violet/ai-human/
+       ai-spectrum) to tell the 6 pipeline steps apart. Forcing every title
+       to the same --primary purple on top of that fought the per-card
+       accent instead of reading as its own category — cyan and green cards
+       got a mismatched purple title, and the already-purple/blue cards
+       (purple/focal/violet/spectrum, 4 of 6) doubled down on it. Titles stay
+       neutral in both themes; the accent color does the differentiating. */
+    :root[data-theme="light"] .ai-card h3 {
+      color: var(--text);
     }
 
     /* Hero text (h1/h2/desc) is pinned white/light-gray for dark mode's own
