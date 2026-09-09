@@ -957,9 +957,10 @@ export default function SkillsSection() {
   // .ai-card, which has its own backdrop-filter — Chromium leaves that
   // transform painted at its old value there (confirmed the same bug
   // family as the theme toggle's backdrop-filter background-color
-  // staleness in useTheme.ts, and the FAQ/portfolio-filter sliding
-  // indicators in useSlidingIndicator.ts; a CSS class swap triggers it
-  // exactly like an inline style write does). A synchronous display:none/
+  // staleness in useTheme.ts; a CSS class swap triggers it exactly like an
+  // inline style write does — the FAQ/portfolio-filter sliding indicators
+  // hit this too, back when they hand-measured their own geometry instead
+  // of Motion's layoutId, see tabIndicator.ts). A synchronous display:none/
   // reflow/restore on the card busts the stale paint; scoped to just the
   // affected card, not document.body, so it can't disturb page scroll.
   // Runs on both the opening AND closing card — prevExpandedRef keeps the

@@ -159,6 +159,16 @@
        line      : #06C755
     ═══════════════════════════════════════ */
     :root {
+      /* Track/label color-fade easing for every switch (theme-switch,
+         sm-theme-switch) — animata.design's Fluid Tabs LABEL_TRANSITION
+         curve verbatim (https://animata.design/docs/tabs/fluid-tabs). The
+         knobs' own position is Motion's job now (see Navbar.tsx's
+         motion.span animate={{x}}, transition: INDICATOR_SPRING in
+         tabIndicator.ts — a real spring, not a CSS curve standing in for
+         one), but the track background and label color are plain color
+         transitions with nothing to spring toward, so they stay on this
+         CSS easing instead. */
+      --switch-ease: cubic-bezier(0.32, 0.72, 0, 1);
       --primary: #6C63FF;
       --secondary: #FF6584;
       --bg: #0A0912;
@@ -959,7 +969,7 @@
       border-radius: 9999px;
       cursor: pointer;
       flex-shrink: 0;
-      transition: background 0.35s ease, border-color 0.35s ease;
+      transition: background 0.28s var(--switch-ease), border-color 0.28s var(--switch-ease);
     }
 
     .theme-switch.theme-switch--dark {
@@ -984,11 +994,13 @@
       height: 20px;
       border-radius: 50%;
       font-size: 10px;
-      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.35s ease, border-color 0.35s ease;
+      /* Position (transform) is Motion's job now — see Navbar.tsx's
+         motion.span animate={{x}} — not a CSS transition, so a plain class
+         swap here can't fight Motion's own inline-style writes every frame. */
+      transition: background 0.28s var(--switch-ease), border-color 0.28s var(--switch-ease);
     }
 
     .theme-switch.theme-switch--dark .theme-switch-knob {
-      transform: translateX(0);
       /* Was backdrop-filter: blur(6px) — dropped. That's the one property
          only the dark-state knob carried (light-state has none), so every
          toggle simultaneously flipped the knob's own backdrop-filter layer
@@ -1007,7 +1019,6 @@
     }
 
     .theme-switch.theme-switch--light .theme-switch-knob {
-      transform: translateX(41px);
       background: #ffffff;
       color: #3A3A42;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -1022,6 +1033,7 @@
       font-size: 11px;
       font-weight: 600;
       white-space: nowrap;
+      transition: color 0.28s var(--switch-ease);
     }
 
     /* Dark: knob rests left, so the label owns the right half. */
@@ -4516,15 +4528,13 @@
 
     /* PORTFOLIO FILTER BUTTONS — btn-glass style */
 
-    /* Fluid Tabs track (same technique as .faq-tabs in ContactSection):
-       one glass pill shell holds flat tab buttons, and a single indicator
-       span (positioned/sized by the useSlidingIndicator hook, animated by
-       this CSS transition) slides between them instead of each button
-       carrying its own active background. Was a Motion layoutId-shared
-       motion.span; Motion's shared-layout animation is non-functional in
-       this project's setup (froze at the first-rendered position on every
-       later activation) so this uses plain measured geometry + transition
-       instead — see useSlidingIndicator.ts. */
+    /* Fluid Tabs track (same technique as .faq-tabs in ContactSection, and
+       animata.design's own Fluid Tabs — see tabIndicator.ts): one glass
+       pill shell holds flat tab buttons, each mounting its own
+       .portfolio-filter-indicator (inset:0, filling that button) only
+       while active. Motion's shared layoutId animates the indicator
+       between whichever button currently mounts it — no geometry measured
+       in this file, no CSS transition on the indicator itself. */
     .portfolio-filter-tabs {
       position: relative;
       display: flex;
@@ -4562,12 +4572,11 @@
 
     .portfolio-filter-indicator {
       position: absolute;
-      left: 0;
+      inset: 0;
       z-index: 0;
       border-radius: 9999px;
       background: var(--primary);
       box-shadow: 0 2px 10px color-mix(in oklab, var(--primary) 45%, transparent);
-      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .portfolio-filter-label {
@@ -5471,22 +5480,18 @@
       color: #fff;
     }
 
-    /* Sliding pill indicator: geometry comes from useSlidingIndicator
-       (measures the active .faq-tab's own box), this transition animates
-       it. Used to be a Motion layoutId shared between two conditionally-
-       mounted motion.span instances (animata.design's Fluid Tabs
-       technique) — Motion's shared-layout animation turned out to be
-       non-functional in this project's setup (froze at the first-rendered
-       position on every later activation), so this no longer depends on
-       it at all. */
+    /* Sliding pill indicator: a Motion layoutId shared between two
+       conditionally-mounted motion.span instances, one per tab — Motion
+       animates the shared element's geometry between mount points itself
+       (animata.design's Fluid Tabs technique, see tabIndicator.ts). No
+       geometry measured in this file, no CSS transition on the indicator. */
     .faq-tab-indicator {
       position: absolute;
-      left: 0;
+      inset: 0;
       z-index: 0;
       border-radius: 9999px;
       background: var(--primary);
       box-shadow: 0 2px 10px color-mix(in oklab, var(--primary) 45%, transparent);
-      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .faq-tab-label {
@@ -8273,7 +8278,7 @@
       flex-shrink: 0;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      transition: background 0.2s, border-color 0.2s;
+      transition: background 0.28s var(--switch-ease), border-color 0.28s var(--switch-ease);
     }
 
     .sm-theme-switch:hover {
@@ -8291,6 +8296,11 @@
       border-color: var(--glass-border-hov);
     }
 
+    /* Position (transform) is Motion's job — see Navbar.tsx's motion.span
+       animate={{x}} (0 dark / 74 light — track 116px, 4px knob margin both
+       sides, 34px knob: resting right edge = 116 - 4 - 34 = 78, minus the
+       knob's own left:4 rest position = 74px of travel). No CSS transition
+       here so a class swap can't fight Motion's own inline-style writes. */
     .sm-theme-switch-knob {
       position: absolute;
       top: 4px;
@@ -8306,19 +8316,6 @@
       background: #6C63FF;
       border: 1px solid rgba(108, 99, 255, 0.6);
       color: #ffffff;
-      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .sm-theme-switch--dark .sm-theme-switch-knob {
-      transform: translateX(0);
-    }
-
-    .sm-theme-switch--light .sm-theme-switch-knob {
-      /* Track 116px, 4px knob margin both sides, 34px knob: resting right
-         edge = 116 - 4 - 34 = 78, minus the knob's own left:4 rest position
-         = 74px of travel — same 4px inset on both ends of its swing, not
-         just the dark/rest side. */
-      transform: translateX(74px);
     }
 
     .sm-theme-switch-label {
@@ -8331,6 +8328,7 @@
       font-weight: 600;
       white-space: nowrap;
       color: rgba(255, 255, 255, 0.5);
+      transition: color 0.28s var(--switch-ease);
     }
 
     /* Same translucent-white problem .sm-lang-btn had — on the light

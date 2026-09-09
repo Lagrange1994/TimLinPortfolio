@@ -1,20 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import SpecularOverlay from './SpecularOverlay';
-import { useSlidingIndicator } from '../utils/useSlidingIndicator';
 import {
   Accordion,
   AccordionItem,
   AccordionButton,
   AccordionPanel,
 } from './animate-ui/components/headless/accordion';
+import { LayoutGroup } from 'motion/react';
+import { INDICATOR_SPRING } from '../utils/tabIndicator';
 
 export default function ContactSection() {
   const { t } = useLang();
   const sendEmailRef = useRef(null);
-  const faqTabsRef = useRef<HTMLDivElement>(null);
   const [faqTab, setFaqTab] = useState<'experience' | 'freelance'>('experience');
-  const faqIndicator = useSlidingIndicator(faqTabsRef, '.faq-tab', faqTab === 'experience' ? 0 : 1);
   // Single-open accordion: starts fully collapsed (-1 = none open).
   // Clicking an open item toggles it closed again. Headless UI's Disclosure
   // has no controlled `open` prop, so exclusivity used to be enforced by
@@ -213,19 +213,8 @@ export default function ContactSection() {
               <div className="card-shadow-wrap">
               <div className="faq-card contact-card sc-card rise-card">
                 <div className="card-title">FAQ</div>
-                <div className="faq-tabs" role="tablist" ref={faqTabsRef}>
-                  {faqIndicator && (
-                    <span
-                      className="faq-tab-indicator"
-                      style={{
-                        transform: faqIndicator.transform,
-                        width: faqIndicator.width,
-                        height: faqIndicator.height,
-                        top: faqIndicator.top,
-                      }}
-                      aria-hidden="true"
-                    />
-                  )}
+                <LayoutGroup id="faq-tabs">
+                <div className="faq-tabs" role="tablist">
                   <button
                     type="button"
                     role="tab"
@@ -233,6 +222,14 @@ export default function ContactSection() {
                     className={`faq-tab${faqTab === 'experience' ? ' active' : ''}`}
                     onClick={() => { setFaqTab('experience'); setOpenFaqIndex(-1); }}
                   >
+                    {faqTab === 'experience' && (
+                      <motion.span
+                        layoutId="faq-tab-indicator"
+                        className="faq-tab-indicator"
+                        transition={INDICATOR_SPRING}
+                        aria-hidden="true"
+                      />
+                    )}
                     <span className="faq-tab-label">{t.faq_tab_experience}</span>
                   </button>
                   <button
@@ -242,9 +239,18 @@ export default function ContactSection() {
                     className={`faq-tab${faqTab === 'freelance' ? ' active' : ''}`}
                     onClick={() => { setFaqTab('freelance'); setOpenFaqIndex(-1); }}
                   >
+                    {faqTab === 'freelance' && (
+                      <motion.span
+                        layoutId="faq-tab-indicator"
+                        className="faq-tab-indicator"
+                        transition={INDICATOR_SPRING}
+                        aria-hidden="true"
+                      />
+                    )}
                     <span className="faq-tab-label">{t.faq_tab_freelance}</span>
                   </button>
                 </div>
+                </LayoutGroup>
                 <Accordion className="faq-list" key={faqTab}>
                   {faqItems.map((item, i) => (
                     <AccordionItem

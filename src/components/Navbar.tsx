@@ -1,8 +1,18 @@
 import { useEffect, useRef } from 'react';
+import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { useTheme } from '../utils/useTheme';
+import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import gsap from 'gsap';
+
+// Knob travel distance in px — matches the resting `transform: translateX()`
+// values portfolio.css used to hardcode per theme on .theme-switch-knob /
+// .sm-theme-switch-knob (see that file's own PILL_H/KNOB_D geometry comment
+// for how each is derived). Motion now owns the knob's position via
+// animate={{x}} below instead of a CSS class swap, so these are the single
+// source of truth for both switches' travel.
+const KNOB_TRAVEL = { desktop: 41, mobile: 74 };
 
 declare global {
   interface Window {
@@ -446,9 +456,14 @@ export default function Navbar() {
                   aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
                   <span className="theme-switch-label" aria-hidden="true">{theme === 'light' ? 'Light' : 'Dark'}</span>
-                  <span className="theme-switch-knob" aria-hidden="true">
+                  <motion.span
+                    className="theme-switch-knob"
+                    aria-hidden="true"
+                    animate={{ x: theme === 'light' ? KNOB_TRAVEL.desktop : 0 }}
+                    transition={INDICATOR_SPRING}
+                  >
                     <i className={`fas ${theme === 'light' ? 'fa-sun' : 'fa-moon'}`}></i>
-                  </span>
+                  </motion.span>
                 </button>
                 <button id="lang-menu-btn" onClick={toggleLangDropdown}>
                   <i className="fas fa-globe"></i>
@@ -512,9 +527,14 @@ export default function Navbar() {
                 aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 <span className="sm-theme-switch-label" aria-hidden="true">{theme === 'light' ? 'Light' : 'Dark'}</span>
-                <span className="sm-theme-switch-knob" aria-hidden="true">
+                <motion.span
+                  className="sm-theme-switch-knob"
+                  aria-hidden="true"
+                  animate={{ x: theme === 'light' ? KNOB_TRAVEL.mobile : 0 }}
+                  transition={INDICATOR_SPRING}
+                >
                   <i className={`fas ${theme === 'light' ? 'fa-sun' : 'fa-moon'}`}></i>
-                </span>
+                </motion.span>
               </button>
             </div>
             <div className="sm-lang">

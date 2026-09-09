@@ -1,10 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import { motion, LayoutGroup } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
 import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
 import { portfolioWallMaskPath, DEFAULT_RADIUS, computeWallHeight } from '../utils/portfolioMask';
 import { scrollToSectionAligned } from '../utils/navHeader';
-import { useSlidingIndicator } from '../utils/useSlidingIndicator';
+import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import gsap from 'gsap';
 
 const SMOOTH_TAU = 0.18;
@@ -98,9 +99,8 @@ const projectsByLink = new Map(PROJECTS.map(p => [p.link, p]));
 // fresh ProjectCard reference on every render made React treat every
 // <ProjectCard> as a brand-new component type each time, fully unmounting
 // and remounting every project/grid card's real DOM node on ANY unrelated
-// PortfolioSection re-render (activeFilter/expanded changes, even
-// useSlidingIndicator's own setRect once the grid's filter tabs first
-// mount). That silently wiped every imperative style written onto those
+// PortfolioSection re-render (activeFilter/expanded changes included).
+// That silently wiped every imperative style written onto those
 // nodes elsewhere (clip-path, --card-w/--card-h, MagicBento's --glow-*) the
 // moment a remount landed, which is what broke the grid cards' hover ripple
 // reveal and rounded corners. t/expanded/activeFilter are passed as props
@@ -187,8 +187,6 @@ export default function PortfolioSection() {
   const { t, lang } = useLang();
   const [expanded, setExpanded] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
-  const filterTabsRef = useRef<HTMLDivElement>(null);
-  const filterIndicator = useSlidingIndicator(filterTabsRef, '.portfolio-filter-tab', ['all', 'mobile', 'web'].indexOf(activeFilter));
   const scrollerInitRef = useRef(false);
   const wallOutlinePathRef = useRef<SVGPathElement | null>(null);
   // .portfolio-wall-clip holds the clip-path that contains the marquee
@@ -1142,19 +1140,8 @@ export default function PortfolioSection() {
 
         {/* Filter buttons */}
         {expanded && (
-          <div id="portfolio-filters" className="portfolio-filter-tabs" role="tablist" ref={filterTabsRef}>
-            {filterIndicator && (
-              <span
-                className="portfolio-filter-indicator"
-                style={{
-                  transform: filterIndicator.transform,
-                  width: filterIndicator.width,
-                  height: filterIndicator.height,
-                  top: filterIndicator.top,
-                }}
-                aria-hidden="true"
-              />
-            )}
+          <LayoutGroup id="portfolio-filters">
+          <div id="portfolio-filters" className="portfolio-filter-tabs" role="tablist">
             {['all', 'mobile', 'web'].map(f => (
               <button
                 key={f}
@@ -1165,12 +1152,21 @@ export default function PortfolioSection() {
                 data-filter={f}
                 onClick={() => handleFilter(f)}
               >
+                {activeFilter === f && (
+                  <motion.span
+                    layoutId="portfolio-filter-indicator"
+                    className="portfolio-filter-indicator"
+                    transition={INDICATOR_SPRING}
+                    aria-hidden="true"
+                  />
+                )}
                 <span className="portfolio-filter-label">
                   {f === 'all' ? 'All' : f === 'mobile' ? 'Apps Design' : 'Web Design'}
                 </span>
               </button>
             ))}
           </div>
+          </LayoutGroup>
         )}
 
         {/* Grid view */}
