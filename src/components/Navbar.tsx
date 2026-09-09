@@ -1,18 +1,21 @@
 import { useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { useTheme } from '../utils/useTheme';
-import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import gsap from 'gsap';
 
-// Knob travel distance in px — matches the resting `transform: translateX()`
-// values portfolio.css used to hardcode per theme on .theme-switch-knob /
-// .sm-theme-switch-knob (see that file's own PILL_H/KNOB_D geometry comment
-// for how each is derived). Motion now owns the knob's position via
-// animate={{x}} below instead of a CSS class swap, so these are the single
-// source of truth for both switches' travel.
-const KNOB_TRAVEL = { desktop: 41, mobile: 74 };
+// Both theme-switch knobs used to be motion.span with animate={{x}} and a
+// KNOB_TRAVEL constant here. They're plain spans now and portfolio.css owns
+// their position via a transform transition on the .theme-switch--light /
+// .sm-theme-switch--light class this component already sets. Motion drives a
+// spring from requestAnimationFrame, i.e. on the main thread, and a theme
+// toggle is the one moment the main thread is guaranteed to be busy (whole-
+// document style recalc, then a repaint of every themed surface). On a phone
+// that block outlasted the animation, so the knob froze partway across and
+// jumped to its end position once frames resumed. A CSS transform transition
+// is an accelerated animation — Chromium runs it on the compositor thread,
+// which doesn't care that the main thread is stalled. See
+// .theme-switch-knob in portfolio.css for the full note.
 
 declare global {
   interface Window {
@@ -456,14 +459,9 @@ export default function Navbar() {
                   aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
                   <span className="theme-switch-label" aria-hidden="true">{theme === 'light' ? 'Light' : 'Dark'}</span>
-                  <motion.span
-                    className="theme-switch-knob"
-                    aria-hidden="true"
-                    animate={{ x: theme === 'light' ? KNOB_TRAVEL.desktop : 0 }}
-                    transition={INDICATOR_SPRING}
-                  >
+                  <span className="theme-switch-knob" aria-hidden="true">
                     <i className={`fas ${theme === 'light' ? 'fa-sun' : 'fa-moon'}`}></i>
-                  </motion.span>
+                  </span>
                 </button>
                 <button id="lang-menu-btn" onClick={toggleLangDropdown}>
                   <i className="fas fa-globe"></i>
@@ -527,14 +525,9 @@ export default function Navbar() {
                 aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 <span className="sm-theme-switch-label" aria-hidden="true">{theme === 'light' ? 'Light' : 'Dark'}</span>
-                <motion.span
-                  className="sm-theme-switch-knob"
-                  aria-hidden="true"
-                  animate={{ x: theme === 'light' ? KNOB_TRAVEL.mobile : 0 }}
-                  transition={INDICATOR_SPRING}
-                >
+                <span className="sm-theme-switch-knob" aria-hidden="true">
                   <i className={`fas ${theme === 'light' ? 'fa-sun' : 'fa-moon'}`}></i>
-                </motion.span>
+                </span>
               </button>
             </div>
             <div className="sm-lang">

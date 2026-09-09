@@ -162,13 +162,31 @@
       /* Track/label color-fade easing for every switch (theme-switch,
          sm-theme-switch) — animata.design's Fluid Tabs LABEL_TRANSITION
          curve verbatim (https://animata.design/docs/tabs/fluid-tabs). The
-         knobs' own position is Motion's job now (see Navbar.tsx's
-         motion.span animate={{x}}, transition: INDICATOR_SPRING in
-         tabIndicator.ts — a real spring, not a CSS curve standing in for
-         one), but the track background and label color are plain color
-         transitions with nothing to spring toward, so they stay on this
-         CSS easing instead. */
+         knobs' own position is a transform transition on this same curve
+         (see .theme-switch-knob) — it used to be a Motion spring, dropped
+         because a main-thread rAF spring stalls during a theme toggle;
+         --switch-ease at 0.38s stands in for the critically-damped spring
+         it replaced. The track background and label color are plain color
+         transitions with nothing to spring toward, so they were always on
+         this CSS easing. */
       --switch-ease: cubic-bezier(0.32, 0.72, 0, 1);
+
+      /* The mobile menu's theme crossfade — deliberately NOT --switch-ease.
+         That curve is front-loaded (0.32, 0.72 puts most of the travel in
+         the first third, then a long tail), which is right for a control
+         that should feel like it snapped into place, and wrong for a
+         surface that should look like it's easing between two states: it
+         reads as a flash followed by a drift. This is easeInOutSine —
+         symmetric, zero slope at both ends, no flat middle — the same shape
+         a breathing-LED PWM ramp uses, which is why it reads as breathing
+         rather than as a fade with a hard start.
+         Long, too: at 0.38s a symmetric curve just looks slow-to-start, not
+         calm. 0.68s is where the ramp becomes legible as its own movement.
+         Anything reading these two must be inside the html.theme-transitioning
+         window — see useTheme.ts, whose class-removal timeout and stale-paint
+         bust delay are both derived from this duration. */
+      --theme-breathe-ease: cubic-bezier(0.37, 0, 0.63, 1);
+      --theme-breathe-dur: 0.68s;
       --primary: #6C63FF;
       --secondary: #FF6584;
       --bg: #0A0912;
@@ -299,17 +317,84 @@
        cancel a transition on those elements mid-flight and snap them anyway
        — so they keep their existing instant-snap-then-bust behavior instead
        of fighting it.
-       Scoped to html.theme-transitioning, NOT a bare `*` — useTheme.ts adds
-       that class only for the ~0.28s window right after a toggle and removes
-       it once the crossfade is done (see its own comment). A permanently-on
-       `*` transition was tried first and made everything ELSE that changes
-       any of these same properties — the mobile menu opening/closing, any
-       hover state, any class swap — ease instead of snap too, all the time,
-       which read as the whole menu UI turning sluggish. Scoping to this
-       class keeps the crossfade limited to the moment a theme switch is
-       actually in flight. */
-    html.theme-transitioning *:not(.bento-card):not(.ai-card):not(.tech-item):not(.process-card):not(.philosophy-card):not(.pill) {
-      transition: background-color 0.28s var(--switch-ease), border-color 0.28s var(--switch-ease), color 0.28s var(--switch-ease);
+       An EXPLICIT surface list, not `*`. Two earlier versions were universal
+       — first a permanently-on `*` (which made every unrelated class swap,
+       every hover and the mobile menu ease instead of snap), then the same
+       selector scoped to html.theme-transitioning. Scoping fixed the
+       everything-is-sluggish-always regression but not the freeze, because
+       the cost was never the scope — it was the breadth. Measured on this
+       page: 1873 DOM nodes, 1845 of them matched, three properties each, so
+       one tap started ~5500 concurrent transitions that Chromium then had to
+       interpolate AND repaint every frame for 280ms. A desktop CPU absorbs
+       that; a phone drops the whole window on the floor, which is the
+       screen-wide freeze — and since Motion's knob spring ticked on that same
+       blocked main thread, the knob stopped partway across too.
+       So the list is budgeted by measured node count instead. On this page:
+       #sm-panel * is 32 nodes and #main-header * is 58 — the whole mobile
+       menu and the whole navbar, together ~5% of the document, which is why
+       they can afford the full three-property fade. The generic text rule
+       below is 191 nodes and gets `color` only (one property, not three).
+       That's ~270 elements / ~400 transitions against the 1845 / ~5500 the
+       `*` version started, while still reading as a crossfade rather than a
+       snap. span and div are deliberately NOT in it — 628 and 633 nodes
+       respectively, i.e. two thirds of the document and the entire reason
+       the universal selector was unaffordable.
+       The largest visible change on mobile isn't in any of these lists: the
+       two bg.webp/bg_w.webp layers crossfade by opacity
+       (BeamsBackground.tsx, .spline-bg-layer.is-active), which the
+       compositor runs on its own thread for free. */
+    html.theme-transitioning,
+    html.theme-transitioning body,
+    html.theme-transitioning #bg-scene,
+    html.theme-transitioning #bg-spline-scene,
+    html.theme-transitioning .snap-section {
+      transition: background-color 0.38s var(--switch-ease), border-color 0.38s var(--switch-ease), color 0.38s var(--switch-ease);
+    }
+
+    /* The two chrome subtrees, in full. Both are small enough to fade
+       properly (32 + 58 nodes) and both are what you're actually looking at
+       when you hit the switch — the mobile switch lives inside #sm-panel, so
+       the open menu IS the foreground during the whole transition, and its
+       text snapping to the new theme while everything around it eased was
+       the thing that read as broken.
+       The two knobs are excluded by name: this rule sets the `transition`
+       shorthand, which would replace their own `transition: transform` and
+       drop the knob back off the compositor — the exact regression the knob
+       rewrite fixed. Their icon children are left in (a color fade on a
+       child element doesn't touch the parent's own accelerated animation). */
+    html.theme-transitioning #main-header,
+    html.theme-transitioning #main-header *:not(.theme-switch-knob) {
+      transition: background-color 0.38s var(--switch-ease), border-color 0.38s var(--switch-ease), color 0.38s var(--switch-ease);
+    }
+
+    /* The mobile menu breathes instead — slower and on a symmetric
+       ease-in-out (see --theme-breathe-ease/-dur). It's the one surface that
+       earns it: the mobile switch lives inside this panel, so when you hit
+       it the open menu is the entire foreground and the fade is the only
+       thing happening on screen, which is exactly the case where a longer,
+       zero-slope-at-both-ends ramp reads as intentional rather than slow.
+       The navbar above keeps the shorter --switch-ease because it's chrome
+       you're usually looking past, and the page body keeps it because a
+       0.68s ramp across 200+ text nodes is a lot of frames to spend on
+       something peripheral.
+       .sm-theme-switch-knob stays excluded: this shorthand would replace its
+       `transition: transform` and drop it off the compositor. The knob keeps
+       its own 0.38s — deliberately quicker than the panel around it, so the
+       control still answers the tap immediately while its surroundings
+       ease. */
+    html.theme-transitioning #sm-panel,
+    html.theme-transitioning #sm-panel *:not(.sm-theme-switch-knob) {
+      transition: background-color var(--theme-breathe-dur) var(--theme-breathe-ease), border-color var(--theme-breathe-dur) var(--theme-breathe-ease), color var(--theme-breathe-dur) var(--theme-breathe-ease);
+    }
+
+    /* Body copy, one property. Text is what sells a theme fade and `color`
+       alone is a third of the per-frame cost of the three-property version,
+       so this can cover the readable page without the budget the chrome
+       rules above spend. Same card exclusions as the comment at the top of
+       this block: those get display:none'd by useTheme.ts's stale-paint
+       bust, which cancels an in-flight transition and snaps them anyway. */
+    html.theme-transitioning :is(h1, h2, h3, h4, h5, h6, p, a, li, button, label, strong, em, small):not(.bento-card):not(.ai-card):not(.tech-item):not(.process-card):not(.philosophy-card):not(.pill) {
+      transition: color 0.38s var(--switch-ease);
     }
 
     /* ── LIGHT MODE (Variant A — "紫調延伸") ──
@@ -1067,10 +1152,29 @@
       height: 20px;
       border-radius: 50%;
       font-size: 10px;
-      /* Position (transform) is Motion's job now — see Navbar.tsx's
-         motion.span animate={{x}} — not a CSS transition, so a plain class
-         swap here can't fight Motion's own inline-style writes every frame. */
-      transition: background 0.28s var(--switch-ease), border-color 0.28s var(--switch-ease);
+      /* Position is a plain CSS transform transition — deliberately NOT
+         Motion's animate={{x}} spring, which is what used to drive it.
+         Motion advances a spring from requestAnimationFrame on the main
+         thread, so it can only move the knob on frames the main thread
+         actually gets to run; a theme toggle is precisely the moment it
+         doesn't (full-document style recalc + repaint of every themed
+         surface), and the knob visibly stalled partway across, then jumped
+         to wherever the spring had reached by the time frames resumed. A
+         transform transition is an accelerated animation: Chromium hands it
+         to the compositor thread and it keeps interpolating at full rate
+         while the main thread is busy. Same reasoning React Bits' own docs
+         give ("consider disabling certain effects on mobile"), and the same
+         approach as feralui.dev/gradients' knob referenced below.
+         will-change promotes the layer up front so the promotion isn't
+         itself a first-frame cost. Nothing else on this element is allowed
+         to transition — a second, non-composited property animating here
+         would force the whole animation back onto the main thread. The
+         spring it replaces was stiffness 380 / damping 34 / mass 0.75, i.e.
+         damping ratio ~1.0: critically damped, no overshoot, ~0.4s to
+         settle, which --switch-ease at 0.38s matches closely. */
+      transform: translateX(0);
+      transition: transform 0.38s var(--switch-ease);
+      will-change: transform;
     }
 
     .theme-switch.theme-switch--dark .theme-switch-knob {
@@ -1095,6 +1199,10 @@
       background: #ffffff;
       color: #3A3A42;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+      /* Travel distance — 41px, carried over verbatim from what used to be
+         Motion's KNOB_TRAVEL.desktop constant in Navbar.tsx. This rule is the
+         single source of truth for it now. */
+      transform: translateX(41px);
     }
 
     .theme-switch-label {
@@ -8399,11 +8507,14 @@
       border-color: var(--glass-border-hov);
     }
 
-    /* Position (transform) is Motion's job — see Navbar.tsx's motion.span
-       animate={{x}} (0 dark / 74 light — track 116px, 4px knob margin both
-       sides, 34px knob: resting right edge = 116 - 4 - 34 = 78, minus the
-       knob's own left:4 rest position = 74px of travel). No CSS transition
-       here so a class swap can't fight Motion's own inline-style writes. */
+    /* Position is a CSS transform transition, not Motion's animate={{x}} —
+       see .theme-switch-knob's own comment for why the main-thread spring
+       had to go. This is the switch that mattered: it's the mobile one, and
+       mobile is where the main thread actually stalls long enough for a
+       rAF-driven spring to visibly stop partway across.
+       Travel is 74px — track 116px, 4px knob margin both sides, 34px knob:
+       resting right edge = 116 - 4 - 34 = 78, minus the knob's own left:4
+       rest position = 74. */
     .sm-theme-switch-knob {
       position: absolute;
       top: 4px;
@@ -8419,6 +8530,13 @@
       background: #6C63FF;
       border: 1px solid rgba(108, 99, 255, 0.6);
       color: #ffffff;
+      transform: translateX(0);
+      transition: transform 0.38s var(--switch-ease);
+      will-change: transform;
+    }
+
+    .sm-theme-switch.sm-theme-switch--light .sm-theme-switch-knob {
+      transform: translateX(74px);
     }
 
     .sm-theme-switch-label {

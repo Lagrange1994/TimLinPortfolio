@@ -15,16 +15,72 @@ function bustStalePaint(el: HTMLElement) {
   el.style.display = prevDisplay;
 }
 
+// ── TEMPORARY diagnostic HUD ──────────────────────────────────────────────
+// Not for commit. Chasing "1st toggle fades, 2nd snaps" on real Android
+// Chrome specifically — headless Chromium (same engine) cannot reproduce it
+// even after eliminating a stale-dev-server variable, so the next step is
+// reading real frame-by-frame numbers off the actual failing phone instead
+// of guessing again. Opt-in via ?themedebug=1 so it never shows otherwise.
+// Prints, per toggle: when the class/attribute land, then samples a visible
+// menu label's computed color on every rAF for ~900ms and reports SNAP (<=2
+// distinct values — went straight from start color to end color) or
+// SMOOTH(n) (n interpolated steps seen). Also logs the exact moment the
+// stale-paint bust's forced reflow runs, tagged with ms-since-toggle, so a
+// bust landing inside the sampling window shows up directly instead of
+// being inferred. Remove this whole block once the phone confirms the fix.
+const THEME_DEBUG = typeof window !== 'undefined' && /[?&]themedebug=1\b/.test(window.location.search);
+let __themeDebugEl: HTMLDivElement | null = null;
+let __themeDebugN = 0;
+function themeDebugLine(s: string) {
+  if (!THEME_DEBUG) return;
+  if (!__themeDebugEl) {
+    __themeDebugEl = document.createElement('div');
+    __themeDebugEl.id = '__theme_debug__';
+    __themeDebugEl.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:46vh;overflow:auto;background:rgba(0,0,0,.9);color:#7CFC7C;font:10px/1.55 ui-monospace,Menlo,monospace;z-index:2147483647;padding:6px 8px;white-space:pre-wrap;pointer-events:none;';
+    document.body.appendChild(__themeDebugEl);
+  }
+  __themeDebugEl.textContent += s + '\n';
+  __themeDebugEl.scrollTop = __themeDebugEl.scrollHeight;
+}
+function themeDebugSample(n: number) {
+  if (!THEME_DEBUG) return;
+  // Must actually be rendered — a display:none candidate (the desktop
+  // switch label, hidden below 1025px) never runs a CSS transition at all
+  // and would misreport SNAP unconditionally, which isn't the real bug.
+  const candidates = document.querySelectorAll<HTMLElement>('.sm-panel-itemLabel, .theme-switch-label');
+  let el: HTMLElement | null = null;
+  for (const c of candidates) { if (c.getClientRects().length > 0) { el = c; break; } }
+  if (!el) { themeDebugLine(`  [#${n}] no VISIBLE probe element (menu closed, or viewport ≥1025px)`); return; }
+  themeDebugLine(`  [#${n}] probing <${el.className}>`);
+  const t0 = performance.now();
+  const samples: Array<[number, string]> = [];
+  const tick = () => {
+    const t = performance.now() - t0;
+    samples.push([Math.round(t), getComputedStyle(el).color]);
+    if (t < 900) { requestAnimationFrame(tick); return; }
+    const uniq: Array<[number, string]> = [];
+    for (const s of samples) if (!uniq.length || uniq[uniq.length - 1][1] !== s[1]) uniq.push(s);
+    const verdict = uniq.length <= 2 ? 'SNAP' : `SMOOTH(${uniq.length} steps)`;
+    themeDebugLine(`  [#${n}] ${verdict} — ${samples.length} frames sampled — change-times(ms): ${uniq.map(([t]) => t).join(',')}`);
+  };
+  requestAnimationFrame(tick);
+}
+// ───────────────────────────────────────────────────────────────────────
+
 // How long to hold the bust off after a toggle. It display:none's ~28
 // backdrop-filter elements at once and forces a layout — one heavy
 // composited-layer teardown/rebuild. requestIdleCallback alone wasn't
-// enough separation: its 500ms timeout fires while the switch knob's Motion
-// spring (~400ms to settle) and the color crossfade (280ms) are still
-// running, so on a phone that block landed mid-animation and the knob
-// visibly stopped partway across before finishing ("卡在路上"). Waiting
-// past both, and only then asking for idle time, keeps the repair
-// completely outside the window where anything is animating.
-const BUST_DELAY_MS = 700;
+// enough separation: its 500ms timeout fires while the animations are still
+// running, so on a phone that block landed mid-flight and the knob visibly
+// stopped partway across before finishing ("卡在路上"). Waiting past all of
+// them, and only then asking for idle time, keeps the repair completely
+// outside the window where anything is animating.
+// Derived, in order: the longest transition is the mobile menu's breathing
+// crossfade (--theme-breathe-dur, 0.68s), the theme-transitioning class
+// comes off at 800ms, and this sits past that. Raise it if that duration
+// ever goes up — this landing early is the exact shape of the bug it was
+// introduced to avoid.
+const BUST_DELAY_MS = 1100;
 
 // requestIdleCallback lets the forced-layout bust below wait for genuine
 // spare main-thread time instead of competing with whatever frame it lands
@@ -41,50 +97,108 @@ function cancelIdle(id: number) {
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
-  const isFirstRun = useRef(true);
+  // The theme this hook has actually written to the DOM. Compared against
+  // `theme` to tell a real toggle from a re-run, which is what decides
+  // whether to arm the crossfade at all. A boolean isFirstRun ref was used
+  // for this before and got it wrong under StrictMode: dev double-invokes
+  // effects as mount → unmount → remount, so the ref was already spent by
+  // the remount and page load ran the whole toggle path — crossfade class,
+  // stale-paint bust and all — with nothing having changed. Comparing the
+  // value can't be fooled by an extra invocation.
+  const appliedThemeRef = useRef<Theme | null>(null);
   const lazyObserverRef = useRef<IntersectionObserver | null>(null);
   const idleIdRef = useRef<number | null>(null);
+  const didChangeRef = useRef(false);
 
-  // Layout effect, not a passive one: the attribute flip is what every
-  // themed rule keys off, so it should land in the same commit as the
-  // render that changed `theme`, before the browser paints — not a frame
-  // later, which shows up as the switch knob moving before the colors do.
+  // Layout effect, not a passive one, and BOTH the attribute flip and the
+  // class that arms the crossfade happen here, in one synchronous block.
+  //
+  // Splitting them is what made the transition intermittent — "only the
+  // first toggle animates, after that the colors just snap". data-theme was
+  // set here, before paint, while html.theme-transitioning (which is what
+  // actually carries the `transition` declarations) was added from a passive
+  // effect, which React runs AFTER paint. Whenever the browser got a paint
+  // in between, the themed values had already landed at their final colors
+  // with no transition declared on anything, so there was nothing left to
+  // interpolate; the class then arrived too late to matter. Whether that
+  // paint happens depends on how busy the main thread is at that instant,
+  // which is why it looked like a first-time-only effect rather than a
+  // straightforward bug.
+  //
+  // Landing both in a single style change is enough for Chromium: CSS
+  // Transitions resolves transition-property/duration from the AFTER-change
+  // style, so a property that gains its transition in the very change that
+  // alters its value still transitions. Verified in headless Chromium —
+  // 30+ distinct interpolated colors per toggle, every toggle, both
+  // directions. WebKit has never reliably done that: it wants the
+  // transition already declared in the BEFORE-change style, and if it isn't,
+  // the value just lands. Which is why the crossfade could look correct in
+  // one browser and snap in another on the same build.
+  // So the class goes on, the style is flushed, and only then does the
+  // attribute flip — two style changes, the transition declared in the
+  // first, the themed values changing in the second. The extra recalc only
+  // touches transition-* properties: no layout, no paint, and it's read
+  // through getComputedStyle rather than offsetHeight so it doesn't force a
+  // layout pass on the way.
   useLayoutEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    const root = document.documentElement;
+    const changed = appliedThemeRef.current !== null && appliedThemeRef.current !== theme;
+    didChangeRef.current = changed;
+    appliedThemeRef.current = theme;
+
+    // Arms portfolio.css's html.theme-transitioning rules — the color
+    // crossfade is scoped to an actual toggle instead of sitting on every
+    // element permanently (a bare `*` transition was tried first and made
+    // the mobile menu and every hover ease too).
+    //
+    // document.startViewTransition was also tried, to cross-fade the whole
+    // page as one compositor blend. Removed: a view transition hides the
+    // LIVE DOM for the length of its animation and shows static before/after
+    // snapshots instead, while the switch knob kept moving underneath,
+    // unseen — so the knob appeared frozen for the transition's duration and
+    // then jumped to wherever it had already reached ("卡在中間才到另一端").
+    // Its one real advantage — cross-fading light mode's background-IMAGE
+    // against dark mode's flat color, which a background-color transition
+    // genuinely cannot interpolate — went away once both page-background
+    // layers became flat colors on mobile (see #bg-scene in portfolio.css).
+    let debugN = 0;
+    if (changed) {
+      root.classList.add('theme-transitioning');
+      // Commit the arming as its own style change — see the note above.
+      void getComputedStyle(root).transitionDuration;
+    }
+    root.setAttribute('data-theme', theme);
     try {
       localStorage.setItem('theme', theme);
     } catch {
       // Private-mode/storage-disabled: theme still applies for this load, just doesn't persist.
     }
+
+    if (changed && THEME_DEBUG) {
+      debugN = ++__themeDebugN;
+      themeDebugLine(`toggle #${debugN} → ${theme} @ t=${performance.now().toFixed(1)}`);
+      themeDebugSample(debugN);
+    }
+
+    if (!changed) return;
+
+    // Must outlast the LONGEST transition those rules declare. That's the
+    // mobile menu's breathing crossfade at --theme-breathe-dur (0.68s), not
+    // the 0.38s the navbar, page text and knob use. Removing the class also
+    // removes the transition property, and a transition whose property
+    // disappears mid-flight doesn't finish — it jumps straight to its end
+    // value, which is exactly the snap this is here to avoid. The extra
+    // ~120ms is margin for a frame landing late.
+    const transitionTimeoutId = window.setTimeout(() => {
+      root.classList.remove('theme-transitioning');
+    }, 800);
+    return () => window.clearTimeout(transitionTimeoutId);
   }, [theme]);
 
   useEffect(() => {
-    if (isFirstRun.current) {
-      isFirstRun.current = false;
-      return;
-    }
-
-    // Arms portfolio.css's html.theme-transitioning rule for just this
-    // window, so the color crossfade is scoped to an actual toggle instead
-    // of sitting on every element permanently (a bare `*` transition was
-    // tried first and made the mobile menu and every hover ease too).
-    //
-    // document.startViewTransition was also tried here, to cross-fade the
-    // whole page as one compositor blend. Removed: a view transition hides
-    // the LIVE DOM for the length of its animation and shows static
-    // before/after snapshots instead, but the switch knob's position is a
-    // live Motion spring (motion.span animate={{x}}, Navbar.tsx) running
-    // underneath, unseen — so the knob appeared frozen for the transition's
-    // duration and then jumped to wherever the hidden spring had already
-    // reached ("卡在中間才到另一端"). Its one real advantage — cross-fading
-    // light mode's background-IMAGE against dark mode's flat color, which a
-    // background-color transition genuinely cannot interpolate — went away
-    // once both page-background layers became flat colors on mobile (see
-    // #bg-scene in portfolio.css).
-    document.documentElement.classList.add('theme-transitioning');
-    const transitionTimeoutId = window.setTimeout(() => {
-      document.documentElement.classList.remove('theme-transitioning');
-    }, 300);
+    if (!didChangeRef.current) return;
+    const debugToggleT0 = performance.now();
+    const debugN = THEME_DEBUG ? __themeDebugN : 0;
 
     // Chromium can leave an already-rendered node pinned to its pre-toggle
     // background even though the custom property it's built from has
@@ -96,6 +210,9 @@ export function useTheme() {
     if (idleIdRef.current !== null) cancelIdle(idleIdRef.current);
     const bustDelayId = window.setTimeout(() => {
       idleIdRef.current = onIdle(() => {
+        if (THEME_DEBUG) {
+          themeDebugLine(`  [#${debugN}] BUST running @ t=+${(performance.now() - debugToggleT0).toFixed(1)}ms`);
+        }
         const affected = Array.from(document.querySelectorAll<HTMLElement>(STALE_PAINT_SELECTOR));
         const vh = window.innerHeight;
         const near: HTMLElement[] = [];
@@ -129,7 +246,9 @@ export function useTheme() {
       window.clearTimeout(bustDelayId);
       if (idleIdRef.current !== null) cancelIdle(idleIdRef.current);
       lazyObserverRef.current?.disconnect();
-      window.clearTimeout(transitionTimeoutId);
+      if (THEME_DEBUG) {
+        themeDebugLine(`  [#${debugN}] cleanup (bust cancelled if still pending) @ t=+${(performance.now() - debugToggleT0).toFixed(1)}ms`);
+      }
     };
   }, [theme]);
 
