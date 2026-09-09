@@ -372,6 +372,20 @@
       --line: #059C48;
       --line-dim: rgba(5, 156, 72, 0.12);
       --line-bdr: rgba(5, 156, 72, 0.35);
+      /* HBadge category hues (SkillsSection.tsx BADGE_COLORS) — light-mode
+         equivalents of the dark-mode Tailwind utilities (violet/cyan/amber/
+         red/emerald/blue/indigo-400/300), re-picked for AA contrast on a
+         white card. --badge-primary is deliberately NOT --primary: it mirrors
+         Tailwind's generic "indigo" badge category, while --primary is this
+         site's own brand purple (the "brand" badge variant uses --primary
+         directly) — two different categories that happen to be similar hues. */
+      --badge-purple: #7C3AED;
+      --badge-cyan: #0E7490;
+      --badge-amber: #B45309;
+      --badge-red: #DC2626;
+      --badge-green: #059669;
+      --badge-blue: #2563EB;
+      --badge-primary: #4F46E5;
       /* Content-card glass tiers (.process-card, .tech-item, .bento-card,
          .ai-card, .philosophy-card, .pill) — the dark versions read as
          frosted dark glass; light mode swaps to frosted white so the same
@@ -8760,14 +8774,14 @@
        border, and a darker in-brand text shade for contrast on the light
        card (the "-300" text tones read fine on dark but wash out on white). */
     :root[data-theme="light"] .badge-neutral{background-color:transparent !important;color:var(--text-70) !important;border:1px solid var(--glass-border) !important}
-    :root[data-theme="light"] .badge-purple{background-color:transparent !important;color:#7C3AED !important;border:1px solid rgba(124,58,237,.45) !important}
+    :root[data-theme="light"] .badge-purple{background-color:transparent !important;color:var(--badge-purple) !important;border:1px solid rgba(124,58,237,.45) !important}
     :root[data-theme="light"] .badge-brand{background-color:transparent !important;color:var(--primary) !important;border:1px solid rgba(91,79,224,.5) !important}
-    :root[data-theme="light"] .badge-cyan{background-color:transparent !important;color:#0E7490 !important;border:1px solid rgba(6,182,212,.45) !important}
-    :root[data-theme="light"] .badge-warning{background-color:transparent !important;color:#B45309 !important;border:1px solid rgba(217,119,6,.45) !important}
-    :root[data-theme="light"] .badge-danger{background-color:transparent !important;color:#DC2626 !important;border:1px solid rgba(220,38,38,.45) !important}
-    :root[data-theme="light"] .badge-success{background-color:transparent !important;color:#059669 !important;border:1px solid rgba(5,150,105,.45) !important}
-    :root[data-theme="light"] .badge-info{background-color:transparent !important;color:#2563EB !important;border:1px solid rgba(37,99,235,.45) !important}
-    :root[data-theme="light"] .badge-primary{background-color:transparent !important;color:#4F46E5 !important;border:1px solid rgba(79,70,229,.45) !important}
+    :root[data-theme="light"] .badge-cyan{background-color:transparent !important;color:var(--badge-cyan) !important;border:1px solid rgba(6,182,212,.45) !important}
+    :root[data-theme="light"] .badge-warning{background-color:transparent !important;color:var(--badge-amber) !important;border:1px solid rgba(217,119,6,.45) !important}
+    :root[data-theme="light"] .badge-danger{background-color:transparent !important;color:var(--badge-red) !important;border:1px solid rgba(220,38,38,.45) !important}
+    :root[data-theme="light"] .badge-success{background-color:transparent !important;color:var(--badge-green) !important;border:1px solid rgba(5,150,105,.45) !important}
+    :root[data-theme="light"] .badge-info{background-color:transparent !important;color:var(--badge-blue) !important;border:1px solid rgba(37,99,235,.45) !important}
+    :root[data-theme="light"] .badge-primary{background-color:transparent !important;color:var(--badge-primary) !important;border:1px solid rgba(79,70,229,.45) !important}
 
     /* AI Brief card flourish — 4 raw request "documents" (skeleton-loader
        pages, à la animata.design's Code skeleton, each a different layout:
