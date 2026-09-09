@@ -437,17 +437,30 @@
        --grad accent every one of these headlines already carries in its
        .gradient-text suffix. Dark mode keeps its own white unchanged.
        Deliberately does NOT extend to card-level titles (.bento-label,
-       .tech-name, .ai-card h3) — see the comment below those keep. The
-       In-house/Freelance column headers, each process card's photo-scrim
-       title, and Portfolio's own headline lead still get the same
-       light-only blue as the section headlines above. */
+       .tech-name, .ai-card h3, .process-card--has-img .process-name) — see
+       the comments below those keep. The In-house/Freelance column headers
+       and Portfolio's own headline lead still get the same light-only blue
+       as the section headlines above. */
     :root[data-theme="light"] .about-h2,
     :root[data-theme="light"] .contact-headline,
     :root[data-theme="light"] .process-column-header,
-    :root[data-theme="light"] .process-card--has-img .process-name,
     :root[data-theme="light"] .portfolio-headline-title {
       color: var(--primary);
     }
+
+    /* .process-card--has-img .process-name deliberately excluded from the
+       shared rule above, unlike its neighbor .process-column-header: this
+       title sits on the card's own permanent dark photo scrim (see
+       .border-glow-inner::before's fixed rgba(13,10,28,...) gradient above),
+       not on the page background, in BOTH themes — same reasoning already
+       applied to this card's .process-desc and .process-step-badge, which
+       stay pinned white/near-white regardless of theme. The title used to
+       be the one exception, swapping to --primary purple in light mode even
+       though the scrim under it never lightens — brand purple on a
+       near-black gradient reads worse than the plain white every sibling
+       element on the same card already uses. No override needed here: the
+       base .process-card--has-img .process-name rule's own `color: #fff`
+       now simply applies in both themes. */
 
     /* .bento-label, .tech-name and .ai-card h3 are deliberately excluded from
        the shared light-mode headline rule above: each of their cards already
