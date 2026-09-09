@@ -5340,7 +5340,7 @@
       font-size: 11px;
       letter-spacing: .12em;
       text-transform: uppercase;
-      color: #9090A8;
+      color: var(--text-50);
       font-family: var(--mono);
       font-weight: 600;
       margin-bottom: 18px;
