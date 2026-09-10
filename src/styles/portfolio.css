@@ -448,7 +448,20 @@
       /* Neutral charcoal, not near-black: body copy and unstyled icons
          inherit this, and a purple-black base read as "pure black" against
          the light bg. -70/-50/-30 fade the same gray toward the page bg
-         instead of toward a tinted dark. */
+         instead of toward a tinted dark.
+         Contrast budget against --bg-card (#F7FAFC) / white, measured:
+           --text-70 ≈ 4.85:1 (passes WCAG AA normal text, 4.5:1)
+           --text-50 ≈ 2.84:1 (large text / 18px+ only, 3:1 — fails normal)
+           --text-30 ≈ 1.94:1 (decorative only — icons, dividers, disabled
+                                states. NOT for any text a user needs to
+                                read, at any size. 2026-09 audit found six
+                                components on this exact mistake — stat
+                                digits, profile-card name, LINE-CTA caption,
+                                mobile menu toggle, AI-detail table headers —
+                                all moved to --text-70.)
+         These ratios are for LIGHT MODE specifically: dark mode's tiers
+         fade toward near-white instead, so the same names carry different
+         real contrast per theme — recheck before reusing a tier as-is. */
       --text: #3A3A42;
       --text-70: rgba(58, 58, 66, 0.72);
       --text-50: rgba(58, 58, 66, 0.52);
