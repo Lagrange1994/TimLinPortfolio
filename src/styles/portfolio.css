@@ -524,6 +524,20 @@
       --neu-raised-sm-hover:
         6px 6px 14px var(--neu-shadow-dark),
         -6px -6px 14px var(--neu-shadow-light);
+      /* -tight: .process-card sits inside .process-scroll-wrap, an
+         overflow:hidden swipe track with only 12px of padding around the
+         card (see .process-card's own dark-mode box-shadow comment for the
+         same constraint) — the default -raised/-raised-hover reach (8+18=26px,
+         11+24=35px) blows way past that budget and gets hard-clipped into a
+         visible square edge instead of a soft glow. Scaled down to stay
+         within ~12px reach (offset+blur), matching the dark-mode contact-
+         shadow's own budget. */
+      --neu-raised-tight:
+        3px 3px 8px var(--neu-shadow-dark),
+        -3px -3px 8px var(--neu-shadow-light);
+      --neu-raised-tight-hover:
+        4px 4px 10px var(--neu-shadow-dark),
+        -4px -4px 10px var(--neu-shadow-light);
       --card-shadow-selected:
         0 8px 18px rgba(var(--shadow-near), 0.24),
         12px 40px 90px rgba(var(--shadow-far), 0.22),
@@ -542,30 +556,21 @@
        --grad accent every one of these headlines already carries in its
        .gradient-text suffix. Dark mode keeps its own white unchanged.
        Deliberately does NOT extend to card-level titles (.bento-label,
-       .tech-name, .ai-card h3, .process-card--has-img .process-name) — see
-       the comments below those keep. The In-house/Freelance column headers
-       and Portfolio's own headline lead still get the same light-only blue
-       as the section headlines above. */
+       .tech-name, .ai-card h3) — see the comments below those keep.
+       .process-card--has-img .process-name gets its own light-mode override
+       too (plain --text dark gray, not --primary — its card also has to
+       flip its scrim/vignette), as its own rule next to the base rule
+       instead of folded into this selector list — see the
+       :root[data-theme="light"] override near .process-name's base rule
+       above. The In-house/Freelance column headers and Portfolio's own
+       headline lead still get the same light-only blue as the section
+       headlines above. */
     :root[data-theme="light"] .about-h2,
     :root[data-theme="light"] .contact-headline,
     :root[data-theme="light"] .process-column-header,
     :root[data-theme="light"] .portfolio-headline-title {
       color: var(--primary);
     }
-
-    /* .process-card--has-img .process-name deliberately excluded from the
-       shared rule above, unlike its neighbor .process-column-header: this
-       title sits on the card's own permanent dark photo scrim (see
-       .border-glow-inner::before's fixed rgba(13,10,28,...) gradient above),
-       not on the page background, in BOTH themes — same reasoning already
-       applied to this card's .process-desc and .process-step-badge, which
-       stay pinned white/near-white regardless of theme. The title used to
-       be the one exception, swapping to --primary purple in light mode even
-       though the scrim under it never lightens — brand purple on a
-       near-black gradient reads worse than the plain white every sibling
-       element on the same card already uses. No override needed here: the
-       base .process-card--has-img .process-name rule's own `color: #fff`
-       now simply applies in both themes. */
 
     /* .bento-label, .tech-name and .ai-card h3 are deliberately excluded from
        the shared light-mode headline rule above: each of their cards already
@@ -3417,6 +3422,12 @@
       );
     }
 
+    /* 淺色板的 _l 插圖本身就是白底、線條配色，不需要這層深色暗角來壓邊緣
+       ——蓋上去只會讓乾淨的白底插圖變濛。 */
+    :root[data-theme="light"] .border-glow-bg-slot::after {
+      background: none !important;
+    }
+
     /* 白色／彩色圖片交叉淡入淡出：預設白色，hover 換彩色 */
     .process-card-bg-img--white,
     .process-card-bg-img--color {
@@ -3432,6 +3443,21 @@
     }
     .border-glow-card:hover .process-card-bg-img--white {
       opacity: 0;
+    }
+
+    /* 淺色板專用第三圖層（_l 檔案，本身就是淺色配色，不需要白／彩色 hover
+       交叉淡入）：預設隱藏，只在 light 主題下蓋過白／彩色兩層。 */
+    .process-card-bg-img--light {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+    }
+    :root[data-theme="light"] .process-card-bg-img--white,
+    :root[data-theme="light"] .process-card-bg-img--color {
+      opacity: 0 !important;
+    }
+    :root[data-theme="light"] .process-card-bg-img--light {
+      opacity: 1 !important;
     }
 
     /* border-glow-inner 填滿卡片，flex 底部對齊文字 */
@@ -3465,6 +3491,21 @@
       z-index: 0;
     }
 
+    /* 淺色板：底部遮罩淡入卡片自己的 neumorphism 底色（--neu-bg），而不是
+       深色，這樣文字區才會是乾淨的白底，搭配下面深色文字。標題約落在卡片
+       64% 高度處（.process-name 沒有 top padding，緊接在漸層淡入的位置），
+       所以漸層要在 64% 之前就開始爬升，不然深色插圖線條會直接穿過標題
+       文字，深灰字疊淺插圖線條幾乎讀不出來。 */
+    :root[data-theme="light"] .process-card--has-img .border-glow-inner::before {
+      background: linear-gradient(
+        to bottom,
+        transparent 40%,
+        rgba(247, 250, 252, 0.55) 55%,
+        rgba(247, 250, 252, 0.92) 68%,
+        rgba(247, 250, 252, 0.98) 100%
+      ) !important;
+    }
+
     /* 標題 */
     .process-card--has-img .process-name {
       position: relative;
@@ -3476,13 +3517,20 @@
       margin-bottom: 0;
       text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
       line-height: 1.3;
-      /* Pinned white, not var(--text): this variant sits on its own permanent
-         dark photo scrim (.border-glow-inner's gradient above), not on
-         --glass-bg, so it can't follow --text into a dark-on-dark render
-         once light mode makes the base .process-name/.process-desc dark.
-         Light mode swaps this to brand blue — see :root[data-theme="light"]
-         override below — dark mode keeps the original white. */
+      /* Pinned white, not var(--text): dark mode's scrim under this text
+         (.border-glow-inner's gradient above) is a fixed dark photo tint.
+         Light mode now fades that same scrim to --neu-bg instead (see the
+         :root[data-theme="light"] override on .border-glow-inner::before
+         above), so it needs its own light-mode color here too — see
+         override below. */
       color: #fff;
+    }
+
+    :root[data-theme="light"] .process-card--has-img .process-name {
+      color: var(--text);
+      /* 深色陰影是給深色板白字襯深色底用的可讀性陰影，淺色板深灰字在淺底
+         上不需要，留著只會糊字。 */
+      text-shadow: none;
     }
 
     /* 說明文字 — 恆常顯示 */
@@ -3493,10 +3541,13 @@
       color: rgba(255, 255, 255, 0.75);
     }
 
-    /* Same reasoning as .process-name/.process-desc above — the step badge
-       floats over this variant's full-bleed dark-vignetted illustration
-       too, so it keeps its original light values instead of following
-       --text-30/--text-50 into light mode's dark ink. */
+    :root[data-theme="light"] .process-card--has-img .process-desc {
+      color: var(--text-70);
+    }
+
+    /* Dark mode: the step badge floats over the permanent dark photo scrim,
+       so it keeps near-white values instead of following --text-30/--text-50
+       into light mode's dark ink (that light-mode swap happens below). */
     .process-card--has-img .process-step-badge {
       color: rgba(255, 255, 255, .35);
     }
@@ -3506,12 +3557,11 @@
     }
 
     /* The badge's own chip (background/border, set on the base rule above)
-       is hardcoded near-black regardless of --has-img — fine when the
-       whole card stayed a permanent dark photo card, but .border-glow-card
-       itself DOES theme its own --card-bg to light mode's --bg-card, and
-       the badge's -7px top offset lets that light corner peek out from
-       under the (still-always-dark) illustration layers. Swap the chip to
-       the same light-glass treatment every other floating pill uses. */
+       is hardcoded near-black regardless of --has-img — fine in dark mode,
+       but light mode now renders this whole card as a light neumorphism
+       surface (illustration + scrim + text all swap above), so the badge
+       chip joins the same light-glass treatment every other floating pill
+       uses instead of sitting near-black on a light card. */
     :root[data-theme="light"] .process-step-badge {
       background: var(--glass-bg);
       border-color: var(--glass-border);
@@ -10058,6 +10108,20 @@
     :root[data-theme="light"] .contact-card:hover {
       border-color: transparent !important;
       box-shadow: var(--neu-raised-hover) !important;
+    }
+
+    /* .process-card overrides the shared -raised/-raised-hover shadow above
+       with the -tight scale: it sits inside .process-scroll-wrap, an
+       overflow:hidden swipe track with only 12px of clip room, so the
+       shared 26px/35px shadow reach was getting hard-clipped into a visible
+       square edge instead of a soft raised look (see --neu-raised-tight's
+       own comment). Must come after the shared block above to win on source
+       order (same selector specificity, both !important). */
+    :root[data-theme="light"] .process-card.border-glow-card {
+      box-shadow: var(--neu-raised-tight) !important;
+    }
+    :root[data-theme="light"] .process-card:hover {
+      box-shadow: var(--neu-raised-tight-hover) !important;
     }
 
     /* My Portfolio's two card wrappers join the same "raised" tier —

@@ -1671,6 +1671,7 @@ export default function SkillsSection() {
                       <>
                         <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: processCardBg(`${slug}_w`) }} />
                         <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: processCardBg(slug) }} />
+                        <div className="process-card-bg-img process-card-bg-img--light" style={{ backgroundImage: processCardBg(`${slug}_l`) }} />
                       </>
                     }
                   >
@@ -1713,6 +1714,7 @@ export default function SkillsSection() {
                       <>
                         <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: processCardBg(`${slug}_w`) }} />
                         <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: processCardBg(slug) }} />
+                        <div className="process-card-bg-img process-card-bg-img--light" style={{ backgroundImage: processCardBg(`${slug}_l`) }} />
                       </>
                     }
                   >
