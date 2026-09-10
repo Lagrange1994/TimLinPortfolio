@@ -2829,9 +2829,12 @@
     }
 
     /* Light mode only: the big stat digits (5+/10+/4) read as near-black
-       at full var(--text) — lighten to the palest gray tier instead. */
+       at full var(--text) — lighten one tier instead of the palest one.
+       --text-30 measured ~1.9:1 against the card bg here (fails WCAG AA
+       even for this large a font, which needs 3:1); --text-70 clears
+       4.5:1, the normal-text threshold, with margin to spare. */
     :root[data-theme="light"] .digit-col-inner span {
-      color: var(--text-30);
+      color: var(--text-70);
     }
 
     .stat-suffix {
@@ -3078,10 +3081,13 @@
       background-clip: text;
     }
 
+    /* Match the digit-col-inner fix above — same gray tier as the digits
+       it sits next to (e.g. the "+" in "20+"), and for the same contrast
+       reason. */
     :root[data-theme="light"] .stat-suffix.bento-accent {
       background: none;
-      -webkit-text-fill-color: var(--text-30);
-      color: var(--text-30);
+      -webkit-text-fill-color: var(--text-70);
+      color: var(--text-70);
     }
 
     .ai-flow-mini {
