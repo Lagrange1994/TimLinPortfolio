@@ -812,10 +812,11 @@
     }
 
     /* Contact Me (.btn-glass alone, no .btn-grad — the only bare .btn-glass
-       in the site): semi-transparent glass fill in light mode, with
-       --text-70 for the label instead of the base rule's white text. */
+       in the site): matches the hero pill-carousel's glass look exactly
+       (.tag-capsule below, same --text-70 / var(--glass-bg) pair) instead
+       of its own one-off 0.8-alpha variant. */
     :root[data-theme="light"] .btn-glass:not(.btn-grad) {
-      background: rgb(from var(--glass-bg) r g b / 0.8);
+      background: var(--glass-bg);
       color: var(--text-70);
     }
 
