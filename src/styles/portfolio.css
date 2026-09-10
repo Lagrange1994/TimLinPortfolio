@@ -8968,16 +8968,18 @@
     :root[data-theme="light"] .ai-card.ai-focal{background-color:var(--glass-bg-premium);background-image:var(--noise-grain),radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.22),transparent 65%),linear-gradient(180deg,rgba(247,250,252,.5),rgba(247,250,252,.15));border-color:rgba(181,139,255,.38);box-shadow:0 30px 80px -25px rgba(90,60,150,.28),0 0 0 1px rgba(181,139,255,.14),0 0 140px -30px rgba(181,139,255,.3),inset 0 1px 0 rgba(247,250,252,.6)}
     /* Glyph icon is stroke-only SVG (fill="none"), so it always reads as
        line art — the earlier solid-gradient chip just buried that under a
-       filled color block with the icon rendered white-on-color. Back to a
-       faint tinted chip (like dark mode's), but with a darker/more
-       saturated icon color than dark mode's pastel accents (#00D4FF,
-       #7CC4FF, ...), which wash out against a light card. */
-    :root[data-theme="light"] .ai-focal .ai-glyph{background:linear-gradient(135deg,rgba(138,111,255,.16),rgba(255,111,184,.14));border-color:rgba(138,111,255,.42);color:#7C3AED}
-    :root[data-theme="light"] .ai-cyan .ai-glyph{background:rgba(0,212,255,.14);border-color:rgba(0,212,255,.4);color:#0284C7}
-    :root[data-theme="light"] .ai-purple .ai-glyph{background:rgba(19,159,248,.16);border-color:rgba(19,159,248,.42);color:#1D4ED8}
-    :root[data-theme="light"] .ai-violet .ai-glyph{background:rgba(37,102,240,.18);border-color:rgba(37,102,240,.44);color:#3730A3}
-    :root[data-theme="light"] .ai-human .ai-glyph{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.38);color:#059669}
-    :root[data-theme="light"] .ai-spectrum .ai-glyph{background:linear-gradient(135deg,rgba(138,43,226,.16),rgba(0,212,255,.14));border-color:rgba(138,43,226,.42);color:#6D28D9}
+       filled color block with the icon rendered white-on-color. No border
+       ring (tried, cancelled) — just a faint tinted fill behind the icon,
+       no chip outline at all. Colors are a lighter-mid pick — dark mode's
+       own pastel accents (#00D4FF, #7CC4FF, ...) washed out against a
+       light card, but a fully saturated pick (#0284C7, #1D4ED8, ...) read
+       too heavy. */
+    :root[data-theme="light"] .ai-focal .ai-glyph{background:rgba(159,122,234,.14);border:none;color:#9F7AEA}
+    :root[data-theme="light"] .ai-cyan .ai-glyph{background:rgba(56,189,248,.14);border:none;color:#38BDF8}
+    :root[data-theme="light"] .ai-purple .ai-glyph{background:rgba(59,130,246,.14);border:none;color:#3B82F6}
+    :root[data-theme="light"] .ai-violet .ai-glyph{background:rgba(99,102,241,.14);border:none;color:#6366F1}
+    :root[data-theme="light"] .ai-human .ai-glyph{background:rgba(16,185,129,.14);border:none;color:#10B981}
+    :root[data-theme="light"] .ai-spectrum .ai-glyph{background:rgba(168,85,247,.14);border:none;color:#A855F7}
     /* Human Review */
     .ai-card.ai-human{background-image:var(--noise-grain),radial-gradient(460px 280px at 70% 0%,rgba(123,227,181,.2),transparent 65%),radial-gradient(280px 200px at 30% 100%,rgba(255,255,255,.06),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));background-size:180px 180px,auto,auto,auto;background-repeat:repeat,no-repeat,no-repeat,no-repeat;border-color:rgba(123,227,181,.3)}
     .ai-card.ai-human>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(123,227,181,.22),inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.14)}
