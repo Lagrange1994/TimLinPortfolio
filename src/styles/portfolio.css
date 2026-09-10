@@ -6592,18 +6592,20 @@
 
     /* Solid gray, not a gradient-clip fill — override both the gradient
        and the transparent text-fill-color the base rule pairs it with.
-       --text-30 matches the big stat digits (.digit-col-inner span, e.g.
-       "5+") — same gray tier, not just "some gray". */
+       Was --text-30 (same gray tier as the big stat digits), but this is
+       the profile card's actual name/title — at ~1.9:1 against the card
+       bg it read as barely-there. Bumped to --text-70, same fix as the
+       stat digits (.digit-col-inner span) above, for the same reason. */
     :root[data-theme="light"] .pc-details h3 {
       background-image: none;
-      -webkit-text-fill-color: var(--text-30);
-      color: var(--text-30);
+      -webkit-text-fill-color: var(--text-70);
+      color: var(--text-70);
     }
 
     :root[data-theme="light"] .pc-details p {
       background-image: none;
-      -webkit-text-fill-color: var(--text-30);
-      color: var(--text-30);
+      -webkit-text-fill-color: var(--text-70);
+      color: var(--text-70);
     }
 
     /* FONT HEADING */
