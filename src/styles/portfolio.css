@@ -8947,6 +8947,10 @@
     /* Focal badge — gradient pill top-right */
     .ai-focal-badge{position:absolute;top:-13px;right:22px;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:linear-gradient(135deg,#B58BFF,#FF7BC8);color:#1a0a20;font-family:"Geist Mono",monospace;font-size:10px;letter-spacing:.14em;font-weight:600;box-shadow:0 10px 30px -6px rgba(255,123,200,.5);white-space:nowrap}
     .ai-focal-badge::before{content:"";width:5px;height:5px;border-radius:50%;background:#1a0a20}
+    /* 淺色板：實心漸層膠囊改成空心——透明底、彩色邊框跟文字，跟同一張卡片
+       上已經改成同款空心處理的 .ai-glyph 呼應。 */
+    :root[data-theme="light"] .ai-focal-badge{background:rgba(181,139,255,.12);border:1px solid rgba(181,139,255,.5);color:#7C3AED;box-shadow:none}
+    :root[data-theme="light"] .ai-focal-badge::before{background:currentColor}
     /* Radar ring */
     @keyframes aiRingP{0%{transform:scale(.99);opacity:.6}100%{transform:scale(1.04);opacity:0}}
     .ai-card::after{content:"";position:absolute;inset:-10px;border-radius:calc(var(--ai-card-r) + 10px);corner-shape:squircle;border:1px solid rgba(255,255,255,.14);pointer-events:none;animation:none;opacity:0}
@@ -8962,16 +8966,18 @@
        glass-premium surface every other .ai-card variant already gets,
        with the purple/pink identity kept as a tint instead of the base. */
     :root[data-theme="light"] .ai-card.ai-focal{background-color:var(--glass-bg-premium);background-image:var(--noise-grain),radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.22),transparent 65%),linear-gradient(180deg,rgba(247,250,252,.5),rgba(247,250,252,.15));border-color:rgba(181,139,255,.38);box-shadow:0 30px 80px -25px rgba(90,60,150,.28),0 0 0 1px rgba(181,139,255,.14),0 0 140px -30px rgba(181,139,255,.3),inset 0 1px 0 rgba(247,250,252,.6)}
-    :root[data-theme="light"] .ai-focal .ai-glyph{background:linear-gradient(135deg,#8A6FFF,#FF6FB8);border-color:rgba(138,111,255,.5);color:#fff}
-    /* Every other variant's glyph was still the dark-mode flat, low-alpha
-       tint (e.g. rgba(0,212,255,.14)) — nearly invisible on a light card,
-       and inconsistent next to .ai-focal's solid gradient above. Same
-       solid-gradient treatment, each in its own variant hue. */
-    :root[data-theme="light"] .ai-cyan .ai-glyph{background:linear-gradient(135deg,#00D4FF,#0EA5E9);border-color:rgba(0,212,255,.5);color:#fff}
-    :root[data-theme="light"] .ai-purple .ai-glyph{background:linear-gradient(135deg,#139FF8,#2566F0);border-color:rgba(19,159,248,.5);color:#fff}
-    :root[data-theme="light"] .ai-violet .ai-glyph{background:linear-gradient(135deg,#2566F0,#4A00E0);border-color:rgba(37,102,240,.5);color:#fff}
-    :root[data-theme="light"] .ai-human .ai-glyph{background:linear-gradient(135deg,#34D399,#059669);border-color:rgba(52,211,153,.5);color:#fff}
-    :root[data-theme="light"] .ai-spectrum .ai-glyph{background:linear-gradient(135deg,#8A2BE2,#00D4FF);border-color:rgba(138,43,226,.5);color:#fff}
+    /* Glyph icon is stroke-only SVG (fill="none"), so it always reads as
+       line art — the earlier solid-gradient chip just buried that under a
+       filled color block with the icon rendered white-on-color. Back to a
+       faint tinted chip (like dark mode's), but with a darker/more
+       saturated icon color than dark mode's pastel accents (#00D4FF,
+       #7CC4FF, ...), which wash out against a light card. */
+    :root[data-theme="light"] .ai-focal .ai-glyph{background:linear-gradient(135deg,rgba(138,111,255,.16),rgba(255,111,184,.14));border-color:rgba(138,111,255,.42);color:#7C3AED}
+    :root[data-theme="light"] .ai-cyan .ai-glyph{background:rgba(0,212,255,.14);border-color:rgba(0,212,255,.4);color:#0284C7}
+    :root[data-theme="light"] .ai-purple .ai-glyph{background:rgba(19,159,248,.16);border-color:rgba(19,159,248,.42);color:#1D4ED8}
+    :root[data-theme="light"] .ai-violet .ai-glyph{background:rgba(37,102,240,.18);border-color:rgba(37,102,240,.44);color:#3730A3}
+    :root[data-theme="light"] .ai-human .ai-glyph{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.38);color:#059669}
+    :root[data-theme="light"] .ai-spectrum .ai-glyph{background:linear-gradient(135deg,rgba(138,43,226,.16),rgba(0,212,255,.14));border-color:rgba(138,43,226,.42);color:#6D28D9}
     /* Human Review */
     .ai-card.ai-human{background-image:var(--noise-grain),radial-gradient(460px 280px at 70% 0%,rgba(123,227,181,.2),transparent 65%),radial-gradient(280px 200px at 30% 100%,rgba(255,255,255,.06),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.015));background-size:180px 180px,auto,auto,auto;background-repeat:repeat,no-repeat,no-repeat,no-repeat;border-color:rgba(123,227,181,.3)}
     .ai-card.ai-human>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(123,227,181,.22),inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.14)}
@@ -10274,6 +10280,27 @@
     :root[data-theme="light"] .slink:hover {
       border-color: transparent !important;
       box-shadow: var(--neu-raised-sm-hover) !important;
+    }
+
+    /* 淺色板：.tech-level-badge 實心漸層膠囊改空心，跟 .ai-focal-badge 同一套
+       處理——透明底、彩色邊框跟文字，不用滿版漸層色塊。 */
+    :root[data-theme="light"] .tech-level-badge {
+      box-shadow: none !important;
+    }
+    :root[data-theme="light"] .tech-level-badge.html-item {
+      background: rgba(59, 130, 246, .12) !important;
+      border: 1px solid rgba(59, 130, 246, .5) !important;
+      color: #2563EB !important;
+    }
+    :root[data-theme="light"] .tech-level-badge.js-item {
+      background: rgba(249, 115, 22, .12) !important;
+      border: 1px solid rgba(249, 115, 22, .5) !important;
+      color: #C2410C !important;
+    }
+    :root[data-theme="light"] .tech-level-badge.react-item {
+      background: rgba(108, 99, 255, .12) !important;
+      border: 1px solid rgba(108, 99, 255, .5) !important;
+      color: #4C46B6 !important;
     }
 
     :root[data-theme="light"] .slink svg {
