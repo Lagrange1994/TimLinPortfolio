@@ -8025,9 +8025,12 @@
        above, but the unscrolled/top-of-page state (the plain full-width
        bar, not the floating pill) never did, leaving it stuck on the
        dark rgba(18,18,18,.8) base. #sm-toggle-btn's "Menu" label/icon
-       lines are similarly hardcoded white. */
+       lines are similarly hardcoded white.
+       --text-30 here read as near-invisible (~1.9:1) — this is the
+       mobile nav's only menu entry point, so it needs to actually be
+       seen. --text-70 clears WCAG AA (~4.5:1). */
     :root[data-theme="light"] #sm-toggle-btn {
-      color: var(--text-30);
+      color: var(--text-70);
     }
     :root[data-theme="light"] #sm-toggle-btn:focus-visible {
       outline-color: var(--glass-border-hov);
