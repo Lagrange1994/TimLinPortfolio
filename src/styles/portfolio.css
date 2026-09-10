@@ -9998,15 +9998,17 @@
 
     /* 3) 原本的 hover 光暈陰影（.card-hover-shadow 家族）全部關閉——
        neumorphism 的立體感改由第 4 段的雙重陰影負責，這些疊加用的彩色光暈
-       元素不再需要。.grid-card-shadow::after（My Portfolio 卡片自己的
-       hover 光暈，2026-09 併入第 4 段的 neumorphism 陰影前就存在）同理關閉，
-       否則會跟第 4 段新加的 --neu-raised-hover 疊在一起。 */
+       元素不再需要。.grid-card-shadow::after／.project-card-shadow::after
+       （My Portfolio 兩種卡片自己的 hover 光暈，2026-09 併入第 4 段的
+       neumorphism 陰影前就存在）同理關閉，否則會跟第 4 段新加的
+       --neu-raised-hover 疊在一起。 */
     :root[data-theme="light"] .ai-card > .card-hover-shadow,
     :root[data-theme="light"] .process-card > .card-hover-shadow,
     :root[data-theme="light"] .bento-shadow,
     :root[data-theme="light"] .tech-item-wrap::after,
     :root[data-theme="light"] .card-shadow-wrap::after,
-    :root[data-theme="light"] .grid-card-shadow::after {
+    :root[data-theme="light"] .grid-card-shadow::after,
+    :root[data-theme="light"] .project-card-shadow::after {
       box-shadow: none !important;
       opacity: 0 !important;
     }
@@ -10058,19 +10060,28 @@
       box-shadow: var(--neu-raised-hover) !important;
     }
 
-    /* My Portfolio (.grid-card-shadow) joins the same "raised" tier —
-       2026-09: was the one card family never migrated off its own
-       --card-shadow-md/--card-shadow-ai-hover (a theme-universal token,
-       same value in both modes), so it read as a different material from
-       every neumorphism card around it. No background/border-color here:
-       .grid-card-shadow is an invisible shadow-only wrapper (see its own
-       comment above) — .grid-card, the actual visible photo tile, keeps
-       its glass background untouched. */
-    :root[data-theme="light"] .grid-card-shadow {
+    /* My Portfolio's two card wrappers join the same "raised" tier —
+       2026-09: these were the only card families never migrated off their
+       own --card-shadow-md/--card-shadow-ai-hover (a theme-universal
+       token, same value in both modes), so they read as a different
+       material from every neumorphism card around them. No
+       background/border-color here: both are invisible shadow-only
+       wrappers (see their own comments above) — .grid-card/.project-card,
+       the actual visible photo tiles, keep their glass background
+       untouched.
+       .grid-card-shadow is the expanded "View All Projects" grid
+       (#portfolio-grid). .project-card-shadow is the default scroll wall
+       (.portfolio-wall) — its own hover shadow was already the "tight"
+       variant (clipped by the wall's overflow:hidden, rows only 16px
+       apart), but --neu-raised-hover's 24px blur is well inside that
+       margin already, so it doesn't need its own tight version here. */
+    :root[data-theme="light"] .grid-card-shadow,
+    :root[data-theme="light"] .project-card-shadow {
       box-shadow: var(--neu-raised) !important;
     }
 
-    :root[data-theme="light"] .grid-card-shadow:hover {
+    :root[data-theme="light"] .grid-card-shadow:hover,
+    :root[data-theme="light"] .project-card-shadow:hover {
       box-shadow: var(--neu-raised-hover) !important;
     }
 
