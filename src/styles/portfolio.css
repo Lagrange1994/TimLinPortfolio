@@ -10012,19 +10012,23 @@
        改成單一不透明底色（--neu-bg）+ 雙重陰影（左上亮、右下暗，模擬單一
        光源下的擠壓浮雕感）。邊框整個關閉（border-color 透明），立體感完全
        交給陰影負責——這是 neumorphism.io 的核心作法。互動卡片 hover 時陰影
-       位移/模糊量加大，模擬「浮得更高」，取代原本的彩色 hover 光暈。 */
+       位移/模糊量加大，模擬「浮得更高」，取代原本的彩色 hover 光暈。
+
+       所有「大尺寸」卡片家族（bento/ai/process/cta-strip/line-banner/
+       contact-card）共用同一套 --neu-raised／--neu-raised-hover 陰影，原本
+       每個家族各自重複同樣四行規則（還各自漏東漏西：.line-banner:hover 漏了
+       border-color、.bento-card 沒接上 hover 陰影、.cta-strip/.line-banner/
+       .contact-card 用 background 簡寫但 .bento-card/.ai-card 用兩行
+       background-color+background-image——其實效果相同，background 簡寫本來
+       就會把沒指定的 background-image 重設成 none），2026-09 合併成一組，
+       全部統一用 background 簡寫。「sm」尺寸卡片（tech-item/slink）另外
+       共用 --neu-raised-sm 系列，見下方 .tech-item/.slink 那組。 */
     :root[data-theme="light"] .bento-card,
     :root[data-theme="light"] .bento-card.bento-cyan,
     :root[data-theme="light"] .bento-card.bento-purple,
     :root[data-theme="light"] .bento-card.bento-violet,
     :root[data-theme="light"] .bento-card.bento-human,
-    :root[data-theme="light"] .bento-card.bento-spectrum {
-      background-color: var(--neu-bg) !important;
-      background-image: none !important;
-      border-color: transparent !important;
-      box-shadow: var(--neu-raised) !important;
-    }
-
+    :root[data-theme="light"] .bento-card.bento-spectrum,
     :root[data-theme="light"] .ai-card,
     :root[data-theme="light"] .ai-card.ai-focal,
     :root[data-theme="light"] .ai-card.ai-human,
@@ -10032,15 +10036,21 @@
     :root[data-theme="light"] .ai-card.ai-purple,
     :root[data-theme="light"] .ai-card.ai-violet,
     :root[data-theme="light"] .ai-card.ai-spectrum,
-    :root[data-theme="light"] .process-card.border-glow-card {
-      background-color: var(--neu-bg) !important;
-      background-image: none !important;
+    :root[data-theme="light"] .process-card.border-glow-card,
+    :root[data-theme="light"] .cta-strip,
+    :root[data-theme="light"] .line-banner,
+    :root[data-theme="light"] .contact-card {
+      background: var(--neu-bg) !important;
       border-color: transparent !important;
       box-shadow: var(--neu-raised) !important;
     }
 
+    :root[data-theme="light"] .bento-card:hover,
     :root[data-theme="light"] .ai-card:hover,
-    :root[data-theme="light"] .process-card:hover {
+    :root[data-theme="light"] .process-card:hover,
+    :root[data-theme="light"] .cta-strip:hover,
+    :root[data-theme="light"] .line-banner:hover,
+    :root[data-theme="light"] .contact-card:hover {
       border-color: transparent !important;
       box-shadow: var(--neu-raised-hover) !important;
     }
@@ -10152,35 +10162,21 @@
       border-bottom-color: var(--border) !important;
     }
 
+    /* 「sm」尺寸卡片共用 --neu-raised-sm 系列，同一套規則。.slink 原本只覆寫
+       了 box-shadow，底色還留著舊的 --glass-bg（半透明玻璃感）——陰影已經是
+       neumorphism 的「單一不透明底色擠壓浮雕」語彙，底下卻透出玻璃底色，兩
+       套立體語言疊在一起，跟其他卡片不一致，一併併入 background/border-color
+       修正。 */
     :root[data-theme="light"] .tech-item.html-item,
     :root[data-theme="light"] .tech-item.js-item,
-    :root[data-theme="light"] .tech-item.react-item {
-      background: var(--neu-bg) !important;
-      background-image: none !important;
-      border-color: transparent !important;
-      box-shadow: var(--neu-raised-sm) !important;
-    }
-
-    :root[data-theme="light"] .tech-item:hover {
-      border-color: transparent !important;
-      box-shadow: var(--neu-raised-sm-hover) !important;
-    }
-
-    :root[data-theme="light"] .cta-strip {
-      background: var(--neu-bg) !important;
-      border-color: transparent !important;
-      box-shadow: var(--neu-raised) !important;
-    }
-
-    :root[data-theme="light"] .cta-strip:hover {
-      border-color: transparent !important;
-      box-shadow: var(--neu-raised-hover) !important;
-    }
-
+    :root[data-theme="light"] .tech-item.react-item,
     :root[data-theme="light"] .slink {
+      background: var(--neu-bg) !important;
+      border-color: transparent !important;
       box-shadow: var(--neu-raised-sm) !important;
     }
 
+    :root[data-theme="light"] .tech-item:hover,
     :root[data-theme="light"] .slink:hover {
       border-color: transparent !important;
       box-shadow: var(--neu-raised-sm-hover) !important;
@@ -10194,18 +10190,6 @@
       background: rgba(23, 15, 45, 0.16);
     }
 
-    /* .line-banner（Contact 的 LINE CTA）比照其他卡片換成同一套 neumorphism
-       底色＋陰影，拿掉彩色漸層背景與 ::before 描邊環。 */
-    :root[data-theme="light"] .line-banner {
-      background: var(--neu-bg) !important;
-      border-color: transparent !important;
-      box-shadow: var(--neu-raised) !important;
-    }
-
-    :root[data-theme="light"] .line-banner:hover {
-      box-shadow: var(--neu-raised-hover) !important;
-    }
-
     /* .line-id ("官方帳號 @xxx") inherits --text-30 from the base rule,
        which is tuned for dark mode's near-white text base. In light mode
        that resolves to ~1.9:1 against the card bg at 11px — fails WCAG AA
@@ -10216,22 +10200,10 @@
       color: var(--text-50);
     }
 
+    /* .line-banner's own gradient-border ring pseudo — background/shadow
+       are handled by the shared "raised" tier block above now. */
     :root[data-theme="light"] .line-banner::before {
       opacity: 0 !important;
-    }
-
-    /* .contact-card / .faq-card（faq-card 直接複用 .contact-card class）
-       原本走 --glass-bg 系列，一併換成 neumorphism 底色＋陰影，維持跟其他
-       卡片一致的立體語言。 */
-    :root[data-theme="light"] .contact-card {
-      background: var(--neu-bg) !important;
-      border-color: transparent !important;
-      box-shadow: var(--neu-raised) !important;
-    }
-
-    :root[data-theme="light"] .contact-card:hover {
-      border-color: transparent !important;
-      box-shadow: var(--neu-raised-hover) !important;
     }
 
     /* .tag-capsule (hero marquee pills) deliberately excluded from this
