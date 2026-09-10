@@ -719,15 +719,19 @@
        was inline style={{color:'var(--text)'}} on each span; moved to a
        shared class so the light-mode override below can target both at
        once. Dark mode: var(--text) — same full color the digit-wheel
-       numbers (.digit-col-inner span) use there. Light mode overrides to
-       var(--text-30) to match those same numbers' own light-mode override,
-       two breakpoints down. */
+       numbers (.digit-col-inner span) use there.
+       Light mode was --text-30, matching those same numbers' own
+       light-mode override two breakpoints down — but that's the same
+       ~1.9:1 contrast failure fixed there (see the --text tier comment
+       in :root[data-theme="light"] above). This is the site's own
+       wordmark, in the navbar and the footer both; bumped to --text-70
+       to match. */
     .brand-lin {
       color: var(--text);
     }
 
     :root[data-theme="light"] .brand-lin {
-      color: var(--text-30);
+      color: var(--text-70);
     }
 
     /* ── GLASS CARD (matches index.html .card) ── */
