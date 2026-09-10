@@ -9221,6 +9221,17 @@
        once open, hovering the × nudges it round another quarter-turn. */
     .ai-card.is-open .ai-card-toggle:hover{transform:rotate(135deg) scale(1.1)}
     .ai-card.is-open{border-color:rgba(181,139,255,.4)}
+    /* Light mode: plain gray outline, transparent fill, in every state
+       (idle, card-hover hint, direct hover, open ×) instead of the
+       dark-mode white/purple tints, which are either invisible or read as
+       a stray purple accent on a light card. */
+    :root[data-theme="light"] .ai-card-toggle,
+    :root[data-theme="light"] .ai-card:hover .ai-card-toggle,
+    :root[data-theme="light"] .ai-card-toggle:hover,
+    :root[data-theme="light"] .ai-card.is-open .ai-card-toggle {
+      background: transparent;
+      border-color: var(--text-30);
+    }
     /* AI Brief card swaps its passive doc-flow teaser for the real tags
        once expanded — the two would be redundant clutter shown together. */
     .ai-card.ai-focal .ai-tags{display:none}
