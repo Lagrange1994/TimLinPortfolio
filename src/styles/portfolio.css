@@ -10091,8 +10091,10 @@
        utilities (unconditional), not var(--line) — same white-on-white
        problem, fixed by scoping to this specific table instead of touching
        the global Tailwind utility class. */
+    /* Column headers (ID/Source/Type/Status) — same --text-30 contrast
+       failure as the other fixes in this pass, at an even smaller 10px. */
     :root[data-theme="light"] .ai-violet .ai-card-detail th {
-      color: var(--text-30);
+      color: var(--text-70);
       border-color: rgba(23, 15, 45, 0.15) !important;
     }
     :root[data-theme="light"] .ai-violet .ai-card-detail td {
