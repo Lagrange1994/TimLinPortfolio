@@ -451,14 +451,21 @@
          instead of toward a tinted dark.
          Contrast budget against --bg-card (#F7FAFC) / white, measured:
            --text-70 ≈ 4.85:1 (passes WCAG AA normal text, 4.5:1)
-           --text-50 ≈ 2.84:1 (large text / 18px+ only, 3:1 — fails normal)
+           --text-50 ≈ 2.84:1 (fails AA outright — just short even of the
+                                3:1 large-text floor. Used anyway below as
+                                a deliberate design call where --text-30
+                                read as broken; treat as a taste tier, not
+                                an accessible one — reach for --text-70
+                                instead if AA actually needs to pass.)
            --text-30 ≈ 1.94:1 (decorative only — icons, dividers, disabled
                                 states. NOT for any text a user needs to
-                                read, at any size. 2026-09 audit found six
-                                components on this exact mistake — stat
-                                digits, profile-card name, LINE-CTA caption,
-                                mobile menu toggle, AI-detail table headers —
-                                all moved to --text-70.)
+                                read, at any size.)
+         2026-09 audit found six components on the --text-30-for-real-text
+         mistake — stat digits, profile-card name, LINE-CTA caption, mobile
+         menu toggle, AI-detail table headers, logo/footer wordmark — all
+         moved to --text-50 per an explicit design call to keep the lighter
+         look; --text-70 is the AA-passing alternative if that's preferred
+         later.
          These ratios are for LIGHT MODE specifically: dark mode's tiers
          fade toward near-white instead, so the same names carry different
          real contrast per theme — recheck before reusing a tier as-is. */
@@ -724,14 +731,15 @@
        light-mode override two breakpoints down — but that's the same
        ~1.9:1 contrast failure fixed there (see the --text tier comment
        in :root[data-theme="light"] above). This is the site's own
-       wordmark, in the navbar and the footer both; bumped to --text-70
-       to match. */
+       wordmark, in the navbar and the footer both; bumped to --text-50
+       (~2.84:1 — a deliberate design call, still short of WCAG AA's
+       3:1/4.5:1, but a large improvement over --text-30) to match. */
     .brand-lin {
       color: var(--text);
     }
 
     :root[data-theme="light"] .brand-lin {
-      color: var(--text-70);
+      color: var(--text-50);
     }
 
     /* ── GLASS CARD (matches index.html .card) ── */
@@ -2846,12 +2854,14 @@
     }
 
     /* Light mode only: the big stat digits (5+/10+/4) read as near-black
-       at full var(--text) — lighten one tier instead of the palest one.
+       at full var(--text) — lighten instead of using the palest tier.
        --text-30 measured ~1.9:1 against the card bg here (fails WCAG AA
-       even for this large a font, which needs 3:1); --text-70 clears
-       4.5:1, the normal-text threshold, with margin to spare. */
+       even for this large a font, which needs 3:1). --text-50 (~2.84:1)
+       is a deliberate design call — still just short of the 3:1 large-text
+       floor, but close, and a large step up from --text-30. --text-70
+       would clear AA outright (~4.85:1) if that margin is wanted back. */
     :root[data-theme="light"] .digit-col-inner span {
-      color: var(--text-70);
+      color: var(--text-50);
     }
 
     .stat-suffix {
@@ -3103,8 +3113,8 @@
        reason. */
     :root[data-theme="light"] .stat-suffix.bento-accent {
       background: none;
-      -webkit-text-fill-color: var(--text-70);
-      color: var(--text-70);
+      -webkit-text-fill-color: var(--text-50);
+      color: var(--text-50);
     }
 
     .ai-flow-mini {
@@ -6611,18 +6621,19 @@
        and the transparent text-fill-color the base rule pairs it with.
        Was --text-30 (same gray tier as the big stat digits), but this is
        the profile card's actual name/title — at ~1.9:1 against the card
-       bg it read as barely-there. Bumped to --text-70, same fix as the
-       stat digits (.digit-col-inner span) above, for the same reason. */
+       bg it read as barely-there. Bumped to --text-50, matching the
+       stat digits (.digit-col-inner span) above — same tradeoff noted
+       there. */
     :root[data-theme="light"] .pc-details h3 {
       background-image: none;
-      -webkit-text-fill-color: var(--text-70);
-      color: var(--text-70);
+      -webkit-text-fill-color: var(--text-50);
+      color: var(--text-50);
     }
 
     :root[data-theme="light"] .pc-details p {
       background-image: none;
-      -webkit-text-fill-color: var(--text-70);
-      color: var(--text-70);
+      -webkit-text-fill-color: var(--text-50);
+      color: var(--text-50);
     }
 
     /* FONT HEADING */
@@ -8045,9 +8056,12 @@
        lines are similarly hardcoded white.
        --text-30 here read as near-invisible (~1.9:1) — this is the
        mobile nav's only menu entry point, so it needs to actually be
-       seen. --text-70 clears WCAG AA (~4.5:1). */
+       seen. --text-50 (~2.84:1) is a deliberate design call to match the
+       tier used elsewhere in this pass; note it's still below WCAG AA's
+       4.5:1 for normal-size text like this label, unlike --text-70
+       (~4.85:1) which would clear it outright. */
     :root[data-theme="light"] #sm-toggle-btn {
-      color: var(--text-70);
+      color: var(--text-50);
     }
     :root[data-theme="light"] #sm-toggle-btn:focus-visible {
       outline-color: var(--glass-border-hov);
@@ -10111,7 +10125,7 @@
     /* Column headers (ID/Source/Type/Status) — same --text-30 contrast
        failure as the other fixes in this pass, at an even smaller 10px. */
     :root[data-theme="light"] .ai-violet .ai-card-detail th {
-      color: var(--text-70);
+      color: var(--text-50);
       border-color: rgba(23, 15, 45, 0.15) !important;
     }
     :root[data-theme="light"] .ai-violet .ai-card-detail td {
@@ -10194,9 +10208,11 @@
     /* .line-id ("官方帳號 @xxx") inherits --text-30 from the base rule,
        which is tuned for dark mode's near-white text base. In light mode
        that resolves to ~1.9:1 against the card bg at 11px — fails WCAG AA
-       badly. --text-70 clears 4.5:1. */
+       badly. --text-50 (~2.84:1) is a deliberate design call, matching
+       the tier used elsewhere in this pass — still short of AA at this
+       size, but a large step up. */
     :root[data-theme="light"] .line-id {
-      color: var(--text-70);
+      color: var(--text-50);
     }
 
     :root[data-theme="light"] .line-banner::before {
