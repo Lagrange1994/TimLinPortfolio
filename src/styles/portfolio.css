@@ -10169,6 +10169,14 @@
       box-shadow: var(--neu-raised-hover) !important;
     }
 
+    /* .line-id ("官方帳號 @xxx") inherits --text-30 from the base rule,
+       which is tuned for dark mode's near-white text base. In light mode
+       that resolves to ~1.9:1 against the card bg at 11px — fails WCAG AA
+       badly. --text-70 clears 4.5:1. */
+    :root[data-theme="light"] .line-id {
+      color: var(--text-70);
+    }
+
     :root[data-theme="light"] .line-banner::before {
       opacity: 0 !important;
     }
