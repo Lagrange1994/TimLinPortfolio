@@ -34,10 +34,35 @@ let __themeDebugN = 0;
 function themeDebugLine(s: string) {
   if (!THEME_DEBUG) return;
   if (!__themeDebugEl) {
-    __themeDebugEl = document.createElement('div');
-    __themeDebugEl.id = '__theme_debug__';
-    __themeDebugEl.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:46vh;overflow:auto;background:rgba(0,0,0,.9);color:#7CFC7C;font:10px/1.55 ui-monospace,Menlo,monospace;z-index:2147483647;padding:6px 8px;white-space:pre-wrap;pointer-events:none;';
-    document.body.appendChild(__themeDebugEl);
+    // Wrapper is pointer-events:none so it never blocks taps on the real
+    // site underneath; the log text and the copy button opt back into
+    // pointer-events individually so they're the only tappable parts.
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:2147483647;pointer-events:none;display:flex;flex-direction:column;';
+    const copyBtn = document.createElement('button');
+    copyBtn.textContent = '📋 複製 log（測完再按，不用搶時間）';
+    copyBtn.style.cssText = 'pointer-events:auto;font:12px/1.4 ui-monospace,Menlo,monospace;padding:10px;background:#222;color:#7CFC7C;border:none;border-top:1px solid #444;';
+    copyBtn.onclick = async () => {
+      const text = __themeDebugEl!.textContent || '';
+      try {
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = '✅ 已複製，貼到聊天視窗給我';
+      } catch {
+        // Clipboard API can be blocked (no HTTPS/permission) — fall back to
+        // a selectable textarea the user can long-press → select all → copy.
+        copyBtn.textContent = '⬇️ 複製失敗，改用下面文字框長按選取';
+        __themeDebugEl!.style.userSelect = 'text';
+        __themeDebugEl!.style.pointerEvents = 'auto';
+      }
+      window.setTimeout(() => { copyBtn.textContent = '📋 複製 log（測完再按，不用搶時間）'; }, 2500);
+    };
+    const el = document.createElement('div');
+    el.id = '__theme_debug__';
+    el.style.cssText = 'max-height:40vh;overflow:auto;background:rgba(0,0,0,.9);color:#7CFC7C;font:10px/1.55 ui-monospace,Menlo,monospace;padding:6px 8px;white-space:pre-wrap;pointer-events:auto;-webkit-user-select:text;user-select:text;';
+    wrap.appendChild(el);
+    wrap.appendChild(copyBtn);
+    document.body.appendChild(wrap);
+    __themeDebugEl = el;
   }
   __themeDebugEl.textContent += s + '\n';
   __themeDebugEl.scrollTop = __themeDebugEl.scrollHeight;
