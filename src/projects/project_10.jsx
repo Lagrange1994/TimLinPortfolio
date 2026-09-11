@@ -452,7 +452,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div id="split-panel-header" className="sticky top-0 bg-black z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold font-heading text-text mb-1 leading-tight panel-title">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">Hengchun Airport Web Design Proposal</p>
+                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">恆春航空站官網設計提案</p>
                                             <TabNav
                                                 prefix="hc"
                                                 containerRef={tabsContainerRef}

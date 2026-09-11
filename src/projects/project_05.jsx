@@ -505,7 +505,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div className="sticky top-0 bg-zoo-dark/95 backdrop-blur-xl z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold text-text font-heading mb-1 leading-tight panel-title">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">Internal Management & Mobile Response</p>
+                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">動物園內部管理與行動應變系統</p>
                                             <TabNav
                                                 prefix="zoo"
                                                 containerRef={tabsContainerRef}

@@ -98,9 +98,86 @@
             background: var(--color-kh-primary);
         }
     </style>
+  <meta name="author" content="Tim Lin" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+  <meta property="og:site_name" content="Tim Lin Portfolio" />
+  <meta property="og:locale" content="zh_TW" />
+
+  <!-- Structured data. #root is empty until this page's React entry mounts,
+       so a crawler that never runs JS sees no case-study content at all —
+       this graph plus the <noscript> summary below is what it reads. The
+       Person/WebSite nodes are @id stubs that resolve against index.html. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CreativeWork",
+        "@id": "https://timlin-design.vercel.app/project_03.html#case-study",
+        "name": "高雄市警察局新世代智慧科技辦案系統",
+        "headline": "高雄市警察局 | 新世代智慧科技辦案系統 - UI/UX Case Study",
+        "description": "高雄市警察局新世代智慧科技辦案系統介面設計，個人作品。以 Figma + React 打造，聚焦設備妥善率管理，確保攝影機與伺服器等辦案工具隨時可用。",
+        "url": "https://timlin-design.vercel.app/project_03.html",
+        "image": "https://timlin-design.vercel.app/img/my_portfolio/police.webp",
+        "inLanguage": "zh-Hant",
+        "keywords": "UI/UX Design, Dashboard Design, Figma, React, 設備管理, 警政系統",
+        "genre": "UI/UX Case Study",
+        "creator": {
+          "@id": "https://timlin-design.vercel.app/#tim-lin"
+        },
+        "author": {
+          "@id": "https://timlin-design.vercel.app/#tim-lin"
+        },
+        "isPartOf": {
+          "@id": "https://timlin-design.vercel.app/#website"
+        },
+        "mainEntityOfPage": "https://timlin-design.vercel.app/project_03.html"
+      },
+      {
+        "@type": "Person",
+        "@id": "https://timlin-design.vercel.app/#tim-lin",
+        "name": "Tim Lin",
+        "url": "https://timlin-design.vercel.app/",
+        "jobTitle": "UI/UX Designer & Web Developer"
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://timlin-design.vercel.app/#website",
+        "url": "https://timlin-design.vercel.app/",
+        "name": "Tim Lin Portfolio"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://timlin-design.vercel.app/project_03.html#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Tim Lin Portfolio",
+            "item": "https://timlin-design.vercel.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "高雄市警察局新世代智慧科技辦案系統",
+            "item": "https://timlin-design.vercel.app/project_03.html"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <div id="root"></div>
+  <!-- Text mirror of the case study for crawlers and readers that never
+       execute the bundle; hidden for everyone else. -->
+  <noscript>
+    <h1>高雄市警察局新世代智慧科技辦案系統</h1>
+    <p>高雄市警察局新世代智慧科技辦案系統介面設計，個人作品。以 Figma + React 打造，聚焦設備妥善率管理，確保攝影機與伺服器等辦案工具隨時可用。</p>
+    <p>設計與製作：Tim Lin — UI/UX Designer &amp; Web Developer．關鍵字：UI/UX Design、Dashboard Design、Figma、React、設備管理、警政系統</p>
+    <p><a href="/">← 回到 Tim Lin 作品集首頁</a></p>
+  </noscript>
   <script type="module" src="/src/projects/project_03.jsx"></script>
 </body>
 </html>

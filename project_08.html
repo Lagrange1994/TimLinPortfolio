@@ -141,9 +141,86 @@
             background: var(--color-lv-primary);
         }
     </style>
+  <meta name="author" content="Tim Lin" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+  <meta property="og:site_name" content="Tim Lin Portfolio" />
+  <meta property="og:locale" content="zh_TW" />
+
+  <!-- Structured data. #root is empty until this page's React entry mounts,
+       so a crawler that never runs JS sees no case-study content at all —
+       this graph plus the <noscript> summary below is what it reads. The
+       Person/WebSite nodes are @id stubs that resolve against index.html. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CreativeWork",
+        "@id": "https://timlin-design.vercel.app/project_08.html#case-study",
+        "name": "Love-Two Live 直播社群 App",
+        "headline": "Love Two live app | 互動式直播社群設計",
+        "description": "Love Two live app 直播社群介面設計，個人作品。以 Adobe XD 打造青綠色科技感視覺與遊戲化任務機制，解決用戶留存痛點，塑造差異化品牌識別。",
+        "url": "https://timlin-design.vercel.app/project_08.html",
+        "image": "https://timlin-design.vercel.app/img/my_portfolio/stream.webp",
+        "inLanguage": "zh-Hant",
+        "keywords": "UI/UX Design, Mobile App Design, Adobe XD, 遊戲化, 品牌識別",
+        "genre": "UI/UX Case Study",
+        "creator": {
+          "@id": "https://timlin-design.vercel.app/#tim-lin"
+        },
+        "author": {
+          "@id": "https://timlin-design.vercel.app/#tim-lin"
+        },
+        "isPartOf": {
+          "@id": "https://timlin-design.vercel.app/#website"
+        },
+        "mainEntityOfPage": "https://timlin-design.vercel.app/project_08.html"
+      },
+      {
+        "@type": "Person",
+        "@id": "https://timlin-design.vercel.app/#tim-lin",
+        "name": "Tim Lin",
+        "url": "https://timlin-design.vercel.app/",
+        "jobTitle": "UI/UX Designer & Web Developer"
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://timlin-design.vercel.app/#website",
+        "url": "https://timlin-design.vercel.app/",
+        "name": "Tim Lin Portfolio"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://timlin-design.vercel.app/project_08.html#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Tim Lin Portfolio",
+            "item": "https://timlin-design.vercel.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Love-Two Live 直播社群 App",
+            "item": "https://timlin-design.vercel.app/project_08.html"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <div id="root"></div>
+  <!-- Text mirror of the case study for crawlers and readers that never
+       execute the bundle; hidden for everyone else. -->
+  <noscript>
+    <h1>Love-Two Live 直播社群 App</h1>
+    <p>Love Two live app 直播社群介面設計，個人作品。以 Adobe XD 打造青綠色科技感視覺與遊戲化任務機制，解決用戶留存痛點，塑造差異化品牌識別。</p>
+    <p>設計與製作：Tim Lin — UI/UX Designer &amp; Web Developer．關鍵字：UI/UX Design、Mobile App Design、Adobe XD、遊戲化、品牌識別</p>
+    <p><a href="/">← 回到 Tim Lin 作品集首頁</a></p>
+  </noscript>
   <script type="module" src="/src/projects/project_08.jsx"></script>
 </body>
 </html>

@@ -114,9 +114,86 @@
             background: var(--color-gh-primary);
         }
     </style>
+  <meta name="author" content="Tim Lin" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+  <meta property="og:site_name" content="Tim Lin Portfolio" />
+  <meta property="og:locale" content="zh_TW" />
+
+  <!-- Structured data. #root is empty until this page's React entry mounts,
+       so a crawler that never runs JS sees no case-study content at all —
+       this graph plus the <noscript> summary below is what it reads. The
+       Person/WebSite nodes are @id stubs that resolve against index.html. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CreativeWork",
+        "@id": "https://timlin-design.vercel.app/project_12.html#case-study",
+        "name": "中央存保 Golden House – 購得好房",
+        "headline": "中央存保 Golden House – 購得好房 | Gamified Financial Edu - Case Study",
+        "description": "中央存保 Golden House 理財教育網頁遊戲介面設計，個人作品。以 Adobe XD 打造互動式 Web Game，用遊戲化機制降低民眾理解「買房」與「存款保險」的門檻。",
+        "url": "https://timlin-design.vercel.app/project_12.html",
+        "image": "https://timlin-design.vercel.app/img/my_portfolio/coin.webp",
+        "inLanguage": "zh-Hant",
+        "keywords": "UI/UX Design, Web Game, Adobe XD, 遊戲化, 金融教育",
+        "genre": "UI/UX Case Study",
+        "creator": {
+          "@id": "https://timlin-design.vercel.app/#tim-lin"
+        },
+        "author": {
+          "@id": "https://timlin-design.vercel.app/#tim-lin"
+        },
+        "isPartOf": {
+          "@id": "https://timlin-design.vercel.app/#website"
+        },
+        "mainEntityOfPage": "https://timlin-design.vercel.app/project_12.html"
+      },
+      {
+        "@type": "Person",
+        "@id": "https://timlin-design.vercel.app/#tim-lin",
+        "name": "Tim Lin",
+        "url": "https://timlin-design.vercel.app/",
+        "jobTitle": "UI/UX Designer & Web Developer"
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://timlin-design.vercel.app/#website",
+        "url": "https://timlin-design.vercel.app/",
+        "name": "Tim Lin Portfolio"
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://timlin-design.vercel.app/project_12.html#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Tim Lin Portfolio",
+            "item": "https://timlin-design.vercel.app/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "中央存保 Golden House – 購得好房",
+            "item": "https://timlin-design.vercel.app/project_12.html"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <div id="root"></div>
+  <!-- Text mirror of the case study for crawlers and readers that never
+       execute the bundle; hidden for everyone else. -->
+  <noscript>
+    <h1>中央存保 Golden House – 購得好房</h1>
+    <p>中央存保 Golden House 理財教育網頁遊戲介面設計，個人作品。以 Adobe XD 打造互動式 Web Game，用遊戲化機制降低民眾理解「買房」與「存款保險」的門檻。</p>
+    <p>設計與製作：Tim Lin — UI/UX Designer &amp; Web Developer．關鍵字：UI/UX Design、Web Game、Adobe XD、遊戲化、金融教育</p>
+    <p><a href="/">← 回到 Tim Lin 作品集首頁</a></p>
+  </noscript>
   <script type="module" src="/src/projects/project_12.jsx"></script>
 </body>
 </html>

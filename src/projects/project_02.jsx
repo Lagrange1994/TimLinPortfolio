@@ -640,7 +640,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div className="sticky top-0 bg-app-dark/95 backdrop-blur-xl z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <h2 className="text-xl lg:text-3xl font-bold mb-1 font-heading panel-title">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">Mobile Experience Optimization</p>
+                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">警用雲端影像分析系統・行動版體驗優化</p>
 
                                             <TabNav
                                                 prefix="app"

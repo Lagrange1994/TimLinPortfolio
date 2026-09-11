@@ -481,7 +481,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <br />
                                                 <h2 className="text-xl lg:text-3xl font-bold font-heading text-text mb-1 leading-tight panel-title">{t('title_sub')}</h2>
                                             </div>
-                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">Financial Education Web Game</p>
+                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">理財教育網頁遊戲・存款保險觀念互動設計</p>
 
                                             <TabNav
                                                 prefix="gh"
