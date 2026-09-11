@@ -20,6 +20,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet" />
   <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Sets data-theme before this page's own <style> block below is parsed,
+       so the homepage's saved theme (same 'theme' localStorage key) carries
+       over here instead of every project page always starting dark. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+      } catch (e) {}
+    })();
+  </script>
   <style>
         body,
         html {
