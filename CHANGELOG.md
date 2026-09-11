@@ -2,6 +2,28 @@
 
 記錄重大 bug 修復與其根因，方便之後回頭查。日常小改動看 `git log` 即可，這裡只放值得留存脈絡的項目。
 
+## 2026-09-11
+
+### 修復：`.portfolio-wall-frame` 滾動進場淡入在快速滾動／CTA 跳轉時瞬間出現
+
+**根因：** 一路試了四種機制才定位到真正原因。CSS transition 從頭到尾沒動過（連手動切 class 都沒用）；改用固定時長 GSAP tween 後，靠 markers/onUpdate 證實動畫本身跑得完全正確，但因為觸發點（`top 85%`）太早，正常滾動速度會在動畫播完前就把面板滑過去，播完時人已經看不到了；換成 `scrub`（進度綁滾動位置而非時間）修好了慢速手動滾，但在真實瀏覽器裡用「點擊 CTA + 取樣 opacity/scrollY」直接量出：快速滾動或 CTA 跳轉時，未加 lag 的原始滾動進度會在畫面真正停下來「之前」就已經飽和到 1——不管 `scrub` 的 lag 數值調多大都沒用，因為 `scrollToSectionAligned` 的最終停靠位置，天生就跟這個元素的觸發終點幾乎重合。兩次調整 one-shot 觸發點的百分比（`55%`、`19%`）也從另一個方向撞上同一道牆：沒有任何百分比能可靠分辨「已觸發」跟「畫面還剩幾 px 減速中」。
+
+**修復：** 徹底放棄用滾動位置當觸發依據，改成對 `scroll` 事件做 200ms 防抖動（debounce）——不管使用者用什麼方式、什麼速度到達這個區塊，動畫只在畫面真正靜止之後才播放。額外確認：12 張作品輪播圖片的 decode 也會搶動畫幀，因此 `Loader.tsx` 現在一掛載就預先對全部圖片 `new Image()` + `.decode()`，不受 `loading="lazy"` 限制。
+
+**Commits：** `435ab9d`
+
+---
+
+### 新增：13 個專案頁的 Loading 畫面淺色版
+
+**問題：** `project_01.html`～`project_12.html` 的 loading 遮罩（`.loader`/`.loader-text`/`.loader-animation`）從沒做過 `[data-theme="light"]` 覆寫——訪客若之前在首頁切成淺色模式（透過共用的 `theme` localStorage key），進到任何一個案例研究頁面時，會先看到一個純黑背景、白字白圈疊在上面幾乎看不見的 loading 畫面。
+
+**修復：** 每頁各自補上淺色覆寫，背景用該頁自己的 `--color-{prefix}-dark`（跟頁面其他淺色面板同一套 token），文字/圈圈用共用的 `--color-text`。`project_13.html` 架構獨立（自己的 `project13-tailwind.css`），完全沒有 `data-theme` 切換機制，不在範圍內、未變動。
+
+**Commits：** `22846dd`
+
+---
+
 ## 2026-09-03
 
 ### 修復：主標 `.hero-h1` gradient-clip 文字偶發疊字殘影
