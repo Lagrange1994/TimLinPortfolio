@@ -83,12 +83,26 @@
 
         /* Light-mode overrides for this file's own hand-authored bootstrap CSS
            (loaded before Tailwind/projects-tailwind.css tokens exist as classes
-           here) — hero-bg-custom/::before and .loader are deliberately excluded,
-           same reasoning as the hero text: fixed photo + vignette, not chrome. */
+           here) — hero-bg-custom/::before is deliberately excluded, same
+           reasoning as the hero text: fixed photo + vignette, not chrome.
+           .loader is NOT excluded (below): it's a full-bleed overlay, not a
+           photo, and was left black-with-white-text/ring in light mode — a
+           correct dark loader flashing in front of an otherwise light page. */
         html[data-theme="light"],
         html[data-theme="light"] body {
             background-color: var(--color-police-dark);
             color: var(--color-text);
+        }
+
+        :root[data-theme="light"] .loader {
+            background: var(--color-police-dark);
+        }
+        :root[data-theme="light"] .loader-text {
+            color: var(--color-text);
+        }
+        :root[data-theme="light"] .loader-animation:before,
+        :root[data-theme="light"] .loader-animation:after {
+            box-shadow: 0 0 0 3px inset var(--color-text);
         }
 
         :root[data-theme="light"] .panel-title {

@@ -113,12 +113,25 @@
            scale, not the shared hc-dark/-dark-light/-dark-lighter hex — reused
            here as the closest role match (canvas/card/hover-card/scrollbar) so
            this page still gets the same hc light identity as the rest of the
-           hc-branded UI. hero-bg-custom/::before and .loader excluded — fixed
-           photo + vignette, same reasoning as the always-white hero text. */
+           hc-branded UI. hero-bg-custom/::before excluded — fixed photo +
+           vignette, same reasoning as the always-white hero text. .loader is
+           NOT excluded (below): it's a full-bleed overlay, not a photo, and
+           was left black-with-white-text/ring in light mode. */
         html[data-theme="light"],
         html[data-theme="light"] body {
             background-color: var(--color-hc-dark);
             color: var(--color-text);
+        }
+
+        :root[data-theme="light"] .loader {
+            background: var(--color-hc-dark);
+        }
+        :root[data-theme="light"] .loader-text {
+            color: var(--color-text);
+        }
+        :root[data-theme="light"] .loader-animation:before,
+        :root[data-theme="light"] .loader-animation:after {
+            box-shadow: 0 0 0 3px inset var(--color-text);
         }
 
         :root[data-theme="light"] .panel-title {

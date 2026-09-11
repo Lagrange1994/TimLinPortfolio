@@ -99,12 +99,25 @@
         .loader { background: #121212; transition: opacity 0.1s ease, visibility 0.1s ease; }
 
         /* Light-mode overrides for this file's own hand-authored bootstrap CSS.
-           hero-bg-custom/::before and .loader deliberately excluded — fixed
-           photo + vignette, same reasoning as the always-white hero text. */
+           hero-bg-custom/::before deliberately excluded — fixed photo +
+           vignette, same reasoning as the always-white hero text. .loader is
+           NOT excluded (below): it's a full-bleed overlay, not a photo, and
+           was left black-with-white-text/ring in light mode. */
         html[data-theme="light"],
         html[data-theme="light"] body {
             background-color: var(--color-gh-dark);
             color: var(--color-text);
+        }
+
+        :root[data-theme="light"] .loader {
+            background: var(--color-gh-dark);
+        }
+        :root[data-theme="light"] .loader-text {
+            color: var(--color-text);
+        }
+        :root[data-theme="light"] .loader-animation:before,
+        :root[data-theme="light"] .loader-animation:after {
+            box-shadow: 0 0 0 3px inset var(--color-text);
         }
 
         :root[data-theme="light"] .panel-title {
