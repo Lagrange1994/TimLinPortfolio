@@ -37,7 +37,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 features_title: "APP 特色呈現",
                 features_sub: "點擊下方項目，左側將顯示 Before/After 對照",
                 drag_hint: "拖曳滑桿比較 Web vs App 差異",
-                gallery_title: "介面總覽 Gallery",
+                gallery_title: "介面總覽",
                 web_complex: "WEB (Complex)",
                 app_simple: "APP (Simple)",
                 back_home: "Back to Portfolio"
@@ -78,7 +78,7 @@ gsap.registerPlugin(ScrollToPlugin);
             return [
                 {
                     id: 'simple-01',
-                    title: isZh ? '空間與佈局 (Space)' : 'Space & Layout',
+                    title: isZh ? '空間與佈局' : 'Space & Layout',
                     icon: 'ph-stack',
                     web: { desc: isZh ? '多欄位、多視窗並列' : 'Multi-column, Multi-window', type: 'Complex' },
                     app: { desc: isZh ? '垂直單欄、Card UI 堆疊' : 'Vertical Single Column, Card UI', type: 'Simple' },
@@ -86,7 +86,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 },
                 {
                     id: 'simple-02',
-                    title: isZh ? '數據呈現 (Data)' : 'Data Presentation',
+                    title: isZh ? '數據呈現' : 'Data Presentation',
                     icon: 'ph-chart-bar',
                     web: { desc: isZh ? '詳細數據表格、參數列表' : 'Detailed Data Tables', type: 'Complex' },
                     app: { desc: isZh ? '視覺燈號、顏色警示' : 'Visual Signals, Color Alerts', type: 'Simple' },
@@ -94,15 +94,15 @@ gsap.registerPlugin(ScrollToPlugin);
                 },
                 {
                     id: 'simple-03',
-                    title: isZh ? '任務焦點 (Task)' : 'Task Focus',
+                    title: isZh ? '任務焦點' : 'Task Focus',
                     icon: 'ph-crosshair',
                     web: { desc: isZh ? '多功能整合 Dashboard' : 'Multifunctional Dashboard', type: 'Complex' },
-                    app: { desc: isZh ? '單一任務導向 (Task-Oriented)' : 'Single Task Oriented', type: 'Simple' },
+                    app: { desc: isZh ? '單一任務導向' : 'Single Task Oriented', type: 'Simple' },
                     insight: isZh ? '每次進入頁面只專注解決一個問題（如：查車牌），避免功能干擾。' : 'Focus on one problem at a time (e.g., checking plates) to avoid distraction.'
                 },
                 {
                     id: 'simple-04',
-                    title: isZh ? '操作互動 (Interaction)' : 'Interaction',
+                    title: isZh ? '操作互動' : 'Interaction',
                     icon: 'ph-hand-pointing',
                     web: { desc: isZh ? '滑鼠精細操作、多層篩選' : 'Mouse Precision, Filters', type: 'Complex' },
                     app: { desc: isZh ? '大尺寸觸控、模糊搜尋' : 'Large Touch Targets, Fuzzy Search', type: 'Simple' },
@@ -128,7 +128,7 @@ gsap.registerPlugin(ScrollToPlugin);
                     desc: isZh ? '將伺服器列表轉化為直觀的燈號卡片。' : 'Transforming server lists into visual signal cards.',
                     beforeImg: './img/project_01/home_02.jpg',
                     afterImg: './img/project_02/mobile_mockup_01@2x.jpg',
-                    point: isZh ? '直接顯示毫秒 (ms) 延遲，以紅/綠燈號代表連線狀態。' : 'Latency in ms, traffic light colors for status.'
+                    point: isZh ? '直接顯示毫秒延遲，以紅/綠燈號代表連線狀態。' : 'Latency in ms, traffic light colors for status.'
                 },
                 {
                     id: 'feat-03',

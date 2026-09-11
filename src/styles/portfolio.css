@@ -687,6 +687,16 @@
       background: var(--bg-safe);
     }
 
+    /* ── 4K / large-screen scale lock ──
+       Everything below is sized against a 1920×1080 canvas; past that width
+       it reads too small on 4K/ultrawide, so zoom the whole page up to keep
+       the same visual density as a 1920 screen instead of just spreading out. */
+    @media (min-width: 1921px) {
+      html {
+        zoom: calc(100vw / 1920);
+      }
+    }
+
     body {
       font-family: var(--font);
       background: transparent;

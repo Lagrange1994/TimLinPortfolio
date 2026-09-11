@@ -34,25 +34,25 @@ gsap.registerPlugin(ScrollToPlugin);
                 tab_context: "01. 視覺策略", tab_process: "02. 設計策略", tab_solution: "03. 主要功能", tab_climax: "04. 生態系成果",
 
                 context_title: "視覺策略與市場區隔",
-                context_desc: "在充斥著「紅色」與「粉色」的直播應用市場中，本專案的核心目標是透過強烈的色彩區隔來重塑品牌認知。我們大膽捨棄了業界慣用的暖色系，轉而採用冷色調的「青綠色 (Teal)」作為主視覺，旨在打造一個更具科技感、更年輕，且能降低用戶視覺焦慮的沈浸式社交空間。",
+                context_desc: "在充斥著「紅色」與「粉色」的直播應用市場中，本專案的核心目標是透過強烈的色彩區隔來重塑品牌認知。我們大膽捨棄了業界慣用的暖色系，轉而採用冷色調的「青綠色」作為主視覺，旨在打造一個更具科技感、更年輕，且能降低用戶視覺焦慮的沈浸式社交空間。",
                 role_title: "My Role", role_name: "UI 設計師", tools: "Tools",
-                visual_strat_title: "核心視覺策略 Core Visual Strategy",
+                visual_strat_title: "核心視覺策略",
                 visual_p1_title: "對抗視覺疲勞", visual_p1_desc: "競品常見的大紅色容易引發焦慮與緊迫感，導致用戶無法長時間停留。青綠色則傳遞放鬆、成長的心理暗示，有效延長觀看時長。",
-                visual_p2_title: "遊戲化氛圍", visual_p2_desc: "配合深色模式 (Dark Mode)，螢光綠能營造出類似電競或科幻電影的沈浸感，讓「解任務」與「送禮物」更像是在玩遊戲，而非單純的消費。",
+                visual_p2_title: "遊戲化氛圍", visual_p2_desc: "配合深色模式，螢光綠能營造出類似電競或科幻電影的沈浸感，讓「解任務」與「送禮物」更像是在玩遊戲，而非單純的消費。",
                 visual_p3_title: "品牌年輕化", visual_p3_desc: "跳脫傳統直播「俗氣」、「秀場」的刻板印象，透過清新的視覺語言吸引更注重質感與社群互動的 Z 世代用戶。",
 
-                process_title: "設計策略 The Process", process_sub: "從視覺到機制，全方位的留存設計",
-                proc_1_title: "01. 視覺風格重塑 (Visual Identity)", proc_1_desc: "採用深色模式搭配高飽和度「青綠色 (Teal)」，營造清新、科技且耐看的品牌形象，區隔市場競品。",
-                proc_2_title: "02. 遊戲化驅動 (Gamification)", proc_2_desc: "設計具象化的「兔子進度條」與每日任務，將觀看行為轉化為「解任務」的遊戲體驗，強制拉長停留時間。",
-                proc_3_title: "03. 社交閉環 (Social Loop)", proc_3_desc: "整合「圖文動態牆 (Moments)」與直播流，填補主播下線後的內容空窗期，打造像 Instagram 般隨時可滑的社交體驗。",
-                proc_4_title: "04. 雙軌經濟 (Dual Economy)", proc_4_desc: "為觀眾與主播分別設計「貢獻勳章」與「職涯等級」，滿足大戶的虛榮心與新手的成長指引。",
+                process_title: "設計策略", process_sub: "從視覺到機制，全方位的留存設計",
+                proc_1_title: "01. 視覺風格重塑", proc_1_desc: "採用深色模式搭配高飽和度「青綠色」，營造清新、科技且耐看的品牌形象，區隔市場競品。",
+                proc_2_title: "02. 遊戲化驅動", proc_2_desc: "設計具象化的「兔子進度條」與每日任務，將觀看行為轉化為「解任務」的遊戲體驗，強制拉長停留時間。",
+                proc_3_title: "03. 社交閉環", proc_3_desc: "整合「圖文動態牆」與直播流，填補主播下線後的內容空窗期，打造像 Instagram 般隨時可滑的社交體驗。",
+                proc_4_title: "04. 雙軌經濟", proc_4_desc: "為觀眾與主播分別設計「貢獻勳章」與「職涯等級」，滿足大戶的虛榮心與新手的成長指引。",
 
-                sol_title: "主要功能與特色 Key Features",
-                feat_1_title: "遊戲化任務系統 (Gamified Tasks)", feat_1_desc: "透過「兔子進度條」與「倒數紅包」將觀看時間轉化為積分獎勵。利用 Zeigarnik 效應，讓用戶為了完成任務而主動停留，大幅提升平台黏著度。",
-                feat_2_title: "社群動態牆 (Social Moments)", feat_2_desc: "整合「即時直播流」與「圖文動態」，填補主播下線後的內容空窗期。用戶可隨時按讚、互動，打造全天候活躍的社交閉環。",
-                feat_3_title: "雙軌等級體系 (Dual-Track Ranking)", feat_3_desc: "區分「主播等級」與「貢獻等級」，透過顯性的徽章與排行榜展示社交資本。滿足大戶的虛榮心，同時給予新手主播明確的成長指引。",
+                sol_title: "主要功能與特色",
+                feat_1_title: "遊戲化任務系統", feat_1_desc: "透過「兔子進度條」與「倒數紅包」將觀看時間轉化為積分獎勵。利用 Zeigarnik 效應，讓用戶為了完成任務而主動停留，大幅提升平台黏著度。",
+                feat_2_title: "社群動態牆", feat_2_desc: "整合「即時直播流」與「圖文動態」，填補主播下線後的內容空窗期。用戶可隨時按讚、互動，打造全天候活躍的社交閉環。",
+                feat_3_title: "雙軌等級體系", feat_3_desc: "區分「主播等級」與「貢獻等級」，透過顯性的徽章與排行榜展示社交資本。滿足大戶的虛榮心，同時給予新手主播明確的成長指引。",
 
-                climax_title: "生態系成果 Ecosystem Gallery", climax_desc: "從直播到社交，打造完整的沈浸式娛樂生態系。",
+                climax_title: "生態系成果", climax_desc: "從直播到社交，打造完整的沈浸式娛樂生態系。",
 
                 // Categories
                 cat_tasks: "首頁與任務", cat_live: "直播間互動", cat_social: "社交動態牆", cat_profile: "個人成長體系",

@@ -31,26 +31,26 @@ gsap.registerPlugin(ScrollToPlugin);
                 btn_explore: "探索設計旅程", back_home: "Back to Portfolio",
                 tab_context: "01. 背景與痛點", tab_process: "02. 策略", tab_solution: "03. 特色", tab_climax: "04. 成果",
 
-                context_title: "專案背景 Context",
+                context_title: "專案背景",
                 context_desc: "許多民眾對於「買房」與「存款保險」等議題感到遙遠或壓力大，傳統的文字宣導難以產生共鳴。我們的任務是打造一款 Web Game，透過直覺的機制降低學習門檻。",
                 role_title: "My Role", role_name: "Visual / UI 設計師", tools: "Tools",
-                conflict_title: "痛點與挑戰 The Conflict", conflict_sub: "傳統宣導的困境",
+                conflict_title: "痛點與挑戰", conflict_sub: "傳統宣導的困境",
                 pain_1_title: "議題沈重感", pain_1_desc: "理財話題容易引發民眾焦慮，導致資訊排斥。",
                 pain_2_title: "法規生硬難懂", pain_2_desc: "存款保險條例等內容枯燥，難以長時間閱讀。",
                 pain_3_title: "缺乏互動反饋", pain_3_desc: "單向的政令宣導缺乏「做中學」的機會。",
 
-                process_title: "設計策略 Design Strategy", process_sub: "如何將嚴肅議題轉化為沈浸式體驗",
+                process_title: "設計策略", process_sub: "如何將嚴肅議題轉化為沈浸式體驗",
                 step_1_title: "01. 視覺心理學", step_1_desc: "捨棄科技感，改用「莫蘭迪色系」繪製田園背景，營造「成家」的溫馨願景，降低焦慮。",
                 step_2_title: "02. 符號具象化", step_2_desc: "利用高彩度的「金黃色」作為資產焦點，深黑色「炸彈」代表風險，直觀引導玩家操作。",
                 step_3_title: "03. 隱喻危機", step_3_desc: "將抽象的金融風暴設計為「擬人化龍捲風」，讓資產流失的過程變得可見且緊迫。",
                 step_4_title: "04. 知識防護", step_4_desc: "打破說教，將枯燥的條文轉化為「遊戲保命道具」，激發玩家主動學習的動機。",
 
-                sol_title: "核心特色 Core Features",
+                sol_title: "核心特色",
                 sol_1_title: "沈浸式溫馨視覺", sol_1_desc: "低飽和度背景與柔和色調，傳遞歲月靜好的氛圍，符合「安居樂業」的最終目標。", sol_1_label: "Mood:",
                 sol_2_title: "隨機事件：金融風暴", sol_2_desc: "擬人化的龍捲風會捲走金幣，視覺化呈現市場波動與資產縮水，製造遊戲張力。", sol_2_label: "Event:",
                 sol_3_title: "UI 轉換：冷靜與防護", sol_3_desc: "危機時介面轉為深藍色，暗示理性思考。答對問題即啟動防護，強化正確觀念的重要性。", sol_3_label: "Interaction:",
 
-                gallery_title: "介面展示 Gallery", gallery_desc: "點擊下方卡片查看遊戲畫面細節。",
+                gallery_title: "介面展示", gallery_desc: "點擊下方卡片查看遊戲畫面細節。",
                 gallery_hint: "點擊預覽設計細節。",
                 img_1: "溫馨主視覺", img_2: "擬人化危機", img_3: "知識防護罩", img_4: "結局1", img_5: "結局2"
             },

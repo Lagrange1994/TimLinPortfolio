@@ -26,11 +26,11 @@ gsap.registerPlugin(ScrollToPlugin);
                 tab_process: "02. 流程",
                 tab_solution: "03. 方案",
                 tab_climax: "04. 成果",
-                context_title: "專案背景 Context",
+                context_title: "專案背景",
                 context_desc: "傳統警政巡邏依賴紙本簽章，不僅耗費人力成本，更難以即時掌握員警動態。本專案旨在透過 GPS、物聯網與視覺化設計，打造一套能提升勤務效率、落實防弊，並保障員警執勤安全的智慧化 App。",
                 role_title: "My Role",
                 role_name: "UI 設計師",
-                pain_title: "痛點與挑戰 The Conflict",
+                pain_title: "痛點與挑戰",
                 pain_sub: "傳統紙本巡簽的困境",
                 pain_1_title: "勤務效率低落",
                 pain_1_desc: "新手員警需耗時記憶路線，容易迷路或繞道。",
@@ -38,7 +38,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 pain_2_desc: "紙本簽到無法驗證是否本人到場，存在「代簽」風險。",
                 pain_3_title: "緊急溝通斷層",
                 pain_3_desc: "遇險時使用無線電報位耗時且不精準，錯失黃金救援時間。",
-                process_title: "執行過程 The Process",
+                process_title: "執行過程",
                 process_sub: "將「管理需求」轉化為「保命工具」的設計歷程",
                 process_1_title: "01. 場域觀察",
                 process_1_desc: "分析員警夜間巡邏情境，確定高對比度與單手操作的重要性。",
@@ -48,8 +48,8 @@ gsap.registerPlugin(ScrollToPlugin);
                 process_3_desc: "運用青色導航線與紅色緊急按鈕，建立直觀的視覺層級。",
                 process_4_title: "04. 防弊驗證",
                 process_4_desc: "導入 GPS 誤差偵測與停留時間計算，確保數據可信度。",
-                solution_title: "解決方案與亮點 The Solution",
-                gallery_title: "介面展示 Gallery",
+                solution_title: "解決方案與亮點",
+                gallery_title: "介面展示",
                 gallery_desc: "點擊下方卡片，預覽完整設計介面與功能說明。",
                 back_home: "Back to Portfolio"
             },
@@ -105,9 +105,9 @@ gsap.registerPlugin(ScrollToPlugin);
         const getSolutionFeatures = (lang) => {
             const isZh = lang === 'zh';
             return [
-                { id: 'sol-01', title: isZh ? '視覺化路徑引導' : 'Visualized Route Guidance', desc: isZh ? '在地圖上直接繪製最佳巡邏路線，取代列表式清單，即便是跨區支援也能無縫接軌。' : 'Draws best patrol routes on map, replacing lists. Seamless transition even for cross-district support.', icon: 'Map', image: './img/project_04/03@2x.jpg', benefit: isZh ? 'Benefit: 直覺路徑指引，減少迷航與繞路。' : 'Benefit: Intuitive guidance reduces lost time.' },
-                { id: 'sol-02', title: isZh ? '數位防弊簽到' : 'Digital Anti-Fraud Sign-in', desc: isZh ? '紀錄精確座標與「守望時間」，系統自動檢測誤差距離(如3m)，杜絕遠端作弊。' : 'Records precise coords and "watch time". Detects distance errors to prevent remote cheating.', icon: 'Shield', image: './img/project_04/04.jpg', benefit: isZh ? 'Benefit: 確保勤務落實，數據真實可信。' : 'Benefit: Ensures duty fulfillment and reliable data.' },
-                { id: 'sol-03', title: isZh ? 'SOS 緊急互助網' : 'SOS Emergency Network', desc: isZh ? '一鍵發送求救訊號，系統自動通知「最近」的同仁而非僅限同隊，提供精確座標爭取黃金救援時間。' : 'One-click SOS notifies "nearest" colleagues (not just team) with coords for rapid rescue.', icon: 'Alert', image: './img/project_04/07.jpg', benefit: isZh ? 'Benefit: 縮短支援反應時間，保障員警安全。' : 'Benefit: Shortens response time, ensuring safety.' }
+                { id: 'sol-01', title: isZh ? '視覺化路徑引導' : 'Visualized Route Guidance', desc: isZh ? '在地圖上直接繪製最佳巡邏路線，取代列表式清單，即便是跨區支援也能無縫接軌。' : 'Draws best patrol routes on map, replacing lists. Seamless transition even for cross-district support.', icon: 'Map', image: './img/project_04/03@2x.jpg', benefit: isZh ? '直覺路徑指引，減少迷航與繞路。' : 'Benefit: Intuitive guidance reduces lost time.' },
+                { id: 'sol-02', title: isZh ? '數位防弊簽到' : 'Digital Anti-Fraud Sign-in', desc: isZh ? '紀錄精確座標與「守望時間」，系統自動檢測誤差距離(如3m)，杜絕遠端作弊。' : 'Records precise coords and "watch time". Detects distance errors to prevent remote cheating.', icon: 'Shield', image: './img/project_04/04.jpg', benefit: isZh ? '確保勤務落實，數據真實可信。' : 'Benefit: Ensures duty fulfillment and reliable data.' },
+                { id: 'sol-03', title: isZh ? 'SOS 緊急互助網' : 'SOS Emergency Network', desc: isZh ? '一鍵發送求救訊號，系統自動通知「最近」的同仁而非僅限同隊，提供精確座標爭取黃金救援時間。' : 'One-click SOS notifies "nearest" colleagues (not just team) with coords for rapid rescue.', icon: 'Alert', image: './img/project_04/07.jpg', benefit: isZh ? '縮短支援反應時間，保障員警安全。' : 'Benefit: Shortens response time, ensuring safety.' }
             ];
         };
 

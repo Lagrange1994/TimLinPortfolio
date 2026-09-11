@@ -26,11 +26,11 @@ gsap.registerPlugin(ScrollToPlugin);
                 tab_process: "02. 流程",
                 tab_solution: "03. 方案",
                 tab_climax: "04. 成果",
-                context_title: "專案背景 Context",
+                context_title: "專案背景",
                 context_desc: "本專案與前期的差異在於「核心目標的轉移」。我們移除了非警務核心的淹水監測功能，將 UX 重點轉向「設備妥善率管理」。在數位辦案時代，如果攝影機故障或伺服器崩潰，再強大的 AI 都無用武之地。因此，我們不僅設計監控介面，更打造了一套透明化的後勤維運系統。",
                 role_title: "My Role",
                 role_name: "UI 設計師",
-                pain_title: "痛點與挑戰 The Conflict",
+                pain_title: "痛點與挑戰",
                 pain_sub: "當設備故障成為辦案阻礙",
                 pain_1_title: "維修黑箱作業",
                 pain_1_desc: "傳統報修進度不明，員警無法得知設備何時修復。",
@@ -38,18 +38,18 @@ gsap.registerPlugin(ScrollToPlugin);
                 pain_2_desc: "調閱關鍵畫面時才發現攝影機已斷線或畫面遮擋。",
                 pain_3_title: "行政流程內耗",
                 pain_3_desc: "缺乏標準化表單，來回溝通成本極高。",
-                process_title: "設計流程 Design Process",
+                process_title: "設計流程",
                 process_sub: "從使用者訪談到行政流程優化",
-                process_1_title: "01. 需求收斂 (Scope Definition)",
+                process_1_title: "01. 需求收斂",
                 process_1_desc: "與業主確認移除「淹水監測」等非核心功能，將資源集中於「設備妥善率」與「刑偵輔助」，確立了由「戰情室風格」轉向「清爽管理後台」的視覺策略。",
-                process_2_title: "02. 流程邏輯設計 (Workflow Logic)",
-                process_2_desc: "繪製維修通報的狀態流程圖 (State Flow)，定義「表單送出 > 廠商接單 > 維修中 > 完修」的五大節點與時間戳記邏輯，確保行政責任歸屬明確。",
-                process_3_title: "03. 介面設計 (UI Design)",
-                process_3_desc: "採用高亮度的淺色卡片設計 (Light Dashboard)，搭配紅綠燈號概念，讓管理者能一眼掃視上百台伺服器與攝影機的健康狀態，減輕長時間監控的視覺負擔。",
-                process_4_title: "04. 標準化交付 (Standardization)",
+                process_2_title: "02. 流程邏輯設計",
+                process_2_desc: "繪製維修通報的狀態流程圖，定義「表單送出 > 廠商接單 > 維修中 > 完修」的五大節點與時間戳記邏輯，確保行政責任歸屬明確。",
+                process_3_title: "03. 介面設計",
+                process_3_desc: "採用高亮度的淺色卡片設計，搭配紅綠燈號概念，讓管理者能一眼掃視上百台伺服器與攝影機的健康狀態，減輕長時間監控的視覺負擔。",
+                process_4_title: "04. 標準化交付",
                 process_4_desc: "建立標準化的報修表單規範，包含設備編號自動帶入、故障類型下拉選單等，降低人為輸入錯誤。",
-                solution_title: "解決方案 The Solution",
-                gallery_title: "介面展示 Gallery",
+                solution_title: "解決方案",
+                gallery_title: "介面展示",
                 gallery_desc: "重點展示：系統監控儀表板、GIS 地圖與維修流程。",
                 back_home: "Back to Portfolio"
             },
@@ -107,10 +107,10 @@ gsap.registerPlugin(ScrollToPlugin);
         const getSolutionFeatures = (lang) => {
             const isZh = lang === 'zh';
             return [
-                { id: 'sol-01', title: isZh ? '硬體健康度監控看板' : 'Hardware Health Monitor', desc: isZh ? '將 CPU/GPU 負載與 IoT 設備的 Ping 值連線狀態可視化。管理者在調閱畫面失敗前，即可先一步發現異常。' : 'Visualizes CPU/GPU load and IoT device Ping status. Managers can detect anomalies before footage retrieval fails.', icon: 'Server', image: './img/project_03/工作區域 1@2x.jpg', benefit: isZh ? 'Benefit: 確保 AI 運算資源與前端攝影機的戰備狀態。' : 'Benefit: Ensures readiness of AI resources and cameras.' },
-                { id: 'sol-02', title: isZh ? '全透明維修履歷' : 'Transparent Repair Log', desc: isZh ? '將傳統電話叫修轉化為「可視化進度條」。清楚記錄表單送出、廠商接單、維修中到結案的每一個時間節點。' : 'Transforms phone calls into a "visual progress bar". Logs every node from submission, acceptance, repair to closure.', icon: 'Timeline', image: './img/project_03/工作區域 4@2x.jpg', benefit: isZh ? 'Benefit: 釐清行政責任，大幅減少內部溝通內耗。' : 'Benefit: Clarifies accountability, reducing internal friction.' },
-                { id: 'sol-03', title: isZh ? '標準化報修流程' : 'Standardized Reporting', desc: isZh ? '結構化的通報表單設計，引導第一線員警準確填寫設備編號與故障類型，降低誤報率。' : 'Structured form design guides officers to accurately enter device IDs and fault types, reducing false reports.', icon: 'List', image: './img/project_03/工作區域 12@2x.jpg', benefit: isZh ? 'Benefit: 提升報修資訊準確度，加速廠商處理效率。' : 'Benefit: Increases accuracy and vendor processing speed.' },
-                { id: 'sol-04', title: isZh ? '路口設備整合調閱' : 'Integrated Intersection View', desc: isZh ? '在地圖上點擊路口，即顯示該節點所有向度的攝影機狀態與畫面，實現直覺化的 GIS 空間管理。' : 'Clicking an intersection on the map shows status and footage of all cameras at that node for intuitive GIS management.', icon: 'Camera', image: './img/project_03/工作區域 8@2x.jpg', benefit: isZh ? 'Benefit: 直覺化的路口即時調閱與狀態檢視。' : 'Benefit: Intuitive real-time monitoring and status check.' }
+                { id: 'sol-01', title: isZh ? '硬體健康度監控看板' : 'Hardware Health Monitor', desc: isZh ? '將 CPU/GPU 負載與 IoT 設備的 Ping 值連線狀態可視化。管理者在調閱畫面失敗前，即可先一步發現異常。' : 'Visualizes CPU/GPU load and IoT device Ping status. Managers can detect anomalies before footage retrieval fails.', icon: 'Server', image: './img/project_03/工作區域 1@2x.jpg', benefit: isZh ? '確保 AI 運算資源與前端攝影機的戰備狀態。' : 'Benefit: Ensures readiness of AI resources and cameras.' },
+                { id: 'sol-02', title: isZh ? '全透明維修履歷' : 'Transparent Repair Log', desc: isZh ? '將傳統電話叫修轉化為「可視化進度條」。清楚記錄表單送出、廠商接單、維修中到結案的每一個時間節點。' : 'Transforms phone calls into a "visual progress bar". Logs every node from submission, acceptance, repair to closure.', icon: 'Timeline', image: './img/project_03/工作區域 4@2x.jpg', benefit: isZh ? '釐清行政責任，大幅減少內部溝通內耗。' : 'Benefit: Clarifies accountability, reducing internal friction.' },
+                { id: 'sol-03', title: isZh ? '標準化報修流程' : 'Standardized Reporting', desc: isZh ? '結構化的通報表單設計，引導第一線員警準確填寫設備編號與故障類型，降低誤報率。' : 'Structured form design guides officers to accurately enter device IDs and fault types, reducing false reports.', icon: 'List', image: './img/project_03/工作區域 12@2x.jpg', benefit: isZh ? '提升報修資訊準確度，加速廠商處理效率。' : 'Benefit: Increases accuracy and vendor processing speed.' },
+                { id: 'sol-04', title: isZh ? '路口設備整合調閱' : 'Integrated Intersection View', desc: isZh ? '在地圖上點擊路口，即顯示該節點所有向度的攝影機狀態與畫面，實現直覺化的 GIS 空間管理。' : 'Clicking an intersection on the map shows status and footage of all cameras at that node for intuitive GIS management.', icon: 'Camera', image: './img/project_03/工作區域 8@2x.jpg', benefit: isZh ? '直覺化的路口即時調閱與狀態檢視。' : 'Benefit: Intuitive real-time monitoring and status check.' }
             ];
         };
 

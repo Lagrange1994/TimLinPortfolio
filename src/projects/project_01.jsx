@@ -26,11 +26,11 @@ gsap.registerPlugin(ScrollToPlugin);
                 tab_process: "02. 流程",
                 tab_solution: "03. 方案",
                 tab_climax: "04. 成果",
-                context_title: "專案背景 Context",
+                context_title: "專案背景",
                 context_desc: "面對日益增長的城市監控數據，傳統的警用系統面臨「數據孤島」的困境。本專案旨在建立一個整合 GIS 空間邏輯與 AI 影像辨識的指揮中樞，將分散的數千支攝影機轉化為可搜尋、可追蹤、可預警的智慧資產。",
                 role_title: "My Role",
                 role_name: "UI 設計師",
-                pain_title: "痛點與挑戰 The Conflict",
+                pain_title: "痛點與挑戰",
                 pain_sub: "當海量影像成為辦案負擔",
                 pain_1_title: "數據超載",
                 pain_1_desc: "員警需在海量錄影中大海撈針，缺乏有效的過濾機制。",
@@ -38,18 +38,18 @@ gsap.registerPlugin(ScrollToPlugin);
                 pain_2_desc: "系統僅能錄影，無法主動識別嫌疑車輛或異常行為。",
                 pain_3_title: "關聯性薄弱",
                 pain_3_desc: "設備狀態與監控畫面分離，故障排除與調閱效率低落。",
-                process_title: "開發流程 Development Process",
+                process_title: "開發流程",
                 process_sub: "以使用者為中心的軟體開發生命週期",
-                process_1_title: "01. 需求分析與場勘 (Requirement & Field Study)",
+                process_1_title: "01. 需求分析與場勘",
                 process_1_desc: "深入刑偵單位進行用戶訪談，了解辦案邏輯（如共犯追蹤、電子圍籬）。並實地走訪勤務指揮中心進行現場場勘研究，觀察員警在低光源環境下的操作習慣與多螢幕配置需求。",
-                process_2_title: "02. 系統架構與邏輯 (System Architecture & Logic)",
+                process_2_title: "02. 系統架構與邏輯",
                 process_2_desc: "定義複雜的 GIS 空間查詢邏輯（如交集/聯集演算法），規劃 LPR 車牌辨識資料流，確保前端介面能直觀呈現後端龐大的運算結果。",
-                process_3_title: "03. 介面設計與原型 (UI Design & Prototyping)",
-                process_3_desc: "使用 Figma 建立高保真深色模式 (Dark Mode) 原型，設計高對比度的視覺層級，降低員警長時間監控的視覺疲勞。",
-                process_4_title: "04. 開發協作與交付 (Development Handoff)",
+                process_3_title: "03. 介面設計與原型",
+                process_3_desc: "使用 Figma 建立高保真深色模式原型，設計高對比度的視覺層級，降低員警長時間監控的視覺疲勞。",
+                process_4_title: "04. 開發協作與交付",
                 process_4_desc: "與前端工程師密切合作，定義 Mapbox API 串接規範與即時資料 WebSocket 通訊協定，確保設計稿完美落地。",
-                solution_title: "解決方案與亮點 The Solution",
-                gallery_title: "介面展示 Gallery",
+                solution_title: "解決方案與亮點",
+                gallery_title: "介面展示",
                 gallery_desc: "以下分為六大模組展示完整的高保真設計介面。",
                 back_home: "Back to Portfolio"
             },
@@ -109,12 +109,12 @@ gsap.registerPlugin(ScrollToPlugin);
         const getSolutionFeatures = (lang) => {
             const isZh = lang === 'zh';
             return [
-                { id: 'sol-01', title: isZh ? '全知視角營運儀表板' : 'Omniscient Dashboard', desc: isZh ? '整合 Server 資源、CAM 連線狀態與即時氣象，提供系統健康度的一站式概覽，從被動報修轉為主動預警。' : 'Integrates server resources, CAM status, and weather to provide a one-stop overview of system health.', icon: 'Dashboard', image: './img/project_01/home_02.jpg', benefit: isZh ? 'Benefit: 讓維運人員一眼掌握系統健康度，主動預警。' : 'Benefit: Allows staff to grasp system health at a glance.' },
-                { id: 'sol-02', title: isZh ? 'GIS 空間邏輯查詢' : 'GIS Spatial Logic Query', desc: isZh ? '獨創「交集/聯集」查詢邏輯，能迅速找出同時出現在多個案發現場的嫌疑車輛，大幅縮短刑偵過濾時間。' : 'Unique "Intersection/Union" query logic quickly identifies suspect vehicles appearing at multiple crime scenes.', icon: 'Map', image: './img/project_01/track_04.jpg', benefit: isZh ? 'Benefit: 迅速限縮同時出現在多個犯罪現場的嫌疑車輛。' : 'Benefit: Rapidly narrows down suspect vehicles across locations.' },
-                { id: 'sol-03', title: isZh ? '主動式車輛聯防' : 'Active Vehicle Defense', desc: isZh ? '建立動態黑名單（失竊/涉案），結合 LPR 技術實現「車過即知」的自動化警示與簡訊推播。' : 'Dynamic blacklists (stolen/involved) combined with LPR technology for automated alerts and push notifications.', icon: 'Bell', image: './img/project_01/search_03.jpg', benefit: isZh ? 'Benefit: 實現「車過即知」的即時打擊能力。' : 'Benefit: Real-time capability to know when a vehicle passes.' },
-                { id: 'sol-04', title: isZh ? '戰情中心級 AI 監控' : 'AI Surveillance Center', desc: isZh ? '地圖與影像雙向連動，結合 AI 物件框選（人/車流），實現直覺化的路口即時調閱與戰情指揮。' : 'Two-way linkage between map and video, combined with AI object bounding (people/traffic) for intuitive command.', icon: 'Eye', image: './img/project_01/cam_01.jpg', benefit: isZh ? 'Benefit: 直覺化的路口即時調閱與戰情指揮。' : 'Benefit: Intuitive real-time intersection monitoring.' },
-                { id: 'sol-05', title: isZh ? '智慧防災水情監控' : 'Smart Flood Monitoring', desc: isZh ? '結合 IoT 感測器與監視影像，透過紅/橘/藍分級警示與實景尺標，將抽象水位數據轉化為直觀的決策輔助資訊。' : 'Combines IoT sensors and surveillance. Uses color-coded alerts and visual markers to visualize water level data.', icon: 'Water', image: './img/project_01/flood_02.jpg', benefit: isZh ? 'Benefit: 視覺化的實景對照，協助指揮官快速判斷災情等級。' : 'Benefit: Visual benchmarks help commanders judge disaster levels.' },
-                { id: 'sol-06', title: isZh ? '軟硬體全域維運' : 'Full Stack Maintenance', desc: isZh ? '整合前端 GIS 設備地圖與後端 Server 效能監測，從記憶體負載到磁碟 I/O，提供 IT 人員深度的系統健康診斷工具。' : 'Integrates GIS device maps and server performance monitoring, providing IT staff with deep diagnostic tools.', icon: 'Server', image: './img/project_01/performance_02.jpg', benefit: isZh ? 'Benefit: 實現從業務操作層到系統維護層的無縫管理。' : 'Benefit: Seamless management from operations to maintenance.' }
+                { id: 'sol-01', title: isZh ? '全知視角營運儀表板' : 'Omniscient Dashboard', desc: isZh ? '整合 Server 資源、CAM 連線狀態與即時氣象，提供系統健康度的一站式概覽，從被動報修轉為主動預警。' : 'Integrates server resources, CAM status, and weather to provide a one-stop overview of system health.', icon: 'Dashboard', image: './img/project_01/home_02.jpg', benefit: isZh ? '讓維運人員一眼掌握系統健康度，主動預警。' : 'Benefit: Allows staff to grasp system health at a glance.' },
+                { id: 'sol-02', title: isZh ? 'GIS 空間邏輯查詢' : 'GIS Spatial Logic Query', desc: isZh ? '獨創「交集/聯集」查詢邏輯，能迅速找出同時出現在多個案發現場的嫌疑車輛，大幅縮短刑偵過濾時間。' : 'Unique "Intersection/Union" query logic quickly identifies suspect vehicles appearing at multiple crime scenes.', icon: 'Map', image: './img/project_01/track_04.jpg', benefit: isZh ? '迅速限縮同時出現在多個犯罪現場的嫌疑車輛。' : 'Benefit: Rapidly narrows down suspect vehicles across locations.' },
+                { id: 'sol-03', title: isZh ? '主動式車輛聯防' : 'Active Vehicle Defense', desc: isZh ? '建立動態黑名單（失竊/涉案），結合 LPR 技術實現「車過即知」的自動化警示與簡訊推播。' : 'Dynamic blacklists (stolen/involved) combined with LPR technology for automated alerts and push notifications.', icon: 'Bell', image: './img/project_01/search_03.jpg', benefit: isZh ? '實現「車過即知」的即時打擊能力。' : 'Benefit: Real-time capability to know when a vehicle passes.' },
+                { id: 'sol-04', title: isZh ? '戰情中心級 AI 監控' : 'AI Surveillance Center', desc: isZh ? '地圖與影像雙向連動，結合 AI 物件框選（人/車流），實現直覺化的路口即時調閱與戰情指揮。' : 'Two-way linkage between map and video, combined with AI object bounding (people/traffic) for intuitive command.', icon: 'Eye', image: './img/project_01/cam_01.jpg', benefit: isZh ? '直覺化的路口即時調閱與戰情指揮。' : 'Benefit: Intuitive real-time intersection monitoring.' },
+                { id: 'sol-05', title: isZh ? '智慧防災水情監控' : 'Smart Flood Monitoring', desc: isZh ? '結合 IoT 感測器與監視影像，透過紅/橘/藍分級警示與實景尺標，將抽象水位數據轉化為直觀的決策輔助資訊。' : 'Combines IoT sensors and surveillance. Uses color-coded alerts and visual markers to visualize water level data.', icon: 'Water', image: './img/project_01/flood_02.jpg', benefit: isZh ? '視覺化的實景對照，協助指揮官快速判斷災情等級。' : 'Benefit: Visual benchmarks help commanders judge disaster levels.' },
+                { id: 'sol-06', title: isZh ? '軟硬體全域維運' : 'Full Stack Maintenance', desc: isZh ? '整合前端 GIS 設備地圖與後端 Server 效能監測，從記憶體負載到磁碟 I/O，提供 IT 人員深度的系統健康診斷工具。' : 'Integrates GIS device maps and server performance monitoring, providing IT staff with deep diagnostic tools.', icon: 'Server', image: './img/project_01/performance_02.jpg', benefit: isZh ? '實現從業務操作層到系統維護層的無縫管理。' : 'Benefit: Seamless management from operations to maintenance.' }
             ];
         };
 

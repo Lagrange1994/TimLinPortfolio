@@ -34,7 +34,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 btn_explore: "探索設計旅程", back_home: "Back to Portfolio",
                 tab_request: "01. 業主需求", tab_process: "02. 流程", tab_highlights: "03. 特色", tab_gallery: "04. 成果",
 
-                request_title: "業主需求 Client Request",
+                request_title: "業主需求",
                 request_desc: "北區水資源局希望將現有的觀光行政流程全面數位化，新增「貴賓參訪」、「預約解說」與「街頭藝人」等線上申請頁面。",
                 role_title: "My Role", role_name: "UI 設計師", tools: "Tools",
                 list_title: "待新增頁面列表",
@@ -42,14 +42,14 @@ gsap.registerPlugin(ScrollToPlugin);
                 req_2_title: "預約解說導覽", req_2_desc: "結合地圖與路線說明，讓申請者了解導覽內容。",
                 req_3_title: "街頭藝人與場地申請", req_3_desc: "明確標示可展演區域與相關規範。",
 
-                process_title: "製作流程 Workflow",
+                process_title: "製作流程",
                 step_1_title: "Step 1. 盤點與解構", step_1_desc: "收集所有紙本申請書與管理要點，將文字拆解為「必要條件」（如：申請期限、人數下限、證件需求）。",
                 step_2_title: "Step 2. 動線簡化", step_2_desc: "設計流暢的引導動線：閱讀須知 → 確認資格 → 選擇日期 → 填寫表單",
-                step_3_title: "Step 3. 視覺轉化 (Visualizing)", step_3_desc: "將枯燥的數字與注意事項轉化為醒目的粗體與圖表，降低閱讀疲勞。",
+                step_3_title: "Step 3. 視覺轉化", step_3_desc: "將枯燥的數字與注意事項轉化為醒目的粗體與圖表，降低閱讀疲勞。",
                 step_4_title: "Step 4. 地圖整合", step_4_desc: "繪製專屬的向量地圖，將申請場地與導覽路線具象化，讓使用者對「地點」有直觀認識。",
 
-                highlights_title: "設計特色 Highlights",
-                gallery_title: "頁面展示 Gallery", gallery_desc: "點擊下方卡片預覽各個申請頁面的最終設計成果。",
+                highlights_title: "設計特色",
+                gallery_title: "頁面展示", gallery_desc: "點擊下方卡片預覽各個申請頁面的最終設計成果。",
                 scroll_hint: "上下滾動瀏覽完整畫面"
             },
             en: {
@@ -86,10 +86,10 @@ gsap.registerPlugin(ScrollToPlugin);
         const getAnalysisFeatures = (lang) => {
             const isZh = lang === 'zh';
             return [
-                { id: 'feat-01', title: isZh ? '高度資訊圖表化 (Infographic)' : 'Infographic Design', desc: isZh ? '將法規文字轉化為直觀圖表，解決閱讀疲勞。' : 'Converting legal text into intuitive charts to reduce fatigue.', icon: 'Chart', image: './img/project_07/石門水庫6觀光服務 6.3.3貴賓參訪申請0819.jpg', note: isZh ? 'Insight: 人數限制與申請時間採用醒目數字設計，大幅降低認知負擔。' : 'Insight: Limits and times use bold numbers to reduce cognitive load.' },
-                { id: 'feat-02', title: isZh ? '活潑的吉祥物行銷' : 'Mascot Marketing', desc: isZh ? '利用角色引導填表流程，降低公文申請的嚴肅感。' : 'Using characters to guide the form process, softening the seriousness.', icon: 'Mascot', image: './img/project_07/石門水庫6觀光服務 6.3.3貴賓參訪申請0819.jpg', note: isZh ? 'Insight: 透過角色扮演（Role-play）增加情境感，提升親和力。' : 'Insight: Role-play adds context and increases approachability.' },
-                { id: 'feat-03', title: isZh ? '直觀的地圖式導航' : 'Map-based Navigation', desc: isZh ? '將景點與動線直接整合在地理位置上，而非純清單。' : 'Integrating spots and routes directly onto maps, not just lists.', icon: 'Map', image: './img/project_07/石門水庫6觀光服務 6.3.4預約解說申請0822.jpg', note: isZh ? 'Insight: 使用者能預先建立空間感，明確知道「去哪裡看什麼」。' : 'Insight: Users build spatial awareness of "where to go and what to see".' },
-                { id: 'feat-04', title: isZh ? '一致性的視覺識別' : 'Consistent Visual Identity', desc: isZh ? '嚴格遵守藍、青、湖水綠的主色調，搭配圓形元素。' : 'Strictly adhering to blue, cyan, and aqua tones with circular elements.', icon: 'Palette', image: './img/project_07/石門水庫6觀光服務 6.3.6街頭藝人申請0822.jpg', note: isZh ? 'Insight: 視覺語彙統一，強化了「水資源」與「觀光」的品牌聯想。' : 'Insight: Unified visual language reinforces "Water Resources" and "Tourism".' }
+                { id: 'feat-01', title: isZh ? '高度資訊圖表化' : 'Infographic Design', desc: isZh ? '將法規文字轉化為直觀圖表，解決閱讀疲勞。' : 'Converting legal text into intuitive charts to reduce fatigue.', icon: 'Chart', image: './img/project_07/石門水庫6觀光服務 6.3.3貴賓參訪申請0819.jpg', note: isZh ? '人數限制與申請時間採用醒目數字設計，大幅降低認知負擔。' : 'Insight: Limits and times use bold numbers to reduce cognitive load.' },
+                { id: 'feat-02', title: isZh ? '活潑的吉祥物行銷' : 'Mascot Marketing', desc: isZh ? '利用角色引導填表流程，降低公文申請的嚴肅感。' : 'Using characters to guide the form process, softening the seriousness.', icon: 'Mascot', image: './img/project_07/石門水庫6觀光服務 6.3.3貴賓參訪申請0819.jpg', note: isZh ? '透過角色扮演增加情境感，提升親和力。' : 'Insight: Role-play adds context and increases approachability.' },
+                { id: 'feat-03', title: isZh ? '直觀的地圖式導航' : 'Map-based Navigation', desc: isZh ? '將景點與動線直接整合在地理位置上，而非純清單。' : 'Integrating spots and routes directly onto maps, not just lists.', icon: 'Map', image: './img/project_07/石門水庫6觀光服務 6.3.4預約解說申請0822.jpg', note: isZh ? '使用者能預先建立空間感，明確知道「去哪裡看什麼」。' : 'Insight: Users build spatial awareness of "where to go and what to see".' },
+                { id: 'feat-04', title: isZh ? '一致性的視覺識別' : 'Consistent Visual Identity', desc: isZh ? '嚴格遵守藍、青、湖水綠的主色調，搭配圓形元素。' : 'Strictly adhering to blue, cyan, and aqua tones with circular elements.', icon: 'Palette', image: './img/project_07/石門水庫6觀光服務 6.3.6街頭藝人申請0822.jpg', note: isZh ? '視覺語彙統一，強化了「水資源」與「觀光」的品牌聯想。' : 'Insight: Unified visual language reinforces "Water Resources" and "Tourism".' }
             ];
         };
 
