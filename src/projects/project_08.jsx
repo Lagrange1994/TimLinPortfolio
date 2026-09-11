@@ -482,11 +482,11 @@ gsap.registerPlugin(ScrollToPlugin);
                     <ScrollTopButton prefix="lv" visible={showBackToHero} onClick={() => scrollToSection(0)} />
 
                     <div id="main-scroller" ref={mainContainerRef}>
-                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-lv-dark relative hero-bg-custom">
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center relative hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
-                                    <div className={`inline-block px-4 py-1 rounded-full border border-lv-primary/50 bg-lv-primary/20 text-lv-primary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>SOCIAL LIVE STREAMING APP</div>
-                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-lv-primary to-lv-secondary font-heading" dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
+                                    <div className={`inline-block px-4 py-1 rounded-full border hero-badge text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s', '--hero-badge-color': '#00D2A0' }}>SOCIAL LIVE STREAMING APP</div>
+                                    <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left font-heading ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>{t('title_main')}<br /><span className="text-transparent bg-clip-text font-heading" style={{ backgroundImage: 'linear-gradient(to right, #00D2A0, #FFB800)' }} dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span></h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
                                     <HeroCTAButton prefix="lv" shadowClass="shadow-[0_10px_30px_rgba(0,210,160,0.4)]" loading={loading} label={t('btn_explore')} onClick={() => scrollToSection(1)} />
                                 </div>
@@ -513,7 +513,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     <div className="sticky top-0 bg-lv-dark/95 backdrop-blur-xl z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold text-text font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
+                                            <h2 className="text-xl lg:text-3xl font-bold text-text font-heading mb-1 leading-tight panel-title">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4 font-sans">Gamified Social Live Streaming Platform</p>
                                             <TabNav
                                                 prefix="lv"

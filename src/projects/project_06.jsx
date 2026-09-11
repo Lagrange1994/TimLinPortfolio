@@ -404,7 +404,7 @@ gsap.registerPlugin(ScrollToPlugin);
                     <ScrollTopButton prefix="tym" visible={showBackToHero} onClick={() => scrollToSection(0)} />
 
                     <div id="main-scroller" ref={mainContainerRef}>
-                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-tym-dark relative hero-bg-metro">
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center relative hero-bg-metro">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
                                     <div className={`inline-block px-4 py-1 rounded-full border border-white bg-black/20 text-white text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>APP REDESIGN</div>
@@ -443,7 +443,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     <div className="sticky top-0 bg-tym-dark/95 backdrop-blur-xl z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold font-heading text-text mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
+                                            <h2 className="text-xl lg:text-3xl font-bold font-heading text-text mb-1 leading-tight panel-title">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">Revamp Plan & Design Strategy</p>
                                             <TabNav
                                                 prefix="tym"

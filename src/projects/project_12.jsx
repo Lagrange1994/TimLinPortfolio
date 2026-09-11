@@ -408,18 +408,18 @@ gsap.registerPlugin(ScrollToPlugin);
 
                     <div id="main-scroller" ref={mainContainerRef}>
                         {/* [修改] bg-dark -> bg-gh-dark */}
-                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-gh-dark hero-bg-custom">
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
                                     {/* [修改] border-primary -> border-gh-primary, bg-primary -> bg-gh-primary, text-primary -> text-gh-primary */}
-                                    <div className={`inline-block px-4 py-1 rounded-full border border-gh-primary/50 bg-gh-primary/20 text-gh-primary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>
+                                    <div className={`inline-block px-4 py-1 rounded-full border hero-badge text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s', '--hero-badge-color': '#EAC435' }}>
                                         FINANCIAL EDUCATION GAME
                                     </div>
                                     <h1 className={`text-5xl lg:text-7xl font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
                                         {lang === 'zh' ? (
                                             <React.Fragment>
                                                 {t('title_main')}<br className="md:hidden" />
-                                                <span className="font-heading text-gh-primary"> Golden House</span>
+                                                <span className="font-heading" style={{ color: '#EAC435' }}> Golden House</span>
                                                 <br />
                                                 {t('title_sub')}
                                             </React.Fragment>
@@ -427,7 +427,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                             <React.Fragment>
                                                 <span className="font-heading">{t('title_main')}</span>
                                                 <br className="md:hidden" />
-                                                <span className="font-heading text-gh-primary">{t('title_sub')}</span>
+                                                <span className="font-heading" style={{ color: '#EAC435' }}>{t('title_sub')}</span>
                                             </React.Fragment>
                                         )}
                                     </h1>
@@ -476,10 +476,10 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div className="sticky top-0 bg-gh-dark/95 backdrop-blur-xl z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
                                             <div className="mb-2">
-                                                <span className="font-heading text-text text-xl lg:text-3xl font-bold">{lang === 'zh' ? '中央存保' : 'CDIC'}</span>
-                                                <span className="font-heading text-text text-xl lg:text-3xl font-bold"> Golden House</span>
+                                                <span className="font-heading text-text text-xl lg:text-3xl font-bold panel-title">{lang === 'zh' ? '中央存保' : 'CDIC'}</span>
+                                                <span className="font-heading text-text text-xl lg:text-3xl font-bold panel-title"> Golden House</span>
                                                 <br />
-                                                <h2 className="text-xl lg:text-3xl font-bold font-heading text-text mb-1 leading-tight">{t('title_sub')}</h2>
+                                                <h2 className="text-xl lg:text-3xl font-bold font-heading text-text mb-1 leading-tight panel-title">{t('title_sub')}</h2>
                                             </div>
                                             <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">Financial Education Web Game</p>
 

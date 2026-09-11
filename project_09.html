@@ -35,6 +35,7 @@
         }
 
         .hero-bg-custom {
+            background-color: #121212;
             background-image: url('./img/project_09/hero_img.jpg');
             background-image: -webkit-image-set(url('./img/project_09/hero_img.webp') 1x, url('./img/project_09/hero_img.jpg') 1x);
             background-image: image-set(url('./img/project_09/hero_img.webp') 1x, url('./img/project_09/hero_img.jpg') 1x);
@@ -102,6 +103,10 @@
         html[data-theme="light"] body {
             background-color: var(--color-epb-dark);
             color: var(--color-text);
+        }
+
+        :root[data-theme="light"] .panel-title {
+            color: var(--color-epb-primary);
         }
 
         :root[data-theme="light"] .glass-panel {

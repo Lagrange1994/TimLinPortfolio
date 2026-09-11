@@ -320,6 +320,27 @@
   --color-zoo-dark-lighter: #E7F1DA;
 }
 
+/* Hero CTA button + eyebrow badge (project_XX.jsx hero sections): pinned to
+   a fixed color via an inline --hero-cta-color/--hero-badge-color custom
+   property set per project prefix, instead of the theme-switchable
+   {prefix}-primary/-accent tokens used everywhere else. Same "hero never
+   changes with theme" rule already applied to the hero photo overlay and
+   title gradient — these two sit on the same fixed-dark hero photo. */
+.hero-cta-btn {
+  background-color: var(--hero-cta-color);
+  border-color: color-mix(in srgb, var(--hero-cta-color) 50%, transparent);
+}
+.hero-cta-btn:hover {
+  background-color: #fff;
+  color: var(--hero-cta-color);
+}
+
+.hero-badge {
+  border-color: color-mix(in srgb, var(--hero-badge-color) 50%, transparent);
+  background-color: color-mix(in srgb, var(--hero-badge-color) 20%, transparent);
+  color: var(--hero-badge-color);
+}
+
 /* Split-view "device mockup showcase" panels (the left-hand column that
    holds the screenshot/phone/browser preview) were hand-authored as flat
    arbitrary-value grays (bg-[#1a1a1a] etc.) instead of a per-prefix token —

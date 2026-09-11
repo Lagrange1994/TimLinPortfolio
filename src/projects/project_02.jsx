@@ -611,14 +611,14 @@ gsap.registerPlugin(ScrollToPlugin);
 
                     <div id="main-scroller" ref={mainContainerRef}>
                         {/* [修改] bg-dark -> bg-app-dark */}
-                        <section id="hero" ref={heroRef} className="snap-section active-section flex items-center justify-center bg-app-dark relative hero-bg-custom">
+                        <section id="hero" ref={heroRef} className="snap-section active-section flex items-center justify-center relative hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
                                     {/* [修改] border-secondary -> border-app-secondary, bg-secondary -> bg-app-secondary, text-secondary -> text-app-secondary */}
-                                    <div className={`inline-block px-4 py-1 rounded-full border border-app-secondary/50 bg-app-secondary/20 text-app-secondary text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>MOBILE COMMAND CENTER</div>
+                                    <div className={`inline-block px-4 py-1 rounded-full border hero-badge text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s', '--hero-badge-color': '#FFD700' }}>MOBILE COMMAND CENTER</div>
                                     <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
                                         {/* [修改] from-primary -> from-app-primary, to-secondary -> to-app-secondary */}
-                                        {t('title_main')}<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-app-primary to-app-secondary">{t('title_sub')}</span>
+                                        {t('title_main')}<br /><span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(to right, #FF4A00, #FFD700)' }}>{t('title_sub')}</span>
                                     </h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
                                     <HeroCTAButton prefix="app" shadowClass="shadow-[0_10px_30px_rgba(255,74,0,0.4)]" loading={loading} label={t('btn_explore')} onClick={() => scrollToSection(1)} />
@@ -639,7 +639,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                     {/* [修改] bg-dark/95 -> bg-app-dark/95 */}
                                     <div className="sticky top-0 bg-app-dark/95 backdrop-blur-xl z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold mb-1 font-heading">{t('title_main')}<br />{t('title_sub')}</h2>
+                                            <h2 className="text-xl lg:text-3xl font-bold mb-1 font-heading panel-title">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">Mobile Experience Optimization</p>
 
                                             <TabNav

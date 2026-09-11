@@ -425,7 +425,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                     <div id="main-scroller" ref={mainContainerRef}>
                         {/* [修改] bg-dark -> bg-tmu-dark */}
-                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center bg-tmu-dark hero-bg-custom">
+                        <section ref={heroRef} className="snap-section active-section flex items-center justify-center hero-bg-custom">
                             <div className="container max-w-7xl mx-auto px-8 z-20">
                                 <div className="max-w-5xl text-left">
                                     {/* [修正] 標籤改為白色 (border-white text-white) */}
@@ -463,7 +463,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                     {/* [修改] bg-dark/95 -> bg-tmu-dark/95 */}
                                     <div className="sticky top-0 bg-tmu-dark/95 backdrop-blur-xl z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold text-text font-heading mb-1 leading-tight">{t('title_main')}<br />{t('title_sub')}</h2>
+                                            <h2 className="text-xl lg:text-3xl font-bold text-text font-heading mb-1 leading-tight panel-title">{t('title_main')}<br />{t('title_sub')}</h2>
                                             <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4">Clinical Education E-Portfolio System</p>
                                             <TabNav
                                                 prefix="tmu"
