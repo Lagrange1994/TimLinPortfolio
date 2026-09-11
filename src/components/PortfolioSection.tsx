@@ -7,6 +7,9 @@ import { portfolioWallMaskPath, DEFAULT_RADIUS, computeWallHeight } from '../uti
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import gsap from 'gsap';
+import ScrollTrigger from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const SMOOTH_TAU = 0.18;
 // Matches How I Use AI's card corner radius (.ai-card) so the squircle reads
@@ -80,13 +83,27 @@ function createPortfolioScroller(row: HTMLElement, normalSpeed: number, hoverSpe
   startRAF();
 }
 
-function getBentoBigIndices(total: number) {
-  const a = Math.floor(Math.random() * Math.floor(total / 2));
-  const b = Math.floor(total / 2) + Math.floor(Math.random() * Math.ceil(total / 2));
-  return [a, b];
+// project9~12 are deprioritized for the bento grid's enlarged slots — picked
+// only if there aren't enough other projects to fill all 3.
+const BENTO_BIG_AVOID_IDS = new Set(['p9', 'p10', 'p11', 'p12']);
+
+function getBentoBigIndices(projects: typeof PROJECTS) {
+  const preferred: number[] = [];
+  const avoided: number[] = [];
+  projects.forEach((p, i) => (BENTO_BIG_AVOID_IDS.has(p.id) ? avoided : preferred).push(i));
+
+  const pool = [...preferred];
+  if (pool.length < 3) pool.push(...avoided);
+
+  const picked: number[] = [];
+  while (picked.length < 3 && pool.length) {
+    const i = Math.floor(Math.random() * pool.length);
+    picked.push(pool.splice(i, 1)[0]);
+  }
+  return picked;
 }
 
-const bentoBigIndices = getBentoBigIndices(PROJECTS.length);
+const bentoBigIndices = getBentoBigIndices(PROJECTS);
 // The infinite scroller wall clones cards with plain DOM cloneNode (see
 // createPortfolioScroller) — clones aren't React-managed, so their
 // data-title never updates when the language changes. Keyed by href
@@ -197,6 +214,9 @@ export default function PortfolioSection() {
   // can never drift apart.
   const wallClipRef = useRef<HTMLDivElement | null>(null);
   const wallFillRef = useRef<HTMLDivElement | null>(null);
+  // .wall-frame-in's own scroll-in reveal target — see the ScrollTrigger
+  // effect below and the .wall-frame-in comment in portfolio.css.
+  const wallFrameRef = useRef<HTMLDivElement | null>(null);
   // The wall's top/height are measured once (see the wall-geometry effect
   // below) and then locked — re-measuring on every resize is what caused the
   // address-bar-driven svh jitter this replaces.
@@ -780,6 +800,61 @@ export default function PortfolioSection() {
     };
   }, [expanded]);
 
+  // .wall-frame-in's plain CSS opacity/translateY reveal (see that class's
+  // own comment in portfolio.css for why this stays off the shared
+  // useRiseReveal system — GSAP can't own the transform itself here). The
+  // *trigger* for it, though, is GSAP ScrollTrigger rather than a raw
+  // IntersectionObserver: a first pass used IntersectionObserver directly,
+  // but it never reliably fired (confirmed via a manual IO attached to this
+  // exact fully-in-viewport element never invoking its callback), leaving
+  // the wrapper stuck at opacity:0 until something else (deep scroll,
+  // resize) happened to nudge layout. ScrollTrigger is the same scroll-
+  // position-polling mechanism every other .rise-soft/.rise-card reveal on
+  // this page already depends on, so it gets the identical reliability —
+  // it's only used here to toggle a class, never to tween the wrapper's
+  // own transform. One-shot: adds .visible the first time the wrapper
+  // scrolls into view, then kills itself. Deliberately reads/writes nothing
+  // the wall-geometry/lockWallGeometry effects above depend on (top/height/
+  // clip-path all stay untouched), so it can't race them. prefers-reduced-
+  // motion visitors don't need this at all — portfolio.css forces
+  // .wall-frame-in to opacity:1 for them unconditionally.
+  useEffect(() => {
+    const frame = wallFrameRef.current;
+    if (!frame) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // Double rAF before adding .visible: ScrollTrigger.create() below does a
+    // synchronous state sync against the CURRENT scroll position, so if the
+    // page already satisfies 'top 85%' the instant this effect runs (e.g. the
+    // browser restored scroll position mid-page on reload), onEnter fires
+    // synchronously here with no earlier frame having ever painted this
+    // wrapper's opacity:0 — the CSS transition below has no "from" state to
+    // interpolate from and the reveal collapses into an instant jump instead
+    // of a fade. One rAF only guarantees a callback before the *next*
+    // paint, which can still land in the same batch as this effect's own
+    // first paint; two guarantees opacity:0 has actually been painted at
+    // least once first. A real scroll-triggered onEnter already has a
+    // painted opacity:0 frame behind it, so this adds an imperceptible ~2
+    // frames of delay there, not a behavior change.
+    let raf1 = 0;
+    let raf2 = 0;
+    const reveal = () => {
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => frame.classList.add('visible'));
+      });
+    };
+    const trigger = ScrollTrigger.create({
+      trigger: frame,
+      start: 'top 85%',
+      once: true,
+      onEnter: reveal,
+    });
+    return () => {
+      trigger.kill();
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, []);
+
   // Fixed-radius squircle clip-path for project/grid cards. These cards'
   // boxes are responsive (fixed 340x220 vs 260x170 on mobile for
   // .project-card; auto-sized grid cells, including the 2x2 .mb-big span,
@@ -1079,7 +1154,7 @@ export default function PortfolioSection() {
             rose while the mobile height lock (lockWallGeometry) read a
             mid-animation offset and came out wrong. This wrapper decouples
             the two: a plain CSS transition owns the wrapper's
-            transform/opacity (see the IntersectionObserver effect below
+            transform/opacity (see the ScrollTrigger effect below
             and .wall-frame-in in portfolio.css — NOT the shared
             useRiseReveal system every other .rise-soft element uses, see
             that effect's comment for why), while .portfolio-wall stays
@@ -1098,7 +1173,7 @@ export default function PortfolioSection() {
             (not the skewed one) for the notch edges to stay straight
             instead of following the skew — see apply() in the effect
             above. */}
-        <div className="portfolio-wall-frame" style={{ display: expanded ? 'none' : '' }}>
+        <div ref={wallFrameRef} className="portfolio-wall-frame wall-frame-in" style={{ display: expanded ? 'none' : '' }}>
           <div id="portfolio-scroller-desktop" className="portfolio-wall">
             <div className="portfolio-wall-fill" aria-hidden="true" ref={wallFillRef} />
             <div className="portfolio-wall-clip" ref={wallClipRef}>

@@ -4071,11 +4071,18 @@
       z-index: 2;
     }
 
-    /* Positioned/sized wrapper. Entrance animation pulled out entirely for
-       now (pending a redesign — see PortfolioSection.tsx's wall-mask effect
-       for what's still in place: the notch computation still waits for
-       label/title/sub to settle, that's a correctness thing, not
-       animation) — this just renders at its final state, no fade/rise. */
+    /* Positioned/sized wrapper. Its scroll-in entrance lives on the
+       .wall-frame-in class below (plain CSS opacity/transform, toggled by
+       a GSAP ScrollTrigger in PortfolioSection.tsx — a raw IntersectionObserver
+       was tried first and never reliably fired) — NOT the
+       shared useRiseReveal/.rise-soft GSAP system every other card/text
+       element here uses. That was tried directly on this element first and
+       broke real geometry: only the inner marquee rows visibly rose while
+       lockWallGeometry's mobile height lock (which waits on label's
+       'rise-settled' event, not this wrapper's) read the still-animating
+       transform mid-flight and computed a wrong offset. See the JSX
+       comment by .portfolio-wall-frame in PortfolioSection.tsx for the
+       full history. */
     .portfolio-wall-frame {
       position: relative;
       /* Capped at 1440px total width like .section's own max-width, but
@@ -4097,6 +4104,32 @@
          clipped wall child actually rendered. Dark/light values match
          #bg-panel-shadow's own split exactly. */
       filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.65));
+    }
+
+    /* Scroll-in reveal for .portfolio-wall-frame — same rise+fade language
+       as .stagger-item/.fade-in elsewhere, kept as its own class (rather
+       than reusing those) since this wrapper already owns a `transform`-
+       sensitive absolute/relative layout (see .portfolio-wall-frame above)
+       and its own filter — a dedicated class keeps that pairing explicit.
+       Starts hidden/offset, PortfolioSection.tsx's ScrollTrigger
+       adds .visible once the wrapper scrolls into view. */
+    .wall-frame-in {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    .wall-frame-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .wall-frame-in {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
     }
 
     /* Same neumorphism drop-shadow pair as the hero panel's
