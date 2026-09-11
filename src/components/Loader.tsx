@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLang } from '../context/LangContext';
+import { PROJECTS } from '../data/projects';
 
 // Must match HeroSection's "Hero spline desktop+tablet conditional" effect —
 // that's the breakpoint below which the hero figure is a static <img> instead
@@ -14,6 +15,24 @@ export default function Loader() {
   const [stepIndex, setStepIndex] = useState(0);
   const [done, setDone] = useState(false);
   const stepTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Fire off fetch+decode for every portfolio marquee image as soon as the
+  // loading screen mounts — well before ProjectCard's own `loading="lazy"`
+  // <img> tags would normally start fetching. wall-frame-in's reveal fires
+  // (see PortfolioSection.tsx) via a scroll-settle debounce, on a static
+  // page — but if the 12 portfolio images (each cloned multiple times by
+  // createPortfolioScroller to fill every marquee row) are still decoding
+  // when the user arrives, that main-thread work can eat the reveal's own
+  // animation frames and make it look instant regardless of how correct
+  // its own timing is. Not gated on hideLoader/forceTimer — this must not
+  // delay first paint of the hero, it only needs a head start.
+  useEffect(() => {
+    PROJECTS.forEach(p => {
+      const img = new Image();
+      img.src = p.img;
+      img.decode?.().catch(() => {});
+    });
+  }, []);
 
   useEffect(() => {
     stepTimerRef.current = setInterval(() => {

@@ -800,58 +800,145 @@ export default function PortfolioSection() {
     };
   }, [expanded]);
 
-  // .wall-frame-in's plain CSS opacity/translateY reveal (see that class's
-  // own comment in portfolio.css for why this stays off the shared
-  // useRiseReveal system — GSAP can't own the transform itself here). The
-  // *trigger* for it, though, is GSAP ScrollTrigger rather than a raw
-  // IntersectionObserver: a first pass used IntersectionObserver directly,
-  // but it never reliably fired (confirmed via a manual IO attached to this
-  // exact fully-in-viewport element never invoking its callback), leaving
-  // the wrapper stuck at opacity:0 until something else (deep scroll,
-  // resize) happened to nudge layout. ScrollTrigger is the same scroll-
-  // position-polling mechanism every other .rise-soft/.rise-card reveal on
-  // this page already depends on, so it gets the identical reliability —
-  // it's only used here to toggle a class, never to tween the wrapper's
-  // own transform. One-shot: adds .visible the first time the wrapper
-  // scrolls into view, then kills itself. Deliberately reads/writes nothing
-  // the wall-geometry/lockWallGeometry effects above depend on (top/height/
-  // clip-path all stay untouched), so it can't race them. prefers-reduced-
-  // motion visitors don't need this at all — portfolio.css forces
-  // .wall-frame-in to opacity:1 for them unconditionally.
+  // .wall-frame-in's scroll-in reveal — went through two root-caused,
+  // *disproven* mechanisms before this one, both confirmed via GSAP's own
+  // ScrollTrigger internals (markers/onUpdate logging, and later direct
+  // window.__ScrollTrigger.getAll() inspection + console.table opacity
+  // sampling in the real browser — not guesswork):
+  // 1) A one-shot, fixed-*duration* tween triggered at 'top 85%' finished
+  //    playing while the frame was still scrolling up from mostly
+  //    off-screen — normal scroll speed outpaced the tween's duration, so
+  //    the reveal finished off-camera before the user's eyes/scroll
+  //    settled.
+  // 2) Switched to `scrub` (progress tied to scroll position, not
+  //    wall-clock time) — fixed slow hand-scroll, but fast scroll and
+  //    CTA-jump (scrollToSectionAligned in navHeader.ts) still looked
+  //    instant. Measured why with a live sampler (click the real CTA
+  //    button, sample getComputedStyle(frame).opacity + window.scrollY
+  //    every rAF): the trigger's *raw*, un-lagged scroll progress reached
+  //    1 while the CTA's own scroll animation was still moving fast
+  //    (~300-450px away from its resting stop) — the section's natural
+  //    resting scroll position sits at or past this element's trigger end
+  //    almost by construction (that's what "resting" *is*: this element
+  //    at a resting view means you've scrolled essentially through its
+  //    whole trigger range). By the time the page actually stopped moving,
+  //    scrub's lag had already closed nearly all the gap (~91% opacity) —
+  //    the only visible tail was the last ~9%, which reads as "already
+  //    there" once the eye isn't fighting page motion. No scrub number
+  //    fixes this: the raw target is already saturated before the page
+  //    stops, so there's nothing left for a bigger lag to visibly stretch
+  //    out — a bigger lag only stretches an already-invisible tail.
+  // Fixed by reverting to a fixed-duration one-shot tween (not scrub) but
+  // moving its trigger point much later than attempt #1's 'top 85%' — to
+  // 'top 55%', i.e. the frame is already substantially inside the
+  // viewport before the reveal even starts. Whatever speed you're
+  // scrolling at, there's very little scroll distance left once you cross
+  // 55%, so a short fixed-duration tween (0.8s) reliably outlasts the
+  // remaining scroll and finishes while the page is at or near rest —
+  // this is the opposite failure mode of attempt #1 (trigger too early +
+  // long remaining scroll), not a rejection of "fixed duration" as a
+  // concept.
+  // Kept as its own standalone effect rather than folding into the shared
+  // useRiseReveal() call: that was tried once before (adding .rise-soft to
+  // this element directly) and broke real geometry, because that system's
+  // row/column bucketing sweeps every .rise-soft/.rise-card in the section
+  // together on one shared schedule, and lockWallGeometry's mobile height
+  // lock waits specifically on *label*'s 'rise-settled' event — pulling the
+  // frame into that shared pass changed timing it wasn't built to expect.
+  // Opacity ONLY, deliberately — no transform (translateY/scale), no
+  // clip-path wipe. Two different attempts at adding a "rise" motion on top
+  // of the fade both produced real, confirmed regressions: a transform
+  // (translateY/scale) on the frame visibly detached .portfolio-wall-
+  // outline's notch stroke from the wall, since that SVG path's coordinates
+  // are computed against label/title/sub's absolute getBoundingClientRect()
+  // (see the wall-mask useLayoutEffect above) — elements that settle on
+  // their own separate, earlier timeline and never share the frame's
+  // transform, so a still-moving frame always visibly drifts from them no
+  // matter how the notch's own numbers are recomputed. A clip-path:inset()
+  // wipe on .portfolio-wall instead (sidestepping the transform issue
+  // entirely, since clip-path never touches layout/getBoundingClientRect)
+  // fixed that, but introduced a different regression: inset() imposes a
+  // hard box-edge clip even at inset(0) — unlike this element's actual
+  // `overflow: visible` (no clip-path at all), which .portfolio-wall-
+  // outline's own comment explains exists specifically so its 3.5px stroke
+  // can bleed its outer half past the box on the notch's straight
+  // (unrounded) sides. The wipe cut that bleed off top/bottom permanently,
+  // even once fully "open". Opacity is the one property this element (and
+  // its notch) can animate with zero side effects on either front — the
+  // fade itself is confirmed working via GSAP's own ScrollTrigger state
+  // (opacity tracking scroll-driven progress exactly, 0→1) and by direct
+  // visual confirmation.
+  // Three scroll-*position*-based mechanisms were tried and disproven here
+  // via live opacity+scrollY sampling in the real browser (click the CTA,
+  // sample getComputedStyle(frame).opacity + window.scrollY every rAF) —
+  // scrub (any lag value: raw progress saturates before/at a CTA or fast
+  // scroll's natural rest), and two one-shot 'top X%' thresholds (55%,
+  // then a measured-and-corrected 19%): both still fired while scrollY
+  // had a final ~30-70px left to travel, so the tween's fast early ramp
+  // (0→~0.7) overlapped the page's own still-decelerating final approach
+  // and read as one "snap", with only an imperceptible tail visible after
+  // motion actually stopped. Percentage tuning has a hard ceiling: the
+  // frame's own scroll-linked position and the page's own scroll-stop
+  // moment converge in the same short window no matter which position
+  // threshold is picked, because that convergence is inherent to how
+  // scrollToSectionAligned computes its landing target (see navHeader.ts)
+  // — it's not a number to tune away.
+  // Fixed by decoupling entirely from scroll *position*: gate on scroll
+  // *stopping* instead, via a 150ms debounce on the 'scroll' event. This
+  // works identically for a CTA jump, a fast flick, or a slow hand-scroll,
+  // because it doesn't care how the page got to rest, only that it has —
+  // the reveal always plays against a static page. `entered` (has the
+  // frame been scrolled into general view at least once) still comes from
+  // a plain ScrollTrigger 'top 90%' watch, so a visitor who never scrolls
+  // near this section never gets a stray reveal from unrelated page
+  // scroll elsewhere (e.g. the marquee rows' own scroll containers don't
+  // bubble a window 'scroll' event, but scrolling far past the section
+  // and back up would; gating on `entered` keeps this specific to actually
+  // having reached the frame).
   useEffect(() => {
     const frame = wallFrameRef.current;
     if (!frame) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    // Double rAF before adding .visible: ScrollTrigger.create() below does a
-    // synchronous state sync against the CURRENT scroll position, so if the
-    // page already satisfies 'top 85%' the instant this effect runs (e.g. the
-    // browser restored scroll position mid-page on reload), onEnter fires
-    // synchronously here with no earlier frame having ever painted this
-    // wrapper's opacity:0 — the CSS transition below has no "from" state to
-    // interpolate from and the reveal collapses into an instant jump instead
-    // of a fade. One rAF only guarantees a callback before the *next*
-    // paint, which can still land in the same batch as this effect's own
-    // first paint; two guarantees opacity:0 has actually been painted at
-    // least once first. A real scroll-triggered onEnter already has a
-    // painted opacity:0 frame behind it, so this adds an imperceptible ~2
-    // frames of delay there, not a behavior change.
-    let raf1 = 0;
-    let raf2 = 0;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.set(frame, { clearProps: 'all' });
+      return;
+    }
+    let entered = false;
+    let revealed = false;
+    let settleTimer: ReturnType<typeof setTimeout> | null = null;
     const reveal = () => {
-      raf1 = requestAnimationFrame(() => {
-        raf2 = requestAnimationFrame(() => frame.classList.add('visible'));
-      });
+      if (revealed) return;
+      revealed = true;
+      // 1s: confirmed via a deliberately exaggerated debug pass (2.5s
+      // duration + 600ms settle-wait) that the scroll-settle mechanism
+      // itself is visible and correct — the earlier "still can't see it"
+      // reports were 0.6s/150ms being too subtle to register against
+      // post-scroll attention lag, not a logic bug. 1s splits the
+      // difference: the exaggerated version was confirmed too slow/
+      // draggy, but the original was confirmed imperceptible.
+      gsap.to(frame, { autoAlpha: 1, duration: 1, ease: 'power2.out' });
     };
-    const trigger = ScrollTrigger.create({
-      trigger: frame,
-      start: 'top 85%',
-      once: true,
-      onEnter: reveal,
+    const scheduleSettleCheck = () => {
+      if (settleTimer) clearTimeout(settleTimer);
+      settleTimer = setTimeout(() => {
+        if (entered) reveal();
+      }, 200);
+    };
+    const ctx = gsap.context(() => {
+      gsap.set(frame, { autoAlpha: 0 });
+      ScrollTrigger.create({
+        trigger: frame,
+        start: 'top 90%',
+        onEnter: () => {
+          entered = true;
+          scheduleSettleCheck();
+        },
+      });
     });
+    window.addEventListener('scroll', scheduleSettleCheck, { passive: true });
     return () => {
-      trigger.kill();
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
+      window.removeEventListener('scroll', scheduleSettleCheck);
+      if (settleTimer) clearTimeout(settleTimer);
+      ctx.revert();
     };
   }, []);
 

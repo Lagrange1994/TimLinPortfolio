@@ -4072,17 +4072,33 @@
     }
 
     /* Positioned/sized wrapper. Its scroll-in entrance lives on the
-       .wall-frame-in class below (plain CSS opacity/transform, toggled by
-       a GSAP ScrollTrigger in PortfolioSection.tsx — a raw IntersectionObserver
-       was tried first and never reliably fired) — NOT the
-       shared useRiseReveal/.rise-soft GSAP system every other card/text
-       element here uses. That was tried directly on this element first and
-       broke real geometry: only the inner marquee rows visibly rose while
-       lockWallGeometry's mobile height lock (which waits on label's
-       'rise-settled' event, not this wrapper's) read the still-animating
-       transform mid-flight and computed a wrong offset. See the JSX
-       comment by .portfolio-wall-frame in PortfolioSection.tsx for the
-       full history. */
+       .wall-frame-in class below — a GSAP tween fired once scrolling has
+       actually *stopped* (a 200ms debounce on the 'scroll' event; see
+       PortfolioSection.tsx's wall-frame-in effect), not tied to scroll
+       position at all. Went through several broken shapes first: a plain
+       CSS transition (never actually animated in any trigger mechanism,
+       even toggled by hand with no JS involved); a fixed-duration
+       ScrollTrigger-fired tween (the same technique every .rise-soft/
+       .rise-card uses, see useRiseReveal.ts) that kept finishing while this
+       (much taller than a card) panel was still scrolling up from
+       off-screen; then `scrub` (progress tied to scroll position) which
+       fixed slow hand-scroll but not CTA-jump/fast-scroll — a live
+       opacity+scrollY sampler proved the raw scroll-linked progress
+       saturates near/at a CTA's natural resting stop regardless of lag
+       size, and two follow-up one-shot 'top X%' thresholds hit the same
+       wall from the other side (no percentage separates "fired" from "page
+       still has a few decelerating px left", since scrollToSectionAligned's
+       landing target and this element's resting view converge by
+       construction). Dropping scroll position as the trigger entirely
+       fixed it for real: whatever speed or mechanism got the user there,
+       the reveal only ever plays against an already-static page. Not
+       folded into the *shared* useRiseReveal() call, though: that was tried
+       directly on this element too and broke real geometry — only the
+       inner marquee rows visibly rose while lockWallGeometry's mobile
+       height lock (which waits on label's 'rise-settled' event, not this
+       wrapper's) read the still-animating transform mid-flight and computed
+       a wrong offset. See the JSX comment by .portfolio-wall-frame in
+       PortfolioSection.tsx for the full history. */
     .portfolio-wall-frame {
       position: relative;
       /* Capped at 1440px total width like .section's own max-width, but
@@ -4106,29 +4122,22 @@
       filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.65));
     }
 
-    /* Scroll-in reveal for .portfolio-wall-frame — same rise+fade language
-       as .stagger-item/.fade-in elsewhere, kept as its own class (rather
-       than reusing those) since this wrapper already owns a `transform`-
-       sensitive absolute/relative layout (see .portfolio-wall-frame above)
-       and its own filter — a dedicated class keeps that pairing explicit.
-       Starts hidden/offset, PortfolioSection.tsx's ScrollTrigger
-       adds .visible once the wrapper scrolls into view. */
+    /* Scroll-in reveal for .portfolio-wall-frame — GSAP owns opacity
+       entirely now (see PortfolioSection.tsx's wall-frame-in effect); this
+       just hides it up-front to avoid a flash before gsap.set runs, same as
+       .rise-card/.rise-soft below. Opacity only, deliberately — no
+       transform, no transition. A transform here (translateY/scale, tried
+       and reverted) visibly detaches .portfolio-wall-outline's notch stroke
+       from the wall it traces, since that SVG path's coordinates are
+       computed against other elements outside this frame that never share
+       its transform (see the effect's own comment for the full story). */
     .wall-frame-in {
       opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
-        transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-      will-change: opacity, transform;
-    }
-    .wall-frame-in.visible {
-      opacity: 1;
-      transform: translateY(0);
+      will-change: opacity;
     }
     @media (prefers-reduced-motion: reduce) {
       .wall-frame-in {
         opacity: 1 !important;
-        transform: none !important;
-        transition: none !important;
       }
     }
 
@@ -4188,7 +4197,13 @@
        why that half would otherwise get clipped away. Nothing else needs
        hiding here: .portfolio-wall-fill/-clip each carry their own
        clip-path at all times (see their comments), so neither ever paints
-       past the real notch shape even without a container-level clip. */
+       past the real notch shape even without a container-level clip. A
+       clip-path: inset() wipe was tried here for the wall-frame-in reveal's
+       "rise" feel — reverted, since inset() imposes a hard box-edge clip
+       even at inset(0), cutting off the outline stroke's intentional bleed
+       even once "fully open". The reveal is opacity-only now (on
+       .portfolio-wall-frame, see PortfolioSection.tsx) — this element stays
+       untouched by it. */
     .portfolio-wall {
       position: relative;
       width: 100%;
