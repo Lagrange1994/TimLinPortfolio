@@ -4,12 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <!-- Sets data-theme before portfolio.css's :root[data-theme="light"] block
-       is even parsed, so a returning light-mode visitor never flashes dark
-       first. No stored value = dark, the site's original/default look. -->
+       is even parsed, so a returning visitor's saved theme applies with no
+       flash. No saved value falls back to the OS/browser prefers-color-scheme;
+       no preference there either = dark, the site's original/default look. -->
   <script>
     (function () {
       try {
         var t = localStorage.getItem('theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+        }
         if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
       } catch (e) {}
     })();

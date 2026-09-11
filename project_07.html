@@ -22,11 +22,15 @@
   <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
   <!-- Sets data-theme before this page's own <style> block below is parsed,
        so the homepage's saved theme (same 'theme' localStorage key) carries
-       over here instead of every project page always starting dark. -->
+       over here. No saved value falls back to the OS/browser
+       prefers-color-scheme; no preference there either = dark. -->
   <script>
     (function () {
       try {
         var t = localStorage.getItem('theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+        }
         if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
       } catch (e) {}
     })();
