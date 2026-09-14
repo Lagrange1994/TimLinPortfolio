@@ -1068,8 +1068,8 @@
       color: var(--text-70);
     }
 
-    :root[data-theme="light"] #main-header.scrolled #lang-menu-btn i,
-    :root[data-theme="light"] #main-header:not(.scrolled) #lang-menu-btn i {
+    :root[data-theme="light"] #main-header.scrolled #lang-menu-btn svg,
+    :root[data-theme="light"] #main-header:not(.scrolled) #lang-menu-btn svg {
       color: var(--text-70);
     }
 
@@ -1080,8 +1080,8 @@
       color: var(--text);
     }
 
-    :root[data-theme="light"] #main-header.scrolled #lang-menu-btn:hover i,
-    :root[data-theme="light"] #main-header:not(.scrolled) #lang-menu-btn:hover i {
+    :root[data-theme="light"] #main-header.scrolled #lang-menu-btn:hover svg,
+    :root[data-theme="light"] #main-header:not(.scrolled) #lang-menu-btn:hover svg {
       color: var(--text);
     }
 
@@ -6763,6 +6763,16 @@
       border-radius: 9999px;
       font-size: 12px;
       font-weight: 700;
+      /* Unitless, not `normal` — `normal` resolves against whichever font
+         actually rendered the line's glyphs, and "繁體中文"/"English" fall
+         back to different fonts in the stack with different built-in
+         leading. That made the pill's own height (and the icon-vs-label
+         vertical centering, both driven by this line box) shift by ~3px
+         on every language switch. A unitless multiplier is always
+         font-size × 1, independent of which font drew the text, so the
+         line box — and the pill around it — stays a fixed height either
+         language. */
+      line-height: 1;
       cursor: pointer;
       background: rgba(255, 255, 255, 0.07);
       backdrop-filter: blur(10px);
@@ -6772,8 +6782,7 @@
       white-space: nowrap;
     }
 
-    #lang-menu-btn i {
-      font-size: 13px;
+    #lang-menu-btn svg {
       color: rgba(255, 255, 255, 0.7);
       transition: color 0.3s;
     }
@@ -6784,7 +6793,7 @@
       color: #fff;
     }
 
-    #lang-menu-btn:hover i {
+    #lang-menu-btn:hover svg {
       color: #fff;
     }
 
@@ -6831,6 +6840,11 @@
       border: none;
       color: rgba(255, 255, 255, 0.8);
       font-size: 13px;
+      /* Same fixed-line-height reasoning as #lang-menu-btn above — the
+         "繁體中文" row and the "English" row sit right on top of each
+         other in the dropdown, so a per-font leading difference would
+         show up as the two rows visibly having different heights. */
+      line-height: 1;
       cursor: pointer;
       transition: background 0.15s;
       text-align: left;
@@ -6841,11 +6855,9 @@
       color: #fff;
     }
 
-    .lang-opt i {
-      font-size: 11px;
+    .lang-opt svg {
       color: #6C63FF;
       opacity: 0;
-      width: 12px;
       flex-shrink: 0;
     }
 
@@ -6868,7 +6880,7 @@
       color: var(--text);
     }
 
-    .lang-opt.active i {
+    .lang-opt.active svg {
       opacity: 1;
     }
 

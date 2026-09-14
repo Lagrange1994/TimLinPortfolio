@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { useTheme } from '../utils/useTheme';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Globe, ChevronDown, Check } from 'lucide-react';
 import gsap from 'gsap';
 
 // Both theme-switch knobs used to be motion.span with animate={{x}} and a
@@ -465,16 +465,16 @@ export default function Navbar() {
                   </span>
                 </button>
                 <button id="lang-menu-btn" onClick={toggleLangDropdown}>
-                  <i className="fas fa-globe"></i>
+                  <Globe size={13} strokeWidth={2.25} />
                   <span id="lang-label">{lang === 'zh' ? '繁體中文' : 'English'}</span>
-                  <i className="fas fa-chevron-down" id="lang-chevron" style={{ fontSize: '10px', opacity: 0.7, transition: 'transform 0.2s' }}></i>
+                  <ChevronDown size={10} strokeWidth={2.25} id="lang-chevron" style={{ opacity: 0.7, transition: 'transform 0.2s' }} />
                 </button>
                 <div id="lang-dropdown">
                   <button className={`lang-opt${lang === 'zh' ? ' active' : ''}`} onClick={() => handleLangSelect('zh')}>
-                    <i className="fas fa-check" id="check-zh"></i>繁體中文
+                    <Check size={12} strokeWidth={2.25} id="check-zh" />繁體中文
                   </button>
                   <button className={`lang-opt${lang === 'en' ? ' active' : ''}`} onClick={() => handleLangSelect('en')}>
-                    <i className="fas fa-check" id="check-en"></i>English
+                    <Check size={12} strokeWidth={2.25} id="check-en" />English
                   </button>
                 </div>
               </div>
