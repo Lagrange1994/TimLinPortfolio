@@ -12,5 +12,6 @@ export { default as GalleryItemButton } from './GalleryItemButton.jsx';
 export { default as BrowserFrame } from './BrowserFrame.jsx';
 export { default as PhoneFrame } from './PhoneFrame.jsx';
 export { default as ImageWithSkeleton, ResponsiveImage } from './ImageWithSkeleton.jsx';
+export { default as PreviewFrame } from './PreviewFrame.jsx';
 export { default as ResizeHandle } from './ResizeHandle.jsx';
 export { default as ThemeToggle } from './ThemeToggle.jsx';

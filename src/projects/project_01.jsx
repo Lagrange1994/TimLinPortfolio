@@ -6,7 +6,7 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, PainPointCard, ProcessTimeline, FeatureCard,
-    GalleryItemButton, BrowserFrame, ImageWithSkeleton,
+    GalleryItemButton, PreviewFrame,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -465,11 +465,12 @@ gsap.registerPlugin(ScrollToPlugin);
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-police-dark overflow-hidden">
                             <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl">
                                 <div className="w-full h-[35vh] lg:h-full flex items-center justify-center">
-                                    {/* [修改] bg-dark-light -> bg-police-dark-light */}
-                                    <div className="relative w-full max-w-full max-h-full lg:max-h-[90%] bg-police-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col">
-                                        {(activeTab === 'solution' || activeTab === 'climax') && <BrowserFrame />}
-                                        <ImageWithSkeleton src={currentImage} alt="Preview" containerClassName="relative bg-border/5 group h-full w-full" className="w-full h-full object-cover" />
-                                    </div>
+                                    <PreviewFrame
+                                        chromeClassName="bg-police-dark-light"
+                                        showHeader={activeTab === 'solution' || activeTab === 'climax'}
+                                        imageSrc={currentImage}
+                                        imageClassName="w-full h-full object-cover"
+                                    />
                                 </div>
                             </div>
 

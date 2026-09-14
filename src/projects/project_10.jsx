@@ -6,7 +6,7 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, ProcessTimeline, FeatureCard,
-    GalleryItemButton, BrowserFrame, ImageWithSkeleton,
+    GalleryItemButton, PreviewFrame,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -432,16 +432,21 @@ gsap.registerPlugin(ScrollToPlugin);
                             <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#050505] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/10 shadow-2xl">
                                 <div className="w-full h-[35vh] lg:h-full flex flex-col items-center justify-center">
                                     <div className="flex-1 min-h-0 w-full flex items-center justify-center">
-                                        <div className="relative w-full h-auto max-w-full max-h-full lg:max-h-[90%] bg-hc-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-500">
-                                            {(activeTab === 'solution' || activeTab === 'climax') && <BrowserFrame />}
-                                            <div ref={imageScrollRef} className="flex-1 min-h-0 overflow-y-auto custom-scroll relative bg-border/5 block">
-                                                <ImageWithSkeleton src={previewImage === 'v15' ? "./img/project_10/tw_index_lg_v15.jpg.jpg" : "./img/project_10/tw_index_lg_v16.jpg.jpg"} alt="Website Preview" className="w-full h-auto block transition-opacity duration-500" containerClassName="w-full h-auto" />
-                                            </div>
+                                        <PreviewFrame
+                                            ref={imageScrollRef}
+                                            chromeClassName="bg-hc-dark-light"
+                                            showHeader={activeTab === 'solution' || activeTab === 'climax'}
+                                            imageSrc={previewImage === 'v15' ? "./img/project_10/tw_index_lg_v15.jpg.jpg" : "./img/project_10/tw_index_lg_v16.jpg.jpg"}
+                                            imageAlt="Website Preview"
+                                            imageAreaClassName="overflow-y-auto custom-scroll block"
+                                            imageContainerClassName="w-full h-auto"
+                                            imageClassName="w-full h-auto block transition-opacity duration-500"
+                                        >
                                             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-1 md:space-x-2 p-1 md:p-1.5 bg-hc-dark/80 backdrop-blur rounded-full border border-border/10 shadow-xl z-20">
                                                 <button onClick={() => setPreviewImage('v16')} className={`px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold transition-all whitespace-nowrap ${previewImage === 'v16' ? 'bg-hc-primary text-black shadow-lg' : 'text-text/60 hover:text-text'}`}>News</button>
                                                 <button onClick={() => setPreviewImage('v15')} className={`px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold transition-all whitespace-nowrap ${previewImage === 'v15' ? 'bg-hc-primary text-black shadow-lg' : 'text-text/60 hover:text-text'}`}>Info</button>
                                             </div>
-                                        </div>
+                                        </PreviewFrame>
                                     </div>
                                     <div className="text-center mt-2 text-xs text-text/45 shrink-0"><i className="ph ph-arrows-down-up mr-2"></i>{t('scroll_hint')}</div>
                                 </div>

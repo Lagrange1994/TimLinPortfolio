@@ -6,7 +6,7 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, PainPointCard, ProcessTimeline, FeatureCard,
-    GalleryItemButton, PhoneFrame, ImageWithSkeleton, ResizeHandle,
+    GalleryItemButton, PhoneFrame, PreviewFrame, ResizeHandle,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -453,10 +453,8 @@ gsap.registerPlugin(ScrollToPlugin);
                 if (activeTab === 'context' || activeTab === 'process') {
                     return (
                         <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                            <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-tn-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
-                                <div className="w-full h-full bg-transparent flex items-center justify-center overflow-hidden">
-                                    <ImageWithSkeleton src={currentImage} alt="Preview" className="w-full h-full object-contain" containerClassName="w-full h-full" />
-                                </div>
+                            <div className="pointer-events-auto w-full h-full">
+                                <PreviewFrame chromeClassName="bg-tn-dark-light" imageSrc={currentImage} />
                             </div>
                         </div>
                     );

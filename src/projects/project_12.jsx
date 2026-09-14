@@ -6,7 +6,7 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, PainPointCard, ProcessTimeline, FeatureCard,
-    GalleryItemButton, BrowserFrame, ImageWithSkeleton,
+    GalleryItemButton, PreviewFrame,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -446,26 +446,12 @@ gsap.registerPlugin(ScrollToPlugin);
                                  style={{ height: window.innerWidth < 1024 ? '35vh' : '100%' }}>
                                 
                                 <div className="w-full h-full flex items-center justify-center">
-                                    {/* Browser Frame Container */}
-                                    {/* [關鍵修正] 使用 max-h-[90%] 與 h-full，強迫容器先佔位，不依賴圖片撐開 */}
-                                    <div className="relative w-full max-w-full max-h-full lg:max-h-[90%] bg-gh-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300">
-                                        
-                                        {/* Browser Header (Conditional) */}
-                                        {showBrowserHeader && <BrowserFrame />}
-
-                                        {/* Image Area */}
-                                        {/* [關鍵修正] 這裡使用 flex-1 與 min-h-0 確保填滿剩餘空間 */}
-                                        <div ref={imageScrollRef} className={`w-full flex-1 min-h-0 relative bg-border/5 group ${showBrowserHeader ? 'block' : 'flex items-center justify-center'}`}>
-                                            <ImageWithSkeleton
-                                                key={currentImage}
-                                                src={currentImage}
-                                                alt="Preview"
-                                                // 確保圖片與 Skeleton 都是 100% 寬高
-                                                containerClassName="w-full h-full flex items-center justify-center"
-                                                className={`transition-opacity duration-500 block ${showBrowserHeader ? 'w-full h-full object-contain' : 'max-w-full max-h-full object-contain'}`}
-                                            />
-                                        </div>
-                                    </div>
+                                    <PreviewFrame
+                                        ref={imageScrollRef}
+                                        chromeClassName="bg-gh-dark-light"
+                                        showHeader={showBrowserHeader}
+                                        imageSrc={currentImage}
+                                    />
                                 </div>
                             </div>
 

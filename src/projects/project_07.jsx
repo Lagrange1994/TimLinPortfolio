@@ -6,7 +6,7 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, ProcessTimeline, FeatureCard,
-    GalleryItemButton, BrowserFrame, ImageWithSkeleton,
+    GalleryItemButton, PreviewFrame,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -434,13 +434,13 @@ gsap.registerPlugin(ScrollToPlugin);
                             <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl">
                                 <div className="w-full h-[35vh] lg:h-full flex flex-col items-center justify-center">
                                     <div className="flex-1 min-h-0 w-full flex items-center justify-center">
-                                        {/* [修改] bg-dark-light -> bg-sm-dark-light */}
-                                        <div className={`relative transition-all duration-500 shadow-2xl rounded-xl border border-border/10 overflow-hidden flex flex-col ${['highlights', 'gallery'].includes(activeTab) ? 'w-full h-full max-w-full max-h-full lg:max-h-[90%] bg-sm-dark-light' : 'w-auto h-auto max-w-full max-h-full lg:max-h-[90%] bg-transparent'}`}>
-                                            {['highlights', 'gallery'].includes(activeTab) && <BrowserFrame />}
-                                            <div ref={imageScrollRef} className={`relative w-full h-full scrollable-area ${['highlights', 'gallery'].includes(activeTab) ? 'flex-1 min-h-0 block bg-border/5' : 'overflow-hidden flex items-center justify-center h-full'}`}>
-                                                <ImageWithSkeleton src={currentImage} alt="Preview" className={`transition-all duration-500 block ${['highlights', 'gallery'].includes(activeTab) ? 'w-full h-auto' : 'max-w-full max-h-full object-contain'}`} containerClassName={['highlights', 'gallery'].includes(activeTab) ? 'w-full h-auto' : 'w-full h-full flex items-center justify-center'} />
-                                            </div>
-                                        </div>
+                                        <PreviewFrame
+                                            ref={imageScrollRef}
+                                            chromeClassName="bg-sm-dark-light"
+                                            showChrome={['highlights', 'gallery'].includes(activeTab)}
+                                            showHeader={['highlights', 'gallery'].includes(activeTab)}
+                                            imageSrc={currentImage}
+                                        />
                                     </div>
                                     {['highlights', 'gallery'].includes(activeTab) && (
                                         <div className="text-center mt-2 text-xs text-text/45 shrink-0"><i className="ph ph-arrows-down-up mr-2"></i>{t('scroll_hint')}</div>
