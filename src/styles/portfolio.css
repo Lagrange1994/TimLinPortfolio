@@ -6760,6 +6760,14 @@
       align-items: center;
       gap: 6px;
       padding: 8px 16px;
+      /* Explicit, not left to padding + line-height to add up to it — see
+         .theme-switch's own PILL_H comment: the two pills sit side by side
+         in .navbar-lang and are meant to read as the same control height.
+         Padding alone drifted off that whenever this pill's content height
+         changed (see the line-height comment below), so it's pinned
+         directly instead of re-deriving it from padding math every time
+         something here changes. */
+      height: 35px;
       border-radius: 9999px;
       font-size: 12px;
       font-weight: 700;
