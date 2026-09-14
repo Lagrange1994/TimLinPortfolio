@@ -370,46 +370,22 @@ export default function HeroSection() {
   }, []);
 
   // Hero spline desktop+tablet conditional — only load the 3D figure above
-  // mobile width. Dropping the `url` (and thus the WebGL context) the
-  // instant the hero scrolled out of view caused a visible pop-in/reset
-  // every time it scrolled back, so e3e0e81 made it load once and stay.
-  // But leaving it permanently mounted means it keeps burning a WebGL
-  // context for the rest of the page's lifetime, stacked on top of the
-  // background Spline scene near the top — up to 2 concurrent contexts,
-  // and sustained GPU contention from an always-alive hero context has
-  // been the suspect for renderer
-  // freezes (page stops responding to scroll — see homepage-webgl-stability
-  // memory) since before e3e0e81. Debouncing the drop gets both: a normal
-  // scroll-past-and-back within HERO_DROP_DELAY_MS never triggers a
-  // reload (no pop-in), but a user who actually moves on sheds the
-  // context after a few seconds instead of holding it forever.
+  // mobile width. Loaded once and left alone: an IntersectionObserver used
+  // to drop the `url` (and thus the WebGL context) 4s after the hero left
+  // view, on the theory that fewer concurrent contexts prevents renderer
+  // freezes — but that's the same GPU-contention theory already rejected
+  // once for the sibling bg-Spline scene (see homepage-webgl-stability
+  // memory: user said "put it back, this isn't a Spline problem," and the
+  // real freeze root cause turned out to be an unrelated overscroll-behavior
+  // /touchstart bug). Measured cost of the drop-and-reload cycle: a 1.8s
+  // dropped frame and ~10s of cumulative main-thread longtasks every time a
+  // user scrolls away for >4s and back — a real, reproducible jank that's
+  // worse than the theoretical risk it was guarding against.
   useEffect(() => {
     if (window.innerWidth < 768) return;
-    const heroEl = document.getElementById('home');
     const heroSpline = document.getElementById('hero-spline');
-    if (!heroEl || !heroSpline) return;
-
-    const HERO_DROP_DELAY_MS = 4000;
+    if (!heroSpline) return;
     heroSpline.setAttribute('url', './models/hero_figure.splinecode');
-
-    let dropTimer: ReturnType<typeof setTimeout> | null = null;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        if (dropTimer) { clearTimeout(dropTimer); dropTimer = null; }
-        if (!heroSpline.getAttribute('url')) heroSpline.setAttribute('url', './models/hero_figure.splinecode');
-      } else if (!dropTimer) {
-        dropTimer = setTimeout(() => {
-          heroSpline.removeAttribute('url');
-          dropTimer = null;
-        }, HERO_DROP_DELAY_MS);
-      }
-    }, { threshold: 0 });
-    observer.observe(heroEl);
-
-    return () => {
-      observer.disconnect();
-      if (dropTimer) clearTimeout(dropTimer);
-    };
   }, []);
 
   // Mobile hero layout: the image+headline+CTA group (.hero-inner) must sit
