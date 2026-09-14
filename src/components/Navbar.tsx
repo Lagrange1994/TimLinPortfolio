@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { useTheme } from '../utils/useTheme';
+import { Sun, Moon } from 'lucide-react';
 import gsap from 'gsap';
 
 // Both theme-switch knobs used to be motion.span with animate={{x}} and a
@@ -460,7 +461,7 @@ export default function Navbar() {
                 >
                   <span className="theme-switch-label" aria-hidden="true">{theme === 'light' ? 'Light' : 'Dark'}</span>
                   <span className="theme-switch-knob" aria-hidden="true">
-                    <i className={`fas ${theme === 'light' ? 'fa-sun' : 'fa-moon'}`}></i>
+                    {theme === 'light' ? <Sun size={12} strokeWidth={2.25} /> : <Moon size={12} strokeWidth={2.25} />}
                   </span>
                 </button>
                 <button id="lang-menu-btn" onClick={toggleLangDropdown}>
@@ -526,7 +527,7 @@ export default function Navbar() {
               >
                 <span className="sm-theme-switch-label" aria-hidden="true">{theme === 'light' ? 'Light' : 'Dark'}</span>
                 <span className="sm-theme-switch-knob" aria-hidden="true">
-                  <i className={`fas ${theme === 'light' ? 'fa-sun' : 'fa-moon'}`}></i>
+                  {theme === 'light' ? <Sun size={18} strokeWidth={2.25} /> : <Moon size={18} strokeWidth={2.25} />}
                 </span>
               </button>
             </div>
