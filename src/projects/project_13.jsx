@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import ScrollTrigger from 'gsap/ScrollTrigger';
+import ImageWithSkeleton from './shared/ImageWithSkeleton';
 
 gsap.registerPlugin(ScrollToPlugin, ScrollTrigger);
 
@@ -327,13 +328,11 @@ const goHome = (e) => {
                                 style={{ width: large ? '100px' : '80px', height: large ? '100px' : '80px', clipPath: 'polygon(20% 0%, 100% 0, 100% 80%, 80% 100%, 0 100%, 0 20%)' }}>
                                 <div className="w-full h-full bg-tech-dark/80 backdrop-blur-md flex items-center justify-center overflow-hidden relative"
                                     style={{ clipPath: 'polygon(20% 0%, 100% 0, 100% 80%, 80% 100%, 0 100%, 0 20%)' }}>
-                                    <picture style={{ display: 'contents' }}>
-                                        <source srcSet={`./img/project_13/${item.img_3d}.webp`} type="image/webp" />
-                                        <img src={`./img/project_13/${item.img_3d}.png`} alt={item.title}
-                                            className="relative z-10 w-full h-full object-cover transform scale-110 transition-transform duration-700"
-                                            loading="lazy" decoding="async"
-                                            onError={(e) => e.target.style.display = 'none'} />
-                                    </picture>
+                                    <ImageWithSkeleton src={`./img/project_13/${item.img_3d}.png`} alt={item.title}
+                                        containerClassName="w-full h-full"
+                                        className="relative z-10 w-full h-full object-cover transform scale-110 transition-transform duration-700"
+                                        loading="lazy"
+                                        onError={(e) => e.target.style.display = 'none'} />
                                     <div className="absolute inset-0 bg-gradient-to-t from-tech-dark/40 to-transparent z-20 pointer-events-none"></div>
                                 </div>
                             </div>
@@ -662,11 +661,12 @@ const goHome = (e) => {
                             <div className="relative group">
                                 <div className="absolute -inset-4 bg-tech-primary/5 blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
                                 <div className="relative z-10 p-px" style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)', background: 'rgba(255,255,255,0.14)' }}>
-                                    <img
+                                    <ImageWithSkeleton
                                         src="./img/project_13/display.webp"
                                         alt="Design Language in Action"
+                                        containerClassName="w-full"
                                         className="w-full block shadow-2xl"
-                                        loading="lazy" decoding="async"
+                                        loading="lazy"
                                         style={{ clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' }}
                                     />
                                 </div>

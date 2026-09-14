@@ -24,3 +24,16 @@
   --font-mono: "JetBrains Mono", monospace;
   --font-display: "Orbitron", sans-serif;
 }
+
+/* ImageWithSkeleton.jsx (src/projects/shared) needs this class — project_13
+   has no data-theme/light-mode mechanism (see CLAUDE.md), so unlike
+   projects-tailwind.css's .skeleton this is dark-only. */
+.skeleton {
+    background: linear-gradient(110deg, #1F2833 8%, #2D3947 18%, #1F2833 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+    to { background-position-x: -200%; }
+}
