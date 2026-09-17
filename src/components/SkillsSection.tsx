@@ -7,14 +7,10 @@ import AiFlowStepper from './AiFlowStepper';
 import PriorityQueueFlow from './PriorityQueueFlow';
 import PolicyPill from './PolicyPill';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from './GoogleGeminiEffect';
+import FigmaMcpShowcase from './FigmaMcpShowcase';
 
-// process/*.png are ~1-1.7MB each (24 files, 27MB total) since they're
-// full-bleed illustrations, not icons — WebP at the same visual quality
-// runs 70-80% smaller. image-set()'s typed fallback lets a browser without
-// WebP support fall through to the original PNG (kept in the repo
-// unmodified) instead of losing the image outright.
 function processCardBg(slug: string) {
-  return `image-set(url("./img/process/${slug}.webp") type("image/webp"), url("./img/process/${slug}.png") type("image/png"))`;
+  return `url("./img/process/${slug}.webp")`;
 }
 
 // Top-to-bottom, index-paired with GEMINI_BEAM_STOPS so each chip's vertical
@@ -1671,6 +1667,7 @@ export default function SkillsSection() {
                       <>
                         <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: processCardBg(`${slug}_w`) }} />
                         <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: processCardBg(slug) }} />
+                        <div className="process-card-bg-img process-card-bg-img--light-white" style={{ backgroundImage: processCardBg(`${slug}_l_w`) }} />
                         <div className="process-card-bg-img process-card-bg-img--light" style={{ backgroundImage: processCardBg(`${slug}_l`) }} />
                       </>
                     }
@@ -1714,6 +1711,7 @@ export default function SkillsSection() {
                       <>
                         <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: processCardBg(`${slug}_w`) }} />
                         <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: processCardBg(slug) }} />
+                        <div className="process-card-bg-img process-card-bg-img--light-white" style={{ backgroundImage: processCardBg(`${slug}_l_w`) }} />
                         <div className="process-card-bg-img process-card-bg-img--light" style={{ backgroundImage: processCardBg(`${slug}_l`) }} />
                       </>
                     }
@@ -1787,6 +1785,7 @@ export default function SkillsSection() {
             <span className="tech-level-badge react-item">RESPONSIVE</span>
           </div>
         </div>
+        <FigmaMcpShowcase />
         <div className="tech-note rise-soft" dangerouslySetInnerHTML={{ __html: t.figma_mcp }} />
       </section>
 

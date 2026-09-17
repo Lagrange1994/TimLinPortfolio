@@ -3448,19 +3448,27 @@
       opacity: 0;
     }
 
-    /* 淺色板專用第三圖層（_l 檔案，本身就是淺色配色，不需要白／彩色 hover
-       交叉淡入）：預設隱藏，只在 light 主題下蓋過白／彩色兩層。 */
-    .process-card-bg-img--light {
+    /* 淺色板專用兩層（_l_w / _l 檔案，本身就是淺色配色，不需要深色主題的白／
+       彩色交叉淡入）：深色主題下都隱藏；淺色主題下預設顯示 _l_w，hover 換成 _l。 */
+    .process-card-bg-img--light,
+    .process-card-bg-img--light-white {
       position: absolute;
       inset: 0;
       opacity: 0;
+      transition: opacity 0.4s ease;
     }
     :root[data-theme="light"] .process-card-bg-img--white,
     :root[data-theme="light"] .process-card-bg-img--color {
       opacity: 0 !important;
     }
-    :root[data-theme="light"] .process-card-bg-img--light {
-      opacity: 1 !important;
+    :root[data-theme="light"] .process-card-bg-img--light-white {
+      opacity: 1;
+    }
+    :root[data-theme="light"] .border-glow-card:hover .process-card-bg-img--light-white {
+      opacity: 0;
+    }
+    :root[data-theme="light"] .border-glow-card:hover .process-card-bg-img--light {
+      opacity: 1;
     }
 
     /* border-glow-inner 填滿卡片，flex 底部對齊文字 */
@@ -4786,6 +4794,66 @@
     .tech-note strong {
       color: var(--text);
       font-weight: 600;
+    }
+
+    /* Figma MCP showcase: one dense static illustration (design canvas ->
+       MCP hub -> code editor), authored as a Claude design canvas artboard
+       and injected via dangerouslySetInnerHTML at its native 1600x900, then
+       scaled to the card's real width in FigmaMcpShowcase.tsx (same
+       ResizeObserver technique PolicyPill uses). Pure SVG/CSS — no WebGL,
+       kept deliberately off the homepage's already-fragile pointer/WebGL
+       surface. */
+    .mcp-showcase-wrap {
+      margin-top: 24px;
+      position: relative;
+      width: 100%;
+      font-family: system-ui, sans-serif;
+      /* Dark defaults — mirror the panels' original hardcoded hex so dark
+         mode is pixel-identical to before this was tokenized. */
+      --mcp-fg-rgb: 255, 255, 255;
+      --mcp-surface: #17171b;
+      --mcp-card-bg: #17171b;
+      --mcp-code-bg: #131316;
+      --mcp-code-editor-bg: #1a1a1e;
+      --mcp-code-tab-bg: #1c1c20;
+      --mcp-string: #9dd8a8;
+    }
+    :root[data-theme="light"] .mcp-showcase-wrap {
+      --mcp-fg-rgb: 58, 58, 66;
+      --mcp-surface: var(--bg-hover);
+      --mcp-card-bg: #ffffff;
+      --mcp-code-bg: #F3F1FA;
+      --mcp-code-editor-bg: #FBFAFD;
+      --mcp-code-tab-bg: #E4E1F0;
+      --mcp-string: #1a7a43;
+    }
+    /* Same card treatment as .tech-item (border-radius/corner-shape/
+       box-shadow/overflow all on one element) — .tech-item proves this
+       combination is safe: box-shadow is the element's OWN, painted on the
+       border box, not clipped by that same element's overflow:hidden
+       (only a DESCENDANT's shadow gets clipped by an ancestor's
+       overflow:hidden, which is why .mcp-showcase-wrap above stays
+       overflow:visible instead of clipping these panels' shadows). */
+    .mcp-panel {
+      border-radius: 48px;
+      corner-shape: squircle;
+      border: 1px solid rgba(var(--mcp-fg-rgb), 0.09);
+      box-shadow: var(--card-shadow-md), var(--card-edge);
+      overflow: hidden;
+    }
+    .mcp-mono { font-family: var(--mono); }
+
+    @keyframes mcpBlink { 0%, 45% { opacity: 1; } 50%, 95% { opacity: 0; } 100% { opacity: 1; } }
+    @keyframes mcpDrift { 0% { transform: translateY(0px); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0px); } }
+    @keyframes mcpPulseGlow { 0% { opacity: 0.55; } 50% { opacity: 0.9; } 100% { opacity: 0.55; } }
+    @keyframes mcpDashFlow { to { stroke-dashoffset: -240; } }
+    .mcp-cursor-blink { animation: mcpBlink 1.1s step-end infinite; }
+    .mcp-chip-float { animation: mcpDrift 4.5s ease-in-out infinite; }
+    .mcp-hub-pulse { animation: mcpPulseGlow 3.2s ease-in-out infinite; }
+    .mcp-trail-line { animation: mcpDashFlow 6s linear infinite; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mcp-cursor-blink, .mcp-chip-float, .mcp-hub-pulse, .mcp-trail-line { animation: none; }
     }
 
     /* PORTFOLIO */
