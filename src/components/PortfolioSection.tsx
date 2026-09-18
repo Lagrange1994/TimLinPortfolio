@@ -1358,7 +1358,11 @@ export default function PortfolioSection() {
           id="portfolio-grid"
           style={{ display: expanded ? 'grid' : 'none' }}
         >
-          {PROJECTS.map((p, i) => (
+          {/* Unmounted while folded (not just display:none) so the 13 cards'
+              decoded images/ripples/masks are freed before the marquee wall
+              re-paints — folding used to stack both and, on phones, the
+              browser force-reloaded the tab. */}
+          {expanded && PROJECTS.map((p, i) => (
             <ProjectCard
               key={p.id}
               p={p}
