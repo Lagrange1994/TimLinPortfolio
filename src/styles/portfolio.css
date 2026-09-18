@@ -4779,46 +4779,78 @@
       background: var(--text-50);
     }
 
-    .tech-note {
-      margin-top: 24px;
-      border-left: 3px solid var(--primary);
-      padding: 12px 16px;
-      font-size: 13px;
-      color: var(--text-50);
-      line-height: 1.7;
-      background: rgba(108, 99, 255, 0.06);
-      border-radius: 0 8px 8px 0;
-      backdrop-filter: var(--glass-blur);
+    /* Caption above the Figma MCP showcase panels — text style and vertical
+       rhythm copied verbatim from .ai-chips-header (How I Use AI section). */
+    .figma-mcp-header {
+      text-align: center;
+      margin-top: 120px;
+      margin-bottom: 0;
     }
-
-    .tech-note strong {
+    .figma-mcp-header h3 {
+      margin: 0;
+      font-size: clamp(2.25rem, 5vw, 3.75rem);
+      font-weight: 100;
+      letter-spacing: -0.02em;
       color: var(--text);
-      font-weight: 600;
+      line-height: 1.15;
+      font-family: 'Quicksand', 'GenSen Rounded TW', 'Noto Sans TC', sans-serif;
+    }
+    .figma-mcp-header p {
+      margin: 14px auto 0;
+      max-width: 520px;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.6;
+      color: var(--text-50);
+      /* Text carries <wbr> after each punctuation mark (see figma_mcp_desc
+         in translations.ts) — keep-all stops the browser from also breaking
+         between adjacent CJK characters, so those <wbr> points are the only
+         places a line can wrap. */
+      word-break: keep-all;
+    }
+    @media (max-width: 1024px) {
+      .figma-mcp-header {
+        margin-bottom: 32px;
+      }
+    }
+    @media (max-width: 640px) {
+      .figma-mcp-header h3 {
+        font-size: 28px;
+      }
     }
 
-    /* Figma MCP showcase: one dense static illustration (design canvas ->
-       MCP hub -> code editor), authored as a Claude design canvas artboard
-       and injected via dangerouslySetInnerHTML at its native 1600x900, then
-       scaled to the card's real width in FigmaMcpShowcase.tsx (same
-       ResizeObserver technique PolicyPill uses). Pure SVG/CSS — no WebGL,
-       kept deliberately off the homepage's already-fragile pointer/WebGL
-       surface. */
-    .mcp-showcase-wrap {
+    /* Figma MCP showcase — two responsive cards (Figma design canvas mockup +
+       VS Code mockup) bridged by a centered "Figma MCP" hub. Was previously
+       one fixed 1600x900 illustration scaled via CSS `zoom`, sized by hand-
+       calculated pixel heights for each panel — every time the two panels'
+       content didn't naturally add up to the same height, the shorter one
+       was left with a flat, differently-colored empty patch that kept
+       reading as a stray "block". Rebuilt on the same grid mechanism
+       .tech-items already uses for its 3 cards (`display:grid` +
+       `align-items:stretch`, `height:100%` on the card): the grid makes both
+       cards equal height automatically, and any leftover space in the
+       shorter card is just its own background continuing (e.g. blank space
+       below the last code line, like a real editor), not a separate patch. */
+    .mcp-grid {
       margin-top: 24px;
       position: relative;
-      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      align-items: stretch;
       font-family: system-ui, sans-serif;
-      /* Dark defaults — mirror the panels' original hardcoded hex so dark
-         mode is pixel-identical to before this was tokenized. */
+      /* Dark defaults — pulled close to the page's own --bg (#0A0912) so the
+         cards read as app windows floating on the page, not as a distinctly
+         lighter rectangle sitting on top of it. */
       --mcp-fg-rgb: 255, 255, 255;
-      --mcp-surface: #17171b;
-      --mcp-card-bg: #17171b;
-      --mcp-code-bg: #131316;
-      --mcp-code-editor-bg: #1a1a1e;
-      --mcp-code-tab-bg: #1c1c20;
+      --mcp-surface: #0f0f13;
+      --mcp-card-bg: #0f0f13;
+      --mcp-code-bg: #0c0c10;
+      --mcp-code-editor-bg: #101014;
+      --mcp-code-tab-bg: #131317;
       --mcp-string: #9dd8a8;
     }
-    :root[data-theme="light"] .mcp-showcase-wrap {
+    :root[data-theme="light"] .mcp-grid {
       --mcp-fg-rgb: 58, 58, 66;
       --mcp-surface: var(--bg-hover);
       --mcp-card-bg: #ffffff;
@@ -4828,32 +4860,152 @@
       --mcp-string: #1a7a43;
     }
     /* Same card treatment as .tech-item (border-radius/corner-shape/
-       box-shadow/overflow all on one element) — .tech-item proves this
-       combination is safe: box-shadow is the element's OWN, painted on the
-       border box, not clipped by that same element's overflow:hidden
-       (only a DESCENDANT's shadow gets clipped by an ancestor's
-       overflow:hidden, which is why .mcp-showcase-wrap above stays
-       overflow:visible instead of clipping these panels' shadows). */
-    .mcp-panel {
+       box-shadow/overflow/height:100% all on one element, stretched by the
+       parent grid) — .tech-item proves this combination is safe: box-shadow
+       is the element's own, painted on the border box, not clipped by that
+       same element's overflow:hidden. */
+    .mcp-card {
+      position: relative;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
       border-radius: 48px;
       corner-shape: squircle;
+      background: var(--mcp-surface);
       border: 1px solid rgba(var(--mcp-fg-rgb), 0.09);
       box-shadow: var(--card-shadow-md), var(--card-edge);
       overflow: hidden;
     }
+    .mcp-card.code-card {
+      background: var(--mcp-code-bg);
+    }
     .mcp-mono { font-family: var(--mono); }
 
+    /* MCP hub — centered on the grid's own gap (not a fixed pixel offset),
+       so it stays put in the seam between the two cards at any width. */
+    .mcp-hub {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      pointer-events: none;
+      filter: drop-shadow(0 0 30px var(--primary)99) drop-shadow(0 0 55px var(--secondary)55);
+    }
+    .mcp-hub-ring {
+      position: absolute;
+      inset: -8px;
+      border-radius: 9999px;
+      border: 2px solid color-mix(in srgb, var(--primary) 75%, transparent);
+      animation: aiRingP 3s ease-out infinite;
+    }
+    .mcp-hub-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      white-space: nowrap;
+    }
+    /* Connecting trails — the original bezier curves + flowing dash
+       animation, unchanged in shape/motion from before the card rewrite.
+       Only the coordinate space changed: the paths used to be fixed pixels
+       on the old 1600x900 canvas, now they're percentages of that same
+       1600x900 box (x/16, y/9) drawn into a 0-100 viewBox with
+       preserveAspectRatio="none", so the SVG stretches to the grid's actual
+       size while the curve keeps the same proportions and meets the hub at
+       dead center. vector-effect="non-scaling-stroke" (set in the JSX)
+       keeps the stroke a constant screen width despite that non-uniform
+       stretch. */
+    .mcp-trail-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 4;
+    }
+    /* Two curve sets live in the same SVG — only one shows at a time,
+       swapped at the mobile breakpoint below (.mcp-trail-mobile becomes
+       visible there instead). */
+    .mcp-trail-mobile {
+      display: none;
+    }
+
     @keyframes mcpBlink { 0%, 45% { opacity: 1; } 50%, 95% { opacity: 0; } 100% { opacity: 1; } }
-    @keyframes mcpDrift { 0% { transform: translateY(0px); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0px); } }
-    @keyframes mcpPulseGlow { 0% { opacity: 0.55; } 50% { opacity: 0.9; } 100% { opacity: 0.55; } }
     @keyframes mcpDashFlow { to { stroke-dashoffset: -240; } }
     .mcp-cursor-blink { animation: mcpBlink 1.1s step-end infinite; }
-    .mcp-chip-float { animation: mcpDrift 4.5s ease-in-out infinite; }
-    .mcp-hub-pulse { animation: mcpPulseGlow 3.2s ease-in-out infinite; }
     .mcp-trail-line { animation: mcpDashFlow 6s linear infinite; }
 
     @media (prefers-reduced-motion: reduce) {
-      .mcp-cursor-blink, .mcp-chip-float, .mcp-hub-pulse, .mcp-trail-line { animation: none; }
+      .mcp-cursor-blink, .mcp-trail-line { animation: none; }
+    }
+
+    /* Tablet: the two mockups' own inner side panels (Pages / file tree)
+       are the first thing to go — at this width they'd otherwise squeeze
+       the actual canvas/editor content down to almost nothing. */
+    @media (max-width: 1024px) {
+      .mcp-card .mcp-pages-sidebar,
+      .mcp-card .mcp-filetree,
+      .mcp-card .mcp-tabbar {
+        display: none !important;
+      }
+    }
+
+    /* Mobile: stack the two cards instead of squeezing them side by side,
+       same 24px stacked gap .tech-items uses for its own single-column
+       mobile layout — the hub pill overhangs into that gap the same way
+       .tech-level-badge already overhangs its own card above (an
+       established overlap pattern here, not a collision). The trail
+       curves swap to the rotated (top-to-bottom) set to match. */
+    @media (max-width: 720px) {
+      .mcp-grid {
+        grid-template-columns: 1fr;
+        row-gap: 24px;
+      }
+      /* Stacked cards don't share the desktop grid row's stretch. Let the
+         Figma card size to its own content, and pin the code card to that
+         same height via --mcp-figma-h (kept in sync by a ResizeObserver in
+         FigmaMcpShowcase.tsx) so the two stay matched without a hand-picked
+         pixel value. */
+      .mcp-card {
+        height: auto;
+      }
+      .mcp-card.code-card {
+        height: var(--mcp-figma-h, auto);
+      }
+      .mcp-trail-desktop {
+        display: none;
+      }
+      .mcp-trail-mobile {
+        display: inline;
+      }
+      /* Pin the hub to row 1's own grid area (the first/top card) instead of
+         the desktop `top: 50%` (of the whole grid) rule — an absolutely-
+         positioned grid child with a non-auto grid-row/column is contained
+         by that grid AREA, not the whole grid box, per the CSS Grid spec.
+         So `top: 100%` here means "row 1's bottom edge" (exactly the top
+         card's own bottom, regardless of how much shorter/taller it is than
+         the bottom card), and adding half the 24px row-gap plus a
+         translate(-50%) centers the hub squarely ON the gap, split evenly
+         above/below it, instead of drifting toward whichever card happens
+         to be taller. */
+      .mcp-hub {
+        grid-row: 1 / 2;
+        grid-column: 1 / 2;
+        top: calc(100% + 12px);
+      }
+      .mcp-hub-pill {
+        padding: 14px 26px;
+        gap: 10px;
+      }
+      .mcp-hub-pill span {
+        font-size: 16px !important;
+      }
+      .mcp-hub-pill i {
+        font-size: 18px !important;
+      }
     }
 
     /* PORTFOLIO */
@@ -8192,24 +8344,6 @@
     .fill-purple {
       background: linear-gradient(to right, var(--primary), var(--secondary));
     }
-
-    .tech-note {
-      margin-top: 24px;
-      border-left: 3px solid var(--primary);
-      padding: 12px 16px;
-      font-size: 13px;
-      color: var(--text-50);
-      line-height: 1.7;
-      background: rgba(108, 99, 255, 0.06);
-      border-radius: 0 8px 8px 0;
-      backdrop-filter: var(--glass-blur);
-    }
-
-    .tech-note strong {
-      color: var(--text);
-      font-weight: 600;
-    }
-
 
     /* ══ STAGGERED MENU ══ */
     #sm-toggle-btn {

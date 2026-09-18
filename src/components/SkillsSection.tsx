@@ -1785,8 +1785,11 @@ export default function SkillsSection() {
             <span className="tech-level-badge react-item">RESPONSIVE</span>
           </div>
         </div>
+        <div className="figma-mcp-header rise-soft">
+          <h3>{t.figma_mcp_title}</h3>
+          <p dangerouslySetInnerHTML={{ __html: t.figma_mcp_desc }} />
+        </div>
         <FigmaMcpShowcase />
-        <div className="tech-note rise-soft" dangerouslySetInnerHTML={{ __html: t.figma_mcp }} />
       </section>
 
       {/* MY SKILLS + HOW I USE AI (merged) */}
