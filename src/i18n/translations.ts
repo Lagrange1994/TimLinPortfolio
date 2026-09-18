@@ -42,7 +42,7 @@ export const translations = {
     tech_sub: '我不是工程師，但我能讀懂程式、修改邏輯、 <br>有效縮短設計與開發之間的溝通距離。',
     figma_mcp_title: 'Figma MCP',
     figma_mcp_desc:
-      '透過 MCP 讓 AI 直接讀取 Figma 設計稿的元件、<wbr>Token 與標註規格，<wbr>無需截圖或手動複製。<wbr>設計稿即時轉為程式碼，<wbr>一次對齊，<wbr>省去反覆溝通。',
+      '這份程式讀寫能力，<wbr>讓我能更進一步透過 MCP，<wbr>讓 AI 直接讀取 Figma 設計稿的元件、<wbr>Token 與標註規格，<wbr>無需截圖或手動複製。<wbr>設計稿即時轉為程式碼，<wbr>一次對齊，<wbr>徹底縮短設計與開發之間的溝通距離。',
     skill_html:
       '熟悉網頁基礎標籤結構與語意化寫法，能獨立閱讀、修改程式碼，有效銜接設計稿與開發實作。',
     skill_js:
@@ -310,7 +310,7 @@ export const translations = {
       'I read code, modify logic, <br>and bridge the communication gap between design and development.',
     figma_mcp_title: 'Figma MCP',
     figma_mcp_desc:
-      'I connect AI directly to Figma via MCP, letting it read components, tokens, and specs in real time. No screenshots, no manual handoff. Design translates to code in one pass.',
+      'That code literacy goes one step further with Figma MCP: I connect AI directly to Figma so it reads components, tokens, and specs in real time — no screenshots, no manual handoff. Design translates to code in one pass, closing the loop between design and development.',
     skill_html:
       'Comfortable reading and editing HTML structure. Able to bridge design specs and development implementation directly.',
     skill_js:
