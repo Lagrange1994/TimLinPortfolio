@@ -253,6 +253,29 @@ export default function BeamsBackground() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile, heroEl]);
 
+  // Tablet/phone (<1025px, matching the "no hero panel" cutoff used
+  // throughout this file and in portfolio.css's sync()-adjacent comments)
+  // don't get the persistent background the effect above is scoped away
+  // from — see portfolio.css's #bg-spline-scene.is-hero-out-of-view rule.
+  // Toggling a class here (rather than removing the spline `url`s the way
+  // the GPU-context effect above does) keeps this purely visual and
+  // immediate, independent of that effect's own 4s debounce: #bg-spline-
+  // scene is looked up fresh inside the observer callback (not cached at
+  // effect-setup time) because on tablet/desktop it only exists once
+  // heroEl's own state populates and heroFrame first renders — by the time
+  // the callback actually fires (a later scroll event), that's long done.
+  useEffect(() => {
+    if (window.innerWidth >= 1025) return;
+    const homeEl = document.getElementById('home');
+    if (!homeEl) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      document.getElementById('bg-spline-scene')
+        ?.classList.toggle('is-hero-out-of-view', !entry.isIntersecting);
+    }, { threshold: 0 });
+    observer.observe(homeEl);
+    return () => observer.disconnect();
+  }, []);
+
   // Desktop-only hero-frame pieces (spline scene + its two notches) — see
   // the heroEl comment above for why these are portaled into #home rather
   // than rendered in place: #home is now the gradient (its own CSS

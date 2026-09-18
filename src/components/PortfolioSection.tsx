@@ -138,8 +138,12 @@ function ProjectCard({ p, mode, index, t, expanded, activeFilter }: {
   const categoryLabel = p.category === 'mobile' ? 'Apps Design' : p.category === 'web' ? 'Web Design' : '';
   // Grid cards' hover ripple reveals each project's hero shot — same
   // slug as the project's own page (project_XX.html -> project_XX/), not
-  // the curated thumbnail in p.img.
-  const heroImg = `./img/${p.link.replace('.html', '')}/hero_img.webp`;
+  // the curated thumbnail in p.img. Uses a dedicated small preview
+  // (~1000px wide, generated from hero_img.webp) instead of the full-size
+  // hero_img itself — that file is sized for the project page's own
+  // full-bleed background and is 2400px+ wide, ~15x more pixels than this
+  // ripple ever renders at (capped at the grid card's own box size).
+  const heroImg = `./img/${p.link.replace('.html', '')}/hero_img_preview.webp`;
   const card = (
     <a
       className={cls}
