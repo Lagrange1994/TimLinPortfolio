@@ -385,30 +385,11 @@ export default function BeamsBackground() {
   return (
     <>
       <div id="bg-scene" aria-hidden="true" role="presentation" />
-      {isMobile && (
-        <div id="bg-spline-scene" aria-hidden="true" role="presentation">
-          <picture>
-            <source srcSet="./img/bg.webp" type="image/webp" />
-            <img
-              id="spline-bg"
-              className={`spline-bg-layer${theme === 'dark' ? ' is-active' : ''}`}
-              src="./img/bg.jpg"
-              alt=""
-              aria-hidden="true"
-            />
-          </picture>
-          <picture>
-            <source srcSet="./img/bg_w.webp" type="image/webp" />
-            <img
-              id="spline-bg-light"
-              className={`spline-bg-layer${theme === 'light' ? ' is-active' : ''}`}
-              src="./img/bg_w.jpg"
-              alt=""
-              aria-hidden="true"
-            />
-          </picture>
-        </div>
-      )}
+      {/* Phones (<768px) render no background image at all — bg.webp/bg_w.webp
+          (~4MB decoded each, pinned full-screen) were part of the memory load
+          that made mobile browsers force-reload the tab. #bg-scene's flat
+          color is the whole backdrop there; Loader.tsx tolerates the missing
+          .spline-bg-layer (nothing to wait for). */}
       {heroFrame}
     </>
   );
