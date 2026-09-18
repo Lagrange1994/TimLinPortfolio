@@ -1,6 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { initCrashLog } from './utils/crashLog';
+
+initCrashLog();
 
 // Block accidental/forced reloads with a confirm prompt. Deliberate in-site
 // navigation (clicking a link, e.g. a project card) is exempt via the flag.
