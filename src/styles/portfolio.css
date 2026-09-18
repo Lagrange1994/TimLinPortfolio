@@ -2533,19 +2533,20 @@
     }
 
     /* Light mode: the white outline/dot/chevrons barely read against the
-       now-light hero panel. Same logo "Lin" gray (--text-30) as the other
-       hero-panel light-mode overrides. */
+       now-light hero panel. Matches .hero-desc's own gray (--text-70)
+       instead of the lighter --text-30 decorative tier, so the scroll hint
+       reads as the same ink as the subtitle text right above it. */
     :root[data-theme="light"] .hero-scroll-indicator .mouse {
-      border-color: var(--text-30);
+      border-color: var(--text-70);
     }
 
     :root[data-theme="light"] .hero-scroll-indicator .wheel {
-      border-color: var(--text-30);
+      border-color: var(--text-70);
     }
 
     :root[data-theme="light"] .hero-scroll-indicator .m_scroll_arrows {
-      border-right-color: var(--text-30);
-      border-bottom-color: var(--text-30);
+      border-right-color: var(--text-70);
+      border-bottom-color: var(--text-70);
     }
 
     @media (max-width: 1024px) {
@@ -4819,7 +4820,7 @@
       font-size: 14px;
       font-weight: 400;
       line-height: 1.6;
-      color: var(--text-50);
+      color: var(--text-70);
       /* Text carries <wbr> after each punctuation mark (see figma_mcp_desc
          in translations.ts) — keep-all stops the browser from also breaking
          between adjacent CJK characters, so those <wbr> points are the only
