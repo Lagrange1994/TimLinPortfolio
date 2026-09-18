@@ -1486,8 +1486,11 @@
       /* Fine film-grain texture, tiled via background-image on every glass
          card (see UNIVERSAL GLASS CARD below). SVG feTurbulence baked to a
          low, constant alpha (feFuncA slope) so it reads as subtle noise —
-         not the loud colorful static feTurbulence produces at full alpha. */
-      --noise-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch' result='t'/%3E%3CfeColorMatrix in='t' type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.09'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+         not the loud colorful static feTurbulence produces at full alpha.
+         Pre-rasterized to public/img/noise-grain.png instead of an inline
+         SVG data URI: ~50 elements in one section each running the filter
+         live exhausted iOS WebKit memory and got the tab killed. */
+      --noise-grain: url("/img/noise-grain.png");
     }
 
     /* NAV LINK — matches index.html: text-only, hover-bg handles the pill */
@@ -10655,5 +10658,32 @@
       *, *::before, *::after {
         -webkit-backdrop-filter: none !important;
         backdrop-filter: none !important;
+      }
+    }
+
+    /* Phones: sections far from the viewport are unloaded (see
+       useUnloadOffscreen.ts) so their layers/animations/tiles are freed —
+       the page was otherwise accumulating render memory until iOS killed
+       the tab. --unload-content-h is the section's last measured content-box
+       height, so the document's scroll height never changes. */
+    @media (max-width: 767px) {
+      section.section.is-unloaded {
+        content-visibility: hidden;
+        contain-intrinsic-height: var(--unload-content-h);
+      }
+    }
+
+    /* Browsers without content-visibility (iOS < 18): same effect by hand —
+       pin the height and drop the children from rendering entirely. */
+    @supports not (content-visibility: hidden) {
+      @media (max-width: 767px) {
+        section.section.is-unloaded {
+          box-sizing: border-box;
+          height: var(--unload-h);
+          overflow: hidden;
+        }
+        section.section.is-unloaded > * {
+          display: none;
+        }
       }
     }

@@ -7,6 +7,7 @@
 // normal visitors never see it.
 const LOG_KEY = '__crashLog';
 const CLEAN_KEY = '__cleanExit';
+const DEATH_KEY = '__lastDeathLog';
 const MAX_ENTRIES = 40;
 
 function readLog(): string[] {
@@ -37,6 +38,9 @@ export function initCrashLog() {
     // Flag present = last session ended via pagehide (normal nav/reload
     // triggered by the page). Absent + a non-empty log = abnormal death.
     crashed = previous.length > 0 && sessionStorage.getItem(CLEAN_KEY) !== '1';
+    // Keep the most recent abnormal session around until the next one, so a
+    // manual reload while reading the overlay doesn't wipe the evidence.
+    if (crashed) sessionStorage.setItem(DEATH_KEY, JSON.stringify(previous));
     sessionStorage.removeItem(CLEAN_KEY);
     sessionStorage.setItem(LOG_KEY, '[]');
   } catch {
@@ -56,16 +60,27 @@ export function initCrashLog() {
   window.addEventListener('error', (e) => push(`error ${e.message}`));
   window.addEventListener('unhandledrejection', () => push('unhandledrejection'));
   document.addEventListener('visibilitychange', () => push(`visibility=${document.visibilityState}`));
+  window.addEventListener('pageshow', (e) => push(`pageshow persisted=${e.persisted}`));
+  document.addEventListener('freeze', () => push('freeze'));
+  document.addEventListener('resume', () => push('resume'));
   window.addEventListener('pagehide', (e) => {
     push(`pagehide persisted=${e.persisted}`);
-    try { sessionStorage.setItem(CLEAN_KEY, '1'); } catch { /* ignore */ }
+    if (!e.persisted) {
+      try { sessionStorage.setItem(CLEAN_KEY, '1'); } catch { /* ignore */ }
+    }
   });
   document.addEventListener('webglcontextlost', () => push('webglcontextlost'), true);
 
-  if (new URLSearchParams(location.search).has('debug') && previous.length > 0) {
+  if (new URLSearchParams(location.search).has('debug')) {
+    let death: string[] = [];
+    try { death = JSON.parse(sessionStorage.getItem(DEATH_KEY) || '[]'); } catch { /* ignore */ }
+    const text = [
+      death.length ? `LAST ABNORMAL DEATH:\n${death.join('\n')}` : 'no abnormal death recorded yet',
+      `\nprevious session ${crashed ? 'DIED ABNORMALLY' : 'ended normally'}:\n${previous.join('\n')}`,
+    ].join('\n');
     const box = document.createElement('pre');
     box.style.cssText = 'position:fixed;left:0;right:0;bottom:0;max-height:45vh;overflow:auto;margin:0;padding:8px;z-index:2147483647;background:#000c;color:#0f0;font:10px/1.3 monospace;white-space:pre-wrap;';
-    box.textContent = `previous session ${crashed ? 'DIED ABNORMALLY' : 'ended via pagehide'}\n${previous.join('\n')}`;
+    box.textContent = text;
     box.addEventListener('click', () => box.remove());
     document.body.appendChild(box);
   }
