@@ -1644,6 +1644,24 @@
          it, and the light-mode desktop override below only kicks in at
          1025px+). */
       background: var(--bg-safe);
+      transition: opacity 0.5s ease;
+    }
+
+    /* Tablet/phone only (this file's own <1025px "no hero panel" cutoff —
+       see #bg-spline-scene's base rule above and the sync() comment in
+       BeamsBackground.tsx): once the hero scrolls out of view, fade this
+       whole layer out — the phone <picture>/<img> raster fallback, or
+       tablet's plain full-bleed Spline scene — so every section past the
+       hero sits on #bg-scene's flat --bg-safe color instead of carrying
+       the hero's own background down the rest of the page. Class is
+       toggled by an IntersectionObserver on #home (BeamsBackground.tsx);
+       desktop's panel is deliberately left out (see that file's own
+       top-of-file comment: it "stays mounted and fully opaque at every
+       scroll position"). */
+    @media (max-width: 1024px) {
+      #bg-spline-scene.is-hero-out-of-view {
+        opacity: 0;
+      }
     }
 
     /* Same flat-instead-of-w_bg.svg swap as #bg-scene above, and for the
