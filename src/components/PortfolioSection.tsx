@@ -64,7 +64,14 @@ function createPortfolioScroller(row: HTMLElement, normalSpeed: number, hoverSpe
     let offset = 0, velocity = normalSpeed, targetVelocity = normalSpeed, lastTs: number | null = null;
     const direction = isReverse ? -1 : 1;
 
+    // Only animate while the row is on screen — four always-running rAF
+    // loops rewriting transforms on off-screen layers keep the GPU busy for
+    // the whole page (a contributor to phone tab reloads near Portfolio).
+    let visible = true;
+    let running = false;
+
     function tick(ts: number) {
+      if (!visible) { running = false; return; }
       if (!lastTs) lastTs = ts;
       const dt = Math.min((ts - lastTs) / 1000, 0.05);
       lastTs = ts;
@@ -75,7 +82,18 @@ function createPortfolioScroller(row: HTMLElement, normalSpeed: number, hoverSpe
       requestAnimationFrame(tick);
     }
 
-    requestAnimationFrame(tick);
+    function start() {
+      if (running) return;
+      running = true;
+      lastTs = null;
+      requestAnimationFrame(tick);
+    }
+
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) start();
+    }).observe(row);
+    start();
     row.addEventListener('mouseenter', () => { targetVelocity = hoverSpeed; });
     row.addEventListener('mouseleave', () => { targetVelocity = normalSpeed; });
   }

@@ -5237,7 +5237,11 @@
       text-decoration: none;
       display: block;
       background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
+      /* No backdrop-filter here: the photo fully covers the card so it was
+         never visible, but ~30+ marquee cards (4 rows + clones) each
+         allocating a backdrop surface inside the animated 3D-skewed wall
+         exhausted GPU memory on phones and made the browser force-reload
+         the tab on scrolling into Portfolio. */
       border: 1px solid var(--glass-border);
       transition: all .3s;
     }
@@ -7324,7 +7328,7 @@
         grid-template-columns: repeat(2, 1fr) !important;
       }
 
-      .grid-card.mb-big {
+      .grid-card-shadow.mb-big {
         grid-column: span 1;
         grid-row: span 1;
         aspect-ratio: 3/2;
@@ -7894,7 +7898,10 @@
         grid-template-columns: 1fr !important;
       }
 
-      .grid-card.mb-big {
+      /* .mb-big sits on the .grid-card-shadow wrapper (the real grid item),
+         not .grid-card — targeting .grid-card left span 2 in force, which
+         spawned an implicit 2nd column and put cards side by side. */
+      .grid-card-shadow.mb-big {
         grid-column: span 1;
         grid-row: span 1;
         aspect-ratio: 3/2;
@@ -10638,3 +10645,15 @@
        (:root[data-theme="light"] .tag-capsule up above), matching
        .skill-pill instead of getting the card treatment. */
 
+
+    /* Phones/tablets (<=1024px): backdrop-filter fully disabled site-wide.
+       Each one allocates its own GPU backdrop surface; stacked with the
+       animated marquee/3D layers that exhausted memory and made mobile
+       browsers force-reload the tab. Kept last + !important so it wins over
+       every earlier per-component declaration. */
+    @media (max-width: 1024px) {
+      *, *::before, *::after {
+        -webkit-backdrop-filter: none !important;
+        backdrop-filter: none !important;
+      }
+    }
