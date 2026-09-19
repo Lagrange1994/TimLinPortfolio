@@ -300,7 +300,7 @@ export default function AboutSection() {
                   <div className="pc-inside"></div>
                   <div className="pc-shine"></div>
                   <div className="pc-content pc-avatar-content">
-                    <img className="avatar" src="./img/about_me.png" alt="Tim Lin" loading="lazy" />
+                    <img className="avatar" src="./img/about_me.webp" alt="Tim Lin" loading="lazy" />
                   </div>
                   <div className="pc-content">
                     <div className="pc-details">
