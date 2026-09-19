@@ -255,7 +255,7 @@ gsap.registerPlugin(ScrollToPlugin);
             }, [activeTab]);
             const touchStartY = useRef(0);
             const [isResizing, setIsResizing] = useState(false);
-            const [mobileVisualHeight, setMobileVisualHeight] = useState(40);
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(35);
 
             const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
 

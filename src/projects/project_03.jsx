@@ -459,8 +459,8 @@ gsap.registerPlugin(ScrollToPlugin);
 
                         {/* [修改] bg-dark -> bg-kh-dark */}
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-kh-dark overflow-hidden">
-                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl">
-                                <div className="w-full h-[35vh] lg:h-full flex items-center justify-center">
+                            <div className="w-full shrink-0 max-lg:h-[35vh] z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl">
+                                <div className="w-full h-full flex items-center justify-center">
                                     <PreviewFrame
                                         chromeClassName="bg-kh-dark-light"
                                         showHeader={activeTab === 'solution' || activeTab === 'climax'}

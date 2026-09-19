@@ -6,7 +6,7 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, ProcessTimeline, FeatureCard,
-    GalleryItemButton, PreviewFrame,
+    GalleryItemButton, PreviewFrame, ResizeHandle,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -226,6 +226,45 @@ gsap.registerPlugin(ScrollToPlugin);
                 return () => node.removeEventListener('touchmove', onTouchMove);
             }, [activeTab]);
             const imageScrollRef = useRef(null);
+
+            // Phone-only drag handle that resizes the demo panel (same behaviour as
+            // project_02). The window-level touch handlers below are subscribed once per
+            // section index, so they read the ref, not a stale isResizing closure.
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(35);
+            const [isResizing, setIsResizing] = useState(false);
+            const isResizingRef = useRef(false);
+            isResizingRef.current = isResizing;
+
+            const handleResizeStart = () => {
+                if (window.innerWidth >= 1024) return;
+                setIsResizing(true);
+                document.body.style.userSelect = 'none';
+            };
+
+            useEffect(() => {
+                const handleResizeMove = (e) => {
+                    if (!isResizing) return;
+                    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+                    let newHeightVh = (clientY / window.innerHeight) * 100;
+                    if (newHeightVh < 35) newHeightVh = 35;
+                    if (newHeightVh > 80) newHeightVh = 80;
+                    setMobileVisualHeight(newHeightVh);
+                };
+                const handleResizeEnd = () => {
+                    setIsResizing(false);
+                    document.body.style.userSelect = '';
+                };
+                window.addEventListener('mousemove', handleResizeMove);
+                window.addEventListener('touchmove', handleResizeMove, { passive: false });
+                window.addEventListener('mouseup', handleResizeEnd);
+                window.addEventListener('touchend', handleResizeEnd);
+                return () => {
+                    window.removeEventListener('mousemove', handleResizeMove);
+                    window.removeEventListener('touchmove', handleResizeMove);
+                    window.removeEventListener('mouseup', handleResizeEnd);
+                    window.removeEventListener('touchend', handleResizeEnd);
+                };
+            }, [isResizing]);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
             const touchStartY = useRef(0);
@@ -362,7 +401,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const handleTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
 
             const handleTouchEnd = (e) => {
-                if (isScrollingRef.current) return;
+                if (isScrollingRef.current || isResizingRef.current) return;
                 // Stop swipe if inside tabs
                 if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
 
@@ -431,19 +470,24 @@ gsap.registerPlugin(ScrollToPlugin);
                         {/* [修改] bg-dark -> bg-sm-dark */}
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-sm-dark overflow-hidden">
                             {/* [修改] bg-[#1e293b] (保留原色碼) */}
-                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl">
-                                <div className="w-full h-[35vh] lg:h-full flex flex-col items-center justify-center">
+                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] relative flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                                <ResizeHandle prefix="sm" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
+                                <div className="relative w-full h-full flex flex-col items-center justify-center">
                                     <div className="flex-1 min-h-0 w-full flex items-center justify-center">
                                         <PreviewFrame
                                             ref={imageScrollRef}
+                                            resizable
                                             chromeClassName="bg-sm-dark-light"
                                             showChrome={['highlights', 'gallery'].includes(activeTab)}
                                             showHeader={['highlights', 'gallery'].includes(activeTab)}
                                             imageSrc={currentImage}
+                                            imageAreaClassName="overflow-y-auto overscroll-contain custom-scroll block"
+                                            imageContainerClassName="w-full min-h-full flex items-center justify-center"
+                                            imageClassName="w-full h-auto block transition-opacity duration-500"
                                         />
                                     </div>
                                     {['highlights', 'gallery'].includes(activeTab) && (
-                                        <div className="text-center mt-2 text-xs text-text/45 shrink-0"><i className="ph ph-arrows-down-up mr-2"></i>{t('scroll_hint')}</div>
+                                        <div className="text-center mt-2 max-lg:mt-0 max-lg:absolute max-lg:bottom-0 max-lg:inset-x-0 text-xs text-text/45 shrink-0"><i className="ph ph-arrows-down-up mr-2"></i>{t('scroll_hint')}</div>
                                     )}
                                 </div>
                             </div>

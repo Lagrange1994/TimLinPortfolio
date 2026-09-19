@@ -453,7 +453,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 if (activeTab === 'context' || activeTab === 'process') {
                     return (
                         <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                            <div className="pointer-events-auto w-full h-full">
+                            <div className="pointer-events-auto w-full h-full flex items-center justify-center">
                                 <PreviewFrame chromeClassName="bg-tn-dark-light" imageSrc={currentImage} />
                             </div>
                         </div>

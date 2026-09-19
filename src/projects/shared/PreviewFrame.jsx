@@ -10,8 +10,24 @@ import BrowserFrame from './BrowserFrame';
 // currentImage changes, the old <img> is gone and the new one hasn't loaded
 // yet: nothing in the chain has a size, and a content-driven frame collapses
 // to 0 height until the next image's intrinsic size arrives, then snaps
-// back open. This component always uses a DEFINITE height (h-full /
-// lg:h-[90%]) so the frame never depends on the image inside it.
+// back open. This component always uses a DEFINITE height so the frame never
+// depends on the image inside it: lg:h-[90%] on desktop, and on phones the
+// whole frame (browser-chrome header included) is a 16:9 box — aspect-video,
+// derived from the width, not the content — sitting vertically centred in the
+// caller's 35vh panel, exactly like project_02's window frame (panel 35vh,
+// frame 16:9, ~48px above and below it at 402px wide). It used to be h-full
+// there, which stretched the frame to the whole panel and cropped or
+// letterboxed images, and later a 16:9 image area that made header tabs taller
+// than the others. contain:size keeps the box coming ONLY from that ratio: a
+// tall scrolling screenshot (project_10's 1920x3200 page) stays inside a
+// fixed-ratio window the visitor scrolls, instead of stretching the frame to
+// the image's height (aspect-ratio + overflow otherwise lets some engines,
+// notably WebKit, size the box from its content).
+// `resizable` is for pages with a drag handle that resizes the panel on phones
+// (project_07/09/10/11, the long-strip website demos): the frame keeps the
+// same 16:9 default but also gets a floor of "panel minus 2rem top and bottom",
+// so dragging the handle down makes the frame taller too (aspect-ratio boxes
+// grow to their min-height), and the tall screenshot scrolls inside it.
 // chromeClassName must be a literal Tailwind class string at the call site
 // (e.g. "bg-police-dark-light") — Tailwind's scanner needs to see it as
 // written text, so it can't be built dynamically in here from a prefix prop.
@@ -26,11 +42,12 @@ const PreviewFrame = React.forwardRef(function PreviewFrame({
     imageClassName = 'w-full h-full object-contain',
     imageContainerClassName = 'w-full h-full flex items-center justify-center',
     imageAreaClassName = 'group',
+    resizable = false,
     children,
 }, scrollRef) {
     return (
         <div
-            className={`relative w-full max-w-full h-full lg:h-[90%] rounded-xl overflow-hidden flex flex-col transition-all duration-300 ${
+            className={`relative w-full max-w-full aspect-video max-lg:[contain:size] ${resizable ? 'max-lg:min-h-[calc(100%-4rem)]' : ''} lg:aspect-auto lg:h-[90%] rounded-xl overflow-hidden flex flex-col transition-all duration-300 ${
                 showChrome ? `${chromeClassName} border border-border/10 shadow-2xl` : 'bg-transparent'
             }`}
         >
