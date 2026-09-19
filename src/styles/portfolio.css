@@ -1368,7 +1368,9 @@
         right: 48px;
         top: 48px;
         height: 50px;
-        padding: 0 2.5rem;
+        /* right = (50px row - 2px border - 35px pills) / 2, so the pills sit
+           the same distance from the right edge as from the top/bottom. */
+        padding: 0 6.5px 0 2.5rem;
         border-radius: 9999px;
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.3);
