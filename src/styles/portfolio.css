@@ -9818,11 +9818,14 @@
     .ai-chips-header h3{margin:0;font-size:clamp(2.25rem,5vw,3.75rem);font-weight:100;letter-spacing:-.02em;color:var(--text);line-height:1.15;font-family:'Quicksand','GenSen Rounded TW','Noto Sans TC',sans-serif}
     .ai-chips-header p{margin:14px auto 0;max-width:520px;font-size:clamp(1rem,1.8vw,1.25rem);font-weight:400;line-height:1.6;color:var(--text-50)}
     .ai-chips-row .ai-chips{position:absolute;inset:0;z-index:1;pointer-events:none}
-    .ai-chips-row .ai-chip{position:absolute;right:28px;transform:translateY(-50%);pointer-events:auto;display:inline-flex;align-items:center;gap:8px;padding:9px 16px 9px 13px;border-radius:999px;background-color:rgba(255,255,255,.04);background-image:var(--noise-grain);background-repeat:repeat;background-size:180px 180px;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(12px);font-size:13.5px;color:var(--text);transition:background-color .3s,border-color .3s,transform .3s;cursor:default}
+    .ai-chips-row .ai-chip{position:absolute;right:28px;transform:translateY(-50%);pointer-events:auto;display:inline-flex;align-items:center;gap:8px;padding:9px 16px 9px 13px;border-radius:999px;background-color:var(--glass-bg);background-image:var(--noise-grain);background-repeat:repeat;background-size:180px 180px;border:1px solid var(--glass-border);backdrop-filter:var(--glass-blur);font-size:13.5px;color:var(--text);transition:background-color .3s,border-color .3s,transform .3s;cursor:default}
+    /* Fill/border/blur come from the same --glass-* tokens .skill-pill uses, so
+       the chips match those tags in both themes; only the border colour is
+       restated here to keep it winning over the generic light-mode rules. */
     :root[data-theme="light"] .ai-chips-row .ai-chip{border-color:var(--glass-border)}
     :root[data-theme="light"] .ai-chips-row .ai-chip.is-arrived,
     :root[data-theme="light"] .ai-chips-row .ai-chip.is-arrived:hover{border-color:var(--chip-glow)}
-    .ai-chips-row .ai-chip:hover{background-color:rgba(255,255,255,.07);border-color:rgba(138,43,226,.4);transform:translateY(calc(-50% - 2px))}
+    .ai-chips-row .ai-chip:hover{background-color:var(--glass-bg);border-color:rgba(138,43,226,.4);transform:translateY(calc(-50% - 2px))}
     /* Beam-arrival border — outline switches to the chip's own beam color
        (--chip-glow, set inline per chip) the instant that beam's line-draw
        reaches the right edge (see GoogleGeminiEffect's onArriveChange). */
@@ -10695,4 +10698,32 @@
           display: none;
         }
       }
+    }
+
+    /* Restored sections (see useUnloadOffscreen.ts) fade back in as they
+       actually reach the viewport rather than popping into view. Held
+       invisible until then (.is-restoring), so the animation isn't spent
+       off-screen. "up" = the user is scrolling up, so content arrives from
+       ABOVE (the reverse of the usual rise-from-below); "down" rises from
+       below, matching the site's regular reveal direction. */
+    @media (max-width: 767px) {
+      section.section.is-restoring {
+        opacity: 0;
+      }
+      section.section.is-restore-in-up {
+        animation: section-restore-in-up .8s cubic-bezier(.22, 1, .36, 1) both;
+      }
+      section.section.is-restore-in-down {
+        animation: section-restore-in-down .8s cubic-bezier(.22, 1, .36, 1) both;
+      }
+    }
+
+    @keyframes section-restore-in-up {
+      from { opacity: 0; transform: translateY(-28px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    @keyframes section-restore-in-down {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: none; }
     }
