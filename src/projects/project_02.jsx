@@ -228,7 +228,7 @@ gsap.registerPlugin(ScrollToPlugin);
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center bg-[#0f0402]" style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}>
                         <div className="w-full h-full max-w-full max-h-full flex items-center justify-center">
-                            <div className="relative h-full aspect-[9/19] border-[4px] md:border-[8px] border-[#2d2d2d] rounded-[1.25rem] lg:rounded-[2.5rem] overflow-hidden bg-black">
+                            <div className="relative h-full aspect-[9/19] border-[4px] md:border-[8px] border-[#2d2d2d] max-lg:rounded-[17.1%/8.1%] lg:rounded-[2.5rem] overflow-hidden bg-black">
                                 <ImageWithSkeleton src={afterImage} className="w-full h-full object-cover" alt="App Version" />
                             </div>
                         </div>

@@ -154,7 +154,7 @@ gsap.registerPlugin(ScrollToPlugin);
         const PhoneFrame = ({ src, alt }) => {
             return (
                 <div className="w-full h-full flex items-center justify-center pointer-events-none">
-                    <div className="relative h-full w-auto max-w-full aspect-[9/19] shadow-2xl overflow-hidden transition-all duration-300 bg-black border-[6px] md:border-[8px] border-[#2d2d2d] rounded-[1.25rem] lg:rounded-[2.5rem]">
+                    <div className="relative h-full w-auto max-w-full aspect-[9/19] shadow-2xl overflow-hidden transition-all duration-300 bg-black border-[6px] md:border-[8px] border-[#2d2d2d] max-lg:rounded-[15.47%/7.33%] lg:rounded-[2.5rem]">
                         <ImageWithSkeleton src={src} alt={alt} className="w-full h-full object-cover block" containerClassName="w-full h-full bg-[#1a1a1a]" />
                     </div>
                 </div>

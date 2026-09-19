@@ -103,11 +103,19 @@ describe.each([
     expect(source).toMatch(/\r?\n\s*resizable\r?\n/);
   });
 
-  it('sizes the panel from mobileVisualHeight on phones, clamped like project_02', () => {
+  it('sizes the panel from mobileVisualHeight on phones, floor 35vh like project_02', () => {
     expect(source).toMatch(/useState\(35\)/);
     expect(source).toMatch(/\$\{mobileVisualHeight\}vh/);
     expect(source).toMatch(/newHeightVh < 35\) newHeightVh = 35/);
-    expect(source).toMatch(/newHeightVh > 80\) newHeightVh = 80/);
+  });
+
+  it('caps the drag at the height where the whole screenshot is visible (not a fixed 80vh)', () => {
+    // upper limit comes from the rendered image height + the panel's fixed overhead
+    expect(source).toMatch(/const getMaxVisualVh = \(\) =>/);
+    expect(source).toMatch(/img\.offsetHeight \+ \(panel\.offsetHeight - area\.clientHeight\)/);
+    expect(source).toMatch(/Math\.min\(80, Math\.max\(35,/);
+    expect(source).toMatch(/newHeightVh > maxVh\) newHeightVh = maxVh/);
+    expect(source).toMatch(/<div ref=\{visualPanelRef\}/);
   });
 
   it("doesn't switch sections when the finger lifts after dragging the handle", () => {
