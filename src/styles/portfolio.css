@@ -1039,6 +1039,15 @@
       border-bottom: none;
     }
 
+    /* Desktop: the pills at the right end sit ~8.5px from the top/bottom
+       (8px padding + 1px border - pill/logo height rounding), so the right
+       padding is cut to match instead of the left's 24px. */
+    @media (min-width: 1025px) {
+      #main-header.scrolled #nav-container {
+        padding-right: 7.5px;
+      }
+    }
+
     /* Light mode: the scrolled pill AND the unscrolled desktop notch pill
        (.navbar-menu below) both get the light glass look — same tokens,
        just a different selector root, so the two states read as one
