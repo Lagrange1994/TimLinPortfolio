@@ -10653,11 +10653,20 @@
        Each one allocates its own GPU backdrop surface; stacked with the
        animated marquee/3D layers that exhausted memory and made mobile
        browsers force-reload the tab. Kept last + !important so it wins over
-       every earlier per-component declaration. */
+       every earlier per-component declaration.
+       #nav-container is the one exception: a single always-on-screen
+       element (not one per card), and its glass is what keeps the fixed
+       navbar readable over scrolling content. The -webkit- twin is for
+       iOS < 18, which only knows the prefixed property. */
     @media (max-width: 1024px) {
-      *, *::before, *::after {
+      *:not(#nav-container), *::before, *::after {
         -webkit-backdrop-filter: none !important;
         backdrop-filter: none !important;
+      }
+
+      #nav-container {
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
       }
     }
 
