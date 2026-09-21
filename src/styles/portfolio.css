@@ -1,4 +1,5 @@
-﻿
+@import './gensen-faces.css';
+
     *,
     *::before,
     *::after {
@@ -7,42 +8,9 @@
       padding: 0;
     }
 
-    /* ── GENSEN ROUNDED TW (self-hosted CJK font) ── */
-    @font-face {
-      font-family: 'GenSen Rounded TW';
-      src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-L.woff2') format('woff2');
-      font-weight: 300;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'GenSen Rounded TW';
-      src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-R.woff2') format('woff2');
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'GenSen Rounded TW';
-      src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-M.woff2') format('woff2');
-      font-weight: 500;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'GenSen Rounded TW';
-      src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-B.woff2') format('woff2');
-      font-weight: 700;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'GenSen Rounded TW';
-      src: url('/fonts/gensen-rounded-tw/GenSenRounded2TW-H.woff2') format('woff2');
-      font-weight: 900;
-      font-style: normal;
-      font-display: swap;
-    }
+    /* GenSen Rounded TW @font-face rules: generated into gensen-faces.css by
+       scripts/subset-fonts.py (full font + small preloaded first-screen layer);
+       the @import is hoisted to the top of this file. */
 
     /* ── LOADER ── */
     .loader {

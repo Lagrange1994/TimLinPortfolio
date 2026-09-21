@@ -167,6 +167,10 @@
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
   <link rel="preconnect" href="https://unpkg.com" crossorigin />
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+  <!-- Perf: first-screen GenSen glyph layer (see scripts/subset-fonts.py) — ~48 KB per weight instead of the full ~290 KB files; R/M/B = hero desc/role/title. -->
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/gensen-rounded-tw/GenSenRounded2TW-R-hero.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/gensen-rounded-tw/GenSenRounded2TW-M-hero.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="/fonts/gensen-rounded-tw/GenSenRounded2TW-B-hero.woff2" crossorigin />
   <link rel="preload" as="image" href="/img/figure.webp" type="image/webp" fetchpriority="high" />
   <!-- Perf: start Spline scene downloads immediately, in parallel with the
        viewer script / React bundle that would otherwise gate them. Media
