@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useLayoutEffect, useEffect, useImperativeHandle } from 'react';
 import ImageWithSkeleton from './ImageWithSkeleton';
 import BrowserFrame from './BrowserFrame';
 
@@ -33,6 +33,11 @@ import BrowserFrame from './BrowserFrame';
 // written text, so it can't be built dynamically in here from a prefix prop.
 // scrollRef forwards to the image-area div — some callers reset its
 // scrollTop on tab change (galleries taller than the frame scroll inside it).
+// Desktop + `resizable`: the frame hugs its screenshot (h-auto, capped at 90%
+// of the panel) instead of a fixed 90% height, so a screenshot shorter than
+// that no longer leaves empty frame-coloured bands above and below it. Because
+// an unloaded <img> has no height, the frame would collapse mid tab-switch, so
+// it holds its last settled height (min-height) until the new image loads.
 const PreviewFrame = React.forwardRef(function PreviewFrame({
     chromeClassName,
     showChrome = true,
@@ -45,14 +50,39 @@ const PreviewFrame = React.forwardRef(function PreviewFrame({
     resizable = false,
     children,
 }, scrollRef) {
+    const frameRef = useRef(null);
+    const areaRef = useRef(null);
+    const lastH = useRef(0);
+    useImperativeHandle(scrollRef, () => areaRef.current);
+
+    useEffect(() => {
+        const frame = frameRef.current;
+        if (!resizable || !frame || typeof ResizeObserver === 'undefined') return;
+        const ro = new ResizeObserver(() => {
+            if (frame.style.minHeight || frame.querySelector('.skeleton')) return;
+            lastH.current = frame.getBoundingClientRect().height;
+        });
+        ro.observe(frame);
+        const release = () => { frame.style.minHeight = ''; };
+        frame.addEventListener('load', release, true);
+        return () => { ro.disconnect(); frame.removeEventListener('load', release, true); };
+    }, [resizable]);
+
+    useLayoutEffect(() => {
+        const frame = frameRef.current;
+        if (!resizable || !frame || !lastH.current || window.innerWidth < 1024) return;
+        if (frame.querySelector('.skeleton')) frame.style.minHeight = `${lastH.current}px`;
+    }, [imageSrc, resizable]);
+
     return (
         <div
-            className={`relative w-full max-w-full aspect-video max-lg:[contain:size] ${resizable ? 'max-lg:min-h-[calc(100%-4rem)]' : ''} lg:aspect-auto lg:h-[90%] rounded-xl overflow-hidden flex flex-col transition-all duration-300 ${
+            ref={frameRef}
+            className={`relative w-full max-w-full aspect-video max-lg:[contain:size] ${resizable ? 'max-lg:min-h-[calc(100%-4rem)]' : ''} lg:aspect-auto ${resizable ? 'lg:h-auto lg:max-h-[90%]' : 'lg:h-[90%]'} rounded-xl overflow-hidden flex flex-col transition-all duration-300 ${
                 showChrome ? `${chromeClassName} border border-border/10 shadow-2xl` : 'bg-transparent'
             }`}
         >
             {showHeader && <BrowserFrame />}
-            <div ref={scrollRef} className={`w-full flex-1 min-h-0 relative bg-border/5 ${imageAreaClassName}`}>
+            <div ref={areaRef} className={`w-full flex-1 min-h-0 relative bg-border/5 ${resizable ? 'lg:flex-[0_1_auto]' : ''} ${imageAreaClassName}`}>
                 <ImageWithSkeleton
                     src={imageSrc}
                     alt={imageAlt}
