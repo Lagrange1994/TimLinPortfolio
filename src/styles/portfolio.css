@@ -206,13 +206,16 @@
          shift hue AND fade alpha at once. */
       --grad-logo-mid: #4A00E0;
       /* Role line only (hero-h2, light mode). */
-      --grad-role: linear-gradient(45deg, #256AF0, #00D4FF);
+      /* Now identical to --grad-logo (role line matches the name). Previous
+         values, to revert: --grad-role: linear-gradient(45deg, #256AF0,
+         #00D4FF); --grad-role-mid: #139FF8; dark .hero-h2 color: #e5e7eb. */
+      --grad-role: var(--grad-logo);
       /* Same reasoning as --grad-logo-mid above, for --grad-role's own
          middle — a 2-stop gradient with no explicit middle stop of its own,
          so this is the plain sRGB average of #256AF0 and #00D4FF
          (19,159,248 — matches what linear-gradient itself paints at the
          50% mark by default), not a picked color. */
-      --grad-role-mid: #139FF8;
+      --grad-role-mid: var(--grad-logo-mid);
       /* The 4 hard-cut bands of #bg-frame-glow-grad (BeamsBackground.tsx)'s
          flow blend — offsets 0/39.6967/70.3616/87.9173/100%, each variable
          covering one band's start+end stop pair (see the comment above the
@@ -2368,7 +2371,7 @@
     .hero-h2 {
       font-size: clamp(1.2rem, 3vw, 2.25rem);
       font-weight: 500;
-      color: #e5e7eb;
+      color: #fff; /* was #e5e7eb; matches .hero-h1 */
       margin-bottom: 1.5rem;
     }
 
