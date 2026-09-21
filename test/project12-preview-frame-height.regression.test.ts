@@ -28,9 +28,9 @@ describe('shared PreviewFrame sizes itself with a definite height', () => {
 
   const imageAreaClassName = source.match(/className=\{`w-full flex-1 min-h-0 relative bg-border\/5[^`]*`\}/)?.[0];
 
-  it('uses lg:h-[90%] on the frame (desktop)', () => {
+  it('caps the desktop 16:9 frame at 90% of the panel height (no tall letterboxed box)', () => {
     expect(frameClassName).toBeTruthy();
-    expect(frameClassName).toMatch(/lg:h-\[90%\]/);
+    expect(frameClassName).toMatch(/lg:w-\[min\(100%,calc\(90cqh\*16\/9\)\)\]/);
   });
 
   it('sizes the whole phone frame (header included) as 16:9, like project_02', () => {
@@ -86,7 +86,7 @@ describe('PreviewFrame resizable mode', () => {
 
   it('keeps the 16:9 default but grows with the panel (floor = panel minus 2rem top and bottom)', () => {
     expect(source).toMatch(/resizable = false/);
-    expect(source).toMatch(/resizable \? 'max-lg:min-h-\[calc\(100%-4rem\)\]' : ''/);
+    expect(source).toMatch(/resizable \? 'max-lg:min-h-\[calc\(100%-4rem\)\] lg:aspect-auto lg:h-auto lg:max-h-\[90%\]'/);
   });
 });
 
