@@ -33,9 +33,10 @@ import BrowserFrame from './BrowserFrame';
 // written text, so it can't be built dynamically in here from a prefix prop.
 // scrollRef forwards to the image-area div — some callers reset its
 // scrollTop on tab change (galleries taller than the frame scroll inside it).
-// Desktop, non-resizable: the frame is also 16:9 (width capped so it fits in
-// 90% of the panel's height) instead of a tall 90% box that letterboxes a
-// 16:9 screenshot. Desktop + `resizable`: the frame hugs its screenshot (h-auto, capped at 90%
+// Desktop, non-resizable: the IMAGE AREA is 16:9 (the browser-chrome header, if
+// any, sits on top of it, so the frame is 2rem taller than 16:9 and never crops
+// an object-cover screenshot); width is capped so the whole frame fits in 90%
+// of the panel's height, instead of a tall 90% box that letterboxes it. Desktop + `resizable`: the frame hugs its screenshot (h-auto, capped at 90%
 // of the panel) instead of a fixed 90% height, so a screenshot shorter than
 // that no longer leaves empty frame-coloured bands above and below it. Because
 // an unloaded <img> has no height, the frame would collapse mid tab-switch, so
@@ -82,12 +83,12 @@ const PreviewFrame = React.forwardRef(function PreviewFrame({
             : 'w-full h-full [container-type:size] flex items-center justify-center'}>
         <div
             ref={frameRef}
-            className={`relative w-full max-w-full aspect-video max-lg:[contain:size] max-lg:w-[min(100%,calc(100cqh*16/9))] ${resizable ? 'max-lg:min-h-[calc(100%-4rem)] lg:aspect-auto lg:h-auto lg:max-h-[90%]' : 'lg:[contain:size] lg:w-[min(100%,calc(90cqh*16/9))]'} rounded-xl overflow-hidden flex flex-col transition-all duration-300 ${
+            className={`relative w-full max-w-full aspect-video max-lg:[contain:size] max-lg:w-[min(100%,calc(100cqh*16/9))] ${resizable ? 'max-lg:min-h-[calc(100%-4rem)] lg:aspect-auto lg:h-auto lg:max-h-[90%]' : (showHeader ? 'lg:aspect-auto lg:h-auto lg:w-[min(100%,calc((90cqh-2rem)*16/9))]' : 'lg:aspect-auto lg:h-auto lg:w-[min(100%,calc(90cqh*16/9))]')} rounded-xl overflow-hidden flex flex-col transition-all duration-300 ${
                 showChrome ? `${chromeClassName} border border-border/10 shadow-2xl` : 'bg-transparent'
             }`}
         >
             {showHeader && <BrowserFrame />}
-            <div ref={areaRef} className={`w-full flex-1 min-h-0 relative bg-border/5 ${resizable ? 'lg:flex-[0_1_auto]' : ''} ${imageAreaClassName}`}>
+            <div ref={areaRef} className={`w-full flex-1 min-h-0 relative bg-border/5 ${resizable ? 'lg:flex-[0_1_auto]' : 'lg:flex-none lg:aspect-video'} ${imageAreaClassName}`}>
                 <ImageWithSkeleton
                     src={imageSrc}
                     alt={imageAlt}

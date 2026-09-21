@@ -45,7 +45,7 @@ describe('shared PreviewFrame sizes itself with a definite height', () => {
     expect(imageAreaClassName).toBeTruthy();
     expect(imageAreaClassName).toMatch(/\bflex-1\b/);
     expect(imageAreaClassName).toMatch(/\bmin-h-0\b/);
-    expect(imageAreaClassName).not.toMatch(/aspect-video/);
+    expect(imageAreaClassName).not.toMatch(/(?<!lg:)aspect-video/); // only the desktop-only lg:aspect-video variant
   });
 
   it('never falls back to a content-driven max-h-only frame', () => {
