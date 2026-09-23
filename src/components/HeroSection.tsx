@@ -1,8 +1,10 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import HeroAskStrip from './HeroAskStrip';
 import gsap from 'gsap';
+
+const HERO_SCENE_SIZE = 672; // px, the Spline scene's authored canvas (measured)
 
 const SMOOTH_TAU = 0.18;
 
@@ -88,11 +90,17 @@ export default function HeroSection() {
     }
 
     const heroFig = document.querySelector<HTMLElement>('#home .hero-fig');
+    const heroSplineViewer = document.getElementById('hero-spline');
     const h1 = document.querySelector<HTMLElement>('#home .hero-h1');
     const h2 = document.querySelector<HTMLElement>('#home .hero-h2');
 
     bypass(h1); bypass(h2);
     if (heroFig) gsap.set(heroFig, { opacity: 0, y: 70 });
+    // Off for the entrance's duration: the Spline runtime hit-tests pointer
+    // moves against the canvas regardless of its opacity/in-flight transform,
+    // so a hover mid-slide could still fire a prop's pop-up. Restored in the
+    // tween's onComplete below, once the figure has stopped moving.
+    if (heroSplineViewer) heroSplineViewer.style.pointerEvents = 'none';
 
     const h1Words = h1 ? splitWords(h1) : [];
     const h2Chars = h2 ? splitChars(h2) : [];
@@ -141,7 +149,17 @@ export default function HeroSection() {
 
     function animate() {
       setTimeout(() => {
-        if (heroFig) gsap.to(heroFig, { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out' });
+        // onComplete dispatches 'hero-fig-settled' — picked up by the Spline
+        // sizing effect below to re-sync the runtime's cached hover-hit-test
+        // rect once this box has actually stopped moving (a fixed delay
+        // there undershoots on a slow device/tab, where this tween itself
+        // can take longer than the delay to even finish).
+        if (heroFig) {
+          gsap.to(heroFig, { opacity: 1, y: 0, duration: 1.1, ease: 'power3.out', onComplete: () => {
+            window.dispatchEvent(new Event('hero-fig-settled'));
+            if (heroSplineViewer) heroSplineViewer.style.pointerEvents = 'auto';
+          } });
+        }
         if (h1Words.length) gsap.to(h1Words, { opacity: 1, y: 0, rotation: 0, duration: 1.0, ease: 'power3.out', stagger: 0.11, delay: 0.15, onComplete: () => {
           // bypass() above left an inline transition:none on h1 itself (not
           // the word spans it was actually meant to bypass) — harmless while
@@ -381,11 +399,151 @@ export default function HeroSection() {
   // dropped frame and ~10s of cumulative main-thread longtasks every time a
   // user scrolls away for >4s and back — a real, reproducible jank that's
   // worse than the theoretical risk it was guarding against.
+  //
+  // Set as early as possible (not deferred to any later event): Loader.tsx's
+  // waitForAssets() listens for THIS element's own `load` event to decide
+  // when to dismiss the loading screen and fire 'hero-ready' — deferring
+  // `url` to something gated on 'hero-ready' (tried once) is a deadlock,
+  // since 'hero-ready' can then never fire without the loader's own 4s
+  // force-timeout.
   useEffect(() => {
     if (window.innerWidth < 768) return;
     const heroSpline = document.getElementById('hero-spline');
     if (!heroSpline) return;
     heroSpline.setAttribute('url', './models/hero_figure.splinecode');
+  }, []);
+
+  // The Spline runtime sizes its canvas off the host <spline-viewer>
+  // element's own LAYOUT size (clientWidth/clientHeight — unaffected by a CSS
+  // transform on that same element), not the scene's authored resolution. Two
+  // things follow from that:
+  //   - Giving the host `width/height: 100%` (i.e. the box's own ~720px) makes
+  //     the runtime render at 720x720 — but its camera is pixel-based, so a
+  //     smaller canvas shows a smaller CROP of the scene (hips down + the
+  //     side props cut off), not a shrunk whole scene.
+  //   - A CSS transform: scale() on a 100%-sized host doesn't fix this: the
+  //     transform doesn't change clientWidth, so the runtime keeps rendering
+  //     at the box's small size and the transform then shrinks that already-
+  //     cropped render even further — same crop, just smaller (confirmed live:
+  //     canvas stayed a plain 720x720 crop with a scale(0.667) applied).
+  // The fix: give the host a FIXED size equal to the scene's own authored
+  // resolution (measured 672x672) so the runtime always renders the whole,
+  // uncropped scene, then shrink that fixed-size host into the (smaller) box
+  // with a CSS transform + absolute position (see portfolio.css).
+  //
+  // That alone left the props' hover pop-ups offset by a small, fixed amount
+  // for some users but not others (root-caused by reading the bundled
+  // @splinetool/viewer source, unpkg.com/@splinetool/viewer@1.12.98/build/
+  // spline-viewer.js): the runtime's EventManager caches the canvas's
+  // getBoundingClientRect() ONCE, in its constructor, as `eventContext.
+  // domRect`, and maps every pointer event through that same cached rect
+  // forever after (`Lne`/`Bne` in the bundle: `(pageX - domRect.left) /
+  // domRect.width`, etc.) — it only gets refreshed on a real `window`
+  // `resize` event (and that listener is itself only attached if the scene
+  // has scroll-triggered objects, which ours doesn't) or on `scroll`. A pure
+  // CSS transform never fires either, so if the box's final position isn't
+  // settled yet at construction time (e.g. a webfont swap reflows `.hero-fig`
+  // after the scene has already loaded), the cached rect goes stale forever
+  // and every hover lands off by exactly however much the box later moved —
+  // confirmed live: the cached rect's top can drift ~14px from the canvas's
+  // real one. syncSplineDomRect() re-points the cache at the live rect
+  // whenever this box resizes, so it can never go stale again. Undocumented
+  // internals (`_spline`, `_canvas`, `eventManager.eventContext.domRect`) —
+  // every step is optional-chained so a future viewer version that removes
+  // them just makes this a no-op, not a crash.
+  useEffect(() => {
+    if (window.innerWidth < 768 || typeof ResizeObserver === 'undefined') return;
+    const fig = document.querySelector<HTMLElement>('#home .hero-fig');
+    const viewer = document.getElementById('hero-spline') as
+      | (HTMLElement & {
+          _spline?: {
+            eventManager?: { eventContext?: { domRect?: DOMRect } };
+            _renderer?: { setDrawingBufferSize?: (w: number, h: number, ratio: number) => void };
+            _getPixelRatio?: () => number;
+            requestRender?: () => void;
+          };
+          _canvas?: HTMLCanvasElement;
+        })
+      | null;
+    if (!fig) return;
+    // The canvas is a fixed 672x672 css px (native scene size) shown at
+    // ~0.4x, but the runtime backs it at devicePixelRatio (1620x1620 on a
+    // 1.5x screen) — ~5x more pixels than the ~450px it actually displays,
+    // vs. the reference site's ~765x672 backing. That per-frame GPU cost is
+    // what made the entrance stutter. Render at display resolution instead
+    // (backing pixels == on-screen pixels, still sharp), overriding the
+    // runtime's own pixel-ratio getter so its internal resizes keep it.
+    let lastPixelRatio = 0;
+    const syncSplinePixelRatio = (scale: number) => {
+      const sp = viewer?._spline;
+      const renderer = sp?._renderer;
+      if (!sp || !renderer?.setDrawingBufferSize) return;
+      const ratio = Math.min(window.devicePixelRatio || 1, Math.max(0.5, (window.devicePixelRatio || 1) * scale));
+      sp._getPixelRatio = () => ratio;
+      if (Math.abs(ratio - lastPixelRatio) < 0.01) return;
+      lastPixelRatio = ratio;
+      renderer.setDrawingBufferSize(HERO_SCENE_SIZE, HERO_SCENE_SIZE, ratio);
+      sp.requestRender?.();
+    };
+    const syncSplineDomRect = () => {
+      const canvas = viewer?._canvas;
+      const ctx = viewer?._spline?.eventManager?.eventContext;
+      if (canvas && ctx) ctx.domRect = canvas.getBoundingClientRect();
+    };
+    const sync = () => {
+      const rect = fig.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      if (!w || !h) return;
+      // Scale by HEIGHT alone (not Math.min(w, h)) so the scene always spans
+      // the box's full height, bottom to top — `.hero-fig` isn't a square, it
+      // can be wider than it is tall, and scaling by the smaller dimension
+      // left a gap between the figure's head and the top of the box. Width
+      // overflow beyond the box is fine: `.hero-fig` has `overflow: hidden`.
+      const scale = h / HERO_SCENE_SIZE;
+      const size = HERO_SCENE_SIZE * scale;
+      syncSplinePixelRatio(scale);
+      // Scale via the individual `scale` CSS property (origin 0 0, see the
+      // stylesheet rule) — the viewer sits inside `.hero-fig`, whose own
+      // entrance tween carries it along, so nothing else touches its transform.
+      if (viewer) viewer.style.scale = String(scale);
+      viewer?.style.setProperty('--hero-fig-x', (w - size) / 2 + 'px');
+      viewer?.style.setProperty('--hero-fig-y', '0px');
+      syncSplineDomRect();
+    };
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(fig);
+    // Also re-sync: once the scene actually finishes loading (its own
+    // constructor captures its first, possibly-stale rect right around this
+    // event); once the entrance tween's own onComplete fires (see animate()
+    // above — the authoritative "this box has actually stopped moving"
+    // signal, since neither `.hero-fig`'s own slide-up transform nor the
+    // spline-viewer's `--hero-fig-scale` transform change clientWidth/Height,
+    // so this ResizeObserver never fires for either on its own); and once
+    // more on a fixed delay as a fallback for whichever of those two fires
+    // first (a slow device/tab can still be mid-tween when the scene's
+    // 'load' event lands).
+    viewer?.addEventListener('load', sync);
+    window.addEventListener('hero-fig-settled', sync);
+    const settleTimer = window.setTimeout(sync, 1500);
+    // The viewer's `load` event can fire before `_spline`/`_renderer` exist
+    // (and the 1500ms fallback above can fire before the scene even loads),
+    // so nothing else guarantees a sync() call once the runtime is really
+    // up — poll for it so the reduced pixel ratio lands before the entrance.
+    let runtimeTimer = 0;
+    const waitForRuntime = () => {
+      if (viewer?._spline?._renderer) { sync(); return; }
+      runtimeTimer = window.setTimeout(waitForRuntime, 100);
+    };
+    waitForRuntime();
+    return () => {
+      window.clearTimeout(runtimeTimer);
+      window.removeEventListener('hero-fig-settled', sync);
+      ro.disconnect();
+      viewer?.removeEventListener('load', sync);
+      window.clearTimeout(settleTimer);
+    };
   }, []);
 
   // Mobile hero layout: the image+headline+CTA group (.hero-inner) must sit
@@ -438,6 +596,31 @@ export default function HeroSection() {
     };
   }, []);
 
+  const tagsMarquee = (
+    <div id="hero-tags-clip">
+      <div className="hero-tags scroller hero-scroller" data-direction="left" data-animated="true">
+        <div className="scroller-inner">
+          <span className="tag-capsule"><i className="fas fa-rocket" style={{ color: '#4ade80' }}></i>Open for Opportunities</span>
+          <span className="tag-capsule"><i className="fas fa-sitemap" style={{ color: '#60a5fa' }}></i>Complex System UX</span>
+          <span className="tag-capsule"><i className="fas fa-cube" style={{ color: '#c084fc' }}></i>3D Web Experience</span>
+          <span className="tag-capsule"><i className="fas fa-robot" style={{ color: '#67e8f9' }}></i>AI-Powered Workflow</span>
+          <span className="tag-capsule"><i className="fas fa-mobile-alt" style={{ color: '#fb923c' }}></i>Mobile App UI</span>
+          <span className="tag-capsule"><i className="fas fa-landmark" style={{ color: '#4ade80' }}></i>Gov &amp; Enterprise Projects</span>
+          <span className="tag-capsule"><i className="fas fa-puzzle-piece" style={{ color: '#facc15' }}></i>Problem Solver</span>
+          <span className="tag-capsule"><i className="ph-fill ph-map-pin" style={{ color: '#f87171' }}></i>Taipei, Taiwan</span>
+          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-rocket" style={{ color: '#4ade80' }}></i>Open for Opportunities</span>
+          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-sitemap" style={{ color: '#60a5fa' }}></i>Complex System UX</span>
+          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-cube" style={{ color: '#c084fc' }}></i>3D Web Experience</span>
+          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-robot" style={{ color: '#67e8f9' }}></i>AI-Powered Workflow</span>
+          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-mobile-alt" style={{ color: '#fb923c' }}></i>Mobile App UI</span>
+          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-landmark" style={{ color: '#4ade80' }}></i>Gov &amp; Enterprise Projects</span>
+          <span className="tag-capsule" aria-hidden="true"><i className="fas fa-puzzle-piece" style={{ color: '#facc15' }}></i>Problem Solver</span>
+          <span className="tag-capsule" aria-hidden="true"><i className="ph-fill ph-map-pin" style={{ color: '#f87171' }}></i>Taipei, Taiwan</span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <section id="home">
       <div className="hero-inner">
@@ -483,29 +666,21 @@ export default function HeroSection() {
           (BeamsBackground.tsx's sync() writes both from the same
           heroFramePath() `d` as the border/glow), so the marquee gets cut
           off wherever it crosses into either notch instead of spilling
-          into the space the ask-strip/navbar logo actually occupies. */}
-      <div id="hero-tags-clip">
-        <div className="hero-tags scroller hero-scroller" data-direction="left" data-animated="true">
-          <div className="scroller-inner">
-            <span className="tag-capsule"><i className="fas fa-rocket" style={{ color: '#4ade80' }}></i>Open for Opportunities</span>
-            <span className="tag-capsule"><i className="fas fa-sitemap" style={{ color: '#60a5fa' }}></i>Complex System UX</span>
-            <span className="tag-capsule"><i className="fas fa-cube" style={{ color: '#c084fc' }}></i>3D Web Experience</span>
-            <span className="tag-capsule"><i className="fas fa-robot" style={{ color: '#67e8f9' }}></i>AI-Powered Workflow</span>
-            <span className="tag-capsule"><i className="fas fa-mobile-alt" style={{ color: '#fb923c' }}></i>Mobile App UI</span>
-            <span className="tag-capsule"><i className="fas fa-landmark" style={{ color: '#4ade80' }}></i>Gov &amp; Enterprise Projects</span>
-            <span className="tag-capsule"><i className="fas fa-puzzle-piece" style={{ color: '#facc15' }}></i>Problem Solver</span>
-            <span className="tag-capsule"><i className="ph-fill ph-map-pin" style={{ color: '#f87171' }}></i>Taipei, Taiwan</span>
-            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-rocket" style={{ color: '#4ade80' }}></i>Open for Opportunities</span>
-            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-sitemap" style={{ color: '#60a5fa' }}></i>Complex System UX</span>
-            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-cube" style={{ color: '#c084fc' }}></i>3D Web Experience</span>
-            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-robot" style={{ color: '#67e8f9' }}></i>AI-Powered Workflow</span>
-            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-mobile-alt" style={{ color: '#fb923c' }}></i>Mobile App UI</span>
-            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-landmark" style={{ color: '#4ade80' }}></i>Gov &amp; Enterprise Projects</span>
-            <span className="tag-capsule" aria-hidden="true"><i className="fas fa-puzzle-piece" style={{ color: '#facc15' }}></i>Problem Solver</span>
-            <span className="tag-capsule" aria-hidden="true"><i className="ph-fill ph-map-pin" style={{ color: '#f87171' }}></i>Taipei, Taiwan</span>
-          </div>
-        </div>
-      </div>
+          into the space the ask-strip/navbar logo actually occupies.
+
+          Portaled to document.body at >=1025px (same threshold
+          BeamsBackground.tsx's own sync() uses for the notch/clip-path
+          system) for the same reason #hero-spline is (see its own portal
+          comment above): the figure now paints above #main-header, and a
+          descendant of #home can never out-rank that — so to keep the
+          marquee in front of the figure too (not just the navbar) where
+          they overlap, it has to leave #home's stacking context the same
+          way. Below 1025px it renders in place exactly as before (no
+          notch/clip-path system exists there for it to need to share, and
+          the figure doesn't reach it in practice at those widths) —
+          switching the render target on every resize would be pointless
+          churn for a case that doesn't need fixing. */}
+      {tagsMarquee}
       <HeroAskStrip />
       <button
         className="hero-scroll-indicator"

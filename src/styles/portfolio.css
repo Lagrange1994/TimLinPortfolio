@@ -2006,10 +2006,13 @@
          identical clip-path in sync() — the marquee is a plain horizontal
          strip with no curve of its own, so without this it doesn't taper
          off at the notches, it just keeps going straight through the
-         rectangular area the ask-strip/navbar logo actually occupy. z-index
-         -2 keeps the whole wrapper above the spline scene (-3) it floats
-         over everywhere else and below the border/glow paint order for the
-         notch seam it now shares with them. */
+         rectangular area the ask-strip/navbar logo actually occupy.
+
+
+         z-index 1 (above .hero-inner's z-index:auto content, which includes
+         the Spline figure) so the marquee paints in front of the figure
+         where they overlap; still below #main-header (100) and every fixed
+         overlay, since #home is its own stacking context. */
       #hero-tags-clip {
         display: block;
         position: absolute;
@@ -2017,7 +2020,7 @@
         left: 24px;
         width: calc(100% - 48px);
         height: calc(100% - 48px);
-        z-index: -2;
+        z-index: 1;
         pointer-events: none;
       }
 
@@ -2290,16 +2293,32 @@
     }
 
     .hero-fig spline-viewer {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
       display: block;
+      overflow: hidden;
     }
 
     /* Desktop + tablet: show Spline, hide static img */
     @media (min-width: 768px) {
       .hero-fig-mobile {
         display: none !important;
+      }
+
+      /* Fixed at the scene's own native 672x672 (see HeroSection.tsx's sync
+         effect for why: the runtime sizes its canvas off this element's own
+         layout size, not a container-relative one, and its camera is pixel-
+         based so a smaller canvas crops rather than shrinks). Positioned
+         inside `.hero-fig` (position: relative) with explicit left/top from
+         --hero-fig-x/-y, and shrunk into the box with the inline `scale`
+         property the sync effect sets. No z-index: the figure lives in
+         `.hero-fig`'s own stacking order, behind the marquee
+         (#hero-tags-clip, z-index 1) and #main-header. */
+      .hero-fig spline-viewer {
+        position: absolute;
+        left: var(--hero-fig-x, 0px);
+        top: var(--hero-fig-y, 0px);
+        width: 672px;
+        height: 672px;
+        transform-origin: 0 0;
       }
     }
 
