@@ -4,9 +4,13 @@ import { scrollToSectionAligned } from '../utils/navHeader';
 import HeroAskStrip from './HeroAskStrip';
 import gsap from 'gsap';
 
-const HERO_SCENE_SIZE = 672; // px, the Spline scene's authored canvas (measured)
+const HERO_SCENE_SIZE = 800; // px, the Spline scene's authored canvas (measured)
 
 const SMOOTH_TAU = 0.18;
+
+interface HoverEventLike {
+  data?: { actions?: { data?: { type?: string; runMode?: string; tweens?: { data?: { state?: string | null } }[] } }[] };
+}
 
 export default function HeroSection() {
   const { t, heroDescs, lang } = useLang();
@@ -427,7 +431,7 @@ export default function HeroSection() {
   //     cropped render even further — same crop, just smaller (confirmed live:
   //     canvas stayed a plain 720x720 crop with a scale(0.667) applied).
   // The fix: give the host a FIXED size equal to the scene's own authored
-  // resolution (measured 672x672) so the runtime always renders the whole,
+  // resolution (measured 800x800) so the runtime always renders the whole,
   // uncropped scene, then shrink that fixed-size host into the (smaller) box
   // with a CSS transform + absolute position (see portfolio.css).
   //
@@ -457,7 +461,16 @@ export default function HeroSection() {
     const viewer = document.getElementById('hero-spline') as
       | (HTMLElement & {
           _spline?: {
-            eventManager?: { eventContext?: { domRect?: DOMRect } };
+            eventManager?: {
+              eventContext?: { domRect?: DOMRect };
+              handlers?: {
+                MouseHover?: {
+                  handleMouseHoverEvent?: (leaveAll?: boolean) => void;
+                  objects?: unknown[];
+                  eventsPerObjects?: Record<string, HoverEventLike[]>;
+                };
+              };
+            };
             _renderer?: { setDrawingBufferSize?: (w: number, h: number, ratio: number) => void };
             _getPixelRatio?: () => number;
             requestRender?: () => void;
@@ -466,7 +479,7 @@ export default function HeroSection() {
         })
       | null;
     if (!fig) return;
-    // The canvas is a fixed 672x672 css px (native scene size) shown at
+    // The canvas is a fixed 800x800 css px (native scene size) shown at
     // ~0.4x, but the runtime backs it at devicePixelRatio (1620x1620 on a
     // 1.5x screen) — ~5x more pixels than the ~450px it actually displays,
     // vs. the reference site's ~765x672 backing. That per-frame GPU cost is
@@ -484,6 +497,42 @@ export default function HeroSection() {
       lastPixelRatio = ratio;
       renderer.setDrawingBufferSize(HERO_SCENE_SIZE, HERO_SCENE_SIZE, ratio);
       sp.requestRender?.();
+    };
+    // The runtime's hover manager listens for `pointermove` on the canvas
+    // only and dispatches an object's "leave" (the Toggle-mode return to Base)
+    // from the NEXT in-canvas move that misses it. A pointer that exits the
+    // canvas straight from an object near its edge never produces that move,
+    // so the object stays stuck "hovered" and its next hover-in is ignored —
+    // the first hover animates, later ones don't. Flush every hovered object
+    // when the pointer leaves the host (handleMouseHoverEvent(true) = leave
+    // all). Undocumented internals, optional-chained like the rest here.
+    const onPointerLeave = () => {
+      viewer?._spline?.eventManager?.handlers?.MouseHover?.handleMouseHoverEvent?.(true);
+    };
+    viewer?.addEventListener('pointerleave', onPointerLeave);
+    // Some props (controller/ipad/wacom) ship a Toggle-mode Mouse Hover
+    // Transition whose FIRST tween — the return-to-Base half — has `state`
+    // missing ("Current State") instead of `null` ("Base State"). The runtime
+    // resolves a missing state to the object's state captured at init(), which
+    // gets re-captured while hovered, so the leave never returns to Base and
+    // every hover after the first appears to do nothing. computer/p c have an
+    // explicit `null` and work. Normalise to `null` (Base) once the hover
+    // manager exists, before any hover can happen (pointer-events are off
+    // during the entrance). The proper fix is re-picking Base State in the
+    // Spline editor; this keeps the site working regardless.
+    const fixHoverBaseStates = () => {
+      const hover = viewer?._spline?.eventManager?.handlers?.MouseHover;
+      if (!hover?.objects?.length || !hover.eventsPerObjects) return false;
+      for (const events of Object.values(hover.eventsPerObjects)) {
+        for (const ev of events) {
+          for (const action of ev.data?.actions ?? []) {
+            const a = action.data;
+            const first = a?.tweens?.[0]?.data;
+            if (a?.type === 'Transition' && a.runMode === 'Toggle' && first && first.state === undefined) first.state = null;
+          }
+        }
+      }
+      return true;
     };
     const syncSplineDomRect = () => {
       const canvas = viewer?._canvas;
@@ -532,6 +581,11 @@ export default function HeroSection() {
     // so nothing else guarantees a sync() call once the runtime is really
     // up — poll for it so the reduced pixel ratio lands before the entrance.
     let runtimeTimer = 0;
+    let hoverFixTimer = 0;
+    const waitForHover = () => {
+      if (!fixHoverBaseStates()) hoverFixTimer = window.setTimeout(waitForHover, 100);
+    };
+    waitForHover();
     const waitForRuntime = () => {
       if (viewer?._spline?._renderer) { sync(); return; }
       runtimeTimer = window.setTimeout(waitForRuntime, 100);
@@ -539,6 +593,8 @@ export default function HeroSection() {
     waitForRuntime();
     return () => {
       window.clearTimeout(runtimeTimer);
+      window.clearTimeout(hoverFixTimer);
+      viewer?.removeEventListener('pointerleave', onPointerLeave);
       window.removeEventListener('hero-fig-settled', sync);
       ro.disconnect();
       viewer?.removeEventListener('load', sync);

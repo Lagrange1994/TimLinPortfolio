@@ -17,15 +17,15 @@ const read = (p: string) => fs.readFileSync(path.join(ROOT, p), 'utf8').replace(
 // guessed at first) so the runtime always renders the whole scene, then
 // shrinking that fixed host into the box with a CSS transform + explicit
 // position. This reliably fixes the crop (verified across viewport sizes).
-describe('hero figure viewer is fixed at the scene\'s native 672x672 and scaled into the box', () => {
+describe('hero figure viewer is fixed at the scene\'s native 800x800 and scaled into the box', () => {
   const css = read('src/styles/portfolio.css');
   const tsx = read('src/components/HeroSection.tsx');
 
-  it('fixes the host at 672x672 and positions it with --hero-fig-{x,y}', () => {
+  it('fixes the host at 800x800 and positions it with --hero-fig-{x,y}', () => {
     const block = css.match(/\.hero-fig spline-viewer \{\s*position: absolute;[\s\S]*?\}/)?.[0];
     expect(block).toBeTruthy();
-    expect(block).toMatch(/width: 672px;/);
-    expect(block).toMatch(/height: 672px;/);
+    expect(block).toMatch(/width: 800px;/);
+    expect(block).toMatch(/height: 800px;/);
     expect(block).toMatch(/left: var\(--hero-fig-x, 0px\);/);
     expect(block).toMatch(/top: var\(--hero-fig-y, 0px\);/);
     // No `transform` here any more (was `scale(var(--hero-fig-scale, ...))`):
@@ -35,8 +35,8 @@ describe('hero figure viewer is fixed at the scene\'s native 672x672 and scaled 
     expect(block).not.toMatch(/transform:/);
   });
 
-  it('keeps --hero-fig-{scale,x,y} in sync with the box via HERO_SCENE_SIZE = 672 and a ResizeObserver', () => {
-    expect(tsx).toMatch(/const HERO_SCENE_SIZE = 672/);
+  it('keeps --hero-fig-{scale,x,y} in sync with the box via HERO_SCENE_SIZE = 800 and a ResizeObserver', () => {
+    expect(tsx).toMatch(/const HERO_SCENE_SIZE = 800/);
     expect(tsx).toMatch(/new ResizeObserver\(sync\)/);
     expect(tsx).toMatch(/ro\.disconnect\(\)/);
   });
@@ -157,5 +157,43 @@ describe('hero figure renders at display resolution, not native-size x dpr', () 
   it('polls for the runtime so the ratio lands even when load fires before _spline exists', () => {
     expect(tsx).toMatch(/if \(viewer\?\._spline\?\._renderer\) \{ sync\(\); return; \}/);
     expect(tsx).toMatch(/window\.clearTimeout\(runtimeTimer\)/);
+  });
+});
+
+// 2026-09-24: objects near the canvas edge (ipad/controller/wacom) animated
+// on the FIRST hover only. The runtime's hover manager listens to `pointermove`
+// on the canvas and only dispatches an object's "leave" from a later in-canvas
+// move that misses it — a pointer leaving the canvas straight from an edge
+// object never gets one, leaving the object stuck "hovered" so the next
+// hover-in is ignored. Fixed by flushing all hovered objects on `pointerleave`.
+describe('hero figure flushes stuck hover state when the pointer leaves the viewer', () => {
+  const tsx = read('src/components/HeroSection.tsx');
+
+  it('calls the hover manager\'s handleMouseHoverEvent(true) on pointerleave, optional-chained', () => {
+    expect(tsx).toMatch(/viewer\?\.addEventListener\('pointerleave', onPointerLeave\)/);
+    expect(tsx).toMatch(/eventManager\?\.handlers\?\.MouseHover\?\.handleMouseHoverEvent\?\.\(true\)/);
+  });
+
+  it('removes the pointerleave listener on cleanup', () => {
+    expect(tsx).toMatch(/viewer\?\.removeEventListener\('pointerleave', onPointerLeave\)/);
+  });
+});
+
+// 2026-09-24: controller/ipad/wacom animated their hover scale-up only once.
+// Read from the live runtime: their first Mouse Hover Transition's FIRST tween
+// (the return-to-Base half) has `state` MISSING ("Current State") where
+// computer/p c have an explicit `null` ("Base State"). The runtime resolves a
+// missing state to the object's state captured at init(), re-captured while
+// hovered, so the leave never returns to Base. Normalised to null at runtime.
+describe('hero figure normalises missing Base states on Toggle hover transitions', () => {
+  const tsx = read('src/components/HeroSection.tsx');
+
+  it('sets a missing first-tween state to null on Toggle-mode Transition actions', () => {
+    expect(tsx).toMatch(/a\?\.type === 'Transition' && a\.runMode === 'Toggle' && first && first\.state === undefined\) first\.state = null/);
+  });
+
+  it('polls until the hover manager exists, and clears the timer on cleanup', () => {
+    expect(tsx).toMatch(/if \(!fixHoverBaseStates\(\)\) hoverFixTimer = window\.setTimeout\(waitForHover, 100\)/);
+    expect(tsx).toMatch(/window\.clearTimeout\(hoverFixTimer\)/);
   });
 });

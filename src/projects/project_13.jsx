@@ -1,3 +1,4 @@
+import '../utils/scaleLock';
 import '../styles/project13-tailwind.css';
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';

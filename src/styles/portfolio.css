@@ -657,7 +657,8 @@
        the same visual density as a 1920 screen instead of just spreading out. */
     @media (min-width: 1921px) {
       html {
-        zoom: calc(100vw / 1920);
+        --z: calc(100vw / 1920px);
+        zoom: var(--z);
       }
     }
 
@@ -1502,7 +1503,7 @@
     /* HERO */
     /* ── HERO — matches Vercel snap-section exactly ── */
     #home {
-      min-height: 100dvh;
+      min-height: calc(100dvh / var(--z, 1));
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -1530,7 +1531,7 @@
       #home {
         padding-top: 0;
         padding-bottom: 0;
-        height: 100dvh;
+        height: calc(100dvh / var(--z, 1));
       }
     }
 
@@ -1698,7 +1699,7 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: 100dvh;
+      height: calc(100dvh / var(--z, 1));
       z-index: -1;
       pointer-events: none;
       opacity: 0;
@@ -1719,7 +1720,7 @@
        object-fit above and doesn't need the extra width. */
     @media (max-aspect-ratio: 16/9) {
       spline-viewer.spline-bg-layer {
-        width: calc(100dvh * 16 / 9);
+        width: calc(calc(100dvh / var(--z, 1)) * 16 / 9);
         left: 50%;
         transform: translateX(-50%);
       }
@@ -2303,7 +2304,7 @@
         display: none !important;
       }
 
-      /* Fixed at the scene's own native 672x672 (see HeroSection.tsx's sync
+      /* Fixed at the scene's own native 800x800 (see HeroSection.tsx's sync
          effect for why: the runtime sizes its canvas off this element's own
          layout size, not a container-relative one, and its camera is pixel-
          based so a smaller canvas crops rather than shrinks). Positioned
@@ -2316,8 +2317,8 @@
         position: absolute;
         left: var(--hero-fig-x, 0px);
         top: var(--hero-fig-y, 0px);
-        width: 672px;
-        height: 672px;
+        width: 800px;
+        height: 800px;
         transform-origin: 0 0;
       }
     }
@@ -3735,7 +3736,7 @@
          content box for the tail notch drawn by the SVG behind it. */
       margin-top: 14px;
       width: min(360px, 84vw);
-      max-height: 60vh;
+      max-height: calc(60vh / var(--z, 1));
       overflow-y: auto;
       background: transparent;
       padding: 20px;
@@ -4021,7 +4022,7 @@
        Expanded/bento mode is untouched (normal block flow). */
     #portfolio:not(.portfolio-expanded) {
       position: relative;
-      min-height: 100dvh;
+      min-height: calc(100dvh / var(--z, 1));
     }
 
     #portfolio:not(.portfolio-expanded) .portfolio-header {
@@ -4052,7 +4053,7 @@
          breathing room so the wall doesn't ride flush against the pill
          navbar — kept as an actual margin (not folded into `top`) so it
          reads as space above the wall rather than shifting its centre. */
-      top: calc((100dvh - var(--wall-h, 75dvh)) / 2 - var(--nav-h, 0px));
+      top: calc((calc(100dvh / var(--z, 1)) - var(--wall-h, calc(75dvh / var(--z, 1)))) / 2 - var(--nav-h, 0px));
       /* Same pre-lock fallback pattern mobile already uses (see its own
          85svh + --wall-h mirror below): without an explicit height here,
          this absolutely-positioned box has none of its own and its only
@@ -4065,7 +4066,7 @@
          instant the lock runs, reading as an instant pop-in with no visible
          rise. Matches the var()'s own 75dvh fallback already used for
          `top` above, so the box is centred consistently pre- and post-lock. */
-      height: var(--wall-h, 75dvh);
+      height: var(--wall-h, calc(75dvh / var(--z, 1)));
       /* Inset 48px each side, same as .portfolio-wall-frame's own base rule
          below — see that rule's comment for why (lines up with the headline's
          left edge instead of running full-bleed past it). */
@@ -4090,7 +4091,7 @@
       left: auto;
       right: 48px;
       width: max-content;
-      top: calc((100dvh - var(--wall-h, 75dvh)) / 2 - var(--nav-h, 0px) + 1.25rem + var(--wall-h, 75dvh) - 40px);
+      top: calc((calc(100dvh / var(--z, 1)) - var(--wall-h, calc(75dvh / var(--z, 1)))) / 2 - var(--nav-h, 0px) + 1.25rem + var(--wall-h, calc(75dvh / var(--z, 1))) - 40px);
       margin: 0;
       z-index: 2;
     }
@@ -8469,8 +8470,8 @@
       position: fixed;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
+      width: calc(100vw / var(--z, 1));
+      height: calc(100vh / var(--z, 1));
       z-index: 500;
       pointer-events: none;
       overflow: hidden;

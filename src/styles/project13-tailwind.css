@@ -11,7 +11,8 @@
    same visual density as a 1920 screen instead of just spreading out. */
 @media (min-width: 1921px) {
   html {
-    zoom: calc(100vw / 1920);
+    --z: calc(100vw / 1920px);
+    zoom: var(--z);
   }
 }
 
