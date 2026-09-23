@@ -16,6 +16,12 @@
   }
 }
 
+/* Tailwind viewport-height utilities resolve against the un-zoomed viewport,
+   so under the root zoom they come out --z times too tall. Same compensation
+   as the other full-viewport sizes. Unlayered, so it beats @layer utilities. */
+.min-h-screen { min-height: calc(100vh / var(--z, 1)); }
+.h-screen { height: calc(100vh / var(--z, 1)); }
+
 @theme {
   --color-tech-primary: #1890FF;
   --color-tech-dark: #0B0C10;

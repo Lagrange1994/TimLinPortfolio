@@ -39,3 +39,21 @@ describe('site-wide 4K scale lock (zoom to a 1920px-wide design)', () => {
     }
   });
 });
+
+// Tailwind's `min-h-screen`/`h-screen`/`max-h-[90vh]` resolve against the
+// un-zoomed viewport, so under the root zoom project_13's hero came out
+// twice as tall at 3840 (2160px virtual instead of 1080).
+describe('Tailwind viewport-height utilities are compensated for the zoom', () => {
+  it('project13 sheet overrides min-h-screen and h-screen', () => {
+    const css = read('src/styles/project13-tailwind.css');
+    expect(css).toMatch(/\.min-h-screen \{ min-height: calc\(100vh \/ var\(--z, 1\)\); \}/);
+    expect(css).toMatch(/\.h-screen \{ height: calc\(100vh \/ var\(--z, 1\)\); \}/);
+  });
+
+  it('projects sheet overrides min-h-screen, h-screen and max-h-[90vh]', () => {
+    const css = read('src/styles/projects-tailwind.css');
+    expect(css).toMatch(/\.min-h-screen \{ min-height: calc\(100vh \/ var\(--z, 1\)\); \}/);
+    expect(css).toMatch(/\.h-screen \{ height: calc\(100vh \/ var\(--z, 1\)\); \}/);
+    expect(css).toContain('.max-h-\\[90vh\\] { max-height: calc(90vh / var(--z, 1)); }');
+  });
+});
