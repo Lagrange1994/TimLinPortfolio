@@ -13,9 +13,10 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 // TEMP (2026-09-27): expanded grid cards' motion/glow effects are switched
-// off — MagicBento glow/spotlight/magnetic tilt, the fly-in entrance, and
-// the CSS hover lift/zoom/shadow (gated by #portfolio-grid.grid-fx-off in
-// portfolio.css). Kept: the hover hero-image ripple, and the marquee wall.
+// off — MagicBento glow/spotlight/magnetic tilt and the CSS hover lift/zoom/
+// shadow (gated by #portfolio-grid.grid-fx-off in portfolio.css). Kept: the
+// fly-in entrance on expand/filter switch, the hover hero-image ripple, and
+// the marquee wall.
 // Flip to true to restore.
 const GRID_CARD_EFFECTS = false;
 
@@ -1160,7 +1161,7 @@ export default function PortfolioSection() {
   // opacity (inherited from the prior animation's `clearProps`) before the
   // 120ms-delayed gsap.fromTo() in the effect below hides and re-animates them.
   useLayoutEffect(() => {
-    if (!expanded || !GRID_CARD_EFFECTS) return;
+    if (!expanded) return;
     const grid = document.getElementById('portfolio-grid');
     if (!grid) return;
     // Targets .grid-card-shadow (see the entrance effect below for why) —
@@ -1197,8 +1198,6 @@ export default function PortfolioSection() {
       wrapper.style.display = show ? '' : 'none';
       return show;
     });
-
-    if (!GRID_CARD_EFFECTS) return;
 
     setTimeout(() => {
       gsap.killTweensOf('#portfolio-grid .grid-card-shadow');

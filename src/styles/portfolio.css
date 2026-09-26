@@ -5471,8 +5471,9 @@
     }
 
     /* TEMP: expanded grid cards' effects switched off (GRID_CARD_EFFECTS in
-       PortfolioSection.tsx adds .grid-fx-off; it also skips MagicBento and
-       the fly-in entrance). The hover hero-image ripple is kept on purpose.
+       PortfolioSection.tsx adds .grid-fx-off; it also skips MagicBento).
+       Kept on purpose: the fly-in entrance on expand/filter switch and the
+       hover hero-image ripple.
        Delete this block + flip the flag to restore. */
     #portfolio-grid.grid-fx-off .grid-card-shadow:hover,
     #portfolio-grid.grid-fx-off .grid-card:hover img {
