@@ -273,7 +273,8 @@ Body / UI（固定 px，依使用次數）：
 - 邊框高光環：`.sc-card::after` 或實體 `.sc-ring`（1px、280px 白色 radial，隨 `--sc-x/y`，hover 淡入 .35s）
 - 背景白光：`.sc-overlay`（600px、8% 白，隨 `--sc-x/y`）
 - 背景色光：`.card-spotlight::before` 或實體 `.spotlight-layer`（`--spotlight-color`，隨 `--mouse-x/y`，hover 60%）
-- 卡片本身有 `overflow:hidden` 以外需求（外側陰影、radar 環）時用實體元素版本
+- 卡片本身有 `overflow:hidden` 以外需求（外側陰影）時用實體元素版本
+- hover 雷達環：共用「HOVER RADAR RING」規則，所有非 Portfolio 卡片用 `outline` + `@keyframes card-radar`（offset 8→17px、白 8.4%→0、3s），不佔偽元素、不被 overflow 裁切、自動跟卡片圓角；`.ai-card.ai-focal` 常駐播放；light mode 由 `--radar-alpha: 0` 關閉
 - hover 大陰影：共用「HOVER SHADOW LAYER」規則（`.bento-shadow`、`.card-hover-shadow`、各 wrapper `::after`），只淡入 opacity
 - light mode 全部關閉
 

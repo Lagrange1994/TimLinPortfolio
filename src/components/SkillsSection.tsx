@@ -1050,19 +1050,12 @@ export default function SkillsSection() {
     return () => cancelAnimationFrame(raf);
   }, [t]);
 
-  // Process + AI card decorations. The old cursor-following edge glow
+  // AI card decorations (the hover radar ring is pure CSS now — see
+  // .card-radar keyframes in portfolio.css). The old cursor-following edge glow
   // (.edge-light, --edge-proximity/--cursor-angle) was replaced 2026-09-27
   // by About Me's white border ring (.sc-ring, driven by --sc-x/--sc-y).
   useEffect(() => {
     const listeners: Array<[HTMLElement, (e: MouseEvent) => void, () => void]> = [];
-
-    // Radar ring — inject into ALL process cards (inhouse + freelance)
-    document.querySelectorAll<HTMLElement>('.process-card').forEach(card => {
-      if (card.querySelector('.process-radar')) return;
-      const radar = document.createElement('span');
-      radar.className = 'process-radar';
-      card.insertBefore(radar, card.firstChild);
-    });
 
     // How I Use AI cards — carries the big-blur hover shadow as a static
     // value that only ever crossfades via opacity (see .card-hover-shadow's
@@ -1106,7 +1099,6 @@ export default function SkillsSection() {
       });
       // Fully undo DOM changes so Strict Mode's second invocation finds
       // clean cards and can re-initialize.
-      document.querySelectorAll<HTMLElement>('.process-card .process-radar').forEach(el => el.remove());
       document.querySelectorAll<HTMLElement>('.ai-card > .card-hover-shadow').forEach(el => el.remove());
     };
   }, [t]);

@@ -2937,8 +2937,8 @@
 
     /* ── Bento card styling ── padding/gap lifted from inpublic.studio's
        "Our focus is simple" section; corner shape + border background
-       match the How I Use AI cards (.ai-card in the section above), minus
-       their hover radar ring — these stay static.
+       match the How I Use AI cards (.ai-card in the section above); the
+       hover radar ring is shared (see HOVER RADAR RING below).
        Equal-height cells (intro1/intro2 spanning 2 rows,
        years/projects/domains/industry in a 2x2) come for free from CSS
        Grid's default align-items:stretch. */
@@ -2974,6 +2974,62 @@
 
     .bento-card:hover {
       transform: translateY(-4px);
+    }
+
+    /* ── HOVER RADAR RING ──
+       One outline pulse for every non-Portfolio card (was an .ai-card::after
+       ring + a JS-injected .process-radar span, both scale()-animated).
+       outline paints outside the box, so the cards' own overflow:hidden
+       can't clip it, it needs no extra element or free pseudo, and it
+       follows the card's border-radius/corner-shape at every breakpoint.
+       Animating outline-offset (not scale) keeps the spread uniform on
+       every card size. Light mode zeroes the alpha (was opacity:0 there). */
+    :root {
+      --radar-alpha: .084;
+    }
+
+    :root[data-theme="light"] {
+      --radar-alpha: 0;
+    }
+
+    @keyframes card-radar {
+      from { outline-offset: 8px;  outline-color: rgba(255, 255, 255, var(--radar-alpha)); }
+      to   { outline-offset: 17px; outline-color: rgba(255, 255, 255, 0); }
+    }
+
+    .bento-card,
+    .tech-item,
+    .mcp-card,
+    .pc-card,
+    .contact-card,
+    .cta-strip,
+    .line-banner,
+    .ai-card,
+    .process-card {
+      outline: 1px solid transparent;
+    }
+
+    :is(.bento-card, .tech-item, .mcp-card, .contact-card, .cta-strip,
+        .line-banner, .ai-card, .process-card):hover,
+    .ai-card.ai-focal {
+      animation: card-radar 3s ease-out infinite;
+    }
+
+    /* .pc-card already runs pc-glow-bg — keep it alongside the ring. */
+    .pc-card:hover {
+      animation: pc-glow-bg 12s linear infinite, card-radar 3s ease-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :is(.bento-card, .tech-item, .mcp-card, .contact-card, .cta-strip,
+          .line-banner, .ai-card, .process-card):hover,
+      .ai-card.ai-focal {
+        animation: none;
+      }
+
+      .pc-card:hover {
+        animation: pc-glow-bg 12s linear infinite;
+      }
     }
 
     /* ── HOVER SHADOW LAYER ──
@@ -3329,22 +3385,6 @@
       box-shadow: var(--card-shadow-ai-hover-tight);
     }
 
-
-    /* Radar ring injected by JS — reuses aiRingP keyframe from AI section */
-    .process-radar {
-      position: absolute;
-      inset: -10px;
-      border-radius: calc(48px + 10px);
-      corner-shape: squircle;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      pointer-events: none;
-      opacity: 0;
-      z-index: 2;
-    }
-
-    .process-card:hover .process-radar {
-      animation: aiRingP 3s ease-out infinite;
-    }
 
     /* JS wraps freelance card children in .border-glow-inner */
     .border-glow-inner {
@@ -5984,9 +6024,9 @@
     /* Cursor-tracking white border ring (About Me cards). .sc-ring is the
        same ring as a real element, for cards that can't take .sc-card itself
        — My Design Process (.border-glow-card) and How I Use AI (.ai-card)
-       both draw shadows/rings outside their box, which .sc-card's
-       overflow:hidden would clip, and .ai-card's ::after is already its
-       radar ring. Both set --sc-x/--sc-y the same way About does. */
+       both draw shadows outside their box, which .sc-card's
+       overflow:hidden would clip. Both set --sc-x/--sc-y the same way
+       About does. */
     .sc-card::after,
     .sc-ring {
       content: '';
@@ -6049,7 +6089,7 @@
 
     /* .spotlight-layer / .sc-overlay as real elements — for How I Use AI
        cards, which can't take .card-spotlight/.sc-card themselves: their
-       overflow:hidden would clip .ai-card's outer radar ring and hover
+       overflow:hidden would clip .ai-card's hover
        shadow, and .ai-card's ::before is already its top edge line. With no
        overflow clip, the layers round their own corners instead. z-index:-1
        tucks them under the card's in-flow content (above its background —
@@ -8648,11 +8688,8 @@
        上已經改成同款空心處理的 .ai-glyph 呼應。 */
     :root[data-theme="light"] .ai-focal-badge{background:rgba(181,139,255,.12);border:1px solid rgba(181,139,255,.5);color:#7C3AED;box-shadow:none}
     :root[data-theme="light"] .ai-focal-badge::before{background:currentColor}
-    /* Radar ring */
+    /* Radar ring keyframe — now only .mcp-hub-ring; cards use card-radar */
     @keyframes aiRingP{0%{transform:scale(.99);opacity:.6}100%{transform:scale(1.04);opacity:0}}
-    .ai-card::after{content:"";position:absolute;inset:-10px;border-radius:calc(var(--ai-card-r) + 10px);corner-shape:squircle;border:1px solid rgba(255,255,255,.14);pointer-events:none;animation:none;opacity:0}
-    .ai-card:hover::after{animation:aiRingP 3s ease-out infinite}
-    .ai-card.ai-focal::after{animation:aiRingP 3s ease-out infinite}
     /* AI Brief focal */
     .ai-card.ai-focal{background-color:rgba(24,16,32,.72);--card-tint-shape:700px 420px at 60% 0%;--card-tint:rgba(181,139,255,.32);border-color:rgba(181,139,255,.32);box-shadow:0 60px 140px -20px rgba(0,0,0,.7),0 0 0 1px rgba(181,139,255,.1),0 0 220px -20px rgba(181,139,255,.35),0 0 360px -40px rgba(255,123,200,.25),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-focal::before{background:linear-gradient(90deg,transparent,#FF7BC8,#B58BFF,transparent);opacity:.5}
@@ -9477,25 +9514,8 @@
         corner-shape: round;
       }
 
-      /* .ai-card's ::after radar ring sizes off
-         --ai-card-r via their own calc() formulas (e.g. calc(var(--ai-card-r)
-         + 10px)) — overriding the var alone keeps them concentric with the
-         20px body without touching their border-radius directly. Only
-         corner-shape needs a direct override, since their base rules hardcode
-         `squircle`. */
       .ai-card {
         --ai-card-r: 20px;
-        corner-shape: round;
-      }
-
-      .ai-card::after {
-        corner-shape: round;
-      }
-
-      /* .process-radar's inset-ring radius is hardcoded (not var-based) at
-         the card's desktop calc(44px + 10px) — recompute for the 20px body. */
-      .process-radar {
-        border-radius: 30px;
         corner-shape: round;
       }
 
@@ -9682,10 +9702,10 @@
       opacity: 0 !important;
     }
 
-    /* 2) 邊框特效：sc-card / sc-ring 光環、ai-card 雷達環與彩色頂邊線，全部關閉 */
+    /* 2) 邊框特效：sc-card / sc-ring 光環、ai-card 彩色頂邊線，全部關閉
+          （雷達環改由 --radar-alpha: 0 關閉，見 HOVER RADAR RING） */
     :root[data-theme="light"] .sc-card::after,
     :root[data-theme="light"] .sc-ring,
-    :root[data-theme="light"] .ai-card::after,
     :root[data-theme="light"] .ai-card::before {
       opacity: 0 !important;
       animation: none !important;
