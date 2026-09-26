@@ -256,7 +256,17 @@ const goHome = (e) => {
                     style={{ backgroundImage: "url('./img/project_13/CNC.webp')" }}
                 >
                     <div className="scanline"></div>
-                    <div className="absolute inset-0 bg-gradient-to-b from-tech-dark/80 via-tech-dark/70 to-tech-dark z-0 pointer-events-none"></div>
+                    {/* Hero image (CNC.webp) mean color #253c4f mixed 25% into
+                        tech-dark, alphas unchanged — same treatment as the other
+                        project heroes. Browsers without relative color ignore the
+                        inline background and keep the Tailwind gradient. */}
+                    <div
+                        className="absolute inset-0 bg-gradient-to-b from-tech-dark/80 via-tech-dark/70 to-tech-dark z-0 pointer-events-none"
+                        style={{
+                            '--hero-tint': 'color-mix(in srgb, #253c4f 25%, var(--color-tech-dark))',
+                            background: 'linear-gradient(to bottom, rgb(from var(--hero-tint) r g b / .8) 0%, rgb(from var(--hero-tint) r g b / .7) 50%, var(--hero-tint) 100%)',
+                        }}
+                    ></div>
                     <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none z-0">
                         <div className="w-[800px] h-[800px] border border-tech-primary/30 rounded-full animate-spin-slow" style={{ animationDuration: '60s' }}></div>
                         <div className="absolute w-[600px] h-[600px] border border-white/10 rounded-full animate-spin-slow" style={{ animationDuration: '40s', animationDirection: 'reverse' }}></div>

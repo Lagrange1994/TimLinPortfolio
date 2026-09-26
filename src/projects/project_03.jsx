@@ -450,7 +450,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div className={`inline-block px-4 py-1 rounded-full border border-white bg-black/20 text-white text-xs font-bold tracking-widest mb-6 ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.1s' }}>System Reliability & Logistics</div>
                                     <h1 className={`text-5xl lg:text-7xl font-heading font-black mb-8 leading-tight text-white drop-shadow-2xl text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.2s' }}>
                                         {/* [修改] from-primary -> from-kh-primary */}
-                                        {t('title_main')}<br /><span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(to right, #00A8E8, #6C63FF)' }} dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span>
+                                        {t('title_main')}<br /><span className="text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(to right, #00A8E8, #60A5FA)' }} dangerouslySetInnerHTML={{ __html: t('title_sub').replace('\n', '<br/>') }}></span>
                                     </h1>
                                     <h2 className={`text-xl md:text-2xl text-gray-300 font-light mb-12 max-w-2xl mr-auto leading-relaxed drop-shadow-md text-left ${loading ? 'opacity-0' : 'fade-in-up'}`} style={{ animationDelay: '0.3s' }}>{t('hero_desc')}</h2>
                                     <HeroCTAButton prefix="kh" shadowClass="shadow-[0_10px_30px_rgba(0,168,232,0.4)]" loading={loading} label={t('btn_explore')} onClick={() => scrollToSection(1)} />

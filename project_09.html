@@ -64,6 +64,11 @@
             position: absolute;
             inset: 0;
             background: linear-gradient(to bottom, rgba(24, 24, 24, 0.4) 0%, rgba(24, 24, 24, 0.6) 100%);
+            /* Hero image mean color (#919781) mixed 25% into this page's dark
+               base, alphas unchanged — same treatment as the homepage Portfolio
+               cards' overlay. Plain line above is the no-relative-color fallback. */
+            --hero-tint: color-mix(in srgb, #919781 25%, rgb(24 24 24));
+            background: linear-gradient(to bottom, rgb(from var(--hero-tint) r g b / 0.4) 0%, rgb(from var(--hero-tint) r g b / 0.6) 100%);
             z-index: 1;
         }
 
