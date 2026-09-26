@@ -398,7 +398,9 @@
          animated — the preset's `speed` field would mean animating this
          fixed full-viewport layer, which risks the same stale-paint/
          repaint issues already fought elsewhere in this file. */
-      --bg: url('/img/w_bg.svg') center / cover no-repeat;
+      /* w_bg.svg fully disabled — flat tone (same as --bg-safe). To restore:
+         url('/img/w_bg.svg') center / cover no-repeat */
+      --bg: #EBEFF1;
       /* Flat stand-in for --bg — see the base :root's own comment on this
          token. This is the one theme where it actually differs from --bg:
          matches the flat color index.html's inline pre-hydration <style>
