@@ -1,125 +1,55 @@
 import { useRef, useCallback } from 'react';
 import './BorderGlow.css';
 
-function parseHSL(hslStr) {
-  const match = hslStr.match(/([\d.]+)\s*([\d.]+)%?\s*([\d.]+)%?/);
-  if (!match) return { h: 40, s: 80, l: 80 };
-  return { h: parseFloat(match[1]), s: parseFloat(match[2]), l: parseFloat(match[3]) };
-}
-
-function buildGlowVars(glowColor, intensity) {
-  const { h, s, l } = parseHSL(glowColor);
-  const base = `${h}deg ${s}% ${l}%`;
-  const opacities = [100, 60, 50, 40, 30, 20, 10];
-  const keys = ['', '-60', '-50', '-40', '-30', '-20', '-10'];
-  const vars = {};
-  for (let i = 0; i < opacities.length; i++) {
-    vars[`--glow-color${keys[i]}`] = `hsl(${base} / ${Math.min(opacities[i] * intensity, 100)}%)`;
-  }
-  return vars;
-}
-
-const GRADIENT_POSITIONS = ['80% 55%', '69% 34%', '8% 6%', '41% 38%', '86% 85%', '82% 18%', '51% 4%'];
-const GRADIENT_KEYS = ['--gradient-one', '--gradient-two', '--gradient-three', '--gradient-four', '--gradient-five', '--gradient-six', '--gradient-seven'];
-const COLOR_MAP = [0, 1, 2, 0, 1, 2, 1];
-
-function buildGradientVars(colors) {
-  const vars = {};
-  for (let i = 0; i < 7; i++) {
-    const c = colors[Math.min(COLOR_MAP[i], colors.length - 1)];
-    vars[GRADIENT_KEYS[i]] = `radial-gradient(at ${GRADIENT_POSITIONS[i]}, ${c} 0px, transparent 50%)`;
-  }
-  vars['--gradient-base'] = `linear-gradient(${colors[0]} 0 100%)`;
-  return vars;
-}
-
+// Card shell for the My Design Process cards. The React Bits original also
+// drew a cursor-following edge glow (.edge-light ring + ::before/::after
+// mesh-gradient border); replaced 2026-09-27 by About Me's white border ring
+// (.sc-ring at --sc-x/--sc-y). The interior spotlight (.bg-spotlight) also
+// tracks the pointer.
 const BorderGlow = ({
   children,
   backgroundSlot,
   className = '',
-  edgeSensitivity = 30,
-  glowColor = '40 80 80',
   backgroundColor = '#120F17',
-  borderRadius = 28,
-  glowRadius = 40,
-  glowIntensity = 1.0,
-  coneSpread = 25,
-  colors = ['#c084fc', '#f472b6', '#38bdf8'],
-  fillOpacity = 0.5,
   spotlightColor = 'rgba(255, 255, 255, 0.08)',
 }) => {
   const cardRef = useRef(null);
 
-  const getCenterOfElement = useCallback((el) => {
-    const { width, height } = el.getBoundingClientRect();
-    return [width / 2, height / 2];
-  }, []);
-
-  const getEdgeProximity = useCallback((el, x, y) => {
-    const [cx, cy] = getCenterOfElement(el);
-    const dx = x - cx;
-    const dy = y - cy;
-    let kx = Infinity;
-    let ky = Infinity;
-    if (dx !== 0) kx = cx / Math.abs(dx);
-    if (dy !== 0) ky = cy / Math.abs(dy);
-    return Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
-  }, [getCenterOfElement]);
-
-  const getCursorAngle = useCallback((el, x, y) => {
-    const [cx, cy] = getCenterOfElement(el);
-    const dx = x - cx;
-    const dy = y - cy;
-    if (dx === 0 && dy === 0) return 0;
-    const radians = Math.atan2(dy, dx);
-    let degrees = radians * (180 / Math.PI) + 90;
-    if (degrees < 0) degrees += 360;
-    return degrees;
-  }, [getCenterOfElement]);
-
   const handlePointerMove = useCallback((e) => {
     const card = cardRef.current;
     if (!card) return;
-    // Light mode kills every visual this drives (--edge-proximity/
-    // --cursor-angle → .border-glow-card::before/::after/.edge-light,
-    // --mouse-x/--mouse-y → .bg-spotlight) via opacity:0 !important in
-    // portfolio.css's light-mode neumorphism block — skip the getBoundingClientRect
-    // + 4 setProperty calls per pointermove, they'd paint nothing.
+    // Light mode hides .bg-spotlight and .sc-ring (opacity:0 !important in
+    // portfolio.css's light-mode block) — skip the getBoundingClientRect +
+    // setProperty calls per pointermove, they'd paint nothing.
     if (document.documentElement.getAttribute('data-theme') === 'light') return;
     const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const edge = getEdgeProximity(card, x, y);
-    const angle = getCursorAngle(card, x, y);
-    card.style.setProperty('--edge-proximity', `${(edge * 100).toFixed(3)}`);
-    card.style.setProperty('--cursor-angle', `${angle.toFixed(3)}deg`);
-    // SpotlightCard 游標追蹤
-    card.style.setProperty('--mouse-x', `${x}px`);
-    card.style.setProperty('--mouse-y', `${y}px`);
-  }, [getEdgeProximity, getCursorAngle]);
+    const x = `${e.clientX - rect.left}px`;
+    const y = `${e.clientY - rect.top}px`;
+    card.style.setProperty('--mouse-x', x);
+    card.style.setProperty('--mouse-y', y);
+    card.style.setProperty('--sc-x', x);
+    card.style.setProperty('--sc-y', y);
+  }, []);
 
-  const glowVars = buildGlowVars(glowColor, glowIntensity);
+  const handlePointerLeave = useCallback(() => {
+    const card = cardRef.current;
+    if (!card) return;
+    card.style.setProperty('--sc-x', '-500px');
+    card.style.setProperty('--sc-y', '-500px');
+  }, []);
 
   return (
     <div
       ref={cardRef}
       onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
       className={`border-glow-card ${className}`}
-      style={{
-        '--card-bg': backgroundColor,
-        '--edge-sensitivity': edgeSensitivity,
-        '--border-radius': `${borderRadius}px`,
-        '--glow-padding': `${glowRadius}px`,
-        '--cone-spread': coneSpread,
-        '--fill-opacity': fillOpacity,
-        ...glowVars,
-        ...buildGradientVars(colors),
-      }}
+      style={{ '--card-bg': backgroundColor }}
     >
+      <span className="sc-ring" aria-hidden="true" />
       {backgroundSlot && (
         <div className="border-glow-bg-slot">{backgroundSlot}</div>
       )}
-      <span className="edge-light" />
       <span className="card-glass-highlight" aria-hidden="true" />
       <div className="border-glow-inner">
         {children}
@@ -129,9 +59,7 @@ const BorderGlow = ({
         style={{ '--spotlight-color': spotlightColor }}
       />
       {/* Opacity-crossfade hover shadow, same technique as .ai-card's
-          .card-hover-shadow (see that rule's comment in portfolio.css) —
-          this card's ::before/::after are already the colored mesh
-          gradient, so it needs a real element too. */}
+          .card-hover-shadow (see that rule's comment in portfolio.css). */}
       <span className="card-hover-shadow" />
     </div>
   );

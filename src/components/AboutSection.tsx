@@ -216,7 +216,7 @@ export default function AboutSection() {
   // wrongly disabled it for real mouse users on some devices).
   useEffect(() => {
     function initSpotlightCardEffect() {
-      document.querySelectorAll<HTMLElement>('.card-spotlight, .sidebar-block').forEach(card => {
+      document.querySelectorAll<HTMLElement>('.card-spotlight').forEach(card => {
         const onMove = (e: MouseEvent) => {
           // Light mode's neumorphism swap forces .card-spotlight::before to
           // opacity:0 !important (portfolio.css) — skip the reflow-triggering

@@ -198,6 +198,11 @@
       --font: 'Quicksand', 'GenSen Rounded TW', 'Noto Sans TC', sans-serif;
       --font-heading: 'Momo Trust Display', 'GenSen Rounded TW', 'Noto Sans TC', sans-serif;
       --mono: 'Quicksand', sans-serif;
+      /* Real monospace for code/data UI (AI Flow tables, stepper labels,
+         word cloud). Geist Mono loads from Google Fonts in index.html —
+         before 2026-09-27 it was hardcoded at 24 call sites but never
+         loaded, so those rendered in each OS's own fallback monospace. */
+      --font-code: 'Geist Mono', ui-monospace, monospace;
       /* #main-header's measured height (Navbar.tsx keeps this in sync, incl.
          its .scrolled compact-pill state). Fallback matches the header's
          un-scrolled height for the first paint before JS runs. */
@@ -722,14 +727,6 @@
 
     :root[data-theme="light"] .brand-lin {
       color: var(--text-50);
-    }
-
-    /* ── GLASS CARD (matches index.html .card) ── */
-    .glass-card {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     }
 
     /* ── LIQUID GLASS BUTTON (matches index.html .liquid-glass-btn) ── */
@@ -2941,24 +2938,33 @@
     /* ── Bento card styling ── padding/gap lifted from inpublic.studio's
        "Our focus is simple" section; corner shape + border background
        match the How I Use AI cards (.ai-card in the section above), minus
-       their hover edge-light glow and radar ring — these stay static.
+       their hover radar ring — these stay static.
        Equal-height cells (intro1/intro2 spanning 2 rows,
        years/projects/domains/industry in a 2x2) come for free from CSS
        Grid's default align-items:stretch. */
-    .bento-card {
-      position: relative;
+    /* Premium glass surface shared by About Me (.bento-card) and How I Use
+       AI (.ai-card): grain + a colored glow washing down from the top edge
+       + a faint white sheen. Color variants (.bento-cyan, .ai-violet, …)
+       only set --card-tint (glow color) and, where the glow is bigger or
+       off-center, --card-tint-shape — plus their own border-color. */
+    .bento-card,
+    .ai-card {
       background-color: var(--glass-bg-premium);
       background-image:
         var(--noise-grain),
-        radial-gradient(380px 220px at 50% 0%, rgba(108, 99, 255, 0.14), transparent 65%),
+        radial-gradient(var(--card-tint-shape, 380px 220px at 50% 0%), var(--card-tint, rgba(108, 99, 255, 0.14)), transparent 65%),
         linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
       background-size: 180px 180px, auto, auto;
       background-repeat: repeat, no-repeat, no-repeat;
       border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 48px;
-      corner-shape: squircle;
       backdrop-filter: blur(1rem);
       box-shadow: var(--card-shadow-md), var(--card-edge);
+    }
+
+    .bento-card {
+      position: relative;
+      border-radius: 48px;
+      corner-shape: squircle;
       padding: 24px;
       display: flex;
       flex-direction: column;
@@ -2968,6 +2974,51 @@
 
     .bento-card:hover {
       transform: translateY(-4px);
+    }
+
+    /* ── HOVER SHADOW LAYER ──
+       Every card family's big-blur hover shadow is its own layer that only
+       crossfades opacity (animating box-shadow's blur/spread directly was
+       the laggy-on-hover version). Shared base here; each family below
+       only sets its own radius/corner-shape (and .project-card-shadow its
+       -tight shadow). .bento-shadow and .card-hover-shadow are real
+       elements, the rest are ::after on an unclipped wrapper — see each
+       family's own comment for why the shadow can't live on the card
+       itself. Light mode turns all of them off (neumorphism block).
+       Keep these ABOVE the per-family rules: same specificity, so the
+       families' overrides win by source order. */
+    .bento-shadow,
+    .card-hover-shadow,
+    .tech-item-wrap::after,
+    .project-card-shadow::after,
+    .grid-card-shadow::after,
+    .card-shadow-wrap::after {
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .3s ease;
+      box-shadow: var(--card-shadow-ai-hover);
+      will-change: opacity;
+    }
+
+    .card-hover-shadow,
+    .tech-item-wrap::after,
+    .project-card-shadow::after,
+    .grid-card-shadow::after,
+    .card-shadow-wrap::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+    }
+
+    .bento-card:hover + .bento-shadow,
+    .ai-card:hover > .card-hover-shadow,
+    .process-card:hover > .card-hover-shadow,
+    .tech-item-wrap:hover::after,
+    .project-card-shadow:hover::after,
+    .grid-card-shadow:hover::after,
+    .card-shadow-wrap:hover::after {
+      opacity: 1;
     }
 
     /* Hover shadow lives on a SEPARATE sibling (.bento-shadow, see
@@ -2990,16 +3041,6 @@
       position: relative;
       border-radius: 48px;
       corner-shape: squircle;
-      z-index: -1;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity .3s ease;
-      box-shadow: var(--card-shadow-ai-hover);
-      will-change: opacity;
-    }
-
-    .bento-card:hover + .bento-shadow {
-      opacity: 1;
     }
 
     /* Per-card colored gradient backgrounds — same palette as the How I Use
@@ -3007,57 +3048,34 @@
        .ai-spectrum in the section above), just swapped onto .bento-card's
        own glow position/size so it still reads as one consistent set. */
     .bento-card.bento-cyan {
-      background-image:
-        var(--noise-grain),
-        radial-gradient(380px 220px at 50% 0%, rgba(0, 212, 255, .2), transparent 65%),
-        linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
-      background-size: 180px 180px, auto, auto;
-      background-repeat: repeat, no-repeat, no-repeat;
+      --card-tint: rgba(0, 212, 255, .2);
       border-color: rgba(0, 212, 255, .3);
     }
     .bento-card.bento-purple {
-      background-image:
-        var(--noise-grain),
-        radial-gradient(380px 220px at 50% 0%, rgba(19, 159, 248, .22), transparent 65%),
-        linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
-      background-size: 180px 180px, auto, auto;
-      background-repeat: repeat, no-repeat, no-repeat;
+      --card-tint: rgba(19, 159, 248, .22);
       border-color: rgba(19, 159, 248, .32);
     }
     .bento-card.bento-violet {
-      background-image:
-        var(--noise-grain),
-        radial-gradient(380px 220px at 50% 0%, rgba(37, 102, 240, .24), transparent 65%),
-        linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
-      background-size: 180px 180px, auto, auto;
-      background-repeat: repeat, no-repeat, no-repeat;
+      --card-tint: rgba(37, 102, 240, .24);
       border-color: rgba(37, 102, 240, .34);
     }
     .bento-card.bento-human {
-      background-image:
-        var(--noise-grain),
-        radial-gradient(380px 220px at 50% 0%, rgba(123, 227, 181, .2), transparent 65%),
-        linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
-      background-size: 180px 180px, auto, auto;
-      background-repeat: repeat, no-repeat, no-repeat;
+      --card-tint: rgba(123, 227, 181, .2);
       border-color: rgba(123, 227, 181, .3);
     }
     .bento-card.bento-spectrum {
-      background-image:
-        var(--noise-grain),
-        radial-gradient(420px 260px at 50% 0%, rgba(74, 0, 224, .22), transparent 65%),
-        linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
-      background-size: 180px 180px, auto, auto;
-      background-repeat: repeat, no-repeat, no-repeat;
+      --card-tint-shape: 420px 260px at 50% 0%;
+      --card-tint: rgba(74, 0, 224, .22);
       border-color: rgba(74, 0, 224, .3);
     }
 
-    /* Glass top-edge highlight — same thin gradient line as .ai-card::before.
-       Scoped off .card-spotlight cards: those need ::before for the mouse
-       spotlight overlay, so they use the .card-glass-highlight span below
-       instead (same fix already applied to .process-card/.tech-item). */
-    .bento-card:not(.card-spotlight)::before {
-      content: "";
+    /* Glass top-edge highlight — a thin white line fading out at both ends.
+       .ai-card draws it as its own ::before; every other card
+       (.bento-card, .process-card, .tech-item) has its ::before/::after
+       taken by the spotlight/border-ring effects, so it's the real
+       .card-glass-highlight span there instead. */
+    .card-glass-highlight,
+    .ai-card::before {
       position: absolute;
       top: 0;
       left: 12%;
@@ -3066,17 +3084,7 @@
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .32), transparent);
     }
 
-    /* Same glass top-edge highlight as .bento-card::before, but as a real
-       element — used on cards (.process-card, .tech-item) whose ::before
-       and ::after are already claimed by their own hover-glow effects, so
-       a third pseudo-element isn't available. */
     .card-glass-highlight {
-      position: absolute;
-      top: 0;
-      left: 12%;
-      right: 12%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .32), transparent);
       pointer-events: none;
       z-index: 3;
     }
@@ -3085,18 +3093,11 @@
       overflow: hidden;
     }
 
-    /* years/projects/domains/industry drop into a narrow 2-col cell (~160px)
-       on tablet/mobile — the shared 44px squircle radius stays fixed while
-       the box shrinks, so corners balloon to ~27% of the card's width and
-       read as an oversized blob instead of a subtle squircle. Scale it down
-       to match the smaller cell instead of scaling with viewport width. */
+    /* Corner radius is uniform per breakpoint (My Design Process card is the
+       reference): 48px squircle >=768px, 20px round <=767px (mobile corner
+       pass at end of file). The narrow tablet bento cells used to drop to
+       24px here — removed so every card at the same width matches. */
     @media (max-width: 1024px) {
-      .bento-area-years,
-      .bento-area-projects,
-      .bento-area-domains,
-      .bento-area-industry {
-        border-radius: 24px;
-      }
 
       /* Domains caption — swap the inline separator for the line break so
          "警政・環保・醫療・娛樂" reads as two nouns per line instead of
@@ -3328,9 +3329,6 @@
       box-shadow: var(--card-shadow-ai-hover-tight);
     }
 
-    .process-card:hover > .card-hover-shadow {
-      opacity: 1;
-    }
 
     /* Radar ring injected by JS — reuses aiRingP keyframe from AI section */
     .process-radar {
@@ -3410,21 +3408,6 @@
        overflow:hidden swipe wrap has no room for a bigger ambient layer). */
     .process-card--has-img.border-glow-card {
       box-shadow: 0 4px 10px rgba(var(--shadow-near), 0.18), var(--card-edge) !important;
-    }
-
-    /* 關閉彩色描邊 ::before 跟蓋圖層 ::after——這兩個用 colors prop 算出來的
-       紫/粉/藍 mesh-gradient，會蓋住插圖。外擴的 edge-light 白色光圈跟 How I
-       Use AI 卡片是同一套（同樣的 glowColor），保留不動。
-       彩色版插圖的 hover 交叉淡入（process-card-bg-img--color）是另一套獨立
-       機制，不受影響，照常運作。 */
-    .process-card--has-img.border-glow-card::before,
-    .process-card--has-img.border-glow-card::after {
-      opacity: 0 !important;
-    }
-
-    /* hover：border 透明，讓 ::before 漸層環自然接管 */
-    .process-card--has-img.border-glow-card:hover {
-      border-color: transparent !important;
     }
 
     /* 背景插圖層（border-glow-bg-slot 內，slot 已定位） */
@@ -4379,115 +4362,6 @@
       margin-top: 16px;
     }
 
-    /* HOW I USE AI */
-    .ai-usage-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .ai-usage-card {
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--glass-border);
-      border-radius: 16px;
-      padding: 22px;
-      transition: all .25s;
-    }
-
-    .ai-usage-card:hover {
-      border-color: rgba(34, 211, 238, 0.35);
-      background: var(--glass-bg-hov);
-    }
-
-    .ai-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-
-    .ai-tool-name {
-      font-size: 15px;
-      font-weight: 600;
-      font-family: var(--font-heading);
-    }
-
-    .level-badge {
-      font-size: 10px;
-      font-family: var(--mono);
-      padding: 3px 10px;
-      border-radius: 9999px;
-      letter-spacing: .05em;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .level-advanced {
-      background: rgba(34, 211, 238, 0.15);
-      color: #67e8f9;
-      border: 1px solid rgba(34, 211, 238, 0.3);
-      box-shadow: 0 0 10px rgba(34, 211, 238, 0.15);
-    }
-
-    .level-proficient {
-      background: rgba(192, 132, 252, 0.15);
-      color: #c4b5fd;
-      border: 1px solid rgba(192, 132, 252, 0.3);
-    }
-
-    .ai-bullets {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .ai-bullets li {
-      font-size: 13px;
-      color: var(--text-70);
-      padding-left: 14px;
-      position: relative;
-      line-height: 1.55;
-    }
-
-    .ai-bullets li::before {
-      content: "\B7";
-      position: absolute;
-      left: 0;
-      color: var(--primary);
-    }
-
-    .philosophy-card {
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      border: 1px solid rgba(108, 99, 255, 0.2);
-      border-radius: 16px;
-      padding: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: var(--card-shadow-md), var(--card-edge);
-      transition: transform .25s ease, box-shadow .25s ease;
-    }
-
-    .philosophy-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--card-shadow-ai-hover), var(--card-edge);
-    }
-
-    .philosophy-quote {
-      font-size: 15px;
-      color: var(--text-70);
-      font-style: italic;
-      font-weight: 300;
-      line-height: 1.75;
-      border-left: 2px solid var(--primary);
-      padding-left: 16px;
-    }
-
     /* TECH STACK */
     .tech-sub {
       color: var(--text-70);
@@ -4540,21 +4414,8 @@
        this reason (see its own comment above, re: .tech-level-badge), so
        it's reused here instead of adding another wrapper. */
     .tech-item-wrap::after {
-      content: "";
-      position: absolute;
-      inset: 0;
       border-radius: 48px;
       corner-shape: squircle;
-      z-index: -1;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity .3s ease;
-      box-shadow: var(--card-shadow-ai-hover);
-      will-change: opacity;
-    }
-
-    .tech-item-wrap:hover::after {
-      opacity: 1;
     }
 
     .tech-item {
@@ -4565,7 +4426,6 @@
       padding: 24px;
       display: flex;
       flex-direction: column;
-      backdrop-filter: var(--glass-blur);
       box-shadow: var(--card-shadow-md), var(--card-edge);
       transition: all .25s;
     }
@@ -4575,27 +4435,18 @@
     }
 
     .tech-item.html-item {
-      background-color: var(--glass-bg);
-      background-image: var(--noise-grain);
-      background-repeat: repeat;
-      background-size: 180px 180px;
       border: 1px solid rgba(96, 165, 250, 0.22);
+      --spotlight-color: rgba(96, 165, 250, 0.22);
     }
 
     .tech-item.js-item {
-      background-color: var(--glass-bg);
-      background-image: var(--noise-grain);
-      background-repeat: repeat;
-      background-size: 180px 180px;
       border: 1px solid rgba(251, 146, 60, 0.22);
+      --spotlight-color: rgba(251, 146, 60, 0.22);
     }
 
     .tech-item.react-item {
-      background-color: var(--glass-bg);
-      background-image: var(--noise-grain);
-      background-repeat: repeat;
-      background-size: 180px 180px;
       border: 1px solid rgba(108, 99, 255, 0.22);
+      --spotlight-color: rgba(108, 99, 255, 0.22);
     }
 
     .tech-item-header {
@@ -5215,20 +5066,8 @@
        full-size ai-hover blur would bleed into them or hit the wall's
        own edge, same clipping failure .process-card hit. */
     .project-card-shadow::after {
-      content: "";
-      position: absolute;
-      inset: 0;
       border-radius: 20px;
-      z-index: -1;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity .3s ease;
       box-shadow: var(--card-shadow-ai-hover-tight);
-      will-change: opacity;
-    }
-
-    .project-card-shadow:hover::after {
-      opacity: 1;
     }
 
     .project-card-shadow > .project-card {
@@ -5243,13 +5082,11 @@
       cursor: pointer;
       text-decoration: none;
       display: block;
-      background: var(--glass-bg);
       /* No backdrop-filter here: the photo fully covers the card so it was
          never visible, but ~30+ marquee cards (4 rows + clones) each
          allocating a backdrop surface inside the animated 3D-skewed wall
          exhausted GPU memory on phones and made the browser force-reload
          the tab on scrolling into Portfolio. */
-      border: 1px solid var(--glass-border);
       transition: all .3s;
     }
 
@@ -5411,20 +5248,7 @@
 
     /* Opacity-crossfade hover shadow — see .bento-card::after's comment. */
     .grid-card-shadow::after {
-      content: "";
-      position: absolute;
-      inset: 0;
       border-radius: 20px;
-      z-index: -1;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity .3s ease;
-      box-shadow: var(--card-shadow-ai-hover);
-      will-change: opacity;
-    }
-
-    .grid-card-shadow:hover::after {
-      opacity: 1;
     }
 
     .grid-card-shadow > .grid-card {
@@ -5440,9 +5264,6 @@
       cursor: pointer;
       text-decoration: none;
       display: block;
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--glass-border);
       transition: all .3s;
     }
 
@@ -5666,7 +5487,7 @@
       background: linear-gradient(135deg, rgba(6, 199, 85, 0.1), rgba(6, 199, 85, 0.04));
       backdrop-filter: var(--glass-blur);
       border: none;
-      border-radius: 16px;
+      border-radius: 48px;
       corner-shape: squircle;
       padding: 24px 28px;
       display: grid;
@@ -5796,10 +5617,7 @@
 
     .contact-card {
       position: relative;
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--glass-border);
-      border-radius: 16px;
+      border-radius: 48px;
       corner-shape: squircle;
       padding: 22px;
       box-shadow: var(--card-shadow-md), var(--card-edge);
@@ -5825,21 +5643,8 @@
     }
 
     .card-shadow-wrap::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 16px;
+      border-radius: 48px;
       corner-shape: squircle;
-      z-index: -1;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity .3s ease;
-      box-shadow: var(--card-shadow-ai-hover);
-      will-change: opacity;
-    }
-
-    .card-shadow-wrap:hover::after {
-      opacity: 1;
     }
 
     .card-title {
@@ -5965,12 +5770,12 @@
       background: linear-gradient(135deg, rgba(108, 99, 255, 0.12), rgba(255, 101, 132, 0.06));
       backdrop-filter: var(--glass-blur);
       border: 1px solid rgba(108, 99, 255, 0.25);
-      border-radius: 14px;
+      border-radius: 48px;
+      corner-shape: squircle;
       padding: 18px 22px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
       gap: 16px;
       position: relative;
       box-shadow: var(--card-shadow-sm), var(--card-edge);
@@ -6171,11 +5976,19 @@
           rgba(255, 255, 255, 0.08) 0%, transparent 65%);
     }
 
-    .sc-card:hover .sc-overlay {
+    .sc-card:hover .sc-overlay,
+    :hover > .sc-overlay {
       opacity: 1;
     }
 
-    .sc-card::after {
+    /* Cursor-tracking white border ring (About Me cards). .sc-ring is the
+       same ring as a real element, for cards that can't take .sc-card itself
+       — My Design Process (.border-glow-card) and How I Use AI (.ai-card)
+       both draw shadows/rings outside their box, which .sc-card's
+       overflow:hidden would clip, and .ai-card's ::after is already its
+       radar ring. Both set --sc-x/--sc-y the same way About does. */
+    .sc-card::after,
+    .sc-ring {
       content: '';
       position: absolute;
       inset: 0;
@@ -6193,7 +6006,8 @@
       transition: opacity 0.35s ease;
     }
 
-    .sc-card:hover::after {
+    .sc-card:hover::after,
+    :hover > .sc-ring {
       opacity: 1;
     }
 
@@ -6214,7 +6028,8 @@
       --spotlight-color: rgba(255, 255, 255, 0.15);
     }
 
-    .card-spotlight::before {
+    .card-spotlight::before,
+    .spotlight-layer {
       content: '';
       position: absolute;
       inset: 0;
@@ -6226,21 +6041,34 @@
     }
 
     .card-spotlight:hover::before,
-    .card-spotlight:focus-within::before {
+    .card-spotlight:focus-within::before,
+    :hover > .spotlight-layer,
+    :focus-within > .spotlight-layer {
       opacity: 0.6;
     }
 
-    /* Per-family spotlight tints matching each card's accent */
-    .tech-item.html-item {
-      --spotlight-color: rgba(96, 165, 250, 0.22);
+    /* .spotlight-layer / .sc-overlay as real elements — for How I Use AI
+       cards, which can't take .card-spotlight/.sc-card themselves: their
+       overflow:hidden would clip .ai-card's outer radar ring and hover
+       shadow, and .ai-card's ::before is already its top edge line. With no
+       overflow clip, the layers round their own corners instead. z-index:-1
+       tucks them under the card's in-flow content (above its background —
+       .ai-card is its own stacking context) without having to lift every
+       child the way .bento-card.card-spotlight > * does. */
+    .spotlight-layer {
+      border-radius: inherit;
+      corner-shape: inherit;
     }
 
-    .tech-item.js-item {
-      --spotlight-color: rgba(251, 146, 60, 0.22);
+    .ai-card > .spotlight-layer,
+    .ai-card > .sc-overlay {
+      z-index: -1;
     }
 
-    .tech-item.react-item {
-      --spotlight-color: rgba(108, 99, 255, 0.22);
+    /* Same off-card resting position .card-spotlight gives its own cards. */
+    .ai-card {
+      --mouse-x: -500px;
+      --mouse-y: -500px;
     }
 
     /* Keep real content above the spotlight overlay (::before, z-index:1) —
@@ -6254,38 +6082,38 @@
       z-index: 2;
     }
 
-    .ai-usage-card {
-      --spotlight-color: rgba(34, 211, 238, 0.18);
-    }
-
-    .philosophy-card {
-      --spotlight-color: rgba(108, 99, 255, 0.22);
-    }
-
     /* Bento cards (About section) — tinted to match each card's own
        gradient (bento-cyan/purple/violet/human/spectrum above); the
-       plain .bento-card (years) reuses its default indigo glow. */
-    .bento-card {
+       plain .bento-card (years) reuses its default indigo glow. How I Use
+       AI cards share the same variant names, so they share the tints
+       (.ai-focal has no bento twin and keeps the default). */
+    .bento-card,
+    .ai-card {
       --spotlight-color: rgba(108, 99, 255, 0.36);
     }
 
-    .bento-card.bento-cyan {
+    .bento-card.bento-cyan,
+    .ai-card.ai-cyan {
       --spotlight-color: rgba(0, 212, 255, 0.4);
     }
 
-    .bento-card.bento-purple {
+    .bento-card.bento-purple,
+    .ai-card.ai-purple {
       --spotlight-color: rgba(19, 159, 248, 0.4);
     }
 
-    .bento-card.bento-violet {
+    .bento-card.bento-violet,
+    .ai-card.ai-violet {
       --spotlight-color: rgba(37, 102, 240, 0.4);
     }
 
-    .bento-card.bento-human {
+    .bento-card.bento-human,
+    .ai-card.ai-human {
       --spotlight-color: rgba(123, 227, 181, 0.4);
     }
 
-    .bento-card.bento-spectrum {
+    .bento-card.bento-spectrum,
+    .ai-card.ai-spectrum {
       --spotlight-color: rgba(74, 0, 224, 0.4);
     }
 
@@ -6680,6 +6508,18 @@
       pointer-events: none;
     }
 
+    /* Squircle corners to match every other homepage card. Children need it
+       too: each layer (.pc-inside/.pc-shine/avatar) carries its own 48px
+       radius, and a round corner sits inside the squircle one, so leaving
+       them round exposes a dark sliver of the card bg at each corner.
+       Desktop/tablet only — phones use the plain 20px round pass below. */
+    @media (min-width: 768px) {
+      .pc-card,
+      .pc-card * {
+        corner-shape: squircle;
+      }
+    }
+
     .pc-inside {
       inset: 0;
       position: absolute;
@@ -6995,7 +6835,6 @@
     .about-h2,
     .section-h2,
     .contact-headline,
-    .ai-tool-name,
     .tech-name,
     .process-name,
     .line-title,
@@ -7174,14 +7013,9 @@
     }
 
     /* ══ UNIVERSAL GLASS CARD — all card types ══ */
-    .ai-usage-card,
-    .philosophy-card,
     .tech-item,
     .contact-card,
-    .sidebar-block,
     .slink,
-    .cta-strip,
-    .line-banner,
     .project-card,
     .grid-card,
     .skill-pill,
@@ -7195,53 +7029,7 @@
       background-repeat: repeat;
       background-size: 180px 180px;
       border: 1px solid var(--glass-border);
-
     }
-
-    /* Stronger grain for everything above EXCEPT Portfolio (.project-card/
-       .grid-card) and Contact (.contact-card/.cta-strip/.line-banner) —
-       those keep the base --noise-grain level. */
-    .ai-usage-card,
-    .philosophy-card,
-    .tech-item,
-    .sidebar-block,
-    .slink,
-    .skill-pill,
-    .tag-capsule,
-    .ai-chip,
-    .pill,
-    .domain-pills .pill {
-      background-image: var(--noise-grain);
-    }
-
-    /* Coloured cards keep their tint but still get blur */
-    .tech-item.html-item {
-      background: linear-gradient(135deg, rgba(96, 165, 250, 0.1), rgba(255, 255, 255, 0.04));
-    }
-
-    .tech-item.js-item {
-      background: linear-gradient(135deg, rgba(251, 146, 60, 0.1), rgba(255, 255, 255, 0.04));
-    }
-
-    .tech-item.react-item {
-      background: linear-gradient(135deg, rgba(108, 99, 255, 0.1), rgba(255, 255, 255, 0.04));
-    }
-
-    .philosophy-card {
-      background: var(--glass-bg);
-      border-color: rgba(108, 99, 255, 0.2);
-    }
-
-    .cta-strip {
-      background: linear-gradient(135deg, rgba(108, 99, 255, 0.12), rgba(255, 101, 132, 0.06));
-      border-color: rgba(108, 99, 255, 0.25);
-    }
-
-    .line-banner {
-      background: linear-gradient(135deg, rgba(6, 199, 85, 0.1), rgba(6, 199, 85, 0.04));
-      border: none;
-    }
-
 
     .stagger-item,
     .fade-in {
@@ -7504,11 +7292,6 @@
       .tech-items {
         grid-template-columns: 1fr;
         gap: 24px;
-      }
-
-      /* AI grid — single column */
-      .ai-usage-grid {
-        grid-template-columns: 1fr;
       }
 
       /* Contact FAQ layout — stack, drop the sticky pin (nothing left to
@@ -7886,11 +7669,6 @@
         gap: 24px;
       }
 
-      /* How I Use AI — single column */
-      .ai-usage-grid {
-        grid-template-columns: 1fr;
-      }
-
       /* Portfolio */
       .portfolio-grid.visible {
         grid-template-columns: 1fr;
@@ -8117,265 +7895,6 @@
       color: var(--text-30);
       font-family: var(--mono);
       margin-top: 16px;
-    }
-
-    /* HOW I USE AI */
-    .ai-usage-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .ai-usage-card {
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--glass-border);
-      border-radius: 16px;
-      padding: 22px;
-      transition: all .25s;
-    }
-
-    .ai-usage-card:hover {
-      border-color: rgba(34, 211, 238, 0.35);
-      background: var(--glass-bg-hov);
-    }
-
-    .ai-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-    }
-
-    .ai-tool-name {
-      font-size: 15px;
-      font-weight: 600;
-      font-family: var(--font-heading);
-    }
-
-    .level-badge {
-      font-size: 10px;
-      font-family: var(--mono);
-      padding: 3px 10px;
-      border-radius: 9999px;
-      letter-spacing: .05em;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .level-advanced {
-      background: rgba(34, 211, 238, 0.15);
-      color: #67e8f9;
-      border: 1px solid rgba(34, 211, 238, 0.3);
-      box-shadow: 0 0 10px rgba(34, 211, 238, 0.15);
-    }
-
-    .level-proficient {
-      background: rgba(192, 132, 252, 0.15);
-      color: #c4b5fd;
-      border: 1px solid rgba(192, 132, 252, 0.3);
-    }
-
-    .ai-bullets {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .ai-bullets li {
-      font-size: 13px;
-      color: var(--text-70);
-      padding-left: 14px;
-      position: relative;
-      line-height: 1.55;
-    }
-
-    .ai-bullets li::before {
-      content: "\B7";
-      position: absolute;
-      left: 0;
-      color: var(--primary);
-    }
-
-    .philosophy-card {
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      border: 1px solid rgba(108, 99, 255, 0.2);
-      border-radius: 16px;
-      padding: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: var(--card-shadow-md), var(--card-edge);
-      transition: transform .25s ease, box-shadow .25s ease;
-    }
-
-    .philosophy-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--card-shadow-ai-hover), var(--card-edge);
-    }
-
-    .philosophy-quote {
-      font-size: 15px;
-      color: var(--text-70);
-      font-style: italic;
-      font-weight: 300;
-      line-height: 1.75;
-      border-left: 2px solid var(--primary);
-      padding-left: 16px;
-    }
-
-    /* TECH STACK */
-    .tech-sub {
-      color: var(--text-70);
-      font-size: 14px;
-      margin-bottom: -32px;
-      max-width: 392px;
-    }
-
-    /* Was a per-element inline color in SkillsSection.tsx (rgba(255,255,255,.55),
-       never updated for light mode) — moved here as a real theme-aware rule. */
-    .ai-sub {
-      color: var(--text-70);
-    }
-
-    .tech-items {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    .tech-item {
-      border-radius: 48px;
-      corner-shape: squircle;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      backdrop-filter: var(--glass-blur);
-      transition: all .25s;
-    }
-
-    .tech-item:hover {
-      border-color: rgba(108, 99, 255, 0.4);
-    }
-
-    .tech-item.html-item {
-      background-color: var(--glass-bg);
-      background-image: var(--noise-grain);
-      background-repeat: repeat;
-      background-size: 180px 180px;
-      border: 1px solid rgba(96, 165, 250, 0.22);
-    }
-
-    .tech-item.js-item {
-      background-color: var(--glass-bg);
-      background-image: var(--noise-grain);
-      background-repeat: repeat;
-      background-size: 180px 180px;
-      border: 1px solid rgba(251, 146, 60, 0.22);
-    }
-
-    .tech-item.react-item {
-      background-color: var(--glass-bg);
-      background-image: var(--noise-grain);
-      background-repeat: repeat;
-      background-size: 180px 180px;
-      border: 1px solid rgba(108, 99, 255, 0.22);
-    }
-
-    .tech-item-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .tech-name {
-      font-size: 20px;
-      font-weight: 500;
-      letter-spacing: -.01em;
-      line-height: 1.1;
-    }
-
-    .tech-desc {
-      font-size: 13.5px;
-      color: var(--text-50);
-      margin: 10px 0 14px;
-      line-height: 1.55;
-    }
-
-    /* Same floating gradient capsule shape/position as the AI Brief card's
-       .ai-focal-badge (top-right, overlapping the card edge), but colored
-       per tech-item's own theme hue (below) instead of AI Brief's shared
-       purple-pink. */
-    .tech-level-badge {
-      position: absolute;
-      top: -13px;
-      right: 22px;
-      z-index: 3;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 9999px;
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: .14em;
-      white-space: nowrap;
-    }
-
-    .tech-level-badge::before {
-      content: "";
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
-    .tech-level-badge.html-item {
-      background: linear-gradient(135deg, #60a5fa, #3b82f6);
-      color: #0b1220;
-      box-shadow: 0 10px 30px -6px rgba(96, 165, 250, .5);
-    }
-
-    .tech-level-badge.js-item {
-      background: linear-gradient(135deg, #fb923c, #f97316);
-      color: #1f1206;
-      box-shadow: 0 10px 30px -6px rgba(251, 146, 60, .5);
-    }
-
-    .tech-level-badge.react-item {
-      background: linear-gradient(135deg, #8b7bff, #6C63FF);
-      color: #ffffff;
-      box-shadow: 0 10px 30px -6px rgba(108, 99, 255, .5);
-    }
-
-    .progress-bar {
-      height: 4px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 9999px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      border-radius: 9999px;
-    }
-
-    .fill-blue {
-      background: linear-gradient(to right, #6C63FF, #60a5fa);
-    }
-
-    .fill-orange {
-      background: linear-gradient(to right, var(--secondary), #fb923c);
-    }
-
-    .fill-purple {
-      background: linear-gradient(to right, var(--primary), var(--secondary));
     }
 
     /* ══ STAGGERED MENU ══ */
@@ -8986,20 +8505,12 @@
         grid-template-columns: 1fr;
         gap: 24px;
       }
-
-      .ai-usage-grid {
-        grid-template-columns: 1fr;
-      }
     }
 
     @media (max-width: 767px) {
       .tech-items {
         grid-template-columns: 1fr;
         gap: 24px;
-      }
-
-      .ai-usage-grid {
-        grid-template-columns: 1fr;
       }
 
       /* AI flow grid drops to 2/1 columns here — the 3-column stagger no
@@ -9011,15 +8522,6 @@
 
     /* ── BORDER GLOW (My Design Process cards) ── */
     .border-glow-card {
-      --edge-proximity: 0;
-      --cursor-angle: 45deg;
-      --edge-sensitivity: 30;
-      --color-sensitivity: calc(var(--edge-sensitivity) + 20);
-      --border-radius: 44px;
-      --glow-padding: 28px;
-      --cone-spread: 25;
-      --fill-opacity: 0.4;
-
       position: relative;
       isolation: isolate;
       transform: translate3d(0, 0, 0.01px);
@@ -9036,115 +8538,8 @@
     }
 
     .border-glow-card:hover {
-      border-color: transparent !important;
       background: var(--card-bg, #13101c) !important;
       transform: none !important;
-    }
-
-    .border-glow-card::before,
-    .border-glow-card::after,
-    .border-glow-card>.edge-light {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      corner-shape: inherit;
-      transition: opacity 0.25s ease-out;
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    .border-glow-card:not(:hover)::before,
-    .border-glow-card:not(:hover)::after,
-    .border-glow-card:not(:hover)>.edge-light {
-      opacity: 0;
-      transition: opacity 0.75s ease-in-out;
-    }
-
-    /* mesh-gradient coloured border */
-    .border-glow-card::before {
-      border: 1px solid transparent;
-      background:
-        linear-gradient(var(--card-bg, #13101c) 0 100%) padding-box,
-        linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
-        var(--gradient-one, radial-gradient(at 80% 55%, #6C63FF 0px, transparent 50%)) border-box,
-        var(--gradient-two, radial-gradient(at 69% 34%, #f472b6 0px, transparent 50%)) border-box,
-        var(--gradient-three, radial-gradient(at 8% 6%, #38bdf8 0px, transparent 50%)) border-box,
-        var(--gradient-four, radial-gradient(at 41% 38%, #6C63FF 0px, transparent 50%)) border-box,
-        var(--gradient-five, radial-gradient(at 86% 85%, #f472b6 0px, transparent 50%)) border-box,
-        var(--gradient-six, radial-gradient(at 82% 18%, #38bdf8 0px, transparent 50%)) border-box,
-        var(--gradient-seven, radial-gradient(at 51% 4%, #f472b6 0px, transparent 50%)) border-box,
-        var(--gradient-base, linear-gradient(#6C63FF 0 100%)) border-box;
-      opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
-      mask-image: conic-gradient(from var(--cursor-angle) at center,
-          black calc(var(--cone-spread) * 1%),
-          transparent calc((var(--cone-spread) + 15) * 1%),
-          transparent calc((100 - var(--cone-spread) - 15) * 1%),
-          black calc((100 - var(--cone-spread)) * 1%));
-    }
-
-    /* mesh-gradient soft fill near edges */
-    .border-glow-card::after {
-      border: 1px solid transparent;
-      background:
-        var(--gradient-one, radial-gradient(at 80% 55%, #6C63FF 0px, transparent 50%)) padding-box,
-        var(--gradient-two, radial-gradient(at 69% 34%, #f472b6 0px, transparent 50%)) padding-box,
-        var(--gradient-three, radial-gradient(at 8% 6%, #38bdf8 0px, transparent 50%)) padding-box,
-        var(--gradient-four, radial-gradient(at 41% 38%, #6C63FF 0px, transparent 50%)) padding-box,
-        var(--gradient-five, radial-gradient(at 86% 85%, #f472b6 0px, transparent 50%)) padding-box,
-        var(--gradient-six, radial-gradient(at 82% 18%, #38bdf8 0px, transparent 50%)) padding-box,
-        var(--gradient-seven, radial-gradient(at 51% 4%, #f472b6 0px, transparent 50%)) padding-box,
-        var(--gradient-base, linear-gradient(#6C63FF 0 100%)) padding-box;
-      mask-image:
-        linear-gradient(to bottom, black, black),
-        radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
-        radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
-        radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
-        radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
-        radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
-        conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
-      mask-composite: subtract, add, add, add, add, add;
-      opacity: calc(var(--fill-opacity) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
-      mix-blend-mode: soft-light;
-    }
-
-    /* outer glow ring */
-    /* This box is inset:-glow-padding, i.e. card size + 2*glow-padding —
-       inheriting the card's own border-radius would leave the curve looking
-       flatter than the card's corner since it's stretched over a much bigger
-       box. Scale the radius by the same padding so the ring's corner reads
-       as a uniform-width offset of the card's squircle, not a mismatched one. */
-    .border-glow-card>.edge-light {
-      inset: calc(var(--glow-padding) * -1);
-      z-index: 1;
-      border-radius: calc(var(--border-radius) + var(--glow-padding));
-      corner-shape: squircle;
-      mask-image: conic-gradient(from var(--cursor-angle) at center,
-          black 2.5%, transparent 10%, transparent 90%, black 97.5%);
-      opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
-      mix-blend-mode: plus-lighter;
-    }
-
-    .border-glow-card>.edge-light::before {
-      content: "";
-      position: absolute;
-      inset: var(--glow-padding);
-      border-radius: var(--border-radius);
-      corner-shape: squircle;
-      box-shadow:
-        inset 0 0 0 1px var(--glow-color, hsl(264deg 70% 75% / 100%)),
-        inset 0 0 1px 0 var(--glow-color-60, hsl(264deg 70% 75% / 60%)),
-        inset 0 0 3px 0 var(--glow-color-50, hsl(264deg 70% 75% / 50%)),
-        inset 0 0 6px 0 var(--glow-color-40, hsl(264deg 70% 75% / 40%)),
-        inset 0 0 15px 0 var(--glow-color-30, hsl(264deg 70% 75% / 30%)),
-        inset 0 0 25px 2px var(--glow-color-20, hsl(264deg 70% 75% / 20%)),
-        inset 0 0 50px 2px var(--glow-color-10, hsl(264deg 70% 75% / 10%)),
-        0 0 1px 0 var(--glow-color-60, hsl(264deg 70% 75% / 60%)),
-        0 0 3px 0 var(--glow-color-50, hsl(264deg 70% 75% / 50%)),
-        0 0 6px 0 var(--glow-color-40, hsl(264deg 70% 75% / 40%)),
-        0 0 15px 0 var(--glow-color-30, hsl(264deg 70% 75% / 30%)),
-        0 0 25px 2px var(--glow-color-20, hsl(264deg 70% 75% / 20%)),
-        0 0 50px 2px var(--glow-color-10, hsl(264deg 70% 75% / 10%));
     }
 
     /* inner content wrapper */
@@ -9174,7 +8569,6 @@
        margin-bottom regardless of how many lines it wraps to at this width. */
     @media(max-width:960px){
       .ai-flow-grid{grid-template-columns:repeat(2,1fr);margin-top:48px;row-gap:24px}
-      .ai-flow-grid .ai-card{top:0}
     }
     @media(max-width:640px){
       .ai-flow-grid{grid-template-columns:1fr;gap:24px;padding-bottom:0}
@@ -9185,7 +8579,6 @@
          desktop 16px (was even smaller, 14px, at this breakpoint) so each
          card's .ai-focal-badge overhang (~13px above its own card) doesn't
          touch the card stacked above it. */
-      .ai-flow-grid .ai-card{top:0}
     }
 
     /* Left-low -> right-high stagger, same 48/24/0 spec as Tech Stack.
@@ -9230,9 +8623,8 @@
        .ai-card-detail (tables, nowrap rows) even while that detail is
        collapsed, blowing the card past its column and clipping it under
        body's overflow-x:hidden. */
-    .ai-card{position:relative;z-index:1;min-width:0;padding:22px 26px 22px;--ai-card-r:48px;border-radius:var(--ai-card-r);corner-shape:squircle;background-color:var(--glass-bg-premium);background-image:var(--noise-grain),radial-gradient(380px 220px at 50% 0%,rgba(108,99,255,.14),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(1rem);transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,background .3s;min-height:220px;display:flex;flex-direction:column;box-shadow:var(--card-shadow-md),var(--card-edge)}
-    .ai-card::before{content:"";position:absolute;top:0;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.32),transparent)}
-    .ai-card:hover{border-color:rgba(108,99,255,0.4)}
+    .ai-card{position:relative;z-index:1;min-width:0;padding:22px 26px 22px;--ai-card-r:48px;border-radius:var(--ai-card-r);corner-shape:squircle;transition:transform .45s cubic-bezier(.2,.7,.2,1),border-color .3s,background .3s;min-height:220px;display:flex;flex-direction:column}
+    .ai-card::before{content:""}
     /* .card-hover-shadow (JS-injected, see SkillsSection.tsx's ai-card
        effect — ::before/::after are both already taken on .ai-card) carries
        the big-blur hover shadow as a STATIC value and only ever transitions
@@ -9240,10 +8632,9 @@
        previous approach) forces the browser to re-rasterize that huge blur
        every frame of the transition, which read as laggy/late on hover;
        opacity is compositor-only, so this crossfades instantly. */
-    .card-hover-shadow{content:"";position:absolute;inset:0;border-radius:inherit;corner-shape:squircle;z-index:-1;pointer-events:none;opacity:0;transition:opacity .3s ease;box-shadow:var(--card-shadow-ai-hover);will-change:opacity}
-    .ai-card:hover>.card-hover-shadow{opacity:1}
+    .card-hover-shadow{border-radius:inherit;corner-shape:squircle}
     /* Step badge — floats above card top-left */
-    .ai-step-badge{position:absolute;top:-7px;left:18px;padding:2px 7px;font-family:"Geist Mono",monospace;font-size:9.5px;letter-spacing:.14em;color:rgba(255,255,255,.35);background:rgba(12,9,18,.85);border:1px solid rgba(255,255,255,.07);border-radius:4px;backdrop-filter:blur(8px);opacity:.85}
+    .ai-step-badge{position:absolute;top:-7px;left:18px;padding:2px 7px;font-family:var(--font-code);font-size:9.5px;letter-spacing:.14em;color:rgba(255,255,255,.35);background:rgba(12,9,18,.85);border:1px solid rgba(255,255,255,.07);border-radius:4px;backdrop-filter:blur(8px);opacity:.85}
     .ai-step-badge em{font-style:normal;color:rgba(255,255,255,.55);font-weight:500}
     /* .ai-card itself already themes to var(--glass-bg-premium) in light
        mode — this badge's near-black chip never followed, same fix as
@@ -9251,7 +8642,7 @@
     :root[data-theme="light"] .ai-step-badge{color:var(--text-50);background:var(--glass-bg);border-color:var(--glass-border)}
     :root[data-theme="light"] .ai-step-badge em{color:var(--text)}
     /* Focal badge — gradient pill top-right */
-    .ai-focal-badge{position:absolute;top:-13px;right:22px;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:linear-gradient(135deg,#B58BFF,#FF7BC8);color:#1a0a20;font-family:"Geist Mono",monospace;font-size:10px;letter-spacing:.14em;font-weight:600;box-shadow:0 10px 30px -6px rgba(255,123,200,.5);white-space:nowrap}
+    .ai-focal-badge{position:absolute;top:-13px;right:22px;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:linear-gradient(135deg,#B58BFF,#FF7BC8);color:#1a0a20;font-family:var(--font-code);font-size:10px;letter-spacing:.14em;font-weight:600;box-shadow:0 10px 30px -6px rgba(255,123,200,.5);white-space:nowrap}
     .ai-focal-badge::before{content:"";width:5px;height:5px;border-radius:50%;background:#1a0a20}
     /* 淺色板：實心漸層膠囊改成空心——透明底、彩色邊框跟文字，跟同一張卡片
        上已經改成同款空心處理的 .ai-glyph 呼應。 */
@@ -9263,15 +8654,8 @@
     .ai-card:hover::after{animation:aiRingP 3s ease-out infinite}
     .ai-card.ai-focal::after{animation:aiRingP 3s ease-out infinite}
     /* AI Brief focal */
-    .ai-card.ai-focal{background-color:rgba(24,16,32,.72);background-image:var(--noise-grain),radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.32),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(181,139,255,.32);box-shadow:0 60px 140px -20px rgba(0,0,0,.7),0 0 0 1px rgba(181,139,255,.1),0 0 220px -20px rgba(181,139,255,.35),0 0 360px -40px rgba(255,123,200,.25),inset 0 1px 0 rgba(255,255,255,.1)}
+    .ai-card.ai-focal{background-color:rgba(24,16,32,.72);--card-tint-shape:700px 420px at 60% 0%;--card-tint:rgba(181,139,255,.32);border-color:rgba(181,139,255,.32);box-shadow:0 60px 140px -20px rgba(0,0,0,.7),0 0 0 1px rgba(181,139,255,.1),0 0 220px -20px rgba(181,139,255,.35),0 0 360px -40px rgba(255,123,200,.25),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-focal::before{background:linear-gradient(90deg,transparent,#FF7BC8,#B58BFF,transparent);opacity:.5}
-    /* AI Brief focal card, light mode — the dark-purple background above is
-       a deliberate always-dark focal treatment that never picked up a
-       light counterpart when the rest of the theme system was built, so
-       it stayed a dark island regardless of theme. Swaps to the same
-       glass-premium surface every other .ai-card variant already gets,
-       with the purple/pink identity kept as a tint instead of the base. */
-    :root[data-theme="light"] .ai-card.ai-focal{background-color:var(--glass-bg-premium);background-image:var(--noise-grain),radial-gradient(700px 420px at 60% 0%,rgba(181,139,255,.22),transparent 65%),linear-gradient(180deg,rgba(247,250,252,.5),rgba(247,250,252,.15));border-color:rgba(181,139,255,.38);box-shadow:0 30px 80px -25px rgba(90,60,150,.28),0 0 0 1px rgba(181,139,255,.14),0 0 140px -30px rgba(181,139,255,.3),inset 0 1px 0 rgba(247,250,252,.6)}
     /* Glyph icon is stroke-only SVG (fill="none"), so it always reads as
        line art — the earlier solid-gradient chip just buried that under a
        filled color block with the icon rendered white-on-color. No border
@@ -9291,16 +8675,16 @@
     .ai-card.ai-human>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(123,227,181,.22),inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.14)}
     .ai-card.ai-human::before{background:linear-gradient(90deg,transparent,#7BE3B5,transparent);opacity:.5}
     /* Logo-palette variants for the remaining (non-focal/human) cards */
-    .ai-card.ai-cyan{background-image:var(--noise-grain),radial-gradient(460px 280px at 60% 0%,rgba(0,212,255,.2),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(0,212,255,.3)}
+    .ai-card.ai-cyan{--card-tint-shape:460px 280px at 60% 0%;--card-tint:rgba(0,212,255,.2);border-color:rgba(0,212,255,.3)}
     .ai-card.ai-cyan>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(0,212,255,.2),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-cyan::before{background:linear-gradient(90deg,transparent,#00D4FF,transparent);opacity:.5}
-    .ai-card.ai-purple{background-image:var(--noise-grain),radial-gradient(460px 280px at 60% 0%,rgba(19,159,248,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(19,159,248,.32)}
+    .ai-card.ai-purple{--card-tint-shape:460px 280px at 60% 0%;--card-tint:rgba(19,159,248,.22);border-color:rgba(19,159,248,.32)}
     .ai-card.ai-purple>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(19,159,248,.22),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-purple::before{background:linear-gradient(90deg,transparent,#139FF8,transparent);opacity:.5}
-    .ai-card.ai-violet{background-image:var(--noise-grain),radial-gradient(460px 280px at 60% 0%,rgba(37,102,240,.24),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(37,102,240,.34)}
+    .ai-card.ai-violet{--card-tint-shape:460px 280px at 60% 0%;--card-tint:rgba(37,102,240,.24);border-color:rgba(37,102,240,.34)}
     .ai-card.ai-violet>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(37,102,240,.24),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-violet::before{background:linear-gradient(90deg,transparent,#2566F0,transparent);opacity:.5}
-    .ai-card.ai-spectrum{background-image:var(--noise-grain),radial-gradient(500px 300px at 50% 0%,rgba(74,0,224,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));background-size:180px 180px,auto,auto;background-repeat:repeat,no-repeat,no-repeat;border-color:rgba(74,0,224,.3)}
+    .ai-card.ai-spectrum{--card-tint-shape:500px 300px at 50% 0%;--card-tint:rgba(74,0,224,.22);border-color:rgba(74,0,224,.3)}
     .ai-card.ai-spectrum>.card-hover-shadow{box-shadow:0 40px 100px -20px rgba(0,0,0,.7),0 0 140px -20px rgba(74,0,224,.22),inset 0 1px 0 rgba(255,255,255,.1)}
     .ai-card.ai-spectrum::before{background:linear-gradient(90deg,transparent,#4A00E0,transparent);opacity:.5}
     .ai-card-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
@@ -9315,7 +8699,7 @@
     .ai-focal h3{font-size:24px}
     .ai-card>p{margin:10px 0 14px;font-size:13.5px;line-height:1.55;color:var(--text-50);flex:1;font-family:var(--font)}
     .ai-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
-    .ai-tag{font-family:"Geist Mono",monospace;font-size:10.5px;padding:3px 10px;border-radius:999px;color:#9A93B0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);letter-spacing:.02em}
+    .ai-tag{font-family:var(--font-code);font-size:10.5px;padding:3px 10px;border-radius:999px;color:#9A93B0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);letter-spacing:.02em}
     :root[data-theme="light"] .ai-tag{color:var(--text-70);border-color:var(--glass-border)}
     /* HBadge (SkillsSection.tsx BADGE_COLORS) — every variant is a literal
        Tailwind utility string (bg-*-400/15, text-*-300, or plain white/N for
@@ -9478,7 +8862,7 @@
     .ai-queue-item-active .ai-queue-checkmark,.ai-queue-item-complete .ai-queue-checkmark{opacity:1;transform:scale(1)}
     .ai-queue-tier-group{display:flex;align-items:center;gap:3px}
     .ai-queue-tier{font-size:11px;color:var(--tier-color);line-height:1;opacity:0;transform:scale(.5);transition:opacity .3s ease,transform .3s ease}
-    .ai-queue-tier-label{font-family:"Geist Mono",monospace;font-size:8px;color:var(--tier-color);letter-spacing:.02em;line-height:1;opacity:0;transition:opacity .3s ease}
+    .ai-queue-tier-label{font-family:var(--font-code);font-size:8px;color:var(--tier-color);letter-spacing:.02em;line-height:1;opacity:0;transition:opacity .3s ease}
     .ai-queue-item-active .ai-queue-tier{opacity:1;transform:scale(1.15)}
     .ai-queue-item-active .ai-queue-tier-label{opacity:1}
     .ai-queue-item-complete .ai-queue-tier{opacity:.85;transform:scale(1)}
@@ -9554,7 +8938,7 @@
     .ai-card-detail{
       --a1:#B58BFF;--a2:#FF7BC8;--a3:#7DB8FF;--a4:#7BE3B5;--a5:#FFC97B;
       --ink:var(--text);--ink-dim:var(--text-70);--ink-mute:var(--text-50);--ink-faint:var(--text-30);
-      --line:rgba(255,255,255,.07);--line-strong:rgba(255,255,255,.14);
+      --rule:rgba(255,255,255,.07);--rule-strong:rgba(255,255,255,.14);
     }
     .ai-cyan .ai-card-detail{--a1:#00D4FF}
     .ai-violet .ai-card-detail{--a1:#2566F0}
@@ -9582,7 +8966,7 @@
     .channel .ch-body{min-width:0}
     .channel .ch-name{font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .channel .ch-snippet{font-size:11.5px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-    .channel .ch-time{font-family:"Geist Mono",monospace;font-size:10.5px;color:var(--ink-mute)}
+    .channel .ch-time{font-family:var(--font-code);font-size:10.5px;color:var(--ink-mute)}
     /* Collapses the row that's about to arrive so it stays out of the
        initial stack-in, then expands smoothly when the new message lands. */
     .channel.channel-collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-color:transparent;transform:translateY(-8px);pointer-events:none}
@@ -9593,7 +8977,7 @@
     .channel-loader{display:flex;align-items:center;gap:8px;max-height:0;opacity:0;overflow:hidden;padding-top:0;padding-bottom:0;border-radius:9px;transition:max-height .4s cubic-bezier(.22,.61,.36,1),opacity .3s ease,padding-top .4s ease,padding-bottom .4s ease}
     .channel-loader.is-active{max-height:40px;opacity:1;padding-top:9px;padding-bottom:9px}
     .channel-loader-spinner{width:12px;height:12px;flex-shrink:0;border-radius:50%;border:2px solid color-mix(in oklab,var(--a1) 30%,transparent);border-top-color:var(--a1);animation:channel-loader-spin .7s linear infinite}
-    .channel-loader-text{font-family:"Geist Mono",monospace;font-size:11px;color:var(--ink-mute)}
+    .channel-loader-text{font-family:var(--font-code);font-size:11px;color:var(--ink-mute)}
     @keyframes channel-loader-spin{to{transform:rotate(360deg)}}
 
     /* A couple of ring pulses on the row that just landed — reads as a
@@ -9610,7 +8994,7 @@
     /* Intake — mini form */
     .form-mini{display:flex;flex-direction:column;gap:9px}
     .form-mini .field{display:flex;flex-direction:column;gap:4px}
-    .form-mini .field label{font-family:"Geist Mono",monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute)}
+    .form-mini .field label{font-family:var(--font-code);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute)}
     .form-mini .field .val{padding:9px 12px;border-radius:7px;background:color-mix(in oklab,black 34%,transparent);border:1px solid color-mix(in oklab,white 14%,transparent);font-size:12.5px;color:var(--ink);display:flex;align-items:center;justify-content:space-between;white-space:nowrap;overflow:hidden;gap:8px;min-height:36px}
     .form-mini .field .val>span:first-child{overflow:hidden;text-overflow:ellipsis;line-height:16px}
     .form-mini .field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -9618,14 +9002,14 @@
     /* Amber while fields are still being filled in; only switches to the
        green "complete" tint once every field has actually finished typing
        (.is-filling / .is-complete, toggled from JS — see the intake effect). */
-    .form-status{margin-top:4px;padding:9px 12px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);display:flex;justify-content:space-between;align-items:center;font-family:"Geist Mono",monospace;font-size:11px;color:var(--ink-mute);letter-spacing:.05em;transition:background .35s ease,border-color .35s ease,color .35s ease}
+    .form-status{margin-top:4px;padding:9px 12px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);display:flex;justify-content:space-between;align-items:center;font-family:var(--font-code);font-size:11px;color:var(--ink-mute);letter-spacing:.05em;transition:background .35s ease,border-color .35s ease,color .35s ease}
     .form-status .bar{display:flex;gap:3px}
     .form-status .pdot{width:12px;height:3px;border-radius:2px;background:rgba(255,255,255,.2);transform-origin:center;transition:background .2s ease}
     .form-status.is-filling{background:color-mix(in oklab,var(--a5) 10%,transparent);border-color:color-mix(in oklab,var(--a5) 30%,transparent);color:var(--a5)}
     .form-status.is-filling .pdot{background:color-mix(in oklab,var(--a5) 60%,transparent)}
     .form-status.is-complete{background:color-mix(in oklab,var(--a4) 8%,transparent);border-color:color-mix(in oklab,var(--a4) 26%,transparent);color:var(--a4)}
     .form-status.is-complete .pdot{background:color-mix(in oklab,var(--a4) 70%,transparent)}
-    .priority-pill{padding:2px 7px;border-radius:4px;background:color-mix(in oklab,var(--a5) 14%,transparent);border:1px solid color-mix(in oklab,var(--a5) 30%,transparent);color:var(--a5);font-family:"Geist Mono",monospace;font-size:10px;letter-spacing:.05em}
+    .priority-pill{padding:2px 7px;border-radius:4px;background:color-mix(in oklab,var(--a5) 14%,transparent);border:1px solid color-mix(in oklab,var(--a5) 30%,transparent);color:var(--a5);font-family:var(--font-code);font-size:10px;letter-spacing:.05em}
 
     /* AI Brief — summary, classification, gaps, questions, direction */
     .ai-thinking-indicator{display:flex;align-items:center;gap:8px;height:0;opacity:0;overflow:hidden;pointer-events:none;transition:opacity .25s ease}
@@ -9633,7 +9017,7 @@
     .ai-thinking-dot{width:6px;height:6px;border-radius:50%;background:var(--a1,#B58BFF);animation:ai-think-bounce 1s ease-in-out infinite}
     .ai-thinking-dot:nth-child(2){animation-delay:.15s}
     .ai-thinking-dot:nth-child(3){animation-delay:.3s}
-    .ai-thinking-label{font-family:"Geist Mono",monospace;font-size:11px;color:var(--ink-mute)}
+    .ai-thinking-label{font-family:var(--font-code);font-size:11px;color:var(--ink-mute)}
     @keyframes ai-think-bounce{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-4px);opacity:1}}
     @media (prefers-reduced-motion: reduce){.ai-thinking-dot{animation:none}}
 
@@ -9642,14 +9026,14 @@
        SkillsSection.tsx for the JS side of this handoff (the real-content
        elements start with an inline display:none set in JSX so this initial
        state can't be lost to cascade/specificity surprises). */
-    .ai-block-spinner{display:flex;align-items:center;gap:7px;font-family:"Geist Mono",monospace;font-size:11px;color:var(--ink-mute)}
+    .ai-block-spinner{display:flex;align-items:center;gap:7px;font-family:var(--font-code);font-size:11px;color:var(--ink-mute)}
     .ai-block-spinner .spin-ring{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:2px solid color-mix(in oklab,var(--a1,#B58BFF) 25%,transparent);border-top-color:var(--a1,#B58BFF);animation:ai-spin .8s linear infinite}
     @keyframes ai-spin{to{transform:rotate(360deg)}}
     @media (prefers-reduced-motion: reduce){.ai-block-spinner .spin-ring{animation:none}}
 
     .ai-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .ai-block .vv{display:flex;align-items:center;gap:8px}
-    .badge{padding:3px 8px;border-radius:5px;font-family:"Geist Mono",monospace;font-size:10.5px;letter-spacing:.05em}
+    .badge{padding:3px 8px;border-radius:5px;font-family:var(--font-code);font-size:10.5px;letter-spacing:.05em}
     .badge.violet{background:color-mix(in oklab,var(--a1) 16%,transparent);border:1px solid color-mix(in oklab,var(--a1) 32%,transparent);color:var(--a1)}
     .badge.amber{background:color-mix(in oklab,var(--a5) 14%,transparent);border:1px solid color-mix(in oklab,var(--a5) 30%,transparent);color:var(--a5)}
     .ai-block{padding:11px 13px;border-radius:9px}
@@ -9661,23 +9045,23 @@
     .ai-block ul li,.ai-block ol li{font-size:12.5px;color:var(--ink-dim);line-height:1.4;display:flex;gap:9px}
     .ai-block ul li::before{content:"";width:12px;height:1px;margin-top:9px;background:var(--ink-faint);flex-shrink:0}
     .ai-block ol li{counter-increment:q;color:var(--ink)}
-    .ai-block ol li::before{content:counter(q,decimal-leading-zero);font-family:"Geist Mono",monospace;font-size:10px;color:var(--a3);letter-spacing:.04em;flex-shrink:0;padding-top:2px}
+    .ai-block ol li::before{content:counter(q,decimal-leading-zero);font-family:var(--font-code);font-size:10px;color:var(--a3);letter-spacing:.04em;flex-shrink:0;padding-top:2px}
     .ai-block p{margin:0;font-size:13px;line-height:1.5;color:var(--ink)}
     .ai-block p .hl{background:linear-gradient(180deg,transparent 60%,color-mix(in oklab,var(--a2) 25%,transparent) 60%)}
     .ai-block.direction p{font-size:12.5px}
     /* Tracking — Horizon UI–style table font-size override (match original .sheet table 11px scale) */
-    .ai-violet .ai-card-detail table{font-family:"Geist Mono",monospace;font-size:11px}
+    .ai-violet .ai-card-detail table{font-family:var(--font-code);font-size:11px}
     .ai-violet .ai-card-detail th{font-size:10px;letter-spacing:.06em}
     .ai-violet .ai-card-detail td{font-size:11px}
 
     /* Tracking — mini Sheets */
-    .sheet{border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--line);overflow:hidden}
-    .sheet-tabs{display:flex;gap:0;padding:4px;background:rgba(255,255,255,.025);border-bottom:1px solid var(--line)}
-    .sheet-tabs .tab{padding:5px 10px;font-family:"Geist Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--ink-mute);border-radius:5px}
+    .sheet{border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--rule);overflow:hidden}
+    .sheet-tabs{display:flex;gap:0;padding:4px;background:rgba(255,255,255,.025);border-bottom:1px solid var(--rule)}
+    .sheet-tabs .tab{padding:5px 10px;font-family:var(--font-code);font-size:10.5px;letter-spacing:.06em;color:var(--ink-mute);border-radius:5px}
     .sheet-tabs .tab.active{color:var(--ink);background:rgba(255,255,255,.05)}
-    .sheet table{width:100%;border-collapse:collapse;font-family:"Geist Mono",monospace;font-size:11px}
-    .sheet th{text-align:left;padding:8px 10px;color:var(--ink-mute);font-weight:500;letter-spacing:.06em;border-bottom:1px solid var(--line);background:rgba(255,255,255,.012)}
-    .sheet td{padding:8px 10px;color:var(--ink-dim);border-bottom:1px solid var(--line)}
+    .sheet table{width:100%;border-collapse:collapse;font-family:var(--font-code);font-size:11px}
+    .sheet th{text-align:left;padding:8px 10px;color:var(--ink-mute);font-weight:500;letter-spacing:.06em;border-bottom:1px solid var(--rule);background:rgba(255,255,255,.012)}
+    .sheet td{padding:8px 10px;color:var(--ink-dim);border-bottom:1px solid var(--rule)}
     .sheet tr:last-child td{border-bottom:none}
     .sheet tr.current td{background:color-mix(in oklab,var(--a1) 8%,transparent);color:var(--ink)}
     .sheet tr.current td:first-child{color:var(--a1);font-weight:500;box-shadow:inset 2px 0 0 var(--a1)}
@@ -9686,7 +9070,7 @@
     .st.review{background:color-mix(in oklab,var(--a5) 12%,transparent);color:var(--a5)}
     .st.done{background:color-mix(in oklab,var(--a4) 12%,transparent);color:var(--a4)}
     .st.queue{background:rgba(255,255,255,.05);color:var(--ink-mute)}
-    .sheet-foot{padding:7px 10px;background:rgba(255,255,255,.012);border-top:1px solid var(--line);font-family:"Geist Mono",monospace;font-size:10px;color:var(--ink-mute);letter-spacing:.06em;display:flex;justify-content:space-between}
+    .sheet-foot{padding:7px 10px;background:rgba(255,255,255,.012);border-top:1px solid var(--rule);font-family:var(--font-code);font-size:10px;color:var(--ink-mute);letter-spacing:.06em;display:flex;justify-content:space-between}
     .sheet-foot .sync-live{display:inline-flex;align-items:center;gap:6px}
     .sheet-foot .sync-dot{position:relative;width:6px;height:6px;border-radius:50%;background:#34d399;flex-shrink:0}
     .sheet-foot .sync-dot::after{content:'';position:absolute;inset:0;border-radius:50%;background:#34d399;animation:sync-ping 1.8s cubic-bezier(0,0,.2,1) infinite}
@@ -9701,8 +9085,8 @@
 
     /* Human Review — assessment grid + operating-principle quote */
     .review-grid{display:flex;flex-direction:column;gap:6px}
-    .rrow{display:grid;grid-template-columns:90px 1fr;gap:14px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.025);border:1px solid var(--line)}
-    .rrow .rl{font-family:"Geist Mono",monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute);padding-top:2px}
+    .rrow{display:grid;grid-template-columns:90px 1fr;gap:14px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.025);border:1px solid var(--rule)}
+    .rrow .rl{font-family:var(--font-code);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute);padding-top:2px}
     .rrow .rv{font-size:12.5px;color:var(--ink);line-height:1.45}
     .qq{font-size:17px;line-height:1.3;letter-spacing:-.015em;color:var(--ink);text-align:center}
     .qq .pivot{background:linear-gradient(135deg,var(--a1),var(--a2));-webkit-background-clip:text;background-clip:text;color:transparent;font-style:italic}
@@ -9711,10 +9095,10 @@
     .phases{display:flex;flex-direction:column;gap:2px}
     .phase{display:grid;grid-template-columns:36px 1fr auto;gap:12px;align-items:center;padding:10px 2px;border-bottom:1px solid color-mix(in oklab,var(--panel-tint) 20%,transparent)}
     .phase:last-child{border-bottom:none}
-    .phase .pn{font-family:"Geist Mono",monospace;font-size:11px;color:var(--a1);letter-spacing:.04em}
+    .phase .pn{font-family:var(--font-code);font-size:11px;color:var(--a1);letter-spacing:.04em}
     .phase .pt{font-size:13px;color:var(--ink);letter-spacing:-.012em}
     .phase .pd{font-size:11.5px;color:var(--ink-dim);margin-top:2px;line-height:1.4}
-    .phase .ps{font-family:"Geist Mono",monospace;font-size:10px;color:var(--ink-mute);letter-spacing:.06em;padding:3px 8px;border-radius:5px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+    .phase .ps{font-family:var(--font-code);font-size:10px;color:var(--ink-mute);letter-spacing:.06em;padding:3px 8px;border-radius:5px;background:rgba(255,255,255,.03);border:1px solid var(--rule)}
     /* Same visual language as Request Sources' "just landed" row — a couple
        of ring pulses that fade to nothing, fired once per phase instead of
        a lingering tinted background. */
@@ -9729,58 +9113,6 @@
       100%{border-radius:0;box-shadow:0 0 0 10px color-mix(in oklab,var(--a1) 0%,transparent);background:transparent}
     }
     @media (prefers-reduced-motion: reduce){.phase.phase-pulse{animation:none}}
-
-    /* ── My Design Process 邊框光暈 — 套用到 ai-card（僅 edge-light 外圈，
-       避免與 ai-card 既有 ::before/::after 衝突） ── */
-    .ai-card-glow {
-      isolation: isolate;
-      --edge-proximity: 0;
-      --cursor-angle: 45deg;
-      --edge-sensitivity: 30;
-      --glow-padding: 24px;
-    }
-
-    .ai-card-glow > .edge-light {
-      content: "";
-      position: absolute;
-      inset: calc(var(--glow-padding) * -1);
-      border-radius: calc(var(--ai-card-r) + var(--glow-padding));
-      corner-shape: squircle;
-      z-index: 2;
-      pointer-events: none;
-      transition: opacity 0.25s ease-out;
-      mask-image: conic-gradient(from var(--cursor-angle) at center,
-          black 2.5%, transparent 10%, transparent 90%, black 97.5%);
-      opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
-      mix-blend-mode: plus-lighter;
-    }
-
-    .ai-card-glow:not(:hover) > .edge-light {
-      opacity: 0;
-      transition: opacity 0.75s ease-in-out;
-    }
-
-    .ai-card-glow > .edge-light::before {
-      content: "";
-      position: absolute;
-      inset: var(--glow-padding);
-      border-radius: var(--ai-card-r);
-      corner-shape: squircle;
-      box-shadow:
-        inset 0 0 0 1px var(--glow-color, hsl(264deg 70% 75% / 100%)),
-        inset 0 0 1px 0 var(--glow-color-60, hsl(264deg 70% 75% / 60%)),
-        inset 0 0 3px 0 var(--glow-color-50, hsl(264deg 70% 75% / 50%)),
-        inset 0 0 6px 0 var(--glow-color-40, hsl(264deg 70% 75% / 40%)),
-        inset 0 0 15px 0 var(--glow-color-30, hsl(264deg 70% 75% / 30%)),
-        inset 0 0 25px 2px var(--glow-color-20, hsl(264deg 70% 75% / 20%)),
-        inset 0 0 50px 2px var(--glow-color-10, hsl(264deg 70% 75% / 10%)),
-        0 0 1px 0 var(--glow-color-60, hsl(264deg 70% 75% / 60%)),
-        0 0 3px 0 var(--glow-color-50, hsl(264deg 70% 75% / 50%)),
-        0 0 6px 0 var(--glow-color-40, hsl(264deg 70% 75% / 40%)),
-        0 0 15px 0 var(--glow-color-30, hsl(264deg 70% 75% / 30%)),
-        0 0 25px 2px var(--glow-color-20, hsl(264deg 70% 75% / 20%)),
-        0 0 50px 2px var(--glow-color-10, hsl(264deg 70% 75% / 10%));
-    }
     /* Height is explicit (not content-driven) because the 4 chips below are
        positioned absolutely, each pinned to the y where its matching beam
        (GEMINI_BEAM_STOPS) ends — so the beam visually threads through the
@@ -9790,7 +9122,7 @@
        beam paths (z-index 0) so the frosted chips read clearly on top of
        the gradient lines instead of being painted over. */
     .ai-word-cloud{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
-    .ai-word-cloud span{position:absolute;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-family:"Geist Mono",monospace;color:var(--text);letter-spacing:.02em;padding:4px 12px;border-radius:999px;background-color:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transform:rotate(var(--word-rotate,0deg));animation:word-float-a 6s ease-in-out infinite}
+    .ai-word-cloud span{position:absolute;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-family:var(--font-code);color:var(--text);letter-spacing:.02em;padding:4px 12px;border-radius:999px;background-color:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.32);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transform:rotate(var(--word-rotate,0deg));animation:word-float-a 6s ease-in-out infinite}
     .ai-word-cloud span i{font-size:.9em;color:var(--text-70)}
     /* Base .ai-word-cloud span is a white-tinted glass pill (bg/border both
        literal rgba(255,255,255,...)) tuned for a dark card — on the light
@@ -9836,7 +9168,7 @@
     .ai-chips-row .ai-chip.is-arrived{border-color:var(--chip-glow)}
     .ai-chips-row .ai-chip.is-arrived:hover{border-color:var(--chip-glow)}
     .ai-chip-dot{width:7px;height:7px;border-radius:50%;box-shadow:0 0 8px rgba(138,43,226,.5)}
-    .ai-chip-count{font-family:"Geist Mono",monospace;font-size:10.5px;color:var(--text-30);padding-left:9px;margin-left:2px;border-left:1px solid rgba(255,255,255,.1)}
+    .ai-chip-count{font-family:var(--font-code);font-size:10.5px;color:var(--text-30);padding-left:9px;margin-left:2px;border-left:1px solid rgba(255,255,255,.1)}
 
     /* Tablet + mobile share this: desktop's .ai-chips-header has
        margin-bottom:0, leaving virtually no gap between the "AI handles
@@ -10127,18 +9459,25 @@
       .contact-card,
       .line-banner,
       .mcp-card,
-      .process-card {
+      .process-card,
+      .bento-area-industry,
+      .cta-strip,
+      /* Hover-shadow / overlay layers hardcode the desktop 48px squircle
+         instead of inheriting — without these they stayed 48px behind a
+         20px card on phones. */
+      .bento-shadow,
+      .tech-item-wrap::after,
+      .card-shadow-wrap::after,
+      .process-card--has-img .border-glow-inner::before {
         border-radius: 20px;
         corner-shape: round;
       }
 
-      .bento-area-industry,
-      .cta-strip {
-        border-radius: 14px;
+      .card-hover-shadow {
         corner-shape: round;
       }
 
-      /* .ai-card's rings (::after radar, .edge-light + ::before) size off
+      /* .ai-card's ::after radar ring sizes off
          --ai-card-r via their own calc() formulas (e.g. calc(var(--ai-card-r)
          + 10px)) — overriding the var alone keeps them concentric with the
          20px body without touching their border-radius directly. Only
@@ -10149,9 +9488,7 @@
         corner-shape: round;
       }
 
-      .ai-card::after,
-      .ai-card-glow > .edge-light,
-      .ai-card-glow > .edge-light::before {
+      .ai-card::after {
         corner-shape: round;
       }
 
@@ -10162,22 +9499,10 @@
         corner-shape: round;
       }
 
-      /* The freelance/in-house process cards render through <BorderGlow
-         borderRadius={44}>, which sets --border-radius:44px as an INLINE
-         style (BorderGlow.jsx line ~141) — inline style always beats an
-         external stylesheet rule regardless of media query, so the plain
-         override below is what actually needs !important, not the usual
-         "append at end of file" cascade trick. Its edge-light glow ring
-         reads border-radius from this var, so it kept tracing the old 44px
-         squircle around the now-20px card until this was added. */
-      .border-glow-card {
-        --border-radius: 20px !important;
-        corner-shape: round;
-      }
-
-      .border-glow-card > .edge-light,
-      .border-glow-card > .edge-light::before {
-        corner-shape: round;
+      /* Profile card — every layer reads --card-radius, so the var alone
+         resizes body + inner layers together. */
+      .pc-card-wrapper {
+        --card-radius: 20px;
       }
     }
 
@@ -10238,9 +9563,7 @@
         font-size: 12px;
       }
 
-      /* How I Use AI flow cards — real classes are .ai-card/.ai-focal (not
-         the unused .ai-usage-card/.ai-tool-name/.level-badge/.ai-bullets
-         rules elsewhere in this file, which no JSX references anymore). */
+      /* How I Use AI flow cards */
       .ai-card {
         padding: 16px;
       }
@@ -10354,16 +9677,14 @@
     /* 1) 滑鼠追蹤光暈 overlay 全部關閉 */
     :root[data-theme="light"] .sc-overlay,
     :root[data-theme="light"] .card-spotlight::before,
+    :root[data-theme="light"] .spotlight-layer,
     :root[data-theme="light"] .bg-spotlight {
       opacity: 0 !important;
     }
 
-    /* 2) 邊框特效：sc-card 光環、border-glow-card 滑鼠描邊/外光暈、ai-card 雷達環
-       與彩色頂邊線，全部關閉 */
+    /* 2) 邊框特效：sc-card / sc-ring 光環、ai-card 雷達環與彩色頂邊線，全部關閉 */
     :root[data-theme="light"] .sc-card::after,
-    :root[data-theme="light"] .border-glow-card::before,
-    :root[data-theme="light"] .border-glow-card::after,
-    :root[data-theme="light"] .border-glow-card > .edge-light,
+    :root[data-theme="light"] .sc-ring,
     :root[data-theme="light"] .ai-card::after,
     :root[data-theme="light"] .ai-card::before {
       opacity: 0 !important;
@@ -10405,21 +9726,11 @@
        .contact-card 用 background 簡寫但 .bento-card/.ai-card 用兩行
        background-color+background-image——其實效果相同，background 簡寫本來
        就會把沒指定的 background-image 重設成 none），2026-09 合併成一組，
-       全部統一用 background 簡寫。「sm」尺寸卡片（tech-item/slink）另外
+       全部統一用 background 簡寫。色彩變體（.bento-cyan、.ai-focal…）不必
+       逐一列出：它們的 dark 規則都沒有 !important，這組 !important 本來就蓋得過。「sm」尺寸卡片（tech-item/slink）另外
        共用 --neu-raised-sm 系列，見下方 .tech-item/.slink 那組。 */
     :root[data-theme="light"] .bento-card,
-    :root[data-theme="light"] .bento-card.bento-cyan,
-    :root[data-theme="light"] .bento-card.bento-purple,
-    :root[data-theme="light"] .bento-card.bento-violet,
-    :root[data-theme="light"] .bento-card.bento-human,
-    :root[data-theme="light"] .bento-card.bento-spectrum,
     :root[data-theme="light"] .ai-card,
-    :root[data-theme="light"] .ai-card.ai-focal,
-    :root[data-theme="light"] .ai-card.ai-human,
-    :root[data-theme="light"] .ai-card.ai-cyan,
-    :root[data-theme="light"] .ai-card.ai-purple,
-    :root[data-theme="light"] .ai-card.ai-violet,
-    :root[data-theme="light"] .ai-card.ai-spectrum,
     :root[data-theme="light"] .process-card.border-glow-card,
     :root[data-theme="light"] .cta-strip,
     :root[data-theme="light"] .line-banner,
@@ -10478,16 +9789,16 @@
       box-shadow: var(--neu-raised-hover) !important;
     }
 
-    /* Expanded card detail content (.ai-card-detail, cards 01-06): --line/
-       --line-strong and a handful of hardcoded rgba(255,255,255,...)
+    /* Expanded card detail content (.ai-card-detail, cards 01-06): --rule/
+       --rule-strong and a handful of hardcoded rgba(255,255,255,...)
        dividers/backgrounds were tuned for the dark card and nearly
        disappear on the now-light --neu-bg card above. Same dark-ink flip
        used for --border/--border-hi (rgba(23,15,45,...)) elsewhere in
        light mode. var(--ink)/color-mix(...,var(--aX),...) content already
        themes correctly and isn't touched here. */
     :root[data-theme="light"] .ai-card-detail {
-      --line: rgba(23, 15, 45, 0.12);
-      --line-strong: rgba(23, 15, 45, 0.22);
+      --rule: rgba(23, 15, 45, 0.12);
+      --rule-strong: rgba(23, 15, 45, 0.22);
     }
     :root[data-theme="light"] .ai-card.is-open .ai-card-detail {
       border-top-color: rgba(23, 15, 45, 0.12);
@@ -10553,7 +9864,7 @@
     }
 
     /* Tracking's table header/cell borders are plain Tailwind border-white/N
-       utilities (unconditional), not var(--line) — same white-on-white
+       utilities (unconditional), not var(--rule) — same white-on-white
        problem, fixed by scoping to this specific table instead of touching
        the global Tailwind utility class. */
     /* Column headers (ID/Source/Type/Status) — same --text-30 contrast

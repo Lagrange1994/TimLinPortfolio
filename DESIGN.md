@@ -84,18 +84,25 @@ Dark mode 的 badge 用 Tailwind utility（violet/cyan/amber/red/emerald/blue/in
 
 ### 1.6 卡片色系（color variants）
 
-Bento / AI card 的五種變體共用一套色名，但**各自硬編碼**，沒有共用 token：
+Bento（About Me）與 AI card（How I Use AI）共用同一條「premium glass」背景規則；變體只設：
+- `--card-tint`：頂部光暈色（預設 `rgba(108,99,255,.14)`）
+- `--card-tint-shape`：光暈尺寸／位置（預設 `380px 220px at 50% 0%`）
+- `border-color`，以及同名變體共用的 `--spotlight-color`（`.bento-cyan` 與 `.ai-cyan` 同一條規則）
+
+`.ai-human` 多一層底部光暈，保留完整 `background-image` 覆寫。
+
+| 變體 | Spotlight 色（bento + ai） | AI glyph（light） |
 
 | 變體 | Spotlight 色（bento） | AI glyph（light） |
 |---|---|---|
-| default / focal | `rgba(108,99,255,.36)` | `#9F7AEA` |
+| default / `ai-focal` | `rgba(108,99,255,.36)` | `#9F7AEA` |
 | `cyan` | `rgba(0,212,255,.4)` | `#38BDF8` |
 | `purple` | `rgba(19,159,248,.4)` | `#3B82F6` |
 | `violet` | `rgba(37,102,240,.4)` | `#6366F1` |
 | `human` | `rgba(123,227,181,.4)` | `#10B981` |
 | `spectrum` | `rgba(74,0,224,.4)` | `#A855F7` |
 
-AI 詳細面板內另有區域色盤 `.ai-card-detail { --a1 #B58BFF; --a2 #FF7BC8; --a3 #7DB8FF; --a4 #7BE3B5; --a5 #FFC97B }`。
+AI 詳細面板內另有區域色盤 `.ai-card-detail { --a1 #B58BFF; --a2 #FF7BC8; --a3 #7DB8FF; --a4 #7BE3B5; --a5 #FFC97B }`，分隔線用 `--rule` / `--rule-strong`（dark `rgba(255,255,255,.07/.14)`、light `rgba(23,15,45,.12/.22)`）。`--line` 保留給 LINE 品牌綠，不要拿來當分隔線。
 Tech stack spotlight：HTML `rgba(96,165,250,.22)`、JS `rgba(251,146,60,.22)`、React `rgba(108,99,255,.22)`。
 
 ### 1.7 Theme 切換規則
@@ -115,7 +122,7 @@ Tech stack spotlight：HTML `rgba(96,165,250,.22)`、JS `rgba(251,146,60,.22)`�
 | `--font` | `'Quicksand', 'GenSen Rounded TW', 'Noto Sans TC', sans-serif` | Quicksand: Google Fonts 300–700；GenSen: `gensen-faces.css` 自架 + 首屏 preload |
 | `--font-heading` | `'Momo Trust Display', 'GenSen Rounded TW', 'Noto Sans TC', sans-serif` | Google Fonts wght 100/400 |
 | `--mono` | `'Quicksand', sans-serif` | ⚠️ 名為 mono 但不是等寬字 |
-| （無 token）| `"Geist Mono", monospace` | ⚠️ 硬編碼 22 處（AI Flow 區），**未載入任何 Geist 字檔**，實際落到系統 monospace |
+| `--font-code` | `'Geist Mono', ui-monospace, monospace` | Google Fonts wght 400–700；AI Flow 表格、stepper 標籤、word cloud 等程式碼 / 資料 UI |
 
 ### 2.2 Type scale（實際使用）
 
@@ -147,9 +154,8 @@ Body / UI（固定 px，依使用次數）：
 |---|---|---|
 | Pill | `9999px`（另有 `999px ×4`、`99px ×1` 同義寫法） | 按鈕、`.pill`、`.tag-capsule` |
 | Circle | `50%` | 頭像、dot、icon 按鈕 |
-| Card XL | `48px` + `corner-shape: squircle` | `.bento-card`、`.process-card`、`.tech-item`、`.ai-card`（`--ai-card-r`）、profile card（`--card-radius`） |
-| Border-glow | `--border-radius: 44px` | `.border-glow-card` |
-| Card mobile | `20px` / `14px`（純 border-radius） | ≤1024px 卡片 |
+| Card XL | `48px` + `corner-shape: squircle` | ≥768px 所有非 Portfolio 卡片：`.bento-card`、`.process-card`（基準）、`.tech-item`、`.mcp-card`、`.ai-card`（`--ai-card-r`）、profile card（`--card-radius`）、`.contact-card`/`.faq-card`、`.cta-strip`、`.line-banner`。同寬度一律同值，細條卡也不例外 |
+| Card mobile | `20px` + `corner-shape: round` | ≤767px 同一批卡片，hover 陰影層（`.bento-shadow`、`*-wrap::after`、`.card-hover-shadow`）也要一起改 |
 | M | `16px` | 中型面板 |
 | S | `8px` / `10px` / `12px` | 小元件 |
 | XS | `4px` / `2px` | code、bar |
@@ -260,8 +266,16 @@ Body / UI（固定 px，依使用次數）：
 | `.ai-card` | 同上 | 同上 | `--ai-card-r` 48 | md+edge → ai-hover / `--neu-raised` |
 | `.process-card` | `--glass-bg` | `--glass-border` | 48 squircle | 自訂 contact / `--neu-raised-tight` |
 | `.tech-item` | `--glass-bg` | — | 48 squircle | md+edge / `--neu-raised-sm` |
-| `.border-glow-card` | 游標追蹤邊緣光（`BorderGlow.jsx`，`--gradient-one…seven` JS 注入） | | 44 | |
+| `.border-glow-card` | `BorderGlow.jsx` 外殼（process card 用）：`--card-bg` 實色 + 內部 `.bg-spotlight` | `rgb(255 255 255/14%)` | 同 `.process-card` | 自訂 contact |
 | `.grid-card.mb-glow` | Magic Bento 光暈（`--glow-x/y/intensity/radius`） | | | |
+
+**共用滑鼠互動（About Me 規格，How I Use AI / My Design Process 沿用）**
+- 邊框高光環：`.sc-card::after` 或實體 `.sc-ring`（1px、280px 白色 radial，隨 `--sc-x/y`，hover 淡入 .35s）
+- 背景白光：`.sc-overlay`（600px、8% 白，隨 `--sc-x/y`）
+- 背景色光：`.card-spotlight::before` 或實體 `.spotlight-layer`（`--spotlight-color`，隨 `--mouse-x/y`，hover 60%）
+- 卡片本身有 `overflow:hidden` 以外需求（外側陰影、radar 環）時用實體元素版本
+- hover 大陰影：共用「HOVER SHADOW LAYER」規則（`.bento-shadow`、`.card-hover-shadow`、各 wrapper `::after`），只淡入 opacity
+- light mode 全部關閉
 
 ### Chips / Pills
 - `.pill` — `--glass-bg` + `--glass-border`，`5px 14px`，9999px
@@ -304,17 +318,18 @@ Body / UI（固定 px，依使用次數）：
 
 | # | 問題 | 影響 | 建議 |
 |---|---|---|---|
-| 1 | **`--line` 命名衝突**：`:root` 是 LINE 綠，`.ai-card-detail` 內被覆寫成分隔線色 | 該區塊內用 `var(--line)` 會拿到灰線而非品牌綠 | 分隔線改名 `--rule` / `--rule-strong` |
-| 2 | **Geist Mono 未載入**，22 處硬編碼 | AI Flow 區實際顯示為系統 monospace（各 OS 不同） | 決定要載入 Geist Mono，或改用 `--mono` token |
+| ~~1~~ | ✅ 2026-09-27 已修：`.ai-card-detail` 分隔線改名 `--rule` / `--rule-strong`，`--line` 只剩 LINE 品牌綠 | | |
+| ~~2~~ | ✅ 2026-09-27 已修：Geist Mono 加入 Google Fonts 載入，24 處硬編碼改用 `--font-code` | | |
 | 3 | `--mono` 其實是 Quicksand | 名稱誤導 | 改名或改成真等寬字 |
 | 4 | 硬編碼品牌色：`#6C63FF` ×29、`rgba(108,99,255,…)` ×41、`#B58BFF`/`rgba(181,139,255,…)` ×21 | light mode 下 `--primary` 已變 `#5B4FE0`，硬編碼處不會跟著變 | 改 `color-mix(in oklab, var(--primary) X%, transparent)` |
 | 5 | 117 種不重複 hex、40+ 種 font-size、25+ 種 radius | 無刻度可循 | 收斂成 type scale / radius scale token |
-| 6 | 卡片五色變體無 token（§1.6） | 同一色系各處各寫 | 定義 `--hue-cyan/purple/violet/human/spectrum` |
+| 6 | ◐ 2026-09-27 部分已修：bento / ai 變體改用 `--card-tint`（§1.6）。仍待處理：tech-item 三色、glyph 色、spotlight 色沒有共用色相 token | 同一色系各處各寫 | 定義 `--hue-cyan/purple/violet/human/spectrum` |
 | 7 | 未使用 token：`--card-shadow-hover`、`--card-shadow-selected`、`--glass-shadow(-hov)`、`--line-dim`、`--line-bdr` | 雜訊 | 刪除或啟用 |
-| 8 | Dead CSS：`.glass-card` 無任何元件使用 | 雜訊 | 刪除 |
-| 9 | 約 59 組頂層選擇器重複定義（grep 粗估） | 後段 block 靜默覆蓋前段，改前段會無效 | 逐一合併（改前先搜全檔同選擇器） |
+| 8 | ◐ 2026-09-27 卡片部分已刪（`.glass-card`、`.philosophy-card`、`.ai-usage-*`、`.level-badge`、`.ai-bullets`、`.sidebar-block` 等）。仍待處理：`.sheet` / `.sheet-tabs` / `.sheet th/td`、`.rrow`、`.phase .ps` | 雜訊 | 刪除 |
+| 9 | 頂層選擇器重複定義。2026-09-27 已移除最大的一段（HOW I USE AI / TECH STACK 整段舊版複本，約 260 行），其餘未盤點 | 後段 block 靜默覆蓋前段，改前段會無效 | 逐一合併（改前先搜全檔同選擇器） |
+| 13 | **效能修正沒生效**：`.project-card` 註解說刻意不加 `backdrop-filter`（手機上 30+ 張 marquee 卡會耗盡 GPU 記憶體），但 UNIVERSAL GLASS CARD group 又把它加回去 | 手機 Portfolio 區可能仍有記憶體壓力 | 把 `.project-card` 移出 group 的 `backdrop-filter`（會是實際行為變更，需實機驗證） |
 | 10 | Breakpoint 混用 `767/768`、`1024/1025`、`640/641` 各自成對，另有 480/720/960 | 邊界 1px 行為不一致風險 | 定出 3 個標準斷點 |
 | 11 | Easing 除兩個 token 外全硬編碼 | 同一種「expo-out」出現 3 種寫法 | 補 `--ease-out-expo` 等 token |
 | 12 | Badge 色只有 light token，dark 走 Tailwind utility | 兩套來源 | 補 dark 值進 `:root` |
 
-**JS 注入的 CSS 變數**（CSS 內看不到定義，屬正常）：`--chip-glow`、`--word-rotate`（`SkillsSection.tsx`）、`--gradient-one…seven`（`BorderGlow.jsx`）、`--unload-h`（`useUnloadOffscreen.ts`）、`--glow-color-10…60`（有 fallback）。
+**JS 注入的 CSS 變數**（CSS 內看不到定義，屬正常）：`--chip-glow`、`--word-rotate`（`SkillsSection.tsx`）、`--unload-h`（`useUnloadOffscreen.ts`）、`--sc-x/--sc-y`、`--mouse-x/--mouse-y`（各 section 的滑鼠追蹤）。

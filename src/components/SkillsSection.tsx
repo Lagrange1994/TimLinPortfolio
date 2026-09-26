@@ -1050,56 +1050,11 @@ export default function SkillsSection() {
     return () => cancelAnimationFrame(raf);
   }, [t]);
 
-  // Border glow cards
+  // Process + AI card decorations. The old cursor-following edge glow
+  // (.edge-light, --edge-proximity/--cursor-angle) was replaced 2026-09-27
+  // by About Me's white border ring (.sc-ring, driven by --sc-x/--sc-y).
   useEffect(() => {
-    const GLOW_COLOR = '264 70 75';
-    const BG = '#13101c';
-    const COLORS = ['#6C63FF', '#f472b6', '#38bdf8'];
-    const INTENSITY = 1.1;
-    const GRAD_POS = ['80% 55%', '69% 34%', '8% 6%', '41% 38%', '86% 85%', '82% 18%', '51% 4%'];
-    const GRAD_KEYS = ['--gradient-one', '--gradient-two', '--gradient-three', '--gradient-four', '--gradient-five', '--gradient-six', '--gradient-seven'];
-    const COLOR_MAP = [0, 1, 2, 0, 1, 2, 1];
-
-    function parseHSL(s: string) {
-      const m = s.match(/([\d.]+)\s*([\d.]+)%?\s*([\d.]+)%?/);
-      return m ? { h: +m[1], s: +m[2], l: +m[3] } : { h: 264, s: 70, l: 75 };
-    }
-    function setGlowVars(el: HTMLElement, hslStr: string, intensity: number) {
-      const { h, s, l } = parseHSL(hslStr);
-      const base = `${h}deg ${s}% ${l}%`;
-      [100, 60, 50, 40, 30, 20, 10].forEach((op, i) => {
-        const suffix = i === 0 ? '' : `-${op}`;
-        el.style.setProperty(`--glow-color${suffix}`, `hsl(${base} / ${Math.min(op * intensity, 100)}%)`);
-      });
-    }
-    function setGradientVars(el: HTMLElement, colors: string[]) {
-      GRAD_KEYS.forEach((key, i) => {
-        const c = colors[Math.min(COLOR_MAP[i], colors.length - 1)];
-        el.style.setProperty(key, `radial-gradient(at ${GRAD_POS[i]}, ${c} 0px, transparent 50%)`);
-      });
-      el.style.setProperty('--gradient-base', `linear-gradient(${colors[0]} 0 100%)`);
-    }
-    function getCenter(el: HTMLElement) {
-      const r = el.getBoundingClientRect();
-      return [r.width / 2, r.height / 2];
-    }
-    function edgeProximity(el: HTMLElement, x: number, y: number) {
-      const [cx, cy] = getCenter(el);
-      const dx = x - cx, dy = y - cy;
-      let kx = Infinity, ky = Infinity;
-      if (dx !== 0) kx = cx / Math.abs(dx);
-      if (dy !== 0) ky = cy / Math.abs(dy);
-      return Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
-    }
-    function cursorAngle(el: HTMLElement, x: number, y: number) {
-      const [cx, cy] = getCenter(el);
-      const dx = x - cx, dy = y - cy;
-      if (!dx && !dy) return 0;
-      const deg = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-      return deg < 0 ? deg + 360 : deg;
-    }
-
-    const handlers = new Map<HTMLElement, (e: PointerEvent) => void>();
+    const listeners: Array<[HTMLElement, (e: MouseEvent) => void, () => void]> = [];
 
     // Radar ring — inject into ALL process cards (inhouse + freelance)
     document.querySelectorAll<HTMLElement>('.process-card').forEach(card => {
@@ -1109,88 +1064,50 @@ export default function SkillsSection() {
       card.insertBefore(radar, card.firstChild);
     });
 
-    // Freelance cards — full border-glow-card treatment
-    document.querySelectorAll<HTMLElement>('.process-card').forEach(card => {
-      if (card.querySelector('.edge-light')) return;
-
-      const el = document.createElement('span');
-      el.className = 'edge-light';
-      card.insertBefore(el, card.firstChild);
-
-      const inner = document.createElement('div');
-      inner.className = 'border-glow-inner';
-      Array.from(card.children)
-        .filter(c => !c.classList.contains('edge-light') && !c.classList.contains('process-radar'))
-        .forEach(c => inner.appendChild(c));
-      card.appendChild(inner);
-
-      card.classList.add('border-glow-card');
-      card.style.setProperty('--card-bg', BG);
-      setGlowVars(card, GLOW_COLOR, INTENSITY);
-      setGradientVars(card, COLORS);
-
-      const handler = (e: PointerEvent) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        card.style.setProperty('--edge-proximity', (edgeProximity(card, x, y) * 100).toFixed(3));
-        card.style.setProperty('--cursor-angle', `${cursorAngle(card, x, y).toFixed(3)}deg`);
-      };
-
-      card.addEventListener('pointermove', handler);
-      handlers.set(card, handler);
-    });
-
-    // How I Use AI cards — outer edge-light glow only
-    // (ai-card already uses ::before/::after for its own line/radar effects,
-    // so we only add the cursor-following edge-light ring, not the full
-    // border-glow-card treatment)
+    // How I Use AI cards — carries the big-blur hover shadow as a static
+    // value that only ever crossfades via opacity (see .card-hover-shadow's
+    // own comment in portfolio.css) — animating box-shadow's blur/spread
+    // directly was the laggy-on-hover version this replaces.
     document.querySelectorAll<HTMLElement>('.ai-card').forEach(card => {
-      if (card.querySelector(':scope > .edge-light')) return;
-
-      const el = document.createElement('span');
-      el.className = 'edge-light';
-      card.insertBefore(el, card.firstChild);
-
-      // Carries the big-blur hover shadow as a static value that only ever
-      // crossfades via opacity (see .card-hover-shadow's own comment in
-      // portfolio.css) — animating box-shadow's blur/spread directly was
-      // the laggy-on-hover version this replaces.
+      if (card.querySelector(':scope > .card-hover-shadow')) return;
       const shadowEl = document.createElement('span');
       shadowEl.className = 'card-hover-shadow';
       card.insertBefore(shadowEl, card.firstChild);
 
-      card.classList.add('ai-card-glow');
-      setGlowVars(card, GLOW_COLOR, INTENSITY);
-
-      const handler = (e: PointerEvent) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        card.style.setProperty('--edge-proximity', (edgeProximity(card, x, y) * 100).toFixed(3));
-        card.style.setProperty('--cursor-angle', `${cursorAngle(card, x, y).toFixed(3)}deg`);
+      // Border ring + background glow position — same mousemove/mouseleave
+      // pattern as About's .sc-card effect: --sc-x/y drive .sc-ring and
+      // .sc-overlay, --mouse-x/y drive .spotlight-layer. Light mode hides all
+      // three, so skip the reflow there.
+      const onMove = (e: MouseEvent) => {
+        if (document.documentElement.getAttribute('data-theme') === 'light') return;
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) + 'px';
+        const y = (e.clientY - r.top) + 'px';
+        card.style.setProperty('--sc-x', x);
+        card.style.setProperty('--sc-y', y);
+        card.style.setProperty('--mouse-x', x);
+        card.style.setProperty('--mouse-y', y);
       };
-
-      card.addEventListener('pointermove', handler);
-      handlers.set(card, handler);
+      const onLeave = () => {
+        card.style.setProperty('--sc-x', '-500px');
+        card.style.setProperty('--sc-y', '-500px');
+        card.style.setProperty('--mouse-x', '-500px');
+        card.style.setProperty('--mouse-y', '-500px');
+      };
+      card.addEventListener('mousemove', onMove);
+      card.addEventListener('mouseleave', onLeave);
+      listeners.push([card, onMove, onLeave]);
     });
 
     return () => {
-      // Remove radar from ALL process cards (inhouse cards aren't in handlers)
-      document.querySelectorAll<HTMLElement>('.process-card .process-radar').forEach(el => el.remove());
-      // Remove listeners AND fully undo DOM changes so Strict Mode's second
-      // invocation finds clean cards and can re-initialize with fresh listeners.
-      handlers.forEach((handler, card) => {
-        card.removeEventListener('pointermove', handler);
-        card.classList.remove('border-glow-card');
-        card.querySelector('.edge-light')?.remove();
-        card.querySelector('.card-hover-shadow')?.remove();
-        const inner = card.querySelector<HTMLElement>('.border-glow-inner');
-        if (inner) {
-          Array.from(inner.children).forEach(c => card.insertBefore(c, inner));
-          inner.remove();
-        }
+      listeners.forEach(([card, onMove, onLeave]) => {
+        card.removeEventListener('mousemove', onMove);
+        card.removeEventListener('mouseleave', onLeave);
       });
+      // Fully undo DOM changes so Strict Mode's second invocation finds
+      // clean cards and can re-initialize.
+      document.querySelectorAll<HTMLElement>('.process-card .process-radar').forEach(el => el.remove());
+      document.querySelectorAll<HTMLElement>('.ai-card > .card-hover-shadow').forEach(el => el.remove());
     };
   }, [t]);
 
@@ -1654,14 +1571,6 @@ export default function SkillsSection() {
                     key={slug}
                     className="process-card process-card--has-img rise-card"
                     backgroundColor="#13101c"
-                    borderRadius={48}
-                    colors={['#6C63FF', '#FF6584', '#38bdf8']}
-                    glowColor="264 70 75"
-                    edgeSensitivity={25}
-                    glowRadius={24}
-                    glowIntensity={1.1}
-                    coneSpread={25}
-                    fillOpacity={0}
                     spotlightColor="rgba(108, 99, 255, 0.12)"
                     backgroundSlot={
                       <>
@@ -1698,14 +1607,6 @@ export default function SkillsSection() {
                     key={slug}
                     className="process-card process-card--has-img rise-card"
                     backgroundColor="#13101c"
-                    borderRadius={48}
-                    colors={['#6C63FF', '#FF6584', '#38bdf8']}
-                    glowColor="264 70 75"
-                    edgeSensitivity={25}
-                    glowRadius={24}
-                    glowIntensity={1.1}
-                    coneSpread={25}
-                    fillOpacity={0}
                     spotlightColor="rgba(108, 99, 255, 0.12)"
                     backgroundSlot={
                       <>
@@ -2010,8 +1911,11 @@ export default function SkillsSection() {
               <article
                 key={card.id}
                 ref={(el: HTMLElement | null) => { if (el) cardRefs.current.set(card.id, el); else cardRefs.current.delete(card.id); }}
-                className={`ai-card ai-card-glow rise-card${card.variant ? ' ' + card.variant : ''}${isOpen ? ' is-open' : ''}`}
+                className={`ai-card rise-card${card.variant ? ' ' + card.variant : ''}${isOpen ? ' is-open' : ''}`}
               >
+                <span className="sc-overlay" aria-hidden="true" />
+                <span className="spotlight-layer" aria-hidden="true" />
+                <span className="sc-ring" aria-hidden="true" />
                 <span className="ai-step-badge"><em>{card.step}</em></span>
                 {card.badge && <span className="ai-focal-badge">{card.badge}</span>}
                 <div className="ai-card-head">

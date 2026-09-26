@@ -49,7 +49,7 @@
 }
 
 .afs-label-sep {
-  font-family: "Geist Mono", monospace;
+  font-family: var(--font-code);
   font-size: 10px;
   color: #6A6482;
 }
@@ -85,7 +85,7 @@ i.afs-icon {
 }
 
 .afs-label {
-  font-family: "Geist Mono", monospace;
+  font-family: var(--font-code);
   font-size: 10px;
   color: #9A93B0;
   white-space: nowrap;
@@ -151,6 +151,24 @@ i.afs-icon {
 
 .ai-flow-stepper-boxed .afs-label {
   font-size: 8px;
+}
+
+/* Desktop: keep the collapsed card's 5 boxed steps on ONE row whenever
+   they can physically fit. The steps alone are ~281px; with full 16px
+   connectors + 6px margins the row needs ~394px (Geist Mono labels), just
+   over the ~382px content box at 1440 — so Delivery wrapped onto a second
+   line. Flex decides line breaks from each item's flex-BASIS, so the
+   connectors' basis drops to their 4px floor and their margins to 3px
+   (row needs ~321px to stay on one line — fits from ~1280 up) and then
+   grow back toward 16px with whatever room is left. Narrower desktop
+   cards (~244px at 1025) still can't fit 281px of steps and wrap exactly
+   as before. Tablet/phone are untouched. */
+@media (min-width: 1025px) {
+  .ai-card:not(.is-open) .ai-flow-stepper-boxed .afs-connector {
+    flex: 1 1 4px;
+    max-width: 16px;
+    margin: 0 3px;
+  }
 }
 
 /* Card expanded: drop the boxed teaser look and revert to the original
