@@ -26,13 +26,13 @@
        has data-theme="light" set by the script above before that CSS ever
        loads, and --bg in light mode is the w_bg.svg photo backdrop — once
        that stylesheet DOES land a beat later, the image flashes in before
-       the Loader component (which paints a flat, matching #EBEFF1 over
+       the Loader component (which paints a flat, matching #F7FAFC over
        everything) has mounted to cover it. Pin the exact flat color the
        Loader itself will show, for both themes, so there's nothing to
        flash regardless of how long the JS graph takes. -->
   <style>
     html { background: #0A0912; }
-    html[data-theme="light"] { background: #EBEFF1; }
+    html[data-theme="light"] { background: #F7FAFC; }
   </style>
   <title>Tim Lin - Product Designer</title>
   <link rel="icon" type="image/x-icon" href="/img/favicon/favicon.ico" />

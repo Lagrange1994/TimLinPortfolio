@@ -43,7 +43,7 @@ Review this file before any UI change. Update it when design decisions change.
 | Token | Dark | Light | 用途 |
 |---|---|---|---|
 | `--bg` | `#0A0912` | `url(/img/w_bg.svg) center/cover` | 頁面背景（light 是完整 shorthand，需用 `background:` 不能用 `background-color:`） |
-| `--bg-safe` | `#0A0912` | `#EBEFF1` | `--bg` 的純色替身，`body.hero-ready` 前用，避免提早抓圖 |
+| `--bg-safe` | `#0A0912` | `#F7FAFC` | `--bg` 的純色替身，`body.hero-ready` 前用，避免提早抓圖 |
 | `--bg-card` | `#1E1E1E` | `#F7FAFC` | 實心元件底 |
 | `--bg-hover` | `#2D2D2D` | `#EFEDF7` | 實心元件 hover |
 | `--glass-bg` | `rgba(30,30,30,.5)` | `rgba(247,250,252,.72)` | 一般玻璃卡 |

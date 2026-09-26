@@ -44,7 +44,7 @@
        image, since it's gone before the page bg is even visible underneath
        it. Matches .portfolio-wall's light-mode flat color. */
     :root[data-theme="light"] .loader {
-      background: #EBEFF1;
+      background: #F7FAFC;
     }
 
     .loader-animation {
@@ -400,13 +400,13 @@
          repaint issues already fought elsewhere in this file. */
       /* w_bg.svg fully disabled — flat tone (same as --bg-safe). To restore:
          url('/img/w_bg.svg') center / cover no-repeat */
-      --bg: #EBEFF1;
+      --bg: #F7FAFC;
       /* Flat stand-in for --bg — see the base :root's own comment on this
          token. This is the one theme where it actually differs from --bg:
          matches the flat color index.html's inline pre-hydration <style>
          and .loader already pin light mode to, so nothing on screen ever
          requests w_bg.svg until body.hero-ready explicitly swaps it in. */
-      --bg-safe: #EBEFF1;
+      --bg-safe: #F7FAFC;
       --bg-card: #F7FAFC;
       --bg-hover: #EFEDF7;
       --border: rgba(23, 15, 45, 0.10);
@@ -4271,7 +4271,7 @@
     }
 
     :root[data-theme="light"] .portfolio-wall-fill {
-      background: #EBEFF1;
+      background: #F7FAFC;
     }
 
     /* Contains the marquee cards to the same notched shape — kept as its
