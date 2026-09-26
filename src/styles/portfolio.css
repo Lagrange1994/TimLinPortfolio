@@ -5159,6 +5159,50 @@
       opacity: .9;
     }
 
+    /* ── Lazy-load skeleton ──
+       Shimmering fill in each thumbnail's own mean color (--ph, inline
+       from projects.ts) until the <img> is done; portfolioSkeleton.ts then
+       adds .img-loaded and it fades out. The positioned ::before paints
+       over the (static) img but under the later positioned overlay/ripple/
+       glow siblings. .project-card's copy takes the same dark-mode dimming
+       as its img so the reveal doesn't flash brighter first. */
+    .project-card::before,
+    .grid-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, .28) 50%, transparent 65%) 100% 0 / 250% 100% no-repeat,
+        var(--ph, var(--bg-card));
+      animation: portfolio-skeleton 1.4s linear infinite;
+      transition: opacity .4s ease;
+    }
+
+    .project-card::before {
+      filter: brightness(.7);
+    }
+
+    :root[data-theme="light"] .project-card::before {
+      filter: none;
+    }
+
+    :is(.project-card, .grid-card).img-loaded::before {
+      opacity: 0;
+      animation: none;
+    }
+
+    @keyframes portfolio-skeleton {
+      to { background-position: 0% 0, 0 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .project-card::before,
+      .grid-card::before {
+        animation: none;
+      }
+    }
+
     :root[data-theme="light"] .project-card:hover {
       opacity: 1;
     }
@@ -5372,9 +5416,18 @@
     }
 
     /* overlay always-visible at rest; brighter on hover */
+    /* Each card's dark gradient takes a hint of its own thumbnail color
+       (--ph, the same mean color as the lazy-load skeleton): black mixed
+       with 25% of it, alphas unchanged via relative color syntax. Browsers
+       without relative color keep the plain black line above it. */
     .grid-card .project-overlay {
+      --overlay-tint: color-mix(in srgb, var(--ph, #000) 25%, #000);
       opacity: 1;
       background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.35) 45%, transparent 75%);
+      background: linear-gradient(to top,
+          rgb(from var(--overlay-tint) r g b / .82) 0%,
+          rgb(from var(--overlay-tint) r g b / .35) 45%,
+          transparent 75%);
     }
 
     .grid-card .project-title {
@@ -7773,7 +7826,8 @@
          they'd either leave cards permanently dim or, on browsers that
          simulate :hover from a tap, flash a tag stuck at the touch point.
          Cards show at full brightness and the tag stays hidden instead. */
-      .project-card img {
+      .project-card img,
+      .project-card::before {
         filter: none;
       }
 

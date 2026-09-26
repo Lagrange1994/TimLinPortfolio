@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback, type CSSProperties } from 'react';
 import { motion, LayoutGroup } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
@@ -6,6 +6,7 @@ import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
 import { portfolioWallMaskPath, DEFAULT_RADIUS, computeWallHeight } from '../utils/portfolioMask';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
+import { attachPortfolioSkeleton } from '../utils/portfolioSkeleton';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 
@@ -169,13 +170,16 @@ function ProjectCard({ p, mode, index, t, expanded, activeFilter }: {
       data-category={p.category}
       data-title={title}
       data-sub={categoryLabel}
+      // Skeleton fill (see .project-card::before) — inline so marquee
+      // cloneNode copies carry it too.
+      style={{ '--ph': p.color } as CSSProperties}
       onClick={() => {
         sessionStorage.setItem('portfolioScrollY', String(window.scrollY));
         sessionStorage.setItem('portfolioExpanded', expanded ? 'true' : 'false');
         sessionStorage.setItem('portfolioActiveFilter', activeFilter);
       }}
     >
-      <img src={p.img} alt={title} loading="lazy" />
+      <img src={p.img} alt={title} loading="lazy" decoding="async" />
       {mode === 'grid' && (
         <>
           {/* Ripple — grow/fade keyframe copied straight from the
@@ -253,6 +257,10 @@ export default function PortfolioSection() {
   // waiting for a 'rise-settled' event that useRiseReveal (a one-time,
   // empty-deps effect) will never fire again.
   const wallMaskEntranceSettledRef = useRef(false);
+
+  // Lazy-load skeleton — declared first so its capture listener is in place
+  // before the scroller effect clones cards (see portfolioSkeleton.ts).
+  useEffect(() => attachPortfolioSkeleton(), []);
 
   // MagicBento cleanup refs
   const spotlightRef = useRef<HTMLDivElement | null>(null);
