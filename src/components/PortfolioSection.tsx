@@ -12,6 +12,13 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// TEMP (2026-09-27): expanded grid cards' motion/glow effects are switched
+// off — MagicBento glow/spotlight/magnetic tilt, the fly-in entrance, and
+// the CSS hover lift/zoom/shadow (gated by #portfolio-grid.grid-fx-off in
+// portfolio.css). Kept: the hover hero-image ripple, and the marquee wall.
+// Flip to true to restore.
+const GRID_CARD_EFFECTS = false;
+
 const SMOOTH_TAU = 0.18;
 // Matches How I Use AI's card corner radius (.ai-card) so the squircle reads
 // consistently across sections instead of scaling with each card's box size.
@@ -172,7 +179,7 @@ function ProjectCard({ p, mode, index, t, expanded, activeFilter }: {
       data-sub={categoryLabel}
       // Skeleton fill (see .project-card::before) — inline so marquee
       // cloneNode copies carry it too.
-      style={{ '--ph': p.color } as CSSProperties}
+      style={{ '--ph': p.color, '--ph2': p.heroColor } as CSSProperties}
       onClick={() => {
         sessionStorage.setItem('portfolioScrollY', String(window.scrollY));
         sessionStorage.setItem('portfolioExpanded', expanded ? 'true' : 'false');
@@ -985,7 +992,13 @@ export default function PortfolioSection() {
     const ro = new ResizeObserver(entries => {
       for (const entry of entries) {
         const el = entry.target as HTMLElement;
-        const { width, height } = entry.contentRect;
+        // clip-path: path() is laid out in the BORDER box — contentRect
+        // (content box) made the path smaller than the card by the border
+        // width on each side, pinned to the top-left, so the photo's
+        // right/bottom edge got cut while a rim showed on the left/top.
+        const box = entry.borderBoxSize?.[0];
+        const width = box ? box.inlineSize : el.offsetWidth;
+        const height = box ? box.blockSize : el.offsetHeight;
         if (width <= 0 || height <= 0) continue;
         el.style.clipPath = `path('${squircleRectPath(width, height, CARD_CORNER_RADIUS)}')`;
         if (el.classList.contains('grid-card')) {
@@ -1000,7 +1013,7 @@ export default function PortfolioSection() {
         }
       }
     });
-    cards.forEach(c => ro.observe(c));
+    cards.forEach(c => ro.observe(c, { box: 'border-box' }));
     return () => ro.disconnect();
   }, [lang, expanded, activeFilter]);
 
@@ -1131,7 +1144,7 @@ export default function PortfolioSection() {
 
   // Init MagicBento when expanded
   useEffect(() => {
-    if (expanded) {
+    if (expanded && GRID_CARD_EFFECTS) {
       setTimeout(() => initMagicBento(), 50);
     } else {
       destroyMagicBento();
@@ -1147,7 +1160,7 @@ export default function PortfolioSection() {
   // opacity (inherited from the prior animation's `clearProps`) before the
   // 120ms-delayed gsap.fromTo() in the effect below hides and re-animates them.
   useLayoutEffect(() => {
-    if (!expanded) return;
+    if (!expanded || !GRID_CARD_EFFECTS) return;
     const grid = document.getElementById('portfolio-grid');
     if (!grid) return;
     // Targets .grid-card-shadow (see the entrance effect below for why) —
@@ -1184,6 +1197,8 @@ export default function PortfolioSection() {
       wrapper.style.display = show ? '' : 'none';
       return show;
     });
+
+    if (!GRID_CARD_EFFECTS) return;
 
     setTimeout(() => {
       gsap.killTweensOf('#portfolio-grid .grid-card-shadow');
@@ -1364,6 +1379,7 @@ export default function PortfolioSection() {
         {/* Grid view */}
         <div
           id="portfolio-grid"
+          className={GRID_CARD_EFFECTS ? undefined : 'grid-fx-off'}
           style={{ display: expanded ? 'grid' : 'none' }}
         >
           {/* Unmounted while folded (not just display:none) so the 13 cards'

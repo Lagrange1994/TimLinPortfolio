@@ -5416,10 +5416,19 @@
     }
 
     /* overlay always-visible at rest; brighter on hover */
-    /* Each card's dark gradient takes a hint of its own thumbnail color
-       (--ph, the same mean color as the lazy-load skeleton): black mixed
-       with 25% of it, alphas unchanged via relative color syntax. Browsers
-       without relative color keep the plain black line above it. */
+    /* Each card's dark gradient takes a hint of the image it sits on:
+       black mixed with 25% of the thumbnail's mean color (--ph, same as the
+       lazy-load skeleton) at rest, and of the hero shot's mean color (--ph2)
+       once the hover ripple reveals it. Alphas unchanged via relative color
+       syntax; browsers without it keep the plain black line. --overlay-tint
+       is a registered <color> so the swap can transition — gradients
+       themselves can't — timed to the ripple's own .6s ease. */
+    @property --overlay-tint {
+      syntax: '<color>';
+      inherits: false;
+      initial-value: #000;
+    }
+
     .grid-card .project-overlay {
       --overlay-tint: color-mix(in srgb, var(--ph, #000) 25%, #000);
       opacity: 1;
@@ -5428,6 +5437,19 @@
           rgb(from var(--overlay-tint) r g b / .82) 0%,
           rgb(from var(--overlay-tint) r g b / .35) 45%,
           transparent 75%);
+      transition: opacity .3s, --overlay-tint .6s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .grid-card:hover .project-overlay {
+      --overlay-tint: color-mix(in srgb, var(--ph2, var(--ph, #000)) 25%, #000);
+    }
+
+    /* No ripple under reduced motion (see above) → the hero shot never
+       shows, so keep the thumbnail's tint. */
+    @media (prefers-reduced-motion: reduce) {
+      .grid-card:hover .project-overlay {
+        --overlay-tint: color-mix(in srgb, var(--ph, #000) 25%, #000);
+      }
     }
 
     .grid-card .project-title {
@@ -5446,6 +5468,19 @@
     /* GSAP handles all transforms; disable CSS hover-transform */
     .grid-card.mb-glow:hover {
       transform: none;
+    }
+
+    /* TEMP: expanded grid cards' effects switched off (GRID_CARD_EFFECTS in
+       PortfolioSection.tsx adds .grid-fx-off; it also skips MagicBento and
+       the fly-in entrance). The hover hero-image ripple is kept on purpose.
+       Delete this block + flip the flag to restore. */
+    #portfolio-grid.grid-fx-off .grid-card-shadow:hover,
+    #portfolio-grid.grid-fx-off .grid-card:hover img {
+      transform: none;
+    }
+
+    #portfolio-grid.grid-fx-off .grid-card-shadow:hover::after {
+      opacity: 0;
     }
 
     /* border-glow ::after — mask reveals only the border ring */
@@ -7122,6 +7157,15 @@
       background-repeat: repeat;
       background-size: 180px 180px;
       border: 1px solid var(--glass-border);
+    }
+
+    /* Portfolio photo tiles: no border. It traced border-radius:16px while
+       the JS squircle clip-path (44px) cuts the corners, so the hairline
+       broke up at every corner and inset the photo by 1px against the clip
+       edge. The photo now fills the clip exactly. */
+    .project-card,
+    .grid-card {
+      border: 0;
     }
 
     .stagger-item,

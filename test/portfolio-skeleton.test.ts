@@ -84,8 +84,13 @@ describe('portfolio lazy-load skeleton', () => {
     expect(new Set(PROJECTS.map(p => p.color)).size).toBe(PROJECTS.length);
   });
 
-  it('ProjectCard passes the color to the card as --ph', () => {
+  it('every project has a hover hero-image color for the overlay tint', () => {
+    for (const p of PROJECTS) expect(p.heroColor).toMatch(/^#[0-9a-f]{6}$/i);
+  });
+
+  it('ProjectCard passes both colors to the card as --ph / --ph2', () => {
     const src = fs.readFileSync(path.resolve(__dirname, '../src/components/PortfolioSection.tsx'), 'utf8');
     expect(src).toMatch(/'--ph':\s*p\.color/);
+    expect(src).toMatch(/'--ph2':\s*p\.heroColor/);
   });
 });
