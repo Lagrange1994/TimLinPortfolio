@@ -672,16 +672,12 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <div className="mb-4"><h3 className="text-lg md:text-2xl font-bold text-text">{t('focus_title')}</h3><p className="text-xs text-text/60 mt-1">{t('focus_sub')}</p></div>
                                                 <div className="space-y-4">
                                                     {simplificationPoints.map((point) => (
-                                                        /* [修改] border-l-primary -> border-l-app-primary */
-                                                        <div key={point.id} style={dsVars('app')} className="ds-card feature-card border border-border/10 bg-border/5 p-5 border-l-4 border-l-app-primary hover:translate-x-1 transition-all duration-300 group">
-                                                            {/* [修改] bg-secondary/20 -> bg-app-secondary/20, text-secondary -> text-app-secondary */}
+                                                        <div key={point.id} style={dsVars('app')} className="ds-card p-5">
                                                             <div className="flex items-center mb-3"><div className="w-8 h-8 rounded-full bg-app-secondary/20 flex items-center justify-center text-app-secondary mr-3"><i className={`ph ${point.icon}`}></i></div><h4 className="font-bold text-text">{point.title}</h4></div>
                                                             <div className="flex items-center justify-between text-xs mb-3 bg-app-dark/20 p-2 rounded-lg border border-border/10">
                                                                 <div className="text-text/45 w-1/2 pr-2 border-r border-border/30"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('web_complex')}</span>{point.web.desc}</div>
-                                                                {/* [修改] text-secondary -> text-app-secondary */}
                                                                 <div className="text-app-secondary w-1/2 pl-2"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('app_simple')}</span>{point.app.desc}</div>
                                                             </div>
-                                                            {/* [修改] border-secondary -> border-app-secondary */}
                                                             <div className="text-xs text-text/80 italic border-l-2 border-app-secondary pl-3">&quot;{point.insight}&quot;</div>
                                                         </div>
                                                     ))}
@@ -746,16 +742,12 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <div className="mb-4"><h3 className="text-lg md:text-2xl font-bold text-text">{t('focus_title')}</h3><p className="text-xs text-text/60 mt-1">{t('focus_sub')}</p></div>
                                                 <div className="space-y-4">
                                                     {simplificationPoints.map((point) => (
-                                                        /* [修改] border-l-primary -> border-l-app-primary */
-                                                        <div key={point.id} style={dsVars('app')} className="ds-card feature-card border border-border/10 bg-border/5 p-5 border-l-4 border-l-app-primary hover:translate-x-1 transition-all duration-300 group">
-                                                            {/* [修改] bg-secondary/20 -> bg-app-secondary/20, text-secondary -> text-app-secondary */}
+                                                        <div key={point.id} style={dsVars('app')} className="ds-card p-5">
                                                             <div className="flex items-center mb-3"><div className="w-8 h-8 rounded-full bg-app-secondary/20 flex items-center justify-center text-app-secondary mr-3"><i className={`ph ${point.icon}`}></i></div><h4 className="font-bold text-text">{point.title}</h4></div>
                                                             <div className="flex items-center justify-between text-xs mb-3 bg-app-dark/20 p-2 rounded-lg border border-border/10">
                                                                 <div className="text-text/45 w-1/2 pr-2 border-r border-border/30"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('web_complex')}</span>{point.web.desc}</div>
-                                                                {/* [修改] text-secondary -> text-app-secondary */}
                                                                 <div className="text-app-secondary w-1/2 pl-2"><span className="block font-bold mb-1 text-[10px] uppercase tracking-wider opacity-70">{t('app_simple')}</span>{point.app.desc}</div>
                                                             </div>
-                                                            {/* [修改] border-secondary -> border-app-secondary */}
                                                             <div className="text-xs text-text/80 italic border-l-2 border-app-secondary pl-3">&quot;{point.insight}&quot;</div>
                                                         </div>
                                                     ))}

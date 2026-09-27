@@ -150,6 +150,25 @@ describe('ds-home opt-in design layer', () => {
     expect(css).toMatch(/\.ds-home div\.ds-card:hover \{[^}]*transform: none;[^}]*translate: none;/);
   });
 
+  // Every property a page's inline `.feature-card…:hover` rule can set must be
+  // pinned back to the resting value for static (div) cards — project_10/11
+  // swap `background` on hover, which the first version didn't restate.
+  it('static-card hover pins every property the per-page hover rules touch', () => {
+    const css = read('src/styles/ds-home.css').replace(/\/\*[\s\S]*?\*\//g, '');
+    const dark = css.match(/\.ds-home div\.ds-card:hover \{([^}]*)\}/)![1];
+    const light = css.match(/:root\[data-theme="light"\]\.ds-home div\.ds-card:hover \{([^}]*)\}/)![1];
+    const touched = new Set<string>();
+    for (const f of fs.readdirSync(ROOT).filter(f => /^project_(0\d|1[0-2])\.html$/.test(f))) {
+      for (const m of read(f).matchAll(/[^{}]*feature-card[^{}]*:hover[^{}]*\{([^}]*)\}/g)) {
+        m[1].split(';').map(d => d.split(':')[0].trim()).filter(Boolean).forEach(p => touched.add(p));
+      }
+    }
+    const pinned = (body: string, p: string) =>
+      p === 'background' ? /background(-color)?:/.test(body) : new RegExp(`(^|[\\s;])${p}:`).test(body);
+    for (const p of touched) expect(pinned(dark, p) || (p !== 'transform' && pinned(light, p)), p).toBe(true);
+    expect(light).toMatch(/background: var\(--ds-surface/);
+  });
+
   it('theme switch label is hidden unless the page opts in', () => {
     // `hidden` keeps non-ds pages' round icon button unchanged; ds-home.css
     // (unlayered) overrides it with display:flex.

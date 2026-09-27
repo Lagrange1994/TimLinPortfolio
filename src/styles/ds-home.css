@@ -127,9 +127,16 @@
   translate: none;
   border-color: var(--ds-glass-border);
   box-shadow: var(--ds-card-edge);
+  /* project_10/11's inline hover also swaps the whole `background` (and
+     with it the grain), so the resting fill is restated here too. */
+  background-color: color-mix(in srgb, var(--ds-surface, #0F172A) 94%, #fff);
+  background-image: var(--ds-grain);
+  background-repeat: repeat;
+  background-size: 180px 180px;
 }
 
 :root[data-theme="light"].ds-home div.ds-card:hover {
+  background: var(--ds-surface, #F7FAFC);
   border-color: transparent;
   box-shadow: var(--ds-neu-raised-sm);
 }
