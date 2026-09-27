@@ -93,4 +93,14 @@ describe('portfolio lazy-load skeleton', () => {
     expect(src).toMatch(/'--ph':\s*p\.color/);
     expect(src).toMatch(/'--ph2':\s*p\.heroColor/);
   });
+
+  // Regression: a fixed white sweep vanished over the near-white thumbnail
+  // colors in light mode, so the skeleton looked like it had no animation.
+  it('light mode sweeps a darker shade of the card color, not white', () => {
+    const css = fs.readFileSync(path.resolve(__dirname, '../src/styles/portfolio.css'), 'utf8');
+    expect(css).toMatch(/var\(--skeleton-sweep\) 50%/);
+    expect(css).toMatch(
+      /:root\[data-theme="light"\] :is\(\.project-card, \.grid-card\)::before \{\s*--skeleton-sweep: color-mix\(in srgb, var\(--ph[^;]*, #000\);/,
+    );
+  });
 });

@@ -5172,8 +5172,9 @@
       position: absolute;
       inset: 0;
       pointer-events: none;
+      --skeleton-sweep: rgba(255, 255, 255, .28);
       background:
-        linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, .28) 50%, transparent 65%) 100% 0 / 250% 100% no-repeat,
+        linear-gradient(100deg, transparent 35%, var(--skeleton-sweep) 50%, transparent 65%) 100% 0 / 250% 100% no-repeat,
         var(--ph, var(--bg-card));
       animation: portfolio-skeleton 1.4s linear infinite;
       transition: opacity .4s ease;
@@ -5185,6 +5186,14 @@
 
     :root[data-theme="light"] .project-card::before {
       filter: none;
+    }
+
+    /* Light mode: most thumbnail colors are near-white (#e2e0dc, #f0e7d7,
+       #e8e8ea…), so a white sweep over them is invisible and the skeleton
+       reads as static. Sweep a 15%-darker shade of the card's own color
+       instead — visible on light and dark thumbnails alike. */
+    :root[data-theme="light"] :is(.project-card, .grid-card)::before {
+      --skeleton-sweep: color-mix(in srgb, var(--ph, #cbd5e1) 85%, #000);
     }
 
     :is(.project-card, .grid-card).img-loaded::before {
