@@ -18,6 +18,29 @@ const NOTCH_CONTENT_GAP = 26;
 // content (well under the wordmark's height) clears it with more room.
 const NOTCH_CURVE_CLEARANCE = NOTCH_RADIUS;
 
+// .spline-bg-layer's 0.7s opacity crossfade (portfolio.css) plus a margin —
+// the outgoing theme's scene keeps rendering until it has fully faded out.
+const BG_CROSSFADE_MS = 800;
+// Swap anyway if the incoming theme's scene never reports load-complete.
+const BG_SWAP_FALLBACK_MS = 8000;
+
+type SplineViewerEl = HTMLElement & {
+  _spline?: { play?: () => void; stop?: () => void };
+};
+
+// Pause/resume a bg scene's render loop via the viewer's internal runtime
+// (`_spline`, not public API — no-op before it has loaded). Pausing is
+// play() THEN stop(): the runtime's stop() is a no-op once its `_isPaused`
+// flag is set, and a stop() issued before load sets that flag without
+// clearing the loop the load arms afterwards — leaving a "paused" scene that
+// still renders every frame. play() first re-syncs the flag with the loop.
+function setSceneRunning(el: HTMLElement | null, running: boolean) {
+  const app = (el as SplineViewerEl | null)?._spline;
+  if (!app) return;
+  app.play?.();
+  if (!running) app.stop?.();
+}
+
 export default function BeamsBackground() {
   // The decorative background Spline scene stays mounted and fully opaque
   // at every scroll position (both themes) — no scroll-driven fade/unmount.
@@ -42,14 +65,11 @@ export default function BeamsBackground() {
     return () => observer.disconnect();
   }, []);
 
-  // The inactive theme's scene only gets a `url` (and so only starts
-  // loading) once the page's own priority content has already loaded —
-  // Loader.tsx fires 'hero-ready' once the ACTIVE scene and the hero figure
-  // are both up. Giving both scenes a real url from first paint made them
-  // load concurrently, competing with the active one for bandwidth/GPU on
-  // first load; this way first load only ever prioritizes one, and the
-  // other's preload (for a later toggle's crossfade — see the render below)
-  // starts only once there's nothing more urgent left to load.
+  // The other theme's scene is preloaded once the page's own priority
+  // content is up (Loader.tsx fires 'hero-ready' after the ACTIVE scene and
+  // the hero figure), so a toggle only crossfades between two ready scenes —
+  // loading on toggle instead parses the scene and compiles its shaders on
+  // the main thread right on top of the theme transition (visible jank).
   const [preloadOtherTheme, setPreloadOtherTheme] = useState(false);
   useEffect(() => {
     if (document.body.classList.contains('hero-ready')) {
@@ -61,15 +81,25 @@ export default function BeamsBackground() {
     return () => window.removeEventListener('hero-ready', onHeroReady);
   }, []);
 
+  // `shownTheme` is the scene that's visible (.is-active); `fadingOut` is
+  // the previous one during the 0.7s crossfade. Only those two may RENDER:
+  // a Spline viewer keeps rendering at full rate at opacity:0, so the
+  // preloaded scene is paused (see pauseScene) — measured on production, the
+  // invisible scene drew as much as the visible one (~41k draw calls/s) and
+  // cost ~1/3 of the page's frame budget. If the other scene isn't loaded
+  // yet at toggle time, the old one stays shown until it fires
+  // 'load-complete', so there's never a blank gap.
+  const [shownTheme, setShownTheme] = useState(theme);
+  const [fadingOut, setFadingOut] = useState<'dark' | 'light' | null>(null);
+
   // Both background scenes' `url` is managed imperatively (refs, not a JSX
   // prop) for the same reason HeroSection.tsx's #hero-spline is: it needs to
   // be droppable/restorable from an IntersectionObserver without fighting
   // React's own diffing. Dropped whenever #home has been out of view for
   // HERO_DROP_DELAY_MS straight — same debounced pattern and delay as the
   // hero figure (see that comment), applied here because a scrolled-past
-  // hero was otherwise left running up to 3 concurrent WebGL contexts (hero
-  // figure + both preloaded theme scenes) for the rest of the page's
-  // lifetime, exactly the sustained-GPU-contention setup blamed for the
+  // hero was otherwise left running concurrent WebGL contexts for the rest
+  // of the page's lifetime, exactly the sustained-GPU-contention setup blamed for the
   // renderer freezes in homepage-webgl-stability. Restored immediately (no
   // delay) once #home scrolls back into view.
   const splineDarkRef = useRef<HTMLElement>(null);
@@ -79,17 +109,48 @@ export default function BeamsBackground() {
     const dark = splineDarkRef.current;
     const light = splineLightRef.current;
     if (!dark || !light || !inHeroViewRef.current) return;
-    const wantDark = theme === 'dark' || preloadOtherTheme;
-    const wantLight = theme === 'light' || preloadOtherTheme;
-    if (wantDark) { if (!dark.getAttribute('url')) dark.setAttribute('url', './models/bg_scene.splinecode'); }
+    const want = (t: 'dark' | 'light') =>
+      preloadOtherTheme || theme === t || shownTheme === t || fadingOut === t;
+    if (want('dark')) { if (!dark.getAttribute('url')) dark.setAttribute('url', './models/bg_scene.splinecode'); }
     else dark.removeAttribute('url');
-    if (wantLight) { if (!light.getAttribute('url')) light.setAttribute('url', './models/bg_scene_w.splinecode'); }
+    if (want('light')) { if (!light.getAttribute('url')) light.setAttribute('url', './models/bg_scene_w.splinecode'); }
     else light.removeAttribute('url');
-  }, [theme, preloadOtherTheme]);
+  }, [theme, shownTheme, fadingOut, preloadOtherTheme]);
 
   useEffect(() => {
     applyDesiredSplineUrls();
   }, [applyDesiredSplineUrls]);
+
+  // Toggle: wait for the new theme's scene to load, then swap which one is
+  // shown (the CSS crossfade runs) and mark the old one as fading out. The
+  // fallback swaps anyway if a load never completes (network error, or the
+  // hero is scrolled away so no url is set), so the theme can't get stuck.
+  useEffect(() => {
+    if (theme === shownTheme) return;
+    const incoming = theme === 'dark' ? splineDarkRef.current : splineLightRef.current;
+    const swap = () => {
+      setFadingOut(shownTheme);
+      setShownTheme(theme);
+    };
+    if (!incoming || (incoming as HTMLElement & { _loaded?: boolean })._loaded) {
+      swap();
+      return;
+    }
+    incoming.addEventListener('load-complete', swap, { once: true });
+    const fallback = setTimeout(swap, BG_SWAP_FALLBACK_MS);
+    return () => {
+      incoming.removeEventListener('load-complete', swap);
+      clearTimeout(fallback);
+    };
+  }, [theme, shownTheme]);
+
+  // Pause the outgoing scene once the crossfade has finished (it stays
+  // loaded for the next toggle; once preloaded, its url is kept).
+  useEffect(() => {
+    if (!fadingOut) return;
+    const t = setTimeout(() => setFadingOut(null), BG_CROSSFADE_MS);
+    return () => clearTimeout(t);
+  }, [fadingOut]);
 
   useEffect(() => {
     if (isMobile) return;
@@ -131,6 +192,36 @@ export default function BeamsBackground() {
   useEffect(() => {
     setHeroEl(document.getElementById('home'));
   }, []);
+
+  // Run only the shown (and fading-out) bg scene; pause the rest. Re-applied
+  // on every load-complete, because a freshly loaded viewer arms its own
+  // render loop (a setTimeout(0) inside the runtime's load) — deferred past
+  // that so the pause actually sticks. heroEl is a dep because the viewers
+  // only exist once the portal below has mounted into it.
+  const runningRef = useRef({ dark: true, light: true });
+  useEffect(() => {
+    const dark = splineDarkRef.current;
+    const light = splineLightRef.current;
+    if (!dark || !light) return;
+    const run = (t: 'dark' | 'light') => shownTheme === t || fadingOut === t;
+    runningRef.current = { dark: run('dark'), light: run('light') };
+    setSceneRunning(dark, runningRef.current.dark);
+    setSceneRunning(light, runningRef.current.light);
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const onLoaded = (e: Event) => {
+      const el = e.currentTarget as HTMLElement;
+      const key = el === dark ? 'dark' : 'light';
+      timers.push(setTimeout(() => setSceneRunning(el, runningRef.current[key]), 50));
+    };
+    dark.addEventListener('load-complete', onLoaded);
+    light.addEventListener('load-complete', onLoaded);
+    return () => {
+      timers.forEach(clearTimeout);
+      dark.removeEventListener('load-complete', onLoaded);
+      light.removeEventListener('load-complete', onLoaded);
+    };
+  }, [shownTheme, fadingOut, heroEl]);
 
   // Drives the visible 1px border stroke — see heroFramePath.ts. Same
   // pattern as the portfolio wall's outline — the shape is computed once
@@ -351,25 +442,23 @@ export default function BeamsBackground() {
           its filter traces whatever shape its already-clipped child
           rendered — the exact notch silhouette, for free. */}
       <div id="bg-panel-shadow" aria-hidden="true" role="presentation">
-        {/* Both theme scenes stay mounted permanently (no key-remount) and
-            stacked in the same box, so a theme toggle just crossfades opacity
-            between two already-ready WebGL contexts instead of tearing one
-            down and re-fetching/re-initializing the other from scratch,
-            which is what caused the visible stutter a single swapped-`url`
-            element had. `url` itself is left unset here — the
-            applyDesiredSplineUrls effect above owns it imperatively, so it
-            can also drop/restore it on scroll without React fighting that
-            write back on the next render. */}
+        {/* One element per theme, stacked in the same box, so a toggle
+            crossfades between two ready scenes instead of swapping one
+            element's `url` (which showed a blank gap while it reloaded).
+            Only the shown one renders outside a toggle — see shownTheme.
+            `url` is left unset here: applyDesiredSplineUrls owns it
+            imperatively, so it can also drop/restore it on scroll without
+            React fighting that write back on the next render. */}
         <div id="bg-spline-scene" ref={splineSceneRef} aria-hidden="true" role="presentation">
           <spline-viewer
             id="spline-bg-dark"
             ref={splineDarkRef}
-            className={`spline-bg-layer${theme === 'dark' ? ' is-active' : ''}`}
+            className={`spline-bg-layer${shownTheme === 'dark' ? ' is-active' : ''}`}
           />
           <spline-viewer
             id="spline-bg-light"
             ref={splineLightRef}
-            className={`spline-bg-layer${theme === 'light' ? ' is-active' : ''}`}
+            className={`spline-bg-layer${shownTheme === 'light' ? ' is-active' : ''}`}
           />
         </div>
       </div>

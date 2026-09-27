@@ -66,9 +66,8 @@ export default function Loader() {
 
     function waitForAssets() {
       // .spline-bg-layer.is-active loads at every viewport width — a Spline
-      // scene at/above HERO_FIGURE_BREAKPOINT (two now stay mounted per
-      // theme, see BeamsBackground — only the active one gates the loader,
-      // the other preloads unblocking in the background), a plain <img>
+      // scene at/above HERO_FIGURE_BREAKPOINT (one element per theme, but
+      // only the active theme's is loaded — see BeamsBackground), a plain <img>
       // below it, both firing a native `load` event either way. The hero
       // character Spline only gets a `url` (and thus only ever fires `load`)
       // at HERO_FIGURE_BREAKPOINT and up; below that it's a static <img>

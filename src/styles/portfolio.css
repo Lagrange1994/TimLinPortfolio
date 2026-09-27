@@ -312,8 +312,18 @@
        two bg.webp/bg_w.webp layers crossfade by opacity
        (BeamsBackground.tsx, .spline-bg-layer.is-active), which the
        compositor runs on its own thread for free. */
+    /* html/body: NO `color`. color is inherited, so an interpolating color
+       on the root re-cascades into every descendant each frame — a full
+       ~2200-element style recalc per frame for the whole 0.38s, silently
+       undoing the node budget above (span/div excluded for exactly this
+       cost). Measured during a toggle: large (>1000-element) recalcs went
+       from 7-8 to 3 and style time dropped ~30% with color dropped here.
+       Readable text still fades via the generic text rule below. */
     html.theme-transitioning,
-    html.theme-transitioning body,
+    html.theme-transitioning body {
+      transition: background-color 0.38s var(--switch-ease), border-color 0.38s var(--switch-ease);
+    }
+
     html.theme-transitioning #bg-scene,
     html.theme-transitioning #bg-spline-scene,
     html.theme-transitioning .snap-section {
@@ -1688,9 +1698,11 @@
       display: none;
     }
 
-    /* Shared by the mobile raster fallback (one <img> per theme, crossfaded
-       via .is-active) and the single desktop #spline-bg viewer (always
-       .is-active — both themes live in one scene, see BeamsBackground.tsx). */
+    /* Shared by the mobile <img> (a single always-active layer) and both
+       desktop spline-viewer scenes (BeamsBackground.tsx keeps one per theme
+       permanently mounted, stacked in the same box, so a toggle only needs
+       to crossfade opacity between two already-loaded layers instead of
+       swapping a url and re-loading). */
     .spline-bg-layer {
       position: absolute;
       top: 0;
@@ -1709,26 +1721,6 @@
 
     .spline-bg-layer.is-active {
       opacity: 1;
-    }
-
-    /* Desktop background scene: its file exports BOTH theme groups visible
-       (Spline strips hidden objects on export), so it stays hidden until
-       load-complete has hidden the inactive group, and drops .is-ready for
-       the fade-out while a theme toggle flips them. Duration must match
-       THEME_FADE_MS in BeamsBackground.tsx. */
-    #spline-bg {
-      opacity: 0;
-      transition: opacity .25s ease;
-    }
-
-    #spline-bg.is-ready {
-      opacity: 1;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      #spline-bg {
-        transition: none;
-      }
     }
 
     /* 直向（portrait）視口比 16:9 更窄時，橫向拉寬 spline-viewer
@@ -1892,18 +1884,15 @@
         pointer-events: none;
       }
 
-      /* Solid backdrop behind the WebGL canvas = the scene's own background
-         color per theme (the setBackgroundColor values in
-         BeamsBackground.tsx's applySplineTheme), so loading gaps and the
-         theme-swap fade dip to the scene's color, not a mismatched tone. */
-      #bg-spline-scene,
-      body.hero-ready #bg-spline-scene {
-        background: #060E22;
-      }
-
-      :root[data-theme="light"] #bg-spline-scene,
-      :root[data-theme="light"] body.hero-ready #bg-spline-scene {
-        background: #DCDCDC;
+      /* Solid backdrop behind the WebGL canvas for the light Spline scene
+         (bg_scene_w.splinecode — see BeamsBackground.tsx) — same Glass
+         Indigo tone as --frame-glow-base's light value, so the panel reads
+         as one consistent surface instead of canvas margins/loading gaps
+         showing whatever's behind. Only overrides light mode; dark mode
+         still falls through to the base #bg-spline-scene rule's
+         `background: var(--bg)` above, unchanged by this. */
+      :root[data-theme="light"] #bg-spline-scene {
+        background: var(--frame-glow-base);
       }
 
       .spline-bg-layer {
