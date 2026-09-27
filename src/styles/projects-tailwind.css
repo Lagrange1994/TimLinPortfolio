@@ -11,6 +11,7 @@
    exists anywhere in the repo. */
 @import "tailwindcss";
 @import "./gensen-faces.css";
+@import "./ds-home.css";
 
 /* ── 4K / large-screen scale lock ──
    Everything below is sized against a 1920×1080 canvas; past that width it
@@ -170,6 +171,11 @@
      light-mode override: there's no light-mode prod reference to match,
      and it never sits on a light panel. */
   --color-accent: #6C63FF;
+
+  /* Pain-point red — project_01's police-secondary, the one color every
+     PainPointCard uses (it used to follow each project's secondary, which
+     ranged from kh orange to tym blue). */
+  --color-pain: #FF6584;
 }
 
 /* Light-mode overrides. Keyed off the same [data-theme="light"] attribute
@@ -214,6 +220,7 @@
 :root[data-theme="light"] {
   --color-text: #3A3A42;
   --color-border: #171717;
+  --color-pain: #DA002C; /* = police/epb/gh light secondary */
 
   --color-app-primary: #C93A00;
   --color-app-secondary: #857000;

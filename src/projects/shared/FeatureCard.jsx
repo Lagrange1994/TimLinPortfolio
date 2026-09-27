@@ -1,4 +1,5 @@
 import React from 'react';
+import dsVars from './dsVars';
 
 // Clickable icon-avatar card used by the Solution / Feature / Highlight tabs
 // to switch the preview image. activeShadowClass is passed in literally
@@ -7,7 +8,8 @@ export default function FeatureCard({ prefix, active, onClick, icon, title, desc
     return (
         <button
             onClick={onClick}
-            className={`w-full text-left feature-card border p-5 flex items-start space-x-4 transition-all group ${active ? `border-${prefix}-primary bg-border/5 ${activeShadowClass}` : 'border-border/5 hover:bg-border/5'}`}
+            style={dsVars(prefix)}
+            className={`ds-card${active ? ' is-active' : ''} w-full text-left feature-card border p-5 flex items-start space-x-4 transition-all group ${active ? `border-${prefix}-primary bg-border/5 ${activeShadowClass}` : 'border-border/5 hover:bg-border/5'}`}
         >
             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${active ? `bg-${prefix}-primary text-${prefix}-dark` : `bg-border/10 text-${prefix}-primary`}`}>{icon}</div>
             <div>

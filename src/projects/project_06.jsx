@@ -7,6 +7,7 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, PainPointCard, GalleryItemButton, ImageWithSkeleton, ResizeHandle,
+    dsVars,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -56,8 +57,10 @@ gsap.registerPlugin(ScrollToPlugin);
                 challenge_title: "雙重挑戰",
                 pain_user_title: "轉乘資訊迷航，求助無門",
                 pain_user_desc: ["票價時刻表未對齊，難以一眼辨識出發/抵達時間。", "高鐵與捷運班次缺乏視覺連動，轉乘規劃困難。", "App 內缺乏即時的常見問答入口。"],
+                pain_user_titles: ["時刻表難以辨讀", "轉乘規劃困難", "缺乏即時問答"],
                 pain_biz_title: "商業轉換率低，流量流失",
                 pain_biz_desc: ["缺乏原生商城，跳轉網頁導致使用者流失。", "兌換專區分類混亂，降低會員消耗點數意願。", "活動訊息與領取流程斷裂。"],
+                pain_biz_titles: ["外連導致流失", "兌換分類混亂", "活動流程斷裂"],
                 strat_1_title: "策略 I：資訊可讀性優化", strat_1_sub: "Enhancing Information Accessibility",
                 strat_1_desc: "針對「時刻表難讀」的痛點，捨棄傳統表格，改採資訊層級分明的卡片式設計，聚焦「時間」與「銜接」。",
                 feat_1_title: "卡片式時刻表", feat_1_desc: "以'北上'與'南下'區分，對齊時刻表，自動媒合銜接高鐵車次。",
@@ -89,8 +92,10 @@ gsap.registerPlugin(ScrollToPlugin);
                 challenge_title: "The Challenge",
                 pain_user_title: "Information Maze",
                 pain_user_desc: ["Timetables misaligned, hard to read.", "Lack of visual connection between HSR and Metro schedules.", "No instant FAQ access inside the App."],
+                pain_user_titles: ["Hard-to-Read Timetables", "Difficult Transfers", "No Instant Help"],
                 pain_biz_title: "Low Conversion",
                 pain_biz_desc: ["Lack of native mall, external links cause drop-off.", "Confusing redemption categories.", "Disconnected event redemption flow."],
+                pain_biz_titles: ["External-Link Drop-off", "Confusing Redemption", "Broken Event Flow"],
                 strat_1_title: "Strategy I: Readability", strat_1_sub: "Enhancing Information Accessibility",
                 strat_1_desc: "Addressing the 'hard-to-read' timetable by switching to a card-based design, focusing on 'Time' and 'Connection'.",
                 feat_1_title: "Card-based Timetable", feat_1_desc: "Aligned schedules for North/South bound, auto-matching HSR connections.",
@@ -417,9 +422,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         </section>
 
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-tym-dark overflow-hidden">
-                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
-                                <div className="absolute top-10 left-10 w-32 h-32 bg-tym-primary/20 blur-[60px] rounded-full"></div>
-                                <div className="absolute bottom-10 right-10 w-40 h-40 bg-tym-secondary/20 blur-[60px] rounded-full"></div>
+                            <div className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <div className="w-full h-full max-w-full flex flex-col items-center justify-center relative">
                                     <div className="relative z-10 transform transition-all duration-500 flex items-center justify-center flex-1 min-h-0 w-full">
                                         <div className="transition-all duration-500 overflow-hidden flex items-center justify-center w-full h-full">
@@ -431,8 +434,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                     {activeTab !== 'context' && activeTab !== 'gallery' && (
                                         <div className="mt-3 z-30 flex items-center justify-center pointer-events-auto shrink-0 relative">
                                             <div className="flex bg-tym-dark/60 backdrop-blur-md rounded-full p-1 border border-border/20 shadow-xl">
-                                                <button onClick={() => setComparisonMode('before')} className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 ${comparisonMode === 'before' ? 'bg-red-500 text-text shadow-lg transform scale-105' : 'text-text/60 hover:text-text'}`}>{t('btn_before')}</button>
-                                                <button onClick={() => setComparisonMode('after')} className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 ${comparisonMode === 'after' ? 'bg-tym-primary text-text shadow-lg transform scale-105' : 'text-text/60 hover:text-text'}`}>{t('btn_after')}</button>
+                                                <button onClick={() => setComparisonMode('before')} className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 ${comparisonMode === 'before' ? 'bg-red-500 text-white shadow-lg transform scale-105' : 'text-text/60 hover:text-text'}`}>{t('btn_before')}</button>
+                                                <button onClick={() => setComparisonMode('after')} className={`px-4 py-2 rounded-full text-xs font-bold transition-all duration-300 ${comparisonMode === 'after' ? 'bg-tym-primary text-white shadow-lg transform scale-105' : 'text-text/60 hover:text-text'}`}>{t('btn_after')}</button>
                                             </div>
                                         </div>
                                     )}
@@ -456,15 +459,15 @@ gsap.registerPlugin(ScrollToPlugin);
                                     </div>
 
                                     <div ref={contentScrollRef} onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd} className="flex-1 overflow-y-auto custom-scroll scroll-content overflow-x-hidden relative">
-                                    <div ref={swipeContentRef} className="p-4 lg:p-10 pb-24">
+                                    <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'context' && (
-                                            <div className="space-y-8 lg:space-y-10 animate-fadeIn">
-                                                <div>
-                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-3">{t('overview_title')}</h3>
+                                            <div className="space-y-8 lg:space-y-12 animate-fadeIn">
+                                                <div className="space-y-4 lg:space-y-6">
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('overview_title')}</h3>
                                                     <p className="text-text/80 text-sm leading-relaxed mb-4">{t('overview_desc')}</p>
                                                     <InfoGrid>
-                                                        <InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
-                                                        <InfoCard>
+                                                        <InfoCard prefix="tym"><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard prefix="tym">
                                                             <div className="text-xs text-text/45 uppercase mb-2">{t('tools')}</div>
                                                             <div className="flex flex-wrap gap-2">
                                                                 <ToolPill prefix="tym" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
@@ -474,48 +477,44 @@ gsap.registerPlugin(ScrollToPlugin);
                                                     </InfoGrid>
                                                 </div>
                                                 <div className="w-full h-px bg-border/10"></div>
-                                                <div>
-                                                    {/* [修正] 標題加上了 flex 和 span 裝飾桿 */}
-                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tym-secondary rounded-full mr-3"></span>{t('challenge_title')}</h3>
-                                                    <div className="grid gap-5">
+                                                <div className="space-y-6">
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('challenge_title')}</h3>
+                                                    <div className="space-y-4">
                                                         <PainPointCard
                                                             prefix="tym"
                                                             subtitle={<span className="inline-flex items-center"><Icons.User /><span className="ml-2">{t('pain_user_title')}</span></span>}
-                                                            items={t('pain_user_desc').map((desc) => ({ desc }))}
+                                                            items={t('pain_user_desc').map((desc, i) => ({ title: t('pain_user_titles')[i], desc }))}
                                                         />
                                                         <PainPointCard
                                                             prefix="tym"
                                                             subtitle={<span className="inline-flex items-center"><Icons.Shop /><span className="ml-2">{t('pain_biz_title')}</span></span>}
-                                                            items={t('pain_biz_desc').map((desc) => ({ desc }))}
+                                                            items={t('pain_biz_desc').map((desc, i) => ({ title: t('pain_biz_titles')[i], desc }))}
                                                         />
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
                                         {activeTab === 'ux_strategy' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2">{t('strat_1_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_1_sub')}</p><p className="text-text/80 text-sm leading-relaxed mb-6">{t('strat_1_desc')}</p></div><div className="space-y-4">
-                                                {/* [修正] 移除了 border-l-4 */}
-                                                <div className="feature-card-minimal border border-border/10 p-6 hover:border-tym-secondary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Train /></div><div className="ml-5"><h4 className="text-text font-bold text-lg">{t('feat_1_title')}</h4><p className="text-sm text-text/60 mt-2 leading-relaxed">{t('feat_1_desc')}</p></div></div></div>
-                                                <div className="feature-card-minimal border border-border/10 p-6 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0 mt-1"><Icons.Question /></div><div className="ml-5"><h4 className="text-text font-bold text-lg">{t('feat_2_title')}</h4><p className="text-sm text-text/60 mt-2 leading-relaxed">{t('feat_2_desc')}</p></div></div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('strat_1_title')}</h3><p className="text-text/80 text-sm leading-relaxed">{t('strat_1_desc')}</p></div><div className="space-y-4">
+                                                <div style={dsVars('tym')} className="ds-card feature-card-minimal border border-border/10 p-5 hover:border-tym-secondary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0"><Icons.Train /></div><div className="ml-4"><h4 className="text-text font-bold text-sm mb-1">{t('feat_1_title')}</h4><p className="text-xs text-text/60 leading-relaxed">{t('feat_1_desc')}</p></div></div></div>
+                                                <div style={dsVars('tym')} className="ds-card feature-card-minimal border border-border/10 p-5 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0"><Icons.Question /></div><div className="ml-4"><h4 className="text-text font-bold text-sm mb-1">{t('feat_2_title')}</h4><p className="text-xs text-text/60 leading-relaxed">{t('feat_2_desc')}</p></div></div></div>
                                             </div></div>
                                         )}
                                         {activeTab === 'biz_value' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2">{t('strat_2_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_2_sub')}</p><p className="text-text/80 text-sm leading-relaxed mb-6">{t('strat_2_desc')}</p></div>
-                                                {/* [修正] 移除了 border-l-4 */}
-                                                <div className="feature-card-minimal border border-border/10 p-6 hover:border-tym-secondary "><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Shop /></div><div className="ml-5"><h4 className="text-text font-bold text-lg">{t('feat_3_title')}</h4><p className="text-sm text-text/80 leading-relaxed mt-2">{t('feat_3_desc')}</p></div></div></div>
-                                                <div className="feature-card-minimal border border-border/10 p-6 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0 mt-1"><Icons.Shop /></div><div className="ml-5"><h4 className="text-text font-bold text-lg">{t('feat_4_title')}</h4><p className="text-sm text-text/60 mt-2 space-y-1">{t('feat_4_desc')}</p></div></div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('strat_2_title')}</h3><p className="text-text/80 text-sm leading-relaxed">{t('strat_2_desc')}</p></div><div className="space-y-4">
+                                                <div style={dsVars('tym')} className="ds-card feature-card-minimal border border-border/10 p-5 hover:border-tym-secondary "><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0"><Icons.Shop /></div><div className="ml-4"><h4 className="text-text font-bold text-sm mb-1">{t('feat_3_title')}</h4><p className="text-xs text-text/60 leading-relaxed">{t('feat_3_desc')}</p></div></div></div>
+                                                <div style={dsVars('tym')} className="ds-card feature-card-minimal border border-border/10 p-5 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0"><Icons.Shop /></div><div className="ml-4"><h4 className="text-text font-bold text-sm mb-1">{t('feat_4_title')}</h4><p className="text-xs text-text/60 leading-relaxed">{t('feat_4_desc')}</p></div></div></div>
+                                            </div>
                                             </div>
                                         )}
                                         {activeTab === 'engagement' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-3">{t('strat_3_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_3_sub')}</p><p className="text-text/80 text-sm leading-relaxed mb-6">{t('strat_3_desc')}</p></div><div className="space-y-4">
-                                                {/* [修正] 移除了 border-l-4 */}
-                                                <div className="feature-card-minimal border border-border/10 p-6 hover:border-tym-secondary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Loop /></div><div className="ml-5"><h4 className="text-text font-bold text-lg">{t('feat_5_title')}</h4><p className="text-sm text-text/60 mt-2 leading-relaxed">{t('feat_5_desc')}</p></div></div></div>
-                                                <div className="feature-card-minimal border border-border/10 p-6 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0 mt-1"><Icons.Popup /></div><div className="ml-5"><h4 className="text-text font-bold text-lg">{t('feat_6_title')}</h4><p className="text-sm text-text/60 mt-2 leading-relaxed">{t('feat_6_desc')}</p></div></div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('strat_3_title')}</h3><p className="text-text/80 text-sm leading-relaxed">{t('strat_3_desc')}</p></div><div className="space-y-4">
+                                                <div style={dsVars('tym')} className="ds-card feature-card-minimal border border-border/10 p-5 hover:border-tym-secondary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0"><Icons.Loop /></div><div className="ml-4"><h4 className="text-text font-bold text-sm mb-1">{t('feat_5_title')}</h4><p className="text-xs text-text/60 leading-relaxed">{t('feat_5_desc')}</p></div></div></div>
+                                                <div style={dsVars('tym')} className="ds-card feature-card-minimal border border-border/10 p-5 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0"><Icons.Popup /></div><div className="ml-4"><h4 className="text-text font-bold text-sm mb-1">{t('feat_6_title')}</h4><p className="text-xs text-text/60 leading-relaxed">{t('feat_6_desc')}</p></div></div></div>
                                             </div></div>
                                         )}
                                         {activeTab === 'gallery' && (
-                                            /* [修正] 按鈕加上了 border (width) */
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-3">{t('gallery_title')}</h3><p className="text-text/80 text-sm leading-relaxed mb-6"><span className="text-tym-primary font-bold">Value Delivered:</span><br />{t('gallery_desc')}</p></div><div className="grid grid-cols-1 gap-3"><div className="text-xs font-bold text-text/45 uppercase mb-1">Interface Gallery</div>{galleryItems.map((item) => (
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-text/60 text-sm">{t('gallery_desc')}</p></div><div className="grid gap-3">{galleryItems.map((item) => (
                                                     <GalleryItemButton
                                                         key={item.id}
                                                         prefix="tym"
@@ -531,15 +530,15 @@ gsap.registerPlugin(ScrollToPlugin);
                                     
                                     </div>
                                     {peekTab && (
-                                    <div ref={peekContentRef} style={{ transform: `translateX(${peekDragDirection * 100}%)` }} className="absolute inset-0 p-4 lg:p-10 pb-24 overflow-y-auto">
+                                    <div ref={peekContentRef} style={{ transform: `translateX(${peekDragDirection * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
                                         {peekTab === 'context' && (
-                                            <div className="space-y-8 lg:space-y-10 animate-fadeIn">
-                                                <div>
-                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-3">{t('overview_title')}</h3>
+                                            <div className="space-y-8 lg:space-y-12 animate-fadeIn">
+                                                <div className="space-y-4 lg:space-y-6">
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('overview_title')}</h3>
                                                     <p className="text-text/80 text-sm leading-relaxed mb-4">{t('overview_desc')}</p>
                                                     <InfoGrid>
-                                                        <InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
-                                                        <InfoCard>
+                                                        <InfoCard prefix="tym"><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard prefix="tym">
                                                             <div className="text-xs text-text/45 uppercase mb-2">{t('tools')}</div>
                                                             <div className="flex flex-wrap gap-2">
                                                                 <ToolPill prefix="tym" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
@@ -549,48 +548,44 @@ gsap.registerPlugin(ScrollToPlugin);
                                                     </InfoGrid>
                                                 </div>
                                                 <div className="w-full h-px bg-border/10"></div>
-                                                <div>
-                                                    {/* [修正] 標題加上了 flex 和 span 裝飾桿 */}
-                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-tym-secondary rounded-full mr-3"></span>{t('challenge_title')}</h3>
-                                                    <div className="grid gap-5">
+                                                <div className="space-y-6">
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('challenge_title')}</h3>
+                                                    <div className="space-y-4">
                                                         <PainPointCard
                                                             prefix="tym"
                                                             subtitle={<span className="inline-flex items-center"><Icons.User /><span className="ml-2">{t('pain_user_title')}</span></span>}
-                                                            items={t('pain_user_desc').map((desc) => ({ desc }))}
+                                                            items={t('pain_user_desc').map((desc, i) => ({ title: t('pain_user_titles')[i], desc }))}
                                                         />
                                                         <PainPointCard
                                                             prefix="tym"
                                                             subtitle={<span className="inline-flex items-center"><Icons.Shop /><span className="ml-2">{t('pain_biz_title')}</span></span>}
-                                                            items={t('pain_biz_desc').map((desc) => ({ desc }))}
+                                                            items={t('pain_biz_desc').map((desc, i) => ({ title: t('pain_biz_titles')[i], desc }))}
                                                         />
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
                                         {peekTab === 'ux_strategy' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2">{t('strat_1_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_1_sub')}</p><p className="text-text/80 text-sm leading-relaxed mb-6">{t('strat_1_desc')}</p></div><div className="space-y-4">
-                                                {/* [修正] 移除了 border-l-4 */}
-                                                <div className="feature-card-minimal border border-border/10 p-6 hover:border-tym-secondary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Train /></div><div className="ml-5"><h4 className="text-text font-bold text-lg">{t('feat_1_title')}</h4><p className="text-sm text-text/60 mt-2 leading-relaxed">{t('feat_1_desc')}</p></div></div></div>
-                                                <div className="feature-card-minimal border border-border/10 p-6 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0 mt-1"><Icons.Question /></div><div className="ml-5"><h4 className="text-text font-bold text-lg">{t('feat_2_title')}</h4><p className="text-sm text-text/60 mt-2 leading-relaxed">{t('feat_2_desc')}</p></div></div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('strat_1_title')}</h3><p className="text-text/80 text-sm leading-relaxed">{t('strat_1_desc')}</p></div><div className="space-y-4">
+                                                <div style={dsVars('tym')} className="ds-card feature-card-minimal border border-border/10 p-5 hover:border-tym-secondary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0"><Icons.Train /></div><div className="ml-4"><h4 className="text-text font-bold text-sm mb-1">{t('feat_1_title')}</h4><p className="text-xs text-text/60 leading-relaxed">{t('feat_1_desc')}</p></div></div></div>
+                                                <div style={dsVars('tym')} className="ds-card feature-card-minimal border border-border/10 p-5 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0"><Icons.Question /></div><div className="ml-4"><h4 className="text-text font-bold text-sm mb-1">{t('feat_2_title')}</h4><p className="text-xs text-text/60 leading-relaxed">{t('feat_2_desc')}</p></div></div></div>
                                             </div></div>
                                         )}
                                         {peekTab === 'biz_value' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2">{t('strat_2_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_2_sub')}</p><p className="text-text/80 text-sm leading-relaxed mb-6">{t('strat_2_desc')}</p></div>
-                                                {/* [修正] 移除了 border-l-4 */}
-                                                <div className="feature-card-minimal border border-border/10 p-6 hover:border-tym-secondary "><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Shop /></div><div className="ml-5"><h4 className="text-text font-bold text-lg">{t('feat_3_title')}</h4><p className="text-sm text-text/80 leading-relaxed mt-2">{t('feat_3_desc')}</p></div></div></div>
-                                                <div className="feature-card-minimal border border-border/10 p-6 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0 mt-1"><Icons.Shop /></div><div className="ml-5"><h4 className="text-text font-bold text-lg">{t('feat_4_title')}</h4><p className="text-sm text-text/60 mt-2 space-y-1">{t('feat_4_desc')}</p></div></div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('strat_2_title')}</h3><p className="text-text/80 text-sm leading-relaxed">{t('strat_2_desc')}</p></div><div className="space-y-4">
+                                                <div style={dsVars('tym')} className="ds-card feature-card-minimal border border-border/10 p-5 hover:border-tym-secondary "><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0"><Icons.Shop /></div><div className="ml-4"><h4 className="text-text font-bold text-sm mb-1">{t('feat_3_title')}</h4><p className="text-xs text-text/60 leading-relaxed">{t('feat_3_desc')}</p></div></div></div>
+                                                <div style={dsVars('tym')} className="ds-card feature-card-minimal border border-border/10 p-5 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0"><Icons.Shop /></div><div className="ml-4"><h4 className="text-text font-bold text-sm mb-1">{t('feat_4_title')}</h4><p className="text-xs text-text/60 leading-relaxed">{t('feat_4_desc')}</p></div></div></div>
+                                            </div>
                                             </div>
                                         )}
                                         {peekTab === 'engagement' && (
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-3">{t('strat_3_title')}</h3><p className="text-xs text-tym-secondary font-bold tracking-wide uppercase mb-4">{t('strat_3_sub')}</p><p className="text-text/80 text-sm leading-relaxed mb-6">{t('strat_3_desc')}</p></div><div className="space-y-4">
-                                                {/* [修正] 移除了 border-l-4 */}
-                                                <div className="feature-card-minimal border border-border/10 p-6 hover:border-tym-secondary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0 mt-1"><Icons.Loop /></div><div className="ml-5"><h4 className="text-text font-bold text-lg">{t('feat_5_title')}</h4><p className="text-sm text-text/60 mt-2 leading-relaxed">{t('feat_5_desc')}</p></div></div></div>
-                                                <div className="feature-card-minimal border border-border/10 p-6 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0 mt-1"><Icons.Popup /></div><div className="ml-5"><h4 className="text-text font-bold text-lg">{t('feat_6_title')}</h4><p className="text-sm text-text/60 mt-2 leading-relaxed">{t('feat_6_desc')}</p></div></div></div>
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('strat_3_title')}</h3><p className="text-text/80 text-sm leading-relaxed">{t('strat_3_desc')}</p></div><div className="space-y-4">
+                                                <div style={dsVars('tym')} className="ds-card feature-card-minimal border border-border/10 p-5 hover:border-tym-secondary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-secondary/20 text-tym-secondary flex items-center justify-center shrink-0"><Icons.Loop /></div><div className="ml-4"><h4 className="text-text font-bold text-sm mb-1">{t('feat_5_title')}</h4><p className="text-xs text-text/60 leading-relaxed">{t('feat_5_desc')}</p></div></div></div>
+                                                <div style={dsVars('tym')} className="ds-card feature-card-minimal border border-border/10 p-5 hover:border-tym-primary"><div className="flex items-start"><div className="w-10 h-10 rounded-full bg-tym-primary/20 text-tym-primary flex items-center justify-center shrink-0"><Icons.Popup /></div><div className="ml-4"><h4 className="text-text font-bold text-sm mb-1">{t('feat_6_title')}</h4><p className="text-xs text-text/60 leading-relaxed">{t('feat_6_desc')}</p></div></div></div>
                                             </div></div>
                                         )}
                                         {peekTab === 'gallery' && (
-                                            /* [修正] 按鈕加上了 border (width) */
-                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-3">{t('gallery_title')}</h3><p className="text-text/80 text-sm leading-relaxed mb-6"><span className="text-tym-primary font-bold">Value Delivered:</span><br />{t('gallery_desc')}</p></div><div className="grid grid-cols-1 gap-3"><div className="text-xs font-bold text-text/45 uppercase mb-1">Interface Gallery</div>{galleryItems.map((item) => (
+                                            <div className="space-y-6 lg:space-y-8 animate-fadeIn"><div><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('gallery_title')}</h3><p className="text-text/60 text-sm">{t('gallery_desc')}</p></div><div className="grid gap-3">{galleryItems.map((item) => (
                                                     <GalleryItemButton
                                                         key={item.id}
                                                         prefix="tym"

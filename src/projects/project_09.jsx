@@ -482,7 +482,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         {/* [修改] bg-dark -> bg-epb-dark */}
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-epb-dark overflow-hidden">
                             {/* [修改] bg-[#1e293b] (保留原色碼) */}
-                            <div ref={visualPanelRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] relative flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div ref={visualPanelRef} className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] relative flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <ResizeHandle prefix="epb" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
                                 <div className="relative w-full h-full flex flex-col items-center justify-center">
                                     <div className="flex-1 min-h-0 w-full flex items-center justify-center">
@@ -527,8 +527,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
                                                 <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
                                                     <InfoGrid>
-                                                        <InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
-                                                        <InfoCard>
+                                                        <InfoCard prefix="epb"><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard prefix="epb">
                                                             <div className="text-xs text-text/45 uppercase mb-2">{t('tools')}</div>
                                                             <div className="flex flex-wrap gap-2">
                                                                 <ToolPill prefix="epb" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
@@ -539,7 +539,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 </div>
                                                 <div className="w-full h-px bg-border/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-epb-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('conflict_title')}</h3>
                                                     <PainPointCard
                                                         prefix="epb"
                                                         subtitle={t('conflict_sub')}
@@ -604,8 +604,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
                                                 <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
                                                     <InfoGrid>
-                                                        <InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
-                                                        <InfoCard>
+                                                        <InfoCard prefix="epb"><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard prefix="epb">
                                                             <div className="text-xs text-text/45 uppercase mb-2">{t('tools')}</div>
                                                             <div className="flex flex-wrap gap-2">
                                                                 <ToolPill prefix="epb" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" />
@@ -616,7 +616,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 </div>
                                                 <div className="w-full h-px bg-border/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-epb-secondary rounded-full mr-3"></span>{t('conflict_title')}</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('conflict_title')}</h3>
                                                     <PainPointCard
                                                         prefix="epb"
                                                         subtitle={t('conflict_sub')}

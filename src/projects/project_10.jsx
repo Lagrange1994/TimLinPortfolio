@@ -8,6 +8,7 @@ import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, ProcessTimeline, FeatureCard,
     GalleryItemButton, PreviewFrame, ResizeHandle,
+    dsVars, PainPointCard,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -36,6 +37,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 context_desc: "這是一個典型的政府公開招標案件：一是為了消化預算必須要更新網站，才能撥款到其他專案；二是希望能在有限資源下，擺脫傳統公家機關網站「生硬、冰冷」的刻板印象。",
                 role_title: "My Role", role_name: "UI 設計師", tools: "Tools",
                 challenge_title: "痛點與挑戰",
+                pain_sub: "舊官網的困境",
                 pain_1_title: "資訊混亂", pain_1_desc: "資訊層級混亂，旅客難以直覺找到航班資訊。",
                 pain_2_title: "缺乏特色", pain_2_desc: "視覺陳舊，無法傳遞恆春特有的度假氛圍。",
                 pain_3_title: "維護困難", pain_3_desc: "後台操作複雜，業主希望「越簡單越好」。",
@@ -71,6 +73,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 context_desc: "A typical government tender project: updating the website to utilize budget and shedding the 'stiff, cold' stereotype of public sector sites. The goal was to create a warm, engaging portal with limited resources.",
                 role_title: "My Role", role_name: "UI Designer", tools: "Tools",
                 challenge_title: "The Challenge",
+                pain_sub: "Problems with the old site",
                 pain_1_title: "Information Chaos", pain_1_desc: "Hierarchy was messy; passengers struggled to find flight info.",
                 pain_2_title: "Lack of Character", pain_2_desc: "Outdated visuals failed to convey Hengchun's holiday vibe.",
                 pain_3_title: "Hard Maintenance", pain_3_desc: "Complex backend; client requested simplicity.",
@@ -484,7 +487,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         </section>
 
                         <section id="split-section" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-black overflow-hidden relative">
-                            <div ref={visualPanelRef} className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#050505] relative flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/10 shadow-2xl" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div ref={visualPanelRef} className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#050505] relative flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/10 shadow-2xl" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <ResizeHandle prefix="hc" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
                                 <div className="relative w-full h-full flex flex-col items-center justify-center">
                                     <div className="flex-1 min-h-0 w-full flex items-center justify-center">
@@ -529,9 +532,9 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold font-heading text-text mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p><InfoGrid><InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard><InfoCard><div className="text-xs text-text/45 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><ToolPill prefix="hc" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" /><ToolPill prefix="hc" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" /></div></InfoCard></InfoGrid></div>
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold font-heading text-text mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p><InfoGrid><InfoCard prefix="hc"><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard><InfoCard prefix="hc"><div className="text-xs text-text/45 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><ToolPill prefix="hc" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" /><ToolPill prefix="hc" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" /></div></InfoCard></InfoGrid></div>
                                                 <div className="w-full h-px bg-border/10"></div>
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold font-heading text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-hc-secondary rounded-full mr-3"></span>{t('challenge_title')}</h3><div className="feature-card border border-border/10 p-5"><ul className="space-y-4 text-text/80"><li className="flex items-start text-sm text-text/60"><span className="text-red-400 mr-3 mt-1">✕</span><div><strong className="text-text/90 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-text/60"><span className="text-red-400 mr-3 mt-1">✕</span><div><strong className="text-text/90 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-text/60"><span className="text-red-400 mr-3 mt-1">✕</span><div><strong className="text-text/90 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('challenge_title')}</h3><PainPointCard prefix="hc" subtitle={t('pain_sub')} items={[{ title: t('pain_1_title'), desc: t('pain_1_desc') }, { title: t('pain_2_title'), desc: t('pain_2_desc') }, { title: t('pain_3_title'), desc: t('pain_3_desc') }]} /></div>
                                             </div>
                                         )}
                                         {activeTab === 'process' && (
@@ -590,9 +593,9 @@ gsap.registerPlugin(ScrollToPlugin);
                                     <div ref={peekContentRef} style={{ transform: `translateX(${peekDragDirection * 100}%)` }} className="absolute inset-0 p-4 lg:p-8 pb-24 overflow-y-auto">
                                         {peekTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">
-                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold font-heading text-text mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p><InfoGrid><InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard><InfoCard><div className="text-xs text-text/45 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><ToolPill prefix="hc" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" /><ToolPill prefix="hc" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" /></div></InfoCard></InfoGrid></div>
+                                                <div className="space-y-4 lg:space-y-6"><h3 className="text-lg md:text-2xl font-bold font-heading text-text mb-2 lg:mb-4">{t('context_title')}</h3><p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p><InfoGrid><InfoCard prefix="hc"><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard><InfoCard prefix="hc"><div className="text-xs text-text/45 uppercase mb-2">{t('tools')}</div><div className="flex flex-wrap gap-2"><ToolPill prefix="hc" color="primary" icon={<SharedIcons.XD />} label="Adobe XD" /><ToolPill prefix="hc" color="secondary" icon={<SharedIcons.AI />} label="Illustrator" /></div></InfoCard></InfoGrid></div>
                                                 <div className="w-full h-px bg-border/10"></div>
-                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold font-heading text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-hc-secondary rounded-full mr-3"></span>{t('challenge_title')}</h3><div className="feature-card border border-border/10 p-5"><ul className="space-y-4 text-text/80"><li className="flex items-start text-sm text-text/60"><span className="text-red-400 mr-3 mt-1">✕</span><div><strong className="text-text/90 block text-sm">{t('pain_1_title')}</strong>{t('pain_1_desc')}</div></li><li className="flex items-start text-sm text-text/60"><span className="text-red-400 mr-3 mt-1">✕</span><div><strong className="text-text/90 block text-sm">{t('pain_2_title')}</strong>{t('pain_2_desc')}</div></li><li className="flex items-start text-sm text-text/60"><span className="text-red-400 mr-3 mt-1">✕</span><div><strong className="text-text/90 block text-sm">{t('pain_3_title')}</strong>{t('pain_3_desc')}</div></li></ul></div></div>
+                                                <div className="space-y-6"><h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('challenge_title')}</h3><PainPointCard prefix="hc" subtitle={t('pain_sub')} items={[{ title: t('pain_1_title'), desc: t('pain_1_desc') }, { title: t('pain_2_title'), desc: t('pain_2_desc') }, { title: t('pain_3_title'), desc: t('pain_3_desc') }]} /></div>
                                             </div>
                                         )}
                                         {peekTab === 'process' && (

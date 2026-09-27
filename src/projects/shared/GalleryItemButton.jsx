@@ -1,4 +1,5 @@
 import React from 'react';
+import dsVars from './dsVars';
 
 // activeShadowClass is passed in literally (tied to each project's own
 // primary rgba value). desc is optional — projects whose gallery data has no
@@ -7,7 +8,8 @@ export default function GalleryItemButton({ prefix, active, onClick, id, name, d
     return (
         <button
             onClick={onClick}
-            className={`w-full text-left feature-card border p-3 hover:bg-border/10 transition-all group flex items-center justify-between gap-3 ${active ? `border-${prefix}-primary bg-border/5 ${activeShadowClass || ''}` : 'border-border/5'}`}
+            style={dsVars(prefix)}
+            className={`ds-card ds-card--sm${active ? ' is-active' : ''} w-full text-left feature-card border p-3 hover:bg-border/10 transition-all group flex items-center justify-between gap-3 ${active ? `border-${prefix}-primary bg-border/5 ${activeShadowClass || ''}` : 'border-border/5'}`}
         >
             <div className="min-w-0">
                 <h4 className={`font-medium transition-colors text-xs lg:text-sm ${active ? 'text-text' : 'text-text/80 group-hover:text-text/90'}`}>

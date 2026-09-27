@@ -8,6 +8,7 @@ import {
     BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav,
     InfoGrid, InfoCard, GalleryItemButton, PhoneFrame,
     ImageWithSkeleton, ResizeHandle,
+    dsVars,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -630,7 +631,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         {/* [修改] bg-dark -> bg-app-dark */}
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-app-dark overflow-hidden">
                             {/* [修改] bg-dark -> bg-app-dark, bg-dark-light -> bg-app-dark-light */}
-                            <div className="w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-app-dark relative border-b lg:border-b-0 lg:border-r border-border/5 flex items-center justify-center" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-app-dark relative border-b lg:border-b-0 lg:border-r border-border/5 flex items-center justify-center" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <div className="w-full h-full overflow-hidden flex items-center justify-center lg:pb-0">{renderLeftPanel()}</div>
                                 <ResizeHandle prefix="app" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
                             </div>
@@ -660,8 +661,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3>
                                                 <p className="text-text/80 leading-relaxed text-sm">{t('context_desc')}</p>
                                                 <InfoGrid>
-                                                    <InfoCard><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-text/60 mt-1">{t('mobile_first_sub')}</p></InfoCard>
-                                                    <InfoCard><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-text/60 mt-1">{t('soft_ui_sub')}</p></InfoCard>
+                                                    <InfoCard prefix="app"><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-text/60 mt-1">{t('mobile_first_sub')}</p></InfoCard>
+                                                    <InfoCard prefix="app"><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-text/60 mt-1">{t('soft_ui_sub')}</p></InfoCard>
                                                 </InfoGrid>
                                             </div>
                                         )}
@@ -672,7 +673,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <div className="space-y-4">
                                                     {simplificationPoints.map((point) => (
                                                         /* [修改] border-l-primary -> border-l-app-primary */
-                                                        <div key={point.id} className="feature-card border border-border/10 bg-border/5 p-5 border-l-4 border-l-app-primary hover:translate-x-1 transition-all duration-300 group">
+                                                        <div key={point.id} style={dsVars('app')} className="ds-card feature-card border border-border/10 bg-border/5 p-5 border-l-4 border-l-app-primary hover:translate-x-1 transition-all duration-300 group">
                                                             {/* [修改] bg-secondary/20 -> bg-app-secondary/20, text-secondary -> text-app-secondary */}
                                                             <div className="flex items-center mb-3"><div className="w-8 h-8 rounded-full bg-app-secondary/20 flex items-center justify-center text-app-secondary mr-3"><i className={`ph ${point.icon}`}></i></div><h4 className="font-bold text-text">{point.title}</h4></div>
                                                             <div className="flex items-center justify-between text-xs mb-3 bg-app-dark/20 p-2 rounded-lg border border-border/10">
@@ -694,7 +695,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <div className="space-y-3">
                                                     {appFeatures.map((feat) => (
                                                         /* [修改] bg-primary/10 -> bg-app-primary/10, border-primary -> border-app-primary */
-                                                        <button key={feat.id} onClick={() => setActiveFeatureId(feat.id)} className={`w-full text-left p-4 rounded-xl border transition-all ${activeFeatureId === feat.id ? 'bg-app-primary/10 border-app-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-border/5 border-border/10 hover:bg-border/10'}`}>
+                                                        <button key={feat.id} onClick={() => setActiveFeatureId(feat.id)} style={dsVars('app')} className={`ds-card ds-card--sm${activeFeatureId === feat.id ? ' is-active' : ''} w-full text-left p-4 rounded-xl border transition-all ${activeFeatureId === feat.id ? 'bg-app-primary/10 border-app-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-border/5 border-border/10 hover:bg-border/10'}`}>
                                                             {/* [修改] text-primary -> text-app-primary */}
                                                             <h4 className={`font-bold text-sm mb-1 ${activeFeatureId === feat.id ? 'text-app-primary' : 'text-text'}`}>{feat.title}</h4>
                                                             <p className="text-xs text-text/60 mb-2">{feat.desc}</p>
@@ -734,8 +735,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3>
                                                 <p className="text-text/80 leading-relaxed text-sm">{t('context_desc')}</p>
                                                 <InfoGrid>
-                                                    <InfoCard><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-text/60 mt-1">{t('mobile_first_sub')}</p></InfoCard>
-                                                    <InfoCard><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-text/60 mt-1">{t('soft_ui_sub')}</p></InfoCard>
+                                                    <InfoCard prefix="app"><i className="ph ph-device-mobile text-app-primary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('mobile_first')}</h4><p className="text-xs text-text/60 mt-1">{t('mobile_first_sub')}</p></InfoCard>
+                                                    <InfoCard prefix="app"><i className="ph ph-feather text-app-secondary mb-2 text-xl"></i><h4 className="font-bold text-sm">{t('soft_ui')}</h4><p className="text-xs text-text/60 mt-1">{t('soft_ui_sub')}</p></InfoCard>
                                                 </InfoGrid>
                                             </div>
                                         )}
@@ -746,7 +747,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <div className="space-y-4">
                                                     {simplificationPoints.map((point) => (
                                                         /* [修改] border-l-primary -> border-l-app-primary */
-                                                        <div key={point.id} className="feature-card border border-border/10 bg-border/5 p-5 border-l-4 border-l-app-primary hover:translate-x-1 transition-all duration-300 group">
+                                                        <div key={point.id} style={dsVars('app')} className="ds-card feature-card border border-border/10 bg-border/5 p-5 border-l-4 border-l-app-primary hover:translate-x-1 transition-all duration-300 group">
                                                             {/* [修改] bg-secondary/20 -> bg-app-secondary/20, text-secondary -> text-app-secondary */}
                                                             <div className="flex items-center mb-3"><div className="w-8 h-8 rounded-full bg-app-secondary/20 flex items-center justify-center text-app-secondary mr-3"><i className={`ph ${point.icon}`}></i></div><h4 className="font-bold text-text">{point.title}</h4></div>
                                                             <div className="flex items-center justify-between text-xs mb-3 bg-app-dark/20 p-2 rounded-lg border border-border/10">
@@ -768,7 +769,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 <div className="space-y-3">
                                                     {appFeatures.map((feat) => (
                                                         /* [修改] bg-primary/10 -> bg-app-primary/10, border-primary -> border-app-primary */
-                                                        <button key={feat.id} onClick={() => setActiveFeatureId(feat.id)} className={`w-full text-left p-4 rounded-xl border transition-all ${activeFeatureId === feat.id ? 'bg-app-primary/10 border-app-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-border/5 border-border/10 hover:bg-border/10'}`}>
+                                                        <button key={feat.id} onClick={() => setActiveFeatureId(feat.id)} style={dsVars('app')} className={`ds-card ds-card--sm${activeFeatureId === feat.id ? ' is-active' : ''} w-full text-left p-4 rounded-xl border transition-all ${activeFeatureId === feat.id ? 'bg-app-primary/10 border-app-primary shadow-[0_0_15px_rgba(255,74,0,0.2)]' : 'bg-border/5 border-border/10 hover:bg-border/10'}`}>
                                                             {/* [修改] text-primary -> text-app-primary */}
                                                             <h4 className={`font-bold text-sm mb-1 ${activeFeatureId === feat.id ? 'text-app-primary' : 'text-text'}`}>{feat.title}</h4>
                                                             <p className="text-xs text-text/60 mb-2">{feat.desc}</p>

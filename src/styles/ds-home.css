@@ -1,0 +1,458 @@
+/* ══ Homepage design language for project pages (opt-in) ══
+   Brings the homepage card system (portfolio.css: UNIVERSAL GLASS CARD,
+   HOVER RADAR RING, squircle radius table, light-mode neumorphism) to the
+   project case-study pages, while each project keeps its own accent color.
+
+   Opt-in per page: only pages whose <html> carries class="ds-home" pick it
+   up (project_01 is the pilot). Once every page opts in, the .ds-home scope
+   can be dropped. Rules are unlayered on purpose — they must beat the
+   Tailwind utilities (rounded-xl, border-border/10, bg-border/5…) still on
+   the shared components for the pages that haven't opted in yet; unlayered
+   CSS always wins over @layer utilities, whatever the specificity.
+
+   Hooks (added to src/projects/shared/*):
+     .ds-card        InfoCard, PainPointCard, FeatureCard, GalleryItemButton
+     .ds-card--sm    the smaller of those (Info/Gallery) — same radius tier
+                     as the others below 768px, a step down above it
+     .is-active      selected FeatureCard / GalleryItemButton
+     .ds-tabs/.ds-tab  TabNav → homepage .portfolio-filter-tabs pill bar
+     .ds-chrome-btn  BackButton, ThemeToggle, ScrollTopButton
+     .ds-pill        ToolPill
+   --ds-accent / --ds-on-accent / --ds-surface are set inline by each
+   component from its prefix prop (dsVars() in shared/dsVars.js →
+   var(--color-{prefix}-primary / -dark)), so the theme's light-mode
+   accent overrides still apply. */
+
+:root {
+  /* Values copied from portfolio.css's dark :root — kept as their own
+     --ds-* names so this file never collides with the homepage tokens. */
+  --ds-glass-bg: rgba(30, 30, 30, 0.5);
+  --ds-glass-bg-hov: rgba(42, 42, 42, 0.65);
+  --ds-glass-border: rgba(255, 255, 255, 0.1);
+  --ds-glass-border-hov: rgba(255, 255, 255, 0.22);
+  --ds-card-edge: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --ds-grain: url("/img/noise-grain.png");
+  --ds-radar-alpha: .084;
+  --ds-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ds-radius-card: 32px;
+  --ds-radius-card-sm: 24px;
+}
+
+:root[data-theme="light"] {
+  --ds-glass-bg: rgba(247, 250, 252, 0.72);
+  --ds-glass-bg-hov: rgba(247, 250, 252, 0.92);
+  --ds-glass-border: rgba(23, 15, 45, 0.10);
+  --ds-glass-border-hov: rgba(23, 15, 45, 0.22);
+  --ds-radar-alpha: 0;
+  /* neumorphism.io set from portfolio.css (--neu-*) */
+  --ds-neu-dark: #D2D5D6;
+  --ds-neu-light: #FFFFFF;
+  --ds-neu-raised-sm: 4px 4px 10px var(--ds-neu-dark), -4px -4px 10px var(--ds-neu-light);
+  --ds-neu-raised-sm-hover: 6px 6px 14px var(--ds-neu-dark), -6px -6px 14px var(--ds-neu-light);
+}
+
+@media (max-width: 767px) {
+  :root {
+    --ds-radius-card: 20px;
+    --ds-radius-card-sm: 20px;
+  }
+}
+
+@keyframes ds-card-radar {
+  from { outline-offset: 4px;  outline-color: rgba(255, 255, 255, var(--ds-radar-alpha)); }
+  to   { outline-offset: 12px; outline-color: rgba(255, 255, 255, 0); }
+}
+
+/* ── Cards ── */
+.ds-home .ds-card {
+  border: 1px solid var(--ds-glass-border);
+  border-radius: var(--ds-radius-card);
+  /* The panel's own color (--ds-surface = the prefix's -dark token, the
+     same tint the .glass-panel gradient ends on) lifted 6% toward white,
+     so the card reads as a raised piece of the panel rather than a neutral
+     gray slab. Set here, not in :root, because --ds-surface is only set
+     inline on the component. Light mode replaces the background below. */
+  background-color: color-mix(in srgb, var(--ds-surface, #0F172A) 94%, #fff);
+  background-image: var(--ds-grain);
+  background-repeat: repeat;
+  background-size: 180px 180px;
+  box-shadow: var(--ds-card-edge);
+  outline: 1px solid transparent;
+  transition:
+    background-color .3s ease,
+    border-color .3s ease,
+    box-shadow .3s ease,
+    transform .5s var(--ds-ease);
+}
+
+.ds-home .ds-card--sm {
+  border-radius: var(--ds-radius-card-sm);
+}
+
+@media (min-width: 768px) {
+  .ds-home .ds-card {
+    corner-shape: squircle;
+  }
+}
+
+/* Clickable cards lift 5px on hover — project_12's (and most pages')
+   inline `.feature-card:hover { transform: translateY(-5px) }`, set here so
+   every page gets the same lift: project_02's inline rule only moved 2px,
+   and project_05/06 have no such rule at all. Rides .ds-card's own
+   .5s expo-out transform transition. */
+.ds-home :is(button.ds-card):hover {
+  transform: translateY(-5px);
+  animation: ds-card-radar 3s ease-out infinite;
+}
+
+/* Hover fill/border only on cards that aren't selected: this selector
+   outweighs .ds-card.is-active, so on the selected card it used to hide the
+   selected color until the pointer left — a click looked like it hadn't
+   registered. */
+.ds-home :is(button.ds-card):not(.is-active):hover {
+  background-color: color-mix(in srgb, var(--ds-surface, #0F172A) 90%, #fff);
+  border-color: var(--ds-glass-border-hov);
+}
+
+/* Static cards (PainPointCard, InfoCard — divs, not buttons) don't react to
+   hover: each project_XX.html's own inline `.feature-card:hover` lift +
+   accent border/shadow otherwise hits PainPointCard too (it shares the
+   feature-card class). Hover feedback stays on the clickable button cards.
+   Specificity (0,3,1)/(0,4,1) beats the inline (0,2,0)/(0,3,0) rules
+   regardless of which stylesheet loads last. */
+.ds-home div.ds-card:hover {
+  transform: none;
+  /* Tailwind v4 hover:translate-x-* (project_02's comparison cards) uses the
+     standalone `translate` property, which transform:none doesn't cancel. */
+  translate: none;
+  border-color: var(--ds-glass-border);
+  box-shadow: var(--ds-card-edge);
+}
+
+:root[data-theme="light"].ds-home div.ds-card:hover {
+  border-color: transparent;
+  box-shadow: var(--ds-neu-raised-sm);
+}
+
+.ds-home .ds-card.is-active {
+  border-color: color-mix(in srgb, var(--ds-accent) 70%, transparent);
+  background-color: color-mix(in srgb, var(--ds-accent) 10%, color-mix(in srgb, var(--ds-surface, #0F172A) 94%, #fff));
+  box-shadow:
+    var(--ds-card-edge),
+    0 0 24px color-mix(in srgb, var(--ds-accent) 18%, transparent);
+}
+
+/* Neumorphism only reads as "raised from the same surface" when the card
+   fill equals the panel behind it — --ds-surface is the page's own
+   {prefix}-dark tint, set inline by the component. */
+:root[data-theme="light"].ds-home .ds-card {
+  background: var(--ds-surface, #F7FAFC);
+  border-color: transparent;
+  box-shadow: var(--ds-neu-raised-sm);
+}
+
+:root[data-theme="light"].ds-home :is(button.ds-card):not(.is-active):hover {
+  border-color: transparent;
+  box-shadow: var(--ds-neu-raised-sm-hover);
+}
+
+:root[data-theme="light"].ds-home .ds-card.is-active {
+  border-color: color-mix(in srgb, var(--ds-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--ds-accent) 6%, transparent);
+  box-shadow: var(--ds-neu-raised-sm-hover);
+}
+
+/* ── Tabs: homepage .portfolio-filter-tabs pill bar (tablet/desktop) ──
+   Phones (≤767px) keep the original underline tabs: the pill bar is
+   wider than a phone panel and turned into a horizontally-scrolling strip
+   with its scrollbar showing under it. Everything below is ≥768px only;
+   the Motion indicator stays display:none (its `hidden` class) on phones. */
+@media (min-width: 768px) {
+  .ds-home .ds-tabs {
+    gap: 4px;
+    width: fit-content;
+    max-width: 100%;
+    padding: 4px;
+    /* The container's own pb-2 used to be the gap above the header's bottom
+       border; padding:4px above replaces it, so the gap moves to a margin —
+       mirrors TabNav's mt-2 lg:mt-4. */
+    margin-bottom: 12px;
+    border: 1px solid var(--ds-glass-border);
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .ds-home .ds-tab {
+    position: relative;
+    margin: 0; /* cancels the container's space-x-6 */
+    padding: 6px 16px;
+    border: 0;
+    border-radius: 9999px;
+    font-size: 12px;
+    color: color-mix(in srgb, var(--color-text) 70%, transparent);
+    transition: color .2s ease, background-color .3s var(--ds-ease), box-shadow .3s ease;
+  }
+
+  .ds-home .ds-tab:hover {
+    color: var(--color-text);
+  }
+
+  .ds-home .ds-tab.is-active {
+    color: var(--ds-on-accent);
+  }
+
+  /* The sliding pill (Motion layoutId, see TabNav.jsx) — same look as the
+     homepage's .portfolio-filter-indicator. The label sits above it. */
+  .ds-home .ds-tab-indicator {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: 9999px;
+    background: var(--ds-accent);
+    box-shadow: 0 2px 10px color-mix(in oklab, var(--ds-accent) 45%, transparent);
+  }
+
+  .ds-home .ds-tab-label {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ds-home .ds-tabs {
+    margin-bottom: 16px;
+  }
+}
+
+/* ── Floating chrome (back / theme / scroll-top) ──
+   Same glass as the homepage's scrolled navbar pill (#main-header.scrolled
+   #nav-container): translucent fill + 16px blur + hairline border, in both
+   themes (the homepage navbar stays glass in light mode too, it doesn't go
+   neumorphic like the cards). */
+.ds-home .ds-chrome-btn {
+  border: 1px solid var(--ds-glass-border);
+  /* Same fill as .ds-card (panel color lifted 6% toward white), so the
+     chrome reads as the same material as the cards. Light mode overrides. */
+  background-color: color-mix(in srgb, var(--ds-surface, #0F172A) 94%, #fff);
+  background-image: var(--ds-grain);
+  background-size: 180px 180px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 0.25rem 0.375rem rgba(0, 0, 0, 0.1);
+  color: var(--color-text);
+}
+
+.ds-home .ds-chrome-btn:hover {
+  border-color: var(--ds-glass-border-hov);
+  background-color: color-mix(in srgb, var(--ds-surface, #0F172A) 90%, #fff);
+  color: var(--color-text);
+}
+
+:root[data-theme="light"].ds-home .ds-chrome-btn {
+  background-color: var(--ds-glass-bg);
+}
+
+:root[data-theme="light"].ds-home .ds-chrome-btn:hover {
+  background-color: var(--ds-glass-bg-hov);
+}
+
+/* Hover glint — the homepage .btn-glass::before sweep: a skewed white
+   band parked off the left edge, sliding across on hover. isolation gives
+   each button its own stacking context so the z-index:-1 band paints above
+   the button's fill but under its icon/label/knob. overflow clips it to the
+   pill. (No position here: ScrollTopButton is Tailwind `fixed`, which this
+   unlayered file would otherwise override; the others set relative below.) */
+.ds-home .ds-chrome-btn {
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.ds-home .ds-chrome-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  z-index: -1;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1) 40%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0.1) 60%, transparent);
+  transform: skewX(-25deg);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
+.ds-home .ds-chrome-btn:hover::before {
+  left: 100%;
+}
+
+/* The theme switch opts out — its knob slide is its own hover/tap feedback. */
+.ds-home .ds-switch::before {
+  content: none;
+}
+
+/* Light glass is near-white already — a 40% white band barely shows on it. */
+:root[data-theme="light"].ds-home .ds-chrome-btn::before {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4) 40%, rgba(255, 255, 255, 0.95) 50%, rgba(255, 255, 255, 0.4) 60%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-home .ds-chrome-btn::before {
+    transition: none;
+  }
+}
+
+/* Back: a 35px circle (the theme switch's height) that opens into an
+   icon + label capsule on hover. Width stays auto — the label's own
+   max-width transition is what grows the button, so it animates to the
+   label's real length in either language instead of a fixed hover:w-40. */
+.ds-home .back-btn {
+  position: relative;
+  justify-content: flex-start;
+  width: auto;
+  min-width: 35px;
+  height: 35px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  font-size: 13px;
+}
+
+.ds-home .back-btn:hover {
+  width: auto;
+  padding: 0 16px 0 13px;
+}
+
+.ds-home .ds-back-label {
+  max-width: 0;
+  margin-left: 0;
+  opacity: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ds-home .back-btn:hover .ds-back-label {
+  max-width: 200px;
+  margin-left: 8px;
+  opacity: 1;
+}
+
+/* Theme: the homepage navbar's .theme-switch — 76×35 pill, knob slides
+   between the ends via a transform transition (see portfolio.css
+   .theme-switch for why it isn't a JS spring). */
+.ds-home .ds-switch {
+  position: relative;
+  display: inline-flex;
+  justify-content: flex-start;
+  width: 76px;
+  height: 35px;
+  padding: 0;
+  transition: background-color .28s cubic-bezier(0.32, 0.72, 0, 1), border-color .28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ds-home .ds-switch-label {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ds-home .ds-switch-knob {
+  position: absolute;
+  top: 6.5px;
+  left: 6.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 11px;
+  transition: transform .38s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ds-home .ds-switch--dark .ds-switch-label {
+  left: 33px;
+  right: 7px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.ds-home .ds-switch--dark .ds-switch-knob {
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.ds-home .ds-switch--light .ds-switch-label {
+  left: 7px;
+  right: 33px;
+  justify-content: flex-end;
+  color: #3A3A42;
+}
+
+.ds-home .ds-switch--light .ds-switch-knob {
+  background: #fff;
+  color: #3A3A42;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transform: translateX(41px);
+}
+
+/* ── Page canvas: homepage base color + grain ──
+   The Beams/Spline backdrop is too heavy to ship per case study, so the
+   pages share the homepage's flat --bg and its grain texture instead.
+   .ds-stage is the screenshot showcase column (kept neutral — no project
+   tint, so it never color-casts the screenshots); the tabbed panel keeps
+   its project-tinted .glass-panel, now over the same grain. */
+:root {
+  --ds-page-bg: #0A0912;
+}
+
+:root[data-theme="light"] {
+  --ds-page-bg: #F7FAFC;
+}
+
+.ds-home body {
+  background-color: var(--ds-page-bg);
+}
+
+.ds-home .ds-stage,
+:root[data-theme="light"].ds-home .ds-stage {
+  background-color: var(--ds-page-bg);
+  background-image: var(--ds-grain);
+  background-size: 180px 180px;
+}
+
+/* Hero sections are excluded by their photo class, not by id — most pages'
+   hero has no id="hero" (04/05/06/08/09/11/12) or a different one
+   (project_10's #hero-section), and this background-image would replace
+   the hero photo set by each page's .hero-bg-custom / .hero-bg-metro. */
+.ds-home .snap-section:not([class*="hero-bg-"]) {
+  background-image: var(--ds-grain);
+  background-size: 180px 180px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-home .ds-switch-knob {
+    transition: none;
+  }
+}
+
+/* ── Tool pills: homepage .tag-capsule — translucent fill + plain gray
+   hairline in both themes (no neumorphic shadow in light mode). Text and
+   icon keep the project accent color from ToolPill's own classes. */
+.ds-home .ds-pill {
+  border-color: var(--ds-glass-border);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+:root[data-theme="light"].ds-home .ds-pill {
+  background-color: var(--ds-glass-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-home :is(button.ds-card):hover {
+    animation: none;
+  }
+}

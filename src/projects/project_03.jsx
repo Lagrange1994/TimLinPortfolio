@@ -460,7 +460,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                         {/* [修改] bg-dark -> bg-kh-dark */}
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-kh-dark overflow-hidden">
-                            <div className="w-full shrink-0 max-lg:h-[35vh] z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl">
+                            <div className="ds-stage w-full shrink-0 max-lg:h-[35vh] z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl">
                                 <div className="w-full h-full flex items-center justify-center">
                                     <PreviewFrame
                                         chromeClassName="bg-kh-dark-light"
@@ -497,8 +497,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                                     <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3>
                                                     <p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
                                                     <InfoGrid>
-                                                        <InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
-                                                        <InfoCard>
+                                                        <InfoCard prefix="kh"><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard prefix="kh">
                                                             <div className="text-xs text-text/45 uppercase mb-2">Tools</div>
                                                             <div className="flex flex-wrap gap-2">
                                                                 <ToolPill prefix="kh" color="primary" icon={<SharedIcons.Figma />} label="Figma" />
@@ -509,7 +509,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 </div>
                                                 <div className="w-full h-px bg-border/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-kh-secondary rounded-full mr-3"></span>{t('pain_title')}</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('pain_title')}</h3>
                                                     <PainPointCard
                                                         prefix="kh"
                                                         subtitle={t('pain_sub')}
@@ -601,8 +601,8 @@ gsap.registerPlugin(ScrollToPlugin);
                                                     <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('context_title')}</h3>
                                                     <p className="text-text/80 text-sm leading-relaxed mb-4">{t('context_desc')}</p>
                                                     <InfoGrid>
-                                                        <InfoCard><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
-                                                        <InfoCard>
+                                                        <InfoCard prefix="kh"><div className="text-xs text-text/45 uppercase mb-1">{t('role_title')}</div><div className="font-bold text-text">{t('role_name')}</div></InfoCard>
+                                                        <InfoCard prefix="kh">
                                                             <div className="text-xs text-text/45 uppercase mb-2">Tools</div>
                                                             <div className="flex flex-wrap gap-2">
                                                                 <ToolPill prefix="kh" color="primary" icon={<SharedIcons.Figma />} label="Figma" />
@@ -613,7 +613,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                 </div>
                                                 <div className="w-full h-px bg-border/10"></div>
                                                 <div className="space-y-6">
-                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4 flex items-center"><span className="w-1 h-6 bg-kh-secondary rounded-full mr-3"></span>{t('pain_title')}</h3>
+                                                    <h3 className="text-lg md:text-2xl font-bold text-text mb-2 lg:mb-4">{t('pain_title')}</h3>
                                                     <PainPointCard
                                                         prefix="kh"
                                                         subtitle={t('pain_sub')}
