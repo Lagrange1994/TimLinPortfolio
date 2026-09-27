@@ -164,7 +164,14 @@ export function useRiseReveal() {
           // timeline's auto-advancing cursor after two position:0 inserts is
           // not guaranteed to land at the true end.
           tl.call(
-            () => el.dispatchEvent(new CustomEvent('rise-settled', { bubbles: true })),
+            () => {
+              // portfolio.css gives .rise-card/.rise-soft will-change up front
+              // so the reveal starts smoothly; once settled the element never
+              // moves again, so drop the layer instead of keeping ~30 of them
+              // for the rest of the visit. gsap.set so ctx.revert() undoes it.
+              gsap.set(el, { willChange: 'auto' });
+              el.dispatchEvent(new CustomEvent('rise-settled', { bubbles: true }));
+            },
             undefined,
             DUR * 1.15
           );

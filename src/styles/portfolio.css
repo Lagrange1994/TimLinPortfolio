@@ -1688,11 +1688,9 @@
       display: none;
     }
 
-    /* Shared by the mobile <img> (a single always-active layer) and both
-       desktop spline-viewer scenes (BeamsBackground.tsx keeps one per theme
-       permanently mounted, stacked in the same box, so a toggle only needs
-       to crossfade opacity between two already-loaded layers instead of
-       swapping a url and re-loading). */
+    /* Shared by the mobile raster fallback (one <img> per theme, crossfaded
+       via .is-active) and the single desktop #spline-bg viewer (always
+       .is-active — both themes live in one scene, see BeamsBackground.tsx). */
     .spline-bg-layer {
       position: absolute;
       top: 0;
@@ -1711,6 +1709,26 @@
 
     .spline-bg-layer.is-active {
       opacity: 1;
+    }
+
+    /* Desktop background scene: its file exports BOTH theme groups visible
+       (Spline strips hidden objects on export), so it stays hidden until
+       load-complete has hidden the inactive group, and drops .is-ready for
+       the fade-out while a theme toggle flips them. Duration must match
+       THEME_FADE_MS in BeamsBackground.tsx. */
+    #spline-bg {
+      opacity: 0;
+      transition: opacity .25s ease;
+    }
+
+    #spline-bg.is-ready {
+      opacity: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #spline-bg {
+        transition: none;
+      }
     }
 
     /* 直向（portrait）視口比 16:9 更窄時，橫向拉寬 spline-viewer
@@ -1874,15 +1892,18 @@
         pointer-events: none;
       }
 
-      /* Solid backdrop behind the WebGL canvas for the light Spline scene
-         (bg_scene_w.splinecode — see BeamsBackground.tsx) — same Glass
-         Indigo tone as --frame-glow-base's light value, so the panel reads
-         as one consistent surface instead of canvas margins/loading gaps
-         showing whatever's behind. Only overrides light mode; dark mode
-         still falls through to the base #bg-spline-scene rule's
-         `background: var(--bg)` above, unchanged by this. */
-      :root[data-theme="light"] #bg-spline-scene {
-        background: var(--frame-glow-base);
+      /* Solid backdrop behind the WebGL canvas = the scene's own background
+         color per theme (the setBackgroundColor values in
+         BeamsBackground.tsx's applySplineTheme), so loading gaps and the
+         theme-swap fade dip to the scene's color, not a mismatched tone. */
+      #bg-spline-scene,
+      body.hero-ready #bg-spline-scene {
+        background: #060E22;
+      }
+
+      :root[data-theme="light"] #bg-spline-scene,
+      :root[data-theme="light"] body.hero-ready #bg-spline-scene {
+        background: #DCDCDC;
       }
 
       .spline-bg-layer {
@@ -3054,7 +3075,10 @@
       opacity: 0;
       transition: opacity .3s ease;
       box-shadow: var(--card-shadow-ai-hover);
-      will-change: opacity;
+      /* No will-change: an opacity transition is already run on the
+         compositor while it plays. A permanent hint kept a full-card layer
+         alive for every card (~60 incl. the portfolio marquee clones) for
+         the whole visit, hovered or not. */
     }
 
     .card-hover-shadow,
@@ -7177,6 +7201,12 @@
     .project-card,
     .grid-card {
       border: 0;
+      /* The universal glass rule above re-added the blur that .project-card
+         deliberately dropped (see its own comment): the photo covers the
+         whole tile, so ~30 marquee cards each paid for an invisible
+         backdrop surface re-blurred every frame. */
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
     }
 
     .stagger-item,
@@ -10115,6 +10145,27 @@
         -webkit-backdrop-filter: blur(16px);
         backdrop-filter: blur(16px);
       }
+    }
+
+    /* Desktop backdrop-filter trims (phones already drop them all, above).
+       - Marquee pills: .scroller-inner moves every frame, so each pill's
+         blur is re-rasterized every frame; behind them is only the soft
+         Beams background, which a blur barely changes.
+       - Pills/badges nested inside an already-blurred card: that card is a
+         backdrop root, so the child only ever blurred the card's own flat
+         surface — invisible work.
+       !important because several of these get their blur back from
+       :root[data-theme="light"] overrides of higher specificity. */
+    .scroller-inner .skill-pill,
+    .scroller-inner .tag-capsule,
+    .process-step-badge,
+    .ai-step-badge,
+    .ai-card-toggle,
+    .about-orbit-node,
+    .about-float-box,
+    .contact-card .slink {
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
     }
 
     /* Sections scrolled well out of view pause every CSS animation inside
