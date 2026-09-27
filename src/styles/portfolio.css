@@ -5190,10 +5190,11 @@
 
     /* Light mode: most thumbnail colors are near-white (#e2e0dc, #f0e7d7,
        #e8e8ea…), so a white sweep over them is invisible and the skeleton
-       reads as static. Sweep a 15%-darker shade of the card's own color
-       instead — visible on light and dark thumbnails alike. */
+       reads as static. Sweep a 30%-darker shade of the card's own color
+       instead — visible on light and dark thumbnails alike (15% was still
+       too faint to notice on the near-white ones). */
     :root[data-theme="light"] :is(.project-card, .grid-card)::before {
-      --skeleton-sweep: color-mix(in srgb, var(--ph, #cbd5e1) 85%, #000);
+      --skeleton-sweep: color-mix(in srgb, var(--ph, #cbd5e1) 70%, #000);
     }
 
     :is(.project-card, .grid-card).img-loaded::before {
