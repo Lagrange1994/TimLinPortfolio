@@ -708,8 +708,14 @@ function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: 
     let targetVelocity = normalSpeed;
     let lastTs: number | null = null;
     const direction = isReverse ? -1 : 1;
+    // Only animate while on screen (same as PortfolioSection's rows) —
+    // otherwise both skill rows keep rewriting transforms every frame for
+    // the whole visit.
+    let visible = true;
+    let running = false;
 
     function tick(ts: number) {
+      if (!visible) { running = false; return; }
       if (!lastTs) lastTs = ts;
       const dt = Math.min((ts - lastTs) / 1000, 0.05);
       lastTs = ts;
@@ -721,7 +727,18 @@ function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: 
       requestAnimationFrame(tick);
     }
 
-    requestAnimationFrame(tick);
+    function start() {
+      if (running) return;
+      running = true;
+      lastTs = null;
+      requestAnimationFrame(tick);
+    }
+
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) start();
+    }).observe(scroller);
+    start();
     scroller.addEventListener('mouseenter', () => { targetVelocity = hoverSpeed; });
     scroller.addEventListener('mouseleave', () => { targetVelocity = normalSpeed; });
   }

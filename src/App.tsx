@@ -3,6 +3,7 @@ import './styles/tailwind.css';
 import { LangProvider } from './context/LangContext';
 import { useRiseReveal } from './utils/useRiseReveal';
 import { useUnloadOffscreen } from './utils/useUnloadOffscreen';
+import { usePauseOffscreenAnimations } from './utils/usePauseOffscreenAnimations';
 import Loader from './components/Loader';
 import BeamsBackground from './components/BeamsBackground';
 import Navbar from './components/Navbar';
@@ -16,6 +17,7 @@ import ChatPanel from './components/ChatPanel';
 export default function App() {
   useRiseReveal();
   useUnloadOffscreen();
+  usePauseOffscreenAnimations();
 
   return (
     <LangProvider>

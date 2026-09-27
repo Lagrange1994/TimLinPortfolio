@@ -10117,6 +10117,16 @@
       }
     }
 
+    /* Sections scrolled well out of view pause every CSS animation inside
+       them (see usePauseOffscreenAnimations.ts) so off-screen decorative
+       loops stop costing compositor/GPU time. */
+    .is-offscreen-paused,
+    .is-offscreen-paused *,
+    .is-offscreen-paused *::before,
+    .is-offscreen-paused *::after {
+      animation-play-state: paused !important;
+    }
+
     /* Phones: sections far from the viewport are unloaded (see
        useUnloadOffscreen.ts) so their layers/animations/tiles are freed —
        the page was otherwise accumulating render memory until iOS killed

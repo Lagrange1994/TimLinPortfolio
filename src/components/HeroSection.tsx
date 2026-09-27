@@ -306,8 +306,13 @@ export default function HeroSection() {
         if (oneSetWidth <= 0) return;
 
         let offset = 0, velocity = 80, targetVelocity = 80, lastTs: number | null = null;
+        // Only animate while on screen (same as PortfolioSection's rows) —
+        // otherwise this loop rewrites a transform every frame for the rest
+        // of the visit, long after the hero has scrolled away.
+        let visible = true, running = false;
 
         function tick(ts: number) {
+          if (!visible) { running = false; return; }
           if (!lastTs) lastTs = ts;
           const dt = Math.min((ts - lastTs) / 1000, 0.05);
           lastTs = ts;
@@ -317,7 +322,18 @@ export default function HeroSection() {
           requestAnimationFrame(tick);
         }
 
-        requestAnimationFrame(tick);
+        function start() {
+          if (running) return;
+          running = true;
+          lastTs = null;
+          requestAnimationFrame(tick);
+        }
+
+        new IntersectionObserver(([entry]) => {
+          visible = entry.isIntersecting;
+          if (visible) start();
+        }).observe(scroller);
+        start();
         scroller.addEventListener('mouseenter', () => { targetVelocity = 25; });
         scroller.addEventListener('mouseleave', () => { targetVelocity = 80; });
       });
