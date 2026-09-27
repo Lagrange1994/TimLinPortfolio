@@ -491,8 +491,12 @@
 /* ImageWithSkeleton.jsx has no prefix prop (it's used before any per-project
    token would apply), so this stays one shared neutral gradient rather than
    12 per-prefix versions — same reasoning as the showcase-panel grays above. */
+/* background-image, not the `background` shorthand: the shorthand reset
+   background-size to auto, so the gradient was exactly the element's width
+   and shimmer's background-position shift resolved to 0 — light mode's
+   skeleton never moved. */
 :root[data-theme="light"] .skeleton {
-    background: linear-gradient(110deg, #ECECEC 8%, #DADADA 18%, #ECECEC 33%);
+    background-image: linear-gradient(110deg, #ECECEC 8%, #DADADA 18%, #ECECEC 33%);
 }
 
 @keyframes shimmer {

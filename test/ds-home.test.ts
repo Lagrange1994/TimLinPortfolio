@@ -115,6 +115,18 @@ describe('ds-home opt-in design layer', () => {
 
   // Regression: the hover fill/border outweighed .is-active, so a just-clicked
   // card kept its hover look until the pointer left.
+  // Regression: the light-mode .skeleton override used the `background`
+  // shorthand, which reset background-size to auto — the shimmer's
+  // background-position shift then resolved to 0 and the skeleton froze.
+  it('light-mode image skeleton keeps its 200% background-size (shimmer moves)', () => {
+    const css = read('src/styles/projects-tailwind.css').replace(/\/\*[\s\S]*?\*\//g, '');
+    const light = css.match(/:root\[data-theme="light"\] \.skeleton \{([^}]*)\}/);
+    expect(light).not.toBeNull();
+    expect(light![1]).toMatch(/background-image:/);
+    expect(light![1]).not.toMatch(/(^|[\s;])background:/);
+    expect(css).toMatch(/\.skeleton \{[^}]*background-size: 200% 100%;/);
+  });
+
   it('hover fill/border never applies to the selected card', () => {
     const css = read('src/styles/ds-home.css').replace(/\/\*[\s\S]*?\*\//g, '');
     const hoverBlocks = [...css.matchAll(/([^{}]*button\.ds-card[^{}]*:hover)\s*\{([^}]*)\}/g)];
