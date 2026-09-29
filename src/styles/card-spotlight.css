@@ -1,0 +1,75 @@
+/* Project-page card spotlight — the homepage Contact Me card's
+   cursor-following glow (portfolio.css .sc-overlay), for the case-study
+   cards: every .ds-card (InfoCard, PainPointCard, FeatureCard,
+   GalleryItemButton, inline ds-card divs) plus project_13's .spotlight-card.
+   --sc-x/--sc-y are set by src/utils/cardSpotlight.ts.
+
+   Painted as ::before at z-index -1 inside an isolated card: above the
+   card's own fill/grain, below its (unpositioned) content — no wrapper
+   element and no z-index bumps on the content needed. A card whose content
+   is itself positioned over a full-bleed layer sets --spotlight-z. */
+.ds-card,
+.spotlight-card {
+  position: relative;
+  isolation: isolate;
+}
+
+.ds-card::before,
+.spotlight-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  corner-shape: inherit;
+  pointer-events: none;
+  z-index: var(--spotlight-z, -1);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  background: radial-gradient(600px circle at var(--sc-x, -500px) var(--sc-y, -500px),
+      rgba(255, 255, 255, 0.08) 0%, transparent 65%);
+}
+
+/* Clickable cards and the section tabs are <button>s, which Tailwind v4's
+   preflight gives cursor:default — show the hand like a link. */
+button.ds-card,
+.ds-tab {
+  cursor: pointer;
+}
+
+/* Cursor-tracking border highlight — the homepage .sc-card::after ring: a
+   1px padding box masked down to just its edge, lit by a tighter, brighter
+   gradient at the same --sc-x/--sc-y. Above the content (z-index 4), but
+   the mask leaves only the 1px edge to paint. */
+.ds-card::after,
+.spotlight-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  corner-shape: inherit;
+  background: radial-gradient(280px circle at var(--sc-x, -500px) var(--sc-y, -500px),
+      rgba(255, 255, 255, 0.32) 0%, transparent 70%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.ds-card:hover::before,
+.spotlight-card:hover::before,
+.ds-card:hover::after,
+.spotlight-card:hover::after {
+  opacity: 1;
+}
+
+/* Same as the homepage: light mode's neumorphism cards take no glow. */
+:root[data-theme="light"] .ds-card::before,
+:root[data-theme="light"] .spotlight-card::before,
+:root[data-theme="light"] .ds-card::after,
+:root[data-theme="light"] .spotlight-card::after {
+  display: none;
+}

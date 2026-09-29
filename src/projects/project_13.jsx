@@ -1,4 +1,5 @@
 import '../utils/scaleLock';
+import '../utils/cardSpotlight';
 import '../styles/project13-tailwind.css';
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
@@ -323,7 +324,7 @@ const goHome = (e) => {
 
             return (
             <div ref={cardRef} className={`feat-card group relative chamfer-card p-[1px] bg-white/10 hover:bg-tech-primary/50 transition-colors duration-500 ${large ? 'aspect-[16/9]' : 'aspect-[3/2]'}`}>
-                <div className="chamfer-card w-full h-full bg-tech-panel flex flex-col justify-end items-start p-6 relative overflow-hidden">
+                <div className="chamfer-card spotlight-card [--spotlight-z:5] w-full h-full bg-tech-panel flex flex-col justify-end items-start p-6 relative overflow-hidden">
                     <div className="absolute inset-0 z-0 opacity-80 group-hover:opacity-100 transition-opacity duration-500">
                         <div className="glitch-container">
                             {bgVisible && [...Array(5)].map((_, i) => (
@@ -563,7 +564,7 @@ const goHome = (e) => {
 
                             {/* 01 Chamfer Geometry */}
                             <div className="lang-card chamfer-card p-[1px] bg-white/10 hover:bg-tech-primary/20 transition-colors duration-500">
-                                <div className="chamfer-card bg-tech-panel p-8 h-full flex flex-col">
+                                <div className="chamfer-card spotlight-card bg-tech-panel p-8 h-full flex flex-col">
                                     <div className="font-mono text-[10px] text-tech-primary tracking-widest mb-3">{t.dl.pillars[0].code}</div>
                                     <h3 className="font-display font-bold text-white text-xl mb-3 tracking-wide">{t.dl.pillars[0].title}</h3>
                                     <p className="text-gray-400 text-sm leading-relaxed mb-8 flex-1">{t.dl.pillars[0].desc}</p>
@@ -594,7 +595,7 @@ const goHome = (e) => {
 
                             {/* 02 Industrial Palette */}
                             <div className="lang-card chamfer-card p-[1px] bg-white/10 hover:bg-tech-primary/20 transition-colors duration-500">
-                                <div className="chamfer-card bg-tech-panel p-8 h-full flex flex-col">
+                                <div className="chamfer-card spotlight-card bg-tech-panel p-8 h-full flex flex-col">
                                     <div className="font-mono text-[10px] text-tech-primary tracking-widest mb-3">{t.dl.pillars[1].code}</div>
                                     <h3 className="font-display font-bold text-white text-xl mb-3 tracking-wide">{t.dl.pillars[1].title}</h3>
                                     <p className="text-gray-400 text-sm leading-relaxed mb-8 flex-1">{t.dl.pillars[1].desc}</p>
@@ -621,7 +622,7 @@ const goHome = (e) => {
 
                             {/* 03 Engineering Typography */}
                             <div className="lang-card chamfer-card p-[1px] bg-white/10 hover:bg-tech-primary/20 transition-colors duration-500">
-                                <div className="chamfer-card bg-tech-panel p-8 h-full flex flex-col">
+                                <div className="chamfer-card spotlight-card bg-tech-panel p-8 h-full flex flex-col">
                                     <div className="font-mono text-[10px] text-tech-primary tracking-widest mb-3">{t.dl.pillars[2].code}</div>
                                     <h3 className="font-display font-bold text-white text-xl mb-3 tracking-wide">{t.dl.pillars[2].title}</h3>
                                     <p className="text-gray-400 text-sm leading-relaxed mb-8 flex-1">{t.dl.pillars[2].desc}</p>
@@ -646,7 +647,7 @@ const goHome = (e) => {
 
                             {/* 04 Signal Motion */}
                             <div className="lang-card chamfer-card p-[1px] bg-white/10 hover:bg-tech-primary/20 transition-colors duration-500">
-                                <div className="chamfer-card bg-tech-panel p-8 h-full flex flex-col">
+                                <div className="chamfer-card spotlight-card bg-tech-panel p-8 h-full flex flex-col">
                                     <div className="font-mono text-[10px] text-tech-primary tracking-widest mb-3">{t.dl.pillars[3].code}</div>
                                     <h3 className="font-display font-bold text-white text-xl mb-3 tracking-wide">{t.dl.pillars[3].title}</h3>
                                     <p className="text-gray-400 text-sm leading-relaxed mb-8 flex-1">{t.dl.pillars[3].desc}</p>
