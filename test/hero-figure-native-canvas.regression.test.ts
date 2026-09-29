@@ -179,6 +179,23 @@ describe('hero figure flushes stuck hover state when the pointer leaves the view
   });
 });
 
+// Hand cursor over hover-reactive props: read the hover manager's own
+// raycast result (`_prevObjects`) after its canvas pointermove, reset on leave.
+describe('hero figure shows a pointer cursor over hoverable props', () => {
+  const tsx = read('src/components/HeroSection.tsx');
+
+  it('sets cursor from MouseHover._prevObjects on pointermove and clears it on leave', () => {
+    expect(tsx).toMatch(/viewer\?\.addEventListener\('pointermove', onPointerMove\)/);
+    expect(tsx).toMatch(/MouseHover\?\._prevObjects/);
+    expect(tsx).toMatch(/viewer\.style\.cursor = hovered\?\.length \? 'pointer' : ''/);
+    expect(tsx).toMatch(/onPointerLeave = \(\) => \{[\s\S]*?viewer\.style\.cursor = ''/);
+  });
+
+  it('removes the pointermove listener on cleanup', () => {
+    expect(tsx).toMatch(/viewer\?\.removeEventListener\('pointermove', onPointerMove\)/);
+  });
+});
+
 // 2026-09-24: controller/ipad/wacom animated their hover scale-up only once.
 // Read from the live runtime: their first Mouse Hover Transition's FIRST tween
 // (the return-to-Base half) has `state` MISSING ("Current State") where

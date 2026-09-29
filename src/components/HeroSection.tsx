@@ -510,6 +510,7 @@ export default function HeroSection() {
                 MouseHover?: {
                   handleMouseHoverEvent?: (leaveAll?: boolean) => void;
                   objects?: unknown[];
+                  _prevObjects?: unknown[];
                   eventsPerObjects?: Record<string, HoverEventLike[]>;
                 };
               };
@@ -551,8 +552,19 @@ export default function HeroSection() {
     // all). Undocumented internals, optional-chained like the rest here.
     const onPointerLeave = () => {
       viewer?._spline?.eventManager?.handlers?.MouseHover?.handleMouseHoverEvent?.(true);
+      if (viewer) viewer.style.cursor = '';
     };
     viewer?.addEventListener('pointerleave', onPointerLeave);
+    // Hand cursor over the props that react to hover. The hover manager
+    // re-raycasts on the canvas's own pointermove and keeps the objects the
+    // pointer is currently over in `_prevObjects`; this listener is on the
+    // host, so it runs after (the event bubbles out of the viewer's shadow
+    // root) and reads the fresh result. The canvas inherits the host cursor.
+    const onPointerMove = () => {
+      const hovered = viewer?._spline?.eventManager?.handlers?.MouseHover?._prevObjects;
+      if (viewer) viewer.style.cursor = hovered?.length ? 'pointer' : '';
+    };
+    viewer?.addEventListener('pointermove', onPointerMove);
     // Some props (controller/ipad/wacom) ship a Toggle-mode Mouse Hover
     // Transition whose FIRST tween — the return-to-Base half — has `state`
     // missing ("Current State") instead of `null` ("Base State"). The runtime
@@ -638,6 +650,7 @@ export default function HeroSection() {
       window.clearTimeout(runtimeTimer);
       window.clearTimeout(hoverFixTimer);
       viewer?.removeEventListener('pointerleave', onPointerLeave);
+      viewer?.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('hero-fig-settled', sync);
       ro.disconnect();
       viewer?.removeEventListener('load', sync);
