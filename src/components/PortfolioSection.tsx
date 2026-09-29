@@ -27,6 +27,11 @@ const CARD_CORNER_RADIUS = 44;
 // Breathing room around the headline/subtitle text inside the wall outline's
 // top-left notches, so the rounded corners don't cut in right at the glyphs.
 const NOTCH_PADDING = 16;
+// How far the wall's top edge rides up over the subtitle's bottom at the
+// 1920×1080 reference layout (centred wall, settled 72px navbar) — reused to
+// pin the wall to the headline on taller-than-16:9 screens, so the two modes
+// meet at the same top edge (see applyDesktopGeometry).
+const WALL_SUB_OVERLAP = 31;
 // Tighter padding under the subtitle specifically — that notch's bottom
 // should hug the subtitle closer than the other notch edges. Paired with
 // NOTCH2_TURN_RADIUS in portfolioMask.ts, which shrinks that turn's corner
@@ -722,7 +727,11 @@ export default function PortfolioSection() {
     // the moment of this one-time measurement instead.
     function measureAvailableHeight(): number {
       const probe = document.createElement('div');
-      probe.style.cssText = 'position:fixed; visibility:hidden; pointer-events:none; height:calc(100dvh - var(--nav-h, 72px) - env(safe-area-inset-bottom, 0px));';
+      // 100dvh / --z, same as portfolio.css's own dvh rules: above 1920px
+      // wide, html's zoom (scaleLock / --z) scales viewport units up with it,
+      // so a bare 100dvh overcounts the room in layout px and the centred
+      // wall sinks away from the headline on high-res screens.
+      probe.style.cssText = 'position:fixed; visibility:hidden; pointer-events:none; height:calc(100dvh / var(--z, 1) - var(--nav-h, 72px) - env(safe-area-inset-bottom, 0px));';
       document.body.appendChild(probe);
       const availablePx = probe.getBoundingClientRect().height;
       probe.remove();
@@ -768,18 +777,77 @@ export default function PortfolioSection() {
         // no leftover gap.
         inner!.style.setProperty('--wall-scale', contentHeight > 0 ? `${capPx / contentHeight}` : '1');
       } else {
-        const availableHeight = measureAvailableHeight();
-        const wallHeight = computeWallHeight(contentHeight, availableHeight);
-        const topOffset = Math.max(0, (availableHeight - wallHeight) / 2);
-        frame!.style.top = `${topOffset}px`;
-        frame!.style.marginTop = '0px';
-        frame!.style.height = `${wallHeight}px`;
-        // Desktop/tablet's wallHeight is already content-fit-capped (see
-        // computeWallHeight above), so the row stack matches the box at
-        // scale 1 by construction — no stretch/shrink needed here.
-        inner!.style.setProperty('--wall-scale', '1');
+        baseContentHeight = contentHeight;
+        applyDesktopGeometry();
       }
       wallGeometryLockedRef.current = true;
+    }
+
+    // 3-row stack height, captured at first lock (before .wall-fill can
+    // reveal row 4 and inflate measureContentHeight()). Card sizes are
+    // fixed layout px, so it never changes with the viewport.
+    let baseContentHeight = 0;
+
+    // Layout-px offset of el's top from the section's top, via the
+    // offsetTop chain — unaffected by the headline's rise-soft transform
+    // (which may still be mid-flight when this runs) and by the navbar's
+    // --nav-h settling, unlike getBoundingClientRect().
+    function offsetTopWithin(el: HTMLElement): number {
+      let y = 0;
+      let node: HTMLElement | null = el;
+      while (node && node !== section) {
+        y += node.offsetTop;
+        node = node.offsetParent as HTMLElement | null;
+      }
+      return y;
+    }
+
+    function applyDesktopGeometry() {
+      const availableHeight = measureAvailableHeight();
+      const sub = section!.querySelector<HTMLElement>('.portfolio-headline-sub');
+      const centredHeight = computeWallHeight(baseContentHeight, availableHeight);
+      const centredTop = Math.max(0, (availableHeight - centredHeight) / 2);
+      // Where the wall's top sits relative to the headline at 1920×1080 (the
+      // reference layout): WALL_SUB_OVERLAP px above the subtitle's bottom,
+      // so the notch wraps the text the same way on every screen.
+      const anchoredTop = sub ? offsetTopWithin(sub) + sub.offsetHeight - WALL_SUB_OVERLAP : centredTop;
+      // +2px slack: at exactly 16:9 the two land within a pixel of each
+      // other and rounding shouldn't flip the mode.
+      if (centredTop <= anchoredTop + 2) {
+        // 16:9-or-wider: centring already keeps the wall at/above the
+        // headline — the original content-fit wall.
+        wall!.classList.remove('wall-fill', 'wall-fill-scale');
+        frame!.style.top = `${centredTop}px`;
+        frame!.style.height = `${centredHeight}px`;
+        inner!.style.setProperty('--wall-scale', '1');
+      } else {
+        // Taller than 16:9 (2560×1600, square, portrait…): centring a
+        // content-sized wall would strand it far below the headline. Pin its
+        // top to the headline instead and let it fill down to an equal
+        // bottom gap — size and aspect follow the screen, not the content.
+        // .wall-fill reveals row 4 (top-aligned so rows 1–3 stay put); if
+        // even 4 rows can't cover the height, scale the stack up to fill it,
+        // the way mobile does (.wall-fill-scale re-centres it for the scale).
+        const wallHeight = Math.max(centredHeight, availableHeight - anchoredTop * 2);
+        frame!.style.top = `${anchoredTop}px`;
+        frame!.style.height = `${wallHeight}px`;
+        wall!.classList.add('wall-fill');
+        const row4 = inner!.querySelector<HTMLElement>('.portfolio-row:nth-child(4)');
+        if (row4) createPortfolioScroller(row4, 40, 12);
+        const fullStack = measureContentHeight();
+        const scale = fullStack > 0 && fullStack < wallHeight ? wallHeight / fullStack : 1;
+        wall!.classList.toggle('wall-fill-scale', scale > 1);
+        inner!.style.setProperty('--wall-scale', `${scale}`);
+      }
+      frame!.style.marginTop = '0px';
+    }
+
+    // Desktop/tablet geometry follows the viewport live; only mobile keeps
+    // the one-time lock (address-bar jitter — see above).
+    function onResize() {
+      if (!wallGeometryLockedRef.current || baseContentHeight <= 0) return;
+      if (window.matchMedia('(max-width: 767px)').matches) return;
+      applyDesktopGeometry();
     }
 
     // threshold: 0.01 fires as soon as 1% of the (tall, mobile) section is
@@ -832,9 +900,22 @@ export default function PortfolioSection() {
       section.addEventListener('rise-settled', onRiseSettled);
     }
 
+    window.addEventListener('resize', onResize);
+    // Both can settle after the first lock: the headline's layout (web font
+    // swap, language change, wrapping) and the navbar's height (--nav-h is
+    // still mid-shrink animation when the section first intersects) —
+    // re-apply when either does, so the result doesn't depend on timing.
+    const headerRo = new ResizeObserver(onResize);
+    const header = section.querySelector<HTMLElement>('.portfolio-header');
+    const navHeader = document.getElementById('main-header');
+    if (header) headerRo.observe(header);
+    if (navHeader) headerRo.observe(navHeader);
+
     return () => {
       io.disconnect();
+      headerRo.disconnect();
       section.removeEventListener('rise-settled', onRiseSettled);
+      window.removeEventListener('resize', onResize);
     };
   }, [expanded]);
 

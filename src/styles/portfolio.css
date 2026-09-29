@@ -4375,6 +4375,25 @@
       display: none;
     }
 
+    /* Taller-than-16:9 desktop/tablet screens: PortfolioSection.tsx's
+       applyDesktopGeometry() pins the wall to the headline, grows it past
+       the content height and adds .wall-fill. Row 4 fills the extra room; rows are top-aligned
+       (padding-top cancels the inner's -40px inset) so rows 1–3 sit exactly
+       where the centred 3-row stack put them. */
+    .portfolio-wall.wall-fill .portfolio-wall-inner {
+      justify-content: flex-start;
+      padding-top: 40px;
+    }
+    .portfolio-wall.wall-fill .portfolio-row:nth-child(4) {
+      display: block;
+    }
+    /* Even 4 rows too short (square/portrait screens): the stack is scaled
+       up via --wall-scale around the inner's centre, so centre it again. */
+    .portfolio-wall.wall-fill-scale .portfolio-wall-inner {
+      justify-content: center;
+      padding-top: 0;
+    }
+
     .portfolio-row .scroller-inner {
       gap: 16px;
     }
