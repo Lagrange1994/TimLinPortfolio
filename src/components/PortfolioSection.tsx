@@ -27,6 +27,9 @@ const CARD_CORNER_RADIUS = 44;
 // Breathing room around the headline/subtitle text inside the wall outline's
 // top-left notches, so the rounded corners don't cut in right at the glyphs.
 const NOTCH_PADDING = 16;
+// Fired on #portfolio whenever the desktop geometry effect sets the wall's
+// top/height, so the notch-mask effect recuts the path for the new position.
+const WALL_GEOMETRY_EVENT = 'wall-geometry';
 // How far the wall's top edge rides up over the subtitle's bottom at the
 // 1920×1080 reference layout (centred wall, settled 72px navbar) — reused to
 // pin the wall to the headline on taller-than-16:9 screens, so the two modes
@@ -665,9 +668,15 @@ export default function PortfolioSection() {
       measureAndObserve();
     }
     section.addEventListener('rise-settled', onRiseSettled);
+    // The geometry effect below moved the wall (see WALL_GEOMETRY_EVENT).
+    function onWallGeometry() {
+      if (wallMaskEntranceSettledRef.current) apply();
+    }
+    section.addEventListener(WALL_GEOMETRY_EVENT, onWallGeometry);
     return () => {
       ro?.disconnect();
       section!.removeEventListener('rise-settled', onRiseSettled);
+      section!.removeEventListener(WALL_GEOMETRY_EVENT, onWallGeometry);
     };
   }, [lang, expanded]);
 
@@ -840,6 +849,11 @@ export default function PortfolioSection() {
         inner!.style.setProperty('--wall-scale', `${scale}`);
       }
       frame!.style.marginTop = '0px';
+      // The notch mask (effect above) must be recut for the new top: a
+      // position-only move (e.g. a language switch re-wrapping the headline
+      // shifts anchoredTop) never trips its ResizeObserver, leaving the
+      // notch cut for the old top — visibly misaligned with the text.
+      section!.dispatchEvent(new Event(WALL_GEOMETRY_EVENT));
     }
 
     // Desktop/tablet geometry follows the viewport live; only mobile keeps
