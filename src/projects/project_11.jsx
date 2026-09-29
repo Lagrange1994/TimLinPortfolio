@@ -8,7 +8,7 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
     BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, PainPointCard, ProcessTimeline, FeatureCard,
-    GalleryItemButton, PreviewFrame, ResizeHandle,
+    GalleryItemButton, PreviewFrame, ResizeHandle, get16by9FloorVh,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -244,7 +244,7 @@ gsap.registerPlugin(ScrollToPlugin);
             // project_02). The window-level touch handlers below are subscribed once per
             // section index, so they read the ref, not a stale isResizing closure.
             const visualPanelRef = useRef(null);
-            const [mobileVisualHeight, setMobileVisualHeight] = useState(35);
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(get16by9FloorVh);
             const [isResizing, setIsResizing] = useState(false);
             const isResizingRef = useRef(false);
             isResizingRef.current = isResizing;
@@ -259,7 +259,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 const img = area && area.querySelector('img');
                 if (!area || !panel || !img || !img.offsetHeight) return 80;
                 const maxPx = img.offsetHeight + (panel.offsetHeight - area.clientHeight);
-                return Math.min(80, Math.max(35, (maxPx / window.innerHeight) * 100));
+                return Math.min(80, Math.max(get16by9FloorVh(), (maxPx / window.innerHeight) * 100));
             };
 
             const handleResizeStart = () => {
@@ -274,7 +274,7 @@ gsap.registerPlugin(ScrollToPlugin);
                     const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
                     let newHeightVh = (clientY / window.innerHeight) * 100;
                     const maxVh = getMaxVisualVh();
-                    if (newHeightVh < 35) newHeightVh = 35;
+                    if (newHeightVh < get16by9FloorVh()) newHeightVh = get16by9FloorVh();
                     if (newHeightVh > maxVh) newHeightVh = maxVh;
                     setMobileVisualHeight(newHeightVh);
                 };
@@ -497,7 +497,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         {/* [修改] bg-dark -> bg-tmu-dark */}
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-tmu-dark overflow-hidden">
                             {/* [修改] bg-[#1e293b] (保留原色碼) */}
-                            <div ref={visualPanelRef} className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] relative flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div ref={visualPanelRef} className="ds-stage ds-stage--web-bare w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] relative flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <ResizeHandle prefix="tmu" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
                                 <div className="relative w-full h-full flex flex-col items-center justify-center">
                                     <div className="flex-1 min-h-0 w-full flex items-center justify-center">
@@ -514,7 +514,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                         />
                                     </div>
                                     {showBrowserHeader && (
-                                        <div className="text-center mt-2 max-lg:mt-0 max-lg:absolute max-lg:bottom-0 max-lg:inset-x-0 text-xs text-text/45 shrink-0"><i className="ph ph-arrows-down-up mr-2"></i>{t('scroll_hint')}</div>
+                                        <div className="text-center mt-2 max-lg:mt-0 max-lg:absolute max-lg:bottom-3 max-lg:inset-x-0 text-xs text-text/45 shrink-0"><span className="scroll-hint-pill max-lg:inline-flex max-lg:items-center max-lg:px-3 max-lg:py-1.5 max-lg:rounded-full max-lg:bg-black/55 max-lg:backdrop-blur-md max-lg:border max-lg:border-white/15 max-lg:text-white"><i className="ph ph-arrows-down-up mr-2"></i>{t('scroll_hint')}</span></div>
                                     )}
                                 </div>
                             </div>

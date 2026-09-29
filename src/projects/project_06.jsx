@@ -8,7 +8,7 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, PainPointCard, GalleryItemButton, ImageWithSkeleton, ResizeHandle,
-    dsVars,
+    dsVars, get16by9FloorVh,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -24,8 +24,8 @@ gsap.registerPlugin(ScrollToPlugin);
 
         const SimpleFrame = ({ src, alt }) => (
             <div className="w-full h-full flex items-center justify-center pointer-events-none">
-                <div className="w-full max-w-full max-h-full h-auto bg-transparent flex items-center justify-center pointer-events-auto">
-                    <ImageWithSkeleton src={src} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" alt={alt} />
+                <div className="w-full max-w-full max-h-full h-auto max-lg:h-full bg-transparent flex items-center justify-center pointer-events-auto">
+                    <ImageWithSkeleton src={src} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl max-lg:w-full max-lg:h-full max-lg:object-cover max-lg:rounded-none max-lg:shadow-none" alt={alt} />
                 </div>
             </div>
         );
@@ -262,7 +262,7 @@ gsap.registerPlugin(ScrollToPlugin);
             }, [activeTab]);
             const touchStartY = useRef(0);
             const [isResizing, setIsResizing] = useState(false);
-            const [mobileVisualHeight, setMobileVisualHeight] = useState(35);
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(get16by9FloorVh);
 
             const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
 
@@ -299,7 +299,8 @@ gsap.registerPlugin(ScrollToPlugin);
                     if (!isResizing) return;
                     const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
                     let newHeightVh = (clientY / window.innerHeight) * 100;
-                    if (newHeightVh < 35) newHeightVh = 35; if (newHeightVh > 80) newHeightVh = 80;
+                    const floorVh = get16by9FloorVh();
+                    if (newHeightVh < floorVh) newHeightVh = floorVh; if (newHeightVh > 80) newHeightVh = 80;
                     setMobileVisualHeight(newHeightVh);
                 };
                 const handleResizeEnd = () => { setIsResizing(false); document.body.style.userSelect = ''; };
@@ -423,7 +424,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         </section>
 
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-tym-dark overflow-hidden">
-                            <div className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', padding: window.innerWidth < 1024 && activeTab === 'context' ? 0 : undefined, transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <div className="w-full h-full max-w-full flex flex-col items-center justify-center relative">
                                     <div className="relative z-10 transform transition-all duration-500 flex items-center justify-center flex-1 min-h-0 w-full">
                                         <div className="transition-all duration-500 overflow-hidden flex items-center justify-center w-full h-full">

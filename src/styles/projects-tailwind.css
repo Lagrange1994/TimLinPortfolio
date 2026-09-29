@@ -389,6 +389,54 @@
     height: 100%;
 }
 
+/* Website-type screenshots (PreviewFrame/BrowserFrame/WebFrame/WindowFrame)
+   drop their "image container" on phones: no dark padding/background, no
+   rounded browser-mockup chrome — the screenshot fills the display area
+   (ds-stage, now a plain 16:9 box on the non-resizable pages instead of a
+   fixed 35vh slice — see that rule below) edge-to-edge instead of floating
+   inside a letterboxed panel. App-type screenshots (PhoneFrame/AppRawFrame)
+   keep their proper phone-bezel container — untouched by this rule; only
+   elements actually carrying these classes are affected. Desktop (lg:) is
+   untouched. !important beats the many base Tailwind utilities these
+   elements already carry (border, shadow, rounded-xl, aspect-video, ...). */
+@media (max-width: 1023.98px) {
+  .ds-stage--web-bare {
+    background: transparent !important;
+    padding: 0 !important;
+  }
+  .preview-frame-wrap {
+    padding: 0 !important;
+  }
+  .preview-frame {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: auto !important;
+    contain: none !important;
+    border-radius: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+  .preview-frame-header {
+    display: none !important;
+  }
+  .preview-frame img {
+    object-fit: cover !important;
+  }
+
+  /* Scroll-hint pill (project_07/09/10/11): dark scrim + white text by
+     default so it reads over any screenshot regardless of site theme (see
+     comment on the pill markup itself). In light mode a dark scrim on an
+     already-light page looks like an error state, so it flips to a white
+     pill with gray text instead — still theme-independent of the
+     screenshot underneath, just the light-mode half of that same idea. */
+  :root[data-theme="light"] .scroll-hint-pill {
+    background-color: #ffffff;
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #4b5563;
+  }
+}
+
 .feature-card {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
     backdrop-filter: blur(12px);

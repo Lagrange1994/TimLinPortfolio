@@ -9,7 +9,7 @@ import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, ProcessTimeline, FeatureCard, GalleryItemButton,
     ImageWithSkeleton, ResizeHandle,
-    dsVars,
+    dsVars, get16by9FloorVh,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -167,8 +167,8 @@ gsap.registerPlugin(ScrollToPlugin);
         // --- SIMPLE FRAME ---
         const SimpleFrame = ({ src, alt }) => (
             <div className="w-full h-full flex items-center justify-center pointer-events-none ">
-                <div className="relative w-full max-w-full h-auto max-h-full flex flex-col items-center justify-center pointer-events-auto">
-                    <ImageWithSkeleton src={src} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" alt={alt} />
+                <div className="relative w-full max-w-full h-auto max-h-full max-lg:h-full flex flex-col items-center justify-center pointer-events-auto">
+                    <ImageWithSkeleton src={src} className="max-w-full max-h-full object-contain rounded-lg shadow-2xl max-lg:w-full max-lg:h-full max-lg:object-cover max-lg:rounded-none max-lg:shadow-none" alt={alt} />
                 </div>
             </div>
         );
@@ -299,7 +299,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const imageScrollRef = useRef(null);
             const touchStartY = useRef(0);
             const [isResizing, setIsResizing] = useState(false);
-            const [mobileVisualHeight, setMobileVisualHeight] = useState(35);
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(get16by9FloorVh);
             const tabsContainerRef = useRef(null); // Ref for Tabs
 
             const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
@@ -349,7 +349,8 @@ gsap.registerPlugin(ScrollToPlugin);
                     if (!isResizing) return;
                     const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
                     let newHeightVh = (clientY / window.innerHeight) * 100;
-                    if (newHeightVh < 35) newHeightVh = 35; if (newHeightVh > 80) newHeightVh = 80;
+                    const floorVh = get16by9FloorVh();
+                    if (newHeightVh < floorVh) newHeightVh = floorVh; if (newHeightVh > 80) newHeightVh = 80;
                     setMobileVisualHeight(newHeightVh);
                 };
                 const handleResizeEnd = () => { setIsResizing(false); document.body.style.userSelect = ''; };
@@ -497,7 +498,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         </section>
 
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-lv-dark overflow-hidden">
-                            <div ref={imageScrollRef} className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div ref={imageScrollRef} className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', padding: window.innerWidth < 1024 && activeTab !== 'solution' && activeTab !== 'climax' ? 0 : undefined, transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <div className="absolute top-10 left-10 w-32 h-32 bg-lv-primary/20 blur-[60px] rounded-full"></div>
                                 <div className="absolute bottom-10 right-10 w-40 h-40 bg-lv-secondary/20 blur-[60px] rounded-full"></div>
                                 <div className="w-full h-full max-w-full flex flex-col items-center justify-center relative">

@@ -8,7 +8,7 @@ import ScrollToPlugin from 'gsap/ScrollToPlugin';
 import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, PainPointCard, ProcessTimeline, FeatureCard,
-    GalleryItemButton, PhoneFrame, PreviewFrame, ResizeHandle,
+    GalleryItemButton, PhoneFrame, PreviewFrame, ResizeHandle, get16by9FloorVh,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -257,7 +257,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const touchStartY = useRef(0);
             const overscrollAccumulator = useRef(0);
 
-            const [mobileVisualHeight, setMobileVisualHeight] = useState(35);
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(get16by9FloorVh);
             const [isResizing, setIsResizing] = useState(false);
 
             const t = (key) => TRANSLATIONS[lang][key] || key;
@@ -298,7 +298,8 @@ gsap.registerPlugin(ScrollToPlugin);
                     if (!isResizing) return;
                     const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
                     let newHeightVh = (clientY / window.innerHeight) * 100;
-                    if (newHeightVh < 35) newHeightVh = 35; if (newHeightVh > 80) newHeightVh = 80;
+                    const floorVh = get16by9FloorVh();
+                    if (newHeightVh < floorVh) newHeightVh = floorVh; if (newHeightVh > 80) newHeightVh = 80;
                     setMobileVisualHeight(newHeightVh);
                 };
                 const handleResizeEnd = () => { setIsResizing(false); document.body.style.userSelect = ''; };
@@ -454,7 +455,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 // 01 Context & 02 Process -> Original Web Container
                 if (activeTab === 'context' || activeTab === 'process') {
                     return (
-                        <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
+                        <div className="preview-frame-wrap w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
                             <div className="pointer-events-auto w-full h-full flex items-center justify-center">
                                 <PreviewFrame chromeClassName="bg-tn-dark-light" imageSrc={currentImage} />
                             </div>

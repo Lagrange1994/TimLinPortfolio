@@ -103,17 +103,17 @@ describe.each([
     expect(source).toMatch(/\r?\n\s*resizable\r?\n/);
   });
 
-  it('sizes the panel from mobileVisualHeight on phones, floor 35vh like project_02', () => {
-    expect(source).toMatch(/useState\(35\)/);
+  it('sizes the panel from mobileVisualHeight on phones, floor computed as 16:9 of the viewport', () => {
+    expect(source).toMatch(/useState\(get16by9FloorVh\)/);
     expect(source).toMatch(/\$\{mobileVisualHeight\}vh/);
-    expect(source).toMatch(/newHeightVh < 35\) newHeightVh = 35/);
+    expect(source).toMatch(/newHeightVh < get16by9FloorVh\(\)\) newHeightVh = get16by9FloorVh\(\)/);
   });
 
   it('caps the drag at the height where the whole screenshot is visible (not a fixed 80vh)', () => {
     // upper limit comes from the rendered image height + the panel's fixed overhead
     expect(source).toMatch(/const getMaxVisualVh = \(\) =>/);
     expect(source).toMatch(/img\.offsetHeight \+ \(panel\.offsetHeight - area\.clientHeight\)/);
-    expect(source).toMatch(/Math\.min\(80, Math\.max\(35,/);
+    expect(source).toMatch(/Math\.min\(80, Math\.max\(get16by9FloorVh\(\),/);
     expect(source).toMatch(/newHeightVh > maxVh\) newHeightVh = maxVh/);
     expect(source).toMatch(/<div ref=\{visualPanelRef\}/);
   });
@@ -128,16 +128,21 @@ describe.each([
   });
 });
 
-// Phone panel = 35vh TOTAL on every project (project_02's spec), padding
-// included. 01/03 used to put h-[35vh] on an inner box inside a p-4 panel
-// (339px at 402x874), and project_06 defaulted to 40vh (350px).
-describe('every project starts with the same 35vh phone panel as project_02', () => {
+// Phone panel starts (and won't shrink below) a 16:9 box on every resizable
+// project (project_02's spec) — computed from the viewport via
+// get16by9FloorVh() instead of a flat 35 (vh) magic number, so the un-dragged
+// panel is exactly 16:9 on any device, not just one tuned for a single test
+// viewport. 01/03 don't have a resize handle, so they just size the panel as
+// a plain 16:9 box directly (max-lg:aspect-video) — no JS floor needed.
+describe('every project starts with a 16:9 phone panel as project_02', () => {
   const read = (file: string) => fs.readFileSync(path.join(ROOT, 'src/projects', file), 'utf8');
 
-  it.each(['project_01.jsx', 'project_03.jsx'])('%s sizes the panel itself, not an inner box inside its padding', (file) => {
+  it.each(['project_01.jsx', 'project_03.jsx', 'project_12.jsx'])('%s sizes the panel itself as a 16:9 box, not a fixed-vh inner box inside its padding', (file) => {
     const source = read(file);
-    expect(source).toMatch(/shrink-0 max-lg:h-\[35vh\] z-20/);
+    expect(source).toMatch(/shrink-0 max-lg:aspect-video z-20/);
+    expect(source).not.toMatch(/max-lg:h-\[35vh\]/);
     expect(source).not.toMatch(/w-full h-\[35vh\] lg:h-full/);
+    expect(source).not.toMatch(/'35vh'/);
   });
 
   it.each([
@@ -150,16 +155,41 @@ describe('every project starts with the same 35vh phone panel as project_02', ()
     'project_09.jsx',
     'project_10.jsx',
     'project_11.jsx',
-  ])('%s defaults the resizable panel to 35vh', (file) => {
-    expect(read(file)).toMatch(/\[mobileVisualHeight, setMobileVisualHeight\] = useState\(35\)/);
+  ])('%s defaults the resizable panel to a computed 16:9 floor', (file) => {
+    expect(read(file)).toMatch(/\[mobileVisualHeight, setMobileVisualHeight\] = useState\(get16by9FloorVh\)/);
+    expect(read(file)).toMatch(/get16by9FloorVh/);
   });
 
   it.each(['project_07.jsx', 'project_09.jsx', 'project_10.jsx', 'project_11.jsx'])(
-    '%s floats the scroll hint in the gap below the frame on phones',
+    '%s floats the scroll hint in the gap below the frame on phones, in a fixed dark scrim pill (legible over any screenshot, both site themes)',
     (file) => {
       const source = read(file);
-      expect(source).toMatch(/max-lg:absolute max-lg:bottom-0 max-lg:inset-x-0/);
+      // bottom-3, not bottom-0: a gap between the pill and the frame's edge.
+      expect(source).toMatch(/max-lg:absolute max-lg:bottom-3 max-lg:inset-x-0/);
+      // Fixed black/white by default, NOT the theme-flipping --color-border
+      // token: the pill sits over an arbitrary screenshot (unrelated to the
+      // site's own light/dark toggle), so a theme-adaptive translucent tint
+      // can land light-on-light there. Same reasoning as the hero eyebrow
+      // badge (bg-black/20 text-white, also fixed regardless of site theme)
+      // — a dark scrim + white text reads over any screenshot content.
+      expect(source).toMatch(/scroll-hint-pill max-lg:inline-flex/);
+      expect(source).toMatch(/max-lg:rounded-full max-lg:bg-black\/55 max-lg:backdrop-blur-md max-lg:border max-lg:border-white\/15 max-lg:text-white/);
       expect(source).toMatch(/className="relative w-full h-full flex flex-col items-center justify-center"/);
     },
   );
+});
+
+// Light mode is already a bright page, so the dark scrim above reads like an
+// error/warning chip instead of a hint. It flips to a white pill + gray text
+// in light mode via a dedicated .scroll-hint-pill hook, keeping the same
+// "fixed regardless of the screenshot underneath" property in both themes.
+describe('scroll-hint pill flips to a white/gray pill in light mode', () => {
+  const source = fs.readFileSync(path.join(ROOT, 'src/styles/projects-tailwind.css'), 'utf8');
+
+  it('overrides .scroll-hint-pill under :root[data-theme="light"] with a white background and gray text', () => {
+    const block = source.match(/:root\[data-theme="light"\] \.scroll-hint-pill \{[^}]*\}/)?.[0];
+    expect(block).toBeTruthy();
+    expect(block).toMatch(/background-color:\s*#fff(?:fff)?;/);
+    expect(block).toMatch(/color:\s*#4b5563;/);
+  });
 });

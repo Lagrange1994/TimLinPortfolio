@@ -9,7 +9,7 @@ import {
     BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav,
     InfoGrid, InfoCard, GalleryItemButton, PhoneFrame,
     ImageWithSkeleton, ResizeHandle,
-    dsVars,
+    dsVars, get16by9FloorVh,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -245,10 +245,10 @@ gsap.registerPlugin(ScrollToPlugin);
 
         const WindowFrame = ({ src, alt }) => {
             return (
-                <div className="flex items-center justify-center p-4 lg:p-12 w-full h-full">
+                <div className="preview-frame-wrap flex items-center justify-center p-4 lg:p-12 w-full h-full">
                     <div className="w-full max-w-full h-full flex items-center justify-center">
                         {/* [修改] bg-dark-light -> bg-app-dark-light */}
-                        <div className="relative bg-app-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col shrink-0 animate-fadeIn w-full" style={{ maxWidth: '100%', maxHeight: '100%' }}>
+                        <div className="preview-frame relative bg-app-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col shrink-0 animate-fadeIn w-full" style={{ maxWidth: '100%', maxHeight: '100%' }}>
                             <ImageWithSkeleton src={src} alt={alt} className="block w-full h-full object-cover" />
                         </div>
                     </div>
@@ -387,7 +387,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const touchStartY = useRef(0);
             const tabsContainerRef = useRef(null);
 
-            const [mobileVisualHeight, setMobileVisualHeight] = useState(35);
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(get16by9FloorVh);
             const [isResizing, setIsResizing] = useState(false);
 
             const t = (key) => TRANSLATIONS[lang][key] || key;
@@ -436,7 +436,8 @@ gsap.registerPlugin(ScrollToPlugin);
                     const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
                     const windowHeight = window.innerHeight;
                     let newHeightVh = (clientY / windowHeight) * 100;
-                    if (newHeightVh < 35) newHeightVh = 35;
+                    const floorVh = get16by9FloorVh();
+                    if (newHeightVh < floorVh) newHeightVh = floorVh;
                     if (newHeightVh > 80) newHeightVh = 80;
                     setMobileVisualHeight(newHeightVh);
                 };

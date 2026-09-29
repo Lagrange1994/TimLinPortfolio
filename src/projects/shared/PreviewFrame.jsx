@@ -83,7 +83,7 @@ const PreviewFrame = React.forwardRef(function PreviewFrame({
             : 'w-full h-full [container-type:size] flex items-center justify-center'}>
         <div
             ref={frameRef}
-            className={`relative w-full max-w-full aspect-video max-lg:[contain:size] max-lg:w-[min(100%,calc(100cqh*16/9))] ${resizable ? 'max-lg:min-h-[calc(100%-4rem)] lg:aspect-auto lg:h-auto lg:max-h-[90%]' : (showHeader ? 'lg:aspect-auto lg:h-auto lg:w-[min(100%,calc((90cqh-2rem)*16/9))]' : 'lg:aspect-auto lg:h-auto lg:w-[min(100%,calc(90cqh*16/9))]')} rounded-xl overflow-hidden flex flex-col transition-all duration-300 ${
+            className={`preview-frame relative w-full max-w-full aspect-video max-lg:[contain:size] max-lg:w-[min(100%,calc(100cqh*16/9))] ${resizable ? 'max-lg:min-h-[calc(100%-4rem)] lg:aspect-auto lg:h-auto lg:max-h-[90%]' : (showHeader ? 'lg:aspect-auto lg:h-auto lg:w-[min(100%,calc((90cqh-2rem)*16/9))]' : 'lg:aspect-auto lg:h-auto lg:w-[min(100%,calc(90cqh*16/9))]')} rounded-xl overflow-hidden flex flex-col transition-all duration-300 ${
                 showChrome ? `${chromeClassName} border border-border/10 shadow-2xl` : 'bg-transparent'
             }`}
         >

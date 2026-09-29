@@ -230,13 +230,12 @@ gsap.registerPlugin(ScrollToPlugin);
                 node.addEventListener('touchmove', onTouchMove, { passive: false });
                 return () => node.removeEventListener('touchmove', onTouchMove);
             }, [activeTab]);
-            const imageScrollRef = useRef(null);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
             const touchStartY = useRef(0);
             const tabsContainerRef = useRef(null);
 
-            const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
+            const t = (key) => TRANSLATIONS[lang][key] || key;
 
             // Derived Data
             const solutionFeatures = getSolutionFeatures((k) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][k]) ? TRANSLATIONS[lang][k] : k);
@@ -247,6 +246,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 const savedLang = localStorage.getItem('lang');
                 const initialLang = savedLang === 'en' ? 'en' : 'zh';
                 setLang(initialLang);
+                document.documentElement.lang = initialLang === 'zh' ? 'zh-TW' : 'en';
 
                 const preload = (src) => new Promise((resolve) => {
                     const img = new Image();
@@ -285,7 +285,6 @@ gsap.registerPlugin(ScrollToPlugin);
             useEffect(() => {
                 if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
                 if (swipeContentRef.current) gsap.set(swipeContentRef.current, { x: 0, opacity: 1 });
-                if (imageScrollRef.current) imageScrollRef.current.scrollTop = 0;
 
                 switch (activeTab) {
                     case 'context':
@@ -333,36 +332,33 @@ gsap.registerPlugin(ScrollToPlugin);
             };
 
             const handleWheel = (e) => {
-                if (isScrollingRef.current) return;
                 if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
 
-                const scrollable = e.target.closest('.scrollable-area');
-                if (scrollable) {
-                    const { scrollTop, scrollHeight, clientHeight } = scrollable;
-                    const isScrollable = scrollHeight > clientHeight;
-                    if (isScrollable) {
-                        if (e.deltaY < 0) return;
-                        const atBottom = Math.abs(scrollHeight - clientHeight - scrollTop) <= 1;
-                        if (!atBottom) return;
-                    }
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                if (isSplitView && contentEl) {
+                    const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                    if (e.deltaY < 0 && scrollTop <= 0) return;
+                    if (scrollHeight > clientHeight && e.deltaY > 0 && scrollTop + clientHeight < scrollHeight) return;
                 }
+                if (isScrollingRef.current) return;
                 if (e.deltaY > 0 && currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
             };
 
             const handleTouchStart = (e) => { touchStartY.current = e.touches[0].clientY; };
 
             const handleTouchEnd = (e) => {
-                if (isScrollingRef.current) return;
                 if (tabsContainerRef.current && tabsContainerRef.current.contains(e.target)) return;
 
+                if (isScrollingRef.current) return;
                 const diff = touchStartY.current - e.changedTouches[0].clientY;
-                const scrollable = e.target.closest('.scrollable-area');
-
+                const isSplitView = currentSectionIndex === 1;
+                const contentEl = contentScrollRef.current;
+                const isInsideContent = contentEl && contentEl.contains(e.target);
                 if (Math.abs(diff) > 50 && diff > 0) {
-                    if (scrollable) {
-                        const { scrollTop, scrollHeight, clientHeight } = scrollable;
-                        const atBottom = Math.abs(scrollHeight - clientHeight - scrollTop) <= 1;
-                        if (scrollHeight > clientHeight && !atBottom) return;
+                    if (isSplitView && isInsideContent) {
+                        const { scrollTop, scrollHeight, clientHeight } = contentEl;
+                        if (scrollHeight > clientHeight && scrollTop + clientHeight < scrollHeight - 5) return;
                     }
                     if (currentSectionIndex < sectionsRef.current.length - 1) scrollToSection(currentSectionIndex + 1);
                 }
@@ -444,15 +440,13 @@ gsap.registerPlugin(ScrollToPlugin);
 
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-gh-dark overflow-hidden relative">
                             {/* Left Column: Image / Preview Area */}
-                            <div className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" 
-                                 style={{ height: window.innerWidth < 1024 ? '35vh' : '100%' }}>
-                                
+                            <div className="ds-stage ds-stage--web-bare w-full shrink-0 max-lg:aspect-video z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative">
                                 <div className="w-full h-full flex items-center justify-center">
                                     <PreviewFrame
-                                        ref={imageScrollRef}
                                         chromeClassName="bg-gh-dark-light"
                                         showHeader={showBrowserHeader}
                                         imageSrc={currentImage}
+                                        imageClassName="w-full h-full object-cover"
                                     />
                                 </div>
                             </div>
@@ -481,7 +475,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                         </div>
                                     </div>
 
-                                    <div ref={contentScrollRef} onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd} className="flex-1 overflow-y-auto custom-scroll scroll-content scrollable-area overflow-x-hidden relative">
+                                    <div ref={contentScrollRef} onTouchStart={handleTabTouchStart} onTouchEnd={handleTabTouchEnd} className="flex-1 overflow-y-auto overflow-x-hidden custom-scroll scroll-content relative">
                                     <div ref={swipeContentRef} className="p-4 lg:p-8 pb-24">
                                         {activeTab === 'context' && (
                                             <div className="space-y-8 lg:space-y-12 animate-fadeIn">

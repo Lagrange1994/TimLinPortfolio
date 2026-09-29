@@ -9,7 +9,7 @@ import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav,
     ToolPill, InfoGrid, InfoCard, PainPointCard, FeatureCard,
     GalleryItemButton, BrowserFrame, ImageWithSkeleton, ResizeHandle,
-    dsVars,
+    dsVars, get16by9FloorVh,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -17,8 +17,8 @@ gsap.registerPlugin(ScrollToPlugin);
 // --- COMPONENTS ---
 
         const WebFrame = ({ src }) => (
-            <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
+            <div className="preview-frame-wrap w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
+                <div className="preview-frame relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
                     <BrowserFrame />
                     <div className="w-full h-full bg-border/5 flex items-center justify-center overflow-hidden relative group">
                         <ImageWithSkeleton src={src} alt="Web View" className="w-full h-full object-contain" />
@@ -28,8 +28,8 @@ gsap.registerPlugin(ScrollToPlugin);
         );
 
         const SimpleRoundedFrame = ({ src }) => (
-            <div className="w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
-                <div className="relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
+            <div className="preview-frame-wrap w-full h-full flex items-center justify-center pointer-events-none p-4 lg:p-12">
+                <div className="preview-frame relative z-10 w-full h-auto max-w-full max-h-[90vh] bg-zoo-dark-light rounded-xl border border-border/10 shadow-2xl overflow-hidden flex flex-col transition-all duration-300 pointer-events-auto">
                     <div className="w-full h-full bg-border/5 flex items-center justify-center overflow-hidden relative group">
                         <ImageWithSkeleton src={src} alt="Context View" className="w-full h-full object-contain" />
                     </div>
@@ -294,7 +294,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const touchStartY = useRef(0);
             const overscrollAccumulator = useRef(0);
 
-            const [mobileVisualHeight, setMobileVisualHeight] = useState(35);
+            const [mobileVisualHeight, setMobileVisualHeight] = useState(get16by9FloorVh);
             const [isResizing, setIsResizing] = useState(false);
 
             const t = (key) => (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) ? TRANSLATIONS[lang][key] : key;
@@ -341,7 +341,8 @@ gsap.registerPlugin(ScrollToPlugin);
                     if (!isResizing) return;
                     const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
                     let newHeightVh = (clientY / window.innerHeight) * 100;
-                    if (newHeightVh < 35) newHeightVh = 35; if (newHeightVh > 80) newHeightVh = 80;
+                    const floorVh = get16by9FloorVh();
+                    if (newHeightVh < floorVh) newHeightVh = floorVh; if (newHeightVh > 80) newHeightVh = 80;
                     setMobileVisualHeight(newHeightVh);
                 };
                 const handleResizeEnd = () => { setIsResizing(false); document.body.style.userSelect = ''; };

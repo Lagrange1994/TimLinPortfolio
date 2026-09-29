@@ -16,3 +16,4 @@ export { default as PreviewFrame } from './PreviewFrame.jsx';
 export { default as ResizeHandle } from './ResizeHandle.jsx';
 export { default as ThemeToggle } from './ThemeToggle.jsx';
 export { default as dsVars } from './dsVars.js';
+export { default as get16by9FloorVh } from './mobileVisualHeight.js';

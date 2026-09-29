@@ -465,7 +465,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                         {/* [修改] bg-dark -> bg-police-dark */}
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-police-dark overflow-hidden">
-                            <div className="ds-stage w-full shrink-0 max-lg:h-[35vh] z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl">
+                            <div className="ds-stage ds-stage--web-bare w-full shrink-0 max-lg:aspect-video z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl">
                                 <div className="w-full h-full flex items-center justify-center">
                                     <PreviewFrame
                                         chromeClassName="bg-police-dark-light"
