@@ -152,6 +152,20 @@ describe('background Spline scenes — preload the other theme, but paused', () 
     expect(light.classList.contains('is-active')).toBe(true);
   });
 
+  it('pauses the shown scene as soon as the hero scrolls off, resumes when it returns', async () => {
+    const { dark } = await mount();
+    const darkApp = mockRuntime(dark);
+    loadComplete(dark);
+    act(() => { vi.advanceTimersByTime(50); });
+    expect(darkApp.running).toBe(true);
+
+    act(() => ioCbs.forEach(cb => cb([{ isIntersecting: false }])));
+    expect(darkApp.running).toBe(false); // immediately, not after the 4s url drop
+
+    act(() => ioCbs.forEach(cb => cb([{ isIntersecting: true }])));
+    expect(darkApp.running).toBe(true);
+  });
+
   it('swaps anyway if the new scene never finishes loading', async () => {
     const { light } = await mount();
     await setTheme('light');

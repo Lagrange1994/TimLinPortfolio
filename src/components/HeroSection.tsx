@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
+import { setSceneRunning } from '../utils/splineRunning';
 import HeroAskStrip from './HeroAskStrip';
 import gsap from 'gsap';
 
@@ -431,6 +432,32 @@ export default function HeroSection() {
     const heroSpline = document.getElementById('hero-spline');
     if (!heroSpline) return;
     heroSpline.setAttribute('url', './models/hero_figure.splinecode');
+  }, []);
+
+  // Pause (not unload — see above) the figure's render loop while #home is
+  // off screen: the viewer keeps rendering at full rate when scrolled away,
+  // measured ~5–15k draw calls/s on every other section. stop()/play() keeps
+  // the loaded scene, so scrolling back resumes instantly with no reload.
+  // Re-applied after load-complete (see setSceneRunning for why).
+  useEffect(() => {
+    if (window.innerWidth < 768) return;
+    const heroSpline = document.getElementById('hero-spline');
+    const heroEl = document.getElementById('home');
+    if (!heroSpline || !heroEl) return;
+    let visible = true;
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      setSceneRunning(heroSpline, visible);
+    }, { threshold: 0 });
+    observer.observe(heroEl);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onLoaded = () => { timer = setTimeout(() => setSceneRunning(heroSpline, visible), 50); };
+    heroSpline.addEventListener('load-complete', onLoaded);
+    return () => {
+      observer.disconnect();
+      clearTimeout(timer);
+      heroSpline.removeEventListener('load-complete', onLoaded);
+    };
   }, []);
 
   // The Spline runtime sizes its canvas off the host <spline-viewer>

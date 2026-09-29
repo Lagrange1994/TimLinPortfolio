@@ -96,6 +96,7 @@ const SpecularOverlay = ({
     host.style.left = '0';
     host.style.pointerEvents = 'none';
     host.style.zIndex = '5';
+    host.style.display = 'none'; // shown by the IntersectionObserver below
     document.body.appendChild(host);
 
     const dpr = window.devicePixelRatio || 1;
@@ -215,9 +216,33 @@ const SpecularOverlay = ({
       program.uniforms.uThickness.value = p.thickness * dpr;
       renderer.render({ scene: mesh });
     };
-    raf = requestAnimationFrame(update);
+
+    // Only run the loop while the button is on (or near) screen — otherwise
+    // this rAF ran on every section of the page, forcing a layout read
+    // (getBoundingClientRect + getComputedStyle) and a WebGL draw each frame
+    // for a button nobody could see. The canvas is hidden while stopped so a
+    // stale frame can't linger at its last fixed position.
+    const setActive = active => {
+      if (active) {
+        if (!raf) {
+          host.style.display = '';
+          last = performance.now();
+          raf = requestAnimationFrame(update);
+        }
+      } else if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        host.style.display = 'none';
+      }
+    };
+    const io = typeof IntersectionObserver === 'undefined'
+      ? null
+      : new IntersectionObserver(([entry]) => setActive(entry.isIntersecting), { rootMargin: `${PAD * 2}px` });
+    if (io) io.observe(target);
+    else setActive(true);
 
     return () => {
+      io?.disconnect();
       cancelAnimationFrame(raf);
       window.removeEventListener('pointermove', onPointerMove);
       gl.getExtension('WEBGL_lose_context')?.loseContext();

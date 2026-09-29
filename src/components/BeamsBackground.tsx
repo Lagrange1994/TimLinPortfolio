@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { heroFramePath, FRAME_INSET, FRAME_RADIUS, NOTCH_FLAT, NOTCH_RADIUS } from '../utils/heroFramePath';
+import { setSceneRunning } from '../utils/splineRunning';
 
 // Fixed gap between a notch's content and its reference point on the S-bend
 // (NOTCH_CURVE_CLEARANCE below) — same 26px used for .navbar-brand's own
@@ -23,23 +24,6 @@ const NOTCH_CURVE_CLEARANCE = NOTCH_RADIUS;
 const BG_CROSSFADE_MS = 800;
 // Swap anyway if the incoming theme's scene never reports load-complete.
 const BG_SWAP_FALLBACK_MS = 8000;
-
-type SplineViewerEl = HTMLElement & {
-  _spline?: { play?: () => void; stop?: () => void };
-};
-
-// Pause/resume a bg scene's render loop via the viewer's internal runtime
-// (`_spline`, not public API — no-op before it has loaded). Pausing is
-// play() THEN stop(): the runtime's stop() is a no-op once its `_isPaused`
-// flag is set, and a stop() issued before load sets that flag without
-// clearing the loop the load arms afterwards — leaving a "paused" scene that
-// still renders every frame. play() first re-syncs the flag with the loop.
-function setSceneRunning(el: HTMLElement | null, running: boolean) {
-  const app = (el as SplineViewerEl | null)?._spline;
-  if (!app) return;
-  app.play?.();
-  if (!running) app.stop?.();
-}
 
 export default function BeamsBackground() {
   // The decorative background Spline scene stays mounted and fully opaque
@@ -105,6 +89,10 @@ export default function BeamsBackground() {
   const splineDarkRef = useRef<HTMLElement>(null);
   const splineLightRef = useRef<HTMLElement>(null);
   const inHeroViewRef = useRef(true);
+  // Same #home visibility, but immediate (no drop delay) — pauses the shown
+  // scene the moment the hero is scrolled off, instead of it rendering at
+  // full rate for the 4s until its url is dropped.
+  const [heroVisible, setHeroVisible] = useState(true);
   const applyDesiredSplineUrls = useCallback(() => {
     const dark = splineDarkRef.current;
     const light = splineLightRef.current;
@@ -160,6 +148,7 @@ export default function BeamsBackground() {
     const BG_DROP_DELAY_MS = 4000;
     let dropTimer: ReturnType<typeof setTimeout> | null = null;
     const observer = new IntersectionObserver(([entry]) => {
+      setHeroVisible(entry.isIntersecting);
       if (entry.isIntersecting) {
         if (dropTimer) { clearTimeout(dropTimer); dropTimer = null; }
         inHeroViewRef.current = true;
@@ -193,7 +182,8 @@ export default function BeamsBackground() {
     setHeroEl(document.getElementById('home'));
   }, []);
 
-  // Run only the shown (and fading-out) bg scene; pause the rest. Re-applied
+  // Run only the shown (and fading-out) bg scene, and only while the hero is
+  // on screen; pause the rest. Re-applied
   // on every load-complete, because a freshly loaded viewer arms its own
   // render loop (a setTimeout(0) inside the runtime's load) — deferred past
   // that so the pause actually sticks. heroEl is a dep because the viewers
@@ -203,7 +193,7 @@ export default function BeamsBackground() {
     const dark = splineDarkRef.current;
     const light = splineLightRef.current;
     if (!dark || !light) return;
-    const run = (t: 'dark' | 'light') => shownTheme === t || fadingOut === t;
+    const run = (t: 'dark' | 'light') => heroVisible && (shownTheme === t || fadingOut === t);
     runningRef.current = { dark: run('dark'), light: run('light') };
     setSceneRunning(dark, runningRef.current.dark);
     setSceneRunning(light, runningRef.current.light);
@@ -221,7 +211,7 @@ export default function BeamsBackground() {
       dark.removeEventListener('load-complete', onLoaded);
       light.removeEventListener('load-complete', onLoaded);
     };
-  }, [shownTheme, fadingOut, heroEl]);
+  }, [shownTheme, fadingOut, heroEl, heroVisible]);
 
   // Drives the visible 1px border stroke — see heroFramePath.ts. Same
   // pattern as the portfolio wall's outline — the shape is computed once
