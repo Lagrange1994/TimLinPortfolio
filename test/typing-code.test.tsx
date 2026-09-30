@@ -67,3 +67,29 @@ describe('TypingCode reduced-motion fallback', () => {
     expect(container.querySelector('.tcp-cursor')).toBeNull();
   });
 });
+
+// Regression: the box used to be sized with `minHeight` computed from its
+// own two versions' line count — a floor, not a ceiling, so the card was
+// free to grow taller than that (e.g. a version with more lines than its
+// sibling versions elsewhere on the page, or edited in later to add a
+// line) instead of staying fixed. `height` (not `minHeight`) makes it a
+// hard cap; the optional `lines` prop lets several TypingCode instances
+// (the three tech-stack cards) share one fixed height instead of each
+// sizing off only its own content, so editing one snippet's line count
+// can't make its card disagree with the other two.
+describe('TypingCode box height is fixed, not just a floor', () => {
+  it('uses height (not minHeight) sized from its own content by default', () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }));
+    const { container } = render(<TypingCode versions={[VERSION_A, VERSION_B]} />);
+    const pre = container.querySelector('pre') as HTMLElement;
+    expect(pre.style.height).toBe('calc(3.3em + 28px)');
+    expect(pre.style.minHeight).toBe('');
+  });
+
+  it('lets an explicit `lines` prop override the content-derived count', () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }));
+    const { container } = render(<TypingCode versions={[VERSION_A, VERSION_B]} lines={6} />);
+    const pre = container.querySelector('pre') as HTMLElement;
+    expect(pre.style.height).toBe('calc(9.9em + 28px)');
+  });
+});

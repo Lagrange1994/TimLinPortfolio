@@ -44,7 +44,7 @@ type Phase = 'type' | 'delete' | 'hold';
 // then repeatedly backspaces to the point where the next version's text
 // diverges and types the rest forward — i.e. it looks like someone editing
 // the snippet, not just a one-shot typewriter intro.
-export default function TypingCode({ versions, className = 'tcp-code' }: { versions: CodeVersion[]; className?: string }) {
+export default function TypingCode({ versions, className = 'tcp-code', lines }: { versions: CodeVersion[]; className?: string; lines?: number }) {
   // Computed once from the initial `versions` prop and never reassigned —
   // a lazy initial state (rather than a ref) so render can read it directly
   // without tripping the "no ref access during render" rule.
@@ -107,10 +107,16 @@ export default function TypingCode({ versions, className = 'tcp-code' }: { versi
   const runs = toRuns(flat, count);
   // Pin the box to its tallest version so typing/deleting lines doesn't
   // resize the card around it — only the text inside grows and shrinks.
-  const maxLines = Math.max(...versions.map(v => v.length));
+  // `lines`, when passed, overrides that per-snippet count with a shared
+  // fixed value instead (e.g. every tech-stack card sized the same
+  // regardless of how many lines any one snippet happens to have), so
+  // editing a snippet's content later can't change the card's height —
+  // `height` (not `minHeight`) makes that a hard cap, clipped by
+  // .tcp-code's own overflow: hidden if a version ever runs longer.
+  const maxLines = lines ?? Math.max(...versions.map(v => v.length));
 
   return (
-    <pre ref={preRef} className={className} style={{ minHeight: `calc(${maxLines} * 1.65em + 28px)` }}>
+    <pre ref={preRef} className={className} style={{ height: `calc(${maxLines} * 1.65em + 28px)` }}>
       {runs.map((r, i) => r.cls ? <span key={i} className={r.cls}>{r.text}</span> : <span key={i}>{r.text}</span>)}
       {!reduced && <span className="tcp-cursor" aria-hidden="true" />}
     </pre>

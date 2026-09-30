@@ -639,10 +639,21 @@
       color: var(--text-70);
     }
 
+    /* overflow-x: clip, not hidden — several sections (the portfolio wall's
+       notch/glow bleed, marquee tracks) deliberately lay out content far
+       wider than the viewport and rely on their OWN ancestor's overflow to
+       clip it, not this one. `hidden` still makes body a valid scrollLeft
+       target even with no visible scrollbar, so a focus() from clicking any
+       toggle button elsewhere on the page (e.g. an .ai-card-toggle) can make
+       the browser's default scrollIntoView shove the whole page sideways to
+       "reveal" that focused element relative to body's huge scrollWidth —
+       reproduced by opening the AI Brief card on mobile. `clip` paints
+       identically but never becomes a scroll container, so that scrollLeft
+       shift can't happen. */
     html,
     body {
       width: 100%;
-      overflow-x: hidden;
+      overflow-x: clip;
     }
 
     /* Pull-to-refresh containment for JS-driven scrolls (see navHeader.ts
@@ -3463,6 +3474,25 @@
       box-shadow: 0 4px 10px rgba(var(--shadow-near), 0.18), var(--card-edge) !important;
     }
 
+    /* Matches the mobile split-card's image edge color exactly (see the
+       <768px MOBILE block's .border-glow-bg-slot::after override, which
+       bumps the vignette's outer stop to fully opaque so that edge color
+       is this same #0d0a1c, not an eyeballed guess) — otherwise the square
+       image's bottom edge meets the card's usual --glass-bg-premium tone
+       as a visible seam once the text sits below it instead of overlaid
+       on top of it. background-image: none too — .process-card's own
+       noise-grain + radial-gradient mesh (set !important, unconditionally,
+       above) would otherwise still paint over this flat color, leaving a
+       textured/tinted card background next to the image's smooth vignette
+       fade instead of a flat color match. Applied unconditionally (not
+       gated to mobile): on desktop/tablet the image still fully covers the
+       card via the inset: 0 overlay, so this background never actually
+       shows there. */
+    .process-card--has-img.border-glow-card {
+      background-color: #0d0a1c !important;
+      background-image: none !important;
+    }
+
     /* 背景插圖層（border-glow-bg-slot 內，slot 已定位） */
     .process-card-bg-img {
       width: 100%;
@@ -4521,6 +4551,16 @@
       --spotlight-color: rgba(108, 99, 255, 0.22);
     }
 
+    /* Groups the name/description so the ≤1024px override below can lay
+       them out as one flex item beside .tech-code-preview. `display:
+       contents` drops the wrapper from the box tree on desktop, so
+       .tech-item-header/.tech-desc stay direct flex items of the column
+       exactly as before — this wrapper has zero effect until the row
+       layout below turns it into a real box. */
+    .tech-item-text {
+      display: contents;
+    }
+
     .tech-item-header {
       display: flex;
       justify-content: space-between;
@@ -4780,13 +4820,42 @@
        cards equal height automatically, and any leftover space in the
        shorter card is just its own background continuing (e.g. blank space
        below the last code line, like a real editor), not a separate patch. */
-    .mcp-grid {
+    /* Breaks .mcp-grid-wrap's clip boundary out to the actual browser edge
+       instead of clipping flush against the cards themselves: same trick
+       .section uses to center content (margin: 0 auto) run in reverse,
+       `width: 100vw` + negative side margins pull this element out to the
+       viewport edge regardless of .section's own max-width/padding, and its
+       own padding (mirroring .section's per breakpoint below) puts
+       .mcp-grid-wrap right back where it would sit without the bleed — so
+       the visible cards stay exactly as wide as every other card on the
+       page, but the box-shadow/glow bleeding a few px past their edges (or
+       any small scale-vs-actual-size mismatch) now has real room to fall
+       into before hitting the clip line, instead of being cut mid-card. */
+    .mcp-bleed {
+      width: 100vw;
+      margin-left: calc(50% - 50vw);
+      margin-right: calc(50% - 50vw);
+      padding: 0 48px;
+      overflow: clip;
+      box-sizing: border-box;
+    }
+    /* Measures the grid's rendered width; below MCP_DESIGN_WIDTH the
+       scale-sync effect in FigmaMcpShowcase.tsx scales .mcp-grid down to
+       fit instead of letting it wrap/overflow — see that file's comment for
+       why `transform` (not CSS `zoom`) is what makes this safe. The actual
+       overflow: clip lives on .mcp-bleed (above), not here — see its
+       comment for why. */
+    .mcp-grid-wrap {
       margin-top: 24px;
+      width: 100%;
+    }
+    .mcp-grid {
       position: relative;
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 16px;
       align-items: stretch;
+      transform-origin: top left;
       font-family: system-ui, sans-serif;
       /* Dark defaults — pulled close to the page's own --bg (#0A0912) so the
          cards read as app windows floating on the page, not as a distinctly
@@ -4829,6 +4898,22 @@
       background: var(--mcp-code-bg);
     }
     .mcp-mono { font-family: var(--mono); }
+
+    /* .mcp-grid-wrap.is-scaled = FigmaMcpShowcase.tsx's scale-sync effect is
+       actively shrinking .mcp-grid to fit (phones/narrow tablets). The
+       card's box-shadow (--card-shadow-md has an 8px 24px 56px layer, ~64px
+       of visible bleed) and the hub's glow filter both bleed well past
+       their own element, and .mcp-grid-wrap's overflow: clip crops that
+       bleed at whatever box the wrap happens to be — reserving enough
+       margin there to fit it would shrink the cards noticeably just to
+       hold blank space for a decorative shadow. Dropping both while scaled
+       is the simpler trade: full-size cards, nothing left to clip. */
+    .mcp-grid-wrap.is-scaled .mcp-card {
+      box-shadow: var(--card-edge);
+    }
+    .mcp-grid-wrap.is-scaled .mcp-hub {
+      filter: none;
+    }
 
     /* MCP hub — centered on the grid's own gap (not a fixed pixel offset),
        so it stays put in the seam between the two cards at any width. */
@@ -4875,13 +4960,6 @@
       pointer-events: none;
       z-index: 4;
     }
-    /* Two curve sets live in the same SVG — only one shows at a time,
-       swapped at the mobile breakpoint below (.mcp-trail-mobile becomes
-       visible there instead). */
-    .mcp-trail-mobile {
-      display: none;
-    }
-
     @keyframes mcpBlink { 0%, 45% { opacity: 1; } 50%, 95% { opacity: 0; } 100% { opacity: 1; } }
     @keyframes mcpDashFlow { to { stroke-dashoffset: -240; } }
     .mcp-cursor-blink { animation: mcpBlink 1.1s step-end infinite; }
@@ -4899,61 +4977,6 @@
       .mcp-card .mcp-filetree,
       .mcp-card .mcp-tabbar {
         display: none !important;
-      }
-    }
-
-    /* Mobile: stack the two cards instead of squeezing them side by side,
-       same 24px stacked gap .tech-items uses for its own single-column
-       mobile layout — the hub pill overhangs into that gap the same way
-       .tech-level-badge already overhangs its own card above (an
-       established overlap pattern here, not a collision). The trail
-       curves swap to the rotated (top-to-bottom) set to match. */
-    @media (max-width: 720px) {
-      .mcp-grid {
-        grid-template-columns: 1fr;
-        row-gap: 24px;
-      }
-      /* Stacked cards don't share the desktop grid row's stretch. Let the
-         Figma card size to its own content, and pin the code card to that
-         same height via --mcp-figma-h (kept in sync by a ResizeObserver in
-         FigmaMcpShowcase.tsx) so the two stay matched without a hand-picked
-         pixel value. */
-      .mcp-card {
-        height: auto;
-      }
-      .mcp-card.code-card {
-        height: var(--mcp-figma-h, auto);
-      }
-      .mcp-trail-desktop {
-        display: none;
-      }
-      .mcp-trail-mobile {
-        display: inline;
-      }
-      /* Pin the hub to row 1's own grid area (the first/top card) instead of
-         the desktop `top: 50%` (of the whole grid) rule — an absolutely-
-         positioned grid child with a non-auto grid-row/column is contained
-         by that grid AREA, not the whole grid box, per the CSS Grid spec.
-         So `top: 100%` here means "row 1's bottom edge" (exactly the top
-         card's own bottom, regardless of how much shorter/taller it is than
-         the bottom card), and adding half the 24px row-gap plus a
-         translate(-50%) centers the hub squarely ON the gap, split evenly
-         above/below it, instead of drifting toward whichever card happens
-         to be taller. */
-      .mcp-hub {
-        grid-row: 1 / 2;
-        grid-column: 1 / 2;
-        top: calc(100% + 12px);
-      }
-      .mcp-hub-pill {
-        padding: 14px 26px;
-        gap: 10px;
-      }
-      .mcp-hub-pill span {
-        font-size: 16px !important;
-      }
-      .mcp-hub-pill i {
-        font-size: 18px !important;
       }
     }
 
@@ -7305,6 +7328,13 @@
         padding: 60px 32px;
       }
 
+      /* Matches .section's own side padding above, so .mcp-bleed's
+         viewport-edge clip boundary still puts the visible cards back where
+         they'd sit without the bleed (see .mcp-bleed's comment). */
+      .mcp-bleed {
+        padding: 0 32px;
+      }
+
       #portfolio-grid {
         grid-template-columns: repeat(2, 1fr) !important;
       }
@@ -7576,6 +7606,13 @@
         padding: 36px 16px;
       }
 
+      /* Matches .section's own side padding above, so .mcp-bleed's
+         viewport-edge clip boundary still puts the visible cards back where
+         they'd sit without the bleed (see .mcp-bleed's comment). */
+      .mcp-bleed {
+        padding: 0 16px;
+      }
+
       /* Nav */
       #nav-container {
         padding: 0.35rem 0.65rem;
@@ -7809,10 +7846,49 @@
         font-size: clamp(1.5rem, 6.5vw, 2rem);
       }
 
-      /* Design Process — 2 col */
+      /* Design Process — 2 col. */
       .process-column-grid {
         grid-template-columns: repeat(2, 1fr);
         transform: none !important;
+      }
+
+      /* .process-column-grid--inhouse (the class ProcessCarousel actually
+         renders — reused as-is for both the In-house and Freelance
+         columns, despite the name) sets align-items: flex-start
+         unconditionally as its own desktop rule, for the horizontal swipe
+         carousel. That rule's specificity ties with plain
+         .process-column-grid above, so it isn't beaten by source order
+         alone — it must be re-declared here. Without this, "flex-start" is
+         still a valid (top-anchor) alignment keyword once the container
+         becomes a grid too, silently defeating the grid's own default
+         stretch and leaving the --has-img cards below — which now derive
+         height from content instead of a fixed aspect-ratio — top-aligned
+         instead of matched to their row's tallest card. */
+      .process-column-grid--inhouse {
+        align-items: stretch;
+      }
+
+      /* align-items: stretch above only equalizes cards within the SAME
+         row/grid — the In-house and Freelance columns are two separate
+         grids with different description lengths, so their own rows can
+         still settle at different heights from each other. This pins
+         every card (both columns) to one shared height instead: the
+         tallest card anywhere, measured and kept in sync by the
+         useEffect in SkillsSection.tsx. Falls back to auto (today's
+         per-row-only behavior) before that effect has run once.
+
+         margin-top: 0 !important overrides ProcessCarousel's own inline
+         margin-top (see SkillsSection.tsx) — that's the desktop swipe
+         carousel's left-low/right-high staircase stagger (card 0: 64px,
+         card 1: 32px, card 2+: 0px), left on the DOM regardless of
+         viewport since the same component/markup is reused for the
+         mobile 2-col grid. Without this override the first row's two
+         cards sit at different heights from each other and every row
+         gap becomes uneven; the grid's own `gap` (inherited, 16px)
+         supplies the actual uniform spacing once this is neutralized. */
+      .process-swipe-slot {
+        height: var(--process-card-mobile-h, auto);
+        margin-top: 0 !important;
       }
 
       .process-swipe-controls,
@@ -7847,6 +7923,112 @@
       .process-desc {
         font-size: 10px;
         line-height: 1.45;
+      }
+
+      /* Design Process cards (both columns use --has-img): square on
+         desktop/tablet, but a phone-width square leaves the illustration
+         and the text fighting for the same cramped area, with the text
+         overlaid on top of the image behind a dark scrim for legibility.
+         On phones the card goes portrait instead: a real square image block
+         (not a fixed fraction of some arbitrary card ratio — its own
+         aspect-ratio: 1/1 makes it exactly as tall as the card is wide)
+         stacked in normal flow above an auto-height text block, so the
+         card's own height is just whatever those two add up to, and
+         neither the image nor the text has to compete with the other for
+         space or contrast. Both were `position: absolute; inset: 0`
+         before (a full-card overlay) — switching them to flow removes that
+         entirely, so .card-glass-highlight/.bg-spotlight/.sc-ring (still
+         absolute, still inset: 0) now overlay the *whole* stacked card,
+         same as they did before. */
+      .process-card--has-img.border-glow-card {
+        aspect-ratio: auto;
+        /* .process-swipe-slot (the grid item) is pinned to the tallest
+           card's height by SkillsSection.tsx's sync effect, but this card
+           is only its slot's in-flow CHILD — a taller slot doesn't stretch
+           a shorter child on its own, so a shorter card left extra empty
+           space inside its own slot instead of the surrounding grid gap,
+           making the vertical gap between rows visually bigger than the
+           horizontal gap between columns (same 16px grid gap, but stacked
+           on top of that leftover slack). height: 100% makes every card
+           fill its slot exactly, so all visible spacing is the grid gap. */
+        height: 100%;
+      }
+      .process-card--has-img .border-glow-bg-slot {
+        position: relative;
+        inset: auto;
+        aspect-ratio: 1 / 1;
+        width: 100%;
+        height: auto;
+        /* Was z-index: -2 to sit behind the full-card text overlay — now
+           that it's a normal-flow block instead of a full-card underlay,
+           a negative z-index would paint it behind .border-glow-card's own
+           background instead (any ancestor with position: relative + no
+           z-index still creates a stacking context boundary here), hiding
+           the image entirely. */
+        z-index: auto;
+      }
+      .process-card--has-img .border-glow-inner {
+        /* Static, not just non-absolute: .process-step-badge (a child,
+           position: absolute) needs to skip past this box to find its
+           containing block. Static removes it as a positioning candidate
+           entirely, so the badge escapes to .border-glow-card itself —
+           the same element it was already positioned against before this
+           block existed (.border-glow-inner used to be inset: 0, i.e. flush
+           with the card, so the badge's `top: -7px; left: 18px` already
+           meant "7px above/18px right of the card's own top-left"; this
+           keeps that exact same math true instead of re-deriving it
+           against a box whose own height now depends on the description
+           text length). */
+        position: static;
+        inset: auto;
+        height: auto;
+        justify-content: flex-start;
+        /* Pulls the title up to overlap the image's bottom edge instead of
+           sitting in a gap below it — the vignette (see ::after below)
+           already fades that edge to the card's own solid background
+           color, so the title stays legible without needing the old
+           full-image scrim back. */
+        margin-top: -24px;
+        padding-top: 10px;
+      }
+      /* The bottom-scrim-over-image trick no longer applies — the text
+         block now sits on the card's own plain surface below the image,
+         not on top of it, so it doesn't need a dark gradient to stay
+         legible. */
+      .process-card--has-img .border-glow-inner::before {
+        display: none;
+      }
+      /* Dark mode only (light mode disables this vignette entirely — see
+         :root[data-theme="light"] .border-glow-bg-slot::after elsewhere).
+         Bumped from the desktop 0.8 outer stop to fully opaque: the image
+         now ends where the card's own plain background begins (not
+         overlaid text), so its true visible edge color needs to be a fixed,
+         computable value — #0d0a1c — for .process-card--has-img's own
+         background-color override (see that rule's comment) to match it
+         exactly instead of guessing at what 0.8-opacity-over-white nets
+         out to. */
+      .process-card--has-img .border-glow-bg-slot::after {
+        background: radial-gradient(
+          circle at center,
+          rgba(13, 10, 28, 0.1) 25%,
+          rgba(13, 10, 28, 1) 100%
+        );
+      }
+      .process-card--has-img .process-name,
+      .process-card--has-img .process-desc {
+        text-shadow: none;
+      }
+      .process-card--has-img .process-name {
+        color: var(--text);
+      }
+      .process-card--has-img .process-desc {
+        color: var(--text-50);
+      }
+      .process-card--has-img .process-step-badge {
+        color: var(--text-30);
+      }
+      .process-card--has-img .process-step-badge em {
+        color: var(--text-50);
       }
 
       /* Tech Stack — single column, wider row-gap (see 768–1024 block above) */
@@ -8391,6 +8573,97 @@
          up into the subtitle text instead. */
       .tech-sub {
         margin-bottom: 16px !important;
+      }
+
+      /* Tablet/phone: each card goes side-by-side instead of the desktop's
+         top-to-bottom stack — name+description in a 3/5-wide column, the
+         code simulator in a 2/5-wide column, so a full-width single-column
+         card reads left-to-right instead of leaving the code preview to
+         scroll past below a wall of text. align-items: center (not
+         stretch) keeps both columns pinned to the row's shared vertical
+         center instead of the taller one stretching the shorter, since the
+         two rarely end up the same natural height. .tech-item-text is a
+         plain wrapper (`display: contents` on desktop, see base rule) that
+         only becomes a real flex item here; .tech-code-preview's
+         `margin-top: auto` was a desktop-only column trick to push it to
+         the bottom and has no role in a row, so it's reset. */
+      .tech-item {
+        flex-direction: row;
+        align-items: center;
+        gap: 16px;
+      }
+      .tech-item-text {
+        display: flex;
+        flex-direction: column;
+        flex: 3;
+        min-width: 0;
+      }
+      .tech-code-preview {
+        flex: 2;
+        min-width: 0;
+        margin-top: 0;
+      }
+
+      /* First and third cards mirror the row (code on the left, text on
+         the right) so the three cards don't all read identically —
+         middle card (JavaScript) keeps the base text-left/code-right
+         order from above. */
+      .tech-item.html-item,
+      .tech-item.react-item {
+        flex-direction: row-reverse;
+      }
+
+      /* Phones only: the title moves out of the row entirely to sit
+         full-width above both columns, left-aligned, instead of being
+         trapped in whichever column .tech-item-text ends up in — a narrow
+         phone left it fighting the code column for width. .tech-item
+         switches from a flex row to a 2-column grid so .tech-item-header
+         can span both columns while .tech-code-preview and .tech-desc sit
+         side by side in the row underneath; .tech-item-text goes back to
+         display: contents (same as the desktop base rule) so its children
+         become direct grid items instead of being trapped inside a flex
+         column that no longer exists. Nested (not a sibling block down in
+         the <768px MOBILE section) so it compiles after the flex-row rules
+         above and wins the cascade at equal specificity regardless of
+         source position. */
+      @media (max-width: 767px) {
+        .tech-item {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          grid-template-areas:
+            "header header"
+            "code   desc";
+          /* Centers the code column and the description text on the same
+             horizontal line instead of top-anchoring them — they rarely end
+             up the same natural height, so top-anchored left one looking
+             taller/shorter read as misaligned against the other. */
+          align-items: center;
+          gap: 12px 16px;
+        }
+        .tech-item-text {
+          display: contents;
+        }
+        .tech-item-header {
+          grid-area: header;
+          margin-bottom: 0;
+        }
+        .tech-code-preview {
+          grid-area: code;
+        }
+        .tech-desc {
+          grid-area: desc;
+          margin: 0;
+        }
+        /* Same left/right alternation as the tablet row above (html/react
+           cards mirror the base code-right/text-left order) — swaps which
+           grid area each column resolves to instead of the row's
+           direction. */
+        .tech-item.html-item,
+        .tech-item.react-item {
+          grid-template-areas:
+            "header header"
+            "desc   code";
+        }
       }
 
       .process-column-grid--inhouse .process-swipe-slot {
@@ -9929,6 +10202,18 @@
     }
     :root[data-theme="light"] .process-card:hover {
       box-shadow: var(--neu-raised-tight-hover) !important;
+    }
+
+    /* Light-mode counterpart of the #0d0a1c edge-match above (see that
+       rule's comment) — the light-theme illustration assets are baked
+       with a plain white background and the mobile split-card's vignette
+       is disabled in light mode (see :root[data-theme="light"]
+       .border-glow-bg-slot::after further up), so the image's true edge
+       color here is exactly white, not an approximation. Must come after
+       the shared --neu-bg rule above to win on source order (same
+       selector specificity, both !important). */
+    :root[data-theme="light"] .process-card--has-img.border-glow-card {
+      background-color: #ffffff !important;
     }
 
     /* My Portfolio's two card wrappers join the same "raised" tier —

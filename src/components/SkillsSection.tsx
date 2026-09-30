@@ -58,7 +58,6 @@ const CSS_CODE_A: CodeVersion = [
   [{ text: '  ' }, { text: '--primary', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '   ' }, { text: '#6C63FF', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
   [{ text: '  ' }, { text: '--secondary', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: ' ' }, { text: '#FF6584', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
   [{ text: '  ' }, { text: '--bg', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '        ' }, { text: '#121212', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: '--border', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '    ' }, { text: 'rgba', cls: 'tok-fn' }, { text: '(255,255,255,', cls: 'tok-muted' }, { text: '0.1', cls: 'tok-num' }, { text: ');', cls: 'tok-muted' }],
   [{ text: '}', cls: 'tok-muted' }],
 ];
 const CSS_CODE_B: CodeVersion = [
@@ -66,7 +65,6 @@ const CSS_CODE_B: CodeVersion = [
   CSS_CODE_A[1],
   CSS_CODE_A[2],
   [{ text: '  ' }, { text: '--bg', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '        ' }, { text: '#0f0f10', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: '--border', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '    ' }, { text: 'rgba', cls: 'tok-fn' }, { text: '(255,255,255,', cls: 'tok-muted' }, { text: '0.12', cls: 'tok-num' }, { text: ');', cls: 'tok-muted' }],
   [{ text: '  ' }, { text: '--radius', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '    ' }, { text: '14px', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
   [{ text: '}', cls: 'tok-muted' }],
 ];
@@ -91,7 +89,6 @@ const JS_CODE_B: CodeVersion = [
 const JSX_CODE_A: CodeVersion = [
   [{ text: '<', cls: 'tok-muted' }, { text: 'BorderGlow', cls: 'tok-sel' }],
   [{ text: '  ' }, { text: 'className', cls: 'tok-pink' }, { text: '=', cls: 'tok-muted' }, { text: '"process-card"', cls: 'tok-val' }],
-  [{ text: '  ' }, { text: 'colors', cls: 'tok-pink' }, { text: '={[', cls: 'tok-muted' }, { text: "'#6C63FF'", cls: 'tok-val' }, { text: ',', cls: 'tok-muted' }, { text: ' ' }, { text: "'#FF6584'", cls: 'tok-val' }, { text: ']}', cls: 'tok-muted' }],
   [{ text: '  ' }, { text: 'glowIntensity', cls: 'tok-pink' }, { text: '={', cls: 'tok-muted' }, { text: '1.1', cls: 'tok-num' }, { text: '}', cls: 'tok-muted' }],
   [{ text: '>', cls: 'tok-muted' }],
   [{ text: '  ' }, { text: '{t[nameKey]}', cls: 'tok-fn' }],
@@ -100,13 +97,17 @@ const JSX_CODE_A: CodeVersion = [
 const JSX_CODE_B: CodeVersion = [
   JSX_CODE_A[0],
   JSX_CODE_A[1],
-  JSX_CODE_A[2],
   [{ text: '  ' }, { text: 'glowIntensity', cls: 'tok-pink' }, { text: '={', cls: 'tok-muted' }, { text: '1.3', cls: 'tok-num' }, { text: '}', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: 'edgeSensitivity', cls: 'tok-pink' }, { text: '={', cls: 'tok-muted' }, { text: '20', cls: 'tok-num' }, { text: '}', cls: 'tok-muted' }],
+  JSX_CODE_A[3],
   JSX_CODE_A[4],
   JSX_CODE_A[5],
-  JSX_CODE_A[6],
 ];
+
+// Fixed line count shared by all three tech-item code previews, so editing
+// any one snippet's content later can't change its card's height (or make
+// the three cards disagree with each other) — see TypingCode's own `lines`
+// prop comment.
+const TECH_CODE_LINES = 6;
 
 function escapeHtml(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1556,6 +1557,66 @@ export default function SkillsSection() {
   // Scroll-reveal (.rise-card/.rise-soft → elastic rise + squash-stretch) is
   // handled site-wide by useRiseReveal(), called once in App.tsx.
 
+  // Design Process cards (mobile only, <768px): each card's height is
+  // content-driven (square image + auto-height text, see portfolio.css's
+  // <768px MOBILE block) instead of a fixed aspect-ratio, and CSS Grid's
+  // align-items: stretch only equalizes cards within the SAME row — the
+  // In-house and Freelance columns render as two separate grids with
+  // different description lengths, so their rows can settle at different
+  // heights from each other even though each grid is internally uniform.
+  // Measures every card's own (already row-stretched) height, takes the
+  // single tallest across both columns, and pins every card to that one
+  // height via a CSS custom property so no row/column reads shorter than
+  // another. offsetHeight (not getBoundingClientRect) because .rise-card's
+  // scroll-reveal squashes cards with a scaleY transform on mount, which
+  // would otherwise be measured as "natural" height and undershoot.
+  useEffect(() => {
+    let timer = 0;
+    const sync = () => {
+      document.documentElement.style.removeProperty('--process-card-mobile-h');
+      if (window.innerWidth >= 768) return;
+      const slots = document.querySelectorAll<HTMLElement>('.process-swipe-slot');
+      if (!slots.length) return;
+      let max = 0;
+      slots.forEach(slot => { max = Math.max(max, slot.offsetHeight); });
+      if (max > 0) document.documentElement.style.setProperty('--process-card-mobile-h', `${max}px`);
+    };
+    // Debounces bursts of ResizeObserver/font-load callbacks into a single
+    // measurement. setTimeout instead of requestAnimationFrame: rAF never
+    // fires at all while the tab/page isn't visible (confirmed live — a
+    // backgrounded load left the very first measurement stuck forever with
+    // no callback ever running), while setTimeout still fires there.
+    const scheduleSync = () => {
+      clearTimeout(timer);
+      timer = window.setTimeout(sync, 50);
+    };
+    // Measure once synchronously up front so the pinned height is never
+    // gated on any async callback firing at all, then debounce-refine after.
+    sync();
+    scheduleSync();
+    // Custom web fonts (var(--font-heading) on .process-name, etc.) can
+    // still be mid-swap on first mount — measuring before they land bakes
+    // in whatever the fallback font's shorter/longer line-wraps happened
+    // to produce, and nothing was re-triggering a remeasure afterward.
+    document.fonts?.ready.then(scheduleSync);
+    window.addEventListener('resize', scheduleSync);
+    // Also watch each card's own text block directly: unlike
+    // .process-swipe-slot (whose height this effect itself pins) or
+    // .process-card (which just stretches to fill that pin), .border-glow-
+    // inner's height always reflects its real text content, so observing
+    // it can't loop back on this effect's own writes — only genuine
+    // content/layout changes (language switch, a font finishing async,
+    // font-size media queries at other breakpoints) trigger it.
+    const observer = new ResizeObserver(scheduleSync);
+    document.querySelectorAll('.process-card--has-img .border-glow-inner').forEach(el => observer.observe(el));
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', scheduleSync);
+      observer.disconnect();
+      document.documentElement.style.removeProperty('--process-card-mobile-h');
+    };
+  }, [t]);
+
   return (
     <>
       {/* DESIGN PROCESS */}
@@ -1646,16 +1707,18 @@ export default function SkillsSection() {
           <div className="tech-item-wrap rise-card">
             <div className="tech-item html-item card-spotlight sc-card">
               <span className="card-glass-highlight" aria-hidden="true" />
-              <div className="tech-item-header">
-                <span className="tech-name"><i className="fab fa-html5" style={{ color: '#60a5fa', marginRight: '8px' }}></i>HTML / CSS / Tailwind</span>
+              <div className="tech-item-text">
+                <div className="tech-item-header">
+                  <span className="tech-name"><i className="fab fa-html5" style={{ color: '#60a5fa', marginRight: '8px' }}></i>HTML / CSS / Tailwind</span>
+                </div>
+                <div className="tech-desc">{t.skill_html}</div>
               </div>
-              <div className="tech-desc">{t.skill_html}</div>
               <div className="tech-code-preview">
                 <div className="tcp-bar">
                   <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
                   <span className="tcp-filename">portfolio.css</span>
                 </div>
-                <TypingCode versions={[CSS_CODE_A, CSS_CODE_B]} />
+                <TypingCode versions={[CSS_CODE_A, CSS_CODE_B]} lines={TECH_CODE_LINES} />
               </div>
             </div>
             <span className="tech-level-badge html-item">DESIGN-READY</span>
@@ -1663,16 +1726,18 @@ export default function SkillsSection() {
           <div className="tech-item-wrap rise-card">
             <div className="tech-item js-item card-spotlight sc-card">
               <span className="card-glass-highlight" aria-hidden="true" />
-              <div className="tech-item-header">
-                <span className="tech-name"><i className="fab fa-js" style={{ color: '#fb923c', marginRight: '8px' }}></i>JavaScript</span>
+              <div className="tech-item-text">
+                <div className="tech-item-header">
+                  <span className="tech-name"><i className="fab fa-js" style={{ color: '#fb923c', marginRight: '8px' }}></i>JavaScript</span>
+                </div>
+                <div className="tech-desc">{t.skill_js}</div>
               </div>
-              <div className="tech-desc">{t.skill_js}</div>
               <div className="tech-code-preview">
                 <div className="tcp-bar">
                   <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
                   <span className="tcp-filename">HeroSection.tsx</span>
                 </div>
-                <TypingCode versions={[JS_CODE_A, JS_CODE_B]} />
+                <TypingCode versions={[JS_CODE_A, JS_CODE_B]} lines={TECH_CODE_LINES} />
               </div>
             </div>
             <span className="tech-level-badge js-item">AI-ASSISTED</span>
@@ -1680,16 +1745,18 @@ export default function SkillsSection() {
           <div className="tech-item-wrap rise-card">
             <div className="tech-item react-item card-spotlight sc-card">
               <span className="card-glass-highlight" aria-hidden="true" />
-              <div className="tech-item-header">
-                <span className="tech-name"><i className="fab fa-react" style={{ color: '#a5b4fc', marginRight: '8px' }}></i>React.js / Vue.js</span>
+              <div className="tech-item-text">
+                <div className="tech-item-header">
+                  <span className="tech-name"><i className="fab fa-react" style={{ color: '#a5b4fc', marginRight: '8px' }}></i>React.js / Vue.js</span>
+                </div>
+                <div className="tech-desc">{t.skill_css}</div>
               </div>
-              <div className="tech-desc">{t.skill_css}</div>
               <div className="tech-code-preview">
                 <div className="tcp-bar">
                   <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
                   <span className="tcp-filename">SkillsSection.tsx</span>
                 </div>
-                <TypingCode versions={[JSX_CODE_A, JSX_CODE_B]} />
+                <TypingCode versions={[JSX_CODE_A, JSX_CODE_B]} lines={TECH_CODE_LINES} />
               </div>
             </div>
             <span className="tech-level-badge react-item">RESPONSIVE</span>

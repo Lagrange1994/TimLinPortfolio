@@ -3,7 +3,9 @@ import { useEffect, useRef } from 'react';
 // Two response-native cards (Figma design canvas mockup + VS Code mockup)
 // bridged by a centered "Figma MCP" hub — same shell mechanics as the
 // .tech-item cards above (a CSS Grid with align-items:stretch makes both
-// cards equal height automatically). Content is skeleton/placeholder shapes
+// cards equal height automatically, at any width — the two-column layout
+// never stacks, even on phones; see the scale-sync effect below). Content
+// is skeleton/placeholder shapes
 // on purpose (see FigmaMcpShowcase's earlier history): no real text, numbers
 // or fake screenshots, just structural bars. Text/icons drawn on top of a
 // colored button or gradient tile (Share, the "SC" avatar, selection
@@ -268,107 +270,119 @@ const CODE_CARD_HTML = `
 // illustration scaled via CSS `zoom`: that approach needed every panel
 // height hand-calculated in pixels, and any mismatch between the two
 // panels' actual content height left a flat, oddly-colored empty patch in
-// the shorter one. On desktop, a CSS Grid with align-items:stretch (the
-// same mechanism the three .tech-item cards above already use) makes both
-// cards equal height automatically. On mobile the cards stack instead of
-// sitting in the same grid row, so that stretch no longer applies — a
-// ResizeObserver on the Figma card mirrors its live content height onto
-// --mcp-figma-h, which the mobile code-card height reads (see the
-// `max-width: 720px` block in portfolio.css).
+// the shorter one. A CSS Grid with align-items:stretch (the same mechanism
+// the three .tech-item cards above already use) makes both cards equal
+// height automatically — the grid itself never reflows, at any width.
+//
+// On phones there isn't enough room for the two cards at their natural
+// size, but stacking them (like the old layout did) was ruled out in favor
+// of keeping the same side-by-side layout as desktop, just smaller: the
+// whole two-card grid is authored at a fixed DESIGN_WIDTH and shown via
+// `transform: scale()`, so every raw px value inside the mockups (fonts,
+// padding, radii, ...) shrinks together in lockstep instead of wrapping or
+// overflowing individually. `transform` (not the earlier CSS `zoom`
+// attempt) is what makes this safe: it's purely a paint-time effect, so the
+// grid's own layout — and thus its measured offsetHeight — stays exactly
+// as if unscaled, and the wrapper's height is simply that measured height
+// times the same scale factor. No hand-picked pixel values anywhere.
+const MCP_DESIGN_WIDTH = 640;
+
 export default function FigmaMcpShowcase() {
+  const wrapRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const figmaCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const wrap = wrapRef.current;
     const grid = gridRef.current;
-    const figmaCard = figmaCardRef.current;
-    if (!grid || !figmaCard) return;
-    const sync = () => grid.style.setProperty('--mcp-figma-h', `${figmaCard.offsetHeight}px`);
+    if (!wrap || !grid) return;
+    // wrap sits inside .mcp-bleed (see the JSX below), which breaks out to
+    // the full viewport width and does the actual overflow: clip — so wrap
+    // itself can stay exactly as wide as every other card on the page (this
+    // measurement, and the scale it drives, is unaffected by the bleed) while
+    // the clip boundary sits out at the screen edge instead of flush against
+    // the cards. That alone would already give the cards' box-shadow
+    // (--card-shadow-md has an 8px 24px 56px layer — up to ~64px of visible
+    // bleed) room on most phones, but dropping the shadow (and the hub's glow
+    // filter) for as long as the grid is scaled removes the dependency on
+    // that margin being wide enough at all.
+    const sync = () => {
+      const w = wrap.clientWidth;
+      const scaling = w < MCP_DESIGN_WIDTH;
+      wrap.classList.toggle('is-scaled', scaling);
+      if (!scaling) {
+        grid.style.transform = '';
+        grid.style.width = '';
+        wrap.style.height = '';
+        return;
+      }
+      const scale = w / MCP_DESIGN_WIDTH;
+      grid.style.width = `${MCP_DESIGN_WIDTH}px`;
+      grid.style.transform = `scale(${scale})`;
+      wrap.style.height = `${grid.offsetHeight * scale}px`;
+    };
     sync();
     const observer = new ResizeObserver(sync);
-    observer.observe(figmaCard);
-    return () => observer.disconnect();
+    observer.observe(wrap);
+    // iOS Safari's address bar show/hide resizes the visual viewport without
+    // always firing a reliable resize event on window/ResizeObserver in
+    // time — visualViewport's own resize event catches that case.
+    window.visualViewport?.addEventListener('resize', sync);
+    return () => {
+      observer.disconnect();
+      window.visualViewport?.removeEventListener('resize', sync);
+    };
   }, []);
 
   return (
-    <div className="mcp-grid rise-card" aria-hidden="true" ref={gridRef}>
-      <div className="mcp-card" ref={figmaCardRef} dangerouslySetInnerHTML={{ __html: FIGMA_CARD_HTML }} />
-      <div className="mcp-card code-card" dangerouslySetInnerHTML={{ __html: CODE_CARD_HTML }} />
-      <svg className="mcp-trail-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="mcp-trailA" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0" />
-            <stop offset="50%" stopColor="var(--primary)" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.9" />
-          </linearGradient>
-          <linearGradient id="mcp-trailB" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.9" />
-            <stop offset="50%" stopColor="var(--secondary)" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="var(--secondary)" stopOpacity="0" />
-          </linearGradient>
-          {/* Vertical counterparts of the two gradients above, for the
-              stacked mobile layout — same stops, rotated to flow top-to-
-              bottom since the curves themselves connect top card to bottom
-              card there instead of left card to right card. */}
-          <linearGradient id="mcp-trailA-v" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="var(--primary)" stopOpacity="0" />
-            <stop offset="50%" stopColor="var(--primary)" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.9" />
-          </linearGradient>
-          <linearGradient id="mcp-trailB-v" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.9" />
-            <stop offset="50%" stopColor="var(--secondary)" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="var(--secondary)" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        {/* Desktop: cards sit side by side, curves meet at the horizontal
-            gap between them. */}
-        <path
-          d="M 37.5 62.889 C 43.125 62.889, 43.75 51.111, 49.375 50"
-          fill="none"
-          stroke="url(#mcp-trailA)"
-          strokeWidth="2"
-          strokeDasharray="6 10"
-          vectorEffect="non-scaling-stroke"
-          className="mcp-trail-line mcp-trail-desktop"
-        />
-        <path
-          d="M 50.625 50 C 56.25 48.889, 56.875 62.889, 62.5 62.889"
-          fill="none"
-          stroke="url(#mcp-trailB)"
-          strokeWidth="2"
-          strokeDasharray="6 10"
-          vectorEffect="non-scaling-stroke"
-          className="mcp-trail-line mcp-trail-desktop"
-        />
-        {/* Mobile: cards stack top over bottom, so the same two curves are
-            rotated 90° (x/y swapped) to meet at the vertical gap instead. */}
-        <path
-          d="M 62.889 37.5 C 62.889 43.125, 51.111 43.75, 50 49.375"
-          fill="none"
-          stroke="url(#mcp-trailA-v)"
-          strokeWidth="2"
-          strokeDasharray="6 10"
-          vectorEffect="non-scaling-stroke"
-          className="mcp-trail-line mcp-trail-mobile"
-        />
-        <path
-          d="M 50 50.625 C 48.889 56.25, 62.889 56.875, 62.889 62.5"
-          fill="none"
-          stroke="url(#mcp-trailB-v)"
-          strokeWidth="2"
-          strokeDasharray="6 10"
-          vectorEffect="non-scaling-stroke"
-          className="mcp-trail-line mcp-trail-mobile"
-        />
-      </svg>
-      <div className="mcp-hub">
-        <span className="mcp-hub-ring" />
-        <div className="mcp-hub-pill">
-          <i className="ph-fill ph-sparkle" style={{ color: '#ffffff', fontSize: 15 }} />
-          <span style={{ color: '#ffffff', fontWeight: 600, fontSize: 15, letterSpacing: '0.1em', fontFamily: 'var(--mono)' }}>
-            Figma MCP
-          </span>
+    <div className="mcp-bleed">
+      <div className="mcp-grid-wrap rise-card" aria-hidden="true" ref={wrapRef}>
+        <div className="mcp-grid" ref={gridRef}>
+          <div className="mcp-card" dangerouslySetInnerHTML={{ __html: FIGMA_CARD_HTML }} />
+          <div className="mcp-card code-card" dangerouslySetInnerHTML={{ __html: CODE_CARD_HTML }} />
+          <svg className="mcp-trail-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="mcp-trailA" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="var(--primary)" stopOpacity="0" />
+                <stop offset="50%" stopColor="var(--primary)" stopOpacity="0.85" />
+                <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.9" />
+              </linearGradient>
+              <linearGradient id="mcp-trailB" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.9" />
+                <stop offset="50%" stopColor="var(--secondary)" stopOpacity="0.85" />
+                <stop offset="100%" stopColor="var(--secondary)" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {/* Cards always sit side by side (including on phones, via the
+                scale-sync effect above), so the curves always meet at the
+                horizontal gap between them. */}
+            <path
+              d="M 37.5 62.889 C 43.125 62.889, 43.75 51.111, 49.375 50"
+              fill="none"
+              stroke="url(#mcp-trailA)"
+              strokeWidth="2"
+              strokeDasharray="6 10"
+              vectorEffect="non-scaling-stroke"
+              className="mcp-trail-line"
+            />
+            <path
+              d="M 50.625 50 C 56.25 48.889, 56.875 62.889, 62.5 62.889"
+              fill="none"
+              stroke="url(#mcp-trailB)"
+              strokeWidth="2"
+              strokeDasharray="6 10"
+              vectorEffect="non-scaling-stroke"
+              className="mcp-trail-line"
+            />
+          </svg>
+          <div className="mcp-hub">
+            <span className="mcp-hub-ring" />
+            <div className="mcp-hub-pill">
+              <i className="ph-fill ph-sparkle" style={{ color: '#ffffff', fontSize: 15 }} />
+              <span style={{ color: '#ffffff', fontWeight: 600, fontSize: 15, letterSpacing: '0.1em', fontFamily: 'var(--mono)' }}>
+                Figma MCP
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
