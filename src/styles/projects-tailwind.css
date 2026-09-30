@@ -435,6 +435,25 @@
     border-color: rgba(0, 0, 0, 0.12);
     color: #4b5563;
   }
+
+  /* Sticky panel header (project_01): the title + subtitle above TabNav
+     collapse to 0 height as soon as the tab content scrolls at all, so the
+     sticky header shrinks down to just the tab bar and gives the content
+     more room — desktop keeps them always expanded (--collapse is only ever
+     written from JS inside this breakpoint's scroll effect in
+     project_01.jsx, so it stays at its 0 default elsewhere). --collapse is
+     a plain 0..1 float driven every rAF frame by that JS, not a class swap —
+     no CSS transition here, since animating this property would fight the
+     JS's own per-frame writes instead of letting its damping (which itself
+     varies with how hard the page was just scrolled) be the only easing.
+     max-height (not height) so it can animate without knowing the content's
+     real height up front. */
+  .panel-header-titles {
+    --collapse: 0;
+    max-height: calc(120px * (1 - var(--collapse)));
+    opacity: calc(1 - var(--collapse));
+    overflow: hidden;
+  }
 }
 
 .feature-card {

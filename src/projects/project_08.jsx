@@ -191,6 +191,7 @@ gsap.registerPlugin(ScrollToPlugin);
             const heroRef = useRef(null);
             const splitRef = useRef(null);
             const contentScrollRef = useRef(null);
+            const panelHeaderRef = useRef(null);
             const swipeContentRef = useRef(null);
             const peekContentRef = useRef(null);
             const touchStartRef = useRef(null);
@@ -362,6 +363,7 @@ gsap.registerPlugin(ScrollToPlugin);
             // Tab / Lang Update
             useEffect(() => {
                 if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
+                if (panelHeaderRef.current) panelHeaderRef.current.style.setProperty('--collapse', 0);
                 if (swipeContentRef.current) gsap.set(swipeContentRef.current, { x: 0, opacity: 1 });
 
                 // Get fresh data refs
@@ -392,6 +394,52 @@ gsap.registerPlugin(ScrollToPlugin);
                 sectionsRef.current = [heroRef.current, splitRef.current];
                 if (sectionsRef.current[0]) sectionsRef.current[0].classList.add('active-section');
             }, [loading]);
+
+            // Mobile only (see .panel-header-titles' own media query in
+            // projects-tailwind.css): collapses the sticky panel's title +
+            // subtitle as soon as the tab content scrolls at all, and only
+            // expands them again once scrolled all the way back to the top —
+            // not on any upward scroll, so a partial scroll-up mid-content
+            // doesn't pop it back open.
+            // Driven straight off a CSS var via rAF (not React state + a
+            // fixed-duration CSS transition) so the collapse itself has
+            // weight: a hard/fast scroll tick (large scrollTop delta) snaps
+            // the header shut quickly, a gentle scroll eases it in slowly —
+            // the damping factor is derived from that tick's own force, not
+            // a constant.
+            useEffect(() => {
+                const scrollEl = contentScrollRef.current;
+                const headerEl = panelHeaderRef.current;
+                if (!scrollEl || !headerEl) return;
+
+                let progress = 0;
+                let target = 0;
+                let damping = 0.12;
+                let lastScrollTop = scrollEl.scrollTop;
+                let raf = null;
+
+                const tick = () => {
+                    progress += (target - progress) * damping;
+                    if (Math.abs(target - progress) < 0.002) progress = target;
+                    headerEl.style.setProperty('--collapse', progress);
+                    raf = progress === target ? null : requestAnimationFrame(tick);
+                };
+
+                const onScroll = () => {
+                    const top = scrollEl.scrollTop;
+                    const force = Math.abs(top - lastScrollTop);
+                    lastScrollTop = top;
+                    damping = Math.min(0.35, Math.max(0.08, force / 30));
+                    target = top > 0 ? 1 : 0;
+                    if (raf == null) raf = requestAnimationFrame(tick);
+                };
+
+                scrollEl.addEventListener('scroll', onScroll, { passive: true });
+                return () => {
+                    scrollEl.removeEventListener('scroll', onScroll);
+                    if (raf != null) cancelAnimationFrame(raf);
+                };
+            }, []);
 
             // Scroll Logic
             const scrollToSection = (index) => {
@@ -517,8 +565,10 @@ gsap.registerPlugin(ScrollToPlugin);
                                 <div className="w-full h-full flex flex-col glass-panel relative min-h-0">
                                     <div className="sticky top-0 bg-lv-dark/95 backdrop-blur-xl z-30 border-b border-border/10 shrink-0">
                                         <div className="p-4 lg:p-8 pb-0 lg:pb-0">
-                                            <h2 className="text-xl lg:text-3xl font-bold text-text font-heading mb-1 leading-tight panel-title">{t('title_main')}<br />{t('title_sub')}</h2>
-                                            <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4 font-sans">遊戲化社交直播平台・用戶留存機制設計</p>
+                                            <div ref={panelHeaderRef} className="panel-header-titles">
+                                                <h2 className="text-xl lg:text-3xl font-bold text-text font-heading mb-1 leading-tight panel-title">{t('title_main')}<br />{t('title_sub')}</h2>
+                                                <p className="text-text/60 text-xs lg:text-sm mb-2 lg:mb-4 font-sans">遊戲化社交直播平台・用戶留存機制設計</p>
+                                            </div>
                                             <TabNav
                                                 prefix="lv"
                                                 containerRef={tabsContainerRef}
