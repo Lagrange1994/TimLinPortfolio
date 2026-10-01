@@ -496,14 +496,47 @@ gsap.registerPlugin(ScrollToPlugin);
                 }
             };
 
+            // Mobile back-swipe: a FORCEFUL swipe starting from the left screen
+            // edge (the native swipe-back convention) navigates back, same as
+            // BackButton's goBack(). "Forceful" is a velocity check (px/ms), not
+            // just distance — a slow drag that merely starts near the edge (e.g.
+            // scrolling) must not trigger it, only a real flick.
+            const BACK_EDGE_ZONE = 24;
+            const BACK_DISTANCE = 60;
+            const BACK_VELOCITY = 0.5;
+            const backSwipeRef = useRef(null);
+            const handleBackTouchStart = (e) => {
+                const t = e.touches[0];
+                backSwipeRef.current = t.clientX <= BACK_EDGE_ZONE
+                    ? { x: t.clientX, y: t.clientY, time: e.timeStamp }
+                    : null;
+            };
+            const handleBackTouchEnd = (e) => {
+                const start = backSwipeRef.current;
+                backSwipeRef.current = null;
+                if (!start) return;
+                const t = e.changedTouches[0];
+                const dx = t.clientX - start.x;
+                const dy = t.clientY - start.y;
+                const dt = e.timeStamp - start.time;
+                if (dx < BACK_DISTANCE || Math.abs(dx) < Math.abs(dy) || dt <= 0) return;
+                if (dx / dt >= BACK_VELOCITY) goBack();
+            };
+
             useEffect(() => {
                 const container = mainContainerRef.current;
                 if (container) {
                     window.addEventListener('wheel', handleWheel, { passive: false });
+                    window.addEventListener('touchstart', handleBackTouchStart, { passive: true });
+                    window.addEventListener('touchend', handleBackTouchEnd, { passive: true });
                     window.addEventListener('touchstart', (e) => touchStartY.current = e.touches[0].clientY, { passive: true });
                     window.addEventListener('touchend', handleTouchEnd, { passive: true });
                 }
-                return () => { window.removeEventListener('wheel', handleWheel); };
+                return () => {
+                    window.removeEventListener('wheel', handleWheel);
+                    window.removeEventListener('touchstart', handleBackTouchStart);
+                    window.removeEventListener('touchend', handleBackTouchEnd);
+                };
             // handleWheel/handleTouchEnd are recreated every render and already close
             // over the latest currentSectionIndex; re-subscribing on every render would
             // be wasteful and risks detaching mid-gesture, so only resync on index change.

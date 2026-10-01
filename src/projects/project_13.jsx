@@ -736,6 +736,41 @@ const goHome = (e) => {
                 const stepTimer = setInterval(() => setLoaderStep(i => (i + 1) % 3), 500);
                 return () => clearInterval(stepTimer);
             }, [loaderDone]);
+            // Mobile back-swipe: a FORCEFUL swipe starting from the left screen
+            // edge (the native swipe-back convention) navigates back, matching
+            // Navbar's goHome(). "Forceful" is a velocity check (px/ms), not just
+            // distance — a slow drag that merely starts near the edge (e.g.
+            // scrolling) must not trigger it, only a real flick.
+            useEffect(() => {
+                const BACK_EDGE_ZONE = 24;
+                const BACK_DISTANCE = 60;
+                const BACK_VELOCITY = 0.5;
+                let start = null;
+                const onTouchStart = (e) => {
+                    const t = e.touches[0];
+                    start = t.clientX <= BACK_EDGE_ZONE ? { x: t.clientX, y: t.clientY, time: e.timeStamp } : null;
+                };
+                const onTouchEnd = (e) => {
+                    if (!start) return;
+                    const t = e.changedTouches[0];
+                    const dx = t.clientX - start.x;
+                    const dy = t.clientY - start.y;
+                    const dt = e.timeStamp - start.time;
+                    start = null;
+                    if (dx < BACK_DISTANCE || Math.abs(dx) < Math.abs(dy) || dt <= 0) return;
+                    if (dx / dt < BACK_VELOCITY) return;
+                    let sameOrigin = false;
+                    try { sameOrigin = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch { /* Cross-origin referrer is unavailable. */ }
+                    if (sameOrigin && window.history.length > 1) history.back();
+                    else location.href = '/#portfolio';
+                };
+                window.addEventListener('touchstart', onTouchStart, { passive: true });
+                window.addEventListener('touchend', onTouchEnd, { passive: true });
+                return () => {
+                    window.removeEventListener('touchstart', onTouchStart);
+                    window.removeEventListener('touchend', onTouchEnd);
+                };
+            }, []);
             return (
                 <React.Fragment>
                     <div className={`loader-overlay ${!isLoading ? 'loader-hidden' : ''}`}>
