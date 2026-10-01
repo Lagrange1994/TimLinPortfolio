@@ -354,6 +354,43 @@ export default function Navbar() {
     const onToggle = () => isOpenRef.current ? closeMenu() : openMenu();
     toggleBtn.addEventListener('click', onToggle);
 
+    // Edge-swipe gesture (mobile only — matches the 1024px breakpoint that
+    // shows #sm-toggle-btn): swiping in from the right screen edge opens the
+    // menu, same as tapping the toggle. Start point must be within
+    // EDGE_ZONE of the right edge; a horizontal-dominant leftward drag past
+    // OPEN_THRESHOLD then opens it immediately on touchmove (no need to
+    // wait for touchend) so it feels like dragging the menu out.
+    const EDGE_ZONE = 24;
+    const OPEN_THRESHOLD = 60;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let edgeSwipeActive = false;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (window.innerWidth > 1024 || isOpenRef.current) { edgeSwipeActive = false; return; }
+      const t = e.touches[0];
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+      edgeSwipeActive = t.clientX >= window.innerWidth - EDGE_ZONE;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!edgeSwipeActive || isOpenRef.current) return;
+      const t = e.touches[0];
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      if (dx <= -OPEN_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+        edgeSwipeActive = false;
+        openMenu();
+      }
+    };
+
+    const onTouchEnd = () => { edgeSwipeActive = false; };
+
+    window.addEventListener('touchstart', onTouchStart, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
+
     const panelCloseBtn = document.getElementById('sm-panel-close-btn');
     const onPanelClose = () => { if (isOpenRef.current) closeMenu(); };
     if (panelCloseBtn) panelCloseBtn.addEventListener('click', onPanelClose);
@@ -383,6 +420,9 @@ export default function Navbar() {
       toggleBtn.removeEventListener('click', onToggle);
       if (panelCloseBtn) panelCloseBtn.removeEventListener('click', onPanelClose);
       document.removeEventListener('mousedown', onMousedown);
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
     };
   }, []);
 
