@@ -2348,6 +2348,17 @@
       }
     }
 
+    /* Desktop: a slightly larger figure box — 50rem is the scene's own native
+       800px, so the sync effect (which scales the scene by this box's
+       height) shows it 1:1. Never taller than the hero panel itself: the
+       viewport minus the frame's 24px inset (FRAME_INSET in
+       heroFramePath.ts) on each side. */
+    @media (min-width: 1025px) {
+      .hero-fig {
+        height: min(50rem, calc(100dvh / var(--z, 1) - 48px));
+      }
+    }
+
     /* Mobile only: show static img, hide Spline */
     @media (max-width: 767px) {
       .hero-fig-desktop {
