@@ -365,31 +365,72 @@ export default function Navbar() {
     let touchStartX = 0;
     let touchStartY = 0;
     let edgeSwipeActive = false;
+    let closeSwipeActive = false;
+
+    // The browser's own edge-swipe (back from the left edge, forward from the
+    // right) would otherwise carry the homepage to a project page already
+    // visited — and the right edge is also this menu's gesture. A horizontal
+    // drag starting in either edge zone is cancelled, but only through a
+    // non-passive touchmove attached for the duration of that one edge touch:
+    // a permanent non-passive window listener would make every normal scroll
+    // wait on the main thread. Paired with overscroll-behavior-x: none in
+    // portfolio.css, which covers Chromium's own gesture navigation.
+    let blockStartX = 0;
+    let blockStartY = 0;
+    const blockHistorySwipe = (e: TouchEvent) => {
+      if (!e.cancelable) return;
+      const t = e.touches[0];
+      if (Math.abs(t.clientX - blockStartX) > Math.abs(t.clientY - blockStartY)) e.preventDefault();
+    };
+    const stopBlockingHistorySwipe = () => window.removeEventListener('touchmove', blockHistorySwipe);
 
     const onTouchStart = (e: TouchEvent) => {
-      if (window.innerWidth > 1024 || isOpenRef.current) { edgeSwipeActive = false; return; }
+      stopBlockingHistorySwipe();
+      if (window.innerWidth > 1024) { edgeSwipeActive = false; return; }
       const t = e.touches[0];
+      if (t.clientX <= EDGE_ZONE || t.clientX >= window.innerWidth - EDGE_ZONE) {
+        blockStartX = t.clientX;
+        blockStartY = t.clientY;
+        window.addEventListener('touchmove', blockHistorySwipe, { passive: false });
+      }
       touchStartX = t.clientX;
       touchStartY = t.clientY;
+      if (isOpenRef.current) {
+        // Open: a drag back toward the right that starts at the menu's own
+        // left edge (or anywhere left of it — the prelayer strips/backdrop)
+        // closes it, mirroring the swipe-in that opened it.
+        edgeSwipeActive = false;
+        closeSwipeActive = t.clientX <= panel.getBoundingClientRect().left + EDGE_ZONE;
+        return;
+      }
+      closeSwipeActive = false;
       edgeSwipeActive = t.clientX >= window.innerWidth - EDGE_ZONE;
     };
 
     const onTouchMove = (e: TouchEvent) => {
-      if (!edgeSwipeActive || isOpenRef.current) return;
       const t = e.touches[0];
       const dx = t.clientX - touchStartX;
       const dy = t.clientY - touchStartY;
+      if (closeSwipeActive && isOpenRef.current) {
+        if (dx >= OPEN_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+          closeSwipeActive = false;
+          closeMenu();
+        }
+        return;
+      }
+      if (!edgeSwipeActive || isOpenRef.current) return;
       if (dx <= -OPEN_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
         edgeSwipeActive = false;
         openMenu();
       }
     };
 
-    const onTouchEnd = () => { edgeSwipeActive = false; };
+    const onTouchEnd = () => { edgeSwipeActive = false; closeSwipeActive = false; stopBlockingHistorySwipe(); };
 
     window.addEventListener('touchstart', onTouchStart, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: true });
     window.addEventListener('touchend', onTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', onTouchEnd, { passive: true });
 
     const panelCloseBtn = document.getElementById('sm-panel-close-btn');
     const onPanelClose = () => { if (isOpenRef.current) closeMenu(); };
@@ -423,6 +464,8 @@ export default function Navbar() {
       window.removeEventListener('touchstart', onTouchStart);
       window.removeEventListener('touchmove', onTouchMove);
       window.removeEventListener('touchend', onTouchEnd);
+      window.removeEventListener('touchcancel', onTouchEnd);
+      stopBlockingHistorySwipe();
     };
   }, []);
 

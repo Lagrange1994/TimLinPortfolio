@@ -654,6 +654,11 @@
     body {
       width: 100%;
       overflow-x: clip;
+      /* Horizontal-only: stops Chromium's edge-swipe history navigation (see
+         Navbar.tsx blockHistorySwipe) from carrying the homepage back/forward
+         to already-visited project pages. The y axis is left alone on purpose
+         — pull-to-refresh containment lives in navHeader.ts. */
+      overscroll-behavior-x: none;
     }
 
     /* Pull-to-refresh containment for JS-driven scrolls (see navHeader.ts
