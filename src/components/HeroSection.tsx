@@ -683,11 +683,19 @@ export default function HeroSection() {
     if (!home || !nav || !tags || !text || !img) return;
 
     const GAP = 20; // px of breathing room on each side of the group
+    let measuredWidth = -1;
+    let navClearance = 0;
 
     function measure() {
       if (window.innerWidth >= 768 || !img!.naturalWidth) return;
+      measuredWidth = window.innerWidth;
 
-      const navClearance = nav!.getBoundingClientRect().height + GAP;
+      // Only ever read the navbar's height in its expanded (not .scrolled)
+      // state — a re-measure that lands mid-scroll would otherwise see the
+      // compact pill, shrink navClearance and let the figure grow.
+      if (!navClearance || !nav!.classList.contains('scrolled')) {
+        navClearance = nav!.getBoundingClientRect().height + GAP;
+      }
       const tagsClearance = (home!.getBoundingClientRect().bottom - tags!.getBoundingClientRect().top) + GAP;
       home!.style.setProperty('--hero-navbar-clearance', `${navClearance}px`);
       home!.style.setProperty('--hero-tags-clearance', `${tagsClearance}px`);
@@ -700,10 +708,16 @@ export default function HeroSection() {
     measure();
     if (!img.naturalWidth) img.addEventListener('load', measure, { once: true });
 
-    window.addEventListener('resize', measure);
+    // Mobile browsers fire `resize` whenever the URL bar collapses/expands
+    // during a scroll (height-only change). The figure is locked to its first
+    // measurement, so only a real width change (rotation, split-screen) may
+    // re-measure — a height-only resize must leave it alone.
+    const onResize = () => { if (window.innerWidth !== measuredWidth) measure(); };
+
+    window.addEventListener('resize', onResize);
     window.addEventListener('orientationchange', measure);
     return () => {
-      window.removeEventListener('resize', measure);
+      window.removeEventListener('resize', onResize);
       window.removeEventListener('orientationchange', measure);
     };
   }, []);
