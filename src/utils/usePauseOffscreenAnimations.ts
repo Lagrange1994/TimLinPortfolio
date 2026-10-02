@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { LAZY_UNIT_EVENT } from './lazyUnit';
 
 // Every breakpoint. The homepage keeps dozens of decorative `infinite` CSS
 // animations (orbit rings, glows, blinking cursors, chip marquees…) running
@@ -18,16 +19,26 @@ const PAUSE_MARGIN = '200px 0px';
 export function usePauseOffscreenAnimations(selector = '#home, section.section') {
   useEffect(() => {
     if (typeof IntersectionObserver === 'undefined') return;
-    const sections = Array.from(document.querySelectorAll<HTMLElement>(selector));
     const io = new IntersectionObserver(entries => {
       for (const entry of entries) {
         entry.target.classList.toggle(OFFSCREEN_PAUSED_CLASS, !entry.isIntersecting);
       }
     }, { rootMargin: PAUSE_MARGIN });
-    sections.forEach(s => io.observe(s));
+    // Lazily unmounted page units (LazyUnit) swap their section elements, so
+    // the observed set is re-queried on every LAZY_UNIT_EVENT.
+    const seen = new Set<HTMLElement>();
+    let first = true;
+    const observe = () => {
+      if (!first) io.disconnect();
+      first = false;
+      document.querySelectorAll<HTMLElement>(selector).forEach(s => { seen.add(s); io.observe(s); });
+    };
+    observe();
+    window.addEventListener(LAZY_UNIT_EVENT, observe);
     return () => {
+      window.removeEventListener(LAZY_UNIT_EVENT, observe);
       io.disconnect();
-      sections.forEach(s => s.classList.remove(OFFSCREEN_PAUSED_CLASS));
+      seen.forEach(s => s.classList.remove(OFFSCREEN_PAUSED_CLASS));
     };
   }, [selector]);
 }

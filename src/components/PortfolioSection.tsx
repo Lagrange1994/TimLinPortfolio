@@ -7,6 +7,7 @@ import { portfolioWallMaskPath, DEFAULT_RADIUS, computeWallHeight } from '../uti
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import { attachPortfolioSkeleton } from '../utils/portfolioSkeleton';
+import { RISE_FROM, RISE_TWEEN, RISE_START_EVENT, type RiseStartDetail } from '../utils/useRiseReveal';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
 
@@ -26,6 +27,11 @@ const SMOOTH_TAU = 0.18;
 const CARD_CORNER_RADIUS = 44;
 // Breathing room around the headline/subtitle text inside the wall outline's
 // top-left notches, so the rounded corners don't cut in right at the glyphs.
+// How far the headline text, the wall and the View All button rise from —
+// larger than the site-wide default (28px) so the Portfolio entrance reads
+// clearly. Carried on the label/title/sub via data-rise-y and read back by
+// the wall-frame effect so all of them travel the same distance.
+const PORTFOLIO_RISE_Y = 72;
 const NOTCH_PADDING = 16;
 // Fired on #portfolio whenever the desktop geometry effect sets the wall's
 // top/height, so the notch-mask effect recuts the path for the new position.
@@ -263,16 +269,6 @@ export default function PortfolioSection() {
   // below) and then locked — re-measuring on every resize is what caused the
   // address-bar-driven svh jitter this replaces.
   const wallGeometryLockedRef = useRef(false);
-  // Set once label/title/sub's own entrance has actually finished — see
-  // the wall-mask effect's own comment for the full history of why this
-  // gates BOTH the notch computation and the wall-frame's own fade-in
-  // behind it, rather than computing/showing anything against their
-  // still-animating geometry. A ref (not a plain effect-local flag) so a
-  // later re-run of that effect (lang/expanded change) remembers the
-  // entrance already happened once and doesn't re-gate itself forever
-  // waiting for a 'rise-settled' event that useRiseReveal (a one-time,
-  // empty-deps effect) will never fire again.
-  const wallMaskEntranceSettledRef = useRef(false);
 
   // Lazy-load skeleton — declared first so its capture listener is in place
   // before the scroller effect clones cards (see portfolioSkeleton.ts).
@@ -437,31 +433,13 @@ export default function PortfolioSection() {
   // (per the Figma annotations), not a fixed ratio, so language switches,
   // font loading, and wrapping all need a re-measure.
   //
-  // This also owns the wall-frame's own entrance now (adding .wall-frame-in
-  // — see portfolio.css — and disconnecting a bit of bookkeeping once its
-  // transition ends). Went through three narrower fixes before landing
-  // here: (1) computing the notch as soon as the wall-frame's own fade
-  // started, which read label/title/sub's box mid-animation (their
-  // useRiseReveal entrance springs line-height from a squeezed 0.6x back to
-  // natural via an actually-elastic ease that overshoots before settling —
-  // a real box-size change) and made the notch visibly deform in sync with
-  // their overshoot; (2) gating ONLY their ResizeObserver behind a settled
-  // flag, which just froze the notch at whatever apply()'s first call
-  // happened to read, still wrong if that landed before or during the
-  // squeeze; (3) a useLayoutEffect-ordering trick to guarantee that first
-  // read was pre-squeeze, combined with freezing label/title/sub's rect in
-  // a ref — closer, but apply() could still be triggered by something else
-  // (the wall's own real height landing from lockWallGeometry) while
-  // label/title/sub were still mid-spring, mixing a correct wall size with
-  // a frozen-but-still-momentarily-wrong text rect.
-  // The actual fix: don't compute the notch, and don't even start the
-  // wall-frame's own fade, until label/title/sub have verifiably finished
-  // — there is nothing correct to show before that, so don't show or
-  // compute anything. Once their 'rise-settled' event fires (useRiseReveal
-  // dispatches it once their whole timeline, including the spring, is
-  // done), both happen together: apply() runs once against their now-
-  // guaranteed resting geometry, and .wall-frame-in starts the wall's own
-  // fade — so there is nothing left to snap or deform into afterward.
+  // The notch is cut from label/title/sub's rects. apply() measures those (and
+  // the frame) at rest — clearing their entrance transforms for the one
+  // synchronous measure — so it can run immediately and at any point of the
+  // entrance, while the wall rises together with the text (see the wall-frame
+  // effect below). Earlier versions waited for label/title/sub's
+  // 'rise-settled' event and faded the wall in afterwards, because reading
+  // their still-animating rects deformed the notch.
   useLayoutEffect(() => {
     const section = document.getElementById('portfolio');
     const wall = document.getElementById('portfolio-scroller-desktop');
@@ -481,7 +459,25 @@ export default function PortfolioSection() {
     const viewAllRow = document.querySelector<HTMLElement>('.view-all-row');
     if (!section || !wall || !frame || !pathEl || !clipEl || !fillEl || !label || !title || !sub || !viewAllBtn || !viewAllRow) return;
 
+    // Measures label/title/sub/frame at REST: while they're mid-rise their
+    // GSAP transforms (translateY, scaleY) skew getBoundingClientRect's
+    // top/bottom/height, which is what used to force the whole wall to wait
+    // for 'rise-settled' before it could show. Clearing the inline transforms
+    // for the synchronous duration of one measure (no paint in between) gives
+    // the true resting rects at any point of the entrance, so the wall can
+    // rise together with the text instead of fading in after it.
     function apply() {
+      const els = [label!, title!, sub!, frame!];
+      const saved = els.map(el => el.style.transform);
+      els.forEach(el => { el.style.transform = 'none'; });
+      try {
+        applyAtRest();
+      } finally {
+        els.forEach((el, i) => { el.style.transform = saved[i]; });
+      }
+    }
+
+    function applyAtRest() {
       // Expanded (bento grid) mode hides the wall entirely, so none of this
       // geometry applies — .view-all-row falls back to normal document flow
       // via the .portfolio-expanded CSS override. Clear the inline
@@ -499,9 +495,7 @@ export default function PortfolioSection() {
       const h = wall!.clientHeight;
       if (w <= 0 || h <= 0) return;
       const sectionRect = section!.getBoundingClientRect();
-      // Safe to read live: apply() is never called until label/title/sub
-      // have actually settled (see reveal() below), so this is always
-      // their true resting rect, never mid-animation.
+      // Resting rect — apply() clears the entrance transforms while measuring.
       const labelRect = label!.getBoundingClientRect();
       // Mobile pins the wall's top edge flush with the "My Portfolio"
       // eyebrow's own live position instead of the position/height-lock
@@ -618,28 +612,12 @@ export default function PortfolioSection() {
       viewAllRow!.style.width = 'max-content';
     }
 
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let ro: ResizeObserver | null = null;
 
-    // The wall-frame's own entrance animation is pulled out entirely for
-    // now (pending a redesign) — .portfolio-wall-frame just renders at its
-    // final state, no fade/rise, no transition, see portfolio.css. This
-    // effect still only computes the notch once label/title/sub have
-    // actually settled, though: that's not about animating anything, it's
-    // that the notch math needs their true resting rects (see the effect's
-    // own top-level comment for the whole history of why reading their
-    // still-animating geometry breaks it).
-    //
-    // Splits the actual measure-and-apply work out from the settle gate:
-    // measureAndObserve() does the work (and (re)attaches the
-    // ResizeObserver), called either the first time settling actually
-    // happens OR on every later re-run of this effect (lang/expanded
-    // changes) once that's already happened once. Previously the gate
-    // treated "already settled once" as "never do this again" instead of
-    // "safe to do this immediately" — a language switch reruns this whole
-    // effect (tearing down the old ResizeObserver in cleanup) but never got
-    // a replacement observer, silently freezing the notch at its pre-switch
-    // size instead of tracking the new text's width/height.
+    // Measures immediately and keeps the notch in sync via ResizeObserver.
+    // Safe before label/title/sub finish their entrance because apply()
+    // measures them at rest (see above); a language switch reruns this whole
+    // effect and gets a fresh observer.
     function measureAndObserve() {
       apply();
       ro?.disconnect();
@@ -651,31 +629,14 @@ export default function PortfolioSection() {
       ro.observe(title!);
       ro.observe(sub!);
     }
-
-    if (wallMaskEntranceSettledRef.current || reducedMotion) {
-      // Either a re-run after the one-time entrance already settled on a
-      // prior mount (label/title/sub are already resting — nothing left to
-      // wait for), or useRiseReveal never dispatches 'rise-settled' at all
-      // for reduced-motion visitors (it skips ScrollTrigger setup for
-      // them) — either way, safe to measure now instead of waiting for an
-      // event that may never come again.
-      wallMaskEntranceSettledRef.current = true;
-      measureAndObserve();
-    }
-    function onRiseSettled() {
-      if (wallMaskEntranceSettledRef.current) return;
-      wallMaskEntranceSettledRef.current = true;
-      measureAndObserve();
-    }
-    section.addEventListener('rise-settled', onRiseSettled);
+    measureAndObserve();
     // The geometry effect below moved the wall (see WALL_GEOMETRY_EVENT).
     function onWallGeometry() {
-      if (wallMaskEntranceSettledRef.current) apply();
+      apply();
     }
     section.addEventListener(WALL_GEOMETRY_EVENT, onWallGeometry);
     return () => {
       ro?.disconnect();
-      section!.removeEventListener('rise-settled', onRiseSettled);
       section!.removeEventListener(WALL_GEOMETRY_EVENT, onWallGeometry);
     };
   }, [lang, expanded]);
@@ -894,7 +855,11 @@ export default function PortfolioSection() {
         lockWallGeometry();
         io.disconnect();
       }
-    }, { threshold: 0.01 });
+    // Bottom rootMargin 100%: lock while the section is still a full screen
+    // below the fold, i.e. always before the label's rise (and so the wall's
+    // reveal) starts. Locking on first pixel let a fast jump into the section
+    // reposition the wall in the very frame it started rising.
+    }, { threshold: 0.01, rootMargin: '0px 0px 100% 0px' });
     io.observe(section);
 
     window.addEventListener('resize', onResize);
@@ -915,145 +880,50 @@ export default function PortfolioSection() {
     };
   }, [expanded]);
 
-  // .wall-frame-in's scroll-in reveal — went through two root-caused,
-  // *disproven* mechanisms before this one, both confirmed via GSAP's own
-  // ScrollTrigger internals (markers/onUpdate logging, and later direct
-  // window.__ScrollTrigger.getAll() inspection + console.table opacity
-  // sampling in the real browser — not guesswork):
-  // 1) A one-shot, fixed-*duration* tween triggered at 'top 85%' finished
-  //    playing while the frame was still scrolling up from mostly
-  //    off-screen — normal scroll speed outpaced the tween's duration, so
-  //    the reveal finished off-camera before the user's eyes/scroll
-  //    settled.
-  // 2) Switched to `scrub` (progress tied to scroll position, not
-  //    wall-clock time) — fixed slow hand-scroll, but fast scroll and
-  //    CTA-jump (scrollToSectionAligned in navHeader.ts) still looked
-  //    instant. Measured why with a live sampler (click the real CTA
-  //    button, sample getComputedStyle(frame).opacity + window.scrollY
-  //    every rAF): the trigger's *raw*, un-lagged scroll progress reached
-  //    1 while the CTA's own scroll animation was still moving fast
-  //    (~300-450px away from its resting stop) — the section's natural
-  //    resting scroll position sits at or past this element's trigger end
-  //    almost by construction (that's what "resting" *is*: this element
-  //    at a resting view means you've scrolled essentially through its
-  //    whole trigger range). By the time the page actually stopped moving,
-  //    scrub's lag had already closed nearly all the gap (~91% opacity) —
-  //    the only visible tail was the last ~9%, which reads as "already
-  //    there" once the eye isn't fighting page motion. No scrub number
-  //    fixes this: the raw target is already saturated before the page
-  //    stops, so there's nothing left for a bigger lag to visibly stretch
-  //    out — a bigger lag only stretches an already-invisible tail.
-  // Fixed by reverting to a fixed-duration one-shot tween (not scrub) but
-  // moving its trigger point much later than attempt #1's 'top 85%' — to
-  // 'top 55%', i.e. the frame is already substantially inside the
-  // viewport before the reveal even starts. Whatever speed you're
-  // scrolling at, there's very little scroll distance left once you cross
-  // 55%, so a short fixed-duration tween (0.8s) reliably outlasts the
-  // remaining scroll and finishes while the page is at or near rest —
-  // this is the opposite failure mode of attempt #1 (trigger too early +
-  // long remaining scroll), not a rejection of "fixed duration" as a
-  // concept.
-  // Kept as its own standalone effect rather than folding into the shared
-  // useRiseReveal() call: that was tried once before (adding .rise-soft to
-  // this element directly) and broke real geometry, because that system's
-  // row/column bucketing sweeps every .rise-soft/.rise-card in the section
-  // together on one shared schedule, and lockWallGeometry's mobile height
-  // lock used to wait specifically on *label*'s 'rise-settled' event (it no
-  // longer does, see the IntersectionObserver below) — pulling the
-  // frame into that shared pass changed timing it wasn't built to expect.
-  // Opacity ONLY, deliberately — no transform (translateY/scale), no
-  // clip-path wipe. Two different attempts at adding a "rise" motion on top
-  // of the fade both produced real, confirmed regressions: a transform
-  // (translateY/scale) on the frame visibly detached .portfolio-wall-
-  // outline's notch stroke from the wall, since that SVG path's coordinates
-  // are computed against label/title/sub's absolute getBoundingClientRect()
-  // (see the wall-mask useLayoutEffect above) — elements that settle on
-  // their own separate, earlier timeline and never share the frame's
-  // transform, so a still-moving frame always visibly drifts from them no
-  // matter how the notch's own numbers are recomputed. A clip-path:inset()
-  // wipe on .portfolio-wall instead (sidestepping the transform issue
-  // entirely, since clip-path never touches layout/getBoundingClientRect)
-  // fixed that, but introduced a different regression: inset() imposes a
-  // hard box-edge clip even at inset(0) — unlike this element's actual
-  // `overflow: visible` (no clip-path at all), which .portfolio-wall-
-  // outline's own comment explains exists specifically so its 3.5px stroke
-  // can bleed its outer half past the box on the notch's straight
-  // (unrounded) sides. The wipe cut that bleed off top/bottom permanently,
-  // even once fully "open". Opacity is the one property this element (and
-  // its notch) can animate with zero side effects on either front — the
-  // fade itself is confirmed working via GSAP's own ScrollTrigger state
-  // (opacity tracking scroll-driven progress exactly, 0→1) and by direct
-  // visual confirmation.
-  // Three scroll-*position*-based mechanisms were tried and disproven here
-  // via live opacity+scrollY sampling in the real browser (click the CTA,
-  // sample getComputedStyle(frame).opacity + window.scrollY every rAF) —
-  // scrub (any lag value: raw progress saturates before/at a CTA or fast
-  // scroll's natural rest), and two one-shot 'top X%' thresholds (55%,
-  // then a measured-and-corrected 19%): both still fired while scrollY
-  // had a final ~30-70px left to travel, so the tween's fast early ramp
-  // (0→~0.7) overlapped the page's own still-decelerating final approach
-  // and read as one "snap", with only an imperceptible tail visible after
-  // motion actually stopped. Percentage tuning has a hard ceiling: the
-  // frame's own scroll-linked position and the page's own scroll-stop
-  // moment converge in the same short window no matter which position
-  // threshold is picked, because that convergence is inherent to how
-  // scrollToSectionAligned computes its landing target (see navHeader.ts)
-  // — it's not a number to tune away.
-  // Fixed by decoupling entirely from scroll *position*: gate on scroll
-  // *stopping* instead, via a 150ms debounce on the 'scroll' event. This
-  // works identically for a CTA jump, a fast flick, or a slow hand-scroll,
-  // because it doesn't care how the page got to rest, only that it has —
-  // the reveal always plays against a static page. `entered` (has the
-  // frame been scrolled into general view at least once) still comes from
-  // a plain ScrollTrigger 'top 90%' watch, so a visitor who never scrolls
-  // near this section never gets a stray reveal from unrelated page
-  // scroll elsewhere (e.g. the marquee rows' own scroll containers don't
-  // bubble a window 'scroll' event, but scrolling far past the section
-  // and back up would; gating on `entered` keeps this specific to actually
-  // having reached the frame).
-  useEffect(() => {
+  // The notched wall rises together with the headline text. It used to only
+  // fade in, after the page stopped scrolling (scroll-settle debounce, opacity
+  // only), because a transform on the frame visibly detached the notch
+  // outline from the label/title/sub — whose rects the notch was computed
+  // from while they were still mid-rise. Two things changed that:
+  //  1. apply() (wall-mask effect) now measures label/title/sub/frame at rest
+  //     by clearing their entrance transforms for the one synchronous
+  //     measure, so the notch is correct at every moment of the entrance.
+  //  2. The frame (and the "View All" button, which sits in the wall's leg
+  //     notch but lives outside the frame) run the exact same y/opacity
+  //     tween as the .rise-soft text (RISE_FROM / RISE_TWEEN from
+  //     useRiseReveal), started by the label's own 'rise-start' event; the
+  //     title/sub share the label's trigger (data-rise-with), so all of it
+  //     moves as one beat and the notch stays aligned the whole way.
+  // Deliberately y + opacity only: no scale (the frame's top edge would drift
+  // from the squashing text) and no clip-path (cuts the outline stroke's
+  // bleed even fully open).
+  useLayoutEffect(() => {
+    const section = document.getElementById('portfolio');
     const frame = wallFrameRef.current;
-    if (!frame) return;
+    const row = document.querySelector<HTMLElement>('.view-all-row');
+    const label = document.querySelector<HTMLElement>('#portfolio .section-label');
+    if (!section || !frame || !row || !label) return;
+    const targets = [frame, row];
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      gsap.set(frame, { clearProps: 'all' });
+      gsap.set(targets, { clearProps: 'all' });
       return;
     }
-    let entered = false;
-    let revealed = false;
-    let settleTimer: ReturnType<typeof setTimeout> | null = null;
-    const reveal = () => {
-      if (revealed) return;
-      revealed = true;
-      // 1s: confirmed via a deliberately exaggerated debug pass (2.5s
-      // duration + 600ms settle-wait) that the scroll-settle mechanism
-      // itself is visible and correct — the earlier "still can't see it"
-      // reports were 0.6s/150ms being too subtle to register against
-      // post-scroll attention lag, not a logic bug. 1s splits the
-      // difference: the exaggerated version was confirmed too slow/
-      // draggy, but the original was confirmed imperceptible.
-      gsap.to(frame, { autoAlpha: 1, duration: 1, ease: 'power2.out' });
-    };
-    const scheduleSettleCheck = () => {
-      if (settleTimer) clearTimeout(settleTimer);
-      settleTimer = setTimeout(() => {
-        if (entered) reveal();
-      }, 200);
-    };
+    let played = false;
     const ctx = gsap.context(() => {
-      gsap.set(frame, { autoAlpha: 0 });
-      ScrollTrigger.create({
-        trigger: frame,
-        start: 'top 90%',
-        onEnter: () => {
-          entered = true;
-          scheduleSettleCheck();
-        },
-      });
+      gsap.set(targets, { ...RISE_FROM, y: Number(label.dataset.riseY) || RISE_FROM.y });
     });
-    window.addEventListener('scroll', scheduleSettleCheck, { passive: true });
+    const onRiseStart = (e: Event) => {
+      if (played || e.target !== label) return;
+      played = true;
+      // Added to the label's own timeline (not a fresh tween) so the wall is
+      // frame-exact with the text even through a hitchy first frame, and
+      // enters from the same side: below when scrolling down, above when up.
+      const { tl, dir, riseY } = (e as CustomEvent<RiseStartDetail>).detail;
+      tl.fromTo(targets, { autoAlpha: 0, y: dir * riseY }, { ...RISE_TWEEN, clearProps: 'transform' }, 0);
+    };
+    section.addEventListener(RISE_START_EVENT, onRiseStart);
     return () => {
-      window.removeEventListener('scroll', scheduleSettleCheck);
-      if (settleTimer) clearTimeout(settleTimer);
+      section.removeEventListener(RISE_START_EVENT, onRiseStart);
       ctx.revert();
     };
   }, []);
@@ -1344,12 +1214,12 @@ export default function PortfolioSection() {
 
   return (
     <div className="section-wrapper">
-      <section id="portfolio" className={`section${expanded ? ' portfolio-expanded' : ''}`}>
+      <section id="portfolio" className={`section${expanded ? ' portfolio-expanded' : ''}`} data-lazy-keep={expanded || activeFilter !== 'all' ? '' : undefined}>
         <div className="portfolio-header">
-          <div className="section-label rise-soft" style={{ marginBottom: 0 }}>My Portfolio</div>
+          <div className="section-label rise-soft" data-rise-y={PORTFOLIO_RISE_Y} style={{ marginBottom: 0 }}>My Portfolio</div>
           <div className="portfolio-headline">
-            <h2 className="portfolio-headline-title rise-soft"><span className="headline-lead">Every Idea, Taken </span><span className="gradient-text">All the Way</span></h2>
-            <p className="portfolio-headline-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.portfolio_headline_sub }} />
+            <h2 className="portfolio-headline-title rise-soft" data-rise-with=".section-label" data-rise-y={PORTFOLIO_RISE_Y}><span className="headline-lead">Every Idea, Taken </span><span className="gradient-text">All the Way</span></h2>
+            <p className="portfolio-headline-sub rise-soft" data-rise-with=".section-label" data-rise-y={PORTFOLIO_RISE_Y} dangerouslySetInnerHTML={{ __html: t.portfolio_headline_sub }} />
           </div>
         </div>
 

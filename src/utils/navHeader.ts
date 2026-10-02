@@ -68,6 +68,9 @@ function stopAnimatedScroll() {
 }
 
 function desiredScrollY(target: HTMLElement): number {
+  // A lazily unmounted section (LazyUnit) is a zero-size anchor span with the
+  // section's id; once the real section mounts the span is removed, and a
+  // detached node measures as 0 — callers re-resolve by id every frame.
   const navH =
     parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue('--nav-h')
@@ -168,9 +171,13 @@ export function scrollToSectionAligned(id: string) {
     animateScrollTo(() => 0);
     return;
   }
-  const target = document.getElementById(id);
-  if (!target) return;
+  if (!document.getElementById(id)) return;
 
   primeHeaderForNav();
-  animateScrollTo(() => desiredScrollY(target));
+  // Re-resolved by id on every frame, not captured once: the element can be
+  // swapped mid-flight when a lazily unmounted section mounts (LazyUnit).
+  animateScrollTo(() => {
+    const target = document.getElementById(id);
+    return target ? desiredScrollY(target) : window.scrollY;
+  });
 }

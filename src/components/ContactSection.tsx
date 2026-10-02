@@ -97,7 +97,7 @@ export default function ContactSection() {
   return (
     <>
       <div className="section-wrapper">
-        <section id="contact" className="section">
+        <section id="contact" className="section" data-lazy-keep={faqTab !== 'experience' || openFaqIndex >= 0 ? '' : undefined}>
           <div className="section-label rise-soft">Contact Me</div>
           <h2 className="contact-headline rise-soft">
             Let&apos;s build something <span className="gradient-text">worth using.</span>

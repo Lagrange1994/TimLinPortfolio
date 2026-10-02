@@ -2392,6 +2392,13 @@
       color: #fff;
     }
 
+    /* The name never breaks mid-way: on a narrow screen "Tim Lin" drops to
+       the next line as one unit instead of leaving "Tim" behind. Covers the
+       plain markup and the per-word wrappers used during the entrance. */
+    .hero-h1 span {
+      white-space: nowrap;
+    }
+
     .hero-h2 {
       font-size: clamp(1.2rem, 3vw, 2.25rem);
       font-weight: 500;
@@ -4180,34 +4187,10 @@
       z-index: 2;
     }
 
-    /* Positioned/sized wrapper. Its scroll-in entrance lives on the
-       .wall-frame-in class below — a GSAP tween fired once scrolling has
-       actually *stopped* (a 200ms debounce on the 'scroll' event; see
-       PortfolioSection.tsx's wall-frame-in effect), not tied to scroll
-       position at all. Went through several broken shapes first: a plain
-       CSS transition (never actually animated in any trigger mechanism,
-       even toggled by hand with no JS involved); a fixed-duration
-       ScrollTrigger-fired tween (the same technique every .rise-soft/
-       .rise-card uses, see useRiseReveal.ts) that kept finishing while this
-       (much taller than a card) panel was still scrolling up from
-       off-screen; then `scrub` (progress tied to scroll position) which
-       fixed slow hand-scroll but not CTA-jump/fast-scroll — a live
-       opacity+scrollY sampler proved the raw scroll-linked progress
-       saturates near/at a CTA's natural resting stop regardless of lag
-       size, and two follow-up one-shot 'top X%' thresholds hit the same
-       wall from the other side (no percentage separates "fired" from "page
-       still has a few decelerating px left", since scrollToSectionAligned's
-       landing target and this element's resting view converge by
-       construction). Dropping scroll position as the trigger entirely
-       fixed it for real: whatever speed or mechanism got the user there,
-       the reveal only ever plays against an already-static page. Not
-       folded into the *shared* useRiseReveal() call, though: that was tried
-       directly on this element too and broke real geometry — only the
-       inner marquee rows visibly rose while lockWallGeometry's mobile
-       height lock (which waits on label's 'rise-settled' event, not this
-       wrapper's) read the still-animating transform mid-flight and computed
-       a wrong offset. See the JSX comment by .portfolio-wall-frame in
-       PortfolioSection.tsx for the full history. */
+    /* Positioned/sized wrapper. Its entrance (y + opacity, the same tween as
+       the headline's .rise-soft text) is added to the label's own GSAP
+       timeline by PortfolioSection.tsx's wall-frame effect, so the notched
+       wall rises together with the text — see that effect's comment. */
     .portfolio-wall-frame {
       position: relative;
       /* Capped at 1440px total width like .section's own max-width, but
@@ -4231,15 +4214,9 @@
       filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.65));
     }
 
-    /* Scroll-in reveal for .portfolio-wall-frame — GSAP owns opacity
-       entirely now (see PortfolioSection.tsx's wall-frame-in effect); this
-       just hides it up-front to avoid a flash before gsap.set runs, same as
-       .rise-card/.rise-soft below. Opacity only, deliberately — no
-       transform, no transition. A transform here (translateY/scale, tried
-       and reverted) visibly detaches .portfolio-wall-outline's notch stroke
-       from the wall it traces, since that SVG path's coordinates are
-       computed against other elements outside this frame that never share
-       its transform (see the effect's own comment for the full story). */
+    /* Hides .portfolio-wall-frame up-front to avoid a flash before the
+       wall-frame effect's gsap.set runs; GSAP owns opacity + y from there
+       (see PortfolioSection.tsx). y + opacity only — no scale/clip-path. */
     .wall-frame-in {
       opacity: 0;
       will-change: opacity;
@@ -10549,57 +10526,3 @@
       animation-play-state: paused !important;
     }
 
-    /* Phones: sections far from the viewport are unloaded (see
-       useUnloadOffscreen.ts) so their layers/animations/tiles are freed —
-       the page was otherwise accumulating render memory until iOS killed
-       the tab. --unload-content-h is the section's last measured content-box
-       height, so the document's scroll height never changes. */
-    @media (max-width: 767px) {
-      section.section.is-unloaded {
-        content-visibility: hidden;
-        contain-intrinsic-height: var(--unload-content-h);
-      }
-    }
-
-    /* Browsers without content-visibility (iOS < 18): same effect by hand —
-       pin the height and drop the children from rendering entirely. */
-    @supports not (content-visibility: hidden) {
-      @media (max-width: 767px) {
-        section.section.is-unloaded {
-          box-sizing: border-box;
-          height: var(--unload-h);
-          overflow: hidden;
-        }
-        section.section.is-unloaded > * {
-          display: none;
-        }
-      }
-    }
-
-    /* Restored sections (see useUnloadOffscreen.ts) fade back in as they
-       actually reach the viewport rather than popping into view. Held
-       invisible until then (.is-restoring), so the animation isn't spent
-       off-screen. "up" = the user is scrolling up, so content arrives from
-       ABOVE (the reverse of the usual rise-from-below); "down" rises from
-       below, matching the site's regular reveal direction. */
-    @media (max-width: 767px) {
-      section.section.is-restoring {
-        opacity: 0;
-      }
-      section.section.is-restore-in-up {
-        animation: section-restore-in-up .8s cubic-bezier(.22, 1, .36, 1) both;
-      }
-      section.section.is-restore-in-down {
-        animation: section-restore-in-down .8s cubic-bezier(.22, 1, .36, 1) both;
-      }
-    }
-
-    @keyframes section-restore-in-up {
-      from { opacity: 0; transform: translateY(-28px); }
-      to   { opacity: 1; transform: none; }
-    }
-
-    @keyframes section-restore-in-down {
-      from { opacity: 0; transform: translateY(28px); }
-      to   { opacity: 1; transform: none; }
-    }

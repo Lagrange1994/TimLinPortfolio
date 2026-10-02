@@ -8,6 +8,7 @@ import PriorityQueueFlow from './PriorityQueueFlow';
 import PolicyPill from './PolicyPill';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from './GoogleGeminiEffect';
 import FigmaMcpShowcase from './FigmaMcpShowcase';
+import LazyUnit from './LazyUnit';
 
 function processCardBg(slug: string) {
   return `url("./img/process/${slug}.webp")`;
@@ -943,7 +944,272 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
   );
 }
 
-export default function SkillsSection() {
+// The three sections below are separate components so each can be a
+// LazyUnit of its own: it unmounts once the viewer is more than one section
+// away and remounts (replaying its entrance) when they come back.
+
+// DESIGN PROCESS
+function DesignProcessSection() {
+  const { t } = useLang();
+
+  // Design Process cards (mobile only, <768px): each card's height is
+  // content-driven (square image + auto-height text, see portfolio.css's
+  // <768px MOBILE block) instead of a fixed aspect-ratio, and CSS Grid's
+  // align-items: stretch only equalizes cards within the SAME row — the
+  // In-house and Freelance columns render as two separate grids with
+  // different description lengths, so their rows can settle at different
+  // heights from each other even though each grid is internally uniform.
+  // Measures every card's own (already row-stretched) height, takes the
+  // single tallest across both columns, and pins every card to that one
+  // height via a CSS custom property so no row/column reads shorter than
+  // another. offsetHeight (not getBoundingClientRect) because .rise-card's
+  // scroll-reveal squashes cards with a scaleY transform on mount, which
+  // would otherwise be measured as "natural" height and undershoot.
+  useEffect(() => {
+    let timer = 0;
+    const sync = () => {
+      document.documentElement.style.removeProperty('--process-card-mobile-h');
+      if (window.innerWidth >= 768) return;
+      const slots = document.querySelectorAll<HTMLElement>('.process-swipe-slot');
+      if (!slots.length) return;
+      let max = 0;
+      slots.forEach(slot => { max = Math.max(max, slot.offsetHeight); });
+      if (max > 0) document.documentElement.style.setProperty('--process-card-mobile-h', `${max}px`);
+    };
+    // Debounces bursts of ResizeObserver/font-load callbacks into a single
+    // measurement. setTimeout instead of requestAnimationFrame: rAF never
+    // fires at all while the tab/page isn't visible (confirmed live — a
+    // backgrounded load left the very first measurement stuck forever with
+    // no callback ever running), while setTimeout still fires there.
+    const scheduleSync = () => {
+      clearTimeout(timer);
+      timer = window.setTimeout(sync, 50);
+    };
+    // Measure once synchronously up front so the pinned height is never
+    // gated on any async callback firing at all, then debounce-refine after.
+    sync();
+    scheduleSync();
+    // Custom web fonts (var(--font-heading) on .process-name, etc.) can
+    // still be mid-swap on first mount — measuring before they land bakes
+    // in whatever the fallback font's shorter/longer line-wraps happened
+    // to produce, and nothing was re-triggering a remeasure afterward.
+    document.fonts?.ready.then(scheduleSync);
+    window.addEventListener('resize', scheduleSync);
+    // Also watch each card's own text block directly: unlike
+    // .process-swipe-slot (whose height this effect itself pins) or
+    // .process-card (which just stretches to fill that pin), .border-glow-
+    // inner's height always reflects its real text content, so observing
+    // it can't loop back on this effect's own writes — only genuine
+    // content/layout changes (language switch, a font finishing async,
+    // font-size media queries at other breakpoints) trigger it.
+    const observer = new ResizeObserver(scheduleSync);
+    document.querySelectorAll('.process-card--has-img .border-glow-inner').forEach(el => observer.observe(el));
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', scheduleSync);
+      observer.disconnect();
+      document.documentElement.style.removeProperty('--process-card-mobile-h');
+    };
+  }, [t]);
+
+  return (
+      <section className="section">
+        <div className="section-label rise-soft">My Design Process</div>
+        <div className="process-dual">
+          <div className="process-column">
+            <div className="process-column-head">
+              <div className="process-column-header">
+                <span>{t.tab_inhouse}</span>
+              </div>
+              <p className="process-column-desc">{t.tab_inhouse_desc}</p>
+              <PolicyPill icon="ph-users-three" label={t.process_policy_team_title} body={t.process_policy_team_body} />
+            </div>
+            <ProcessCarousel
+              cards={(['Align','Research','Structure','Design','Validate','Iterate'] as const).map((slug, i) => {
+                const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
+                const nameKey = `ih_name_${idx}` as keyof typeof t;
+                const descKey = `ih_desc_${idx}` as keyof typeof t;
+                return (
+                  <BorderGlow
+                    key={slug}
+                    className="process-card process-card--has-img rise-card"
+                    backgroundColor="#13101c"
+                    spotlightColor="rgba(108, 99, 255, 0.12)"
+                    backgroundSlot={
+                      <>
+                        <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: processCardBg(`${slug}_w`) }} />
+                        <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: processCardBg(slug) }} />
+                        <div className="process-card-bg-img process-card-bg-img--light-white" style={{ backgroundImage: processCardBg(`${slug}_l_w`) }} />
+                        <div className="process-card-bg-img process-card-bg-img--light" style={{ backgroundImage: processCardBg(`${slug}_l`) }} />
+                      </>
+                    }
+                  >
+                    <span className="process-step-badge"><em>{String(i + 1).padStart(2, '0')}</em></span>
+                    <div className="process-name">{t[nameKey] as string}</div>
+                    <div className="process-desc">{t[descKey] as string}</div>
+                  </BorderGlow>
+                );
+              })}
+            />
+          </div>
+          <div className="process-column">
+            <div className="process-column-head">
+              <div className="process-column-header">
+                <span>{t.tab_freelance}</span>
+              </div>
+              <p className="process-column-desc">{t.tab_freelance_desc}</p>
+              <PolicyPill icon="ph-shield-check" label={t.process_policy_title} body={t.process_policy_body} />
+            </div>
+            <ProcessCarousel
+              cards={(['Intake','AI Brief','Triage','Discovery','Proposal','Delivery'] as const).map((slug, i) => {
+                const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
+                const nameKey = `fl_name_${idx}` as keyof typeof t;
+                const descKey = `fl_desc_${idx}` as keyof typeof t;
+                return (
+                  <BorderGlow
+                    key={slug}
+                    className="process-card process-card--has-img rise-card"
+                    backgroundColor="#13101c"
+                    spotlightColor="rgba(108, 99, 255, 0.12)"
+                    backgroundSlot={
+                      <>
+                        <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: processCardBg(`${slug}_w`) }} />
+                        <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: processCardBg(slug) }} />
+                        <div className="process-card-bg-img process-card-bg-img--light-white" style={{ backgroundImage: processCardBg(`${slug}_l_w`) }} />
+                        <div className="process-card-bg-img process-card-bg-img--light" style={{ backgroundImage: processCardBg(`${slug}_l`) }} />
+                      </>
+                    }
+                  >
+                    <span className="process-step-badge"><em>{idx}</em></span>
+                    <div className="process-name">{t[nameKey] as string}</div>
+                    <div className="process-desc">{t[descKey] as string}</div>
+                  </BorderGlow>
+                );
+              })}
+            />
+          </div>
+        </div>
+      </section>
+  );
+}
+
+// TECH STACK
+function TechStackSection() {
+  const { t } = useLang();
+
+  // Spotlight cards — identical mechanism to ContactSection's working
+  // effect: plain mousemove/mouseleave, scoped to this section's own root
+  // so it doesn't cross-contaminate About's/Contact's .sc-card elements. No
+  // matchMedia gate and no pointerType filter — a filter on pointerType
+  // wrongly bailed on devices whose mouse/trackpad reports a non-'mouse'
+  // pointerType, killing the effect entirely. These tech cards also carry
+  // the .card-spotlight colored tint (::before at --mouse-x/--mouse-y), which
+  // Contact's plain sc-cards don't, so drive those vars here too.
+  useEffect(() => {
+    document.querySelectorAll<HTMLElement>('#tech-stack .sc-card').forEach(card => {
+      if (card.querySelector(':scope > .sc-overlay')) return;
+      const ov = document.createElement('div');
+      ov.className = 'sc-overlay';
+      card.insertBefore(ov, card.firstChild);
+
+      const onMove = (e: MouseEvent) => {
+        // .sc-overlay/.card-spotlight::before are opacity:0 !important in
+        // light mode's neumorphism block (portfolio.css) — nothing to paint.
+        if (document.documentElement.getAttribute('data-theme') === 'light') return;
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) + 'px';
+        const y = (e.clientY - r.top) + 'px';
+        card.style.setProperty('--sc-x', x);
+        card.style.setProperty('--sc-y', y);
+        card.style.setProperty('--mouse-x', x);
+        card.style.setProperty('--mouse-y', y);
+      };
+      const onLeave = () => {
+        card.style.setProperty('--sc-x', '-500px');
+        card.style.setProperty('--sc-y', '-500px');
+        card.style.setProperty('--mouse-x', '-500px');
+        card.style.setProperty('--mouse-y', '-500px');
+      };
+      card.addEventListener('mousemove', onMove);
+      card.addEventListener('mouseleave', onLeave);
+    });
+  }, [t]);
+
+  return (
+      <section id="tech-stack" className="section">
+        <div className="section-label rise-soft">Tech Stack</div>
+        <h2 className="about-h2 rise-soft" style={{ marginBottom: '8px' }}>Web development <span className="gradient-text">literacy</span></h2>
+        <p className="tech-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.tech_sub }} />
+        <div className="tech-items">
+          <div className="tech-item-wrap rise-card">
+            <div className="tech-item html-item card-spotlight sc-card">
+              <span className="card-glass-highlight" aria-hidden="true" />
+              <div className="tech-item-text">
+                <div className="tech-item-header">
+                  <span className="tech-name"><i className="fab fa-html5" style={{ color: '#60a5fa', marginRight: '8px' }}></i>HTML / CSS / Tailwind</span>
+                </div>
+                <div className="tech-desc">{t.skill_html}</div>
+              </div>
+              <div className="tech-code-preview">
+                <div className="tcp-bar">
+                  <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
+                  <span className="tcp-filename">portfolio.css</span>
+                </div>
+                <TypingCode versions={[CSS_CODE_A, CSS_CODE_B]} lines={TECH_CODE_LINES} />
+              </div>
+            </div>
+            <span className="tech-level-badge html-item">DESIGN-READY</span>
+          </div>
+          <div className="tech-item-wrap rise-card">
+            <div className="tech-item js-item card-spotlight sc-card">
+              <span className="card-glass-highlight" aria-hidden="true" />
+              <div className="tech-item-text">
+                <div className="tech-item-header">
+                  <span className="tech-name"><i className="fab fa-js" style={{ color: '#fb923c', marginRight: '8px' }}></i>JavaScript</span>
+                </div>
+                <div className="tech-desc">{t.skill_js}</div>
+              </div>
+              <div className="tech-code-preview">
+                <div className="tcp-bar">
+                  <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
+                  <span className="tcp-filename">HeroSection.tsx</span>
+                </div>
+                <TypingCode versions={[JS_CODE_A, JS_CODE_B]} lines={TECH_CODE_LINES} />
+              </div>
+            </div>
+            <span className="tech-level-badge js-item">AI-ASSISTED</span>
+          </div>
+          <div className="tech-item-wrap rise-card">
+            <div className="tech-item react-item card-spotlight sc-card">
+              <span className="card-glass-highlight" aria-hidden="true" />
+              <div className="tech-item-text">
+                <div className="tech-item-header">
+                  <span className="tech-name"><i className="fab fa-react" style={{ color: '#a5b4fc', marginRight: '8px' }}></i>React.js / Vue.js</span>
+                </div>
+                <div className="tech-desc">{t.skill_css}</div>
+              </div>
+              <div className="tech-code-preview">
+                <div className="tcp-bar">
+                  <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
+                  <span className="tcp-filename">SkillsSection.tsx</span>
+                </div>
+                <TypingCode versions={[JSX_CODE_A, JSX_CODE_B]} lines={TECH_CODE_LINES} />
+              </div>
+            </div>
+            <span className="tech-level-badge react-item">RESPONSIVE</span>
+          </div>
+        </div>
+        <div className="figma-mcp-header rise-soft">
+          <h3>{t.figma_mcp_title}</h3>
+          <p dangerouslySetInnerHTML={{ __html: t.figma_mcp_desc }} />
+        </div>
+        <FigmaMcpShowcase />
+      </section>
+  );
+}
+
+// MY SKILLS + HOW I USE AI (merged)
+function AiIntakeSection() {
   const { t } = useLang();
   const aiCards = useMemo(() => makeAiCards(t), [t]);
   const [expandedAiCard, setExpandedAiCard] = useState<string | null>(null);
@@ -1468,77 +1734,6 @@ export default function SkillsSection() {
     }
   }, [expandedAiCard]);
 
-  // Spotlight cards — identical mechanism to ContactSection's working
-  // effect: plain mousemove/mouseleave, scoped to this section's own root
-  // so it doesn't cross-contaminate About's/Contact's .sc-card elements. No
-  // matchMedia gate and no pointerType filter — a filter on pointerType
-  // wrongly bailed on devices whose mouse/trackpad reports a non-'mouse'
-  // pointerType, killing the effect entirely. These tech cards also carry
-  // the .card-spotlight colored tint (::before at --mouse-x/--mouse-y), which
-  // Contact's plain sc-cards don't, so drive those vars here too.
-  useEffect(() => {
-    document.querySelectorAll<HTMLElement>('#tech-stack .sc-card').forEach(card => {
-      if (card.querySelector(':scope > .sc-overlay')) return;
-      const ov = document.createElement('div');
-      ov.className = 'sc-overlay';
-      card.insertBefore(ov, card.firstChild);
-
-      const onMove = (e: MouseEvent) => {
-        // .sc-overlay/.card-spotlight::before are opacity:0 !important in
-        // light mode's neumorphism block (portfolio.css) — nothing to paint.
-        if (document.documentElement.getAttribute('data-theme') === 'light') return;
-        const r = card.getBoundingClientRect();
-        const x = (e.clientX - r.left) + 'px';
-        const y = (e.clientY - r.top) + 'px';
-        card.style.setProperty('--sc-x', x);
-        card.style.setProperty('--sc-y', y);
-        card.style.setProperty('--mouse-x', x);
-        card.style.setProperty('--mouse-y', y);
-      };
-      const onLeave = () => {
-        card.style.setProperty('--sc-x', '-500px');
-        card.style.setProperty('--sc-y', '-500px');
-        card.style.setProperty('--mouse-x', '-500px');
-        card.style.setProperty('--mouse-y', '-500px');
-      };
-      card.addEventListener('mousemove', onMove);
-      card.addEventListener('mouseleave', onLeave);
-    });
-  }, [t]);
-
-  // Tech Stack / How I Use AI: the description text sits only 16px above
-  // the first card (by design, to match the grid gap), so a drag-select
-  // started in one can cross into the other. `user-select: contain` would
-  // be the clean CSS fix but isn't implemented in any major browser —
-  // clamp the Range manually instead, so each block stays independently
-  // selectable.
-  useEffect(() => {
-    function clampSelection() {
-      const sel = window.getSelection();
-      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
-      const anchorEl = sel.anchorNode instanceof Element ? sel.anchorNode : sel.anchorNode?.parentElement;
-      const container = anchorEl?.closest<HTMLElement>('.tech-sub, .tech-item, .ai-sub, .ai-card');
-      if (!container) return;
-
-      const range = sel.getRangeAt(0);
-      if (container.contains(range.commonAncestorContainer)) return;
-
-      const forward = sel.anchorNode === range.startContainer && sel.anchorOffset === range.startOffset;
-      const clamped = document.createRange();
-      if (forward) {
-        clamped.setStart(range.startContainer, range.startOffset);
-        clamped.setEnd(container, container.childNodes.length);
-      } else {
-        clamped.setStart(container, 0);
-        clamped.setEnd(range.endContainer, range.endOffset);
-      }
-      sel.removeAllRanges();
-      sel.addRange(clamped);
-    }
-    document.addEventListener('selectionchange', clampSelection);
-    return () => document.removeEventListener('selectionchange', clampSelection);
-  }, []);
-
   // Skills scrollers
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -1557,219 +1752,7 @@ export default function SkillsSection() {
   // Scroll-reveal (.rise-card/.rise-soft → elastic rise + squash-stretch) is
   // handled site-wide by useRiseReveal(), called once in App.tsx.
 
-  // Design Process cards (mobile only, <768px): each card's height is
-  // content-driven (square image + auto-height text, see portfolio.css's
-  // <768px MOBILE block) instead of a fixed aspect-ratio, and CSS Grid's
-  // align-items: stretch only equalizes cards within the SAME row — the
-  // In-house and Freelance columns render as two separate grids with
-  // different description lengths, so their rows can settle at different
-  // heights from each other even though each grid is internally uniform.
-  // Measures every card's own (already row-stretched) height, takes the
-  // single tallest across both columns, and pins every card to that one
-  // height via a CSS custom property so no row/column reads shorter than
-  // another. offsetHeight (not getBoundingClientRect) because .rise-card's
-  // scroll-reveal squashes cards with a scaleY transform on mount, which
-  // would otherwise be measured as "natural" height and undershoot.
-  useEffect(() => {
-    let timer = 0;
-    const sync = () => {
-      document.documentElement.style.removeProperty('--process-card-mobile-h');
-      if (window.innerWidth >= 768) return;
-      const slots = document.querySelectorAll<HTMLElement>('.process-swipe-slot');
-      if (!slots.length) return;
-      let max = 0;
-      slots.forEach(slot => { max = Math.max(max, slot.offsetHeight); });
-      if (max > 0) document.documentElement.style.setProperty('--process-card-mobile-h', `${max}px`);
-    };
-    // Debounces bursts of ResizeObserver/font-load callbacks into a single
-    // measurement. setTimeout instead of requestAnimationFrame: rAF never
-    // fires at all while the tab/page isn't visible (confirmed live — a
-    // backgrounded load left the very first measurement stuck forever with
-    // no callback ever running), while setTimeout still fires there.
-    const scheduleSync = () => {
-      clearTimeout(timer);
-      timer = window.setTimeout(sync, 50);
-    };
-    // Measure once synchronously up front so the pinned height is never
-    // gated on any async callback firing at all, then debounce-refine after.
-    sync();
-    scheduleSync();
-    // Custom web fonts (var(--font-heading) on .process-name, etc.) can
-    // still be mid-swap on first mount — measuring before they land bakes
-    // in whatever the fallback font's shorter/longer line-wraps happened
-    // to produce, and nothing was re-triggering a remeasure afterward.
-    document.fonts?.ready.then(scheduleSync);
-    window.addEventListener('resize', scheduleSync);
-    // Also watch each card's own text block directly: unlike
-    // .process-swipe-slot (whose height this effect itself pins) or
-    // .process-card (which just stretches to fill that pin), .border-glow-
-    // inner's height always reflects its real text content, so observing
-    // it can't loop back on this effect's own writes — only genuine
-    // content/layout changes (language switch, a font finishing async,
-    // font-size media queries at other breakpoints) trigger it.
-    const observer = new ResizeObserver(scheduleSync);
-    document.querySelectorAll('.process-card--has-img .border-glow-inner').forEach(el => observer.observe(el));
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', scheduleSync);
-      observer.disconnect();
-      document.documentElement.style.removeProperty('--process-card-mobile-h');
-    };
-  }, [t]);
-
   return (
-    <>
-      {/* DESIGN PROCESS */}
-      <section className="section">
-        <div className="section-label rise-soft">My Design Process</div>
-        <div className="process-dual">
-          <div className="process-column">
-            <div className="process-column-head">
-              <div className="process-column-header">
-                <span>{t.tab_inhouse}</span>
-              </div>
-              <p className="process-column-desc">{t.tab_inhouse_desc}</p>
-              <PolicyPill icon="ph-users-three" label={t.process_policy_team_title} body={t.process_policy_team_body} />
-            </div>
-            <ProcessCarousel
-              cards={(['Align','Research','Structure','Design','Validate','Iterate'] as const).map((slug, i) => {
-                const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
-                const nameKey = `ih_name_${idx}` as keyof typeof t;
-                const descKey = `ih_desc_${idx}` as keyof typeof t;
-                return (
-                  <BorderGlow
-                    key={slug}
-                    className="process-card process-card--has-img rise-card"
-                    backgroundColor="#13101c"
-                    spotlightColor="rgba(108, 99, 255, 0.12)"
-                    backgroundSlot={
-                      <>
-                        <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: processCardBg(`${slug}_w`) }} />
-                        <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: processCardBg(slug) }} />
-                        <div className="process-card-bg-img process-card-bg-img--light-white" style={{ backgroundImage: processCardBg(`${slug}_l_w`) }} />
-                        <div className="process-card-bg-img process-card-bg-img--light" style={{ backgroundImage: processCardBg(`${slug}_l`) }} />
-                      </>
-                    }
-                  >
-                    <span className="process-step-badge"><em>{String(i + 1).padStart(2, '0')}</em></span>
-                    <div className="process-name">{t[nameKey] as string}</div>
-                    <div className="process-desc">{t[descKey] as string}</div>
-                  </BorderGlow>
-                );
-              })}
-            />
-          </div>
-          <div className="process-column">
-            <div className="process-column-head">
-              <div className="process-column-header">
-                <span>{t.tab_freelance}</span>
-              </div>
-              <p className="process-column-desc">{t.tab_freelance_desc}</p>
-              <PolicyPill icon="ph-shield-check" label={t.process_policy_title} body={t.process_policy_body} />
-            </div>
-            <ProcessCarousel
-              cards={(['Intake','AI Brief','Triage','Discovery','Proposal','Delivery'] as const).map((slug, i) => {
-                const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
-                const nameKey = `fl_name_${idx}` as keyof typeof t;
-                const descKey = `fl_desc_${idx}` as keyof typeof t;
-                return (
-                  <BorderGlow
-                    key={slug}
-                    className="process-card process-card--has-img rise-card"
-                    backgroundColor="#13101c"
-                    spotlightColor="rgba(108, 99, 255, 0.12)"
-                    backgroundSlot={
-                      <>
-                        <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: processCardBg(`${slug}_w`) }} />
-                        <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: processCardBg(slug) }} />
-                        <div className="process-card-bg-img process-card-bg-img--light-white" style={{ backgroundImage: processCardBg(`${slug}_l_w`) }} />
-                        <div className="process-card-bg-img process-card-bg-img--light" style={{ backgroundImage: processCardBg(`${slug}_l`) }} />
-                      </>
-                    }
-                  >
-                    <span className="process-step-badge"><em>{idx}</em></span>
-                    <div className="process-name">{t[nameKey] as string}</div>
-                    <div className="process-desc">{t[descKey] as string}</div>
-                  </BorderGlow>
-                );
-              })}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* TECH STACK */}
-      <section id="tech-stack" className="section">
-        <div className="section-label rise-soft">Tech Stack</div>
-        <h2 className="about-h2 rise-soft" style={{ marginBottom: '8px' }}>Web development <span className="gradient-text">literacy</span></h2>
-        <p className="tech-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.tech_sub }} />
-        <div className="tech-items">
-          <div className="tech-item-wrap rise-card">
-            <div className="tech-item html-item card-spotlight sc-card">
-              <span className="card-glass-highlight" aria-hidden="true" />
-              <div className="tech-item-text">
-                <div className="tech-item-header">
-                  <span className="tech-name"><i className="fab fa-html5" style={{ color: '#60a5fa', marginRight: '8px' }}></i>HTML / CSS / Tailwind</span>
-                </div>
-                <div className="tech-desc">{t.skill_html}</div>
-              </div>
-              <div className="tech-code-preview">
-                <div className="tcp-bar">
-                  <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
-                  <span className="tcp-filename">portfolio.css</span>
-                </div>
-                <TypingCode versions={[CSS_CODE_A, CSS_CODE_B]} lines={TECH_CODE_LINES} />
-              </div>
-            </div>
-            <span className="tech-level-badge html-item">DESIGN-READY</span>
-          </div>
-          <div className="tech-item-wrap rise-card">
-            <div className="tech-item js-item card-spotlight sc-card">
-              <span className="card-glass-highlight" aria-hidden="true" />
-              <div className="tech-item-text">
-                <div className="tech-item-header">
-                  <span className="tech-name"><i className="fab fa-js" style={{ color: '#fb923c', marginRight: '8px' }}></i>JavaScript</span>
-                </div>
-                <div className="tech-desc">{t.skill_js}</div>
-              </div>
-              <div className="tech-code-preview">
-                <div className="tcp-bar">
-                  <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
-                  <span className="tcp-filename">HeroSection.tsx</span>
-                </div>
-                <TypingCode versions={[JS_CODE_A, JS_CODE_B]} lines={TECH_CODE_LINES} />
-              </div>
-            </div>
-            <span className="tech-level-badge js-item">AI-ASSISTED</span>
-          </div>
-          <div className="tech-item-wrap rise-card">
-            <div className="tech-item react-item card-spotlight sc-card">
-              <span className="card-glass-highlight" aria-hidden="true" />
-              <div className="tech-item-text">
-                <div className="tech-item-header">
-                  <span className="tech-name"><i className="fab fa-react" style={{ color: '#a5b4fc', marginRight: '8px' }}></i>React.js / Vue.js</span>
-                </div>
-                <div className="tech-desc">{t.skill_css}</div>
-              </div>
-              <div className="tech-code-preview">
-                <div className="tcp-bar">
-                  <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
-                  <span className="tcp-filename">SkillsSection.tsx</span>
-                </div>
-                <TypingCode versions={[JSX_CODE_A, JSX_CODE_B]} lines={TECH_CODE_LINES} />
-              </div>
-            </div>
-            <span className="tech-level-badge react-item">RESPONSIVE</span>
-          </div>
-        </div>
-        <div className="figma-mcp-header rise-soft">
-          <h3>{t.figma_mcp_title}</h3>
-          <p dangerouslySetInnerHTML={{ __html: t.figma_mcp_desc }} />
-        </div>
-        <FigmaMcpShowcase />
-      </section>
-
-      {/* MY SKILLS + HOW I USE AI (merged) */}
       <section id="my-skills" className="section">
         <div className="section-label rise-soft">How I Use AI</div>
         <h2 className="about-h2 rise-soft" style={{ letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
@@ -1988,6 +1971,7 @@ export default function SkillsSection() {
                 key={card.id}
                 ref={(el: HTMLElement | null) => { if (el) cardRefs.current.set(card.id, el); else cardRefs.current.delete(card.id); }}
                 className={`ai-card rise-card${card.variant ? ' ' + card.variant : ''}${isOpen ? ' is-open' : ''}`}
+                data-lazy-keep={isOpen ? '' : undefined}
               >
                 <span className="sc-overlay" aria-hidden="true" />
                 <span className="spotlight-layer" aria-hidden="true" />
@@ -2094,6 +2078,48 @@ export default function SkillsSection() {
         </div>
         </div>
       </section>
+  );
+}
+
+export default function SkillsSection() {
+  // Tech Stack / How I Use AI: the description text sits only 16px above
+  // the first card (by design, to match the grid gap), so a drag-select
+  // started in one can cross into the other. `user-select: contain` would
+  // be the clean CSS fix but isn't implemented in any major browser —
+  // clamp the Range manually instead, so each block stays independently
+  // selectable.
+  useEffect(() => {
+    function clampSelection() {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+      const anchorEl = sel.anchorNode instanceof Element ? sel.anchorNode : sel.anchorNode?.parentElement;
+      const container = anchorEl?.closest<HTMLElement>('.tech-sub, .tech-item, .ai-sub, .ai-card');
+      if (!container) return;
+
+      const range = sel.getRangeAt(0);
+      if (container.contains(range.commonAncestorContainer)) return;
+
+      const forward = sel.anchorNode === range.startContainer && sel.anchorOffset === range.startOffset;
+      const clamped = document.createRange();
+      if (forward) {
+        clamped.setStart(range.startContainer, range.startOffset);
+        clamped.setEnd(container, container.childNodes.length);
+      } else {
+        clamped.setStart(container, 0);
+        clamped.setEnd(range.endContainer, range.endOffset);
+      }
+      sel.removeAllRanges();
+      sel.addRange(clamped);
+    }
+    document.addEventListener('selectionchange', clampSelection);
+    return () => document.removeEventListener('selectionchange', clampSelection);
+  }, []);
+
+  return (
+    <>
+      <LazyUnit name="design-process"><DesignProcessSection /></LazyUnit>
+      <LazyUnit name="tech-stack"><TechStackSection /></LazyUnit>
+      <LazyUnit name="ai-intake"><AiIntakeSection /></LazyUnit>
     </>
   );
 }

@@ -64,6 +64,20 @@ describe('usePauseOffscreenAnimations', () => {
     expect(s.classList.contains(OFFSCREEN_PAUSED_CLASS)).toBe(false);
   });
 
+  it('re-observes the current sections when a lazy unit mounts or unmounts', () => {
+    const { container } = render(<Harness />);
+    const before = observed.length;
+    // A LazyUnit swapped in a fresh section element.
+    const fresh = document.createElement('section');
+    fresh.className = 'section';
+    container.appendChild(fresh);
+    act(() => { window.dispatchEvent(new Event('lazy-unit-change')); });
+    expect(observed.length).toBeGreaterThan(before);
+    expect(observed).toContain(fresh);
+    // The old observer was disconnected before re-observing.
+    expect(disconnected).toBeGreaterThanOrEqual(1);
+  });
+
   it('does nothing without IntersectionObserver', () => {
     delete (globalThis as any).IntersectionObserver;
     expect(() => render(<Harness />)).not.toThrow();

@@ -2,7 +2,6 @@ import './styles/portfolio.css';
 import './styles/tailwind.css';
 import { LangProvider } from './context/LangContext';
 import { useRiseReveal } from './utils/useRiseReveal';
-import { useUnloadOffscreen } from './utils/useUnloadOffscreen';
 import { usePauseOffscreenAnimations } from './utils/usePauseOffscreenAnimations';
 import Loader from './components/Loader';
 import BeamsBackground from './components/BeamsBackground';
@@ -13,10 +12,10 @@ import SkillsSection from './components/SkillsSection';
 import PortfolioSection from './components/PortfolioSection';
 import ContactSection from './components/ContactSection';
 import ChatPanel from './components/ChatPanel';
+import LazyUnit from './components/LazyUnit';
 
 export default function App() {
   useRiseReveal();
-  useUnloadOffscreen();
   usePauseOffscreenAnimations();
 
   return (
@@ -25,10 +24,10 @@ export default function App() {
       <BeamsBackground />
       <Navbar />
       <HeroSection />
-      <AboutSection />
+      <LazyUnit name="about"><AboutSection /></LazyUnit>
       <SkillsSection />
-      <PortfolioSection />
-      <ContactSection />
+      <LazyUnit name="portfolio"><PortfolioSection /></LazyUnit>
+      <LazyUnit name="contact"><ContactSection /></LazyUnit>
       <ChatPanel />
     </LangProvider>
   );

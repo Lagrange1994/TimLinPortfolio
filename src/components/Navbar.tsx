@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { useTheme } from '../utils/useTheme';
+import { LAZY_UNIT_EVENT } from '../utils/lazyUnit';
 import { Sun, Moon, Globe, ChevronDown, Check } from 'lucide-react';
 import gsap from 'gsap';
 
@@ -233,8 +234,9 @@ export default function Navbar() {
       });
     });
 
-    // Nav highlight on scroll
-    const sections = document.querySelectorAll<HTMLElement>('section[id]');
+    // Nav highlight on scroll. Lazily unmounted page units (LazyUnit) swap
+    // their section elements, so the observed set is re-queried on every
+    // LAZY_UNIT_EVENT.
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {
@@ -244,9 +246,15 @@ export default function Navbar() {
         }
       });
     }, { threshold: 0.35 });
-    sections.forEach(s => io.observe(s));
+    const observeSections = () => {
+      io.disconnect();
+      document.querySelectorAll<HTMLElement>('section[id]').forEach(s => io.observe(s));
+    };
+    observeSections();
+    window.addEventListener(LAZY_UNIT_EVENT, observeSections);
 
     return () => {
+      window.removeEventListener(LAZY_UNIT_EVENT, observeSections);
       io.disconnect();
       cleanups.forEach(fn => fn());
     };
