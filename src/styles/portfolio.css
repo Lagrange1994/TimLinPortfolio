@@ -4837,11 +4837,23 @@
        any small scale-vs-actual-size mismatch) now has real room to fall
        into before hitting the clip line, instead of being cut mid-card. */
     .mcp-bleed {
-      width: 100vw;
-      margin-left: calc(50% - 50vw);
-      margin-right: calc(50% - 50vw);
-      padding: 0 48px;
-      overflow: clip;
+      /* / var(--z, 1): above 1920px html carries `zoom` (scaleLock.ts), which
+         scales viewport units up with it — a bare 100vw then overshoots the
+         visible width by the zoom factor, shoving the whole grid left and
+         cropping the Figma card on 2K/4K screens. */
+      width: calc(100vw / var(--z, 1));
+      margin-left: calc(50% - 50vw / var(--z, 1));
+      margin-right: calc(50% - 50vw / var(--z, 1));
+      /* .section stops growing at max-width 1440px, so on wider screens its
+         content box (what Tech Stack's three cards fill) is narrower than the
+         viewport minus 48px a side. Add the extra gutter so the MCP grid is
+         exactly that wide too, not full-bleed. */
+      padding: 0 calc(max(0px, (100vw / var(--z, 1) - 1440px) / 2) + 48px);
+      /* Only the x axis is clipped (the scaled phone grid is wider than its
+         wrap). A plain `overflow: clip` also cut the cards' shadow/ripple
+         flat along the grid's top and bottom edges. */
+      overflow-x: clip;
+      overflow-y: visible;
       box-sizing: border-box;
     }
     /* Measures the grid's rendered width; below MCP_DESIGN_WIDTH the
@@ -4903,22 +4915,6 @@
       background: var(--mcp-code-bg);
     }
     .mcp-mono { font-family: var(--mono); }
-
-    /* .mcp-grid-wrap.is-scaled = FigmaMcpShowcase.tsx's scale-sync effect is
-       actively shrinking .mcp-grid to fit (phones/narrow tablets). The
-       card's box-shadow (--card-shadow-md has an 8px 24px 56px layer, ~64px
-       of visible bleed) and the hub's glow filter both bleed well past
-       their own element, and .mcp-grid-wrap's overflow: clip crops that
-       bleed at whatever box the wrap happens to be — reserving enough
-       margin there to fit it would shrink the cards noticeably just to
-       hold blank space for a decorative shadow. Dropping both while scaled
-       is the simpler trade: full-size cards, nothing left to clip. */
-    .mcp-grid-wrap.is-scaled .mcp-card {
-      box-shadow: var(--card-edge);
-    }
-    .mcp-grid-wrap.is-scaled .mcp-hub {
-      filter: none;
-    }
 
     /* MCP hub — centered on the grid's own gap (not a fixed pixel offset),
        so it stays put in the seam between the two cards at any width. */

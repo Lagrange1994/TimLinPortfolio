@@ -34,15 +34,11 @@ describe('FigmaMcpShowcase keeps the two-card grid horizontal on phones via scal
     expect(source).toMatch(/grid\.style\.transform = '';/);
   });
 
-  // Regression: a margin inside the wrap's overflow: clip box, big enough
-  // to fit the cards' own box-shadow (--card-shadow-md has an 8px 24px 56px
-  // layer — up to ~64px of visible bleed), shrank the cards noticeably just
-  // to reserve blank space for a decorative shadow — the opposite problem
-  // (cards too small). Toggling an .is-scaled class and dropping the
-  // shadow/glow in CSS while scaled (see portfolio.css) sidesteps the
-  // tradeoff: full-size cards, nothing left to clip.
-  it('toggles .is-scaled on the wrap so CSS can drop the shadow/glow instead of reserving clip-box margin for it', () => {
-    expect(source).toMatch(/wrap\.classList\.toggle\('is-scaled', scaling\)/);
+  // The shadow/glow used to be dropped via an .is-scaled class while scaled
+  // because the clip box sat flush against the cards. The clip is now x-only
+  // and out at the screen edge, so nothing needs dropping any more.
+  it('no longer toggles .is-scaled (shadow/glow stay on while scaled)', () => {
+    expect(source).not.toMatch(/is-scaled/);
   });
 });
 
@@ -71,18 +67,14 @@ describe('.mcp-grid-wrap clips instead of stacking the two-card grid on phones',
     expect(wrapBlock).not.toMatch(/overflow:/);
   });
 
-  // Regression: the card's box-shadow and the hub's glow filter both bleed
-  // well past their own element (the shadow alone up to ~64px). Even with
-  // .mcp-bleed's extra clip-boundary room (see below), dropping both while
-  // .is-scaled (set by FigmaMcpShowcase.tsx's scale-sync effect) removes
-  // the dependency on that room being wide enough in the first place.
-  it('drops the card shadow and hub glow while the grid is scaled, instead of relying on clip-box margin to fit them', () => {
-    const cardBlock = source.match(/\.mcp-grid-wrap\.is-scaled \.mcp-card \{[^}]*\}/)?.[0];
-    const hubBlock = source.match(/\.mcp-grid-wrap\.is-scaled \.mcp-hub \{[^}]*\}/)?.[0];
-    expect(cardBlock).toBeTruthy();
-    expect(cardBlock).toMatch(/box-shadow:\s*var\(--card-edge\);/);
-    expect(hubBlock).toBeTruthy();
-    expect(hubBlock).toMatch(/filter:\s*none;/);
+  // Regression: the card's box-shadow and the hub's glow filter bleed well
+  // past their own element (the shadow alone up to ~64px). They must stay on
+  // at every width — .mcp-bleed clips x only, so nothing crops them above or
+  // below the cards.
+  it('keeps the card shadow and hub glow at every width (no .is-scaled override)', () => {
+    expect(source).not.toMatch(/\.mcp-grid-wrap\.is-scaled/);
+    const cardBlock = source.match(/\.mcp-card \{[^}]*\}/)?.[0];
+    expect(cardBlock).toMatch(/box-shadow:\s*var\(--card-shadow-md\), var\(--card-edge\);/);
   });
 });
 
@@ -97,10 +89,11 @@ describe('.mcp-bleed pushes the clip boundary out to the browser edge without ch
   it('breaks out to the full viewport width with the negative-margin bleed trick, and clips there', () => {
     const block = source.match(/\.mcp-bleed \{[^}]*\}/)?.[0];
     expect(block).toBeTruthy();
-    expect(block).toMatch(/width:\s*100vw;/);
-    expect(block).toMatch(/margin-left:\s*calc\(50% - 50vw\);/);
-    expect(block).toMatch(/margin-right:\s*calc\(50% - 50vw\);/);
-    expect(block).toMatch(/overflow:\s*clip;/);
+    expect(block).toMatch(/width:\s*calc\(100vw \/ var\(--z, 1\)\);/);
+    expect(block).toMatch(/margin-left:\s*calc\(50% - 50vw \/ var\(--z, 1\)\);/);
+    expect(block).toMatch(/margin-right:\s*calc\(50% - 50vw \/ var\(--z, 1\)\);/);
+    expect(block).toMatch(/overflow-x:\s*clip;/);
+    expect(block).toMatch(/overflow-y:\s*visible;/);
   });
 
   // Regression: without matching .section's own side padding at each
@@ -109,7 +102,7 @@ describe('.mcp-bleed pushes the clip boundary out to the browser edge without ch
   // where they'd otherwise be.
   it('mirrors .section\'s own side padding at every breakpoint so the visible cards land back where they started', () => {
     const desktopBlock = source.match(/\.mcp-bleed \{[^}]*\}/)?.[0];
-    expect(desktopBlock).toMatch(/padding:\s*0 48px;/);
+    expect(desktopBlock).toMatch(/padding:\s*0 calc\(max\(0px, \(100vw \/ var\(--z, 1\) - 1440px\) \/ 2\) \+ 48px\);/);
 
     const tabletSection = source.slice(
       source.indexOf('TABLET (768px'),

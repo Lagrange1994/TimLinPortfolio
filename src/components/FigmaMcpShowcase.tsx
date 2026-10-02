@@ -300,15 +300,13 @@ export default function FigmaMcpShowcase() {
     // itself can stay exactly as wide as every other card on the page (this
     // measurement, and the scale it drives, is unaffected by the bleed) while
     // the clip boundary sits out at the screen edge instead of flush against
-    // the cards. That alone would already give the cards' box-shadow
-    // (--card-shadow-md has an 8px 24px 56px layer — up to ~64px of visible
-    // bleed) room on most phones, but dropping the shadow (and the hub's glow
-    // filter) for as long as the grid is scaled removes the dependency on
-    // that margin being wide enough at all.
+    // the cards. The bleed clips only on x (overflow-y stays visible), so the
+    // cards' box-shadow (--card-shadow-md has an 8px 24px 56px layer — up to
+    // ~64px of visible bleed) and the hub's glow are never cut off above or
+    // below, scaled or not.
     const sync = () => {
       const w = wrap.clientWidth;
       const scaling = w < MCP_DESIGN_WIDTH;
-      wrap.classList.toggle('is-scaled', scaling);
       if (!scaling) {
         grid.style.transform = '';
         grid.style.width = '';
