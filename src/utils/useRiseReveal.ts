@@ -6,8 +6,8 @@ gsap.registerPlugin(ScrollTrigger);
 
 // Site-wide scroll-reveal: left→right column start-stagger (per row, same
 // trigger point) + soft elastic fast-in/slow-out rise + a secondary elastic
-// "stretch" — cards squash→overshoot→settle in scaleY, text line-height
-// squeezes tight then springs open. Bounce intensity tuned down from an
+// "stretch" — cards and text both squash→overshoot→settle in scaleY (a
+// transform, so no layout shift). Bounce intensity tuned down from an
 // earlier pass against the dailywebdesign IG reel reference, which reads as
 // smooth ease-out with no real spring overshoot — this keeps a light single
 // bounce instead of a wobbly multi-oscillation spring.
@@ -135,26 +135,17 @@ export function useRiseReveal() {
               },
             }, 0);
           } else {
-            // Must carry the 'px' unit explicitly — GSAP writes bare numbers
-            // for lineHeight as-is, and unitless CSS line-height is a
-            // font-size *multiplier*, not px.
-            const naturalLH = parseFloat(getComputedStyle(el).lineHeight);
-            if (!Number.isNaN(naturalLH)) {
-              gsap.set(el, { lineHeight: (naturalLH * 0.6) + 'px' });
-              // Unlike scaleY (a transform, GPU-composited), line-height is a
-              // layout property — every tick forces a reflow. `contain:
-              // layout` scopes that reflow to just this element's own
-              // subtree instead of cascading through the whole document, so
-              // a fast scroll that brings a section's whole batch of
-              // rise-soft text into view at once (10+ concurrent tweens)
-              // doesn't thrash full-page layout. Cleared once the tween
-              // settles — nothing after this needs the isolation.
-              el.style.contain = 'layout';
-              tl.to(el, {
-                lineHeight: naturalLH + 'px', duration: DUR * 1.15, ease: STRETCH_EASE,
-                onComplete: () => { el.style.contain = ''; },
-              }, 0);
-            }
+            // Text squash/stretch is a scaleY transform, NOT a line-height
+            // tween. line-height is a layout property: squeezing it to 60%
+            // made every rise-soft block shorter than its final height until
+            // revealed, then grow while scrolling — each tick (and the final
+            // jump) pushed everything below it, which read as the page
+            // nudging itself while you scroll. A transform never changes the
+            // element's layout box, so nothing else moves. Origin is the top
+            // edge so the text springs open downward, like the line-height
+            // opening it replaces.
+            gsap.set(el, { scaleY: 0.82, transformOrigin: 'center top' });
+            tl.to(el, { scaleY: 1, duration: DUR * 1.15, ease: STRETCH_EASE }, 0);
           }
 
           // Lets things that shouldn't start until the reveal has visually
