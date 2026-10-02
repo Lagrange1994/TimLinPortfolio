@@ -32,9 +32,15 @@ describe('Navbar right-edge swipe opens the staggered menu (mobile)', () => {
   });
 
   it('while open, a rightward drag starting at the menu\'s left edge (or left of it) closes it', () => {
-    expect(tsx).toMatch(/closeSwipeActive = t\.clientX <= panel\.getBoundingClientRect\(\)\.left \+ EDGE_ZONE;/);
-    expect(tsx).toMatch(/if \(dx >= OPEN_THRESHOLD && Math\.abs\(dx\) > Math\.abs\(dy\)\) \{\s*closeSwipeActive = false;\s*closeMenu\(\);\s*\}/);
+    expect(tsx).toMatch(/closeFromEdge = t\.clientX <= panel\.getBoundingClientRect\(\)\.left \+ EDGE_ZONE;/);
+    expect(tsx).toMatch(/if \(dx >= OPEN_THRESHOLD && Math\.abs\(dx\) > Math\.abs\(dy\)\) \{/);
     expect(tsx).toMatch(/const onTouchEnd = \(\) => \{ edgeSwipeActive = false; closeSwipeActive = false;/);
+  });
+
+  it('while open, a FORCEFUL rightward flick anywhere in the menu also closes it (not only from the edge)', () => {
+    expect(tsx).toMatch(/closeSwipeActive = true;\s*closeFromEdge = t\.clientX <= panel\.getBoundingClientRect\(\)\.left \+ EDGE_ZONE;/);
+    expect(tsx).toMatch(/const forceful = span > 0 && \(last\.x - first\.x\) \/ span >= CLOSE_MIN_VELOCITY;/);
+    expect(tsx).toMatch(/if \(closeFromEdge \|\| forceful\) \{\s*closeSwipeActive = false;\s*closeMenu\(\);/);
   });
 
   it('cancels horizontal edge drags (either edge) so the browser cannot history-navigate to visited project pages', () => {
@@ -52,6 +58,16 @@ describe('Navbar right-edge swipe opens the staggered menu (mobile)', () => {
   it('also sets overscroll-behavior-x: none on html/body (Chromium gesture navigation)', () => {
     const css = fs.readFileSync(path.join(ROOT, 'src/styles/portfolio.css'), 'utf8');
     expect(css).toMatch(/html,\s*body \{\s*width: 100%;\s*overflow-x: clip;[\s\S]*?overscroll-behavior-x: none;\s*\}/);
+  });
+
+  it('locks page scroll on <html> (not body) while open, and unlocks on close', () => {
+    expect(tsx).toMatch(/document\.documentElement\.classList\.add\('sm-menu-open'\);/);
+    expect(tsx).toMatch(/document\.documentElement\.classList\.remove\('sm-menu-open'\);/);
+    expect(tsx).not.toMatch(/document\.body\.style\.overflow/);
+    const css = fs.readFileSync(path.join(ROOT, 'src/styles/portfolio.css'), 'utf8');
+    expect(css).toMatch(/html\.sm-menu-open \{\s*overflow: hidden;\s*overscroll-behavior: none;\s*\}/);
+    expect(css).toMatch(/\.sm-wrapper \{\s*touch-action: none;\s*\}/);
+    expect(css).toMatch(/\.sm-panel \{\s*touch-action: pan-y;\s*overscroll-behavior: contain;\s*\}/);
   });
 
   it('registers and cleans up all three touch listeners as passive', () => {

@@ -8387,6 +8387,28 @@
       opacity: 1;
     }
 
+    /* Scroll lock while the menu is open. Locked on <html>, not <body>: html
+       is already overflow-x: clip (not visible), so a body overflow never
+       propagates to the viewport and the page kept scrolling underneath —
+       which also moved the mobile URL bar and resized this fixed overlay
+       mid-use. touch-action: none on the overlay stops touch-driven page
+       scroll/chaining anywhere over it; the panel (its own scroll container)
+       re-enables pan-y so a tall menu can still scroll itself, and contains
+       its overscroll so reaching its end can't chain into the page. */
+    html.sm-menu-open {
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
+    .sm-wrapper {
+      touch-action: none;
+    }
+
+    .sm-panel {
+      touch-action: pan-y;
+      overscroll-behavior: contain;
+    }
+
     .sm-prelayers {
       position: absolute;
       top: 0;

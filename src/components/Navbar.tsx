@@ -336,7 +336,7 @@ export default function Navbar() {
     function openMenu() {
       isOpenRef.current = true;
       toggleBtn.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
+      document.documentElement.classList.add('sm-menu-open');
       document.body.classList.add('sm-menu-open');
       wrapper.classList.add('sm-open');
       playOpen(); animateIcon(true); animateText(true);
@@ -345,7 +345,7 @@ export default function Navbar() {
     function closeMenu() {
       isOpenRef.current = false;
       toggleBtn.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
+      document.documentElement.classList.remove('sm-menu-open');
       document.body.classList.remove('sm-menu-open');
       wrapper.classList.remove('sm-open');
       playClose(); animateIcon(false); animateText(false);
@@ -366,6 +366,10 @@ export default function Navbar() {
     let touchStartY = 0;
     let edgeSwipeActive = false;
     let closeSwipeActive = false;
+    let closeFromEdge = false;
+    let closeSamples: { x: number; t: number }[] = [];
+    const CLOSE_MIN_VELOCITY = 0.5;
+    const CLOSE_VELOCITY_WINDOW = 120;
 
     // The browser's own edge-swipe (back from the left edge, forward from the
     // right) would otherwise carry the homepage to a project page already
@@ -396,11 +400,16 @@ export default function Navbar() {
       touchStartX = t.clientX;
       touchStartY = t.clientY;
       if (isOpenRef.current) {
-        // Open: a drag back toward the right that starts at the menu's own
-        // left edge (or anywhere left of it — the prelayer strips/backdrop)
-        // closes it, mirroring the swipe-in that opened it.
+        // Open: a drag back toward the right closes it, mirroring the
+        // swipe-in that opened it. Starting at the menu's own left edge (or
+        // anywhere left of it — the prelayer strips/backdrop) any 60px drag
+        // is enough; starting anywhere else inside the menu it has to be a
+        // forceful flick (recent finger velocity), so ordinary touches and
+        // vertical scrolling of the panel never close it by accident.
         edgeSwipeActive = false;
-        closeSwipeActive = t.clientX <= panel.getBoundingClientRect().left + EDGE_ZONE;
+        closeSwipeActive = true;
+        closeFromEdge = t.clientX <= panel.getBoundingClientRect().left + EDGE_ZONE;
+        closeSamples = [{ x: t.clientX, t: e.timeStamp }];
         return;
       }
       closeSwipeActive = false;
@@ -412,9 +421,17 @@ export default function Navbar() {
       const dx = t.clientX - touchStartX;
       const dy = t.clientY - touchStartY;
       if (closeSwipeActive && isOpenRef.current) {
+        closeSamples.push({ x: t.clientX, t: e.timeStamp });
+        closeSamples = closeSamples.filter(s => e.timeStamp - s.t <= CLOSE_VELOCITY_WINDOW);
         if (dx >= OPEN_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
-          closeSwipeActive = false;
-          closeMenu();
+          const first = closeSamples[0];
+          const last = closeSamples[closeSamples.length - 1];
+          const span = last.t - first.t;
+          const forceful = span > 0 && (last.x - first.x) / span >= CLOSE_MIN_VELOCITY;
+          if (closeFromEdge || forceful) {
+            closeSwipeActive = false;
+            closeMenu();
+          }
         }
         return;
       }
@@ -444,7 +461,7 @@ export default function Navbar() {
 
     panel.querySelectorAll<HTMLElement>('.sm-panel-item').forEach(btn => {
       btn.addEventListener('click', () => {
-        // closeMenu() restores body.style.overflow synchronously — scrolling
+        // closeMenu() lifts the html.sm-menu-open scroll lock synchronously — scrolling
         // before that (e.g. a scrollToSection fired straight from this click,
         // racing the still-open menu's overflow:hidden lock) gets silently
         // dropped, landing the section in the wrong spot. Scroll only after
