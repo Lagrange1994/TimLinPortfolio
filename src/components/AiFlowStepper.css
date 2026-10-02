@@ -171,6 +171,39 @@ i.afs-icon {
   }
 }
 
+/* Tablet/phone: same one-row rule, never wrap. At 360px the card's content
+   box is ~294px — narrower than the 321px the steps + 4px-basis connectors
+   need — so after the connectors hit a 2px floor the steps themselves give
+   up side padding, and below ~340px the label shrinks a step too. nowrap
+   keeps the row on one line even if a very narrow screen still overflows a
+   few px, rather than dropping Delivery onto a second line. */
+@media (max-width: 1024px) {
+  .ai-card:not(.is-open) .ai-flow-stepper-boxed {
+    flex-wrap: nowrap;
+  }
+  .ai-card:not(.is-open) .ai-flow-stepper-boxed .afs-connector {
+    flex: 1 1 2px;
+    max-width: 16px;
+    margin: 0 2px;
+  }
+}
+
+@media (max-width: 380px) {
+  .ai-card:not(.is-open) .ai-flow-stepper-boxed .afs-step {
+    min-width: 0;
+    padding: 8px 5px 7px;
+  }
+}
+
+@media (max-width: 340px) {
+  .ai-card:not(.is-open) .ai-flow-stepper-boxed .afs-step {
+    padding: 8px 3px 7px;
+  }
+  .ai-card:not(.is-open) .ai-flow-stepper-boxed .afs-label {
+    font-size: 7px;
+  }
+}
+
 /* Card expanded: drop the boxed teaser look and revert to the original
    inline pill + plain dot (icons hidden, a synthesized ::before dot takes
    their place) — the icon-forward boxed style is only for the collapsed
