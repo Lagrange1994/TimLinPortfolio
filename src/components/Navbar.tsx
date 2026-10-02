@@ -44,6 +44,30 @@ export default function Navbar() {
   const panelRef = useRef<HTMLElement>(null);
   const isOpenRef = useRef(false);
   const busyRef = useRef(false);
+  const leftGuardRef = useRef<HTMLDivElement>(null);
+  const rightGuardRef = useRef<HTMLDivElement>(null);
+
+  // The browser's own edge-swipe navigation (back from the left edge, forward
+  // from the right) must never fire on the homepage. Two thin fixed strips
+  // along the screen edges own those touches: touch-action: pan-y (see
+  // .edge-swipe-guard in portfolio.css) takes horizontal gestures away from
+  // the browser, and a non-passive touchstart/touchmove preventDefault covers
+  // engines (iOS Safari) that ignore touch-action for their edge gesture.
+  // Native listeners, not React props — React registers touch events as
+  // passive, where preventDefault is ignored. The strips only exist below
+  // 1024px (display: none above), so desktop is untouched.
+  useEffect(() => {
+    const guards = [leftGuardRef.current, rightGuardRef.current].filter(Boolean) as HTMLDivElement[];
+    const stop = (e: TouchEvent) => { if (e.cancelable) e.preventDefault(); };
+    guards.forEach(g => {
+      g.addEventListener('touchstart', stop, { passive: false });
+      g.addEventListener('touchmove', stop, { passive: false });
+    });
+    return () => guards.forEach(g => {
+      g.removeEventListener('touchstart', stop);
+      g.removeEventListener('touchmove', stop);
+    });
+  }, []);
 
   // .theme-switch-knob used to need a display:none/reflow/restore hack here
   // to unstick its transform transition — root cause turned out to be
@@ -593,6 +617,9 @@ export default function Navbar() {
           </button>
         </div>
       </header>
+
+      <div className="edge-swipe-guard edge-swipe-guard--left" ref={leftGuardRef} aria-hidden="true"></div>
+      <div className="edge-swipe-guard edge-swipe-guard--right" ref={rightGuardRef} aria-hidden="true"></div>
 
       {/* Staggered Menu Overlay */}
       <div id="staggered-menu" className="sm-wrapper" data-position="right" ref={menuRef}>

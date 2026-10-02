@@ -8084,6 +8084,21 @@
       #portfolio:not(.portfolio-expanded) .portfolio-wall-frame {
         left: calc(50% - min(50vw, 720px) + 16px);
         width: calc(min(100vw, 1440px) - 32px);
+        /* svh here too, not the base rule's dvh: the wall's `top` is derived
+           from the section height, so a dvh value moved the whole wall each
+           time the address bar toggled mid-scroll. */
+        top: calc((calc(100svh / var(--z, 1)) - var(--wall-h)) / 2 - var(--nav-h, 0px));
+      }
+      #portfolio:not(.portfolio-expanded) .view-all-row {
+        top: calc((calc(100svh / var(--z, 1)) - var(--wall-h)) / 2 - var(--nav-h, 0px) + 1.25rem + var(--wall-h) - 40px);
+      }
+      #portfolio:not(.portfolio-expanded) {
+        min-height: calc(100svh / var(--z, 1));
+      }
+      /* Mobile bg image layer: dvh made the cover-fit photo rescale as the
+         address bar slid. The hero it backs is already pinned to svh. */
+      .spline-bg-layer {
+        height: calc(100svh / var(--z, 1));
       }
       /* Keep the button anchor (see #portfolio .view-all-row) on the same svh
          basis as the wall here, so it doesn't drift while the address bar
@@ -8402,6 +8417,35 @@
 
     .sm-wrapper {
       touch-action: none;
+    }
+
+    /* Edge strips that keep the browser's back/forward edge-swipe off the
+       homepage (see Navbar.tsx). 16px stays clear of the chat button and the
+       menu toggle; z-index sits under the menu overlay (500) so the open
+       menu still receives its own edge touches. */
+    .edge-swipe-guard {
+      display: none;
+    }
+
+    @media (max-width: 1024px) {
+      .edge-swipe-guard {
+        display: block;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        width: 16px;
+        z-index: 450;
+        touch-action: pan-y;
+        background: transparent;
+      }
+
+      .edge-swipe-guard--left {
+        left: 0;
+      }
+
+      .edge-swipe-guard--right {
+        right: 0;
+      }
     }
 
     .sm-panel {

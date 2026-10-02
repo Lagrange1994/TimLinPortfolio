@@ -43,6 +43,21 @@ describe('Navbar right-edge swipe opens the staggered menu (mobile)', () => {
     expect(tsx).toMatch(/if \(closeFromEdge \|\| forceful\) \{\s*closeSwipeActive = false;\s*closeMenu\(\);/);
   });
 
+  it('keeps the browser back/forward edge swipe off the homepage with thin edge guard strips', () => {
+    expect(tsx).toMatch(/className="edge-swipe-guard edge-swipe-guard--left" ref=\{leftGuardRef\}/);
+    expect(tsx).toMatch(/className="edge-swipe-guard edge-swipe-guard--right" ref=\{rightGuardRef\}/);
+    expect(tsx).toMatch(/g\.addEventListener\('touchstart', stop, \{ passive: false \}\);/);
+    expect(tsx).toMatch(/g\.addEventListener\('touchmove', stop, \{ passive: false \}\);/);
+    expect(tsx).toMatch(/g\.removeEventListener\('touchstart', stop\);/);
+    const css = fs.readFileSync(path.join(ROOT, 'src/styles/portfolio.css'), 'utf8');
+    expect(css).toMatch(/\.edge-swipe-guard \{\s*display: none;\s*\}/);
+    const mobile = css.match(/@media \(max-width: 1024px\) \{\s*\.edge-swipe-guard \{[\s\S]*?\.edge-swipe-guard--right \{[\s\S]*?\}\s*\}/)?.[0];
+    expect(mobile).toBeTruthy();
+    expect(mobile).toMatch(/width: 16px;/);
+    expect(mobile).toMatch(/z-index: 450;/);
+    expect(mobile).toMatch(/touch-action: pan-y;/);
+  });
+
   it('cancels horizontal edge drags (either edge) so the browser cannot history-navigate to visited project pages', () => {
     expect(tsx).toMatch(/if \(t\.clientX <= EDGE_ZONE \|\| t\.clientX >= window\.innerWidth - EDGE_ZONE\) \{/);
     expect(tsx).toMatch(/window\.addEventListener\('touchmove', blockHistorySwipe, \{ passive: false \}\);/);
