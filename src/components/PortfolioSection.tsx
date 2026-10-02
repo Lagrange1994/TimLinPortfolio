@@ -772,6 +772,12 @@ export default function PortfolioSection() {
         // content happens to render shorter than it. computeWallHeight's
         // usual min(content, cap) clamp (see portfolioMask.ts) would leave
         // the leftover cap space stranded below the wall instead.
+        // Pin the top first (cap reads it back): offsetTop chain, not the
+        // label's rect, so this is right even while the label is still
+        // mid-rise — which is what lets the lock land before the wall is
+        // ever visible instead of waiting for the label to settle.
+        frame!.style.top = `${offsetTopWithin(label!)}px`;
+        frame!.style.marginTop = '0px';
         const capPx = Math.max(0, measureMobileCapPx());
         frame!.style.height = `${capPx}px`;
         // The 4-row stack's natural height (fixed card height + gaps) rarely
@@ -876,43 +882,20 @@ export default function PortfolioSection() {
     // landing right as the fade/rise settled read as a rubbery "stretch".
     // Locking immediately means the real height is already in place before
     // the entrance even starts, so there's nothing left to snap.
-    // Mobile is different: its top is pinned to the *label's own live
-    // position* (see the geometry effect above), which is only correct
-    // once the label's separate rise-soft entrance (useRiseReveal.ts) has
-    // actually settled — locking on intersection alone there could still
-    // capture a pre-animation label position and freeze an asymmetric gap
-    // forever (the bug this replaces). prefers-reduced-motion visitors
-    // never get a 'rise-settled' event at all (useRiseReveal.ts bails out
-    // of ScrollTrigger setup for them), so they only need the intersection
-    // check.
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    let sectionVisible = false;
-    let labelSettled = reducedMotion;
-
-    function tryLock() {
-      if (!sectionVisible) return;
-      if (isMobile && !labelSettled) return;
-      lockWallGeometry();
-    }
-
+    // Mobile locks on intersection too — never wait for the label's rise.
+    // Its top pin is read from the offsetTop chain (see lockWallGeometry),
+    // which the rise transform can't skew, so the real height and row scale
+    // are already in place while the wall is still invisible. Waiting for the
+    // label's 'rise-settled' instead let the wall fade in at the CSS pre-lock
+    // fallback size (85svh, unscaled rows) and then visibly jump (~30px, rows
+    // shrinking ~19%) when the lock finally landed.
     const io = new IntersectionObserver((entries) => {
       if (entries.some(e => e.isIntersecting)) {
-        sectionVisible = true;
-        tryLock();
+        lockWallGeometry();
         io.disconnect();
       }
     }, { threshold: 0.01 });
     io.observe(section);
-
-    function onRiseSettled(e: Event) {
-      if (e.target !== label) return;
-      labelSettled = true;
-      tryLock();
-    }
-    if (isMobile && !reducedMotion) {
-      section.addEventListener('rise-settled', onRiseSettled);
-    }
 
     window.addEventListener('resize', onResize);
     // Both can settle after the first lock: the headline's layout (web font
@@ -928,7 +911,6 @@ export default function PortfolioSection() {
     return () => {
       io.disconnect();
       headerRo.disconnect();
-      section.removeEventListener('rise-settled', onRiseSettled);
       window.removeEventListener('resize', onResize);
     };
   }, [expanded]);
@@ -976,7 +958,8 @@ export default function PortfolioSection() {
   // this element directly) and broke real geometry, because that system's
   // row/column bucketing sweeps every .rise-soft/.rise-card in the section
   // together on one shared schedule, and lockWallGeometry's mobile height
-  // lock waits specifically on *label*'s 'rise-settled' event — pulling the
+  // lock used to wait specifically on *label*'s 'rise-settled' event (it no
+  // longer does, see the IntersectionObserver below) — pulling the
   // frame into that shared pass changed timing it wasn't built to expect.
   // Opacity ONLY, deliberately — no transform (translateY/scale), no
   // clip-path wipe. Two different attempts at adding a "rise" motion on top
