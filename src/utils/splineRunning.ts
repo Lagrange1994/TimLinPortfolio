@@ -11,8 +11,15 @@ type SplineApp = {
     getPixelRatio?: () => number;
     setPixelRatio?: (ratio: number) => void;
     getSize?: (target: SizeTarget) => SizeTarget;
+    shadowMap?: {
+      enabled?: boolean;
+      autoUpdate?: boolean;
+      needsUpdate?: boolean;
+      render?: (...args: unknown[]) => void;
+    };
   };
   __fpsCap?: number;
+  __shadowEvery?: number;
   __basePixelRatio?: number;
 };
 type SplineViewerEl = HTMLElement & { _spline?: SplineApp };
@@ -46,6 +53,35 @@ export function capSceneFps(app: SplineApp, maxFps = SPLINE_MAX_FPS) {
   app.__fpsCap = maxFps;
   // Re-arm a loop that's already running so it picks up the wrapper now.
   if (!app._isPaused) app._renderer?.setAnimationLoop?.(app.render);
+}
+
+// The runtime re-renders its shadow map on every frame it draws (its opaque
+// pass forces shadowMap.autoUpdate/needsUpdate on, later passes turn them
+// back off) — for the hero figure that's the whole ~200k-triangle scene
+// drawn one extra time per frame, for shadows that barely move. Wraps
+// shadowMap.render so only every `every`th real refresh goes through: the
+// map updates at 30 Hz under the 60 fps cap and the skipped frames reuse the
+// previous one. Calls that wouldn't have drawn anyway (flags off, or no
+// shadow-casting lights — the runtime issues several of those per frame)
+// pass straight through uncounted. Idempotent.
+export const SPLINE_SHADOW_EVERY = 2;
+export function throttleSceneShadows(app: SplineApp, every = SPLINE_SHADOW_EVERY) {
+  const shadowMap = app._renderer?.shadowMap;
+  if (!shadowMap?.render || app.__shadowEvery) return;
+  const render = shadowMap.render;
+  let requests = 0;
+  shadowMap.render = function (this: typeof shadowMap, ...args: unknown[]) {
+    const lights = args[0];
+    const wanted = this.enabled !== false
+      && (this.autoUpdate !== false || this.needsUpdate === true)
+      && (!Array.isArray(lights) || lights.length > 0);
+    if (wanted && requests++ % every !== 0) {
+      this.needsUpdate = false; // what a real refresh would have left behind
+      return;
+    }
+    render.apply(this, args);
+  };
+  app.__shadowEvery = every;
 }
 
 // Render-resolution budget: a scene's drawing buffer never exceeds this many

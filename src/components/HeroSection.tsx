@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
-import { setSceneRunning } from '../utils/splineRunning';
+import { setSceneRunning, throttleSceneShadows } from '../utils/splineRunning';
 import HeroAskStrip from './HeroAskStrip';
 import gsap from 'gsap';
 
@@ -607,6 +607,9 @@ export default function HeroSection() {
       const scale = h / HERO_SCENE_SIZE;
       const size = HERO_SCENE_SIZE * scale;
       syncSplinePixelRatio(scale);
+      // Halve the figure's shadow-map refresh rate (idempotent; a no-op until
+      // the runtime exists — waitForRuntime below guarantees a later call).
+      if (viewer?._spline) throttleSceneShadows(viewer._spline as Parameters<typeof throttleSceneShadows>[0]);
       // Scale via the individual `scale` CSS property (origin 0 0, see the
       // stylesheet rule) — the viewer sits inside `.hero-fig`, whose own
       // entrance tween carries it along, so nothing else touches its transform.

@@ -2,7 +2,7 @@
 // high-refresh monitors) — capSceneFps throttles its loop to 60, and
 // setSceneRunning pauses/resumes it (installing the cap on the way).
 import { describe, it, expect, vi } from 'vitest';
-import { capSceneFps, capSceneResolution, setSceneRunning } from '../src/utils/splineRunning';
+import { capSceneFps, capSceneResolution, setSceneRunning, throttleSceneShadows } from '../src/utils/splineRunning';
 
 // Logical (CSS) size + pixel ratio, like the runtime's WebGLRenderer.
 function mockRendererApp(w: number, h: number, pr: number) {
@@ -109,6 +109,64 @@ describe('capSceneFps', () => {
     expect(app.render).toBe(wrapped);
     drive(app, 60);
     expect(renders.length).toBe(60);
+  });
+});
+
+describe('throttleSceneShadows', () => {
+  // Like three's WebGLShadowMap: render() draws only when enabled and
+  // (autoUpdate || needsUpdate), then clears needsUpdate.
+  function mockShadowApp() {
+    const shadowMap: any = {
+      enabled: true, autoUpdate: false, needsUpdate: false, drawn: 0,
+      render(lights: unknown[]) {
+        if (!this.enabled || (!this.autoUpdate && !this.needsUpdate) || !lights.length) return;
+        this.drawn++;
+        this.needsUpdate = false;
+      },
+    };
+    return { app: { _renderer: { shadowMap } } as any, shadowMap };
+  }
+  // One runtime frame, as observed live: the opaque pass forces a refresh,
+  // later passes render with the flags back off, and one render has
+  // autoUpdate on but no shadow-casting lights.
+  function frames(shadowMap: any, n: number) {
+    for (let i = 0; i < n; i++) {
+      shadowMap.needsUpdate = true; shadowMap.autoUpdate = true;
+      shadowMap.render([{}]);
+      shadowMap.needsUpdate = false; shadowMap.autoUpdate = false;
+      shadowMap.render([{}]);
+      shadowMap.autoUpdate = true;
+      shadowMap.render([]);
+      shadowMap.autoUpdate = false;
+    }
+    return shadowMap.drawn;
+  }
+
+  it('unthrottled, the shadow map is redrawn every frame', () => {
+    expect(frames(mockShadowApp().shadowMap, 60)).toBe(60);
+  });
+
+  it('lets only every 2nd refresh through, starting with the first', () => {
+    const { app, shadowMap } = mockShadowApp();
+    throttleSceneShadows(app);
+    expect(frames(shadowMap, 1)).toBe(1);
+    expect(frames(shadowMap, 59)).toBe(30);
+  });
+
+  it('leaves a disabled shadow map alone', () => {
+    const { app, shadowMap } = mockShadowApp();
+    shadowMap.enabled = false;
+    throttleSceneShadows(app);
+    expect(frames(shadowMap, 10)).toBe(0);
+  });
+
+  it('is idempotent and a no-op before the renderer exists', () => {
+    const { app, shadowMap } = mockShadowApp();
+    throttleSceneShadows(app);
+    const wrapped = shadowMap.render;
+    throttleSceneShadows(app);
+    expect(shadowMap.render).toBe(wrapped);
+    expect(() => throttleSceneShadows({} as any)).not.toThrow();
   });
 });
 
