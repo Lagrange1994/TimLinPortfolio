@@ -63,7 +63,21 @@ gsap.registerPlugin(ScrollToPlugin);
                 img_home: "直播首頁", img_daily_task: "每日任務清單", img_daily_board: "即時排行榜",
                 img_gift: "虛擬禮物面板", img_store: "代幣儲值商店", img_share: "直播分享引導", img_end_live: "直播結束結算",
                 img_follow: "追蹤動態首頁", img_moment: "動態詳情頁", img_moment_2: "用戶互動選單",
-                img_profile: "個人主頁", img_self: "個人資訊彈窗", img_rank_con: "貢獻等級說明", img_rank_broad: "主播等級說明"
+                img_profile: "個人主頁", img_self: "個人資訊彈窗", img_rank_con: "貢獻等級說明", img_rank_broad: "主播等級說明",
+                img_home_desc: "直播首頁集中呈現熱門直播與主要入口。",
+                img_daily_task_desc: "以兔子進度條與每日任務，把觀看轉化為解任務的體驗。",
+                img_daily_board_desc: "即時排行榜呈現用戶的貢獻與活躍表現。",
+                img_gift_desc: "在直播間內快速挑選並贈送虛擬禮物。",
+                img_store_desc: "儲值代幣的商店，作為購買禮物的來源。",
+                img_share_desc: "引導觀眾將直播分享給好友。",
+                img_end_live_desc: "直播結束後彙整本場的表現與結算資訊。",
+                img_follow_desc: "集中查看已追蹤對象的最新動態。",
+                img_moment_desc: "檢視單則動態的完整內容，並可按讚互動。",
+                img_moment_2_desc: "針對動態或用戶開啟的互動選單。",
+                img_profile_desc: "個人主頁呈現身分、等級與個人內容。",
+                img_self_desc: "以彈窗快速查看個人資訊。",
+                img_rank_con_desc: "說明觀眾端「貢獻等級」的升級條件與徽章。",
+                img_rank_broad_desc: "說明主播端「職涯等級」的成長路徑。"
             },
             en: {
                 loader_step1: "Reading project metadata",
@@ -101,7 +115,21 @@ gsap.registerPlugin(ScrollToPlugin);
                 img_home: "Live Home", img_daily_task: "Daily Task List", img_daily_board: "Real-time Leaderboard",
                 img_gift: "Virtual Gift Panel", img_store: "Token Store", img_share: "Share Prompt", img_end_live: "Stream Summary",
                 img_follow: "Following Feed", img_moment: "Moment Detail", img_moment_2: "Interaction Menu",
-                img_profile: "My Profile", img_self: "Profile Popup", img_rank_con: "Contributor Level", img_rank_broad: "Streamer Level"
+                img_profile: "My Profile", img_self: "Profile Popup", img_rank_con: "Contributor Level", img_rank_broad: "Streamer Level",
+                img_home_desc: "The live home gathers popular streams and main entry points.",
+                img_daily_task_desc: "A rabbit progress bar and daily tasks turn watching into quests.",
+                img_daily_board_desc: "A real-time leaderboard shows users' contribution and activity.",
+                img_gift_desc: "Pick and send virtual gifts quickly inside the stream.",
+                img_store_desc: "A token store for topping up to buy gifts.",
+                img_share_desc: "Prompts viewers to share the stream with friends.",
+                img_end_live_desc: "Summarizes the session's performance after the stream ends.",
+                img_follow_desc: "Latest updates from followed streamers in one feed.",
+                img_moment_desc: "Full view of a post with likes and interaction.",
+                img_moment_2_desc: "An interaction menu for a post or user.",
+                img_profile_desc: "A profile showing identity, level and personal content.",
+                img_self_desc: "A popup for quick personal info.",
+                img_rank_con_desc: "Explains how contributor levels and badges are earned.",
+                img_rank_broad_desc: "Explains the streamer level growth path."
             }
         };
 
@@ -120,32 +148,32 @@ gsap.registerPlugin(ScrollToPlugin);
         const getEcosystemCategories = (t) => [
             {
                 id: 'cat_tasks', title: t('cat_tasks'), images: [
-                    { id: '01-01', name: t('img_home'), src: './img/project_08/Home Page.jpg' },
-                    { id: '01-02', name: t('img_daily_task'), src: './img/project_08/Home Page daily task.jpg' },
-                    { id: '01-03', name: t('img_daily_board'), src: './img/project_08/Home Page daily board.jpg' }
+                    { id: '01-01', name: t('img_home'), desc: t('img_home_desc'), src: './img/project_08/Home Page.jpg' },
+                    { id: '01-02', name: t('img_daily_task'), desc: t('img_daily_task_desc'), src: './img/project_08/Home Page daily task.jpg' },
+                    { id: '01-03', name: t('img_daily_board'), desc: t('img_daily_board_desc'), src: './img/project_08/Home Page daily board.jpg' }
                 ]
             },
             {
                 id: 'cat_live', title: t('cat_live'), images: [
-                    { id: '02-01', name: t('img_gift'), src: './img/project_08/Home Page gift.jpg' },
-                    { id: '02-02', name: t('img_store'), src: './img/project_08/Home Page store.jpg' },
-                    { id: '02-03', name: t('img_share'), src: './img/project_08/Home Page share.jpg' },
-                    { id: '02-04', name: t('img_end_live'), src: './img/project_08/end live.jpg' }
+                    { id: '02-01', name: t('img_gift'), desc: t('img_gift_desc'), src: './img/project_08/Home Page gift.jpg' },
+                    { id: '02-02', name: t('img_store'), desc: t('img_store_desc'), src: './img/project_08/Home Page store.jpg' },
+                    { id: '02-03', name: t('img_share'), desc: t('img_share_desc'), src: './img/project_08/Home Page share.jpg' },
+                    { id: '02-04', name: t('img_end_live'), desc: t('img_end_live_desc'), src: './img/project_08/end live.jpg' }
                 ]
             },
             {
                 id: 'cat_social', title: t('cat_social'), images: [
-                    { id: '03-01', name: t('img_follow'), src: './img/project_08/follow.jpg' },
-                    { id: '03-02', name: t('img_moment'), src: './img/project_08/follow moment.jpg' },
-                    { id: '03-03', name: t('img_moment_2'), src: './img/project_08/follow moment 2.jpg' }
+                    { id: '03-01', name: t('img_follow'), desc: t('img_follow_desc'), src: './img/project_08/follow.jpg' },
+                    { id: '03-02', name: t('img_moment'), desc: t('img_moment_desc'), src: './img/project_08/follow moment.jpg' },
+                    { id: '03-03', name: t('img_moment_2'), desc: t('img_moment_2_desc'), src: './img/project_08/follow moment 2.jpg' }
                 ]
             },
             {
                 id: 'cat_profile', title: t('cat_profile'), images: [
-                    { id: '04-01', name: t('img_profile'), src: './img/project_08/My Profile.jpg' },
-                    { id: '04-02', name: t('img_self'), src: './img/project_08/self.jpg' },
-                    { id: '04-03', name: t('img_rank_con'), src: './img/project_08/My rank Contributor.jpg' },
-                    { id: '04-04', name: t('img_rank_broad'), src: './img/project_08/My rank Broadcast.jpg' }
+                    { id: '04-01', name: t('img_profile'), desc: t('img_profile_desc'), src: './img/project_08/My Profile.jpg' },
+                    { id: '04-02', name: t('img_self'), desc: t('img_self_desc'), src: './img/project_08/self.jpg' },
+                    { id: '04-03', name: t('img_rank_con'), desc: t('img_rank_con_desc'), src: './img/project_08/My rank Contributor.jpg' },
+                    { id: '04-04', name: t('img_rank_broad'), desc: t('img_rank_broad_desc'), src: './img/project_08/My rank Broadcast.jpg' }
                 ]
             }
         ];
@@ -652,6 +680,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                                         onClick={() => handleGallerySwitch(img)}
                                                                         id={img.id}
                                                                         name={img.name}
+                                                                        desc={img.desc}
                                                                         activeShadowClass="shadow-[0_0_15px_rgba(0,210,160,0.1)]"
                                                                     />
                                                                 ))}
@@ -732,6 +761,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                                         onClick={() => handleGallerySwitch(img)}
                                                                         id={img.id}
                                                                         name={img.name}
+                                                                        desc={img.desc}
                                                                         activeShadowClass="shadow-[0_0_15px_rgba(0,210,160,0.1)]"
                                                                     />
                                                                 ))}

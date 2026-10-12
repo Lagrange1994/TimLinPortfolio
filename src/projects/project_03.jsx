@@ -120,9 +120,9 @@ gsap.registerPlugin(ScrollToPlugin);
         const getGalleryCategories = (lang) => {
             const isZh = lang === 'zh';
             return [
-                { id: 'cat_health', title: isZh ? '系統健康度與維運' : 'System Health & Ops', images: [{ id: '01-01', name: isZh ? '營運監控 Dashboard' : 'Ops Dashboard', src: './img/project_03/工作區域 1@2x.jpg' }, { id: '01-02', name: isZh ? '維修通報流程追蹤' : 'Repair Tracking', src: './img/project_03/工作區域 4@2x.jpg' }, { id: '01-03', name: isZh ? '通報列表管理' : 'Report List', src: './img/project_03/工作區域 6@2x.jpg' }, { id: '01-04', name: isZh ? '已登記尋車列表' : 'Registered Search List', src: './img/project_03/工作區域 5@2x.jpg' }] },
-                { id: 'cat_surveillance', title: isZh ? 'GIS 與影像監控' : 'GIS & Surveillance', images: [{ id: '02-01', name: isZh ? '路口設備狀態整合' : 'Device Integration', src: './img/project_03/工作區域 8@2x.jpg' }, { id: '02-02', name: isZh ? '全區域地圖監控' : 'Area Map Monitor', src: './img/project_03/工作區域 7@2x.jpg' }, { id: '02-03', name: isZh ? 'AI 影像辨識畫面' : 'AI Recognition View', src: './img/project_03/工作區域 11@2x.jpg' }] },
-                { id: 'cat_search', title: isZh ? '車牌辨識與查詢' : 'LPR & Query', images: [{ id: '03-01', name: isZh ? '車牌模糊搜尋' : 'Fuzzy Plate Search', src: './img/project_03/工作區域 2@2x.jpg' }, { id: '03-02', name: '辨識結果彈窗', name: isZh ? 'Recognition Result' : 'Recognition Result', src: './img/project_03/工作區域 3@2x.jpg' }] }
+                { id: 'cat_health', title: isZh ? '系統健康度與維運' : 'System Health & Ops', images: [{ id: '01-01', name: isZh ? '營運監控 Dashboard' : 'Ops Dashboard', src: './img/project_03/工作區域 1@2x.jpg', desc: isZh ? '將 CPU/GPU 負載與設備 Ping 連線狀態可視化。' : 'Visualizes CPU/GPU load and device ping status.' }, { id: '01-02', name: isZh ? '維修通報流程追蹤' : 'Repair Tracking', src: './img/project_03/工作區域 4@2x.jpg', desc: isZh ? '以進度條呈現表單送出、接單、維修到結案的每個節點。' : 'A progress bar tracks submission, acceptance, repair and closure.' }, { id: '01-03', name: isZh ? '通報列表管理' : 'Report List', src: './img/project_03/工作區域 6@2x.jpg', desc: isZh ? '集中檢視所有報修通報與目前的處理狀態。' : 'All repair reports and their current status in one list.' }, { id: '01-04', name: isZh ? '已登記尋車列表' : 'Registered Search List', src: './img/project_03/工作區域 5@2x.jpg', desc: isZh ? '列出已登記的尋車車牌，方便管理與查詢。' : 'Registered search plates listed for easy management and lookup.' }] },
+                { id: 'cat_surveillance', title: isZh ? 'GIS 與影像監控' : 'GIS & Surveillance', images: [{ id: '02-01', name: isZh ? '路口設備狀態整合' : 'Device Integration', src: './img/project_03/工作區域 8@2x.jpg', desc: isZh ? '點選路口即顯示該節點各向度攝影機的狀態與畫面。' : 'Click an intersection to see every camera\'s status and footage.' }, { id: '02-02', name: isZh ? '全區域地圖監控' : 'Area Map Monitor', src: './img/project_03/工作區域 7@2x.jpg', desc: isZh ? '在 GIS 地圖上總覽全區設備的分布與狀態。' : 'An area-wide GIS map of device distribution and status.' }, { id: '02-03', name: isZh ? 'AI 影像辨識畫面' : 'AI Recognition View', src: './img/project_03/工作區域 11@2x.jpg', desc: isZh ? '影像畫面搭配 AI 辨識結果即時呈現。' : 'Video with live AI recognition results.' }] },
+                { id: 'cat_search', title: isZh ? '車牌辨識與查詢' : 'LPR & Query', images: [{ id: '03-01', name: isZh ? '車牌模糊搜尋' : 'Fuzzy Plate Search', src: './img/project_03/工作區域 2@2x.jpg', desc: isZh ? '支援模糊比對，輸入部分車牌即可快速查詢。' : 'Fuzzy matching finds plates from partial input.' }, { id: '03-02', name: isZh ? '辨識結果彈窗' : 'Recognition Result', src: './img/project_03/工作區域 3@2x.jpg', desc: isZh ? '以彈窗呈現車牌辨識結果與相關資訊。' : 'A popup shows the plate recognition result and related details.' }] }
             ];
         };
 
@@ -637,6 +637,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                                         onClick={() => handleGallerySwitch(img)}
                                                                         id={img.id}
                                                                         name={img.name}
+                                                                        desc={img.desc}
                                                                         activeShadowClass="shadow-[0_0_15px_rgba(0,168,232,0.1)]"
                                                                     />
                                                                 ))}
@@ -741,6 +742,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                                         onClick={() => handleGallerySwitch(img)}
                                                                         id={img.id}
                                                                         name={img.name}
+                                                                        desc={img.desc}
                                                                         activeShadowClass="shadow-[0_0_15px_rgba(0,168,232,0.1)]"
                                                                     />
                                                                 ))}

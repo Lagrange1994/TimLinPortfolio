@@ -137,22 +137,22 @@ gsap.registerPlugin(ScrollToPlugin);
                 {
                     id: 'cat_web', title: isZh ? '網頁後台' : 'Web Admin', type: 'web',
                     images: [
-                        { id: 'w01', name: isZh ? '首頁儀表板' : 'Dashboard', src: './img/project_05/web_01_dashboard.jpg' },
-                        { id: 'w02', name: isZh ? '人流熱區' : 'Heatmap', src: './img/project_05/web_04_heatmap.jpg' },
-                        { id: 'w03', name: isZh ? '營運排班' : 'Scheduling', src: './img/project_05/web_02_schedule.jpg' },
-                        { id: 'w04', name: isZh ? '影像監控' : 'CCTV', src: './img/project_05/web_03_cctv.jpg' },
-                        { id: 'w05', name: isZh ? '知識庫' : 'Knowledge', src: './img/project_05/web_05_knowledge.jpg' }
+                        { id: 'w01', name: isZh ? '首頁儀表板' : 'Dashboard', src: './img/project_05/web_01_dashboard.jpg', desc: isZh ? '彙整人流、活動與營運數據，一眼掌握園區現況。' : 'Visitor flow, events and operations data at a glance.' },
+                        { id: 'w02', name: isZh ? '人流熱區' : 'Heatmap', src: './img/project_05/web_04_heatmap.jpg', desc: isZh ? '以熱力圖呈現園區各區域的人流密度。' : 'A heatmap of visitor density across the park.' },
+                        { id: 'w03', name: isZh ? '營運排班' : 'Scheduling', src: './img/project_05/web_02_schedule.jpg', desc: isZh ? '管理員工與志工的排班與勤務安排。' : 'Manage staff and volunteer schedules.' },
+                        { id: 'w04', name: isZh ? '影像監控' : 'CCTV', src: './img/project_05/web_03_cctv.jpg', desc: isZh ? '在後台集中調閱園區各處的攝影機畫面。' : 'View the park\'s cameras from one place.' },
+                        { id: 'w05', name: isZh ? '知識庫' : 'Knowledge', src: './img/project_05/web_05_knowledge.jpg', desc: isZh ? '建檔與管理動物照護及營運相關的知識資料。' : 'Create and manage animal-care and operations knowledge.' }
                     ]
                 },
                 {
                     id: 'cat_app', title: isZh ? '行動APP' : 'Mobile App', type: 'app',
                     images: [
-                        { id: 'a01', name: isZh ? '登入頁' : 'Login', src: './img/project_05/app_01_login.jpg' },
-                        { id: 'a02', name: isZh ? '行動首頁' : 'Home', src: './img/project_05/app_02_home.jpg' },
-                        { id: 'a03', name: isZh ? '即時資訊' : 'Real-time', src: './img/project_05/app_03_realtime.jpg' },
-                        { id: 'a04', name: isZh ? '緊急通報' : 'SOS', src: './img/project_05/app_04_sos.jpg' },
-                        { id: 'a05', name: isZh ? '行動行事曆' : 'Calendar', src: './img/project_05/app_05_calendar.jpg' },
-                        { id: 'a06', name: isZh ? '行動知識庫' : 'Knowledge', src: './img/project_05/app_06_knowledge.jpg' }
+                        { id: 'a01', name: isZh ? '登入頁' : 'Login', src: './img/project_05/app_01_login.jpg', desc: isZh ? '員工與志工登入行動 APP 的入口。' : 'Entry point for staff and volunteers to sign in.' },
+                        { id: 'a02', name: isZh ? '行動首頁' : 'Home', src: './img/project_05/app_02_home.jpg', desc: isZh ? '讓現場人員快速進入各項功能的行動首頁。' : 'Mobile home giving field staff quick access to key functions.' },
+                        { id: 'a03', name: isZh ? '即時資訊' : 'Real-time', src: './img/project_05/app_03_realtime.jpg', desc: isZh ? '查看現場人流熱區圖與當日活動。' : 'Live crowd hot-zone map and today\'s events.' },
+                        { id: 'a04', name: isZh ? '緊急通報' : 'SOS', src: './img/project_05/app_04_sos.jpg', desc: isZh ? '長按 3 秒即可發出緊急協助通報。' : 'Hold for 3 seconds to send an emergency call for help.' },
+                        { id: 'a05', name: isZh ? '行動行事曆' : 'Calendar', src: './img/project_05/app_05_calendar.jpg', desc: isZh ? '在手機上查看班表與當日行程。' : 'Check shifts and today\'s schedule on the phone.' },
+                        { id: 'a06', name: isZh ? '行動知識庫' : 'Knowledge', src: './img/project_05/app_06_knowledge.jpg', desc: isZh ? '讓志工隨時查閱正確的資訊。' : 'Volunteers can look up accurate information anytime.' }
                     ]
                 }
             ];
@@ -650,6 +650,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                                         onClick={() => handleGallerySwitch(img, category.type)}
                                                                         id={img.id}
                                                                         name={img.name}
+                                                                        desc={img.desc}
                                                                         activeShadowClass="shadow-[0_0_15px_rgba(134,194,50,0.1)]"
                                                                     />
                                                                 ))}
@@ -737,6 +738,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                                         onClick={() => handleGallerySwitch(img, category.type)}
                                                                         id={img.id}
                                                                         name={img.name}
+                                                                        desc={img.desc}
                                                                         activeShadowClass="shadow-[0_0_15px_rgba(134,194,50,0.1)]"
                                                                     />
                                                                 ))}

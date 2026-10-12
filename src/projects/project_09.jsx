@@ -55,8 +55,11 @@ gsap.registerPlugin(ScrollToPlugin);
                 sol_3_title: "分級權限管理", sol_3_desc: "針對不同科室與職級設定專屬權限，確保資料流向安全可控。", sol_3_benefit: "針對不同科室設定專屬權限，確保資料流向安全可控。",
 
                 gallery_title: "介面展示", gallery_desc: "點擊下方卡片查看高保真設計。",
-                gallery_item_hint: "點擊預覽 {name} 介面細節。",
                 img_admin: "管理者後台", img_news: "消息中心", img_booking: "預約表單", img_meeting: "局務會議",
+                img_admin_desc: "管理者統一維護公告、預約與權限等系統內容。",
+                img_news_desc: "集中呈現局內公告與消息，方便回頭查閱歷史資料。",
+                img_booking_desc: "線上預約會議室，避免人工登記造成的時段衝突。",
+                img_meeting_desc: "局務會議的相關資訊與資料集中檢視。",
                 scroll_hint: "上下滾動瀏覽完整畫面"
             },
             en: {
@@ -89,8 +92,11 @@ gsap.registerPlugin(ScrollToPlugin);
                 sol_3_title: "Permission Management", sol_3_desc: "Specific permissions for different departments and ranks to ensure data security.", sol_3_benefit: "Benefit: Custom permissions ensure controllable and secure data flow.",
 
                 gallery_title: "Interface Gallery", gallery_desc: "Click the cards below to view high-fidelity designs.",
-                gallery_item_hint: "Click to preview interface details for {name}.",
                 img_admin: "Admin Dashboard", img_news: "News Center", img_booking: "Reservation Form", img_meeting: "Bureau Meeting",
+                img_admin_desc: "Admins maintain announcements, bookings and permissions in one place.",
+                img_news_desc: "Internal announcements gathered in one place, with history to look back on.",
+                img_booking_desc: "Book meeting rooms online to avoid double-booked slots.",
+                img_meeting_desc: "Information and materials for bureau meetings in one view.",
                 scroll_hint: "Scroll to view the full screen"
             }
         };
@@ -104,12 +110,12 @@ gsap.registerPlugin(ScrollToPlugin);
 
         const getGalleryImages = (t) => {
             const items = [
-                { id: '01', name: t('img_admin'), src: './img/project_09/manage.jpg' },
-                { id: '02', name: t('img_news'), src: './img/project_09/News.jpg' },
-                { id: '03', name: t('img_booking'), src: './img/project_09/Room Reservation non.jpg' },
-                { id: '04', name: t('img_meeting'), src: './img/project_09/Authority.jpg' }
+                { id: '01', name: t('img_admin'), desc: t('img_admin_desc'), src: './img/project_09/manage.jpg' },
+                { id: '02', name: t('img_news'), desc: t('img_news_desc'), src: './img/project_09/News.jpg' },
+                { id: '03', name: t('img_booking'), desc: t('img_booking_desc'), src: './img/project_09/Room Reservation non.jpg' },
+                { id: '04', name: t('img_meeting'), desc: t('img_meeting_desc'), src: './img/project_09/Authority.jpg' }
             ];
-            return items.map((img) => ({ ...img, desc: t('gallery_item_hint').replace('{name}', img.name) }));
+            return items;
         };
 
         const App = () => {

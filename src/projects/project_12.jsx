@@ -54,8 +54,12 @@ gsap.registerPlugin(ScrollToPlugin);
                 sol_3_title: "UI 轉換：冷靜與防護", sol_3_desc: "危機時介面轉為深藍色，暗示理性思考。答對問題即啟動防護，強化正確觀念的重要性。", sol_3_label: "Interaction:",
 
                 gallery_title: "介面展示", gallery_desc: "點擊下方卡片查看遊戲畫面細節。",
-                gallery_hint: "點擊預覽設計細節。",
-                img_1: "溫馨主視覺", img_2: "擬人化危機", img_3: "知識防護罩", img_4: "結局1", img_5: "結局2"
+                img_1: "溫馨主視覺", img_2: "擬人化危機", img_3: "知識防護罩", img_4: "結局1", img_5: "結局2",
+                img_1_desc: "莫蘭迪色系的田園場景，玩家接住金幣累積資產。",
+                img_2_desc: "擬人化龍捲風象徵金融風暴，捲走玩家的金幣。",
+                img_3_desc: "危機時介面轉為深藍，答對題目即可啟動防護。",
+                img_4_desc: "遊戲結束時的結局畫面之一，回顧本局成果。",
+                img_5_desc: "遊戲結束時的另一種結局畫面，回顧本局成果。"
             },
             en: {
                 loader_step1: "Reading project metadata",
@@ -87,8 +91,12 @@ gsap.registerPlugin(ScrollToPlugin);
                 sol_3_title: "UI Shift: Calm & Defense", sol_3_desc: "Interface turns deep blue during crises, suggesting rational thinking. Correct answers trigger defense shields.", sol_3_label: "Interaction:",
 
                 gallery_title: "Interface Gallery", gallery_desc: "Click the cards below to view game details.",
-                gallery_hint: "Click to preview details.",
-                img_1: "Warm Key Visual", img_2: "Personified Crisis", img_3: "Knowledge Shield", img_4: "Ending 1", img_5: "Ending 2"
+                img_1: "Warm Key Visual", img_2: "Personified Crisis", img_3: "Knowledge Shield", img_4: "Ending 1", img_5: "Ending 2",
+                img_1_desc: "A Morandi-toned countryside scene where players catch coins to build assets.",
+                img_2_desc: "A personified tornado stands for the financial storm and sweeps coins away.",
+                img_3_desc: "In a crisis the UI turns deep blue; answering correctly raises a shield.",
+                img_4_desc: "One of the game's ending screens, recapping the run.",
+                img_5_desc: "Another ending screen, recapping the run."
             }
         };
 
@@ -102,11 +110,11 @@ gsap.registerPlugin(ScrollToPlugin);
         ];
 
         const getGalleryImages = (t) => [
-            { id: '01', name: t('img_1'), src: './img/project_12/接金幣-01遊戲畫面.jpg' },
-            { id: '02', name: t('img_2'), src: './img/project_12/接金幣-09金融風暴.jpg' },
-            { id: '03', name: t('img_3'), src: './img/project_12/接金幣-10金融風暴popup.jpg' },
-            { id: '04', name: t('img_4'), src: './img/project_12/接金幣-11結局01.jpg' },
-            { id: '05', name: t('img_5'), src: './img/project_12/接金幣-13結局03.jpg' }
+            { id: '01', name: t('img_1'), desc: t('img_1_desc'), src: './img/project_12/接金幣-01遊戲畫面.jpg' },
+            { id: '02', name: t('img_2'), desc: t('img_2_desc'), src: './img/project_12/接金幣-09金融風暴.jpg' },
+            { id: '03', name: t('img_3'), desc: t('img_3_desc'), src: './img/project_12/接金幣-10金融風暴popup.jpg' },
+            { id: '04', name: t('img_4'), desc: t('img_4_desc'), src: './img/project_12/接金幣-11結局01.jpg' },
+            { id: '05', name: t('img_5'), desc: t('img_5_desc'), src: './img/project_12/接金幣-13結局03.jpg' }
         ];
 
         const App = () => {
@@ -614,7 +622,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                             onClick={() => handleGallerySwitch(img)}
                                                             id={img.id}
                                                             name={img.name}
-                                                            desc={t('gallery_hint')}
+                                                            desc={img.desc}
                                                             activeShadowClass="shadow-[0_0_15px_rgba(234,196,53,0.1)]"
                                                         />
                                                     ))}
@@ -708,7 +716,7 @@ gsap.registerPlugin(ScrollToPlugin);
                                                             onClick={() => handleGallerySwitch(img)}
                                                             id={img.id}
                                                             name={img.name}
-                                                            desc={t('gallery_hint')}
+                                                            desc={img.desc}
                                                             activeShadowClass="shadow-[0_0_15px_rgba(234,196,53,0.1)]"
                                                         />
                                                     ))}
