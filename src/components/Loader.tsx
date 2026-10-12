@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
-import { useLang } from '../context/LangContext';
+import { useEffect } from 'react';
 import { PROJECTS } from '../data/projects';
 
 // Must match HeroSection's "Hero spline desktop+tablet conditional" effect —
@@ -7,15 +6,40 @@ import { PROJECTS } from '../data/projects';
 // of a Spline scene.
 const HERO_FIGURE_BREAKPOINT = 768;
 
-const STEP_KEYS = ['loader_step1', 'loader_step2', 'loader_step3'] as const;
-const STEP_INTERVAL_MS = 1000;
+// Safety net only: reveal the page anyway if an asset never reports ready
+// (viewer script blocked, a scene 404s…). Long enough that the real signals
+// below normally win — the previous 4s was shorter than the scenes take to
+// load on a fast laptop, so it was what dismissed the loader every time.
+// The two scenes this waits for take ~8-10s on a laptop iGPU with a cold
+// shader cache (longer since index.html's link shim trades load time for a
+// loader that keeps moving) and were seen at 13s with the machine under
+// load, hence the headroom.
+export const LOADER_FORCE_MS = 20000;
+// How often readiness is re-checked while waiting (see isReady).
+const POLL_MS = 250;
+// A bg scene with no `url` this long after mount has been dropped on purpose
+// (BeamsBackground drops it when the hero is scrolled out of view), so it is
+// not coming and must not hold the loader.
+const DROPPED_URL_GRACE_MS = 600;
+// After the assets report ready, hold until the main thread has actually gone
+// quiet — a freshly loaded scene compiles more shaders on its first rendered
+// frames — so the hero entrance starts on a calm frame budget, not on top of
+// that tail. "Quiet" is CALM_FRAMES frames in a row with no long hitch, not a
+// perfect 60fps: two live WebGL scenes legitimately run slower than that.
+// Bounded: never more than CALM_MAX_WAIT_MS extra.
+const CALM_FRAME_MS = 100;
+const CALM_FRAMES = 3;
+export const CALM_MAX_WAIT_MS = 1200;
+// The static loader is removed (not just hidden) once its 0.1s fade is over,
+// so its compositor animations don't keep ticking under the page forever.
+const REMOVE_AFTER_MS = 400;
 
+type SplineViewerEl = HTMLElement & { _loaded?: boolean };
+
+// The loading screen itself is static markup in index.html (#page-loader),
+// animated purely on the compositor — see the LOADER block there for why.
+// This component renders nothing; it only decides when to dismiss it.
 export default function Loader() {
-  const { t } = useLang();
-  const [stepIndex, setStepIndex] = useState(0);
-  const [done, setDone] = useState(false);
-  const stepTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
   // Fire off fetch+decode for every portfolio marquee image as soon as the
   // loading screen mounts — well before ProjectCard's own `loading="lazy"`
   // <img> tags would normally start fetching. wall-frame-in's reveal fires
@@ -35,63 +59,105 @@ export default function Loader() {
   }, []);
 
   useEffect(() => {
-    stepTimerRef.current = setInterval(() => {
-      setStepIndex(i => (i + 1) % STEP_KEYS.length);
-    }, STEP_INTERVAL_MS);
-    return () => {
-      if (stepTimerRef.current) clearInterval(stepTimerRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
     const loader = document.getElementById('page-loader');
-    if (!loader) return;
+    // StrictMode's second effect run (dev), after the first already dismissed.
+    if (document.body.classList.contains('hero-ready')) {
+      loader?.classList.add('hidden');
+      return;
+    }
 
     let dismissed = false;
+    let settling = false;
+    let forceTimer: ReturnType<typeof setTimeout> | undefined;
+    let pollTimer: ReturnType<typeof setInterval> | undefined;
+    let calmTimer: ReturnType<typeof setTimeout> | undefined;
+    let calmRaf = 0;
+    const startedAt = performance.now();
+    // ids of <spline-viewer>s that have reported load-complete.
+    const reported = new Set<string>();
+
+    function stopWaiting() {
+      clearTimeout(forceTimer);
+      clearInterval(pollTimer);
+      clearTimeout(calmTimer);
+      if (calmRaf) cancelAnimationFrame(calmRaf);
+      document.removeEventListener('load-complete', onViewerEvent, true);
+    }
+
     function hideLoader() {
       if (dismissed) return;
       dismissed = true;
-      // The loader stays mounted (just hidden via the "hidden" class) rather
-      // than unmounting, so its own effect cleanup never runs — without
-      // this, stepTimer above would keep re-rendering this hidden component
-      // every second for the rest of the page's lifetime.
-      if (stepTimerRef.current) clearInterval(stepTimerRef.current);
-      setDone(true);
-      loader!.classList.add('hidden');
+      stopWaiting();
+      loader?.classList.add('hidden');
       document.body.classList.add('hero-ready');
       window.dispatchEvent(new Event('hero-ready'));
+      if (loader) setTimeout(() => loader.remove(), REMOVE_AFTER_MS);
     }
 
-    const forceTimer = setTimeout(hideLoader, 4000);
+    // Hold the reveal until CALM_FRAMES frames in a row came in under
+    // CALM_FRAME_MS (or the cap runs out).
+    function settle() {
+      if (settling || dismissed) return;
+      settling = true;
+      clearInterval(pollTimer);
+      if (typeof requestAnimationFrame !== 'function') { hideLoader(); return; }
+      calmTimer = setTimeout(hideLoader, CALM_MAX_WAIT_MS);
+      let last = performance.now();
+      let calm = 0;
+      const frame = (now: number) => {
+        calm = now - last < CALM_FRAME_MS ? calm + 1 : 0;
+        last = now;
+        if (calm >= CALM_FRAMES) hideLoader();
+        else calmRaf = requestAnimationFrame(frame);
+      };
+      calmRaf = requestAnimationFrame(frame);
+    }
+
+    // <spline-viewer> never fires a native `load` — the scene being parsed,
+    // compiled and ready is its `load-complete` CustomEvent. Listened for on
+    // the document (capture) because the bg viewers are portaled into #home a
+    // tick after this effect runs, so they don't exist yet to attach to.
+    function viewerReady(id: string, droppable: boolean) {
+      const el = document.getElementById(id) as SplineViewerEl | null;
+      if (reported.has(id) || el?._loaded) return true;
+      // Dropped on purpose (hero out of view) — it isn't going to load.
+      return droppable && !!el && !el.getAttribute('url')
+        && performance.now() - startedAt > DROPPED_URL_GRACE_MS;
+    }
+
+    function isReady() {
+      if (window.innerWidth < HERO_FIGURE_BREAKPOINT) {
+        // Phone: both hero layers are plain images; only the active
+        // background is worth waiting for.
+        const img = document.querySelector<HTMLImageElement>('img.spline-bg-layer.is-active');
+        return !img || img.complete;
+      }
+      const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+      return viewerReady('hero-spline', false) && viewerReady(`spline-bg-${theme}`, true);
+    }
+
+    function check() {
+      if (!dismissed && !settling && isReady()) settle();
+    }
+
+    function onViewerEvent(e: Event) {
+      const id = (e.target as HTMLElement | null)?.id;
+      if (id) reported.add(id);
+      check();
+    }
 
     function waitForAssets() {
-      // .spline-bg-layer.is-active loads at every viewport width — a Spline
-      // scene at/above HERO_FIGURE_BREAKPOINT (one element per theme, but
-      // only the active theme's is loaded — see BeamsBackground), a plain <img>
-      // below it, both firing a native `load` event either way. The hero
-      // character Spline only gets a `url` (and thus only ever fires `load`)
-      // at HERO_FIGURE_BREAKPOINT and up; below that it's a static <img>
-      // too, so there's nothing to wait for there — mobile only waits on
-      // the background.
       const isDesktop = window.innerWidth >= HERO_FIGURE_BREAKPOINT;
-      const pending = [
-        document.querySelector('.spline-bg-layer.is-active'),
-        isDesktop ? document.querySelector('.hero-fig-desktop') : null,
-      ].filter((el): el is Element => !!el);
+      const waitsOnSomething = isDesktop
+        ? !!document.getElementById('hero-spline')
+        : !!document.querySelector('img.spline-bg-layer.is-active');
+      // Nothing to wait for (and nothing heavy just happened): reveal now.
+      if (!waitsOnSomething) { hideLoader(); return; }
 
-      if (!pending.length) {
-        hideLoader();
-        return;
-      }
-
-      let remaining = pending.length;
-      pending.forEach(el => el.addEventListener('load', function () {
-        remaining -= 1;
-        if (remaining === 0) {
-          clearTimeout(forceTimer);
-          hideLoader();
-        }
-      }, { once: true }));
+      forceTimer = setTimeout(hideLoader, LOADER_FORCE_MS);
+      document.addEventListener('load-complete', onViewerEvent, true);
+      pollTimer = setInterval(check, POLL_MS);
+      check();
     }
 
     if (document.readyState === 'loading') {
@@ -101,14 +167,10 @@ export default function Loader() {
     }
 
     return () => {
-      clearTimeout(forceTimer);
+      document.removeEventListener('DOMContentLoaded', waitForAssets);
+      stopWaiting();
     };
   }, []);
 
-  return (
-    <div className="loader" id="page-loader">
-      <div className="loader-animation"></div>
-      <p className="loader-text">{done ? t.loader_step4 : t[STEP_KEYS[stepIndex]]}</p>
-    </div>
-  );
+  return null;
 }

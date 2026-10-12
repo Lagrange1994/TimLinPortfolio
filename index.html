@@ -33,6 +33,79 @@
   <style>
     html { background: #0A0912; }
     html[data-theme="light"] { background: #F7FAFC; }
+
+    /* ── LOADER ──
+       Lives here (static markup in <body> + this inline CSS), not in React or
+       portfolio.css: it has to be on screen and already animating before the
+       JS bundle runs, and every moving part animates ONLY transform/opacity,
+       so the compositor thread keeps it running while the main thread is
+       blocked. Loading blocks it for seconds at a time — each Spline scene
+       parses and compiles its shaders in one 1.5–2.5s task — and the old ring
+       animated `inset` (a layout property, main-thread only), so it froze for
+       exactly those stretches.
+
+       The ring is the same "snake" as before: a 30px pill outline that
+       stretches along one side of a 65px square, then contracts into the next
+       corner. One quarter of that lap (.ls-* below, 0.625s) is rebuilt from
+       two half-pills — each ONE bordered element, a round cap plus the full
+       35px of straight side — that only ever translate. How much of each
+       side shows is decided by its .ls-clip window (overflow:hidden), which
+       translates too while the half inside it counter-translates. The other
+       three quarters are the same motion rotated 90° at a time by
+       .loader-orbit (steps(4), 2.5s), and the second snake is the first one
+       turned 180°. The two halves overlap by 2px so no seam shows mid-move.
+
+       Translate only, never scale: the sides used to be separate 3px bars
+       stretched with scaleY, and a scaled layer is resampled by the GPU
+       while the translate-only caps next to it are not — so the straight
+       part of the pill came out a different thickness from its round ends.
+       Cap and side are now the same border on the same element. */
+    .loader {
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      background: #0A0912;
+      color: #fff;
+      transition: opacity 0.1s ease, visibility 0.1s ease;
+    }
+    html[data-theme="light"] .loader { background: #F7FAFC; color: #3A3A42; }
+    .loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .loader-animation { position: relative; width: 65px; height: 65px; }
+    .loader-orbit, .loader-snake { position: absolute; inset: 0; }
+    .loader-orbit { animation: loader-orbit 2.5s steps(4) infinite; will-change: transform; }
+    .loader-snake-2 { transform: rotate(180deg); }
+    .ls-clip { position: absolute; left: 0; width: 30px; height: 51px; overflow: hidden; will-change: transform; }
+    .ls-clip-a { top: -35px; animation: ls-clip-a 0.625s infinite; }
+    .ls-clip-b { top: 14px; animation: ls-clip-b 0.625s infinite; }
+    .ls-half { position: absolute; left: 0; display: block; box-sizing: border-box; width: 30px; height: 50px; border: 3px solid currentColor; will-change: transform; }
+    .ls-half-a { top: 35px; border-bottom: 0; border-radius: 15px 15px 0 0; animation: ls-half-a 0.625s infinite; }
+    .ls-half-b { top: -34px; border-top: 0; border-radius: 0 0 15px 15px; animation: ls-half-b 0.625s infinite; }
+
+    /* Window + half add up to where the half really is: the top one holds
+       still for the first half-lap and then drops 35px, the bottom one drops
+       35px and then holds — while each window's edge tracks the OTHER cap. */
+    @keyframes loader-orbit { to { transform: rotate(-360deg); } }
+    @keyframes ls-clip-a { 0% { transform: translateY(0); } 50%, 100% { transform: translateY(35px); } }
+    @keyframes ls-half-a { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-35px); } }
+    @keyframes ls-clip-b { 0%, 50% { transform: translateY(0); } 100% { transform: translateY(35px); } }
+    @keyframes ls-half-b { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(35px); } }
+
+    /* The three status lines cycle once a second on opacity alone, for the
+       same reason — a React-state text swap would stall with the main thread. */
+    .loader-text { display: grid; justify-items: center; margin: 0; font-size: 14px; letter-spacing: 0.02em; }
+    .loader-text span { grid-area: 1 / 1; opacity: 0; white-space: nowrap; }
+    .loader-step { animation: loader-step 3s step-end infinite; }
+    .loader-step:nth-child(2) { animation-delay: 1s; }
+    .loader-step:nth-child(3) { animation-delay: 2s; }
+    @keyframes loader-step { 0% { opacity: 0.7; } 33.333%, 100% { opacity: 0; } }
+    .loader.hidden .loader-step { animation: none; }
+    .loader.hidden .loader-done { opacity: 0.7; }
   </style>
   <title>Tim Lin - Product Designer</title>
   <link rel="icon" type="image/x-icon" href="/img/favicon/favicon.ico" />
@@ -179,9 +252,32 @@
        webp background instead (browsers without webp support skip this
        preload by type and just fetch the <picture>'s jpg fallback normally,
        see BeamsBackground.tsx) and never touches the .splinecode files. -->
-  <link rel="preload" as="fetch" href="/models/bg_scene.splinecode" crossorigin media="(min-width: 768px)" />
   <link rel="preload" as="fetch" href="/models/hero_figure.splinecode" crossorigin media="(min-width: 768px)" />
-  <link rel="preload" as="image" type="image/webp" href="/img/bg.webp" media="(max-width: 767px)" />
+  <!-- The hero background is per theme (a Spline scene at 768px and up, a
+       webp below), so its preload is too: a static link could only name the
+       dark file, and a light-theme visitor then paid for a background they
+       never show while their own didn't start downloading until the bundle
+       had run (~1.1s later, measured) — time the loading screen, which waits
+       for exactly this asset, then had to sit through. -->
+  <script>
+    (function () {
+      try {
+        var light = document.documentElement.getAttribute('data-theme') === 'light';
+        var link = document.createElement('link');
+        link.rel = 'preload';
+        if (window.matchMedia('(min-width: 768px)').matches) {
+          link.as = 'fetch';
+          link.crossOrigin = 'anonymous';
+          link.href = light ? '/models/bg_scene_w.splinecode' : '/models/bg_scene.splinecode';
+        } else {
+          link.as = 'image';
+          link.type = 'image/webp';
+          link.href = light ? '/img/bg_w.webp' : '/img/bg.webp';
+        }
+        document.head.appendChild(link);
+      } catch (e) {}
+    })();
+  </script>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -192,6 +288,91 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
 
+  <!-- Keeps the loading animation moving while the Spline scenes compile
+       their shaders. Must run before the viewer script below.
+
+       Every frame on screen — the compositor-driven loader included — is
+       presented by the browser's GPU process, on the same thread that runs
+       the page's WebGL commands. Three.js (inside the Spline runtime) links a
+       program and immediately asks for its LINK_STATUS; that query makes the
+       GPU thread sit and wait for the compile, which on Windows (ANGLE →
+       D3DCompile) is 0.1–0.8s per program with a cold shader cache, i.e. on a
+       first visit. Traced on a cold load: 15–20 freezes adding up to 4–5s of
+       a ~9s loading screen, every one of them a getProgramParameter call.
+
+       So the wait is moved off the GPU thread: linkProgram turns on
+       KHR_parallel_shader_compile, and the first call that needs the linked
+       program polls COMPLETION_STATUS_KHR (which answers without waiting)
+       until the compile is done, then goes through as normal. The main thread
+       is blocked for the same stretch either way — it is in the middle of a
+       synchronous scene load — but the GPU thread stays free to draw. Results
+       are identical; only who does the waiting changes. Measured: freezes
+       roughly halved (about 2s left), loading ~1.5s longer because the
+       polling loop competes with the compiler for CPU.
+
+       What is left cannot be reached from page code: ANGLE compiles some
+       shader variants on the GPU thread itself at first draw.
+
+       Chromium only (navigator.userAgentData) — that is where this was
+       measured. If a wait ever runs past GIVE_UP_MS it switches itself off
+       and everything falls back to the plain blocking calls. -->
+  <script>
+    /* tl-link-shim */
+    (function () {
+      if (!navigator.userAgentData) return;
+      var COMPLETION_STATUS_KHR = 0x91B1;
+      var GIVE_UP_MS = 3000;
+      var pending = new WeakSet();
+      var off = false;
+      var pause = typeof Atomics !== 'undefined' && Atomics.pause ? function () { Atomics.pause(); } : function () {};
+
+      function patch(proto) {
+        if (!proto || proto.__tlLinkShim) return;
+        proto.__tlLinkShim = true;
+        var link = proto.linkProgram;
+        var getParam = proto.getProgramParameter;
+
+        proto.linkProgram = function (program) {
+          if (!off && this.__tlParallel === undefined) this.__tlParallel = !!this.getExtension('KHR_parallel_shader_compile');
+          link.apply(this, arguments);
+          if (!off && this.__tlParallel && program) pending.add(program);
+        };
+
+        function settle(gl, program) {
+          if (!program || !pending.has(program)) return;
+          pending.delete(program);
+          if (off) return;
+          var end = performance.now() + GIVE_UP_MS;
+          // `=== false`: an invalid program or a lost context answers null/true.
+          while (getParam.call(gl, program, COMPLETION_STATUS_KHR) === false) {
+            var now = performance.now();
+            if (now > end) { off = true; return; }
+            // Ask about once a millisecond; in between, idle the core as far as JS can.
+            for (var until = now + 1; performance.now() < until;) pause();
+          }
+        }
+
+        // Every call that makes the driver finish the link before it can answer.
+        ['getProgramParameter', 'getProgramInfoLog', 'getUniformLocation', 'getAttribLocation', 'getActiveUniform',
+          'getActiveAttrib', 'useProgram', 'validateProgram', 'getUniformBlockIndex', 'getActiveUniformBlockParameter',
+          'getActiveUniformBlockName', 'getActiveUniforms', 'getUniformIndices', 'getFragDataLocation',
+          'getTransformFeedbackVarying', 'uniformBlockBinding'].forEach(function (name) {
+          var orig = proto[name];
+          if (typeof orig !== 'function') return;
+          proto[name] = function (program, pname) {
+            if (!(name === 'getProgramParameter' && pname === COMPLETION_STATUS_KHR)) settle(this, program);
+            return orig.apply(this, arguments);
+          };
+        });
+      }
+
+      try {
+        patch(window.WebGLRenderingContext && window.WebGLRenderingContext.prototype);
+        patch(window.WebGL2RenderingContext && window.WebGL2RenderingContext.prototype);
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- Spline viewer (web component). Pinned version must stay >= the
        .splinecode files' own export version (see /models/*.splinecode) — an
        older viewer silently runtime-migrates a newer file on every load
@@ -201,6 +382,39 @@
   <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.98/build/spline-viewer.js"></script>
 </head>
 <body>
+  <!-- Static, outside #root: painted with the HTML itself and driven by the
+       compositor (see the LOADER block in <head>). Loader.tsx only decides
+       when to dismiss it. Copy mirrors loader_step1–4 in
+       src/i18n/translations.ts (zh here, en swapped in by the script below
+       for a returning visitor who chose English). -->
+  <div class="loader" id="page-loader" role="status">
+    <div class="loader-animation" aria-hidden="true">
+      <div class="loader-orbit">
+        <div class="loader-snake">
+          <div class="ls-clip ls-clip-a"><i class="ls-half ls-half-a"></i></div><div class="ls-clip ls-clip-b"><i class="ls-half ls-half-b"></i></div>
+        </div>
+        <div class="loader-snake loader-snake-2">
+          <div class="ls-clip ls-clip-a"><i class="ls-half ls-half-a"></i></div><div class="ls-clip ls-clip-b"><i class="ls-half ls-half-b"></i></div>
+        </div>
+      </div>
+    </div>
+    <p class="loader-text">
+      <span class="loader-step">讀取專案中繼資料</span>
+      <span class="loader-step" aria-hidden="true">載入視覺素材</span>
+      <span class="loader-step" aria-hidden="true">建構渲染畫布</span>
+      <span class="loader-done" aria-hidden="true">初始化完成</span>
+    </p>
+  </div>
+  <script>
+    (function () {
+      try {
+        if (localStorage.getItem('lang') !== 'en') return;
+        var en = ['Reading project metadata', 'Loading visual assets', 'Constructing render canvas', 'Initialization complete'];
+        var spans = document.querySelectorAll('#page-loader .loader-text span');
+        for (var i = 0; i < spans.length; i++) spans[i].textContent = en[i];
+      } catch (e) {}
+    })();
+  </script>
   <div id="root"></div>
   <!-- Text mirror of what the React app renders, for crawlers and readers that
        never execute the bundle. Without it the portfolio links below exist

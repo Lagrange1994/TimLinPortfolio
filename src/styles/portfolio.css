@@ -12,97 +12,11 @@
        scripts/subset-fonts.py (full font + small preloaded first-screen layer);
        the @import is hoisted to the top of this file. */
 
-    /* ── LOADER ── */
-    .loader {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      z-index: 10001;
-      transition: opacity 0.1s ease, visibility 0.1s ease;
-    }
-
-    .loader-text {
-      color: var(--text);
-      opacity: 0.7;
-      font-size: 14px;
-      letter-spacing: 0.02em;
-    }
-
-    .loader.hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-
-    /* --bg is the w_bg.svg texture in light mode (see the token's own
-       comment below) — the loader itself wants a flat color, not that
-       image, since it's gone before the page bg is even visible underneath
-       it. Matches .portfolio-wall's light-mode flat color. */
-    :root[data-theme="light"] .loader {
-      background: #F7FAFC;
-    }
-
-    .loader-animation {
-      width: 65px;
-      aspect-ratio: 1;
-      position: relative;
-    }
-
-    .loader-animation::before,
-    .loader-animation::after {
-      content: '';
-      position: absolute;
-      border-radius: 50px;
-      box-shadow: 0 0 0 3px inset var(--text);
-      animation: l4 2.5s infinite;
-    }
-
-    .loader-animation::after {
-      animation-delay: -1.25s;
-    }
-
-    @keyframes l4 {
-      0% {
-        inset: 0 35px 35px 0;
-      }
-
-      12.5% {
-        inset: 0 35px 0 0;
-      }
-
-      25% {
-        inset: 35px 35px 0 0;
-      }
-
-      37.5% {
-        inset: 35px 0 0 0;
-      }
-
-      50% {
-        inset: 35px 0 0 35px;
-      }
-
-      62.5% {
-        inset: 0 0 0 35px;
-      }
-
-      75% {
-        inset: 0 0 35px 35px;
-      }
-
-      87.5% {
-        inset: 0 0 35px 0;
-      }
-
-      100% {
-        inset: 0 35px 35px 0;
-      }
-    }
+    /* ── LOADER ──
+       The loading screen's markup and CSS live in index.html (static + inline),
+       not here: it must paint and animate before this stylesheet and the JS
+       bundle exist, and it only animates transform/opacity so it stays smooth
+       while the main thread is busy. See the LOADER block there. */
 
     /* ═══════════════════════════════════════
        COLOR SYSTEM — faithfully from index.html
