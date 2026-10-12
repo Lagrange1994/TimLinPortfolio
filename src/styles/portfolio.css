@@ -3880,10 +3880,11 @@
       background: rgba(23, 15, 45, 0.1);
     }
 
-    /* Title/body still read as harsh near-black-on-white at full --text/
-       --text-70 — step both down for a softer light-mode ink. */
+    /* Body reads as harsh near-black-on-white at full --text-70, so it steps
+       down to --text-50 for a softer light-mode ink; the title stays at full
+       --text (dark) so it still reads as the heading. */
     :root[data-theme="light"] .policy-popover-title {
-      color: var(--text-50);
+      color: var(--text);
     }
 
     :root[data-theme="light"] .policy-popover-body {
