@@ -7633,9 +7633,13 @@
          properties, so the image+headline+CTA group centers with an equal
          gap to both — the rem fallbacks only cover the instant before that
          effect runs. */
+      /* --hero-h: the same 100svh frozen to px on first load by
+         HeroSection.tsx, so the section (and the CTA-to-capsule gap inside
+         it) can't change with the address bar; 100svh is only the
+         first-paint fallback. */
       #home {
-        height: 100svh;
-        min-height: 100svh;
+        height: var(--hero-h, 100svh);
+        min-height: var(--hero-h, 100svh);
         padding-top: var(--hero-navbar-clearance, 5rem);
         padding-bottom: var(--hero-tags-clearance, 4rem);
       }

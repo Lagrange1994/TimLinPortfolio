@@ -688,8 +688,27 @@ export default function HeroSection() {
     const GAP = 20; // px of breathing room on each side of the group
     let measuredWidth = -1;
     let navClearance = 0;
+    let heightLockedAtWidth = -1;
+
+    // Freeze the section's height (100svh, in px) at first load. Mobile
+    // browsers can still nudge the viewport units as the address bar slides,
+    // which moved the CTA buttons relative to the bottom-anchored tag
+    // capsules mid-scroll. Re-locked only when the width really changes
+    // (rotation / split screen); >=768px uses the desktop rules untouched.
+    function lockHeight() {
+      if (window.innerWidth === heightLockedAtWidth) return;
+      heightLockedAtWidth = window.innerWidth;
+      if (window.innerWidth >= 768) { home!.style.removeProperty('--hero-h'); return; }
+      const probe = document.createElement('div');
+      probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;width:0;height:100svh;';
+      document.body.appendChild(probe);
+      const h = probe.getBoundingClientRect().height;
+      probe.remove();
+      if (h) home!.style.setProperty('--hero-h', `${h}px`);
+    }
 
     function measure() {
+      lockHeight();
       if (window.innerWidth >= 768 || !img!.naturalWidth) return;
       measuredWidth = window.innerWidth;
 
