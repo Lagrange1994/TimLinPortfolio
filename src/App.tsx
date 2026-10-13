@@ -13,6 +13,7 @@ import AboutSection from './components/AboutSection';
 import SkillsSection from './components/SkillsSection';
 import PortfolioSection from './components/PortfolioSection';
 import ContactSection from './components/ContactSection';
+import BackToTop from './components/BackToTop';
 import ChatPanel from './components/ChatPanel';
 import LazyUnit from './components/LazyUnit';
 
@@ -36,6 +37,7 @@ export default function App() {
       <SkillsSection />
       <LazyUnit name="portfolio"><PortfolioSection /></LazyUnit>
       <LazyUnit name="contact"><ContactSection /></LazyUnit>
+      <BackToTop />
       <ChatPanel />
     </LangProvider>
   );

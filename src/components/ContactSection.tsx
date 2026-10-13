@@ -56,17 +56,6 @@ export default function ContactSection() {
 
   const faqItems = faqTabs[faqTab];
 
-  // Back-to-top: toggle .visible class based on scroll position
-  useEffect(() => {
-    const onScroll = () => {
-      const btn = document.getElementById('back-to-top');
-      if (btn) btn.classList.toggle('visible', window.scrollY > 400);
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   // Spotlight card effect — scoped to this section's own root; see the
   // matching comment in SkillsSection.tsx (all three sections run this same
   // effect and an unscoped query would cross-contaminate).
@@ -302,11 +291,6 @@ export default function ContactSection() {
         </div>
         <p>© 2025 Tim Lin. All rights reserved.</p>
       </footer>
-
-      {/* BACK TO TOP */}
-      <button id="back-to-top" className="btn-glass btn-grad" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-        <i className="fas fa-arrow-up"></i>
-      </button>
     </>
   );
 }

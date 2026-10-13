@@ -7,6 +7,7 @@ import { portfolioWallMaskPath, DEFAULT_RADIUS, computeWallHeight } from '../uti
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import { attachPortfolioSkeleton } from '../utils/portfolioSkeleton';
+import { fixedUiFootprint } from '../utils/fixedUiFootprint';
 import { RISE_FROM, RISE_TWEEN, RISE_START_EVENT, type RiseStartDetail } from '../utils/useRiseReveal';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
@@ -531,12 +532,12 @@ export default function PortfolioSection() {
       // button sits) lands under the fixed #back-to-top / #chat-fab stack
       // (both right-anchored, stacked at the viewport's bottom-right at
       // every width below desktop — see portfolio.css). Instead of a
-      // guessed magic-number push, measure #back-to-top's own live footprint
-      // (both share the same width/right as #chat-fab at any given
-      // breakpoint, so covering one covers both) and derive exactly how much
-      // further the notch — and the button inside it — need to move: the
-      // back-to-top button's own width plus its own live gap from the
-      // viewport edge (its rendered `right` offset). Subtracting the wall's
+      // guessed magic-number push, measure those buttons' own live footprint
+      // (fixedUiFootprint reads both, so it never depends on which of them
+      // happens to be mounted) and derive exactly how much further the
+      // notch — and the button inside it — need to move: the widest fixed
+      // button's own width plus its own live gap from the viewport edge
+      // (its rendered `right` offset). Subtracting the wall's
       // own live side-inset (window width minus wallRect.right) cancels out
       // that inset from the resulting gap — without it, the two buttons'
       // gap would end up equal to the wall's own inset by coincidence, not
@@ -546,12 +547,10 @@ export default function PortfolioSection() {
       const needsFixedUiAvoidance = window.matchMedia('(max-width: 1024px)').matches;
       let btnExtraPush = 0;
       if (needsFixedUiAvoidance) {
-        const backToTop = document.getElementById('back-to-top');
-        if (backToTop) {
-          const backToTopRect = backToTop.getBoundingClientRect();
-          const backToTopRightPadding = window.innerWidth - backToTopRect.right;
+        const footprint = fixedUiFootprint();
+        if (footprint > 0) {
           const wallInsetPx = window.innerWidth - wallRect.right;
-          btnExtraPush = backToTopRect.width + backToTopRightPadding + LEG_GAP_PADDING - wallInsetPx;
+          btnExtraPush = footprint + LEG_GAP_PADDING - wallInsetPx;
         }
       }
       const legGapH = btnRect.height + LEG_GAP_PADDING;
