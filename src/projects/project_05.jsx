@@ -10,7 +10,7 @@ import {
     SharedIcons, BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav,
     ToolPill, InfoGrid, InfoCard, PainPointCard, FeatureCard,
     GalleryItemButton, BrowserFrame, ImageWithSkeleton, ResizeHandle,
-    dsVars, get16by9FloorVh,
+    dsVars, get16by9FloorVh, mobileStageHeightVh,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -194,6 +194,12 @@ gsap.registerPlugin(ScrollToPlugin);
             const [peekTab, setPeekTab] = useState(null);
             const [peekDragDirection, setPeekDragDirection] = useState(0);
             const TAB_ORDER = ['context', 'process', 'solution', 'climax'];
+            // Phone only: the drag handle that resizes the stage — and any height
+            // dragged with it — applies just on the tabs whose stage shows a screenshot
+            // picked from the list (solution/highlights and gallery). On the other tabs
+            // the handle is gone and the stage sits at its 16:9 default.
+            const RESIZABLE_TABS = ['solution', 'climax'];
+            const canResizeVisual = RESIZABLE_TABS.includes(activeTab);
             const handleTabTouchStart = (e) => {
                 if (e.target.closest('.overflow-x-auto')) { touchStartRef.current = null; return; }
                 if (swipeContentRef.current) gsap.killTweensOf(swipeContentRef.current);
@@ -552,9 +558,9 @@ gsap.registerPlugin(ScrollToPlugin);
                         </section>
 
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-zoo-dark h-screen overflow-hidden relative">
-                            <div ref={imageScrollRef} className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div ref={imageScrollRef} className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileStageHeightVh(canResizeVisual, mobileVisualHeight)}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 {renderPreview()}
-                                <ResizeHandle prefix="zoo" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
+                                {canResizeVisual && <ResizeHandle prefix="zoo" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />}
                             </div>
 
                             <div className="flex-1 w-full relative z-10 lg:w-2/5 lg:h-full flex flex-col h-auto min-h-0">

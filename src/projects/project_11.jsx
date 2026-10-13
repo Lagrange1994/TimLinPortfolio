@@ -9,7 +9,7 @@ import { installBackSwipe } from './shared/backSwipe';
 import {
     BackButton, ScrollTopButton, ThemeToggle, HeroCTAButton, TabNav, ToolPill,
     InfoGrid, InfoCard, PainPointCard, ProcessTimeline, FeatureCard,
-    GalleryItemButton, PreviewFrame, ResizeHandle, get16by9FloorVh,
+    GalleryItemButton, PreviewFrame, ResizeHandle, get16by9FloorVh, mobileStageHeightVh,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -143,6 +143,12 @@ gsap.registerPlugin(ScrollToPlugin);
             const [peekTab, setPeekTab] = useState(null);
             const [peekDragDirection, setPeekDragDirection] = useState(0);
             const TAB_ORDER = ['context', 'process', 'solution', 'climax'];
+            // Phone only: the drag handle that resizes the stage — and any height
+            // dragged with it — applies just on the tabs whose stage shows a screenshot
+            // picked from the list (solution/highlights and gallery). On the other tabs
+            // the handle is gone and the stage sits at its 16:9 default.
+            const RESIZABLE_TABS = ['solution', 'climax'];
+            const canResizeVisual = RESIZABLE_TABS.includes(activeTab);
             const handleTabTouchStart = (e) => {
                 if (e.target.closest('.overflow-x-auto')) { touchStartRef.current = null; return; }
                 if (swipeContentRef.current) gsap.killTweensOf(swipeContentRef.current);
@@ -553,8 +559,8 @@ gsap.registerPlugin(ScrollToPlugin);
                         {/* [修改] bg-dark -> bg-tmu-dark */}
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-tmu-dark overflow-hidden">
                             {/* [修改] bg-[#1e293b] (保留原色碼) */}
-                            <div ref={visualPanelRef} className="ds-stage ds-stage--web-bare w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] relative flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl" style={{ height: window.innerWidth < 1024 ? `${mobileVisualHeight}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
-                                <ResizeHandle prefix="tmu" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />
+                            <div ref={visualPanelRef} className="ds-stage ds-stage--web-bare w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1e293b] relative flex items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl" style={{ height: window.innerWidth < 1024 ? `${mobileStageHeightVh(canResizeVisual, mobileVisualHeight)}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                                {canResizeVisual && <ResizeHandle prefix="tmu" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />}
                                 <div className="relative w-full h-full flex flex-col items-center justify-center">
                                     <div className="flex-1 min-h-0 w-full flex items-center justify-center">
                                         <PreviewFrame
