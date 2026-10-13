@@ -96,14 +96,22 @@
     @keyframes ls-clip-b { 0%, 50% { transform: translateY(0); } 100% { transform: translateY(35px); } }
     @keyframes ls-half-b { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(35px); } }
 
-    /* The three status lines cycle once a second on opacity alone, for the
-       same reason — a React-state text swap would stall with the main thread. */
+    /* The status lines take turns (1.5s each) on opacity alone, for the
+       same reason — a React-state text swap would stall with the main thread.
+       9 of them: the scenes take 10s+ to compile on a first visit, and
+       three lines on a 3s loop read as a stuck screen by then. */
     .loader-text { display: grid; justify-items: center; margin: 0; font-size: 14px; letter-spacing: 0.02em; }
     .loader-text span { grid-area: 1 / 1; opacity: 0; white-space: nowrap; }
-    .loader-step { animation: loader-step 3s step-end infinite; }
-    .loader-step:nth-child(2) { animation-delay: 1s; }
-    .loader-step:nth-child(3) { animation-delay: 2s; }
-    @keyframes loader-step { 0% { opacity: 0.7; } 33.333%, 100% { opacity: 0; } }
+    .loader-step { animation: loader-step 13.5s step-end infinite; }
+    .loader-step:nth-child(2) { animation-delay: 1.5s; }
+    .loader-step:nth-child(3) { animation-delay: 3s; }
+    .loader-step:nth-child(4) { animation-delay: 4.5s; }
+    .loader-step:nth-child(5) { animation-delay: 6s; }
+    .loader-step:nth-child(6) { animation-delay: 7.5s; }
+    .loader-step:nth-child(7) { animation-delay: 9s; }
+    .loader-step:nth-child(8) { animation-delay: 10.5s; }
+    .loader-step:nth-child(9) { animation-delay: 12s; }
+    @keyframes loader-step { 0% { opacity: 0.7; } 11.111%, 100% { opacity: 0; } }
     .loader.hidden .loader-step { animation: none; }
     .loader.hidden .loader-done { opacity: 0.7; }
   </style>
@@ -384,7 +392,7 @@
 <body>
   <!-- Static, outside #root: painted with the HTML itself and driven by the
        compositor (see the LOADER block in <head>). Loader.tsx only decides
-       when to dismiss it. Copy mirrors loader_step1–4 in
+       when to dismiss it. Copy mirrors loader_step1–10 in
        src/i18n/translations.ts (zh here, en swapped in by the script below
        for a returning visitor who chose English). -->
   <div class="loader" id="page-loader" role="status">
@@ -401,7 +409,13 @@
     <p class="loader-text">
       <span class="loader-step">讀取專案中繼資料</span>
       <span class="loader-step" aria-hidden="true">載入視覺素材</span>
+      <span class="loader-step" aria-hidden="true">下載 3D 場景檔</span>
+      <span class="loader-step" aria-hidden="true">編譯著色器</span>
       <span class="loader-step" aria-hidden="true">建構渲染畫布</span>
+      <span class="loader-step" aria-hidden="true">佈置燈光與材質</span>
+      <span class="loader-step" aria-hidden="true">喚醒 3D 人物</span>
+      <span class="loader-step" aria-hidden="true">準備深色與淺色主題</span>
+      <span class="loader-step" aria-hidden="true">校準互動與動畫</span>
       <span class="loader-done" aria-hidden="true">初始化完成</span>
     </p>
   </div>
@@ -409,7 +423,7 @@
     (function () {
       try {
         if (localStorage.getItem('lang') !== 'en') return;
-        var en = ['Reading project metadata', 'Loading visual assets', 'Constructing render canvas', 'Initialization complete'];
+        var en = ['Reading project metadata', 'Loading visual assets', 'Downloading 3D scenes', 'Compiling shaders', 'Constructing render canvas', 'Setting up lights and materials', 'Waking up the 3D character', 'Preparing dark and light themes', 'Calibrating interactions and motion', 'Initialization complete'];
         var spans = document.querySelectorAll('#page-loader .loader-text span');
         for (var i = 0; i < spans.length; i++) spans[i].textContent = en[i];
       } catch (e) {}

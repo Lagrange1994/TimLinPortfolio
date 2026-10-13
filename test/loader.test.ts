@@ -99,6 +99,38 @@ describe('Loader', () => {
     expect(heroReady).toBe(1);
   });
 
+  // Regression: the other theme's background scene started loading at
+  // 'hero-ready', so its parse and shader compiles landed on the hero
+  // entrance (first visit: the elements floated up in jerks). It loads
+  // behind the loading screen now, and the loader waits for it too.
+  it("also waits for the other theme's background scene", () => {
+    addStaticLoader();
+    const hero = addViewer('hero-spline');
+    const dark = addViewer('spline-bg-dark');
+    const light = addViewer('spline-bg-light');
+    mount();
+    loadComplete(hero);
+    loadComplete(dark);
+    vi.advanceTimersByTime(3000);
+    expect(isRevealed()).toBe(false); // light (not shown) still loading
+    loadComplete(light);
+    vi.advanceTimersByTime(CALM_MAX_WAIT_MS);
+    expect(isRevealed()).toBe(true);
+    expect(heroReady).toBe(1);
+  });
+
+  it("does not wait for the other theme's scene once its url was dropped", () => {
+    addStaticLoader();
+    const hero = addViewer('hero-spline');
+    const dark = addViewer('spline-bg-dark');
+    addViewer('spline-bg-light', null);
+    mount();
+    loadComplete(hero);
+    loadComplete(dark);
+    vi.advanceTimersByTime(1000 + CALM_MAX_WAIT_MS);
+    expect(isRevealed()).toBe(true);
+  });
+
   it('finds the background viewer even though it is added after mount (portal)', () => {
     addStaticLoader();
     const hero = addViewer('hero-spline');

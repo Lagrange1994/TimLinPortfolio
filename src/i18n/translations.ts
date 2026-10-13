@@ -10,8 +10,14 @@ export const translations = {
     // loader
     loader_step1: '讀取專案中繼資料',
     loader_step2: '載入視覺素材',
-    loader_step3: '建構渲染畫布',
-    loader_step4: '初始化完成',
+    loader_step3: '下載 3D 場景檔',
+    loader_step4: '編譯著色器',
+    loader_step5: '建構渲染畫布',
+    loader_step6: '佈置燈光與材質',
+    loader_step7: '喚醒 3D 人物',
+    loader_step8: '準備深色與淺色主題',
+    loader_step9: '校準互動與動畫',
+    loader_step10: '初始化完成',
     // hero
     hero_role: 'UI/UX Designer & Web Developer',
     hero_desc: '致力於打造兼具美學與功能的數位體驗<br>協助企業推動業務成長並深化用戶互動',
@@ -276,8 +282,14 @@ export const translations = {
     // loader
     loader_step1: 'Reading project metadata',
     loader_step2: 'Loading visual assets',
-    loader_step3: 'Constructing render canvas',
-    loader_step4: 'Initialization complete',
+    loader_step3: 'Downloading 3D scenes',
+    loader_step4: 'Compiling shaders',
+    loader_step5: 'Constructing render canvas',
+    loader_step6: 'Setting up lights and materials',
+    loader_step7: 'Waking up the 3D character',
+    loader_step8: 'Preparing dark and light themes',
+    loader_step9: 'Calibrating interactions and motion',
+    loader_step10: 'Initialization complete',
     // hero
     hero_role: 'UI/UX Designer & Web Developer',
     hero_desc:

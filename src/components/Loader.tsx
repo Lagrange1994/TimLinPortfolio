@@ -10,11 +10,11 @@ const HERO_FIGURE_BREAKPOINT = 768;
 // (viewer script blocked, a scene 404s…). Long enough that the real signals
 // below normally win — the previous 4s was shorter than the scenes take to
 // load on a fast laptop, so it was what dismissed the loader every time.
-// The two scenes this waits for take ~8-10s on a laptop iGPU with a cold
-// shader cache (longer since index.html's link shim trades load time for a
-// loader that keeps moving) and were seen at 13s with the machine under
-// load, hence the headroom.
-export const LOADER_FORCE_MS = 20000;
+// The three scenes this waits for (figure + both themes' backgrounds) take
+// ~10-13s on a laptop iGPU with a cold shader cache (longer since
+// index.html's link shim trades load time for a loader that keeps moving),
+// more with the machine under load, hence the headroom.
+export const LOADER_FORCE_MS = 25000;
 // How often readiness is re-checked while waiting (see isReady).
 const POLL_MS = 250;
 // A bg scene with no `url` this long after mount has been dropped on purpose
@@ -133,7 +133,13 @@ export default function Loader() {
         return !img || img.complete;
       }
       const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
-      return viewerReady('hero-spline', false) && viewerReady(`spline-bg-${theme}`, true);
+      // The other theme's scene loads behind the loading screen too (see
+      // BeamsBackground) — started any later, its parse and shader compiles
+      // land on the hero entrance. Both bg viewers are portaled in together,
+      // so "not in the DOM" can only mean the active one is blocking anyway.
+      const otherId = `spline-bg-${theme === 'light' ? 'dark' : 'light'}`;
+      return viewerReady('hero-spline', false) && viewerReady(`spline-bg-${theme}`, true)
+        && (!document.getElementById(otherId) || viewerReady(otherId, true));
     }
 
     function check() {

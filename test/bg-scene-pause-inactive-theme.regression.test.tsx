@@ -1,6 +1,6 @@
-// Regression: the other theme's background Spline scene is preloaded after
-// 'hero-ready' (so a toggle doesn't parse/compile a scene mid-transition),
-// but it used to be parked at opacity:0 still RENDERING at full rate — a
+// Regression: the other theme's background Spline scene is preloaded (so a
+// toggle doesn't parse/compile a scene mid-transition), but it used to be
+// parked at opacity:0 still RENDERING at full rate — a
 // Spline viewer doesn't stop for opacity. Measured ~41k draw calls/s on its
 // own canvas. Only the shown scene (plus the outgoing one during the
 // crossfade) may run; the preloaded one must be paused.
@@ -80,12 +80,26 @@ describe('background Spline scenes — preload the other theme, but paused', () 
     return { dark, light };
   }
 
-  it('loads only the active theme until hero-ready, then preloads the other', async () => {
+  // Regression: the other theme's scene used to start loading AT
+  // 'hero-ready' — its parse + shader compiles then froze the hero entrance
+  // on a first visit (1.3s of dropped frames in the first 2.8s, measured).
+  // Both load from the start now, behind the loading screen.
+  it('loads both themes from the start, not at hero-ready', async () => {
     const { dark, light } = await mount();
     expect(dark.getAttribute('url')).toBe('./models/bg_scene.splinecode');
-    expect(light.getAttribute('url')).toBeNull();
-    await heroReady();
     expect(light.getAttribute('url')).toBe('./models/bg_scene_w.splinecode');
+    expect(document.body.classList.contains('hero-ready')).toBe(false);
+  });
+
+  it('restores both scenes when the hero scrolls back after its urls were dropped', async () => {
+    const { dark, light } = await mount();
+    act(() => ioCbs.forEach(cb => cb([{ isIntersecting: false }])));
+    act(() => { vi.advanceTimersByTime(4000); });
+    expect(dark.getAttribute('url')).toBeNull();
+    expect(light.getAttribute('url')).toBeNull();
+    act(() => ioCbs.forEach(cb => cb([{ isIntersecting: true }])));
+    expect(dark.getAttribute('url')).not.toBeNull();
+    expect(light.getAttribute('url')).not.toBeNull();
   });
 
   it('the preloaded scene is paused once it has loaded — and stays paused', async () => {
@@ -140,7 +154,7 @@ describe('background Spline scenes — preload the other theme, but paused', () 
     expect(lightApp.running).toBe(false);
   });
 
-  it('toggle before the preload: keeps the old scene shown until the new one loads', async () => {
+  it('toggle before the other scene has loaded: keeps the old scene shown until it does', async () => {
     const { dark, light } = await mount();
     mockRuntime(dark);
     loadComplete(dark);

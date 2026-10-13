@@ -92,12 +92,28 @@ describe('static homepage loader', () => {
   it('status copy matches translations.ts in both languages', () => {
     const zh = translations.zh as Record<string, string>;
     const en = translations.en as Record<string, string>;
-    const keys = ['loader_step1', 'loader_step2', 'loader_step3', 'loader_step4'];
+    const keys = Array.from({ length: 10 }, (_, i) => `loader_step${i + 1}`);
     const spans = [...body.matchAll(/<span class="loader-(?:step|done)"[^>]*>([^<]+)<\/span>/g)].map(m => m[1]);
     expect(spans).toEqual(keys.map(k => zh[k]));
     const enList = body.match(/var en = \[([^\]]+)\]/)?.[1] ?? '';
     const enStrings = [...enList.matchAll(/'([^']+)'/g)].map(m => m[1]);
     expect(enStrings).toEqual(keys.map(k => en[k]));
+  });
+
+  // The scenes take 10s+ to compile on a first visit; three lines on a 3s
+  // loop read as a stuck screen by then. Nine lines, 1.5s each, one at a time.
+  it('status lines take turns: one slot each, no overlap, no gap', () => {
+    const steps = [...body.matchAll(/<span class="loader-step"/g)].length;
+    expect(steps).toBe(9);
+    expect([...body.matchAll(/<span class="loader-done"/g)]).toHaveLength(1);
+    const total = Number(style.match(/\.loader-step\s*\{\s*animation:\s*loader-step ([\d.]+)s step-end infinite;/)![1]);
+    const slot = total / steps;
+    expect(slot).toBeCloseTo(1.5);
+    const delays = [...style.matchAll(/\.loader-step:nth-child\((\d+)\)\s*\{\s*animation-delay:\s*([\d.]+)s;/g)]
+      .map(m => [Number(m[1]), Number(m[2])]);
+    expect(delays).toEqual(Array.from({ length: steps - 1 }, (_, i) => [i + 2, (i + 1) * slot]));
+    const visibleUntil = Number(style.match(/@keyframes loader-step \{ 0% \{ opacity: 0\.7; \} ([\d.]+)%, 100% \{ opacity: 0; \} \}/)![1]);
+    expect(visibleUntil).toBeCloseTo(100 / steps, 2);
   });
 
   it('portfolio.css no longer defines the loader (single source: index.html)', () => {

@@ -49,21 +49,14 @@ export default function BeamsBackground() {
     return () => observer.disconnect();
   }, []);
 
-  // The other theme's scene is preloaded once the page's own priority
-  // content is up (Loader.tsx fires 'hero-ready' after the ACTIVE scene and
-  // the hero figure), so a toggle only crossfades between two ready scenes —
-  // loading on toggle instead parses the scene and compiles its shaders on
-  // the main thread right on top of the theme transition (visible jank).
-  const [preloadOtherTheme, setPreloadOtherTheme] = useState(false);
-  useEffect(() => {
-    if (document.body.classList.contains('hero-ready')) {
-      setPreloadOtherTheme(true);
-      return;
-    }
-    const onHeroReady = () => setPreloadOtherTheme(true);
-    window.addEventListener('hero-ready', onHeroReady, { once: true });
-    return () => window.removeEventListener('hero-ready', onHeroReady);
-  }, []);
+  // BOTH themes' scenes load from the start, behind the loading screen
+  // (Loader.tsx holds 'hero-ready' for the other theme's too), so a toggle
+  // only crossfades between two ready scenes — loading on toggle instead
+  // parses the scene and compiles its shaders on the main thread right on
+  // top of the theme transition. The other theme used to start loading AT
+  // 'hero-ready': measured on a first visit, that put four frozen stretches
+  // (1.3s in total) plus 0.5s of main-thread tasks inside the first 2.8s of
+  // the hero entrance — the elements floated up in jerks.
 
   // `shownTheme` is the scene that's visible (.is-active); `fadingOut` is
   // the previous one during the 0.7s crossfade. Only those two may RENDER:
@@ -97,13 +90,9 @@ export default function BeamsBackground() {
     const dark = splineDarkRef.current;
     const light = splineLightRef.current;
     if (!dark || !light || !inHeroViewRef.current) return;
-    const want = (t: 'dark' | 'light') =>
-      preloadOtherTheme || theme === t || shownTheme === t || fadingOut === t;
-    if (want('dark')) { if (!dark.getAttribute('url')) dark.setAttribute('url', './models/bg_scene.splinecode'); }
-    else dark.removeAttribute('url');
-    if (want('light')) { if (!light.getAttribute('url')) light.setAttribute('url', './models/bg_scene_w.splinecode'); }
-    else light.removeAttribute('url');
-  }, [theme, shownTheme, fadingOut, preloadOtherTheme]);
+    if (!dark.getAttribute('url')) dark.setAttribute('url', './models/bg_scene.splinecode');
+    if (!light.getAttribute('url')) light.setAttribute('url', './models/bg_scene_w.splinecode');
+  }, []);
 
   useEffect(() => {
     applyDesiredSplineUrls();
@@ -133,7 +122,7 @@ export default function BeamsBackground() {
   }, [theme, shownTheme]);
 
   // Pause the outgoing scene once the crossfade has finished (it stays
-  // loaded for the next toggle; once preloaded, its url is kept).
+  // loaded for the next toggle; its url is kept).
   useEffect(() => {
     if (!fadingOut) return;
     const t = setTimeout(() => setFadingOut(null), BG_CROSSFADE_MS);
