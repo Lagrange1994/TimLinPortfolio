@@ -38,9 +38,10 @@ export const SPLINE_MAX_FPS = 60;
 export function capSceneFps(app: SplineApp, maxFps = SPLINE_MAX_FPS) {
   if (app.__fpsCap || !app.render) return;
   const render = app.render;
-  const interval = 1000 / maxFps;
   let last = -Infinity;
   app.render = (time: number) => {
+    // Read per frame: the quality governor lowers a bg scene's cap later on.
+    const interval = 1000 / (app.__fpsCap || maxFps);
     const elapsed = time - last;
     // 1ms slack so a 60 Hz display's slightly-early vsyncs aren't dropped.
     if (elapsed < interval - 1) return;
@@ -116,25 +117,107 @@ export function capSceneResolution(app: SplineApp, maxPixels = SPLINE_MAX_PIXELS
   app.requestRender?.();
 }
 
-// One shared, debounced resize hook re-applies the budget to every scene
+// Quality levels for GPUs that can't keep up at full quality. Chromium on
+// Windows runs WebGL on the integrated GPU of a hybrid laptop whatever the
+// page asks for (the runtime already requests powerPreference
+// 'high-performance'; it is ignored). Measured on an Iris Xe driving a
+// HiDPI screen: figure at 1600×1600 + background at 2560×1440 = ~15 fps,
+// against ~190 fps on the same machine's discrete GPU. Level 0 is what
+// every scene starts on; sceneQualityGovernor.ts steps down only after
+// measuring sustained slow frames, so a GPU that copes never leaves it.
+// Each step lowers the drawing-buffer budgets; from level 2 the (slow,
+// decorative) background also renders at 30 fps so the figure — the thing
+// the visitor is interacting with — gets the frames. Any level above 0 also
+// freezes the dark theme's panel glow (html[data-scene-quality] in
+// portfolio.css + BeamsBackground): its breathing/flowing animation
+// re-blurs a panel-sized shape every frame, which alone halved the frame
+// rate on that Iris Xe.
+export type SceneKind = 'bg' | 'hero';
+export const SCENE_QUALITY_LEVELS = [
+  { bgPixels: SPLINE_MAX_PIXELS, heroPixels: SPLINE_MAX_PIXELS, bgFps: SPLINE_MAX_FPS },
+  { bgPixels: 1920 * 1080, heroPixels: 1200 * 1200, bgFps: SPLINE_MAX_FPS },
+  { bgPixels: 1600 * 900, heroPixels: 1000 * 1000, bgFps: 30 },
+  { bgPixels: 1280 * 720, heroPixels: 800 * 800, bgFps: 30 },
+] as const;
+export const SCENE_QUALITY_MAX = SCENE_QUALITY_LEVELS.length - 1;
+// Per tab: a reload starts on the level this GPU already needed instead of
+// stuttering through the measurement again. Not localStorage — a visitor who
+// then switches the browser to the discrete GPU must not stay degraded.
+const QUALITY_KEY = 'tl-scene-quality';
+
+function clampLevel(n: number) {
+  return Number.isFinite(n) ? Math.min(SCENE_QUALITY_MAX, Math.max(0, Math.round(n))) : 0;
+}
+function storedLevel() {
+  try { return clampLevel(Number(sessionStorage.getItem(QUALITY_KEY) ?? 0)); } catch { return 0; }
+}
+let qualityLevel = storedLevel();
+// Mirrored on <html> so CSS can react to it (see the glow note above).
+function publishLevel() {
+  if (typeof document !== 'undefined') document.documentElement.setAttribute('data-scene-quality', String(qualityLevel));
+}
+if (qualityLevel > 0) publishLevel();
+const qualityListeners = new Set<() => void>();
+const tracked = new Map<HTMLElement, SceneKind>();
+
+export function getSceneQuality() { return qualityLevel; }
+export function scenePixelBudget(kind: SceneKind): number {
+  const level = SCENE_QUALITY_LEVELS[qualityLevel];
+  return kind === 'hero' ? level.heroPixels : level.bgPixels;
+}
+// The hero figure's pixel ratio is owned by HeroSection (it overrides the
+// runtime's own ratio getter), so it subscribes here and re-applies it
+// itself; bg scenes are re-budgeted right away by applyQuality below.
+export function onSceneQualityChange(cb: () => void) {
+  qualityListeners.add(cb);
+  return () => { qualityListeners.delete(cb); };
+}
+export function setSceneQuality(level: number) {
+  const next = clampLevel(level);
+  if (next === qualityLevel) return;
+  qualityLevel = next;
+  try { sessionStorage.setItem(QUALITY_KEY, String(next)); } catch { /* private mode */ }
+  publishLevel();
+  for (const [el, kind] of tracked) {
+    const app = (el as SplineViewerEl)._spline;
+    if (app) applyQuality(app, kind);
+  }
+  qualityListeners.forEach(cb => cb());
+}
+// True while any tracked scene's render loop is running — the governor only
+// counts frames that a scene actually had a part in.
+export function anySceneRunning() {
+  for (const el of tracked.keys()) {
+    const app = (el as SplineViewerEl)._spline;
+    if (el.isConnected && app && !app._isPaused) return true;
+  }
+  return false;
+}
+
+function applyQuality(app: SplineApp, kind: SceneKind) {
+  if (kind !== 'bg') return;
+  if (app.__fpsCap) app.__fpsCap = SCENE_QUALITY_LEVELS[qualityLevel].bgFps;
+  capSceneResolution(app, scenePixelBudget('bg'));
+}
+
+// One shared, debounced resize hook re-applies the budget to every bg scene
 // that has been through setSceneRunning (the runtime's own resize keeps the
 // load-time ratio, so a window grown past the budget would exceed it).
-const tracked = new Set<HTMLElement>();
 let resizeTimer: ReturnType<typeof setTimeout> | undefined;
 function onWindowResize() {
   clearTimeout(resizeTimer);
   // After the runtime's own debounced resize has applied the new size.
   resizeTimer = setTimeout(() => {
-    for (const el of tracked) {
+    for (const [el, kind] of tracked) {
       if (!el.isConnected) { tracked.delete(el); continue; }
       const app = (el as SplineViewerEl)._spline;
-      if (app) capSceneResolution(app);
+      if (app) applyQuality(app, kind);
     }
   }, 400);
 }
-function track(el: HTMLElement) {
+function track(el: HTMLElement, kind: SceneKind) {
   if (tracked.size === 0 && typeof window !== 'undefined') window.addEventListener('resize', onWindowResize);
-  tracked.add(el);
+  tracked.set(el, kind);
 }
 
 // Pause/resume a <spline-viewer>'s render loop via the viewer's internal
@@ -145,14 +228,17 @@ function track(el: HTMLElement) {
 // flag is set, and a stop() issued before load sets that flag without
 // clearing the loop the load arms afterwards — leaving a "paused" scene that
 // still renders every frame. play() first re-syncs the flag with the loop.
-// Also installs the frame-rate cap (see capSceneFps) and the resolution
-// budget (see capSceneResolution) on first call.
-export function setSceneRunning(el: HTMLElement | null, running: boolean) {
+// Also installs the frame-rate cap (see capSceneFps) and, for a bg scene,
+// the resolution budget (see capSceneResolution) at the current quality
+// level. `kind: 'hero'` leaves the resolution alone: HeroSection sets the
+// figure's pixel ratio itself (from the same budget — scenePixelBudget) and
+// a second writer here would undo it on every resume.
+export function setSceneRunning(el: HTMLElement | null, running: boolean, kind: SceneKind = 'bg') {
   const app = (el as SplineViewerEl | null)?._spline;
   if (!el || !app) return;
   capSceneFps(app);
-  capSceneResolution(app);
-  track(el);
+  applyQuality(app, kind);
+  track(el, kind);
   app.play?.();
   if (!running) app.stop?.();
 }

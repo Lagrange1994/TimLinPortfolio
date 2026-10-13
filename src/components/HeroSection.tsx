@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
-import { setSceneRunning, throttleSceneShadows } from '../utils/splineRunning';
+import { onSceneQualityChange, scenePixelBudget, setSceneRunning, throttleSceneShadows } from '../utils/splineRunning';
 import HeroAskStrip from './HeroAskStrip';
 import gsap from 'gsap';
 
@@ -447,11 +447,11 @@ export default function HeroSection() {
     let visible = true;
     const observer = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
-      setSceneRunning(heroSpline, visible);
+      setSceneRunning(heroSpline, visible, 'hero');
     }, { threshold: 0 });
     observer.observe(heroEl);
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const onLoaded = () => { timer = setTimeout(() => setSceneRunning(heroSpline, visible), 50); };
+    const onLoaded = () => { timer = setTimeout(() => setSceneRunning(heroSpline, visible, 'hero'), 50); };
     heroSpline.addEventListener('load-complete', onLoaded);
     return () => {
       observer.disconnect();
@@ -535,7 +535,11 @@ export default function HeroSection() {
       const sp = viewer?._spline;
       const renderer = sp?._renderer;
       if (!sp || !renderer?.setDrawingBufferSize) return;
-      const ratio = Math.min(window.devicePixelRatio || 1, Math.max(0.5, (window.devicePixelRatio || 1) * scale));
+      // Never past the figure's drawing-buffer budget at the current quality
+      // level (see SCENE_QUALITY_LEVELS) — on a HiDPI screen the unbudgeted
+      // buffer is 1600×1600+, which an integrated GPU can't draw at 60 fps.
+      const budgetRatio = Math.sqrt(scenePixelBudget('hero')) / HERO_SCENE_SIZE;
+      const ratio = Math.min(window.devicePixelRatio || 1, Math.max(0.5, (window.devicePixelRatio || 1) * scale), budgetRatio);
       sp._getPixelRatio = () => ratio;
       if (Math.abs(ratio - lastPixelRatio) < 0.01) return;
       lastPixelRatio = ratio;
@@ -634,6 +638,9 @@ export default function HeroSection() {
     viewer?.addEventListener('load', sync);
     window.addEventListener('hero-fig-settled', sync);
     const settleTimer = window.setTimeout(sync, 1500);
+    // The quality governor lowered (or a reload restored) the figure's
+    // drawing-buffer budget — re-apply the pixel ratio from it.
+    const offQuality = onSceneQualityChange(sync);
     // The viewer's `load` event can fire before `_spline`/`_renderer` exist
     // (and the 1500ms fallback above can fire before the scene even loads),
     // so nothing else guarantees a sync() call once the runtime is really
@@ -655,6 +662,7 @@ export default function HeroSection() {
       viewer?.removeEventListener('pointerleave', onPointerLeave);
       viewer?.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('hero-fig-settled', sync);
+      offQuality();
       ro.disconnect();
       viewer?.removeEventListener('load', sync);
       window.clearTimeout(settleTimer);

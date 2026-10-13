@@ -1612,6 +1612,11 @@
       display: none;
     }
 
+    /* Desktop-only panel shadow caster, same reasoning again. */
+    #bg-panel-shadow-shape {
+      display: none;
+    }
+
     /* Below 1025px this is a structural no-op — .hero-tags positions itself
        against #home directly (the base .hero-tags rule further down), same
        as before this wrapper existed. Only the desktop media query below
@@ -1760,27 +1765,53 @@
          The 24px inset / 48px radius here are FRAME_INSET / FRAME_RADIUS in
          heroFramePath.ts — keep the two in sync, they describe the same
          box. */
-      /* Wraps #bg-spline-scene to carry the panel's drop shadow — pressed
-         down onto #bg-frame-glow behind it, per the brief. filter:
-         drop-shadow HAS to live on a different element than the imperative
-         clip-path: confirmed live previously (see the old #bg-notch-tl
-         patch, back when that existed) that Chromium silently drops a
-         filter entirely on any element that also carries a JS-set
-         clip-path. Putting the shadow here instead works around that for
-         free — this wrapper has no clip-path of its own, so its filter just
-         traces whatever shape its clipped child (#bg-spline-scene) already
-         rendered: the exact notch silhouette, no separate geometry needed.
-         filter also makes this the element that establishes a stacking
-         context, which is why z-index -3 (the panel's slot, see the #home
-         comment above) moved here instead of staying on the child. Same
-         24px inset/48px-radius box as before — #bg-spline-scene itself
-         drops to inset:0 below since it's now measured from this wrapper. */
+      /* Wraps #bg-spline-scene: the panel's positioned box and its
+         stacking context (z-index -3, the panel's slot — see the #home
+         comment above). It used to carry the panel's drop shadow as a
+         filter too; that moved to #bg-panel-shadow-shape below (see why
+         there). Same 24px inset/48px-radius box as before —
+         #bg-spline-scene itself is inset:0, measured from this wrapper. */
       #bg-panel-shadow {
         position: absolute;
         inset: 24px;
         z-index: -3;
         pointer-events: none;
+      }
+
+      /* The panel's drop shadow. It used to be `filter: drop-shadow()` on
+         #bg-panel-shadow itself, i.e. over the live WebGL canvas — and a
+         filter over content that changes every frame is re-run by the
+         compositor every frame: the whole panel, blurred at device
+         resolution, 60 times a second. Measured on an integrated GPU with
+         the scenes at their lowest resolution: 27 fps with that filter, 49
+         without — it cost more than either 3D scene. This is a static
+         filled copy of the same silhouette (same `d`, written by
+         BeamsBackground.tsx's sync()) in the same -3 slot, earlier in the
+         DOM so the opaque panel paints over all of it except the shadow
+         spilling past its edge. Nothing in it changes between frames, so
+         its filter is rasterised once. Never put a filter back on an
+         ancestor of the <spline-viewer>s. */
+      #bg-panel-shadow-shape {
+        display: block;
+        position: absolute;
+        top: 24px;
+        left: 24px;
+        width: calc(100% - 48px);
+        height: calc(100% - 48px);
+        z-index: -3;
+        pointer-events: none;
+        overflow: visible;
         filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.65));
+      }
+
+      /* Same tone as the panel's own backdrop, so the antialiased edge
+         where the two shapes meet can't show a seam. */
+      .bg-panel-shadow-fill {
+        fill: var(--bg-safe);
+      }
+
+      :root[data-theme="light"] .bg-panel-shadow-fill {
+        fill: var(--frame-glow-base);
       }
 
       /* Light mode drops the plain dark drop-shadow for the same soft-UI
@@ -1792,7 +1823,7 @@
          --neu-raised's own values exactly, so these are the identical
          numbers just re-expressed as two chained filters instead of one
          box-shadow. */
-      :root[data-theme="light"] #bg-panel-shadow {
+      :root[data-theme="light"] #bg-panel-shadow-shape {
         filter:
           drop-shadow(8px 8px 18px var(--neu-shadow-dark))
           drop-shadow(-8px -8px 18px var(--neu-shadow-light));
@@ -1939,6 +1970,15 @@
         .bg-frame-glow-fill {
           animation: none;
         }
+      }
+
+      /* A GPU the quality governor measured as too slow (any level above
+         0 — see SCENE_QUALITY_LEVELS in splineRunning.ts) gets the glow as
+         a still: animating opacity on this blurred, panel-sized shape makes
+         the compositor redo the blur every frame (measured on an Iris Xe:
+         48 frames/s with the pulse and gradient flow, 102 without). */
+      html[data-scene-quality]:not([data-scene-quality="0"]) .bg-frame-glow-fill {
+        animation: none;
       }
 
       /* #hero-tags-clip shares the panel's exact box (same top/left/size as

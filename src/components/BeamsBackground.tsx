@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { heroFramePath, FRAME_INSET, FRAME_RADIUS, NOTCH_FLAT, NOTCH_RADIUS } from '../utils/heroFramePath';
-import { setSceneRunning } from '../utils/splineRunning';
+import { getSceneQuality, onSceneQualityChange, setSceneRunning } from '../utils/splineRunning';
 
 // Fixed gap between a notch's content and its reference point on the S-bend
 // (NOTCH_CURVE_CLEARANCE below) — same 26px used for .navbar-brand's own
@@ -202,6 +202,22 @@ export default function BeamsBackground() {
     };
   }, [shownTheme, fadingOut, heroEl, heroVisible]);
 
+  // On a GPU the quality governor found too slow (level > 0), stop the dark
+  // glow's gradient "flow": SMIL repaints — and so re-blurs — the whole
+  // panel-sized shape on every frame. The CSS breathing pulse is switched
+  // off by html[data-scene-quality] in portfolio.css; SMIL has no CSS
+  // switch, hence this. The glow itself stays, as a still.
+  useEffect(() => {
+    if (!heroEl) return;
+    const apply = () => {
+      const svg = document.getElementById('bg-frame-glow') as unknown as SVGSVGElement | null;
+      if (getSceneQuality() > 0) svg?.pauseAnimations?.();
+      else svg?.unpauseAnimations?.();
+    };
+    apply();
+    return onSceneQualityChange(apply);
+  }, [heroEl]);
+
   // Drives the visible 1px border stroke — see heroFramePath.ts. Same
   // pattern as the portfolio wall's outline — the shape is computed once
   // from the live box and drawn as a stroke, so the border traces the
@@ -209,6 +225,7 @@ export default function BeamsBackground() {
   // with a rounded-rect box-shadow.
   const framePathRef = useRef<SVGPathElement>(null);
   const frameGlowRef = useRef<SVGPathElement>(null);
+  const frameShadowRef = useRef<SVGPathElement>(null);
   const splineSceneRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (isMobile || !heroEl) return;
@@ -292,10 +309,12 @@ export default function BeamsBackground() {
       document.getElementById('hero-tags-clip')?.style.setProperty('clip-path', `path("${d}")`);
       framePathRef.current?.setAttribute('d', d);
       frameGlowRef.current?.setAttribute('d', d);
+      frameShadowRef.current?.setAttribute('d', d);
       // viewBox matches the element's own pixel box 1:1, so path units are
       // CSS px and the stroke width isn't scaled by the viewport.
       document.getElementById('bg-frame-outline')?.setAttribute('viewBox', `0 0 ${w} ${h}`);
       document.getElementById('bg-frame-glow')?.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      document.getElementById('bg-panel-shadow-shape')?.setAttribute('viewBox', `0 0 ${w} ${h}`);
 
       // .navbar-menu (Navbar.tsx, not a descendant of #home) reads this to
       // sit right after the tl notch's flap instead of at a fixed offset —
@@ -412,14 +431,19 @@ export default function BeamsBackground() {
           corners. See the clip-path comment in sync() for why that's the
           fix, not just a simplification.
 
-          #bg-panel-shadow wraps it (rather than putting filter:drop-shadow
-          directly on #bg-spline-scene) because clip-path and filter don't
-          coexist on the same element here — confirmed live previously (see
-          the #bg-panel-shadow comment in portfolio.css) that a filter
-          silently fails to render at all on an element that also carries an
-          imperative clip-path. The wrapper has no clip-path of its own, so
-          its filter traces whatever shape its already-clipped child
-          rendered — the exact notch silhouette, for free. */}
+          The panel's drop shadow is NOT a filter on this wrapper any more:
+          a filter over a WebGL canvas has to be re-run by the compositor
+          on every frame the canvas draws — a full-panel blur at device
+          resolution, 60 times a second, for a shadow that never changes.
+          Measured on an integrated GPU: 27 fps with it, 49 fps without.
+          The shadow is cast by #bg-panel-shadow-shape just below instead —
+          a static filled copy of the same silhouette (same `d`) sitting
+          behind the opaque panel, whose filter is rasterised once.
+          #bg-panel-shadow stays as the panel's positioned z-index:-3
+          wrapper (see portfolio.css). */}
+      <svg id="bg-panel-shadow-shape" aria-hidden="true" role="presentation">
+        <path ref={frameShadowRef} className="bg-panel-shadow-fill" />
+      </svg>
       <div id="bg-panel-shadow" aria-hidden="true" role="presentation">
         {/* One element per theme, stacked in the same box, so a toggle
             crossfades between two ready scenes instead of swapping one
