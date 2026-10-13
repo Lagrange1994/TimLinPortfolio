@@ -476,10 +476,6 @@ gsap.registerPlugin(ScrollToPlugin);
                 }
             };
 
-            // Mobile left-edge swipe-back + Chrome-style indicator; see shared/backSwipe.js.
-            // Edge-origin drags are stopped before the tab-swipe handlers see them.
-            useEffect(() => installBackSwipe(() => goBack()), []);
-
             useEffect(() => {
                 const container = mainContainerRef.current;
                 if (container) {
@@ -500,6 +496,10 @@ gsap.registerPlugin(ScrollToPlugin);
                 if (sameOrigin && window.history.length > 1) history.back();
                 else location.href = '/#portfolio';
             };
+
+            // Mobile left-edge swipe-back + Chrome-style indicator; see shared/backSwipe.js.
+            // Edge-origin drags are stopped before the tab-swipe handlers see them.
+            useEffect(() => installBackSwipe(() => goBack()), []);
 
             // Conditional Rendering for Left Panel
             const renderPreview = () => {

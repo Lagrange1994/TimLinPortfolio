@@ -25,6 +25,17 @@ describe.each([
   it('carries no leftover per-page copy of the old handlers', () => {
     expect(jsx).not.toMatch(/handleBackTouch|BACK_EDGE_ZONE|backSwipeRef/);
   });
+
+  // Regression: on 12 pages the effect sat above the `const goBack` it closes
+  // over, and four pages wrote `isResizingRef.current` during render. Both
+  // are eslint-plugin-react-hooks errors — 16 of the 24 that kept
+  // `npm run lint` (and so the GitHub "test" check) red.
+  it('installs the swipe after goBack is declared, and writes no ref during render', () => {
+    const declared = jsx.search(/(?:const|function) goBack\b/);
+    expect(declared).toBeGreaterThan(-1);
+    expect(jsx.indexOf('installBackSwipe(')).toBeGreaterThan(declared);
+    expect(jsx).not.toMatch(/^\s*isResizingRef\.current = isResizing;\s*$/m);
+  });
 });
 
 describe('shared backSwipe: pure helpers', () => {

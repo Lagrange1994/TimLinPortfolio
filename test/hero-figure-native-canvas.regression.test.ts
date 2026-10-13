@@ -69,7 +69,7 @@ describe('hero figure viewer is fixed at the scene\'s native 800x800 and scaled 
     // the canvas pinned at 1080x1080 regardless, so nothing changed. Scoped to
     // this effect (not the whole file — an unrelated idle-detection effect
     // elsewhere legitimately uses setInterval).
-    const effect = tsx.match(/useEffect\(\(\) => \{\s*if \(window\.innerWidth < 768 \|\| typeof ResizeObserver[\s\S]*?\n  \}, \[\]\);/)?.[0];
+    const effect = tsx.match(/useEffect\(\(\) => \{\s*if \(window\.innerWidth < 768 \|\| typeof ResizeObserver[\s\S]*?\n {2}\}, \[\]\);/)?.[0];
     expect(effect).toBeTruthy();
     expect(effect).not.toMatch(/setSize/);
     expect(effect).not.toMatch(/setZoom/);
@@ -100,7 +100,7 @@ describe('hero figure viewer is fixed at the scene\'s native 800x800 and scaled 
 // 'hero-ready').
 describe('hero figure re-points the Spline runtime\'s stale pointer-hit-test rect', () => {
   const tsx = read('src/components/HeroSection.tsx');
-  const sizingEffect = tsx.match(/useEffect\(\(\) => \{\s*if \(window\.innerWidth < 768 \|\| typeof ResizeObserver[\s\S]*?\n  \}, \[\]\);/)?.[0];
+  const sizingEffect = tsx.match(/useEffect\(\(\) => \{\s*if \(window\.innerWidth < 768 \|\| typeof ResizeObserver[\s\S]*?\n {2}\}, \[\]\);/)?.[0];
 
   it('re-points eventManager.eventContext.domRect at the live canvas rect', () => {
     expect(sizingEffect).toBeTruthy();
@@ -121,7 +121,7 @@ describe('hero figure re-points the Spline runtime\'s stale pointer-hit-test rec
   });
 
   it('dispatches hero-fig-settled from the entrance tween\'s onComplete, not a plain call', () => {
-    const entranceEffect = tsx.match(/const heroFig = document\.querySelector[\s\S]*?\n  \}, \[\]\);/)?.[0];
+    const entranceEffect = tsx.match(/const heroFig = document\.querySelector[\s\S]*?\n {2}\}, \[\]\);/)?.[0];
     expect(entranceEffect).toBeTruthy();
     expect(entranceEffect).toMatch(/onComplete: \(\) => \{\s*window\.dispatchEvent\(new Event\('hero-fig-settled'\)\);/);
   });
@@ -130,7 +130,7 @@ describe('hero figure re-points the Spline runtime\'s stale pointer-hit-test rec
     // Loader.tsx's waitForAssets() waits for #hero-spline's own `load` event
     // before firing 'hero-ready' in the first place — deferring `url` to
     // anything gated on 'hero-ready' is a real, confirmed-live deadlock.
-    const urlEffect = tsx.match(/useEffect\(\(\) => \{\s*if \(window\.innerWidth < 768\) return;\s*const heroSpline[\s\S]*?\n  \}, \[\]\);/)?.[0];
+    const urlEffect = tsx.match(/useEffect\(\(\) => \{\s*if \(window\.innerWidth < 768\) return;\s*const heroSpline[\s\S]*?\n {2}\}, \[\]\);/)?.[0];
     expect(urlEffect).toBeTruthy();
     expect(urlEffect).toMatch(/heroSpline\.setAttribute\('url', '\.\/models\/hero_figure\.splinecode'\);/);
     expect(urlEffect).not.toMatch(/hero-ready/);

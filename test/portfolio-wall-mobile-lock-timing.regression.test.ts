@@ -10,7 +10,7 @@ const source = fs.readFileSync(path.resolve(__dirname, '..', 'src/components/Por
 // jumped (~30px, rows ~19% smaller) when the lock landed. Measured in a
 // phone-emulated Chromium: lock now lands at opacity 0, before the fade.
 describe('mobile Portfolio wall locks before it becomes visible', () => {
-  const lockFn = source.match(/function lockWallGeometry\(\) \{[\s\S]*?\n    \}\n/)?.[0] ?? '';
+  const lockFn = source.match(/function lockWallGeometry\(\) \{[\s\S]*?\n {4}\}\n/)?.[0] ?? '';
 
   it('locks on intersection without waiting for the label to settle', () => {
     expect(source).not.toMatch(/labelSettled/);

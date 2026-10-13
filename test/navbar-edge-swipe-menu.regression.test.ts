@@ -24,7 +24,7 @@ describe('Navbar right-edge swipe opens the staggered menu (mobile)', () => {
   });
 
   it('triggers on touchmove, not touchend (feels immediate, not a release gesture)', () => {
-    const move = tsx.match(/const onTouchMove = \(e: TouchEvent\) => \{[\s\S]*?\n    \};/)?.[0];
+    const move = tsx.match(/const onTouchMove = \(e: TouchEvent\) => \{[\s\S]*?\n {4}\};/)?.[0];
     expect(move).toBeTruthy();
     expect(move).toMatch(/openMenu\(\);/);
     const end = tsx.match(/const onTouchEnd = \(\) => \{[\s\S]*?\};/)?.[0];

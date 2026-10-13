@@ -1,7 +1,7 @@
 import '../utils/scaleLock';
 import '../utils/cardSpotlight';
 import '../styles/projects-tailwind.css';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import gsap from 'gsap';
 import ScrollToPlugin from 'gsap/ScrollToPlugin';
@@ -249,7 +249,10 @@ gsap.registerPlugin(ScrollToPlugin);
             const [mobileVisualHeight, setMobileVisualHeight] = useState(get16by9FloorVh);
             const [isResizing, setIsResizing] = useState(false);
             const isResizingRef = useRef(false);
-            isResizingRef.current = isResizing;
+            // Kept in sync from a layout effect, not written during render (a render
+            // may be thrown away or replayed): it is still up to date before any later
+            // touch event reads it.
+            useLayoutEffect(() => { isResizingRef.current = isResizing; }, [isResizing]);
 
             // Drag limit: stop growing once the frame shows the WHOLE screenshot (nothing
             // left to scroll). Image height at the current width, plus the panel's fixed
@@ -488,10 +491,6 @@ gsap.registerPlugin(ScrollToPlugin);
                 }
             };
 
-            // Mobile left-edge swipe-back + Chrome-style indicator; see shared/backSwipe.js.
-            // Edge-origin drags are stopped before the tab-swipe handlers see them.
-            useEffect(() => installBackSwipe(() => goBack()), []);
-
             useEffect(() => {
                 const container = mainContainerRef.current;
                 if (container) {
@@ -516,6 +515,10 @@ gsap.registerPlugin(ScrollToPlugin);
                 if (sameOrigin && window.history.length > 1) history.back();
                 else location.href = '/#portfolio';
             };
+
+            // Mobile left-edge swipe-back + Chrome-style indicator; see shared/backSwipe.js.
+            // Edge-origin drags are stopped before the tab-swipe handlers see them.
+            useEffect(() => installBackSwipe(() => goBack()), []);
             const handleGallerySwitch = (imgObj) => { setCurrentImage(imgObj.src); setActiveGalleryId(imgObj.id); };
             const handleSolutionSwitch = (solObj) => { setCurrentImage(solObj.image); setActiveSolutionId(solObj.id); };
 

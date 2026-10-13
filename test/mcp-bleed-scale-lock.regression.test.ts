@@ -10,7 +10,7 @@ const ROOT = path.resolve(__dirname, '..');
 // Figma card cropped. Every vw it uses must be divided by --z.
 describe('.mcp-bleed respects the 4K scale lock', () => {
   const css = fs.readFileSync(path.join(ROOT, 'src/styles/portfolio.css'), 'utf8');
-  const block = css.match(/\.mcp-bleed \{[\s\S]*?\n    \}/)?.[0] ?? '';
+  const block = css.match(/\.mcp-bleed \{[\s\S]*?\n {4}\}/)?.[0] ?? '';
 
   it('divides its viewport-width box and negative margins by --z', () => {
     expect(block).toMatch(/width: calc\(100vw \/ var\(--z, 1\)\);/);
@@ -20,7 +20,7 @@ describe('.mcp-bleed respects the 4K scale lock', () => {
 
   it('adds the gutter beyond .section max-width (1440px) so the grid is exactly as wide as the Tech Stack row', () => {
     expect(block).toMatch(/padding: 0 calc\(max\(0px, \(100vw \/ var\(--z, 1\) - 1440px\) \/ 2\) \+ 48px\);/);
-    const section = css.match(/\n    \.section \{[\s\S]*?\n    \}/)?.[0] ?? '';
+    const section = css.match(/\n {4}\.section \{[\s\S]*?\n {4}\}/)?.[0] ?? '';
     expect(section).toMatch(/max-width: 1440px;/);
     expect(section).toMatch(/padding: 80px 48px;/);
   });
