@@ -11,7 +11,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # 24, not 20: the lockfile is written by npm 11 (bundled with Node 24).
+          # npm 10 resolves the optional wasm bindings differently and rejects
+          # the same lockfile as out of sync, which failed `npm ci` on every push.
+          node-version: 24
       - run: npm ci
       - run: npm run lint
       - run: npm test
