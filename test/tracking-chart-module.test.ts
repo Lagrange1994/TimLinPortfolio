@@ -11,6 +11,10 @@ import { describe, expect, it } from 'vitest';
 // at the type level, since `echarts/core`'s `init`/`setOption` are typed
 // the same whether or not the chart type was registered.
 describe('utils/trackingChart', () => {
+  // Default 5000ms test timeout raced the dynamic import under full-suite
+  // transform/module load and lost intermittently; the import itself (not a
+  // fixed-delay animation) is what's being waited on, so a generous budget
+  // costs nothing when the import is actually fast.
   it('registers enough of echarts/core to init, render, and dispose the tracking bar chart', () => {
     const el = document.createElement('div');
     document.body.appendChild(el);
@@ -31,5 +35,5 @@ describe('utils/trackingChart', () => {
       chart.dispose();
       el.remove();
     });
-  });
+  }, 20000);
 });

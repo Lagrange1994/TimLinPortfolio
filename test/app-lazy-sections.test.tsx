@@ -83,8 +83,11 @@ describe('App.tsx lazy-loaded sections', () => {
     // (1000ms) is too tight under the full suite's transform/module load;
     // the dynamic import itself is what's being waited on here, not a
     // fixed-delay animation, so a generous timeout costs nothing when fast.
-    expect(await screen.findByRole('heading', { level: 2 }, { timeout: 5000 })).toBeTruthy();
-  });
+    // The enclosing `it()` needs the same generous budget (vitest's own
+    // default 5000ms test timeout raced findByRole's internal one and lost
+    // under full-suite load, even though both were nominally 5000ms).
+    expect(await screen.findByRole('heading', { level: 2 }, { timeout: 15000 })).toBeTruthy();
+  }, 20000);
 
   it('wraps every lazy-loaded section usage in its own <Suspense> boundary', () => {
     const appSrc = fs.readFileSync(path.resolve(__dirname, '../src/App.tsx'), 'utf8');
@@ -98,6 +101,23 @@ describe('App.tsx lazy-loaded sections', () => {
       expect(usageLines.length).toBeGreaterThan(0);
       for (const line of usageLines) {
         expect(line).toMatch(/<Suspense[\s>]/);
+      }
+    }
+  });
+
+  // Regression: a rejected import() (stale tab after a redeploy requesting a
+  // deleted chunk hash, or a flaky network) throws during render. With no
+  // error boundary, React unmounts the whole tree to a blank page instead of
+  // just the failed section. See test/error-boundary-lazy-section.regression.test.tsx
+  // for the catching behavior itself — this only checks App.tsx actually
+  // wires the boundary around every lazy usage.
+  it('wraps every lazy-loaded section usage in its own <ErrorBoundary>', () => {
+    const appSrc = fs.readFileSync(path.resolve(__dirname, '../src/App.tsx'), 'utf8');
+    for (const name of ['AboutSection', 'SkillsSection', 'PortfolioSection', 'ContactSection']) {
+      const usageLines = appSrc.split('\n').filter(l => l.includes(`<${name} />`));
+      expect(usageLines.length).toBeGreaterThan(0);
+      for (const line of usageLines) {
+        expect(line).toMatch(/<ErrorBoundary[\s>]/);
       }
     }
   });

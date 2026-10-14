@@ -83,6 +83,31 @@ describe('LazyUnit + React.lazy/Suspense', () => {
     // MutationObserver, and must not double-call.
     expect(setupRiseRevealMock).toHaveBeenCalledTimes(1);
   });
+
+  it('disconnects its MutationObserver on unmount if the lazy import never resolves', async () => {
+    const { default: LazyUnit } = await import('../src/components/LazyUnit');
+    const disconnectSpy = vi.spyOn(MutationObserver.prototype, 'disconnect');
+
+    // Never-settling promise: the import is still pending when the
+    // component unmounts, so LazyUnit's "wait for the section to land"
+    // MutationObserver (see LazyUnit.tsx) never fires its own
+    // find-and-disconnect path. Only the effect's cleanup can disconnect it.
+    const LazyChild = lazy(() => new Promise<{ default: ComponentType }>(() => {}));
+
+    const { unmount } = render(
+      <LazyUnit name="test">
+        <Suspense fallback={null}>
+          <LazyChild />
+        </Suspense>
+      </LazyUnit>
+    );
+
+    const callsBeforeUnmount = disconnectSpy.mock.calls.length;
+    unmount();
+    expect(disconnectSpy.mock.calls.length).toBeGreaterThan(callsBeforeUnmount);
+
+    disconnectSpy.mockRestore();
+  });
 });
 
 describe('useRiseReveal() root-level scan', () => {
