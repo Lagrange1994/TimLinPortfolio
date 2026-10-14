@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "@google/genai": "^2.6.0",
-    "@govtechsg/sgds-web-component": "^3.22.1",
     "@headlessui/react": "^2.2.10",
     "clsx": "^2.1.1",
     "echarts": "^6.1.0",
@@ -24,8 +23,7 @@
     "ogl": "^1.0.11",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "tailwind-merge": "^3.6.0",
-    "three": "^0.160.0"
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@emnapi/core": "1.10.0",
@@ -38,7 +36,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/three": "^0.184.1",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^9",
     "eslint-plugin-jsx-a11y": "^6.10.2",
