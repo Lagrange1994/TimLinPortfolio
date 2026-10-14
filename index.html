@@ -294,7 +294,23 @@
 
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- @phosphor-icons/web's own bootstrap script (what `<script defer
+       src=".../web">` used to load here) does nothing but inject one
+       <link rel="stylesheet"> per weight directory, unconditionally, for
+       all 6 weights (regular/thin/light/bold/fill/duotone) — see
+       https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/index.js.
+       Only regular/ph, ph-bold and ph-fill classes are used anywhere in
+       this codebase (grep -rohE '\bph-(bold|fill|light|thin|duotone)\b'
+       src to re-verify after adding an icon); thin/light/duotone were
+       pure dead weight (~49KB raw CSS + 3 extra requests, on every page).
+       Loading these 3 directly also skips the unpkg->jsdelivr redirect the
+       bootstrap script itself was fetched through, and lets the browser
+       start the font fetch from the HTML parser instead of waiting on a
+       deferred script to inject the <link> after the fact. Version pinned
+       to match what the bootstrap script was already resolving. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css" />
 
   <!-- Keeps the loading animation moving while the Spline scenes compile
        their shaders. Must run before the viewer script below.

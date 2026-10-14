@@ -19,7 +19,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
-  <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Only regular/bold/fill Phosphor weights are used anywhere in this
+       codebase; this used to be the bootstrap script from
+       @phosphor-icons/web, which unconditionally injects a <link> for
+       all 6 weights (regular/thin/light/bold/fill/duotone) regardless of
+       use -- see index.html for the full rationale and how to re-verify
+       after adding an icon. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css" />
   <!-- Warm the simulator iframe's origins ahead of the launch click: it's a separate
        Vercel deployment that also pulls React/ReactDOM from esm.sh via an import map,
        so a cold click pays DNS+TLS for both origins before any bytes of the app load.

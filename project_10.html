@@ -19,7 +19,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Quicksand:wght@300..700&display=swap" rel="stylesheet" />
-  <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Only regular/bold/fill Phosphor weights are used anywhere in this
+       codebase; this used to be the bootstrap script from
+       @phosphor-icons/web, which unconditionally injects a <link> for
+       all 6 weights (regular/thin/light/bold/fill/duotone) regardless of
+       use -- see index.html for the full rationale and how to re-verify
+       after adding an icon. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css" />
   <!-- Sets data-theme before this page's own <style> block below is parsed,
        so the homepage's saved theme (same 'theme' localStorage key) carries
        over here. No saved value falls back to the OS/browser
