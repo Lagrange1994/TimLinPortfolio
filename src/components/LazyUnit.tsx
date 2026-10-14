@@ -82,12 +82,46 @@ export default function LazyUnit({ name, children }: { name: string; children: R
   // that cached `section` elements to re-query.
   useEffect(() => {
     const el = ref.current;
-    let cleanup: (() => void) | undefined;
-    if (loaded && el) {
-      cleanup = setupRiseReveal(Array.from(el.querySelectorAll<HTMLElement>('section')));
+    if (!loaded || !el) {
+      window.dispatchEvent(new Event(LAZY_UNIT_EVENT));
+      return;
     }
+
+    let cleanup: (() => void) | undefined;
+    let observer: MutationObserver | undefined;
+    const runReveal = () => {
+      cleanup = setupRiseReveal(Array.from(el.querySelectorAll<HTMLElement>('section')));
+    };
+
+    if (el.querySelector('section')) {
+      // Normal case, including every remount after the first: `children`
+      // is a real React tree already (on a remount, the lazy-loaded
+      // section's `import()` is cached from its first resolution, so
+      // React.lazy renders it synchronously — no Suspense gap).
+      runReveal();
+    } else {
+      // First-ever mount of a React.lazy + Suspense child (App.tsx wraps
+      // About/Portfolio/Contact's section in one) whose import hasn't
+      // resolved yet: Suspense is still showing `fallback={null}`, so `el`
+      // has no <section> to reveal. Querying now and never again (the old
+      // behavior) would find nothing and this unit's content would just
+      // never rise in — it stays at `opacity:0` forever, since nothing
+      // else re-triggers setupRiseReveal for it. Wait for the real content
+      // to actually land, then run once.
+      observer = new MutationObserver(() => {
+        if (el.querySelector('section')) {
+          observer?.disconnect();
+          runReveal();
+        }
+      });
+      observer.observe(el, { childList: true, subtree: true });
+    }
+
     window.dispatchEvent(new Event(LAZY_UNIT_EVENT));
-    return () => cleanup?.();
+    return () => {
+      observer?.disconnect();
+      cleanup?.();
+    };
   }, [loaded]);
 
   const style = loaded

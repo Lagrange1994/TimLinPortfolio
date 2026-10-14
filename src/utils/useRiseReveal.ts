@@ -238,11 +238,44 @@ export function setupRiseReveal(sections: HTMLElement[]): () => void {
   return () => ctx.revert();
 }
 
-// Sections that are always mounted (everything outside a LazyUnit).
+// Sections that are always mounted (everything outside a LazyUnit) — but
+// "always mounted" doesn't mean "mounted on the very first render": a
+// React.lazy + Suspense child in this group (SkillsSection, see App.tsx)
+// renders nothing until its import resolves, so this effect's one-time (`[]`
+// deps) DOM scan can run before that <section> exists. Without watching for
+// it, that section's .rise-card/.rise-soft items would stay hidden forever —
+// this hook never runs a second time to find them.
 export function useRiseReveal() {
   useEffect(() => {
-    const sections = Array.from(document.querySelectorAll<HTMLElement>('section'))
-      .filter(s => !s.closest('[data-lazy-unit]'));
-    return setupRiseReveal(sections);
+    const revealed = new Set<HTMLElement>();
+    const cleanups: Array<() => void> = [];
+
+    const scanAndReveal = () => {
+      const sections = Array.from(document.querySelectorAll<HTMLElement>('section'))
+        .filter(s => !s.closest('[data-lazy-unit]') && !revealed.has(s));
+      if (!sections.length) return false;
+      sections.forEach(s => revealed.add(s));
+      cleanups.push(setupRiseReveal(sections));
+      return true;
+    };
+
+    scanAndReveal();
+
+    // Every currently-lazy section outside a LazyUnit resolves in one wave
+    // (there's one such section today); disconnect as soon as that wave is
+    // found instead of watching the whole document's subtree for the rest
+    // of the page's life. If a later addition needs a second independent
+    // wave, this will miss it — the `revealed` guard (not this disconnect)
+    // is what actually prevents double setup, so widening this to keep
+    // watching is safe if that's ever needed.
+    const observer = new MutationObserver(() => {
+      if (scanAndReveal()) observer.disconnect();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      cleanups.forEach(c => c());
+    };
   }, []);
 }
