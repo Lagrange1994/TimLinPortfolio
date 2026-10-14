@@ -13,16 +13,17 @@ import BackToTop from './components/BackToTop';
 import ChatPanel from './components/ChatPanel';
 import LazyUnit from './components/LazyUnit';
 import ErrorBoundary from './components/ErrorBoundary';
+import LazySectionFallback from './components/LazySectionFallback';
 
 // Everything below the hero is split out of the main chunk — About (24KB
 // source), Skills (111KB — the biggest single component, echarts tracking
 // chart included), Portfolio (70KB) and Contact (16KB) have no reason to sit
 // in the same bundle Hero/Navbar/BeamsBackground need parsed before first
 // paint. Each becomes its own chunk, fetched in parallel with main.js rather
-// than adding to it; Suspense fallback is `null` because LazyUnit already
-// renders these at their natural flow height on first mount (no reserved
-// space to fill) — same as the brief gap LazyUnit itself leaves on a
-// cold remount, not a new failure mode. Each is also wrapped in its own
+// than adding to it. Each Suspense boundary reserves an approximate section
+// height while its module is in flight: a null fallback makes the document
+// collapse to zero height and shifts every later section when the import
+// resolves. Each is also wrapped in its own
 // ErrorBoundary: a rejected import() (stale tab after a redeploy requesting
 // a deleted chunk hash, or a flaky network) throws during render, and with
 // nothing to catch it React unmounts the whole tree, not just the failed
@@ -49,10 +50,10 @@ export default function App() {
       <BeamsBackground />
       <Navbar />
       <HeroSection />
-      <LazyUnit name="about"><ErrorBoundary><Suspense fallback={null}><AboutSection /></Suspense></ErrorBoundary></LazyUnit>
-      <ErrorBoundary><Suspense fallback={null}><SkillsSection /></Suspense></ErrorBoundary>
-      <LazyUnit name="portfolio"><ErrorBoundary><Suspense fallback={null}><PortfolioSection /></Suspense></ErrorBoundary></LazyUnit>
-      <LazyUnit name="contact"><ErrorBoundary><Suspense fallback={null}><ContactSection /></Suspense></ErrorBoundary></LazyUnit>
+      <LazyUnit name="about"><ErrorBoundary><Suspense fallback={<LazySectionFallback name="about" />}><AboutSection /></Suspense></ErrorBoundary></LazyUnit>
+      <ErrorBoundary><Suspense fallback={<LazySectionFallback name="skills" />}><SkillsSection /></Suspense></ErrorBoundary>
+      <LazyUnit name="portfolio"><ErrorBoundary><Suspense fallback={<LazySectionFallback name="portfolio" />}><PortfolioSection /></Suspense></ErrorBoundary></LazyUnit>
+      <LazyUnit name="contact"><ErrorBoundary><Suspense fallback={<LazySectionFallback name="contact" />}><ContactSection /></Suspense></ErrorBoundary></LazyUnit>
       <BackToTop />
       <ChatPanel />
     </LangProvider>

@@ -1600,6 +1600,7 @@ function AiIntakeSection() {
 
     if (expandedAiCard === 'tracking') {
       let echartsInstance: { dispose: () => void } | null = null;
+      let cancelled = false;
 
       // Count the record totals up from 0 instead of just fading in —
       // plain setInterval rather than a GSAP tween, since this only needs
@@ -1646,7 +1647,7 @@ function AiIntakeSection() {
         // parsing included).
         const { default: echarts } = await import('../utils/trackingChart');
         const el = cardRefs.current.get('tracking')?.querySelector<HTMLElement>('.tracking-chart-container');
-        if (!el) return;
+        if (cancelled || !el) return;
         const chart = echarts.init(el, undefined, { renderer: 'svg' });
         // Read the live --text-50 token instead of hardcoding white — this
         // canvas paints its own pixels, so it doesn't pick up var(--text-50)
@@ -1687,6 +1688,7 @@ function AiIntakeSection() {
         echartsInstance = chart;
       }, 380);
       return () => {
+        cancelled = true;
         clearTimeout(timer);
         echartsInstance?.dispose();
         if (countStart) clearTimeout(countStart);

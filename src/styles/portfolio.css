@@ -838,6 +838,15 @@
       scroll-margin-top: var(--nav-h);
     }
 
+    /* Reserve document flow while an initial React.lazy section is loading.
+       These are not <section> elements: LazyUnit and useRiseReveal should
+       only observe the real content once its module has resolved. */
+    .lazy-section-fallback {
+      min-height: var(--lazy-section-min-height);
+      content-visibility: auto;
+      contain-intrinsic-size: auto var(--lazy-section-min-height);
+    }
+
     .section-label {
       font-size: 11px;
       letter-spacing: .12em;

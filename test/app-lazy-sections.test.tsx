@@ -89,9 +89,15 @@ describe('App.tsx lazy-loaded sections', () => {
     expect(await screen.findByRole('heading', { level: 2 }, { timeout: 15000 })).toBeTruthy();
   }, 20000);
 
-  it('wraps every lazy-loaded section usage in its own <Suspense> boundary', () => {
+  it('wraps every lazy-loaded section usage in a height-reserving <Suspense> fallback', () => {
     const appSrc = fs.readFileSync(path.resolve(__dirname, '../src/App.tsx'), 'utf8');
-    for (const name of ['AboutSection', 'SkillsSection', 'PortfolioSection', 'ContactSection']) {
+    const sections = {
+      AboutSection: 'about',
+      SkillsSection: 'skills',
+      PortfolioSection: 'portfolio',
+      ContactSection: 'contact',
+    };
+    for (const [name, fallback] of Object.entries(sections)) {
       expect(appSrc).toMatch(new RegExp(`const ${name} = lazy\\(`));
       // Every *usage* of <Name /> must have a <Suspense ...> immediately
       // before it on the same line (App.tsx renders these inline, one
@@ -101,6 +107,7 @@ describe('App.tsx lazy-loaded sections', () => {
       expect(usageLines.length).toBeGreaterThan(0);
       for (const line of usageLines) {
         expect(line).toMatch(/<Suspense[\s>]/);
+        expect(line).toContain(`fallback={<LazySectionFallback name="${fallback}" />}`);
       }
     }
   });
