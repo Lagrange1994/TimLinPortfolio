@@ -8358,7 +8358,18 @@
       top: 0;
       left: 0;
       width: calc(100vw / var(--z, 1));
+      /* dvh, not vh: on phones 100vh is the viewport with the browser's
+         address bar / bottom toolbar HIDDEN, so whenever they were showing
+         (always, at the top of the page) the overlay ran past the visible
+         bottom edge and the panel's bottom block — the Theme and Language
+         rows, pushed down by .sm-theme's margin-top: auto — sat behind the
+         toolbar. The panel's content exactly filled that too-tall box, so it
+         had nothing to scroll and those rows could not be reached. 100dvh is
+         the area actually visible right now (the page is scroll-locked while
+         the menu is open, so it doesn't jump mid-use). vh stays as the
+         fallback for browsers without dvh. */
       height: calc(100vh / var(--z, 1));
+      height: calc(100dvh / var(--z, 1));
       z-index: 500;
       pointer-events: none;
       overflow: hidden;
@@ -8457,7 +8468,9 @@
       background: #141414;
       display: flex;
       flex-direction: column;
-      padding: 5.5rem 2.5rem 2.5rem;
+      /* Bottom padding clears the iPhone home indicator too (the page uses
+         viewport-fit=cover, so the inset is real there and 0 elsewhere). */
+      padding: 5.5rem 2.5rem calc(2.5rem + env(safe-area-inset-bottom));
       overflow-y: auto;
       z-index: 10;
       pointer-events: auto;
