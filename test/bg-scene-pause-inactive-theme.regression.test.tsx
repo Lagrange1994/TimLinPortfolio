@@ -96,15 +96,31 @@ describe('background Spline scenes — preload the other theme, but paused', () 
     expect(document.body.classList.contains('hero-ready')).toBe(false);
   });
 
-  it('restores both scenes when the hero scrolls back after its urls were dropped', async () => {
+  // Regression: both urls used to be dropped once the hero had been off
+  // screen for 4s. Unloading a viewer disposes the tween engine that every
+  // Spline scene on the page shares, which killed the hero figure's looping
+  // Start transitions for good — the figure stood still after returning from
+  // the page bottom or a project page. Off the hero they are only paused.
+  it('keeps both scenes loaded however long the hero is off screen — paused, never unloaded', async () => {
     const { dark, light } = await mount();
+    const darkApp = mockRuntime(dark);
+    loadComplete(dark);
+    await heroReady();
+    act(() => { vi.advanceTimersByTime(50); });
     act(() => ioCbs.forEach(cb => cb([{ isIntersecting: false }])));
-    act(() => { vi.advanceTimersByTime(4000); });
-    expect(dark.getAttribute('url')).toBeNull();
-    expect(light.getAttribute('url')).toBeNull();
+    act(() => { vi.advanceTimersByTime(60000); });
+    expect(dark.getAttribute('url')).toBe('./models/bg_scene.splinecode');
+    expect(light.getAttribute('url')).toBe('./models/bg_scene_w.splinecode');
+    expect(darkApp.running).toBe(false);
     act(() => ioCbs.forEach(cb => cb([{ isIntersecting: true }])));
-    expect(dark.getAttribute('url')).not.toBeNull();
-    expect(light.getAttribute('url')).not.toBeNull();
+    expect(dark.getAttribute('url')).toBe('./models/bg_scene.splinecode');
+    expect(darkApp.running).toBe(true);
+  });
+
+  it('never removes a scene url anywhere in the component', async () => {
+    const src = (await import('node:fs')).readFileSync('src/components/BeamsBackground.tsx', 'utf8');
+    expect(src).toMatch(/setAttribute\('url', '\.\/models\/bg_scene\.splinecode'\)/);
+    expect(src).not.toMatch(/removeAttribute\(\s*['"]url['"]\s*\)/);
   });
 
   it('the preloaded scene is paused once it has loaded — and stays paused', async () => {
@@ -196,7 +212,7 @@ describe('background Spline scenes — preload the other theme, but paused', () 
     expect(darkApp.running).toBe(true);
 
     act(() => ioCbs.forEach(cb => cb([{ isIntersecting: false }])));
-    expect(darkApp.running).toBe(false); // immediately, not after the 4s url drop
+    expect(darkApp.running).toBe(false); // immediately
 
     act(() => ioCbs.forEach(cb => cb([{ isIntersecting: true }])));
     expect(darkApp.running).toBe(true);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { heroFramePath, FRAME_INSET, FRAME_RADIUS, NOTCH_FLAT, NOTCH_RADIUS } from '../utils/heroFramePath';
 import { getSceneQuality, onSceneQualityChange, setSceneRunning } from '../utils/splineRunning';
@@ -69,34 +69,30 @@ export default function BeamsBackground() {
   const [shownTheme, setShownTheme] = useState(theme);
   const [fadingOut, setFadingOut] = useState<'dark' | 'light' | null>(null);
 
-  // Both background scenes' `url` is managed imperatively (refs, not a JSX
-  // prop) for the same reason HeroSection.tsx's #hero-spline is: it needs to
-  // be droppable/restorable from an IntersectionObserver without fighting
-  // React's own diffing. Dropped whenever #home has been out of view for
-  // HERO_DROP_DELAY_MS straight — same debounced pattern and delay as the
-  // hero figure (see that comment), applied here because a scrolled-past
-  // hero was otherwise left running concurrent WebGL contexts for the rest
-  // of the page's lifetime, exactly the sustained-GPU-contention setup blamed for the
-  // renderer freezes in homepage-webgl-stability. Restored immediately (no
-  // delay) once #home scrolls back into view.
+  // Both background scenes are loaded once and then kept for the whole
+  // visit: off the hero they are only PAUSED (render loop detached, see
+  // setSceneRunning — no draws, no GPU), never unloaded.
+  //
+  // They used to drop their `url` once #home had been out of view for 4s.
+  // Unloading a viewer runs the Spline runtime's dispose(), which calls
+  // dispose() on the tween engine bundled in spline-viewer.js — a single
+  // module-level engine SHARED by every scene on the page — and that
+  // destroys every running tween, the hero figure's included. The figure's
+  // looping Start transitions ("devices", "stars") died with it and never
+  // restarted (Start fires once): back on the hero after more than 4s away
+  // (the page bottom, or a project page and back), the figure stood still
+  // while it kept rendering. Reproduced 2026-10-14 in headless Edge: 60 of
+  // the scene's 105 objects moving before, 0 after, every time; 0 freezes
+  // with the url kept. Keeping them also spares the reload — parse plus
+  // first-draw shader compiles — every time the visitor scrolls back up.
+  //
+  // `url` is still written imperatively (not a JSX prop) so React never
+  // re-applies it on a re-render.
   const splineDarkRef = useRef<HTMLElement>(null);
   const splineLightRef = useRef<HTMLElement>(null);
-  const inHeroViewRef = useRef(true);
-  // Same #home visibility, but immediate (no drop delay) — pauses the shown
-  // scene the moment the hero is scrolled off, instead of it rendering at
-  // full rate for the 4s until its url is dropped.
+  // #home visibility — pauses the shown scene the moment the hero is
+  // scrolled off, resumes it when it returns.
   const [heroVisible, setHeroVisible] = useState(true);
-  const applyDesiredSplineUrls = useCallback(() => {
-    const dark = splineDarkRef.current;
-    const light = splineLightRef.current;
-    if (!dark || !light || !inHeroViewRef.current) return;
-    if (!dark.getAttribute('url')) dark.setAttribute('url', './models/bg_scene.splinecode');
-    if (!light.getAttribute('url')) light.setAttribute('url', './models/bg_scene_w.splinecode');
-  }, []);
-
-  useEffect(() => {
-    applyDesiredSplineUrls();
-  }, [applyDesiredSplineUrls]);
 
   // Toggle: wait for the new theme's scene to load, then swap which one is
   // shown (the CSS crossfade runs) and mark the old one as fading out. The
@@ -134,30 +130,12 @@ export default function BeamsBackground() {
     const heroEl = document.getElementById('home');
     if (!heroEl) return;
 
-    const BG_DROP_DELAY_MS = 4000;
-    let dropTimer: ReturnType<typeof setTimeout> | null = null;
     const observer = new IntersectionObserver(([entry]) => {
       setHeroVisible(entry.isIntersecting);
-      if (entry.isIntersecting) {
-        if (dropTimer) { clearTimeout(dropTimer); dropTimer = null; }
-        inHeroViewRef.current = true;
-        applyDesiredSplineUrls();
-      } else if (!dropTimer) {
-        dropTimer = setTimeout(() => {
-          inHeroViewRef.current = false;
-          splineDarkRef.current?.removeAttribute('url');
-          splineLightRef.current?.removeAttribute('url');
-          dropTimer = null;
-        }, BG_DROP_DELAY_MS);
-      }
     }, { threshold: 0 });
     observer.observe(heroEl);
-
-    return () => {
-      observer.disconnect();
-      if (dropTimer) clearTimeout(dropTimer);
-    };
-  }, [isMobile, applyDesiredSplineUrls]);
+    return () => observer.disconnect();
+  }, [isMobile]);
 
   // The desktop hero-frame pieces (spline scene + notches) are portaled into
   // #home (see the return statement below) instead of rendered where this
@@ -170,6 +148,17 @@ export default function BeamsBackground() {
   useEffect(() => {
     setHeroEl(document.getElementById('home'));
   }, []);
+
+  // Load both background scenes as soon as the portal has mounted their
+  // viewers into #home (see splineDarkRef above for why they are never
+  // unloaded afterwards).
+  useEffect(() => {
+    const dark = splineDarkRef.current;
+    const light = splineLightRef.current;
+    if (!dark || !light) return;
+    if (!dark.getAttribute('url')) dark.setAttribute('url', './models/bg_scene.splinecode');
+    if (!light.getAttribute('url')) light.setAttribute('url', './models/bg_scene_w.splinecode');
+  }, [heroEl]);
 
   // Behind the loading screen even the shown scene is held paused once it
   // has loaded (it has drawn its first frames by then, so its shaders are
@@ -468,9 +457,9 @@ export default function BeamsBackground() {
             crossfades between two ready scenes instead of swapping one
             element's `url` (which showed a blank gap while it reloaded).
             Only the shown one renders outside a toggle — see shownTheme.
-            `url` is left unset here: applyDesiredSplineUrls owns it
-            imperatively, so it can also drop/restore it on scroll without
-            React fighting that write back on the next render. */}
+            `url` is left unset here: it is set once, imperatively, by the
+            effect next to splineDarkRef (see there for why the scenes are
+            never unloaded). */}
         <div id="bg-spline-scene" ref={splineSceneRef} aria-hidden="true" role="presentation">
           <spline-viewer
             id="spline-bg-dark"
