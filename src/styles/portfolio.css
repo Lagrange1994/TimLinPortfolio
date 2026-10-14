@@ -847,6 +847,35 @@
       contain-intrinsic-size: auto var(--lazy-section-min-height);
     }
 
+    .lazy-section-error {
+      display: grid;
+      place-items: center;
+      gap: 12px;
+      min-height: 14rem;
+      padding: 32px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-70);
+      text-align: center;
+    }
+
+    .lazy-section-error p { margin: 0; }
+
+    .lazy-section-error button {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--glass-bg);
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      padding: 8px 14px;
+    }
+
+    .lazy-section-error button:hover,
+    .lazy-section-error button:focus-visible {
+      border-color: var(--primary);
+      outline: none;
+    }
+
     .section-label {
       font-size: 11px;
       letter-spacing: .12em;

@@ -30,39 +30,61 @@ function linkLine(weight) {
 
 const LINKS_RE = /<link rel="stylesheet" href="https:\/\/cdn\.jsdelivr\.net\/npm\/@phosphor-icons\/web@[^"]+\/src\/regular\/style\.css"[^>]*\/>\r?\n(?:[ \t]*)<link rel="stylesheet" href="https:\/\/cdn\.jsdelivr\.net\/npm\/@phosphor-icons\/web@[^"]+\/src\/bold\/style\.css"[^>]*\/>\r?\n(?:[ \t]*)<link rel="stylesheet" href="https:\/\/cdn\.jsdelivr\.net\/npm\/@phosphor-icons\/web@[^"]+\/src\/fill\/style\.css"[^>]*\/>/;
 
-const repoRoot = path.resolve(__dirname, '..');
 const files = ['index.html', ...Array.from({ length: 13 }, (_, i) => `project_${String(i + 1).padStart(2, '0')}.html`)];
 
-const checkOnly = process.argv.includes('--check');
-let stale = [];
+function syncPhosphorIcons({
+  repoRoot = path.resolve(__dirname, '..'),
+  checkOnly = process.argv.includes('--check'),
+} = {}) {
+  const stale = [];
+  const missing = [];
 
-for (const file of files) {
-  const filePath = path.join(repoRoot, file);
-  const original = fs.readFileSync(filePath, 'utf8');
-  const eol = original.includes('\r\n') ? '\r\n' : '\n';
-  const indentMatch = original.match(/([ \t]*)<link rel="stylesheet" href="https:\/\/cdn\.jsdelivr\.net\/npm\/@phosphor-icons\/web@[^"]+\/src\/regular/);
-  const indent = indentMatch ? indentMatch[1] : '  ';
-  const replacement = [linkLine('regular'), linkLine('bold'), linkLine('fill')].join(eol + indent);
+  for (const file of files) {
+    const filePath = path.join(repoRoot, file);
+    const original = fs.readFileSync(filePath, 'utf8');
+    const eol = original.includes('\r\n') ? '\r\n' : '\n';
+    const indentMatch = original.match(/([ \t]*)<link rel="stylesheet" href="https:\/\/cdn\.jsdelivr\.net\/npm\/@phosphor-icons\/web@[^"]+\/src\/regular/);
+    const indent = indentMatch ? indentMatch[1] : '  ';
+    const replacement = [linkLine('regular'), linkLine('bold'), linkLine('fill')].join(eol + indent);
 
-  if (!LINKS_RE.test(original)) {
-    console.error(`SKIP (no match): ${file}`);
-    continue;
-  }
+    if (!LINKS_RE.test(original)) {
+      // A missing whole block used to be logged as SKIP and still let
+      // `--check` pass. That masks the most damaging drift: a page silently
+      // loses every Phosphor icon stylesheet.
+      missing.push(file);
+      continue;
+    }
 
-  const updated = original.replace(LINKS_RE, replacement);
-  if (updated !== original) {
-    stale.push(file);
-    if (!checkOnly) {
-      fs.writeFileSync(filePath, updated, 'utf8');
-      console.log(`updated: ${file}`);
+    const updated = original.replace(LINKS_RE, replacement);
+    if (updated !== original) {
+      stale.push(file);
+      if (!checkOnly) {
+        fs.writeFileSync(filePath, updated, 'utf8');
+        console.log(`updated: ${file}`);
+      }
     }
   }
+
+  return { stale, missing };
 }
 
-if (checkOnly) {
-  if (stale.length) {
-    console.error(`Stale Phosphor CDN links in: ${stale.join(', ')}. Run 'node scripts/sync-phosphor-icons.cjs' to fix.`);
+if (require.main === module) {
+  const checkOnly = process.argv.includes('--check');
+  const { stale, missing } = syncPhosphorIcons({ checkOnly });
+  if (missing.length) {
+    console.error(`Missing Phosphor CDN link block in: ${missing.join(', ')}. Restore the three regular/bold/fill links before syncing.`);
+  }
+  if (checkOnly && (stale.length || missing.length)) {
+    if (stale.length) {
+      console.error(`Stale Phosphor CDN links in: ${stale.join(', ')}. Run 'node scripts/sync-phosphor-icons.cjs' to fix.`);
+    }
     process.exit(1);
   }
-  console.log('All 14 files match the pinned Phosphor version/integrity.');
+  if (!checkOnly && missing.length) {
+    process.exitCode = 1;
+  } else if (checkOnly) {
+    console.log('All 14 files match the pinned Phosphor version/integrity.');
+  }
 }
+
+module.exports = { syncPhosphorIcons };

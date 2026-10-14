@@ -26,13 +26,14 @@ describe('ErrorBoundary', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('renders nothing instead of crashing when a child throws', () => {
-    const { container } = render(
+  it('renders a visible reload action instead of silently removing a failed section', () => {
+    render(
       <ErrorBoundary>
         <Thrower />
       </ErrorBoundary>
     );
-    expect(container.innerHTML).toBe('');
+    expect(screen.getByRole('alert')).toHaveTextContent('Unable to load this section.');
+    expect(screen.getByRole('button', { name: 'Reload page' })).toBeTruthy();
   });
 
   it('renders children normally when there is no error', () => {

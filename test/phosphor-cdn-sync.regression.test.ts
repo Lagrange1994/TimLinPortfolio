@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+const { syncPhosphorIcons } = require('../scripts/sync-phosphor-icons.cjs') as {
+  syncPhosphorIcons: (options: { repoRoot: string; checkOnly: boolean }) => { stale: string[]; missing: string[] };
+};
 
 // Regression: the pinned Phosphor Icons CDN <link> block (version + SRI
 // integrity hash, one line per weight) is duplicated across index.html and
@@ -51,6 +58,23 @@ describe('Phosphor CDN links stay in lockstep across all 14 HTML entry files', (
       const integrities = new Set(byWeight[weight].map(e => e.integrity));
       expect(Array.from(versions), `${weight}: version drift across files`).toHaveLength(1);
       expect(Array.from(integrities), `${weight}: integrity hash drift across files`).toHaveLength(1);
+    }
+  });
+
+  it('flags a missing entire link block instead of treating it as a passing check', () => {
+    const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'phosphor-sync-'));
+    try {
+      for (const file of files) {
+        fs.copyFileSync(path.join(repoRoot, file), path.join(fixtureRoot, file));
+      }
+      const target = path.join(fixtureRoot, 'project_01.html');
+      const html = fs.readFileSync(target, 'utf8');
+      fs.writeFileSync(target, html.replace(/\s*<link rel="stylesheet" href="https:\/\/cdn\.jsdelivr\.net\/npm\/@phosphor-icons\/web[^>]+\/>\r?\n/g, '\n'));
+
+      const result = syncPhosphorIcons({ repoRoot: fixtureRoot, checkOnly: true });
+      expect(result.missing).toEqual(['project_01.html']);
+    } finally {
+      fs.rmSync(fixtureRoot, { recursive: true, force: true });
     }
   });
 });

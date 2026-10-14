@@ -11,9 +11,9 @@ interface State {
 // Catches a rejected React.lazy import() — a stale tab requesting a chunk a
 // newer deploy has already deleted (ChunkLoadError), or a flaky network —
 // so one section's failed chunk doesn't unmount the whole app to a blank
-// page. Renders nothing on error, matching the null Suspense fallback these
-// boundaries wrap in App.tsx: a missing section degrades gracefully instead
-// of crashing everything below the hero.
+// page. A rejected lazy() promise is cached by React, so remounting cannot
+// retry it reliably; offer a page reload rather than silently removing the
+// failed section.
 export default class ErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false };
 
@@ -25,8 +25,19 @@ export default class ErrorBoundary extends Component<Props, State> {
     console.error('Section failed to load:', error);
   }
 
+  reloadPage = () => {
+    window.location.reload();
+  };
+
   render() {
-    if (this.state.hasError) return null;
+    if (this.state.hasError) {
+      return (
+        <div className="lazy-section-error" role="alert">
+          <p>Unable to load this section.</p>
+          <button type="button" onClick={this.reloadPage}>Reload page</button>
+        </div>
+      );
+    }
     return this.props.children;
   }
 }
