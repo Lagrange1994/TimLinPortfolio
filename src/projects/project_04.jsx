@@ -554,7 +554,7 @@ gsap.registerPlugin(ScrollToPlugin);
 
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-tn-dark h-screen overflow-hidden relative">
 
-                            <div ref={imageScrollRef} className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileStageHeightVh(canResizeVisual, mobileVisualHeight)}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div ref={imageScrollRef} className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex items-center justify-center border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileStageHeightVh(canResizeVisual, mobileVisualHeight)}dvh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 {renderPreview()}
                                 {canResizeVisual && <ResizeHandle prefix="tn" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />}
                             </div>

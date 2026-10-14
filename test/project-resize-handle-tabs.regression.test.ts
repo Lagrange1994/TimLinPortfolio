@@ -67,7 +67,7 @@ describe.each(PAGES)('%s limits the resize handle to its screenshot tabs', (file
   });
 
   it('sizes the stage through mobileStageHeightVh, never from the dragged height directly', () => {
-    expect(jsx).toContain("height: window.innerWidth < 1024 ? `${mobileStageHeightVh(canResizeVisual, mobileVisualHeight)}vh` : '100%'");
+    expect(jsx).toContain("height: window.innerWidth < 1024 ? `${mobileStageHeightVh(canResizeVisual, mobileVisualHeight)}dvh` : '100%'");
     expect(jsx).not.toContain('`${mobileVisualHeight}vh`');
   });
 });

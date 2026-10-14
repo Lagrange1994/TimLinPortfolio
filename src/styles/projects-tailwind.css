@@ -360,9 +360,15 @@
    (project_01 ~ project_12 共用)
    =================================== */
 
+/* dvh, not vh (vh stays as the fallback): on phones 100vh is the viewport
+   with the address bar / bottom toolbar hidden. These pages never scroll the
+   document itself, so those bars stay shown, and a 100vh section ran past the
+   visible bottom edge — its last strip (the end of the tab content, the
+   scroll-to-top button) sat behind the toolbar, clipped by the overflow. */
 #main-scroller {
     width: calc(100vw / var(--z, 1)) !important;
     height: calc(100vh / var(--z, 1)) !important;
+    height: calc(100dvh / var(--z, 1)) !important;
     overflow: hidden !important;
     position: relative;
 }
@@ -370,6 +376,7 @@
 .snap-section {
     width: calc(100vw / var(--z, 1)) !important;
     height: calc(100vh / var(--z, 1)) !important;
+    height: calc(100dvh / var(--z, 1)) !important;
     position: relative;
     opacity: 0 !important;
     visibility: hidden !important;

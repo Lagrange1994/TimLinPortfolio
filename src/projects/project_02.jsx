@@ -692,7 +692,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         {/* [修改] bg-dark -> bg-app-dark */}
                         <section id="split-view" ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-app-dark overflow-hidden">
                             {/* [修改] bg-dark -> bg-app-dark, bg-dark-light -> bg-app-dark-light */}
-                            <div className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-app-dark relative border-b lg:border-b-0 lg:border-r border-border/5 flex items-center justify-center" style={{ height: window.innerWidth < 1024 ? `${mobileStageHeightVh(canResizeVisual, mobileVisualHeight)}vh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-app-dark relative border-b lg:border-b-0 lg:border-r border-border/5 flex items-center justify-center" style={{ height: window.innerWidth < 1024 ? `${mobileStageHeightVh(canResizeVisual, mobileVisualHeight)}dvh` : '100%', transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <div className="w-full h-full overflow-hidden flex items-center justify-center lg:pb-0">{renderLeftPanel()}</div>
                                 {canResizeVisual && <ResizeHandle prefix="app" onMouseDown={handleResizeStart} onTouchStart={handleResizeStart} />}
                             </div>

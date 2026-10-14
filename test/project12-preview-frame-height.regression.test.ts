@@ -107,7 +107,7 @@ describe.each([
     expect(source).toMatch(/useState\(get16by9FloorVh\)/);
     // Through mobileStageHeightVh: the dragged height only applies on the
     // tabs that keep the handle (see project-resize-handle-tabs test).
-    expect(source).toMatch(/\$\{mobileStageHeightVh\(canResizeVisual, mobileVisualHeight\)\}vh/);
+    expect(source).toMatch(/\$\{mobileStageHeightVh\(canResizeVisual, mobileVisualHeight\)\}dvh/);
     expect(source).toMatch(/newHeightVh < get16by9FloorVh\(\)\) newHeightVh = get16by9FloorVh\(\)/);
   });
 

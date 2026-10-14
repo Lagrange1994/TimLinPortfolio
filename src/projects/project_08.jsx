@@ -585,7 +585,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         </section>
 
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-lv-dark overflow-hidden">
-                            <div ref={imageScrollRef} className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileStageHeightVh(canResizeVisual, mobileVisualHeight)}vh` : '100%', padding: window.innerWidth < 1024 && activeTab !== 'solution' && activeTab !== 'climax' ? 0 : undefined, transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div ref={imageScrollRef} className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileStageHeightVh(canResizeVisual, mobileVisualHeight)}dvh` : '100%', padding: window.innerWidth < 1024 && activeTab !== 'solution' && activeTab !== 'climax' ? 0 : undefined, transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <div className="absolute top-10 left-10 w-32 h-32 bg-lv-primary/20 blur-[60px] rounded-full"></div>
                                 <div className="absolute bottom-10 right-10 w-40 h-40 bg-lv-secondary/20 blur-[60px] rounded-full"></div>
                                 <div className="w-full h-full max-w-full flex flex-col items-center justify-center relative">

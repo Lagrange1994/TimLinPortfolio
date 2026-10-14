@@ -483,7 +483,7 @@ gsap.registerPlugin(ScrollToPlugin);
                         </section>
 
                         <section ref={splitRef} className="snap-section flex flex-col lg:flex-row bg-tym-dark overflow-hidden">
-                            <div className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileStageHeightVh(canResizeVisual, mobileVisualHeight)}vh` : '100%', padding: window.innerWidth < 1024 && activeTab === 'context' ? 0 : undefined, transition: isResizing ? 'none' : 'height 0.3s ease' }}>
+                            <div className="ds-stage w-full shrink-0 z-20 lg:w-3/5 lg:h-full bg-[#1a1a1a] flex flex-col items-center justify-center p-4 lg:p-12 border-b lg:border-b-0 lg:border-r border-border/5 shadow-2xl relative" style={{ height: window.innerWidth < 1024 ? `${mobileStageHeightVh(canResizeVisual, mobileVisualHeight)}dvh` : '100%', padding: window.innerWidth < 1024 && activeTab === 'context' ? 0 : undefined, transition: isResizing ? 'none' : 'height 0.3s ease' }}>
                                 <div className="w-full h-full max-w-full flex flex-col items-center justify-center relative">
                                     <div className="relative z-10 transform transition-all duration-500 flex items-center justify-center flex-1 min-h-0 w-full">
                                         <div className="transition-all duration-500 overflow-hidden flex items-center justify-center w-full h-full">
