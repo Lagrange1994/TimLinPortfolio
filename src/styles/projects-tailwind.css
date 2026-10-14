@@ -39,22 +39,48 @@
 
 /* Every project accent class above only exists as a static string SOMEWHERE
    in the codebase because Tailwind's scanner needs to see the literal
-   candidate to generate it — and 10 of the shared/ components (HeroCTAButton,
-   BackButton, FeatureCard, ToolPill, ProcessTimeline, TabNav, ResizeHandle,
-   ScrollTopButton, GalleryItemButton, PainPointCard) build their color class
+   candidate to generate it — and 9 of the shared/ components (BackButton,
+   FeatureCard, ToolPill, ProcessTimeline, TabNav, ResizeHandle,
+   ScrollTopButton, GalleryItemButton, ThemeToggle) build their color class
    with `bg-${prefix}-primary`-style template interpolation instead, which the
-   scanner can never see as a concrete string. Under the old frozen
-   public/style.css this was invisible: someone had hand-patched the missing
-   classes in directly (see git history — "auto-added: missing per-project
-   theme-token utilities for shared/ components"), papering over the same gap
-   this @source inline safelist now covers properly. Without it, buttons/tabs/
-   pills render with no accent color at all — no build error, just a missing
-   rule, exactly the "颜色丢失" symptom this was added to fix. Safelists every
-   {utility}-{project prefix}-{role} combination (plus hover:/group-hover: and
-   common opacity suffixes) actually referenced across those components, so
-   Tailwind generates the rule regardless of which page happens to also spell
-   it out literally elsewhere. */
-@source inline("{hover:,group-hover:,}{bg,text,border}-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-{primary,secondary,dark,dark-light,dark-lighter,accent}{/10,/20,/30,/40,/50,/60,/70,/80,/90,}");
+   scanner can never see as a concrete string. (HeroCTAButton and
+   PainPointCard were in this list before but don't actually need it —
+   HeroCTAButton takes its glow as a literal `shadowClass` prop and colors
+   itself via a `--hero-cta-color` inline style, not a Tailwind class;
+   PainPointCard always uses the fixed `text-pain` token, never `${prefix}`.)
+   Under the old frozen public/style.css this was invisible: someone had
+   hand-patched the missing classes in directly (see git history —
+   "auto-added: missing per-project theme-token utilities for shared/
+   components"), papering over the same gap this @source inline safelist now
+   covers properly. Without it, buttons/tabs/pills render with no accent
+   color at all — no build error, just a missing rule, exactly the
+   "颜色丢失" symptom this was added to fix.
+
+   The previous version of this safelist took the full cross product of
+   every variant × utility × role × opacity suffix (3 × 3 × 6 × 10 = 540
+   combinations per prefix), which Tailwind then expanded per prefix —
+   generating ~1,241 rules, of which only the ~19 patterns below were ever
+   actually referenced. The other 97% (~1,037KB of the compiled shared CSS)
+   was dead weight: still parsed into CSSOM on every project page, never
+   matched by any element. Each line below is scoped to one exact
+   {variant}{utility}-{role}{opacity} shape, expanding only over the 12
+   project-prefix axis — traced from the template literals in each
+   component above (grep `${prefix}` in src/projects/shared/*.jsx to
+   re-verify after editing one of them). Add a line here (with its source
+   component noted) if a future component introduces a new shape; don't
+   widen an existing line's role/opacity "just in case". */
+@source inline("{bg,text,border}-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-primary"); /* FeatureCard bg/text, ProcessTimeline bg/text, TabNav text/border, GalleryItemButton border/text, BackButton text */
+@source inline("{bg,text}-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-dark"); /* FeatureCard text-{p}-dark, ProcessTimeline bg-{p}-dark */
+@source inline("bg-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-dark-light/90"); /* ResizeHandle */
+@source inline("text-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-primary/70"); /* GalleryItemButton index label */
+@source inline("text-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-secondary"); /* ToolPill text-{p}-{color} with color="secondary" */
+@source inline("bg-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-{primary,secondary}/20"); /* ToolPill bg-{p}-{color}/20 */
+@source inline("border-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-{primary,secondary}/30"); /* ToolPill border-{p}-{color}/30 */
+@source inline("hover:border-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-primary/50"); /* BackButton, ThemeToggle */
+@source inline("hover:bg-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-dark-lighter"); /* BackButton, ThemeToggle */
+@source inline("hover:{bg,border}-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-primary"); /* ScrollTopButton */
+@source inline("hover:text-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-secondary"); /* ThemeToggle */
+@source inline("group-hover:text-{app,epb,gh,hc,kh,lv,police,sm,tmu,tn,tym,zoo}-{primary,secondary}"); /* ResizeHandle (primary), BackButton (secondary) */
 
 @theme {
   /* Also dropped in the Phase 1 migration alongside the GenSen @font-face
