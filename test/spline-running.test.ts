@@ -91,6 +91,22 @@ describe('capSceneFps', () => {
     expect(renders.length).toBe(60);
   });
 
+  // Regression: a flat 1ms slack turned ±1.5ms timestamp wobble on a 120 Hz
+  // screen into a 16.7/25/8ms render cadence (p95 25ms, jitter ~7ms —
+  // matched what Edge on Iris Xe reported) — visible as the scenes shaking.
+  it('keeps a steady 60 fps on a 120 Hz display whose frame times wobble', () => {
+    const { app, renders } = mockApp();
+    capSceneFps(app);
+    let seed = 7;
+    const rand = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
+    for (let i = 1; i <= 1200; i++) app.render((i * 1000) / 120 + (rand() - 0.5) * 3);
+    const gaps = renders.slice(1).map((t, i) => t - renders[i]).slice(5).sort((a, b) => a - b);
+    expect(renders.length).toBeGreaterThanOrEqual(590);
+    expect(renders.length).toBeLessThanOrEqual(601);
+    expect(gaps[Math.floor(gaps.length * 0.95)]).toBeLessThan(20);
+    expect(gaps[0]).toBeGreaterThan(12); // never two renders one frame apart
+  });
+
   it('re-arms a running loop with the wrapper, but not a paused one', () => {
     const running = mockApp(false);
     capSceneFps(running.app);

@@ -41,16 +41,32 @@ export function capSceneFps(app: SplineApp, maxFps = SPLINE_MAX_FPS) {
   if (app.__fpsCap || !app.render) return;
   const render = app.render;
   let last = -Infinity;
+  let prevTime: number | undefined;
+  let frameMs = 0; // running estimate of the display's frame interval
   app.render = (time: number) => {
+    if (prevTime !== undefined) {
+      const d = time - prevTime;
+      if (d > 0 && d < 100) frameMs = frameMs ? frameMs * 0.9 + d * 0.1 : d;
+    }
+    prevTime = time;
     // Read per frame: the quality governor lowers a bg scene's cap later on.
     const interval = 1000 / (app.__fpsCap || maxFps);
     const elapsed = time - last;
-    // 1ms slack so a 60 Hz display's slightly-early vsyncs aren't dropped.
-    if (elapsed < interval - 1) return;
+    // Half a display frame of slack (at least 1ms). It used to be a flat
+    // 1ms: on a 120 Hz screen whose frame timestamps wobble by ±1.5ms
+    // (Edge on Iris Xe, measured), a tick landing 1ms+ early was skipped,
+    // the next one 8ms later rendered, and the grid made the following
+    // gap long again — a 16.7 / 25 / 8ms stutter (p95 25ms, frame-to-frame
+    // jitter 6.5ms) instead of a steady 60. Half a frame can't double-
+    // render (the next tick is a whole frame away) or skip a due one.
+    const slack = Math.max(1, frameMs / 2);
+    if (elapsed < interval - slack) return;
     // Advance on the interval grid (not to `time`) so a 144 Hz display
-    // averages exactly maxFps instead of drifting down to every 3rd frame;
-    // resync after a long gap (resume, tab switch) instead of bursting.
-    last = elapsed > interval * 2 ? time : last + interval;
+    // averages exactly maxFps instead of drifting down to every 3rd frame,
+    // but never let the grid fall more than the slack behind `time` (a late
+    // tick would otherwise make the next gap short); resync after a long
+    // gap (resume, tab switch) instead of bursting.
+    last = elapsed > interval * 2 ? time : Math.max(last + interval, time - slack);
     render(time);
   };
   app.__fpsCap = maxFps;
