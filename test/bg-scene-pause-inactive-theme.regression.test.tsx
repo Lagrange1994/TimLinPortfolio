@@ -135,6 +135,22 @@ describe('background Spline scenes — preload the other theme, but paused', () 
     expect(lightApp.running).toBe(false);
   });
 
+  // Regression: the shown scene used to render continuously under the opaque
+  // loading screen from its load until hero-ready, fighting the hero
+  // figure's load (which comes last) for the GPU — the cold-load stalls.
+  it('holds even the shown scene paused behind the loading screen, resumes it at hero-ready', async () => {
+    const { dark } = await mount();
+    const darkApp = mockRuntime(dark);
+    loadComplete(dark);
+    act(() => { vi.advanceTimersByTime(50); });
+    expect(darkApp.running).toBe(false);
+    act(() => { vi.advanceTimersByTime(5000); });
+    expect(darkApp.running).toBe(false);
+    await heroReady();
+    expect(darkApp.running).toBe(true);
+    expect(darkApp.stop).not.toHaveBeenCalled();
+  });
+
   it('toggle with the other scene preloaded: swaps at once, pauses the outgoing one after the crossfade', async () => {
     const { dark, light } = await mount();
     const darkApp = mockRuntime(dark);
@@ -175,6 +191,7 @@ describe('background Spline scenes — preload the other theme, but paused', () 
     const { dark } = await mount();
     const darkApp = mockRuntime(dark);
     loadComplete(dark);
+    await heroReady(); // after the loading screen (see the hold test above)
     act(() => { vi.advanceTimersByTime(50); });
     expect(darkApp.running).toBe(true);
 

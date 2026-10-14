@@ -171,6 +171,25 @@ export default function BeamsBackground() {
     setHeroEl(document.getElementById('home'));
   }, []);
 
+  // Behind the loading screen even the shown scene is held paused once it
+  // has loaded (it has drawn its first frames by then, so its shaders are
+  // compiled), and resumed at 'hero-ready'. It used to render continuously
+  // under the opaque loader from its load-complete (~3-4s) to hero-ready
+  // (~9-11s cold, Iris Xe) — its glass tiles fighting the hero figure's
+  // load, which comes last, for the GPU. Measured cold (Iris Xe, 3 runs
+  // interleaved): hero-ready 10.6s → 9.4s median, every run earlier. The
+  // on-screen stalls (swap gaps >100ms, ~3s in total) are unchanged — they
+  // are the scenes' first-draw shader compiles; hiding the dark panel glow
+  // until hero-ready didn't change them either.
+  const [heroReady, setHeroReady] = useState(() => document.body.classList.contains('hero-ready'));
+  useEffect(() => {
+    if (heroReady) return;
+    const onReady = () => setHeroReady(true);
+    window.addEventListener('hero-ready', onReady, { once: true });
+    if (document.body.classList.contains('hero-ready')) onReady();
+    return () => window.removeEventListener('hero-ready', onReady);
+  }, [heroReady]);
+
   // Run only the shown (and fading-out) bg scene, and only while the hero is
   // on screen; pause the rest. Re-applied
   // on every load-complete, because a freshly loaded viewer arms its own
@@ -182,7 +201,7 @@ export default function BeamsBackground() {
     const dark = splineDarkRef.current;
     const light = splineLightRef.current;
     if (!dark || !light) return;
-    const run = (t: 'dark' | 'light') => heroVisible && (shownTheme === t || fadingOut === t);
+    const run = (t: 'dark' | 'light') => heroReady && heroVisible && (shownTheme === t || fadingOut === t);
     runningRef.current = { dark: run('dark'), light: run('light') };
     setSceneRunning(dark, runningRef.current.dark);
     setSceneRunning(light, runningRef.current.light);
@@ -200,7 +219,7 @@ export default function BeamsBackground() {
       dark.removeEventListener('load-complete', onLoaded);
       light.removeEventListener('load-complete', onLoaded);
     };
-  }, [shownTheme, fadingOut, heroEl, heroVisible]);
+  }, [shownTheme, fadingOut, heroEl, heroVisible, heroReady]);
 
   // On a GPU the quality governor found too slow (level > 0), stop the dark
   // glow's gradient "flow": SMIL repaints — and so re-blurs — the whole
