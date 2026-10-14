@@ -18,13 +18,18 @@ class FakeIO {
 }
 const origIO = globalThis.IntersectionObserver;
 
-// Mirrors the real runtime: stop() is a no-op once paused; play() re-arms.
+// Mirrors the real runtime: `running` = its render loop is armed. stop() is a
+// no-op once paused and also pauses the event manager (which is what froze
+// Start animations); play() re-arms both.
 function mockRuntime(el: HTMLElement) {
-  const app = {
+  const app: any = {
     running: true,
+    eventsPaused: false,
     _isPaused: false,
-    play: vi.fn(function (this: any) { if (this._isPaused) { this._isPaused = false; this.running = true; } }),
-    stop: vi.fn(function (this: any) { if (!this._isPaused) { this._isPaused = true; this.running = false; } }),
+    render: () => {},
+    _renderer: { setAnimationLoop: (cb: unknown) => { app.running = !!cb; } },
+    play: vi.fn(function (this: any) { if (this._isPaused) { this._isPaused = false; this.eventsPaused = false; this.running = true; } }),
+    stop: vi.fn(function (this: any) { if (!this._isPaused) { this._isPaused = true; this.eventsPaused = true; this.running = false; } }),
   };
   (el as any)._spline = app;
   return app;
@@ -122,7 +127,7 @@ describe('background Spline scenes — preload the other theme, but paused', () 
     loadComplete(dark);
     await heroReady();
     const lightApp = mockRuntime(light);
-    act(() => { vi.advanceTimersByTime(1000); }); // any early pause attempt → _isPaused=true
+    lightApp._isPaused = true; // an early stop() (older build / the viewer itself)
     // The runtime's load then arms its loop regardless of _isPaused:
     lightApp.running = true;
     loadComplete(light);

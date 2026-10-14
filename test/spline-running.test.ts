@@ -171,16 +171,52 @@ describe('throttleSceneShadows', () => {
 });
 
 describe('setSceneRunning', () => {
-  it('pauses and resumes, keeping the capped loop across resume', () => {
+  it('pauses and resumes by detaching the loop, keeping the capped loop across resume', () => {
     const { app } = mockApp();
     const el = document.createElement('div') as any;
     el._spline = app;
     setSceneRunning(el, false);
-    expect(app._isPaused).toBe(true);
+    expect(app._renderer.setAnimationLoop).toHaveBeenLastCalledWith(null);
+    expect(app.__loopPaused).toBe(true);
     setSceneRunning(el, true);
-    expect(app._isPaused).toBe(false);
+    expect(app.__loopPaused).toBe(false);
     expect(app._renderer.setAnimationLoop).toHaveBeenLastCalledWith(app.render);
     expect(app.__fpsCap).toBe(60);
+  });
+
+  // Regression: pausing through the runtime's stop() also paused its event
+  // manager, which drops in-flight Start-event Transitions for good — the
+  // hero figure froze after a few quick scroll-away/back cycles.
+  it('never pauses through the runtime stop(), so Start animations survive', () => {
+    const { app } = mockApp();
+    const el = document.createElement('div') as any;
+    el._spline = app;
+    for (let i = 0; i < 4; i++) { setSceneRunning(el, false); setSceneRunning(el, true); }
+    setSceneRunning(el, false);
+    expect(app.stop).not.toHaveBeenCalled();
+    expect(app._isPaused).toBe(false);
+  });
+
+  it('re-syncs a runtime an earlier stop() left paused, then pauses by the loop', () => {
+    const { app } = mockApp(true);
+    const el = document.createElement('div') as any;
+    el._spline = app;
+    setSceneRunning(el, false);
+    expect(app.play).toHaveBeenCalled();
+    expect(app._isPaused).toBe(false);
+    expect(app._renderer.setAnimationLoop).toHaveBeenLastCalledWith(null);
+  });
+
+  it('clears the runtime clock on resume so the first frame does not jump by the whole pause', () => {
+    const { app } = mockApp();
+    const el = document.createElement('div') as any;
+    el._spline = app;
+    app._lastTime = 1000;
+    setSceneRunning(el, true); // already running: clock kept
+    expect(app._lastTime).toBe(1000);
+    setSceneRunning(el, false);
+    setSceneRunning(el, true);
+    expect(app._lastTime).toBeUndefined();
   });
 
   it('is a no-op before the viewer has loaded', () => {

@@ -6,6 +6,7 @@ type SplineApp = {
   requestRender?: () => void;
   _resize?: (force?: boolean) => void;
   _isPaused?: boolean;
+  _lastTime?: number;
   _renderer?: {
     setAnimationLoop?: (cb: ((time: number) => void) | null) => void;
     getPixelRatio?: () => number;
@@ -21,6 +22,7 @@ type SplineApp = {
   __fpsCap?: number;
   __shadowEvery?: number;
   __basePixelRatio?: number;
+  __loopPaused?: boolean;
 };
 type SplineViewerEl = HTMLElement & { _spline?: SplineApp };
 
@@ -53,7 +55,7 @@ export function capSceneFps(app: SplineApp, maxFps = SPLINE_MAX_FPS) {
   };
   app.__fpsCap = maxFps;
   // Re-arm a loop that's already running so it picks up the wrapper now.
-  if (!app._isPaused) app._renderer?.setAnimationLoop?.(app.render);
+  if (!app._isPaused && !app.__loopPaused) app._renderer?.setAnimationLoop?.(app.render);
 }
 
 // The runtime re-renders its shadow map on every frame it draws (its opaque
@@ -198,7 +200,7 @@ export function setSceneQuality(level: number) {
 export function anySceneRunning() {
   for (const el of tracked.keys()) {
     const app = (el as SplineViewerEl)._spline;
-    if (el.isConnected && app && !app._isPaused) return true;
+    if (el.isConnected && app && !app._isPaused && !app.__loopPaused) return true;
   }
   return false;
 }
@@ -232,11 +234,26 @@ function track(el: HTMLElement, kind: SceneKind) {
 // Pause/resume a <spline-viewer>'s render loop via the viewer's internal
 // runtime (`_spline`, not public API — no-op before it has loaded). The
 // viewer's own visibility handling doesn't stop it: it keeps rendering at
-// full rate at opacity:0 and when scrolled fully off-screen. Pausing is
-// play() THEN stop(): the runtime's stop() is a no-op once its `_isPaused`
-// flag is set, and a stop() issued before load sets that flag without
-// clearing the loop the load arms afterwards — leaving a "paused" scene that
-// still renders every frame. play() first re-syncs the flag with the loop.
+// full rate at opacity:0 and when scrolled fully off-screen.
+//
+// Pausing only detaches the loop (setAnimationLoop(null)); it must NOT go
+// through the runtime's stop(). stop() also calls _eventManager.pause(),
+// and a Transition action's pause() drops its in-flight tweens and pending
+// startTimeout — while play() only resume()s, never re-firing the Start
+// event (its Transitions are runMode "Once"). A pause that landed mid-Start
+// left that scene's looping motion frozen for good while it kept rendering
+// (reproduced 2026-10-14: the hero figure's objects stopped moving after 4
+// quick scroll-away/back cycles, prod and local alike). Any pause can land
+// mid-Start — scrolling off the hero, the outgoing theme after a toggle,
+// the preloaded theme 50ms after its load. With the loop detached, nothing
+// renders or costs GPU, and the events/tweens are untouched.
+//
+// play() first re-syncs a runtime that an older stop() left `_isPaused`
+// (it re-arms the loop and resumes events); the loop is then set
+// explicitly either way, so a pause can't be lost to the runtime arming its
+// loop after load. _lastTime is cleared on resume: the runtime's dt is
+// unclamped, so the first frame would otherwise jump every animation
+// forward by the whole pause.
 // Also installs the frame-rate cap (see capSceneFps) and, for a bg scene,
 // the resolution budget (see capSceneResolution) at the current quality
 // level. `kind: 'hero'` leaves the resolution alone: HeroSection sets the
@@ -249,5 +266,7 @@ export function setSceneRunning(el: HTMLElement | null, running: boolean, kind: 
   applyQuality(app, kind);
   track(el, kind);
   app.play?.();
-  if (!running) app.stop?.();
+  if (running && app.__loopPaused) app._lastTime = undefined;
+  app.__loopPaused = !running;
+  app._renderer?.setAnimationLoop?.(running ? app.render ?? null : null);
 }
