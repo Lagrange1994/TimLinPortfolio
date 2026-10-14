@@ -9,9 +9,16 @@ import PolicyPill from './PolicyPill';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from './GoogleGeminiEffect';
 import FigmaMcpShowcase from './FigmaMcpShowcase';
 import LazyUnit from './LazyUnit';
+import { processCardLayers, useProcessCardThemes, type ProcessTheme } from '../utils/processCardImages';
 
-function processCardBg(slug: string) {
-  return `url("./img/process/${slug}.webp")`;
+function ProcessCardBg({ slug, themes }: { slug: string; themes: ReadonlySet<ProcessTheme> }) {
+  return (
+    <>
+      {processCardLayers(slug, themes).map(l => (
+        <div key={l.cls} className={`process-card-bg-img ${l.cls}`} style={l.image ? { backgroundImage: l.image } : undefined} />
+      ))}
+    </>
+  );
 }
 
 // Top-to-bottom, index-paired with GEMINI_BEAM_STOPS so each chip's vertical
@@ -951,6 +958,8 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
 // DESIGN PROCESS
 function DesignProcessSection() {
   const { t } = useLang();
+  const sectionRef = useRef<HTMLElement>(null);
+  const processThemes = useProcessCardThemes(sectionRef);
 
   // Design Process cards (mobile only, <768px): each card's height is
   // content-driven (square image + auto-height text, see portfolio.css's
@@ -1013,7 +1022,7 @@ function DesignProcessSection() {
   }, [t]);
 
   return (
-      <section className="section">
+      <section className="section" ref={sectionRef}>
         <div className="section-label rise-soft">My Design Process</div>
         <div className="process-dual">
           <div className="process-column">
@@ -1035,14 +1044,7 @@ function DesignProcessSection() {
                     className="process-card process-card--has-img rise-card"
                     backgroundColor="#13101c"
                     spotlightColor="rgba(108, 99, 255, 0.12)"
-                    backgroundSlot={
-                      <>
-                        <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: processCardBg(`${slug}_w`) }} />
-                        <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: processCardBg(slug) }} />
-                        <div className="process-card-bg-img process-card-bg-img--light-white" style={{ backgroundImage: processCardBg(`${slug}_l_w`) }} />
-                        <div className="process-card-bg-img process-card-bg-img--light" style={{ backgroundImage: processCardBg(`${slug}_l`) }} />
-                      </>
-                    }
+                    backgroundSlot={<ProcessCardBg slug={slug} themes={processThemes} />}
                   >
                     <span className="process-step-badge"><em>{String(i + 1).padStart(2, '0')}</em></span>
                     <div className="process-name">{t[nameKey] as string}</div>
@@ -1071,14 +1073,7 @@ function DesignProcessSection() {
                     className="process-card process-card--has-img rise-card"
                     backgroundColor="#13101c"
                     spotlightColor="rgba(108, 99, 255, 0.12)"
-                    backgroundSlot={
-                      <>
-                        <div className="process-card-bg-img process-card-bg-img--white" style={{ backgroundImage: processCardBg(`${slug}_w`) }} />
-                        <div className="process-card-bg-img process-card-bg-img--color" style={{ backgroundImage: processCardBg(slug) }} />
-                        <div className="process-card-bg-img process-card-bg-img--light-white" style={{ backgroundImage: processCardBg(`${slug}_l_w`) }} />
-                        <div className="process-card-bg-img process-card-bg-img--light" style={{ backgroundImage: processCardBg(`${slug}_l`) }} />
-                      </>
-                    }
+                    backgroundSlot={<ProcessCardBg slug={slug} themes={processThemes} />}
                   >
                     <span className="process-step-badge"><em>{idx}</em></span>
                     <div className="process-name">{t[nameKey] as string}</div>
