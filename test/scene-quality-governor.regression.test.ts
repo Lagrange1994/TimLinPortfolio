@@ -49,11 +49,12 @@ describe('scene quality levels', () => {
     document.body.innerHTML = '';
   });
 
-  it('every level is cheaper than the one before, and level 0 is the old budget', () => {
+  it('every level is cheaper than the one before (background only), and level 0 is the old budget', () => {
     expect(SCENE_QUALITY_LEVELS[0]).toEqual({ bgPixels: 2560 * 1440, heroPixels: 2560 * 1440, bgFps: 60 });
     for (let i = 1; i <= SCENE_QUALITY_MAX; i++) {
       expect(SCENE_QUALITY_LEVELS[i].bgPixels).toBeLessThan(SCENE_QUALITY_LEVELS[i - 1].bgPixels);
-      expect(SCENE_QUALITY_LEVELS[i].heroPixels).toBeLessThan(SCENE_QUALITY_LEVELS[i - 1].heroPixels);
+      // The figure keeps its full budget: it must not go soft when the bg degrades.
+      expect(SCENE_QUALITY_LEVELS[i].heroPixels).toBe(SCENE_QUALITY_LEVELS[0].heroPixels);
       expect(SCENE_QUALITY_LEVELS[i].bgFps).toBeLessThanOrEqual(SCENE_QUALITY_LEVELS[i - 1].bgFps);
     }
   });
@@ -103,7 +104,7 @@ describe('scene quality levels', () => {
     expect(r.setPixelRatio).not.toHaveBeenCalled();
     expect(app.__fpsCap).toBe(60); // the figure is what's being interacted with
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(scenePixelBudget('hero')).toBe(1000 * 1000);
+    expect(scenePixelBudget('hero')).toBe(2560 * 1440);
     off();
     setSceneQuality(3);
     expect(onChange).toHaveBeenCalledTimes(1);
@@ -138,6 +139,16 @@ describe('scene quality levels', () => {
     expect(anySceneRunning()).toBe(true);
     el.remove();
     expect(anySceneRunning()).toBe(false);
+  });
+
+  // Regression: level 3 drew the 800px figure at 800² on a 1.5x screen (1200²
+  // on-screen) and upscaled it — visibly soft. The budget must cover a 2x
+  // screen's full-resolution figure (800 × 2 = 1600 per side) on every level.
+  it("the figure budget never forces it below a 2x screen's display resolution", () => {
+    for (let i = 0; i <= SCENE_QUALITY_MAX; i++) {
+      setSceneQuality(i);
+      expect(Math.sqrt(scenePixelBudget('hero')) / 800).toBeGreaterThanOrEqual(2);
+    }
   });
 
   it('HeroSection caps the figure ratio by the hero budget and re-syncs on a level change', () => {
