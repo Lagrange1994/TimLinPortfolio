@@ -1634,9 +1634,17 @@ function AiIntakeSection() {
       }
 
       const timer = setTimeout(async () => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore — echarts ships its own types; tsc finds them post-install
-        const echarts = await import('echarts');
+        // Modular import instead of the full `echarts` package: this chart
+        // is only a bar chart on an svg-rendered cartesian grid, but the
+        // full package registers every chart type/component/renderer it
+        // ships (~1.1MB minified) regardless of what's actually used here.
+        // The modular registration lives in utils/trackingChart.ts as static
+        // imports — Rollup only tree-shakes echarts/charts' and
+        // echarts/components' barrel re-exports down to what's used when the
+        // destructure is static; doing it here via dynamic `import('echarts/charts')`
+        // instead pulls in the full namespace (every chart type, map/geo-json
+        // parsing included).
+        const { default: echarts } = await import('../utils/trackingChart');
         const el = cardRefs.current.get('tracking')?.querySelector<HTMLElement>('.tracking-chart-container');
         if (!el) return;
         const chart = echarts.init(el, undefined, { renderer: 'svg' });
