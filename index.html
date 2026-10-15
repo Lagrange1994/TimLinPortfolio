@@ -290,7 +290,11 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display:wght@100;400&family=Noto+Sans+TC:wght@100..900&family=Quicksand:wght@300..700&family=Geist+Mono:wght@400..700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display:wght@100;400&family=Quicksand:wght@300..700&family=Geist+Mono:wght@400..700&display=swap" rel="stylesheet" />
+  <!-- Noto Sans TC only for the few characters GenSen Rounded TW lacks
+       (徹 · → ↗ ・): text= makes Google serve a ~2 KB file with just those
+       glyphs instead of the ~150 KB of slices the full family pulled in. -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&text=%E5%BE%B9%C2%B7%E2%86%92%E2%86%97%E3%83%BB&display=swap" rel="stylesheet" />
 
   <!-- Icons: Font Awesome + Phosphor, self-hosted and cut down to the icons
        the homepage uses (src/styles/icon-faces.css, imported by

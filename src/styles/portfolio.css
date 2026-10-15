@@ -110,8 +110,11 @@
       --line: #06C755;
       --line-dim: rgba(6, 199, 85, 0.12);
       --line-bdr: rgba(6, 199, 85, 0.35);
-      --font: 'Quicksand', 'GenSen Rounded TW', 'Noto Sans TC', sans-serif;
-      --font-heading: 'Momo Trust Display', 'GenSen Rounded TW', 'Noto Sans TC', sans-serif;
+      /* Noto Sans TC is loaded only for the few characters GenSen lacks
+         (徹 · → ↗ ・ — see index.html); anything else outside GenSen, e.g. in
+         chat replies, uses the system CJK font. */
+      --font: 'Quicksand', 'GenSen Rounded TW', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+      --font-heading: 'Momo Trust Display', 'GenSen Rounded TW', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
       --mono: 'Quicksand', sans-serif;
       /* Real monospace for code/data UI (AI Flow tables, stepper labels,
          word cloud). Geist Mono loads from Google Fonts in index.html —
@@ -4803,7 +4806,7 @@
       letter-spacing: -0.02em;
       color: var(--text);
       line-height: 1.15;
-      font-family: 'Quicksand', 'GenSen Rounded TW', 'Noto Sans TC', sans-serif;
+      font-family: 'Quicksand', 'GenSen Rounded TW', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
     }
     .figma-mcp-header p {
       margin: 14px auto 0;
@@ -9708,7 +9711,7 @@
        large hero-scale title + smaller muted subtitle, scaled down to fit
        this row's ~1180px width instead of a full page hero. */
     .ai-chips-header{text-align:center;margin-top:120px;margin-bottom:0}
-    .ai-chips-header h3{margin:0;font-size:clamp(2.25rem,5vw,3.75rem);font-weight:100;letter-spacing:-.02em;color:var(--text);line-height:1.15;font-family:'Quicksand','GenSen Rounded TW','Noto Sans TC',sans-serif}
+    .ai-chips-header h3{margin:0;font-size:clamp(2.25rem,5vw,3.75rem);font-weight:100;letter-spacing:-.02em;color:var(--text);line-height:1.15;font-family:'Quicksand','GenSen Rounded TW','Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif}
     .ai-chips-header p{margin:14px auto 0;max-width:520px;font-size:clamp(1rem,1.8vw,1.25rem);font-weight:400;line-height:1.6;color:var(--text-50)}
     .ai-chips-row .ai-chips{position:absolute;inset:0;z-index:1;pointer-events:none}
     .ai-chips-row .ai-chip{position:absolute;right:28px;transform:translateY(-50%);pointer-events:auto;display:inline-flex;align-items:center;gap:8px;padding:9px 16px 9px 13px;border-radius:999px;background-color:var(--glass-bg);background-image:var(--noise-grain);background-repeat:repeat;background-size:180px 180px;border:1px solid var(--glass-border);backdrop-filter:var(--glass-blur);font-size:13.5px;color:var(--text);transition:background-color .3s,border-color .3s,transform .3s;cursor:default}

@@ -35,4 +35,14 @@ describe('self-hosted homepage icon fonts', () => {
     expect(html).not.toMatch(/font-awesome|@phosphor-icons/);
     expect(fs.readFileSync(path.join(root, 'src/styles/portfolio.css'), 'utf8')).toMatch(/@import '\.\/icon-faces\.css';/);
   });
+
+  // Noto Sans TC was loaded as the full family (~150 KB of Google slices)
+  // only for the few characters GenSen lacks; it's now a text= subset of
+  // exactly those (~2 KB).
+  it('the homepage loads Noto Sans TC only as a text= subset', () => {
+    const links = [...fs.readFileSync(path.join(root, 'index.html'), 'utf8').matchAll(/href="([^"]*Noto\+Sans\+TC[^"]*)"/g)].map(m => m[1]);
+    expect(links).toHaveLength(1);
+    const text = decodeURIComponent(new URL(links[0]).searchParams.get('text') ?? '');
+    expect([...text].sort()).toEqual([...'徹·→↗・'].sort());
+  });
 });
