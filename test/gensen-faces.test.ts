@@ -54,10 +54,24 @@ describe('GenSen font faces', () => {
       const layers = own.filter(f => f.file[2]);
       for (const c of text) {
         const cp = c.codePointAt(0)!;
-        if (!inRange(full.range!, cp)) continue; // not in GenSen at all → Noto Sans TC
+        if (!inRange(full.range!, cp)) continue; // not in GenSen at all → Noto Sans TC subset / system font
         if (!layers.some(l => inRange(l.range!, cp))) uncovered.push(`${w}:${c}`);
       }
     }
     expect(uncovered).toEqual([]);
+  });
+});
+
+// The project pages keep their own font setup: the full GenSen files only,
+// as before the homepage layers existed — not the homepage's page/hero
+// subsets (sized for homepage copy) or their ranges.
+describe('GenSen faces on the project pages', () => {
+  it('projects-tailwind.css imports the full-files-only faces', () => {
+    const tw = fs.readFileSync(path.join(root, 'src/styles/projects-tailwind.css'), 'utf8');
+    expect(tw).toMatch(/@import "\.\/gensen-faces-full\.css";/);
+    expect(tw).not.toMatch(/@import "\.\/gensen-faces\.css";/);
+    const full = fs.readFileSync(path.join(root, 'src/styles/gensen-faces-full.css'), 'utf8');
+    expect(full.match(/@font-face/g)).toHaveLength(6);
+    expect(full).not.toMatch(/-hero|-page|unicode-range/);
   });
 });
