@@ -104,7 +104,7 @@ describe('scene quality levels', () => {
     expect(r.setPixelRatio).not.toHaveBeenCalled();
     expect(app.__fpsCap).toBe(60); // the figure is what's being interacted with
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(scenePixelBudget('hero')).toBe(1200 * 1200);
+    expect(scenePixelBudget('hero')).toBe(1000 * 1000);
     off();
     setSceneQuality(3);
     expect(onChange).toHaveBeenCalledTimes(1);
@@ -143,16 +143,16 @@ describe('scene quality levels', () => {
 
   // Regression, both ways. Level 3 drew the 800px figure at 800² on a 1.5x
   // screen (1200² on-screen) and upscaled it — visibly soft — so no level may
-  // go below a 1.5x screen's full resolution (1200 per side). And keeping a
-  // 2x screen's full 1600² on levels 2–3 was too heavy for Iris Xe (Edge:
-  // frame interval 12.5ms vs 8.5ms at 800²), so those levels cap it there.
-  it('the figure budget keeps a 1.5x screen sharp on every level, and only levels 0–1 cover 2x', () => {
+  // go below 1.25x per side (1000², the chosen floor). And keeping a 2x
+  // screen's full 1600² on levels 2–3 was too heavy for Iris Xe (the figure
+  // is fill-bound: 1200² ≈ 70 fps, 1000² ≈ 95), so those levels cap it there.
+  it('the figure budget never drops below 1000², and only levels 0–1 cover 2x', () => {
     for (let i = 0; i <= SCENE_QUALITY_MAX; i++) {
       setSceneQuality(i);
       const perSide = Math.sqrt(scenePixelBudget('hero')) / 800;
-      expect(perSide).toBeGreaterThanOrEqual(1.5);
+      expect(perSide).toBeGreaterThanOrEqual(1.25);
       if (i <= 1) expect(perSide).toBeGreaterThanOrEqual(2);
-      else expect(perSide).toBe(1.5);
+      else expect(perSide).toBe(1.25);
     }
   });
 
