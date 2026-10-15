@@ -2,7 +2,7 @@
 // high-refresh monitors) — capSceneFps throttles its loop to 60, and
 // setSceneRunning pauses/resumes it (installing the cap on the way).
 import { describe, it, expect, vi } from 'vitest';
-import { capSceneFps, capSceneResolution, setSceneRunning, throttleSceneShadows } from '../src/utils/splineRunning';
+import { capSceneFps, capSceneResolution, freezeSceneTaaJitter, setSceneRunning, throttleSceneShadows } from '../src/utils/splineRunning';
 
 // Logical (CSS) size + pixel ratio, like the runtime's WebGLRenderer.
 function mockRendererApp(w: number, h: number, pr: number) {
@@ -238,5 +238,65 @@ describe('setSceneRunning', () => {
   it('is a no-op before the viewer has loaded', () => {
     expect(() => setSceneRunning(document.createElement('div'), false)).not.toThrow();
     expect(() => setSceneRunning(null, true)).not.toThrow();
+  });
+});
+
+// Regression: the runtime jitters every vertex by a per-frame sub-pixel TAA
+// offset that an always-animating bg never averages away; upscaled ~3x at
+// quality level 3 (Edge / Iris Xe) the whole tile wall visibly shook.
+describe('freezeSceneTaaJitter', () => {
+  // Mirrors the runtime: renderSplineScene jitters by the shared index (one
+  // module-level global for every scene), then bumps it mod 16.
+  function sharedRuntime() {
+    const frameIndex = { value: 0, isRenderGlobal: true };
+    const make = () => {
+      const used: number[] = [];
+      const renderer: any = {
+        uniforms: { frameIndex, resolution: { value: 1, isRenderGlobal: true } },
+        renderSplineScene: vi.fn(function () { used.push(frameIndex.value); frameIndex.value = (frameIndex.value + 1) % 16; }),
+      };
+      return { app: { _renderer: renderer } as any, used };
+    };
+    return { frameIndex, bg: make(), hero: make() };
+  }
+
+  it('renders the frozen scene at one fixed jitter offset, every frame', () => {
+    const { bg, hero } = sharedRuntime();
+    freezeSceneTaaJitter(bg.app);
+    for (let i = 0; i < 20; i++) {
+      hero.app._renderer.renderSplineScene();
+      if (i % 3) bg.app._renderer.renderSplineScene(); // bg skips frames (30 fps cap / drops)
+    }
+    expect(new Set(bg.used)).toEqual(new Set([0]));
+  });
+
+  it("leaves the other scenes' shared sequence untouched (the frozen one no longer bumps it)", () => {
+    const { frameIndex, bg, hero } = sharedRuntime();
+    freezeSceneTaaJitter(bg.app);
+    for (let i = 0; i < 20; i++) { hero.app._renderer.renderSplineScene(); bg.app._renderer.renderSplineScene(); }
+    expect(hero.used).toEqual(Array.from({ length: 20 }, (_, i) => i % 16));
+    expect(frameIndex.value).toBe(20 % 16);
+  });
+
+  it('is idempotent, and a no-op without the runtime internals', () => {
+    const { bg } = sharedRuntime();
+    freezeSceneTaaJitter(bg.app);
+    const wrapped = bg.app._renderer.renderSplineScene;
+    freezeSceneTaaJitter(bg.app);
+    expect(bg.app._renderer.renderSplineScene).toBe(wrapped);
+    expect(() => freezeSceneTaaJitter({} as any)).not.toThrow();
+    const noGlobal: any = { _renderer: { renderSplineScene: vi.fn() } };
+    freezeSceneTaaJitter(noGlobal);
+    expect(noGlobal.__taaIsolated).toBeUndefined();
+  });
+
+  it('setSceneRunning freezes only background scenes, not the figure', () => {
+    const { bg, hero } = sharedRuntime();
+    const elBg = document.createElement('div') as any; elBg._spline = bg.app;
+    const elHero = document.createElement('div') as any; elHero._spline = hero.app;
+    setSceneRunning(elBg, true, 'bg');
+    setSceneRunning(elHero, true, 'hero');
+    expect(bg.app.__taaIsolated).toBe(true);
+    expect(hero.app.__taaIsolated).toBeUndefined();
   });
 });

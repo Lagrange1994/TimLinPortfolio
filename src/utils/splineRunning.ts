@@ -8,6 +8,7 @@ type SplineApp = {
   _isPaused?: boolean;
   _lastTime?: number;
   _renderer?: {
+    renderSplineScene?: (...args: unknown[]) => unknown;
     setAnimationLoop?: (cb: ((time: number) => void) | null) => void;
     getPixelRatio?: () => number;
     setPixelRatio?: (ratio: number) => void;
@@ -23,6 +24,7 @@ type SplineApp = {
   __shadowEvery?: number;
   __basePixelRatio?: number;
   __loopPaused?: boolean;
+  __taaIsolated?: boolean;
 };
 type SplineViewerEl = HTMLElement & { _spline?: SplineApp };
 
@@ -72,6 +74,58 @@ export function capSceneFps(app: SplineApp, maxFps = SPLINE_MAX_FPS) {
   app.__fpsCap = maxFps;
   // Re-arm a loop that's already running so it picks up the wrapper now.
   if (!app._isPaused && !app.__loopPaused) app._renderer?.setAnimationLoop?.(app.render);
+}
+
+// Freezes a background scene's TAA jitter. The runtime jitters every vertex
+// by jitterSequence[frameIndex] / resolution (sub-pixel) for its TAA pass to
+// average away — but our bg scenes always animate (refracting light moving
+// across the glass tiles), the TAA history is rejected, and the raw offset
+// shows: the whole tile wall shook. Invisible at full resolution, plainly
+// visible once the quality governor drops the bg to 1280×720 on a 2x screen
+// (~3x upscale turns sub-pixel into 1–2 screen pixels) — reported on Edge /
+// Iris Xe, which degrades to level 3; Chrome/Brave on the same laptop stayed
+// higher and looked still. frameIndex is a module-level "render global"
+// shared by every Spline scene on the page and bumped after each
+// renderSplineScene; this pins it to 0 while the scene renders and puts the
+// shared value back untouched, so the bg never moves and doesn't advance the
+// figure's sequence either. (Giving each scene its own full 16-step sequence
+// instead was tried and shook MORE — sharing had been hiding half the
+// offsets.) Cost: no TAA anti-aliasing on the bg's edges. Idempotent; a
+// no-op if the runtime doesn't have these internals.
+type FrameIndexGlobal = { value: number; isRenderGlobal?: boolean };
+function findFrameIndexGlobal(root: unknown): FrameIndexGlobal | null {
+  const seen = new Set<object>();
+  const walk = (o: unknown, depth: number): FrameIndexGlobal | null => {
+    if (!o || typeof o !== 'object' || seen.has(o) || depth > 7) return null;
+    seen.add(o);
+    const fi = (o as { frameIndex?: FrameIndexGlobal }).frameIndex;
+    if (fi && typeof fi === 'object' && fi.isRenderGlobal && typeof fi.value === 'number') return fi;
+    for (const key of Object.keys(o)) {
+      let v: unknown;
+      try { v = (o as Record<string, unknown>)[key]; } catch { continue; }
+      const found = walk(v, depth + 1);
+      if (found) return found;
+    }
+    return null;
+  };
+  return walk(root, 0);
+}
+export function freezeSceneTaaJitter(app: SplineApp) {
+  const renderer = app._renderer;
+  if (!renderer?.renderSplineScene || app.__taaIsolated) return;
+  const frameIndex = findFrameIndexGlobal(app);
+  if (!frameIndex) return;
+  app.__taaIsolated = true;
+  const renderSplineScene = renderer.renderSplineScene;
+  renderer.renderSplineScene = function (this: unknown, ...args: unknown[]) {
+    const shared = frameIndex.value;
+    frameIndex.value = 0;
+    try {
+      return renderSplineScene.apply(this, args);
+    } finally {
+      frameIndex.value = shared;
+    }
+  };
 }
 
 // The runtime re-renders its shadow map on every frame it draws (its opaque
@@ -273,6 +327,7 @@ function track(el: HTMLElement, kind: SceneKind) {
 // unclamped, so the first frame would otherwise jump every animation
 // forward by the whole pause.
 // Also installs the frame-rate cap (see capSceneFps) and, for a bg scene,
+// the frozen TAA jitter (see freezeSceneTaaJitter) and
 // the resolution budget (see capSceneResolution) at the current quality
 // level. `kind: 'hero'` leaves the resolution alone: HeroSection sets the
 // figure's pixel ratio itself (from the same budget — scenePixelBudget) and
@@ -281,6 +336,7 @@ export function setSceneRunning(el: HTMLElement | null, running: boolean, kind: 
   const app = (el as SplineViewerEl | null)?._spline;
   if (!el || !app) return;
   capSceneFps(app);
+  if (kind === 'bg') freezeSceneTaaJitter(app);
   applyQuality(app, kind);
   track(el, kind);
   app.play?.();
