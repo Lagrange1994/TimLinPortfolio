@@ -8,8 +8,12 @@ import { SCENE_QUALITY_MAX, anySceneRunning, getSceneQuality, setSceneQuality } 
 
 // How much frame time one verdict is based on.
 export const GOVERNOR_WINDOW_MS = 2000;
-// Median slower than 40 fps = not keeping up → one level down.
-export const GOVERNOR_SLOW_MS = 25;
+// Median slower than 50 fps = not keeping up → one level down. Was 25ms
+// (40 fps): on Iris Xe the light theme settled at ~23ms (~43 fps) on level
+// 1 — full-resolution, 60 fps background — and never stepped down, while
+// level 2 is what gets it near 60. 20ms still leaves a 60 Hz display
+// (16.7ms) and its jitter well clear, and a 50 Hz one exactly at the line.
+export const GOVERNOR_SLOW_MS = 20;
 // Median slower than 20 fps = nowhere near → two levels at once, so a weak
 // GPU doesn't sit through three measurement rounds at a slideshow rate.
 export const GOVERNOR_VERY_SLOW_MS = 50;

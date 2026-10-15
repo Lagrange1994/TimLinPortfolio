@@ -246,6 +246,18 @@ describe('scene quality governor', () => {
     expect(getSceneQuality()).toBe(2);
   });
 
+  // Regression: ~43 fps (23ms) sat under the old 25ms line, so the light
+  // theme on Iris Xe stayed on level 1 instead of reaching level 2's ~60 fps.
+  it('a ~43 fps page steps down; 50–60 Hz pacing does not', () => {
+    runningScene();
+    stop = startSceneQualityGovernor();
+    heroReady();
+    run(GOVERNOR_SETTLE_MS + GOVERNOR_WINDOW_MS * 3, 20); // 50 Hz display
+    expect(getSceneQuality()).toBe(0);
+    run(GOVERNOR_WINDOW_MS + 100, 23);
+    expect(getSceneQuality()).toBe(1);
+  });
+
   it('a slideshow frame rate (under 20 fps) drops two levels at once', () => {
     runningScene();
     stop = startSceneQualityGovernor();
