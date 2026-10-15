@@ -53,8 +53,8 @@ describe('scene quality levels', () => {
     expect(SCENE_QUALITY_LEVELS[0]).toEqual({ bgPixels: 2560 * 1440, heroPixels: 2560 * 1440, bgFps: 60 });
     for (let i = 1; i <= SCENE_QUALITY_MAX; i++) {
       expect(SCENE_QUALITY_LEVELS[i].bgPixels).toBeLessThan(SCENE_QUALITY_LEVELS[i - 1].bgPixels);
-      // The figure keeps its full budget: it must not go soft when the bg degrades.
-      expect(SCENE_QUALITY_LEVELS[i].heroPixels).toBe(SCENE_QUALITY_LEVELS[0].heroPixels);
+      // The figure never steps down faster than the bg, and stays sharp (see below).
+      expect(SCENE_QUALITY_LEVELS[i].heroPixels).toBeLessThanOrEqual(SCENE_QUALITY_LEVELS[i - 1].heroPixels);
       expect(SCENE_QUALITY_LEVELS[i].bgFps).toBeLessThanOrEqual(SCENE_QUALITY_LEVELS[i - 1].bgFps);
     }
   });
@@ -104,7 +104,7 @@ describe('scene quality levels', () => {
     expect(r.setPixelRatio).not.toHaveBeenCalled();
     expect(app.__fpsCap).toBe(60); // the figure is what's being interacted with
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(scenePixelBudget('hero')).toBe(2560 * 1440);
+    expect(scenePixelBudget('hero')).toBe(1200 * 1200);
     off();
     setSceneQuality(3);
     expect(onChange).toHaveBeenCalledTimes(1);
@@ -141,13 +141,18 @@ describe('scene quality levels', () => {
     expect(anySceneRunning()).toBe(false);
   });
 
-  // Regression: level 3 drew the 800px figure at 800² on a 1.5x screen (1200²
-  // on-screen) and upscaled it — visibly soft. The budget must cover a 2x
-  // screen's full-resolution figure (800 × 2 = 1600 per side) on every level.
-  it("the figure budget never forces it below a 2x screen's display resolution", () => {
+  // Regression, both ways. Level 3 drew the 800px figure at 800² on a 1.5x
+  // screen (1200² on-screen) and upscaled it — visibly soft — so no level may
+  // go below a 1.5x screen's full resolution (1200 per side). And keeping a
+  // 2x screen's full 1600² on levels 2–3 was too heavy for Iris Xe (Edge:
+  // frame interval 12.5ms vs 8.5ms at 800²), so those levels cap it there.
+  it('the figure budget keeps a 1.5x screen sharp on every level, and only levels 0–1 cover 2x', () => {
     for (let i = 0; i <= SCENE_QUALITY_MAX; i++) {
       setSceneQuality(i);
-      expect(Math.sqrt(scenePixelBudget('hero')) / 800).toBeGreaterThanOrEqual(2);
+      const perSide = Math.sqrt(scenePixelBudget('hero')) / 800;
+      expect(perSide).toBeGreaterThanOrEqual(1.5);
+      if (i <= 1) expect(perSide).toBeGreaterThanOrEqual(2);
+      else expect(perSide).toBe(1.5);
     }
   });
 

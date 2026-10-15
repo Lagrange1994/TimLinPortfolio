@@ -151,20 +151,22 @@ export function capSceneResolution(app: SplineApp, maxPixels = SPLINE_MAX_PIXELS
 // re-blurs a panel-sized shape every frame, which alone halved the frame
 // rate on that Iris Xe.
 //
-// The figure's budget does NOT step down: it stays at its on-screen
-// resolution on every level (HeroSection caps it at display pixels anyway).
-// It used to drop to 1200² / 1000² / 800², and at level 3 on a 1.5x screen
-// the 1200×1200-device-px figure was drawn at 800² and upscaled — visibly
-// soft (edge sharpness −58%), the thing visitors look at most. Measured
-// cost of keeping it sharp at level 3: ~10–20% fps; the background, not the
-// figure, is what these GPUs are short of (hiding the figure: 48 → 54 fps,
-// hiding the bg: 48 → ~190, 2026-10-14).
+// The figure's budget steps down far less than the background's: full
+// on-screen resolution on levels 0–1 (HeroSection caps it at display pixels
+// anyway), 1200² on levels 2–3. It used to drop to 1200² / 1000² / 800²: at
+// level 3 on a 1.5x screen the 1200×1200-device-px figure was drawn at 800²
+// and upscaled — visibly soft (edge sharpness −58%), the thing visitors look
+// at most. Then it never stepped down at all, which on a 2x screen meant a
+// 1600² figure on the weakest GPUs: on the user's Edge / Iris Xe at level 3
+// the page's frame interval went 12.5ms → 8.5ms with the figure at 800²
+// instead (2026-10-15). 1200² is the middle: 1.5x screens stay at full
+// resolution, 2x ones get 75% of it (vs 50% at the old 800²).
 export type SceneKind = 'bg' | 'hero';
 export const SCENE_QUALITY_LEVELS = [
   { bgPixels: SPLINE_MAX_PIXELS, heroPixels: SPLINE_MAX_PIXELS, bgFps: SPLINE_MAX_FPS },
   { bgPixels: 1920 * 1080, heroPixels: SPLINE_MAX_PIXELS, bgFps: SPLINE_MAX_FPS },
-  { bgPixels: 1600 * 900, heroPixels: SPLINE_MAX_PIXELS, bgFps: 30 },
-  { bgPixels: 1280 * 720, heroPixels: SPLINE_MAX_PIXELS, bgFps: 30 },
+  { bgPixels: 1600 * 900, heroPixels: 1200 * 1200, bgFps: 30 },
+  { bgPixels: 1280 * 720, heroPixels: 1200 * 1200, bgFps: 30 },
 ] as const;
 export const SCENE_QUALITY_MAX = SCENE_QUALITY_LEVELS.length - 1;
 // Per tab: a reload starts on the level this GPU already needed instead of
