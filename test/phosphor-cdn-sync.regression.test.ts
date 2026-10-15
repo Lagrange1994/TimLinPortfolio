@@ -10,13 +10,14 @@ const { syncPhosphorIcons } = require('../scripts/sync-phosphor-icons.cjs') as {
 };
 
 // Regression: the pinned Phosphor Icons CDN <link> block (version + SRI
-// integrity hash, one line per weight) is duplicated across index.html and
-// all 13 project_XX.html files — 14 files, 42 lines. There's no templating
+// integrity hash, one line per weight) is duplicated across all 13
+// project_XX.html files — 39 lines (index.html self-hosts a subset instead:
+// scripts/subset-icons.mjs, test/icon-faces.test.ts). There's no templating
 // for these static Vite MPA entry HTML files, so nothing stops one file
 // drifting out of lockstep with the rest on a manual edit. This asserts all
-// 14 agree, and that every link carries an integrity + crossorigin
+// 13 agree, and that every link carries an integrity + crossorigin
 // attribute (added so a compromised/edge-cached CDN response can't silently
-// inject altered CSS into all 14 pages — the old unpkg bootstrap script had
+// inject altered CSS into all 13 pages — the old unpkg bootstrap script had
 // no such protection either, but these links are easy to pin now that
 // they're already being touched).
 //
@@ -33,9 +34,9 @@ function extractLink(html: string, weight: string) {
   return m ? { href: m[1], version: m[2], integrity: m[3] } : null;
 }
 
-describe('Phosphor CDN links stay in lockstep across all 14 HTML entry files', () => {
+describe('Phosphor CDN links stay in lockstep across the 13 project HTML entry files', () => {
   const repoRoot = path.resolve(__dirname, '..');
-  const files = ['index.html', ...Array.from({ length: 13 }, (_, i) => `project_${String(i + 1).padStart(2, '0')}.html`)];
+  const files = [...Array.from({ length: 13 }, (_, i) => `project_${String(i + 1).padStart(2, '0')}.html`)];
 
   it('every file pins the same version and integrity hash for each weight', () => {
     const byWeight: Record<string, Array<{ file: string; version: string; integrity: string }>> = {

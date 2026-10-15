@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Single source of truth for the pinned Phosphor Icons CDN <link> block that
-// appears in index.html and all 13 project_XX.html files. Run this after
-// bumping PHOSPHOR_VERSION below (and recomputing the SRI hashes) so all 14
-// files stay in lockstep instead of a manual 42-line find/replace.
+// appears in all 13 project_XX.html files (index.html self-hosts a subset
+// instead — scripts/subset-icons.mjs). Run this after
+// bumping PHOSPHOR_VERSION below (and recomputing the SRI hashes) so all 13
+// files stay in lockstep instead of a manual 39-line find/replace.
 //
-//   node scripts/sync-phosphor-icons.cjs           # rewrite all 14 files
+//   node scripts/sync-phosphor-icons.cjs           # rewrite all 13 files
 //   node scripts/sync-phosphor-icons.cjs --check    # exit 1 if any file is stale
 //
 // To bump the version: update PHOSPHOR_VERSION, then recompute each hash with
@@ -30,7 +31,7 @@ function linkLine(weight) {
 
 const LINKS_RE = /<link rel="stylesheet" href="https:\/\/cdn\.jsdelivr\.net\/npm\/@phosphor-icons\/web@[^"]+\/src\/regular\/style\.css"[^>]*\/>\r?\n(?:[ \t]*)<link rel="stylesheet" href="https:\/\/cdn\.jsdelivr\.net\/npm\/@phosphor-icons\/web@[^"]+\/src\/bold\/style\.css"[^>]*\/>\r?\n(?:[ \t]*)<link rel="stylesheet" href="https:\/\/cdn\.jsdelivr\.net\/npm\/@phosphor-icons\/web@[^"]+\/src\/fill\/style\.css"[^>]*\/>/;
 
-const files = ['index.html', ...Array.from({ length: 13 }, (_, i) => `project_${String(i + 1).padStart(2, '0')}.html`)];
+const files = [...Array.from({ length: 13 }, (_, i) => `project_${String(i + 1).padStart(2, '0')}.html`)];
 
 function syncPhosphorIcons({
   repoRoot = path.resolve(__dirname, '..'),
@@ -83,7 +84,7 @@ if (require.main === module) {
   if (!checkOnly && missing.length) {
     process.exitCode = 1;
   } else if (checkOnly) {
-    console.log('All 14 files match the pinned Phosphor version/integrity.');
+    console.log('All 13 files match the pinned Phosphor version/integrity.');
   }
 }
 

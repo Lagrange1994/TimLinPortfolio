@@ -292,25 +292,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display:wght@100;400&family=Noto+Sans+TC:wght@100..900&family=Quicksand:wght@300..700&family=Geist+Mono:wght@400..700&display=swap" rel="stylesheet" />
 
-  <!-- Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- @phosphor-icons/web's own bootstrap script (what `<script defer
-       src=".../web">` used to load here) does nothing but inject one
-       <link rel="stylesheet"> per weight directory, unconditionally, for
-       all 6 weights (regular/thin/light/bold/fill/duotone) — see
-       https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/index.js.
-       Only regular/ph, ph-bold and ph-fill classes are used anywhere in
-       this codebase (grep -rohE '\bph-(bold|fill|light|thin|duotone)\b'
-       src to re-verify after adding an icon); thin/light/duotone were
-       pure dead weight (~49KB raw CSS + 3 extra requests, on every page).
-       Loading these 3 directly also skips the unpkg->jsdelivr redirect the
-       bootstrap script itself was fetched through, and lets the browser
-       start the font fetch from the HTML parser instead of waiting on a
-       deferred script to inject the <link> after the fact. Version pinned
-       to match what the bootstrap script was already resolving. -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css" integrity="sha384-6p9AefaqUhEVheRlj1mpAkbngHXy9mbYMrIdcIt4Jlc9lOLIablJq3bBsLOjGwZ7" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css" integrity="sha384-nblAP2mo2pVPyMQZDw9Xy9Cwgs9lowushAYep4w5+Q9kF4Ibf3n0B/gCMVdR+Vqy" crossorigin="anonymous" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css" integrity="sha384-pPVoXE8ft+zxKtxIDDI7SfTK6y95NHm4qa+hKEg/hs8VkjW5IP+9/dGOPCbDpUPl" crossorigin="anonymous" />
+  <!-- Icons: Font Awesome + Phosphor, self-hosted and cut down to the icons
+       the homepage uses (src/styles/icon-faces.css, imported by
+       portfolio.css; regenerate with node scripts/subset-icons.mjs). -->
 
   <!-- Keeps the loading animation moving while the Spline scenes compile
        their shaders. Must run before the viewer script below.
