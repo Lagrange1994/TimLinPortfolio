@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import { PROJECTS } from '../data/projects';
+import { staticScenesOn } from '../utils/staticScenes';
 
 // Must match HeroSection's "Hero spline desktop+tablet conditional" effect —
 // that's the breakpoint below which the hero figure is a static <img> instead
-// of a Spline scene.
+// of a Spline scene. (Above it too on static scenes — see staticScenes.ts.)
 const HERO_FIGURE_BREAKPOINT = 768;
 
 // Safety net only: reveal the page anyway if an asset never reports ready
@@ -132,6 +133,13 @@ export default function Loader() {
         const img = document.querySelector<HTMLImageElement>('img.spline-bg-layer.is-active');
         return !img || img.complete;
       }
+      if (staticScenesOn()) {
+        // Desktop on still images (staticScenes.ts): same as a phone, but
+        // the background is portaled into #home a tick after this effect
+        // runs, so "not in the DOM yet" means wait, not skip.
+        const img = document.querySelector<HTMLImageElement>('img.spline-bg-layer.is-active');
+        return !!img && img.complete;
+      }
       const theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
       // The other theme's scene loads behind the loading screen too (see
       // BeamsBackground) — started any later, its parse and shader compiles
@@ -155,7 +163,7 @@ export default function Loader() {
     function waitForAssets() {
       const isDesktop = window.innerWidth >= HERO_FIGURE_BREAKPOINT;
       const waitsOnSomething = isDesktop
-        ? !!document.getElementById('hero-spline')
+        ? staticScenesOn() || !!document.getElementById('hero-spline')
         : !!document.querySelector('img.spline-bg-layer.is-active');
       // Nothing to wait for (and nothing heavy just happened): reveal now.
       if (!waitsOnSomething) { hideLoader(); return; }

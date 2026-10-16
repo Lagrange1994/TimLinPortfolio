@@ -253,37 +253,113 @@
   <link rel="preload" as="font" type="font/woff2" href="/fonts/gensen-rounded-tw/GenSenRounded2TW-M-hero.woff2" crossorigin />
   <link rel="preload" as="font" type="font/woff2" href="/fonts/gensen-rounded-tw/GenSenRounded2TW-B-hero.woff2" crossorigin />
   <link rel="preload" as="image" href="/img/figure.webp" type="image/webp" fetchpriority="high" />
-  <!-- Perf: start Spline scene downloads immediately, in parallel with the
-       viewer script / React bundle that would otherwise gate them. Media
-       queries mirror HERO_FIGURE_BREAKPOINT (768px, see Loader.tsx) — below
-       it both scenes are swapped for static images, so mobile preloads the
-       webp background instead (browsers without webp support skip this
-       preload by type and just fetch the <picture>'s jpg fallback normally,
-       see BeamsBackground.tsx) and never touches the .splinecode files. -->
-  <link rel="preload" as="fetch" href="/models/hero_figure.splinecode" crossorigin media="(min-width: 768px)" />
-  <!-- The hero background is per theme (a Spline scene at 768px and up, a
-       webp below), so its preload is too: a static link could only name the
-       dark file, and a light-theme visitor then paid for a background they
-       never show while their own didn't start downloading until the bundle
-       had run (~1.1s later, measured) — time the loading screen, which waits
-       for exactly this asset, then had to sit through. -->
+  <!-- Static scenes: on a GPU that can't run the Spline scenes, desktop gets
+       the phones' approach — still images of the hero figure and background
+       (see src/utils/staticScenes.ts). Decided here, before any preload, so
+       such a visitor never downloads the viewer runtime or a .splinecode
+       file. Sets <html data-static-scenes="<reason>">; 768px and up only
+       (phones always use the images). Probes one throwaway WebGL2 context
+       for the renderer name. `?scenes=3d` / `?scenes=static` force it. -->
   <script>
+    /* tl-static-scenes */
+    (function () {
+      try {
+        if (!window.matchMedia('(min-width: 768px)').matches) return;
+        var root = document.documentElement;
+        var KEY = 'tl-static-scenes';
+        var forced = new URLSearchParams(location.search).get('scenes');
+        if (forced === '3d') {
+          window.__tlScenesForced = true;
+          try { localStorage.removeItem(KEY); } catch (e) {}
+          return;
+        }
+        var reason = forced === 'static' ? 'forced' : '';
+        var renderer = '';
+        var canvas = document.createElement('canvas');
+        // failIfMajorPerformanceCaveat: no context rather than a software one.
+        var gl = canvas.getContext('webgl2', { failIfMajorPerformanceCaveat: true });
+        if (gl) {
+          var info = gl.getExtension('WEBGL_debug_renderer_info');
+          renderer = String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER) || '');
+          var lose = gl.getExtension('WEBGL_lose_context');
+          if (lose) lose.loseContext();
+        } else if (!reason) {
+          reason = 'no-webgl2';
+        }
+        window.__tlGpuRenderer = renderer;
+        var stored = null;
+        try { stored = localStorage.getItem(KEY); } catch (e) {}
+        if (reason) {
+          // decided above
+        } else if (/swiftshader|llvmpipe|softpipe|lavapipe|software|basic render/i.test(renderer)) {
+          reason = 'software';
+        } else if (/intel/i.test(renderer) && /\b(u?hd|gma)\b/i.test(renderer) && !/iris/i.test(renderer)) {
+          // Intel HD / UHD / GMA iGPUs: a fraction of an Iris Xe, which
+          // itself only holds 60 fps on the lowest quality level.
+          reason = 'old-igpu';
+        } else if ((navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2)
+          || (navigator.deviceMemory && navigator.deviceMemory <= 2)) {
+          reason = 'low-end';
+        } else if (renderer && stored === renderer) {
+          // The runtime fallback already gave up on this GPU on an earlier visit.
+          reason = 'slow';
+        }
+        if (reason) root.setAttribute('data-static-scenes', reason);
+      } catch (e) {}
+    })();
+  </script>
+  <!-- Perf: start Spline scene downloads immediately, in parallel with the
+       viewer script / React bundle that would otherwise gate them. Below
+       768px (HERO_FIGURE_BREAKPOINT, see Loader.tsx), and on desktop with
+       static scenes (above), both scenes are still images instead, so the
+       matching webp background is preloaded and the .splinecode files are
+       never touched.
+
+       The hero background is per theme, so its preload is too: a static
+       link could only name the dark file, and a light-theme visitor then
+       paid for a background they never show while their own didn't start
+       downloading until the bundle had run (~1.1s later, measured) — time
+       the loading screen, which waits for exactly this asset, then had to
+       sit through.
+
+       The Spline viewer runtime itself is loaded here too, and only when a
+       scene will actually run — see the tl-link-shim note below for why it
+       must come after that shim. -->
+  <script>
+    window.__tlSplineViewerSrc = 'https://unpkg.com/@splinetool/viewer@1.12.98/build/spline-viewer.js';
     (function () {
       try {
         var light = document.documentElement.getAttribute('data-theme') === 'light';
-        var link = document.createElement('link');
-        link.rel = 'preload';
-        if (window.matchMedia('(min-width: 768px)').matches) {
-          link.as = 'fetch';
-          link.crossOrigin = 'anonymous';
-          link.href = light ? '/models/bg_scene_w.splinecode' : '/models/bg_scene.splinecode';
+        var desktop = window.matchMedia('(min-width: 768px)').matches;
+        var scenes = desktop && !document.documentElement.hasAttribute('data-static-scenes');
+        var preload = function (as, href, type) {
+          var link = document.createElement('link');
+          if (as === 'modulepreload') {
+            link.rel = as;
+          } else {
+            link.rel = 'preload';
+            link.as = as;
+          }
+          if (type) link.type = type;
+          if (as === 'fetch') link.crossOrigin = 'anonymous';
+          link.href = href;
+          document.head.appendChild(link);
+        };
+        if (scenes) {
+          // The viewer's own <script> is inserted further down (after
+          // tl-link-shim, behind the font stylesheets); start its download
+          // now, as the preload scanner did when it was a static tag.
+          preload('modulepreload', window.__tlSplineViewerSrc);
+          preload('fetch', '/models/hero_figure.splinecode');
+          preload('fetch', light ? '/models/bg_scene_w.splinecode' : '/models/bg_scene.splinecode');
         } else {
-          link.as = 'image';
-          link.type = 'image/webp';
-          link.href = light ? '/img/bg_w.webp' : '/img/bg.webp';
+          // Phones and static-scenes desktops show the same images.
+          preload('image', light ? '/img/bg_w.webp' : '/img/bg.webp', 'image/webp');
         }
-        document.head.appendChild(link);
-      } catch (e) {}
+        window.__tlLoadSplineViewer = scenes;
+      } catch (e) {
+        window.__tlLoadSplineViewer = true;
+      }
     })();
   </script>
 
@@ -390,8 +466,18 @@
        older viewer silently runtime-migrates a newer file on every load
        (console: "Your .splinecode file is more recent than the library"),
        which is extra parse/convert work stacked right on top of the hero's
-       GSAP entrance tween and reads as animation jank on load. -->
-  <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.98/build/spline-viewer.js"></script>
+       GSAP entrance tween and reads as animation jank on load.
+       Skipped when no scene will run (phones, static scenes — see the
+       preload script above): nothing would ever use it. -->
+  <script>
+    if (window.__tlLoadSplineViewer !== false) {
+      var splineViewer = document.createElement('script');
+      splineViewer.type = 'module';
+      splineViewer.src = window.__tlSplineViewerSrc
+        || 'https://unpkg.com/@splinetool/viewer@1.12.98/build/spline-viewer.js';
+      document.head.appendChild(splineViewer);
+    }
+  </script>
 </head>
 <body>
   <!-- Static, outside #root: painted with the HTML itself and driven by the

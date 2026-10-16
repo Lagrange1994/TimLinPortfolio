@@ -2053,7 +2053,8 @@
          a still: animating opacity on this blurred, panel-sized shape makes
          the compositor redo the blur every frame (measured on an Iris Xe:
          48 frames/s with the pulse and gradient flow, 102 without). */
-      html[data-scene-quality]:not([data-scene-quality="0"]) .bg-frame-glow-fill {
+      html[data-scene-quality]:not([data-scene-quality="0"]) .bg-frame-glow-fill,
+      html[data-static-scenes] .bg-frame-glow-fill {
         animation: none;
       }
 
@@ -2375,6 +2376,24 @@
         width: 800px;
         height: 800px;
         transform-origin: 0 0;
+      }
+    }
+
+    /* Static scenes (html[data-static-scenes], see staticScenes.ts): a GPU
+       that can't run the Spline figure gets the phones' still image instead
+       (HeroSection doesn't mount the viewer at all). figure.webp is a render
+       of the same square scene, so it's placed the way the sync effect
+       places the viewer: scaled to the box's full height, centred
+       horizontally, overflow clipped by .hero-fig. */
+    @media (min-width: 768px) {
+      html[data-static-scenes] .hero-fig-mobile {
+        display: block !important;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        height: 100%;
+        width: auto;
+        translate: -50% 0;
       }
     }
 

@@ -5,6 +5,7 @@ import { LangProvider } from './context/LangContext';
 import { useRiseReveal } from './utils/useRiseReveal';
 import { usePauseOffscreenAnimations } from './utils/usePauseOffscreenAnimations';
 import { startSceneQualityGovernor } from './utils/sceneQualityGovernor';
+import { fallBackToStaticScenes, staticScenesOn } from './utils/staticScenes';
 import Loader from './components/Loader';
 import BeamsBackground from './components/BeamsBackground';
 import Navbar from './components/Navbar';
@@ -38,10 +39,13 @@ export default function App() {
   useRiseReveal();
   usePauseOffscreenAnimations();
   // Phones show still images instead of the Spline scenes (same 768px
-  // one-shot check as HeroSection / BeamsBackground) — nothing to govern.
+  // one-shot check as HeroSection / BeamsBackground) — nothing to govern;
+  // same for a desktop already on static scenes. If the lowest quality
+  // level still can't keep up, the governor swaps the scenes for the
+  // images too (see staticScenes.ts).
   useEffect(() => {
-    if (window.innerWidth < 768) return;
-    return startSceneQualityGovernor();
+    if (window.innerWidth < 768 || staticScenesOn()) return;
+    return startSceneQualityGovernor(() => fallBackToStaticScenes());
   }, []);
 
   return (

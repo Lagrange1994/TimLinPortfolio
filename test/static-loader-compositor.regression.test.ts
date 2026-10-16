@@ -128,8 +128,8 @@ describe('static homepage loader', () => {
   it('preloads the hero background of the active theme only', () => {
     expect(html).not.toMatch(/<link rel="preload"[^>]*bg_scene(_w)?\.splinecode/);
     expect(html).not.toMatch(/<link rel="preload"[^>]*\/img\/bg(_w)?\.webp/);
-    expect(html).toContain("link.href = light ? '/models/bg_scene_w.splinecode' : '/models/bg_scene.splinecode';");
-    expect(html).toContain("link.href = light ? '/img/bg_w.webp' : '/img/bg.webp';");
+    expect(html).toContain("preload('fetch', light ? '/models/bg_scene_w.splinecode' : '/models/bg_scene.splinecode');");
+    expect(html).toContain("preload('image', light ? '/img/bg_w.webp' : '/img/bg.webp', 'image/webp');");
     expect(html).toContain("window.matchMedia('(min-width: 768px)').matches");
   });
 

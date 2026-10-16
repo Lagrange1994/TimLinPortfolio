@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { onSceneQualityChange, scenePixelBudget, setSceneRunning, throttleSceneShadows } from '../utils/splineRunning';
+import { useStaticScenes } from '../utils/staticScenes';
 import HeroAskStrip from './HeroAskStrip';
 import gsap from 'gsap';
 
@@ -15,6 +16,9 @@ interface HoverEventLike {
 
 export default function HeroSection() {
   const { t, heroDescs, lang } = useLang();
+  // Desktop on still images instead of the Spline figure (see
+  // staticScenes.ts): the phones' <img>, and no viewer mounted at all.
+  const staticScenes = useStaticScenes();
   const typerRef = useRef<{
     stop: () => void;
     restart: (texts: string[]) => void;
@@ -428,11 +432,11 @@ export default function HeroSection() {
   // since 'hero-ready' can then never fire without the loader's own 4s
   // force-timeout.
   useEffect(() => {
-    if (window.innerWidth < 768) return;
+    if (window.innerWidth < 768 || staticScenes) return;
     const heroSpline = document.getElementById('hero-spline');
     if (!heroSpline) return;
     heroSpline.setAttribute('url', './models/hero_figure.splinecode');
-  }, []);
+  }, [staticScenes]);
 
   // Pause (not unload — see above) the figure's render loop while #home is
   // off screen: the viewer keeps rendering at full rate when scrolled away,
@@ -440,7 +444,7 @@ export default function HeroSection() {
   // the loaded scene, so scrolling back resumes instantly with no reload.
   // Re-applied after load-complete (see setSceneRunning for why).
   useEffect(() => {
-    if (window.innerWidth < 768) return;
+    if (window.innerWidth < 768 || staticScenes) return;
     const heroSpline = document.getElementById('hero-spline');
     const heroEl = document.getElementById('home');
     if (!heroSpline || !heroEl) return;
@@ -458,7 +462,7 @@ export default function HeroSection() {
       clearTimeout(timer);
       heroSpline.removeEventListener('load-complete', onLoaded);
     };
-  }, []);
+  }, [staticScenes]);
 
   // The Spline runtime sizes its canvas off the host <spline-viewer>
   // element's own LAYOUT size (clientWidth/clientHeight — unaffected by a CSS
@@ -499,7 +503,7 @@ export default function HeroSection() {
   // every step is optional-chained so a future viewer version that removes
   // them just makes this a no-op, not a crash.
   useEffect(() => {
-    if (window.innerWidth < 768 || typeof ResizeObserver === 'undefined') return;
+    if (window.innerWidth < 768 || staticScenes || typeof ResizeObserver === 'undefined') return;
     const fig = document.querySelector<HTMLElement>('#home .hero-fig');
     const viewer = document.getElementById('hero-spline') as
       | (HTMLElement & {
@@ -667,7 +671,7 @@ export default function HeroSection() {
       viewer?.removeEventListener('load', sync);
       window.clearTimeout(settleTimer);
     };
-  }, []);
+  }, [staticScenes]);
 
   // Mobile hero layout: the image+headline+CTA group (.hero-inner) must sit
   // an equal gap from the fixed navbar above and the tag-capsule row below,
@@ -788,7 +792,7 @@ export default function HeroSection() {
             fetchPriority="high"
             decoding="async"
           />
-          <spline-viewer id="hero-spline" className="hero-fig-desktop" />
+          {!staticScenes && <spline-viewer id="hero-spline" className="hero-fig-desktop" />}
         </div>
         <div className="hero-text">
           <h1 className="hero-h1 stagger-item">Hi, I&apos;m <span>Tim Lin</span></h1>

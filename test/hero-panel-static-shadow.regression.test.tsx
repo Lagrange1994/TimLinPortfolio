@@ -105,6 +105,6 @@ describe('hero panel shadow — static shape, no filter over the WebGL canvas', 
   });
 
   it('CSS switches the glow pulse off at any lowered quality level', () => {
-    expect(css).toMatch(/html\[data-scene-quality\]:not\(\[data-scene-quality="0"\]\) \.bg-frame-glow-fill\s*\{\s*animation:\s*none;\s*\}/);
+    expect(css).toMatch(/html\[data-scene-quality\]:not\(\[data-scene-quality="0"\]\) \.bg-frame-glow-fill,\s*html\[data-static-scenes\] \.bg-frame-glow-fill\s*\{\s*animation:\s*none;\s*\}/);
   });
 });

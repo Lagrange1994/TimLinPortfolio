@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { heroFramePath, FRAME_INSET, FRAME_RADIUS, NOTCH_FLAT, NOTCH_RADIUS } from '../utils/heroFramePath';
 import { getSceneQuality, onSceneQualityChange, setSceneRunning } from '../utils/splineRunning';
+import { useStaticScenes } from '../utils/staticScenes';
 
 // Fixed gap between a notch's content and its reference point on the S-bend
 // (NOTCH_CURVE_CLEARANCE below) — same 26px used for .navbar-brand's own
@@ -32,6 +33,12 @@ export default function BeamsBackground() {
   // Checked once on mount, matching the same one-shot (no resize listener)
   // convention HeroSection uses for its own figure.
   const [isMobile] = useState(() => window.innerWidth < 768);
+  // Desktop on still images instead of the Spline scenes (see
+  // staticScenes.ts): same panel/notches/glow, with the phones' background
+  // images inside the panel in place of the viewers. Unlike
+  // isMobile this can flip at runtime (the quality governor giving up),
+  // which unmounts the viewers.
+  const staticScenes = useStaticScenes();
 
   // useTheme (Navbar's instance) owns data-theme as its own component
   // state, so its toggles aren't visible to any other component's props —
@@ -158,7 +165,7 @@ export default function BeamsBackground() {
     if (!dark || !light) return;
     if (!dark.getAttribute('url')) dark.setAttribute('url', './models/bg_scene.splinecode');
     if (!light.getAttribute('url')) light.setAttribute('url', './models/bg_scene_w.splinecode');
-  }, [heroEl]);
+  }, [heroEl, staticScenes]);
 
   // Behind the loading screen even the shown scene is held paused once it
   // has loaded (it has drawn its first frames by then, so its shaders are
@@ -208,23 +215,24 @@ export default function BeamsBackground() {
       dark.removeEventListener('load-complete', onLoaded);
       light.removeEventListener('load-complete', onLoaded);
     };
-  }, [shownTheme, fadingOut, heroEl, heroVisible, heroReady]);
+  }, [shownTheme, fadingOut, heroEl, heroVisible, heroReady, staticScenes]);
 
-  // On a GPU the quality governor found too slow (level > 0), stop the dark
-  // glow's gradient "flow": SMIL repaints — and so re-blurs — the whole
-  // panel-sized shape on every frame. The CSS breathing pulse is switched
-  // off by html[data-scene-quality] in portfolio.css; SMIL has no CSS
-  // switch, hence this. The glow itself stays, as a still.
+  // On a GPU the quality governor found too slow (level > 0), or one on
+  // static scenes, stop the dark glow's gradient "flow": SMIL repaints — and
+  // so re-blurs — the whole panel-sized shape on every frame. The CSS
+  // breathing pulse is switched off by html[data-scene-quality] /
+  // html[data-static-scenes] in portfolio.css; SMIL has no CSS switch,
+  // hence this. The glow itself stays, as a still.
   useEffect(() => {
     if (!heroEl) return;
     const apply = () => {
       const svg = document.getElementById('bg-frame-glow') as unknown as SVGSVGElement | null;
-      if (getSceneQuality() > 0) svg?.pauseAnimations?.();
+      if (staticScenes || getSceneQuality() > 0) svg?.pauseAnimations?.();
       else svg?.unpauseAnimations?.();
     };
     apply();
     return onSceneQualityChange(apply);
-  }, [heroEl]);
+  }, [heroEl, staticScenes]);
 
   // Drives the visible 1px border stroke — see heroFramePath.ts. Same
   // pattern as the portfolio wall's outline — the shape is computed once
@@ -461,16 +469,40 @@ export default function BeamsBackground() {
             effect next to splineDarkRef (see there for why the scenes are
             never unloaded). */}
         <div id="bg-spline-scene" ref={splineSceneRef} aria-hidden="true" role="presentation">
-          <spline-viewer
-            id="spline-bg-dark"
-            ref={splineDarkRef}
-            className={`spline-bg-layer${shownTheme === 'dark' ? ' is-active' : ''}`}
-          />
-          <spline-viewer
-            id="spline-bg-light"
-            ref={splineLightRef}
-            className={`spline-bg-layer${shownTheme === 'light' ? ' is-active' : ''}`}
-          />
+          {staticScenes ? (
+            // Static scenes: the phones' background images, cover-fitted
+            // into the panel. Both in the DOM like the viewers, so a toggle
+            // is the same crossfade.
+            <>
+              <img
+                id="spline-bg-dark"
+                className={`spline-bg-layer${theme === 'dark' ? ' is-active' : ''}`}
+                src="./img/bg.webp"
+                alt=""
+                aria-hidden="true"
+              />
+              <img
+                id="spline-bg-light"
+                className={`spline-bg-layer${theme === 'light' ? ' is-active' : ''}`}
+                src="./img/bg_w.webp"
+                alt=""
+                aria-hidden="true"
+              />
+            </>
+          ) : (
+            <>
+              <spline-viewer
+                id="spline-bg-dark"
+                ref={splineDarkRef}
+                className={`spline-bg-layer${shownTheme === 'dark' ? ' is-active' : ''}`}
+              />
+              <spline-viewer
+                id="spline-bg-light"
+                ref={splineLightRef}
+                className={`spline-bg-layer${shownTheme === 'light' ? ' is-active' : ''}`}
+              />
+            </>
+          )}
         </div>
       </div>
       {/* The panel's crisp border, as a stroke along its real outline — see
