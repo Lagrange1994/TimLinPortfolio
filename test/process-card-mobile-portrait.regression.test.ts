@@ -13,7 +13,7 @@ const ROOT = path.resolve(__dirname, '..');
 // in normal flow above an auto-height text block. See the <768px MOBILE
 // block in portfolio.css.
 describe('.process-card--has-img stacks a square image over auto-height text on phones', () => {
-  const css = fs.readFileSync(path.join(ROOT, 'src/styles/portfolio.css'), 'utf8');
+  const css = fs.readFileSync(path.join(ROOT, 'src/styles/portfolio.css'), 'utf8').replace(/\r\n/g, '\n');
   const mobileBlock = css.slice(css.indexOf('MOBILE (< 768px)'), css.indexOf('Responsive overrides (must be AFTER'));
 
   it('is scoped to the <768px MOBILE block, not the shared tablet+phone rules', () => {

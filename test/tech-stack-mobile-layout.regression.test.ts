@@ -11,8 +11,8 @@ const ROOT = path.resolve(__dirname, '..');
 // left) so the three cards don't all read identically; the JavaScript card
 // (the middle one) keeps text-left/code-right.
 describe('Tech Stack cards go side-by-side on tablet/phone, alternating which side the code sits on', () => {
-  const jsx = fs.readFileSync(path.join(ROOT, 'src/components/SkillsSection.tsx'), 'utf8');
-  const css = fs.readFileSync(path.join(ROOT, 'src/styles/portfolio.css'), 'utf8');
+  const jsx = fs.readFileSync(path.join(ROOT, 'src/components/SkillsSection.tsx'), 'utf8').replace(/\r\n/g, '\n');
+  const css = fs.readFileSync(path.join(ROOT, 'src/styles/portfolio.css'), 'utf8').replace(/\r\n/g, '\n');
 
   it('wraps each card\'s name+description in .tech-item-text, once per card', () => {
     const count = (jsx.match(/<div className="tech-item-text">/g) || []).length;
