@@ -781,6 +781,9 @@ const PROCESS_VISIBLE_MOBILE = 1;
 const PROCESS_MOBILE_QUERY = '(max-width: 767px)';
 
 const STAIR_STEP = 32;
+const SWIPE_TRANSITION = 'transform .45s cubic-bezier(.22,.61,.36,1)';
+// Release speed (px/ms) that turns a short drag into a page turn.
+const SWIPE_FLICK_PX_PER_MS = 0.35;
 
 function processVisibleCount(isMobile: boolean) {
   return isMobile ? PROCESS_VISIBLE_MOBILE : PROCESS_VISIBLE;
@@ -801,7 +804,7 @@ function processVisibleCount(isMobile: boolean) {
 // straight into a plain <div className={className}> — that section keeps
 // its own desktop/tablet grid — and only become a carousel on phones.
 // `variant` adds a modifier class to the wrap for per-section styling.
-function ProcessCarousel({ cards, mobileOnly = false, className, variant }: {
+export function ProcessCarousel({ cards, mobileOnly = false, className, variant }: {
   cards: ReactNode[];
   mobileOnly?: boolean;
   className?: string;
@@ -821,10 +824,13 @@ function ProcessCarousel({ cards, mobileOnly = false, className, variant }: {
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, []);
-  const [dragPx, setDragPx] = useState(0);
   const [dragging, setDragging] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
-  const dragStartRef = useRef(0);
+  // Live drag state lives in a ref, not React state: a setState per
+  // pointermove re-rendered every card (BorderGlow, illustration layers)
+  // ~60×/s and made finger swipes stutter on phones. The move handler
+  // writes the track's transform straight to the DOM instead.
+  const dragRef = useRef({ active: false, startX: 0, dx: 0, lastX: 0, lastT: 0, vx: 0 });
   const [cardStepPx, setCardStepPx] = useState(0);
   const [risen, setRisen] = useState(false);
 
@@ -891,24 +897,50 @@ function ProcessCarousel({ cards, mobileOnly = false, className, variant }: {
 
   function onPointerDown(e: ReactPointerEvent) {
     if (maxOffset === 0) return;
-    dragStartRef.current = e.clientX;
+    const now = performance.now();
+    dragRef.current = { active: true, startX: e.clientX, dx: 0, lastX: e.clientX, lastT: now, vx: 0 };
     setDragging(true);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   }
 
   function onPointerMove(e: ReactPointerEvent) {
-    if (!dragging) return;
-    setDragPx(e.clientX - dragStartRef.current);
+    const d = dragRef.current;
+    if (!d.active) return;
+    const now = performance.now();
+    if (now > d.lastT) d.vx = (e.clientX - d.lastX) / (now - d.lastT);
+    d.lastX = e.clientX;
+    d.lastT = now;
+    let dx = e.clientX - d.startX;
+    // Rubber-band past either end instead of sliding freely into nothing.
+    if ((offset === 0 && dx > 0) || (offset === maxOffset && dx < 0)) dx *= 0.35;
+    d.dx = dx;
+    const track = trackRef.current;
+    if (track) track.style.transform = `translateX(${-(offset * cardStepPx) + dx}px)`;
   }
 
   function endDrag() {
-    if (!dragging) return;
-    setDragging(false);
+    const d = dragRef.current;
+    if (!d.active) return;
+    d.active = false;
     const step = cardStepPx;
-    if (step > 0 && Math.abs(dragPx) > step * 0.2) {
-      goTo(offset + (dragPx < 0 ? 1 : -1));
+    // A quick flick counts even if it's short; the velocity is the last
+    // pointermove's, must point the same way as the drag, and is stale
+    // (a finger that stopped before lifting) after 100ms.
+    const flick = performance.now() - d.lastT < 100
+      && Math.abs(d.vx) > SWIPE_FLICK_PX_PER_MS && Math.sign(d.vx) === Math.sign(d.dx);
+    const next = step > 0 && (Math.abs(d.dx) > step * 0.2 || flick)
+      ? Math.min(maxOffset, Math.max(0, offset + (d.dx < 0 ? 1 : -1)))
+      : offset;
+    // The move handler wrote the transform behind React's back; settle it
+    // here too, so a snap-back to the same offset (where React sees no prop
+    // change and writes nothing) still animates home.
+    const track = trackRef.current;
+    if (track) {
+      track.style.transition = SWIPE_TRANSITION;
+      track.style.transform = `translateX(${-(next * step)}px)`;
     }
-    setDragPx(0);
+    setDragging(false);
+    if (next !== offset) goTo(next);
   }
 
   // Autoplay: advance one card every 6s, looping back to the start. Paused
@@ -928,7 +960,7 @@ function ProcessCarousel({ cards, mobileOnly = false, className, variant }: {
     return () => clearTimeout(id);
   }, [maxOffset, dragging, risen, offset]);
 
-  const translatePx = -(offset * cardStepPx) + dragPx;
+  const translatePx = -(offset * cardStepPx);
   const dotCount = maxOffset + 1;
   // Gate on `risen` too — otherwise the dot-fill span below mounts (and its
   // 6s CSS fill starts ticking) the instant the carousel renders, well
@@ -943,7 +975,7 @@ function ProcessCarousel({ cards, mobileOnly = false, className, variant }: {
       <div
         className={`process-column-grid process-column-grid--inhouse${dragging ? ' is-dragging' : ''}`}
         ref={trackRef}
-        style={{ transform: `translateX(${translatePx}px)`, transition: dragging ? 'none' : 'transform .45s cubic-bezier(.22,.61,.36,1)' }}
+        style={{ transform: `translateX(${translatePx}px)`, transition: dragging ? 'none' : SWIPE_TRANSITION }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
