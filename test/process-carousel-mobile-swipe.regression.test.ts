@@ -52,6 +52,26 @@ describe('Design Process is a 1-per-page full-width carousel on phones', () => {
     expect(base).toBeTruthy();
   });
 
+  // Regression: tapping a card on a phone showed its hover glow cut off by
+  // the wrap's clip. Every carousel card shadow now has spread = -blur, so
+  // it stays inside the card's width and only falls downward.
+  it('reshapes the carousel card shadows to fall only downward (spread = -blur)', () => {
+    const rules = [
+      /\.process-scroll-wrap \.process-card--has-img\.border-glow-card \{[^}]*\}/,
+      /\.process-scroll-wrap \.process-card > \.card-hover-shadow,\s*\.process-scroll-wrap--tech \.tech-item-wrap::after \{[^}]*\}/,
+      /\.process-scroll-wrap--tech \.tech-item \{\s*box-shadow[^}]*\}/,
+      /:root\[data-theme="light"\] \.process-scroll-wrap \.process-card\.border-glow-card,[^{]*\{[^}]*\}/,
+      /:root\[data-theme="light"\] \.process-scroll-wrap \.process-card:hover,[^{]*\{[^}]*\}/,
+    ];
+    for (const re of rules) {
+      const block = mobileBlock.match(re)?.[0];
+      expect(block, String(re)).toBeTruthy();
+      const layers = [...block!.matchAll(/0 (-?\d+)px (\d+)px (-?\d+)px/g)];
+      expect(layers.length).toBeGreaterThan(0);
+      for (const [, , blur, spread] of layers) expect(Number(spread)).toBe(-Number(blur));
+    }
+  });
+
   it('the track stretches the cards (beats the desktop flex-start rule)', () => {
     const track = mobileBlock.match(/\.process-column-grid--inhouse \{[^}]*\}/)?.[0];
     expect(track).toMatch(/align-items:\s*stretch;/);
@@ -65,7 +85,9 @@ describe('Design Process is a 1-per-page full-width carousel on phones', () => {
 
   it('the wrap clips the off-page cards and the grid no longer pins transform: none', () => {
     const wrap = mobileBlock.match(/\.process-scroll-wrap \{[^}]*\}/)?.[0];
-    expect(wrap).toMatch(/overflow:\s*hidden;/);
+    // Clip only sideways: shadows below and badges above stay visible.
+    expect(wrap).toMatch(/overflow-x:\s*clip;/);
+    expect(wrap).toMatch(/overflow-y:\s*visible;/);
     // Clipped on the column's own edges, aligned with the text above.
     expect(wrap).not.toMatch(/margin:/);
     expect(mobileBlock).not.toMatch(/\.process-column-grid \{[^}]*transform:\s*none !important;/);

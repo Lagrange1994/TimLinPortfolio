@@ -7895,9 +7895,15 @@
          the text above, and the wrap clips the neighbours completely.
          padding-bottom makes room for the dots and, under them, the Swipe
          button — both centred on the card's axis. */
+      /* overflow-x: clip (not hidden) so the y axis can stay visible: the
+         neighbours are cut off at the column's edges, but a card's drop
+         shadow / hover glow below it and the badges above it aren't. The
+         card shadows below are reshaped to only fall downward, so nothing
+         reaches the clipped sides. */
       .process-scroll-wrap {
         position: relative;
-        overflow: hidden;
+        overflow-x: clip;
+        overflow-y: visible;
         /* Bottom up: 12px, Swipe button (~34px), 20px, dots (6px), then
            12px here + the track's own 12px padding = 24px to the card. */
         padding-bottom: 84px;
@@ -7976,6 +7982,38 @@
           "code";
         align-content: start;
         align-items: start;
+      }
+
+      /* Carousel card shadows, downward only: each layer's spread is minus
+         its blur, so the shadow stays inside the card's width and only its
+         y offset shows, below the card — the sides sit on the clip edge.
+         Dark: rest + the hover glow layer. Light: the neumorphism pair
+         (top highlight, bottom shade) in the same shape. */
+      .process-scroll-wrap .process-card--has-img.border-glow-card {
+        box-shadow: 0 8px 12px -12px rgba(var(--shadow-near), 0.6), var(--card-edge) !important;
+      }
+      .process-scroll-wrap .process-card > .card-hover-shadow,
+      .process-scroll-wrap--tech .tech-item-wrap::after {
+        box-shadow:
+          0 18px 20px -20px rgba(0, 0, 0, 0.8),
+          0 14px 20px -20px rgba(181, 139, 255, 0.6);
+      }
+      .process-scroll-wrap--tech .tech-item {
+        box-shadow: 0 8px 12px -12px rgba(var(--shadow-near), 0.6), var(--card-edge);
+      }
+      :root[data-theme="light"] .process-scroll-wrap .process-card.border-glow-card,
+      :root[data-theme="light"] .process-scroll-wrap--tech .tech-item.html-item,
+      :root[data-theme="light"] .process-scroll-wrap--tech .tech-item.js-item,
+      :root[data-theme="light"] .process-scroll-wrap--tech .tech-item.react-item {
+        box-shadow:
+          0 8px 14px -14px var(--neu-shadow-dark),
+          0 -6px 14px -14px var(--neu-shadow-light) !important;
+      }
+      :root[data-theme="light"] .process-scroll-wrap .process-card:hover,
+      :root[data-theme="light"] .process-scroll-wrap--tech .tech-item:hover {
+        box-shadow:
+          0 12px 18px -18px var(--neu-shadow-dark),
+          0 -8px 18px -18px var(--neu-shadow-light) !important;
       }
 
       .process-dual {
