@@ -159,13 +159,14 @@ describe('index.html preloads follow the static-scenes verdict', () => {
     expect(loadViewer).toBe(true);
   });
 
-  it('static desktop: only the phones’ background image, no viewer runtime', () => {
-    expect(preloads({ isStatic: true })).toEqual({ hrefs: ['preload:/img/bg.webp'], loadViewer: false });
-    expect(preloads({ isStatic: true, light: true }).hrefs).toEqual(['preload:/img/bg_w.webp']);
+  it('static desktop: only the desktop still background, no viewer runtime', () => {
+    expect(preloads({ isStatic: true })).toEqual({ hrefs: ['preload:/img/bg_static.webp'], loadViewer: false });
+    expect(preloads({ isStatic: true, light: true }).hrefs).toEqual(['preload:/img/bg_static_w.webp']);
   });
 
   it('phone: the phone background image, no viewer runtime', () => {
     expect(preloads({ desktop: false })).toEqual({ hrefs: ['preload:/img/bg.webp'], loadViewer: false });
+    expect(preloads({ desktop: false, light: true }).hrefs).toEqual(['preload:/img/bg_w.webp']);
   });
 
   it('the viewer <script> is only inserted when a scene will run', () => {
@@ -265,13 +266,13 @@ describe('BeamsBackground on static scenes', () => {
     home.remove();
   });
 
-  it('keeps the desktop panel but shows the phones’ images instead of the viewers', () => {
+  it('keeps the desktop panel but shows the desktop still images instead of the viewers', () => {
     document.documentElement.setAttribute(STATIC_SCENES_ATTR, 'old-igpu');
     render(createElement(BeamsBackground));
     expect(home.querySelector('#bg-frame-outline')).not.toBeNull();
     expect(home.querySelectorAll('spline-viewer')).toHaveLength(0);
     const imgs = [...home.querySelectorAll<HTMLImageElement>('#bg-spline-scene img.spline-bg-layer')];
-    expect(imgs.map(i => i.getAttribute('src'))).toEqual(['./img/bg.webp', './img/bg_w.webp']);
+    expect(imgs.map(i => i.getAttribute('src'))).toEqual(['./img/bg_static.webp', './img/bg_static_w.webp']);
     expect(imgs.map(i => i.classList.contains('is-active'))).toEqual([true, false]);
   });
 

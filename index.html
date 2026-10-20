@@ -352,8 +352,10 @@
           preload('modulepreload', window.__tlSplineViewerSrc);
           preload('fetch', '/models/hero_figure.splinecode');
           preload('fetch', light ? '/models/bg_scene_w.splinecode' : '/models/bg_scene.splinecode');
+        } else if (desktop) {
+          // Static-scenes desktops: 16:9 renders of the desktop bg scenes.
+          preload('image', light ? '/img/bg_static_w.webp' : '/img/bg_static.webp', 'image/webp');
         } else {
-          // Phones and static-scenes desktops show the same images.
           preload('image', light ? '/img/bg_w.webp' : '/img/bg.webp', 'image/webp');
         }
         window.__tlLoadSplineViewer = scenes;

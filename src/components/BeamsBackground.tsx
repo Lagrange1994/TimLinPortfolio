@@ -470,21 +470,21 @@ export default function BeamsBackground() {
             never unloaded). */}
         <div id="bg-spline-scene" ref={splineSceneRef} aria-hidden="true" role="presentation">
           {staticScenes ? (
-            // Static scenes: the phones' background images, cover-fitted
-            // into the panel. Both in the DOM like the viewers, so a toggle
-            // is the same crossfade.
+            // Static scenes: 16:9 renders of the desktop bg scenes,
+            // cover-fitted into the panel. Both in the DOM like the viewers,
+            // so a toggle is the same crossfade.
             <>
               <img
                 id="spline-bg-dark"
                 className={`spline-bg-layer${theme === 'dark' ? ' is-active' : ''}`}
-                src="./img/bg.webp"
+                src="./img/bg_static.webp"
                 alt=""
                 aria-hidden="true"
               />
               <img
                 id="spline-bg-light"
                 className={`spline-bg-layer${theme === 'light' ? ' is-active' : ''}`}
-                src="./img/bg_w.webp"
+                src="./img/bg_static_w.webp"
                 alt=""
                 aria-hidden="true"
               />
