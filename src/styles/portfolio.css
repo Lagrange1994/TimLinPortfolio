@@ -7889,10 +7889,32 @@
         font-size: clamp(1.5rem, 6.5vw, 2rem);
       }
 
-      /* Design Process — 2 col. */
-      .process-column-grid {
-        grid-template-columns: repeat(2, 1fr);
-        transform: none !important;
+      /* Design Process — the same swipe carousel as desktop, one card per
+         page (PROCESS_VISIBLE_MOBILE in SkillsSection.tsx), no staircase.
+         Each card is the column's full width, so its edges line up with
+         the text above, and the wrap clips the neighbours completely.
+         padding-bottom makes room for the dots and, under them, the Swipe
+         button — both centred on the card's axis. */
+      .process-scroll-wrap {
+        position: relative;
+        overflow: hidden;
+        /* Bottom up: 12px, Swipe button (~34px), 20px, dots (6px), then
+           12px here + the track's own 12px padding = 24px to the card. */
+        padding-bottom: 84px;
+      }
+
+      .process-swipe-controls {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 66px;
+        margin-top: 0;
+      }
+
+      .process-swipe-btn {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
       }
 
       /* .process-column-grid--inhouse (the class ProcessCarousel actually
@@ -7909,34 +7931,51 @@
          instead of matched to their row's tallest card. */
       .process-column-grid--inhouse {
         align-items: stretch;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 16px;
+        /* Vertical only: room for card shadows; no side padding, so the
+           card spans the column edge to edge. */
+        padding: 12px 0;
+        touch-action: pan-y;
+        will-change: transform;
       }
 
-      /* align-items: stretch above only equalizes cards within the SAME
-         row/grid — the In-house and Freelance columns are two separate
-         grids with different description lengths, so their own rows can
-         still settle at different heights from each other. This pins
-         every card (both columns) to one shared height instead: the
-         tallest card anywhere, measured and kept in sync by the
-         useEffect in SkillsSection.tsx. Falls back to auto (today's
-         per-row-only behavior) before that effect has run once.
-
-         margin-top: 0 !important overrides ProcessCarousel's own inline
-         margin-top (see SkillsSection.tsx) — that's the desktop swipe
-         carousel's left-low/right-high staircase stagger (card 0: 64px,
-         card 1: 32px, card 2+: 0px), left on the DOM regardless of
-         viewport since the same component/markup is reused for the
-         mobile 2-col grid. Without this override the first row's two
-         cards sit at different heights from each other and every row
-         gap becomes uneven; the grid's own `gap` (inherited, 16px)
-         supplies the actual uniform spacing once this is neutralized. */
-      .process-swipe-slot {
-        height: var(--process-card-mobile-h, auto);
+      .process-column-grid--inhouse .process-swipe-slot {
+        flex: 0 0 100%;
+        width: 100%;
         margin-top: 0 !important;
       }
 
-      .process-swipe-controls,
-      .process-swipe-btn {
-        display: none !important;
+      /* Tech Stack reuses the same phone carousel (ProcessCarousel
+         mobileOnly, variant "tech"); the flex row's stretch evens the
+         cards' heights out. Extra top padding keeps
+         .tech-level-badge (13px above its card) out of the wrap's clip.
+         The Figma MCP heading's 120px desktop margin left a big empty gap
+         under the Swipe button; 56px here (+ the wrap's own 12px below
+         the button). */
+      .process-scroll-wrap--tech + .figma-mcp-header {
+        margin-top: 56px;
+      }
+      .process-scroll-wrap--tech .process-column-grid--inhouse {
+        padding-top: 20px;
+      }
+      .process-scroll-wrap--tech .tech-item-wrap,
+      .process-scroll-wrap--tech .tech-item {
+        height: 100%;
+      }
+      /* One narrow card: stack title, description, code instead of the
+         full-width phone card's code | description columns. */
+      .process-scroll-wrap--tech .tech-item,
+      .process-scroll-wrap--tech .tech-item.html-item,
+      .process-scroll-wrap--tech .tech-item.react-item {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+          "header"
+          "desc"
+          "code";
+        align-content: start;
+        align-items: start;
       }
 
       .process-dual {
@@ -7953,125 +7992,6 @@
          Freelance keeps its margin: it's the divider from In-house above. */
       .process-column:first-child .process-column-header {
         margin-top: 0;
-      }
-
-      .border-glow-inner {
-        padding: 16px;
-      }
-
-      .process-name {
-        font-size: 11px;
-      }
-
-      .process-desc {
-        font-size: 10px;
-        line-height: 1.45;
-      }
-
-      /* Design Process cards (both columns use --has-img): square on
-         desktop/tablet, but a phone-width square leaves the illustration
-         and the text fighting for the same cramped area, with the text
-         overlaid on top of the image behind a dark scrim for legibility.
-         On phones the card goes portrait instead: a real square image block
-         (not a fixed fraction of some arbitrary card ratio — its own
-         aspect-ratio: 1/1 makes it exactly as tall as the card is wide)
-         stacked in normal flow above an auto-height text block, so the
-         card's own height is just whatever those two add up to, and
-         neither the image nor the text has to compete with the other for
-         space or contrast. Both were `position: absolute; inset: 0`
-         before (a full-card overlay) — switching them to flow removes that
-         entirely, so .card-glass-highlight/.bg-spotlight/.sc-ring (still
-         absolute, still inset: 0) now overlay the *whole* stacked card,
-         same as they did before. */
-      .process-card--has-img.border-glow-card {
-        aspect-ratio: auto;
-        /* .process-swipe-slot (the grid item) is pinned to the tallest
-           card's height by SkillsSection.tsx's sync effect, but this card
-           is only its slot's in-flow CHILD — a taller slot doesn't stretch
-           a shorter child on its own, so a shorter card left extra empty
-           space inside its own slot instead of the surrounding grid gap,
-           making the vertical gap between rows visually bigger than the
-           horizontal gap between columns (same 16px grid gap, but stacked
-           on top of that leftover slack). height: 100% makes every card
-           fill its slot exactly, so all visible spacing is the grid gap. */
-        height: 100%;
-      }
-      .process-card--has-img .border-glow-bg-slot {
-        position: relative;
-        inset: auto;
-        aspect-ratio: 1 / 1;
-        width: 100%;
-        height: auto;
-        /* Was z-index: -2 to sit behind the full-card text overlay — now
-           that it's a normal-flow block instead of a full-card underlay,
-           a negative z-index would paint it behind .border-glow-card's own
-           background instead (any ancestor with position: relative + no
-           z-index still creates a stacking context boundary here), hiding
-           the image entirely. */
-        z-index: auto;
-      }
-      .process-card--has-img .border-glow-inner {
-        /* Static, not just non-absolute: .process-step-badge (a child,
-           position: absolute) needs to skip past this box to find its
-           containing block. Static removes it as a positioning candidate
-           entirely, so the badge escapes to .border-glow-card itself —
-           the same element it was already positioned against before this
-           block existed (.border-glow-inner used to be inset: 0, i.e. flush
-           with the card, so the badge's `top: -7px; left: 18px` already
-           meant "7px above/18px right of the card's own top-left"; this
-           keeps that exact same math true instead of re-deriving it
-           against a box whose own height now depends on the description
-           text length). */
-        position: static;
-        inset: auto;
-        height: auto;
-        justify-content: flex-start;
-        /* Pulls the title up to overlap the image's bottom edge instead of
-           sitting in a gap below it — the vignette (see ::after below)
-           already fades that edge to the card's own solid background
-           color, so the title stays legible without needing the old
-           full-image scrim back. */
-        margin-top: -24px;
-        padding-top: 10px;
-      }
-      /* The bottom-scrim-over-image trick no longer applies — the text
-         block now sits on the card's own plain surface below the image,
-         not on top of it, so it doesn't need a dark gradient to stay
-         legible. */
-      .process-card--has-img .border-glow-inner::before {
-        display: none;
-      }
-      /* Dark mode only (light mode disables this vignette entirely — see
-         :root[data-theme="light"] .border-glow-bg-slot::after elsewhere).
-         Bumped from the desktop 0.8 outer stop to fully opaque: the image
-         now ends where the card's own plain background begins (not
-         overlaid text), so its true visible edge color needs to be a fixed,
-         computable value — #0d0a1c — for .process-card--has-img's own
-         background-color override (see that rule's comment) to match it
-         exactly instead of guessing at what 0.8-opacity-over-white nets
-         out to. */
-      .process-card--has-img .border-glow-bg-slot::after {
-        background: radial-gradient(
-          circle at center,
-          rgba(13, 10, 28, 0.1) 25%,
-          rgba(13, 10, 28, 1) 100%
-        );
-      }
-      .process-card--has-img .process-name,
-      .process-card--has-img .process-desc {
-        text-shadow: none;
-      }
-      .process-card--has-img .process-name {
-        color: var(--text);
-      }
-      .process-card--has-img .process-desc {
-        color: var(--text-50);
-      }
-      .process-card--has-img .process-step-badge {
-        color: var(--text-30);
-      }
-      .process-card--has-img .process-step-badge em {
-        color: var(--text-50);
       }
 
       /* Tech Stack — single column, wider row-gap (see 768–1024 block above) */
@@ -9610,8 +9530,10 @@
     @keyframes ai-spin{to{transform:rotate(360deg)}}
     @media (prefers-reduced-motion: reduce){.ai-block-spinner .spin-ring{animation:none}}
 
-    .ai-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .ai-block .vv{display:flex;align-items:center;gap:8px}
+    /* minmax(0,1fr) + wrap: on phones the two badges don't fit one line
+       and used to spill out of the half-width card. */
+    .ai-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+    .ai-block .vv{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
     .badge{padding:3px 8px;border-radius:5px;font-family:var(--font-code);font-size:10.5px;letter-spacing:.05em}
     .badge.violet{background:color-mix(in oklab,var(--a1) 16%,transparent);border:1px solid color-mix(in oklab,var(--a1) 32%,transparent);color:var(--a1)}
     .badge.amber{background:color-mix(in oklab,var(--a5) 14%,transparent);border:1px solid color-mix(in oklab,var(--a5) 30%,transparent);color:var(--a5)}

@@ -774,11 +774,21 @@ function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: 
 }
 
 const PROCESS_VISIBLE = 3;
+// Phones (<768px) page one full-column-width card at a time. Tablet
+// still flattens the carousel into a static grid in CSS, so it keeps
+// PROCESS_VISIBLE.
+const PROCESS_VISIBLE_MOBILE = 1;
+const PROCESS_MOBILE_QUERY = '(max-width: 767px)';
 
 const STAIR_STEP = 32;
 
-// Swipe carousel for the Design Process rows. Always shows PROCESS_VISIBLE
-// cards; offset is clamped to [0, cards.length - PROCESS_VISIBLE] so the last
+function processVisibleCount(isMobile: boolean) {
+  return isMobile ? PROCESS_VISIBLE_MOBILE : PROCESS_VISIBLE;
+}
+
+// Swipe carousel for the Design Process rows. Shows PROCESS_VISIBLE cards
+// (PROCESS_VISIBLE_MOBILE on phones); offset is clamped to
+// [0, cards.length - visible] so the last
 // page borrows back cards instead of showing a short, unbalanced page.
 //
 // The left-low/right-high stagger is computed per SLOT (index - offset), not
@@ -787,9 +797,30 @@ const STAIR_STEP = 32;
 // crosses toward the left edge — so cards visibly step DOWN as they slide
 // left, instead of the whole staircase just translating sideways with each
 // card's height already fixed.
-function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
-  const maxOffset = Math.max(0, cards.length - PROCESS_VISIBLE);
-  const [offset, setOffset] = useState(0);
+// `mobileOnly` (Tech Stack): above the phone breakpoint, render the cards
+// straight into a plain <div className={className}> — that section keeps
+// its own desktop/tablet grid — and only become a carousel on phones.
+// `variant` adds a modifier class to the wrap for per-section styling.
+function ProcessCarousel({ cards, mobileOnly = false, className, variant }: {
+  cards: ReactNode[];
+  mobileOnly?: boolean;
+  className?: string;
+  variant?: string;
+}) {
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia(PROCESS_MOBILE_QUERY).matches);
+  const visible = processVisibleCount(isMobile);
+  const maxOffset = Math.max(0, cards.length - visible);
+  const [rawOffset, setOffset] = useState(0);
+  // Crossing the breakpoint changes maxOffset; clamp instead of resetting so
+  // the current card stays in view.
+  const offset = Math.min(rawOffset, maxOffset);
+
+  useEffect(() => {
+    const mq = window.matchMedia(PROCESS_MOBILE_QUERY);
+    const onChange = () => setIsMobile(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
   const [dragPx, setDragPx] = useState(0);
   const [dragging, setDragging] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -830,18 +861,29 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
     const card = track?.children[0] as HTMLElement | undefined;
     if (!track || !card) return 0;
     const gap = parseFloat(getComputedStyle(track).gap) || 0;
-    return card.getBoundingClientRect().width + gap;
+    // Computed width, not getBoundingClientRect: the rect includes any
+    // transform on the slot, which would mis-size every slide.
+    return (parseFloat(getComputedStyle(card).width) || 0) + gap;
   }
 
   // Measure the rendered card width/gap after layout — cardStep() reads the
   // DOM, so it can't run during render (refs aren't guaranteed attached yet,
   // and React may discard/redo a render pass before committing).
+  // The ResizeObserver also catches the track getting its real size after
+  // mount — e.g. a LazyUnit/Suspense boundary that commits this subtree
+  // hidden (display: none) first, where the first measurement reads 0.
   useLayoutEffect(() => {
     setCardStepPx(cardStep());
     const onResize = () => setCardStepPx(cardStep());
     window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, [cards.length]);
+    const track = trackRef.current;
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(onResize);
+    if (track) observer?.observe(track);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      observer?.disconnect();
+    };
+  }, [cards.length, isMobile]);
 
   function goTo(next: number) {
     setOffset(Math.min(maxOffset, Math.max(0, next)));
@@ -894,8 +936,10 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
   // dot would show "full" long before the carousel really slides.
   const autoplayLive = maxOffset > 0 && !dragging && risen && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  if (mobileOnly && !isMobile) return <div className={className}>{cards}</div>;
+
   return (
-    <div className="process-scroll-wrap">
+    <div className={`process-scroll-wrap${variant ? ` process-scroll-wrap--${variant}` : ''}`}>
       <div
         className={`process-column-grid process-column-grid--inhouse${dragging ? ' is-dragging' : ''}`}
         ref={trackRef}
@@ -914,8 +958,8 @@ function ProcessCarousel({ cards }: { cards: ReactNode[] }) {
           // off-screen cards on the left grow taller than any visible step
           // and inflate the track's height, which pushes the gap to the
           // title above and the swipe controls below out of place.
-          const maxMargin = (PROCESS_VISIBLE - 1) * STAIR_STEP;
-          const marginTop = Math.min(maxMargin, Math.max(0, (PROCESS_VISIBLE - 1 - slot) * STAIR_STEP));
+          const maxMargin = (visible - 1) * STAIR_STEP;
+          const marginTop = Math.min(maxMargin, Math.max(0, (visible - 1 - slot) * STAIR_STEP));
           return (
             <div
               key={i}
@@ -960,66 +1004,6 @@ function DesignProcessSection() {
   const { t } = useLang();
   const sectionRef = useRef<HTMLElement>(null);
   const processThemes = useProcessCardThemes(sectionRef);
-
-  // Design Process cards (mobile only, <768px): each card's height is
-  // content-driven (square image + auto-height text, see portfolio.css's
-  // <768px MOBILE block) instead of a fixed aspect-ratio, and CSS Grid's
-  // align-items: stretch only equalizes cards within the SAME row — the
-  // In-house and Freelance columns render as two separate grids with
-  // different description lengths, so their rows can settle at different
-  // heights from each other even though each grid is internally uniform.
-  // Measures every card's own (already row-stretched) height, takes the
-  // single tallest across both columns, and pins every card to that one
-  // height via a CSS custom property so no row/column reads shorter than
-  // another. offsetHeight (not getBoundingClientRect) because .rise-card's
-  // scroll-reveal squashes cards with a scaleY transform on mount, which
-  // would otherwise be measured as "natural" height and undershoot.
-  useEffect(() => {
-    let timer = 0;
-    const sync = () => {
-      document.documentElement.style.removeProperty('--process-card-mobile-h');
-      if (window.innerWidth >= 768) return;
-      const slots = document.querySelectorAll<HTMLElement>('.process-swipe-slot');
-      if (!slots.length) return;
-      let max = 0;
-      slots.forEach(slot => { max = Math.max(max, slot.offsetHeight); });
-      if (max > 0) document.documentElement.style.setProperty('--process-card-mobile-h', `${max}px`);
-    };
-    // Debounces bursts of ResizeObserver/font-load callbacks into a single
-    // measurement. setTimeout instead of requestAnimationFrame: rAF never
-    // fires at all while the tab/page isn't visible (confirmed live — a
-    // backgrounded load left the very first measurement stuck forever with
-    // no callback ever running), while setTimeout still fires there.
-    const scheduleSync = () => {
-      clearTimeout(timer);
-      timer = window.setTimeout(sync, 50);
-    };
-    // Measure once synchronously up front so the pinned height is never
-    // gated on any async callback firing at all, then debounce-refine after.
-    sync();
-    scheduleSync();
-    // Custom web fonts (var(--font-heading) on .process-name, etc.) can
-    // still be mid-swap on first mount — measuring before they land bakes
-    // in whatever the fallback font's shorter/longer line-wraps happened
-    // to produce, and nothing was re-triggering a remeasure afterward.
-    document.fonts?.ready.then(scheduleSync);
-    window.addEventListener('resize', scheduleSync);
-    // Also watch each card's own text block directly: unlike
-    // .process-swipe-slot (whose height this effect itself pins) or
-    // .process-card (which just stretches to fill that pin), .border-glow-
-    // inner's height always reflects its real text content, so observing
-    // it can't loop back on this effect's own writes — only genuine
-    // content/layout changes (language switch, a font finishing async,
-    // font-size media queries at other breakpoints) trigger it.
-    const observer = new ResizeObserver(scheduleSync);
-    document.querySelectorAll('.process-card--has-img .border-glow-inner').forEach(el => observer.observe(el));
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', scheduleSync);
-      observer.disconnect();
-      document.documentElement.style.removeProperty('--process-card-mobile-h');
-    };
-  }, [t]);
 
   return (
       <section className="section" ref={sectionRef}>
@@ -1135,8 +1119,12 @@ function TechStackSection() {
         <div className="section-label rise-soft">Tech Stack</div>
         <h2 className="about-h2 rise-soft" style={{ marginBottom: '8px' }}>Web development <span className="gradient-text">literacy</span></h2>
         <p className="tech-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.tech_sub }} />
-        <div className="tech-items">
-          <div className="tech-item-wrap rise-card">
+        <ProcessCarousel
+          mobileOnly
+          className="tech-items"
+          variant="tech"
+          cards={[
+          <div key="html" className="tech-item-wrap rise-card">
             <div className="tech-item html-item card-spotlight sc-card">
               <span className="card-glass-highlight" aria-hidden="true" />
               <div className="tech-item-text">
@@ -1154,8 +1142,8 @@ function TechStackSection() {
               </div>
             </div>
             <span className="tech-level-badge html-item">DESIGN-READY</span>
-          </div>
-          <div className="tech-item-wrap rise-card">
+          </div>,
+          <div key="js" className="tech-item-wrap rise-card">
             <div className="tech-item js-item card-spotlight sc-card">
               <span className="card-glass-highlight" aria-hidden="true" />
               <div className="tech-item-text">
@@ -1173,8 +1161,8 @@ function TechStackSection() {
               </div>
             </div>
             <span className="tech-level-badge js-item">AI-ASSISTED</span>
-          </div>
-          <div className="tech-item-wrap rise-card">
+          </div>,
+          <div key="react" className="tech-item-wrap rise-card">
             <div className="tech-item react-item card-spotlight sc-card">
               <span className="card-glass-highlight" aria-hidden="true" />
               <div className="tech-item-text">
@@ -1193,7 +1181,8 @@ function TechStackSection() {
             </div>
             <span className="tech-level-badge react-item">RESPONSIVE</span>
           </div>
-        </div>
+          ]}
+        />
         <div className="figma-mcp-header rise-soft">
           <h3>{t.figma_mcp_title}</h3>
           <p dangerouslySetInnerHTML={{ __html: t.figma_mcp_desc }} />
