@@ -17,6 +17,11 @@ export const GOVERNOR_SLOW_MS = 20;
 // Median slower than 20 fps = nowhere near → two levels at once, so a weak
 // GPU doesn't sit through three measurement rounds at a slideshow rate.
 export const GOVERNOR_VERY_SLOW_MS = 50;
+// Still slower than 30 fps with every scene on the lowest level = this GPU
+// can't run them at all → onGiveUp (App: swap the scenes for still images,
+// see staticScenes.ts). Looser than GOVERNOR_SLOW_MS on purpose: the
+// lowest level at 35–50 fps still beats a picture.
+export const GOVERNOR_GIVE_UP_MS = 1000 / 30;
 // After a step (or at start), let the resized buffers / entrance settle
 // before measuring again.
 export const GOVERNOR_SETTLE_MS = 1200;
@@ -31,7 +36,9 @@ function median(values: number[]) {
 
 // Returns a stop function. Does nothing until 'hero-ready': frames behind
 // the loading screen say how long the scenes take to load, not how they run.
-export function startSceneQualityGovernor() {
+// Once on the lowest level it takes one more measurement there, calls
+// onGiveUp if even that is too slow, and stops either way.
+export function startSceneQualityGovernor(onGiveUp?: () => void) {
   if (typeof requestAnimationFrame !== 'function') return () => {};
   let raf = 0;
   let stopped = false;
@@ -62,14 +69,22 @@ export function startSceneQualityGovernor() {
     if (elapsed < GOVERNOR_WINDOW_MS) return;
     const typical = median(frames);
     reset(now);
+    if (getSceneQuality() >= SCENE_QUALITY_MAX) {
+      stop();
+      if (typical > GOVERNOR_GIVE_UP_MS) onGiveUp?.();
+      return;
+    }
     if (typical <= GOVERNOR_SLOW_MS) return;
     setSceneQuality(getSceneQuality() + (typical > GOVERNOR_VERY_SLOW_MS ? 2 : 1));
-    if (getSceneQuality() >= SCENE_QUALITY_MAX) { stop(); return; }
+    // Nothing left to measure on the lowest level unless there's a fallback.
+    if (getSceneQuality() >= SCENE_QUALITY_MAX && !onGiveUp) { stop(); return; }
     quietUntil = now + GOVERNOR_SETTLE_MS;
   };
 
   const start = () => {
-    if (stopped || getSceneQuality() >= SCENE_QUALITY_MAX) return;
+    // Already on the lowest level (restored for this tab): only the
+    // give-up measurement is left, if there is a fallback to give up to.
+    if (stopped || (getSceneQuality() >= SCENE_QUALITY_MAX && !onGiveUp)) return;
     const now = performance.now();
     reset(now, GOVERNOR_SETTLE_MS);
     raf = requestAnimationFrame(tick);

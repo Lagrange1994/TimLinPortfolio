@@ -13,7 +13,7 @@ import {
   scenePixelBudget, setSceneQuality, setSceneRunning,
 } from '../src/utils/splineRunning';
 import {
-  GOVERNOR_SETTLE_MS, GOVERNOR_WINDOW_MS, startSceneQualityGovernor,
+  GOVERNOR_GIVE_UP_MS, GOVERNOR_SETTLE_MS, GOVERNOR_WINDOW_MS, startSceneQualityGovernor,
 } from '../src/utils/sceneQualityGovernor';
 
 // A viewer element with a runtime like the real one: logical size + pixel
@@ -338,8 +338,50 @@ describe('scene quality governor', () => {
     expect(getSceneQuality()).toBe(0);
   });
 
-  it('App starts it on desktop widths only', () => {
+  it('App starts it on desktop widths without static scenes only, falling back to them on give-up', () => {
     const app = readFileSync(resolve(__dirname, '../src/App.tsx'), 'utf8');
-    expect(app).toMatch(/if \(window\.innerWidth < 768\) return;\s*return startSceneQualityGovernor\(\);/);
+    expect(app).toMatch(/if \(window\.innerWidth < 768 \|\| staticScenesOn\(\)\) return;\s*return startSceneQualityGovernor\(\(\) => fallBackToStaticScenes\(\)\);/);
+  });
+
+  // Old GPUs that still can't keep up on the lowest level get the phones'
+  // still images instead of the scenes (staticScenes.ts).
+  describe('give-up on the lowest level', () => {
+    it('measures once more there and gives up below 30 fps', () => {
+      runningScene();
+      const onGiveUp = vi.fn();
+      stop = startSceneQualityGovernor(onGiveUp);
+      heroReady();
+      run(20000, 67);
+      expect(getSceneQuality()).toBe(SCENE_QUALITY_MAX);
+      expect(onGiveUp).toHaveBeenCalledTimes(1);
+      expect(rafCbs.size).toBe(0);
+    });
+
+    it('keeps the scenes when the lowest level holds 30 fps or better', () => {
+      runningScene();
+      const onGiveUp = vi.fn();
+      stop = startSceneQualityGovernor(onGiveUp);
+      heroReady();
+      run(GOVERNOR_SETTLE_MS + GOVERNOR_WINDOW_MS + 200, 67); // → level 2
+      run(GOVERNOR_SETTLE_MS + GOVERNOR_WINDOW_MS + 200, 25); // → level 3
+      expect(getSceneQuality()).toBe(SCENE_QUALITY_MAX);
+      run(10000, 1000 / 40);
+      expect(onGiveUp).not.toHaveBeenCalled();
+      expect(rafCbs.size).toBe(0);
+    });
+
+    it('with a give-up handler, still measures a tab restored on the lowest level', () => {
+      setSceneQuality(SCENE_QUALITY_MAX);
+      runningScene();
+      const onGiveUp = vi.fn();
+      stop = startSceneQualityGovernor(onGiveUp);
+      heroReady();
+      run(GOVERNOR_SETTLE_MS + GOVERNOR_WINDOW_MS + 200, 50);
+      expect(onGiveUp).toHaveBeenCalledTimes(1);
+    });
+
+    it(`threshold is 30 fps (${GOVERNOR_GIVE_UP_MS.toFixed(1)}ms)`, () => {
+      expect(GOVERNOR_GIVE_UP_MS).toBeCloseTo(1000 / 30, 5);
+    });
   });
 });

@@ -45,7 +45,9 @@ function setup({ chromium = true, ext = true, completeAfterPolls = 3, completion
 describe('WebGL link shim (index.html)', () => {
   it('is inline and runs before the Spline viewer script', () => {
     expect(shim.length).toBeGreaterThan(0);
-    expect(html.indexOf('/* tl-link-shim */')).toBeLessThan(html.indexOf('spline-viewer.js'));
+    // The viewer is fetched earlier (a modulepreload, which doesn't run it);
+    // the <script> that executes it is inserted after the shim.
+    expect(html.indexOf('/* tl-link-shim */')).toBeLessThan(html.indexOf('splineViewer.src'));
   });
 
   it('turns on parallel compile at link time, once per context', () => {
