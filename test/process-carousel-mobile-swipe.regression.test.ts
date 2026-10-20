@@ -30,9 +30,11 @@ describe('Design Process is a 1-per-page full-width carousel on phones', () => {
     expect(track).toMatch(/display:\s*flex;/);
     expect(track).toMatch(/flex-wrap:\s*nowrap;/);
     expect(track).toMatch(/touch-action:\s*pan-y;/);
-    // No side padding: the card spans the column edge to edge.
-    expect(track).toMatch(/padding:\s*12px 0;/);
-    expect(track).toMatch(/gap:\s*16px;/);
+    // 16px side padding cancels the wrap's -16px margins: the card spans
+    // the column edge to edge.
+    expect(track).toMatch(/padding:\s*12px 16px;/);
+    // Wider than the 16px side room, so no neighbour shows at rest.
+    expect(track).toMatch(/gap:\s*32px;/);
     const slot = mobileBlock.match(/\.process-column-grid--inhouse \.process-swipe-slot \{[^}]*\}/)?.[0];
     expect(slot).toMatch(/flex:\s*0 0 100%;/);
   });
@@ -88,8 +90,11 @@ describe('Design Process is a 1-per-page full-width carousel on phones', () => {
     // Clip only sideways: shadows below and badges above stay visible.
     expect(wrap).toMatch(/overflow-x:\s*clip;/);
     expect(wrap).toMatch(/overflow-y:\s*visible;/);
-    // Clipped on the column's own edges, aligned with the text above.
-    expect(wrap).not.toMatch(/margin:/);
+    // Regression: the hover radar ring (outline pulsing up to 17px outside
+    // the card) was cut on both sides when the clip sat on the card edges.
+    // The clip box now reaches the screen edges (= .section's 16px padding).
+    expect(wrap).toMatch(/margin:\s*0 -16px;/);
+    expect(css).toMatch(/to\s*\{ outline-offset: 17px;/);
     expect(mobileBlock).not.toMatch(/\.process-column-grid \{[^}]*transform:\s*none !important;/);
   });
 

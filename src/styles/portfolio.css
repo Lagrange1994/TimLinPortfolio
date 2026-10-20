@@ -7900,8 +7900,15 @@
          shadow / hover glow below it and the badges above it aren't. The
          card shadows below are reshaped to only fall downward, so nothing
          reaches the clipped sides. */
+      /* The -16px side margins (= .section's phone padding) widen the clip
+         box to the screen edges: room for the hover radar ring (an outline
+         pulsing 8→17px outside the card, see HOVER RADAR RING), which got
+         cut on both sides when the clip sat on the card's edges. The
+         track's matching 16px side padding keeps the card itself aligned
+         with the text above. */
       .process-scroll-wrap {
         position: relative;
+        margin: 0 -16px;
         overflow-x: clip;
         overflow-y: visible;
         /* Bottom up: 12px, Swipe button (~34px), 20px, dots (6px), then
@@ -7939,10 +7946,12 @@
         align-items: stretch;
         display: flex;
         flex-wrap: nowrap;
-        gap: 16px;
-        /* Vertical only: room for card shadows; no side padding, so the
-           card spans the column edge to edge. */
-        padding: 12px 0;
+        /* 32px > the 16px side room: at rest the neighbours start 16px
+           past the clip edge, so none of them shows. */
+        gap: 32px;
+        /* Vertical: room for card shadows. Sides: 16px, cancelling the
+           wrap's -16px margins so the card spans the column edge to edge. */
+        padding: 12px 16px;
         touch-action: pan-y;
         will-change: transform;
       }
