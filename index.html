@@ -266,7 +266,10 @@
       try {
         if (!window.matchMedia('(min-width: 768px)').matches) return;
         var root = document.documentElement;
-        var KEY = 'tl-static-scenes';
+        // -v2: v1 verdicts could come from a covered window's throttled
+        // frames (see sceneQualityGovernor.ts), so they're all ignored.
+        var KEY = 'tl-static-scenes-v2';
+        try { localStorage.removeItem('tl-static-scenes'); } catch (e) {}
         var forced = new URLSearchParams(location.search).get('scenes');
         if (forced === '3d') {
           window.__tlScenesForced = true;

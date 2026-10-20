@@ -200,6 +200,7 @@ describe('scene quality governor', () => {
     rafCbs = new Map();
     rafId = 0;
     vi.spyOn(performance, 'now').mockImplementation(() => now);
+    vi.spyOn(document, 'hasFocus').mockReturnValue(true);
     globalThis.requestAnimationFrame = (cb: FrameRequestCallback) => { rafCbs.set(++rafId, cb); return rafId; };
     globalThis.cancelAnimationFrame = (id: number) => { rafCbs.delete(id); };
     stop = () => {};
@@ -319,6 +320,29 @@ describe('scene quality governor', () => {
     run(15000, 67);
     expect(getSceneQuality()).toBe(0);
     vis.mockRestore();
+  });
+
+  // Regression: a window covered by another app stays 'visible' while the
+  // browser throttles its frames — an RTX 4070 measured "under 30 fps" that
+  // way and was pinned to the static images in localStorage for good.
+  it('does not count frames while the window is unfocused (covered / background pane)', () => {
+    runningScene();
+    vi.spyOn(document, 'hasFocus').mockReturnValue(false);
+    stop = startSceneQualityGovernor();
+    heroReady();
+    run(15000, 67);
+    expect(getSceneQuality()).toBe(0);
+  });
+
+  it('an unfocused window on the lowest level never gives up the scenes', () => {
+    runningScene();
+    setSceneQuality(SCENE_QUALITY_MAX);
+    vi.spyOn(document, 'hasFocus').mockReturnValue(false);
+    const onGiveUp = vi.fn();
+    stop = startSceneQualityGovernor(onGiveUp);
+    heroReady();
+    run(20000, 67);
+    expect(onGiveUp).not.toHaveBeenCalled();
   });
 
   it('does not start at all when the tab is already on the lowest level', () => {

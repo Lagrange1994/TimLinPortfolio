@@ -37,12 +37,14 @@ type ProbeOpts = {
   stored?: string | null;
   cores?: number;
   memory?: number;
+  legacy?: string | null;
 };
 
 // Runs index.html's tl-static-scenes script against a fake environment.
-function probe({ renderer = RENDERERS.rtx, desktop = true, search = '', stored = null, cores = 8, memory = 8 }: ProbeOpts = {}) {
+function probe({ renderer = RENDERERS.rtx, desktop = true, search = '', stored = null, cores = 8, memory = 8, legacy = null }: ProbeOpts = {}) {
   const attrs: Record<string, string> = {};
   const storage: Record<string, string> = stored === null ? {} : { [STATIC_SCENES_KEY]: stored };
+  if (legacy !== null) storage['tl-static-scenes'] = legacy;
   const lost = vi.fn();
   const gl = renderer === null ? null : {
     RENDERER: 0x1F01,
@@ -119,6 +121,15 @@ describe('index.html static-scenes probe', () => {
     expect(r.reason).toBeNull();
     expect(r.win.__tlScenesForced).toBe(true);
     expect(r.storage[STATIC_SCENES_KEY]).toBeUndefined();
+  });
+
+  // Regression: v1 verdicts could come from a covered window's throttled
+  // frames (sceneQualityGovernor.ts), e.g. an RTX 4070 pinned to the images.
+  it('ignores and deletes a v1 (tl-static-scenes) verdict', () => {
+    const r = probe({ renderer: RENDERERS.rtx, legacy: RENDERERS.rtx });
+    expect(r.reason).toBeNull();
+    expect(r.storage['tl-static-scenes']).toBeUndefined();
+    expect(STATIC_SCENES_KEY).toBe('tl-static-scenes-v2');
   });
 
   it('?scenes=static forces the images', () => {

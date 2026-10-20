@@ -59,8 +59,12 @@ export function startSceneQualityGovernor(onGiveUp?: () => void) {
     raf = requestAnimationFrame(tick);
     const dt = now - last;
     last = now;
-    // Only frames a running scene had a part in, on a visible page, count.
-    if (now < quietUntil || dt > STALL_MS || document.visibilityState !== 'visible' || !anySceneRunning()) {
+    // Only frames a running scene had a part in, on a visible, focused page,
+    // count. visibilityState alone isn't enough: a window that's covered by
+    // another app (or a background pane) stays 'visible' while the browser
+    // throttles its frames to well under 30 fps — that once pinned an RTX
+    // 4070 to the static images for good.
+    if (now < quietUntil || dt > STALL_MS || document.visibilityState !== 'visible' || !document.hasFocus() || !anySceneRunning()) {
       reset(now);
       return;
     }

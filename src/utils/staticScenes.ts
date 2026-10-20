@@ -25,7 +25,9 @@ export const STATIC_SCENES_ATTR = 'data-static-scenes';
 // localStorage: the GPU renderer string the runtime fallback was taken on.
 // Keyed by renderer, not a plain flag, so a visitor who later moves the
 // browser to a discrete GPU (or another machine profile) gets 3D again.
-export const STATIC_SCENES_KEY = 'tl-static-scenes';
+// -v2: v1 entries could be false verdicts from a covered (throttled) window;
+// index.html drops them. Keep the two in sync.
+export const STATIC_SCENES_KEY = 'tl-static-scenes-v2';
 
 type ScenesWindow = Window & { __tlGpuRenderer?: string; __tlScenesForced?: boolean };
 
