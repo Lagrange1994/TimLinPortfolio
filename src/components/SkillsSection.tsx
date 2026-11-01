@@ -1337,8 +1337,9 @@ export function AiIntakeSection() {
   // inline style/transform outside React. Keeping this outside the className prop avoids
   // an unnecessary re-render of the whole grid's class string on every card expand/collapse.
   useEffect(() => {
+    if (isViewer) return;
     aiFlowGridRef.current?.classList.toggle('has-expanded', !!expandedAiCard);
-  }, [expandedAiCard]);
+  }, [expandedAiCard, isViewer]);
 
   // .ai-card-toggle's rotate(45deg) (from the .is-open class this render
   // just applied/removed) is a transform change on a descendant of
@@ -1355,6 +1356,7 @@ export function AiIntakeSection() {
   // just-closed id available for one more run after expandedAiCard goes null.
   const prevExpandedAiCardRef = useRef<string | null>(null);
   useLayoutEffect(() => {
+    if (isViewer) return;
     const targetId = expandedAiCard ?? prevExpandedAiCardRef.current;
     prevExpandedAiCardRef.current = expandedAiCard;
     if (!targetId) return;
@@ -1364,7 +1366,7 @@ export function AiIntakeSection() {
     el.style.display = 'none';
     void el.offsetHeight;
     el.style.display = prevDisplay;
-  }, [expandedAiCard]);
+  }, [expandedAiCard, isViewer]);
 
   // Design Workflow card — mirror the AiFlowStepper's active step into the
   // phase list below it. A phase that has already had its turn as "in
@@ -1376,6 +1378,7 @@ export function AiIntakeSection() {
   const wfReachedRef = useRef<Set<number>>(new Set([0]));
   const wfPrevRef = useRef(0);
   useEffect(() => {
+    if (isViewer) return;
     const card = cardRefs.current.get('workflow');
     const rows = card ? Array.from(card.querySelectorAll<HTMLElement>('.phases .phase')) : [];
     if (!rows.length) return;
@@ -1423,13 +1426,14 @@ export function AiIntakeSection() {
         gsap.fromTo(badge, { scale: 0.7, opacity: 0.4 }, { scale: 1, opacity: 1, duration: 0.32, ease: 'back.out(3)' });
       }
     });
-  }, [wfActive, t]);
+  }, [wfActive, t, isViewer]);
 
   // Restart SVG SMIL animations (<animateMotion>/<mpath>) injected via
   // dangerouslySetInnerHTML — browsers only auto-start SMIL on document
   // parse, not on dynamic innerHTML insertion, so the flow-particle
   // animation in the AI workflow diagram never begins on its own.
   useEffect(() => {
+    if (isViewer) return;
     const svg = document.querySelector('.ai-flow-grid svg');
     if (!svg) return;
     const restart = () => {
@@ -1447,6 +1451,8 @@ export function AiIntakeSection() {
   // (.edge-light, --edge-proximity/--cursor-angle) was replaced 2026-09-27
   // by About Me's white border ring (.sc-ring, driven by --sc-x/--sc-y).
   useEffect(() => {
+    // Legacy cards only; the viewer has no .ai-card to decorate.
+    if (isViewer) return;
     const listeners: Array<[HTMLElement, (e: MouseEvent) => void, () => void]> = [];
 
     // How I Use AI cards — carries the big-blur hover shadow as a static
@@ -2105,24 +2111,24 @@ export function AiIntakeSection() {
     const snap = reduced || pillSnapRef.current;
     pillSnapRef.current = false;
     ctx.add(() => {
-      pillRefs.current.forEach((li, id) => {
+      const pills = Array.from(pillRefs.current, ([id, li]) => {
         // Compact never unfolds a pill: the step's content sits under the row.
         const open = id === expandedAiCard && !isCompact;
-        const btn = li.querySelector<HTMLElement>('.ai-pill-open');
         const bg = li.querySelector<HTMLElement>('.ai-pill-bg');
-        const inner = li.querySelector<HTMLElement>('.ai-pill-inner');
-        if (!btn || !bg || !inner) return;
-        const target = open ? inner : btn;
-        const tween = { duration: snap ? 0 : AI_PILL_MORPH_S, ease: 'power3.inOut', overwrite: 'auto' as const };
+        const target = li.querySelector<HTMLElement>(open ? '.ai-pill-inner' : '.ai-pill-open');
+        return bg && target ? { li, bg, target } : null;
+      }).filter(p => p !== null);
+      // Writes, then all reads, then the tweens: one layout pass instead of
+      // a forced reflow per pill (a 0s snap tween writes immediately).
+      if (!isCompact) pills.forEach(p => gsap.set(p.li, { clearProps: 'width' }));
+      const sizes = pills.map(p => ({ width: p.target.offsetWidth, height: p.target.offsetHeight }));
+      const tween = { duration: snap ? 0 : AI_PILL_MORPH_S, ease: 'power3.inOut', overwrite: 'auto' as const };
+      pills.forEach((p, i) => {
         // Compact: the open card is centred in its row, so the <li> itself
         // has to grow sideways too (it grows out from the middle). Desktop:
         // the <li> keeps the closed pill's width and the card overhangs it.
-        if (isCompact) gsap.to(li, { width: target.offsetWidth, height: target.offsetHeight, ...tween });
-        else {
-          gsap.set(li, { clearProps: 'width' });
-          gsap.to(li, { height: target.offsetHeight, ...tween });
-        }
-        gsap.to(bg, { width: target.offsetWidth, height: target.offsetHeight, ...tween });
+        gsap.to(p.li, { ...(isCompact ? sizes[i] : { height: sizes[i].height }), ...tween });
+        gsap.to(p.bg, { ...sizes[i], ...tween });
       });
     });
   }, [expandedAiCard, isViewer, isCompact, t, viewerResizeTick]);
@@ -2150,14 +2156,29 @@ export function AiIntakeSection() {
     bg.style.setProperty('--mouse-x', x);
     bg.style.setProperty('--mouse-y', y);
   };
+  // At most one measure + write per frame: pointermove fires far more often
+  // than the screen paints, and each read forces layout mid-morph.
+  const pillGlowRef = useRef<{ bg: HTMLElement; x: number; y: number } | null>(null);
+  const pillGlowRafRef = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(pillGlowRafRef.current), []);
   const onPillPointerMove = (e: ReactPointerEvent<HTMLLIElement>) => {
     if (e.pointerType !== 'mouse' || document.documentElement.getAttribute('data-theme') === 'light') return;
     const bg = e.currentTarget.querySelector<HTMLElement>('.ai-pill-bg');
     if (!bg) return;
-    const r = bg.getBoundingClientRect();
-    setPillGlow(bg, `${e.clientX - r.left}px`, `${e.clientY - r.top}px`);
+    pillGlowRef.current = { bg, x: e.clientX, y: e.clientY };
+    if (pillGlowRafRef.current) return;
+    pillGlowRafRef.current = requestAnimationFrame(() => {
+      pillGlowRafRef.current = 0;
+      const p = pillGlowRef.current;
+      if (!p) return;
+      const r = p.bg.getBoundingClientRect();
+      setPillGlow(p.bg, `${p.x - r.left}px`, `${p.y - r.top}px`);
+    });
   };
   const onPillPointerLeave = (e: ReactPointerEvent<HTMLLIElement>) => {
+    pillGlowRef.current = null;
+    cancelAnimationFrame(pillGlowRafRef.current);
+    pillGlowRafRef.current = 0;
     const bg = e.currentTarget.querySelector<HTMLElement>('.ai-pill-bg');
     if (bg) setPillGlow(bg, '-500px', '-500px');
   };

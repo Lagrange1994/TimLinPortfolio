@@ -124,7 +124,10 @@ describe('How I Use AI — desktop viewer', () => {
     expect(values()).toEqual(full);
   });
 
-  it('every pill carries the Contact Me card hover layers (wash, edge ring, hover shadow)', () => {
+  // The glow writes on the next animation frame (one measure per frame).
+  const nextFrame = () => act(() => new Promise<void>(r => requestAnimationFrame(() => r())));
+
+  it('every pill carries the Contact Me card hover layers (wash, edge ring, hover shadow)', async () => {
     const { container } = setup();
     const pills = container.querySelectorAll('.ai-pill');
     pills.forEach(li => {
@@ -136,16 +139,22 @@ describe('How I Use AI — desktop viewer', () => {
     // a closed pill follows the mouse too, not just the open card
     const closed = container.querySelector<HTMLElement>('.ai-pill:not(.is-open)')!;
     fireEvent.pointerMove(closed, { pointerType: 'mouse', clientX: 12, clientY: 8 });
+    await nextFrame();
     expect(closed.querySelector<HTMLElement>('.ai-pill-bg')!.style.getPropertyValue('--sc-x')).toBe('12px');
   });
 
-  it('the cursor glow follows a mouse, ignores touch, and parks off-card on leave', () => {
+  it('the cursor glow follows a mouse, ignores touch, and parks off-card on leave', async () => {
     const { container } = setup();
     const li = container.querySelector<HTMLElement>('.ai-pill.is-open')!;
     const bg = li.querySelector<HTMLElement>('.ai-pill-bg')!;
     fireEvent.pointerMove(li, { pointerType: 'touch', clientX: 40, clientY: 30 });
+    await nextFrame();
     expect(bg.style.getPropertyValue('--sc-x')).toBe('');
+    // A burst of moves inside one frame lands as one write, at the last spot.
+    fireEvent.pointerMove(li, { pointerType: 'mouse', clientX: 10, clientY: 10 });
     fireEvent.pointerMove(li, { pointerType: 'mouse', clientX: 40, clientY: 30 });
+    expect(bg.style.getPropertyValue('--sc-x')).toBe('');
+    await nextFrame();
     expect(bg.style.getPropertyValue('--sc-x')).toBe('40px');
     expect(bg.style.getPropertyValue('--mouse-y')).toBe('30px');
     fireEvent.pointerLeave(li, { pointerType: 'mouse' });

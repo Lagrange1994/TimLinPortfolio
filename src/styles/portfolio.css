@@ -11153,6 +11153,31 @@
       min-width: 0;
       min-height: 540px;
     }
+    /* The app window's hover ripple (card-radar's look: a faint ring easing
+       from 8px to 17px out). Drawn here, not as the window's own animated
+       outline — that repainted the whole window every frame while hovered;
+       this ring is its own layer and only animates transform/opacity. The
+       stage is exactly the window's box (one grid item, min-height 540 =
+       window height). Light mode has no ring (--radar-alpha 0), so none. */
+    .ai-stage::after {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      border-radius: 26px;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, var(--radar-alpha));
+      opacity: 0;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+    .ai-stage:has(> .aas-window:hover)::after { animation: aas-radar 3s ease-out infinite; }
+    @keyframes aas-radar {
+      from { transform: scale(1); opacity: 1; }
+      to { transform: scale(1.022, 1.032); opacity: 0; }
+    }
+    :root[data-theme="light"] .ai-stage::after { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .ai-stage:has(> .aas-window:hover)::after { animation: none; }
+    }
     /* All panels share one grid cell, so the stage is as tall as the
        tallest step and never jumps when switching. */
     .ai-stage-panel {
@@ -11219,6 +11244,8 @@
     :root[data-theme="light"] .ai-viewer {
       --ai-stage-dot: rgba(58, 58, 66, .08);
       background: radial-gradient(var(--ai-stage-dot) 1px, transparent 1px) 0 0 / 18px 18px, var(--neu-bg);
+      /* Opaque surface: a backdrop blur here would cost GPU and show nothing. */
+      backdrop-filter: none;
       border-color: transparent;
       box-shadow: var(--neu-raised);
     }

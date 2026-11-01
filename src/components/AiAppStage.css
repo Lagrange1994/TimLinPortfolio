@@ -62,14 +62,8 @@
 :root[data-theme="light"] .aas-quote { background: color-mix(in oklab, var(--acc) 9%, var(--w-panel)); }
 :root[data-theme="light"] .aas-table-head { background: rgba(58, 58, 66, 0.035); }
 
-/* Tech Stack card ripple: the site's card-radar ring spreads out from the
-   edge while hovered (outline isn't clipped by overflow:hidden). Light mode
-   sets --radar-alpha to 0 like every other card. */
-.aas-window { outline: 1px solid transparent; }
-.aas-window:hover { animation: card-radar 3s ease-out infinite; }
-@media (prefers-reduced-motion: reduce) {
-  .aas-window:hover { animation: none; }
-}
+/* Hover ripple: drawn by .ai-stage::after in portfolio.css (a compositor-only
+   ring), not an animated outline here, which repainted the whole window. */
 
 /* Title bar */
 .aas-titlebar {
@@ -132,12 +126,16 @@
   opacity: 0;
   visibility: hidden;
   transform: translateY(10px);
-  transition: opacity .25s ease-in-out, visibility .25s, transform .3s ease-in-out;
+  /* Hidden screens skip layout and paint; the switch waits for the exit
+     fade (allow-discrete), so the leaving screen still fades out. */
+  content-visibility: hidden;
+  transition: opacity .25s ease-in-out, visibility .25s, transform .3s ease-in-out, content-visibility .3s allow-discrete;
 }
 .aas-screen.is-active {
   opacity: 1;
   visibility: visible;
   transform: none;
+  content-visibility: visible;
   transition: opacity .45s ease-out .1s, transform .45s cubic-bezier(.2, .7, .2, 1) .1s;
 }
 .aas-screen-inner { position: relative; display: flex; flex-direction: column; gap: 14px; height: 100%; }

@@ -445,14 +445,30 @@ function WorkflowScreen({ active, t }: { active: boolean; t: T }) {
   useEffect(() => {
     if (!active || prefersReduced()) return;
     let i = 0;
+    let id: ReturnType<typeof setInterval> | undefined;
     const start = setTimeout(() => setPhase(0), 0);
-    const id = setInterval(() => {
-      i = (i + 1) % PHASE_ICONS.length;
-      setPhase(i);
-    }, 1700);
+    const run = () => {
+      id ??= setInterval(() => {
+        i = (i + 1) % PHASE_ICONS.length;
+        setPhase(i);
+      }, 1700);
+    };
+    const stop = () => {
+      clearInterval(id);
+      id = undefined;
+    };
+    // Only cycle while the window is on screen — scrolled away, the timer
+    // would keep re-rendering a screen nobody sees.
+    const el = ref.current;
+    let io: IntersectionObserver | undefined;
+    if (el && typeof IntersectionObserver !== 'undefined') {
+      io = new IntersectionObserver(entries => (entries.some(e => e.isIntersecting) ? run() : stop()));
+      io.observe(el);
+    } else run();
     return () => {
       clearTimeout(start);
-      clearInterval(id);
+      stop();
+      io?.disconnect();
     };
   }, [active]);
   useScreenIntro(active, ref, (tl, q) => {
