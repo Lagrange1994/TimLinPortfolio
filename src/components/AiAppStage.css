@@ -1,0 +1,639 @@
+/* How I Use AI — desktop stage as one app window (AiAppStage.tsx).
+   Accent comes from .ai-viewer[data-accent] (portfolio.css), so the window's
+   highlights follow the open step the same way the card glow does.
+
+   Colours, fonts and shadows are the site's design tokens (portfolio.css
+   :root) — every --w-* / status alias below points at one, so both themes
+   come from the token sets and there's no per-theme colour list here.
+   Radii, spacing and durations stay literal: the site has no token scale
+   for those. */
+
+.ai-viewer .ai-stage { min-height: 0; }
+
+.aas-window {
+  --w-bg: color-mix(in oklab, var(--bg-safe) 62%, transparent);
+  --w-line: var(--border);
+  --w-panel: var(--ai-doc-idle-bg);
+  --w-panel-line: var(--border);
+  --ok: var(--badge-green);
+  --info: var(--badge-blue);
+  --warn: var(--badge-amber);
+  --danger: var(--badge-red);
+  --acc: var(--ai-accent, var(--primary));
+  position: relative;
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  height: 540px;
+  min-width: 0;
+  border-radius: 18px;
+  background: var(--w-bg);
+  box-shadow: 0 0 0 1px var(--w-line), var(--card-shadow-md), var(--card-edge);
+  overflow: hidden;
+  font-family: var(--font);
+  color: var(--text);
+}
+/* Light mode: the Figma MCP mockup's palette (.mcp-grid light tokens in
+   portfolio.css) — a lavender --bg-hover window, hairlines in the mockup's
+   rgba(58,58,66) ink, white inner cards, and its card shadow. */
+:root[data-theme="light"] .aas-window {
+  --w-bg: var(--bg-hover);
+  --w-line: rgba(58, 58, 66, 0.09);
+  --w-panel: #ffffff;
+  --w-panel-line: rgba(58, 58, 66, 0.09);
+  box-shadow: 0 0 0 1px var(--w-line), var(--card-shadow-md), var(--card-edge);
+}
+:root[data-theme="light"] .aas-titlebar { border-bottom-color: rgba(58, 58, 66, 0.07); }
+/* Tables / review lists are white cards like the mockup's frames; the
+   header row takes the mockup's faint inner-card tint. */
+:root[data-theme="light"] .aas-table,
+:root[data-theme="light"] .aas-review,
+:root[data-theme="light"] .aas-phases { background: var(--w-panel); }
+/* The inbox list becomes one white card too (its rows' flash still shows). */
+:root[data-theme="light"] .aas-inbox {
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--w-panel);
+  box-shadow: inset 0 0 0 1px var(--w-panel-line);
+}
+/* Tinted callouts tint white instead of the lavender window. */
+:root[data-theme="light"] .aas-block.is-warn { background: color-mix(in oklab, var(--warn) 7%, var(--w-panel)); }
+:root[data-theme="light"] .aas-block.is-ok { background: color-mix(in oklab, var(--ok) 7%, var(--w-panel)); }
+:root[data-theme="light"] .aas-quote { background: color-mix(in oklab, var(--acc) 9%, var(--w-panel)); }
+:root[data-theme="light"] .aas-table-head { background: rgba(58, 58, 66, 0.035); }
+
+/* Tech Stack card ripple: the site's card-radar ring spreads out from the
+   edge while hovered (outline isn't clipped by overflow:hidden). Light mode
+   sets --radar-alpha to 0 like every other card. */
+.aas-window { outline: 1px solid transparent; }
+.aas-window:hover { animation: card-radar 3s ease-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .aas-window:hover { animation: none; }
+}
+
+/* Title bar */
+.aas-titlebar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 16px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--w-line);
+}
+.aas-lights { display: flex; gap: 7px; }
+/* macOS window controls — fixed system colours, not site tokens. */
+.aas-lights i { width: 11px; height: 11px; border-radius: 50%; background: #FF5F57; }
+.aas-lights i:nth-child(2) { background: #FEBC2E; }
+.aas-lights i:nth-child(3) { background: #28C840; }
+.aas-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--text-50);
+  white-space: nowrap;
+}
+.aas-title b { color: var(--text); font-weight: 600; }
+.aas-title-sep { margin: 0 8px; opacity: .5; }
+.aas-status {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-code);
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  color: var(--text-50);
+}
+.aas-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 0 0 color-mix(in oklab, var(--ok) 60%, transparent);
+  animation: aas-live 2s ease-out infinite;
+}
+@keyframes aas-live {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--ok) 55%, transparent); }
+  100% { box-shadow: 0 0 0 7px transparent; }
+}
+
+.aas-body { display: flex; flex: 1; min-height: 0; }
+
+/* Screens — all stacked in one cell, crossfaded */
+.aas-main { position: relative; display: grid; flex: 1; min-width: 0; }
+.aas-screen {
+  grid-area: 1 / 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 20px 24px;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity .25s ease-in-out, visibility .25s, transform .3s ease-in-out;
+}
+.aas-screen.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity .45s ease-out .1s, transform .45s cubic-bezier(.2, .7, .2, 1) .1s;
+}
+.aas-screen-inner { position: relative; display: flex; flex-direction: column; gap: 14px; height: 100%; }
+.aas-screen-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.aas-screen-head h4 { margin: 0; font: 600 16px/1.25 var(--font); letter-spacing: -.01em; color: var(--text); }
+.aas-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  font: 11px/1.3 var(--font-code);
+  letter-spacing: .02em;
+  color: var(--text-50);
+}
+.aas-meta i { color: var(--ok); }
+.aas-mono { font-family: var(--font-code); font-size: 11.5px; }
+.aas-dim { color: var(--text-50); }
+
+.aas-chips { display: flex; gap: 6px; }
+.aas-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--w-panel-line);
+  font: 500 10.5px/1.3 var(--font-code);
+  letter-spacing: .03em;
+  color: var(--text-70);
+  white-space: nowrap;
+}
+.aas-chip.is-accent {
+  background: color-mix(in oklab, var(--acc) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--acc) 40%, transparent);
+  color: var(--acc);
+}
+
+.aas-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font: 600 10.5px/1.4 var(--font);
+  white-space: nowrap;
+  --tone: var(--text-50);
+  color: var(--tone);
+  background: color-mix(in oklab, var(--tone) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--tone) 32%, transparent);
+}
+.aas-badge.is-ok, .aas-badge.is-done { --tone: var(--ok); }
+.aas-badge.is-info, .aas-badge.is-next { --tone: var(--info); }
+.aas-badge.is-warn { --tone: var(--warn); }
+.aas-badge.is-danger { --tone: var(--danger); }
+/* White on an accent fill (no on-accent token; same as the site’s other filled pills). */
+.aas-badge.is-now { --tone: var(--acc); background: var(--acc); color: #fff; box-shadow: none; }
+
+.aas-dots { display: inline-flex; gap: 3px; margin-right: 4px; }
+.aas-dots i { width: 4px; height: 4px; border-radius: 50%; background: var(--acc); animation: aas-bounce 1s ease-in-out infinite; }
+.aas-dots i:nth-child(2) { animation-delay: .15s; }
+.aas-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes aas-bounce { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
+
+.is-typing::after {
+  content: "";
+  display: inline-block;
+  width: 1.5px;
+  height: 1em;
+  margin-left: 1px;
+  vertical-align: -2px;
+  background: var(--acc);
+  animation: aas-caret .8s steps(1) infinite;
+}
+@keyframes aas-caret { 50% { opacity: 0; } }
+
+/* 01 Inbox */
+.aas-toast {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  translate: -50% 0;
+  background: color-mix(in oklab, var(--acc) 18%, var(--w-bg));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--acc) 40%, transparent), var(--card-shadow-sm);
+  font-size: 12px;
+  color: var(--text);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+.aas-toast i { color: var(--acc); }
+.aas-inbox { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.aas-msg {
+  --flash: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--acc) calc(var(--flash) * 18%), transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--acc) calc(var(--flash) * 45%), transparent);
+}
+.aas-msg + .aas-msg::before {
+  content: "";
+  position: absolute;
+  left: 56px;
+  right: 12px;
+  top: 0;
+  height: 1px;
+  background: var(--w-line);
+}
+.aas-msg-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--ch) 16%, transparent);
+  color: var(--ch);
+  font-size: 17px;
+}
+/* Channel colour, read by .aas-msg-icon / .aas-avatar inside. */
+.ch-line { --ch: var(--line); }
+.ch-mail { --ch: var(--badge-blue); }
+.ch-form { --ch: var(--badge-purple); }
+.ch-slack { --ch: var(--secondary); }
+.ch-note { --ch: var(--badge-amber); }
+.aas-msg-body { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.aas-msg-from { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text); }
+.aas-msg-text { font-size: 12.5px; color: var(--text-50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.aas-msg-new {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--acc);
+  color: #fff;
+  font: 600 9.5px/1.4 var(--font-code);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.aas-msg-time { font: 11px var(--font-code); color: var(--text-50); }
+.aas-unread { width: 7px; height: 7px; border-radius: 50%; background: var(--acc); flex-shrink: 0; }
+
+/* 02 Intake */
+.aas-progress { display: flex; align-items: center; gap: 10px; --done: 1; }
+.aas-progress-label { font: 500 11px var(--font-code); color: color-mix(in oklab, var(--ok) calc(var(--done) * 100%), var(--text-50)); white-space: nowrap; }
+.aas-progress-bar { position: relative; width: 120px; height: 5px; border-radius: 3px; background: var(--w-panel-line); overflow: hidden; }
+.aas-progress-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform-origin: left center;
+  background: color-mix(in oklab, var(--ok) calc(var(--done) * 100%), var(--acc));
+}
+.aas-progress-check { color: var(--ok); font-size: 16px; }
+.aas-intake { display: grid; grid-template-columns: minmax(0, 0.9fr) 52px minmax(0, 1.3fr); align-items: center; flex: 1; min-height: 0; }
+.aas-bubble {
+  position: relative;
+  padding: 14px 16px 22px;
+  border-radius: 4px 16px 16px 16px;
+  background: var(--w-panel);
+  box-shadow: inset 0 0 0 1px var(--w-panel-line);
+}
+.aas-bubble-from { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; }
+.aas-bubble-from em { margin-left: auto; font: 500 10px var(--font-code); font-style: normal; color: var(--line); }
+.aas-avatar {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--ch) 18%, transparent);
+  color: var(--ch);
+  font-size: 13px;
+}
+.aas-bubble p { margin: 10px 0 0; font-size: 13px; line-height: 1.6; color: var(--text-70); }
+.aas-bubble-time { position: absolute; right: 12px; bottom: 7px; font: 10px var(--font-code); color: var(--text-30); }
+.aas-pipe { position: relative; display: grid; place-items: center; height: 100%; }
+.aas-pipe-line { position: absolute; left: 4px; right: 4px; top: 50%; height: 2px; background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--acc) 60%, transparent), transparent); }
+.aas-pipe-dot { position: absolute; right: 0; top: -2px; width: 6px; height: 6px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 8px var(--acc); }
+/* Make sits between the message and the form — just its logo (it's the app
+   icon itself, so no chip around it), with a halo so the pipe line reads as
+   running through it. */
+.aas-pipe-chip {
+  position: relative;
+  display: grid;
+  border-radius: 7px;
+  box-shadow: 0 0 0 4px var(--w-bg), 0 0 14px color-mix(in oklab, var(--make) 55%, transparent);
+}
+.aas-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.aas-field {
+  --focus: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--acc) calc(var(--focus) * 12%), var(--w-panel));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--acc) calc(var(--focus) * 60%), var(--w-panel-line));
+}
+.aas-field.is-wide { grid-column: 1 / -1; }
+.aas-field-label { font: 500 10px/1.2 var(--font-code); letter-spacing: .06em; text-transform: uppercase; color: var(--text-50); }
+.aas-field-val { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 18px; font-size: 12.5px; color: var(--text); }
+
+/* 03 AI Brief */
+.aas-brief { position: relative; display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 12px; flex: 1; min-height: 0; }
+.aas-skeleton {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 6px 2px;
+  visibility: hidden;
+  opacity: 0;
+}
+.aas-skeleton i {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--w-panel-line) 0%, color-mix(in oklab, var(--acc) 30%, transparent) 50%, var(--w-panel-line) 100%);
+  background-size: 200% 100%;
+  animation: aas-shimmer 1.1s linear infinite;
+}
+@keyframes aas-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.aas-brief-col, .aas-brief-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.aas-block {
+  --tone: var(--acc);
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--w-panel);
+  box-shadow: inset 0 0 0 1px var(--w-panel-line);
+}
+.aas-block.is-warn { --tone: var(--warn); background: color-mix(in oklab, var(--warn) 7%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--warn) 24%, transparent); }
+.aas-block.is-ok { --tone: var(--ok); background: color-mix(in oklab, var(--ok) 7%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ok) 24%, transparent); }
+.aas-block h5 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 7px;
+  font: 600 10.5px/1.2 var(--font-code);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-50);
+}
+.aas-block h5 i { color: var(--tone); font-size: 14px; }
+.aas-block p { margin: 0; font-size: 12.5px; line-height: 1.65; color: var(--text-70); }
+.aas-summary-text { color: var(--text) !important; }
+.aas-summary-text .hl {
+  color: var(--text);
+  background: linear-gradient(transparent 60%, color-mix(in oklab, var(--acc) 40%, transparent) 60%);
+}
+.aas-missing { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.aas-missing li { position: relative; padding-left: 14px; font-size: 12.5px; line-height: 1.5; color: var(--text-70); }
+.aas-missing li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 5px; height: 5px; border-radius: 50%; background: var(--warn); }
+.aas-conf {
+  --tone: var(--acc);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--w-panel);
+  box-shadow: inset 0 0 0 1px var(--w-panel-line);
+}
+.aas-conf.is-warn { --tone: var(--warn); }
+.aas-conf-label { display: flex; align-items: center; gap: 7px; font: 600 10.5px/1.2 var(--font-code); letter-spacing: .08em; text-transform: uppercase; color: var(--text-50); }
+.aas-conf-label i { color: var(--tone); font-size: 14px; }
+.aas-conf-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; }
+.aas-conf-row b { font-weight: 600; color: var(--text); }
+.aas-conf-row > span { font: 500 11px var(--font-code); color: var(--text-50); }
+.aas-conf-bar { height: 4px; border-radius: 2px; background: var(--w-panel-line); overflow: hidden; }
+.aas-conf-fill { display: block; height: 100%; border-radius: inherit; background: var(--tone); transform-origin: left center; }
+
+/* 04 Tracker */
+.aas-sync-pill { color: var(--ok); }
+.aas-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.aas-stat {
+  --tone: var(--text-50);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: var(--w-panel);
+  box-shadow: inset 0 0 0 1px var(--w-panel-line);
+}
+.aas-stat.is-ok { --tone: var(--ok); }
+.aas-stat.is-info { --tone: var(--info); }
+.aas-stat.is-warn { --tone: var(--warn); }
+.aas-stat-label { font: 500 10px/1.2 var(--font-code); letter-spacing: .08em; text-transform: uppercase; color: var(--text-50); }
+.aas-stat-num { font: 600 22px/1.1 var(--font); letter-spacing: -.02em; color: var(--text); font-variant-numeric: tabular-nums; }
+.aas-stat-bar { height: 3px; border-radius: 2px; background: var(--w-panel-line); overflow: hidden; }
+.aas-stat-fill { display: block; height: 100%; background: var(--tone); transform-origin: left center; }
+.aas-table { display: flex; flex-direction: column; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--w-panel-line); overflow: hidden; }
+.aas-table-head, .aas-row {
+  display: grid;
+  grid-template-columns: 0.9fr 0.8fr 1.1fr 0.9fr 0.8fr;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+}
+.aas-table-head {
+  height: 34px;
+  background: var(--w-panel);
+  font: 600 10px/1 var(--font-code);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-50);
+}
+.aas-row {
+  --flash: 0;
+  height: 44px;
+  overflow: hidden;
+  border-top: 1px solid var(--w-line);
+  font-size: 12.5px;
+  color: var(--text-70);
+  background: color-mix(in oklab, var(--acc) calc(var(--flash) * 16%), transparent);
+}
+.aas-row > span:first-child { color: var(--text); }
+
+/* 05 Review */
+.aas-approve { position: relative; display: inline-grid; }
+.aas-approve > span {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font: 600 11.5px/1.2 var(--font);
+  white-space: nowrap;
+  transition: opacity .25s;
+}
+.aas-approve-done { background: color-mix(in oklab, var(--ok) 16%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ok) 40%, transparent); color: var(--ok); }
+.aas-approve-wait { box-shadow: inset 0 0 0 1px var(--w-panel-line); color: var(--text-50); opacity: 0; }
+.aas-approve.is-pending .aas-approve-done { opacity: 0; }
+.aas-approve.is-pending .aas-approve-wait { opacity: 1; }
+.aas-review { display: flex; flex-direction: column; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--w-panel-line); overflow: hidden; }
+.aas-review-row {
+  --risk: 1;
+  display: grid;
+  grid-template-columns: 20px 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.aas-review-row + .aas-review-row { border-top: 1px solid var(--w-line); }
+.aas-review-row.is-risk { background: color-mix(in oklab, var(--warn) calc(var(--risk) * 8%), transparent); }
+.aas-review-check { color: var(--ok); font-size: 17px; line-height: 1; }
+.aas-review-label { font: 600 10.5px/1.2 var(--font-code); letter-spacing: .06em; text-transform: uppercase; color: var(--text-50); }
+.aas-review-val { color: var(--text); }
+.aas-stamp {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 1px 7px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1.5px var(--danger);
+  color: var(--danger);
+  font: 700 11px/1.4 var(--font-code);
+}
+.aas-quote {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--acc) 9%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--acc) 28%, transparent);
+}
+.aas-quote figcaption { font: 600 10.5px/1.2 var(--font-code); letter-spacing: .08em; text-transform: uppercase; color: var(--text-50); }
+.aas-quote-text { margin: 0; font: 600 18px/1.4 var(--font-heading); color: var(--text); }
+.aas-quote-text .pivot { color: var(--acc); font-style: italic; }
+.aas-quote-by { align-self: flex-end; font: 11px var(--font-code); color: var(--text-50); }
+
+/* 06 Workflow */
+.aas-track { position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding-top: 2px; }
+.aas-track-line {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 19px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--w-panel-line);
+}
+.aas-track-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--phase) / 4 * 100%);
+  border-radius: inherit;
+  background: var(--acc);
+  transition: width .6s cubic-bezier(.2, .7, .2, 1);
+}
+.aas-track-node { position: relative; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.aas-track-dot {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--w-bg);
+  box-shadow: inset 0 0 0 1.5px var(--w-panel-line);
+  color: var(--text-30);
+  font-size: 15px;
+  transition: background-color .35s, color .35s, box-shadow .35s, transform .35s;
+}
+.aas-track-node.is-done .aas-track-dot { color: var(--acc); box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--acc) 60%, transparent); }
+.aas-track-node.is-now .aas-track-dot {
+  background: var(--acc);
+  color: #fff;
+  box-shadow: 0 0 0 5px color-mix(in oklab, var(--acc) 20%, transparent), 0 0 20px color-mix(in oklab, var(--acc) 55%, transparent);
+  transform: scale(1.08);
+}
+.aas-track-name { font: 500 10.5px/1.2 var(--font-code); color: var(--text-50); }
+.aas-track-node.is-now .aas-track-name { color: var(--text); }
+.aas-phases { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--w-panel-line); overflow: hidden; }
+.aas-phase {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  transition: background-color .35s;
+}
+.aas-phase + .aas-phase { border-top: 1px solid var(--w-line); }
+.aas-phase.is-now { background: color-mix(in oklab, var(--acc) 10%, transparent); }
+.aas-phase-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.aas-phase-text b { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.aas-phase-text span { font-size: 11.5px; color: var(--text-50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.aas-badge.is-queued { --tone: var(--text-50); background: transparent; }
+
+/* Narrow stage (small desktops, ~1024px): stack the two-column screens */
+@container (max-width: 700px) {
+  .aas-screen { padding: 18px; }
+  .aas-intake { grid-template-columns: 1fr; gap: 10px; align-items: start; }
+  .aas-pipe { display: none; }
+  /* Stacked, the brief is taller than the window: the two confidence
+     cards share a row and Initial Direction drops out at this width. */
+  .aas-brief { grid-template-columns: 1fr; align-content: start; }
+  .aas-brief-side { display: grid; grid-template-columns: 1fr 1fr; }
+  .aas-brief-side > .aas-block { display: none; }
+  .aas-chips { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aas-screen, .aas-track-fill, .aas-track-dot, .aas-phase { transition: none !important; }
+  .aas-live-dot, .aas-dots i, .aas-skeleton i { animation: none; }
+}
+
+/* Compact viewer (≤960px): the window sits full-width above the pill row. */
+@media (max-width: 960px) {
+  .aas-window { height: 520px; border-radius: 16px; }
+}
+
+/* Phone-width window: tighten every screen to one narrow column. */
+@container (max-width: 460px) {
+  .aas-titlebar { padding: 0 12px; }
+  .aas-title-root { display: none; }
+  .aas-screen { padding: 16px 14px; }
+  .aas-screen-inner { gap: 12px; }
+  .aas-screen-head { flex-wrap: wrap; gap: 8px; }
+  .aas-screen-head h4 { font-size: 15px; }
+  .aas-msg { padding: 10px 6px; gap: 10px; }
+  .aas-msg + .aas-msg::before { left: 50px; right: 6px; }
+  .aas-msg-icon { width: 32px; height: 32px; font-size: 16px; }
+  .aas-progress-bar { width: 90px; }
+  .aas-intake { gap: 8px; }
+  .aas-bubble { padding: 11px 14px; }
+  /* The source message is context here, not the subject: two lines. */
+  .aas-bubble p { margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .aas-bubble-time { display: none; }
+  .aas-form { gap: 6px; }
+  .aas-field { padding: 8px 10px; }
+  .aas-stats { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .aas-stat { padding: 8px 10px; }
+  .aas-stat-num { font-size: 18px; }
+  .aas-table-head, .aas-row { grid-template-columns: 0.95fr 0.7fr 1.1fr 0.9fr; padding: 0 10px; }
+  .aas-table-head > :nth-child(5), .aas-row > :nth-child(5) { display: none; }
+  .aas-row { height: 40px; font-size: 12px; }
+  .aas-review-row { grid-template-columns: 18px minmax(0, 1fr); row-gap: 2px; padding: 9px 12px; }
+  .aas-review-check { grid-row: 1 / 3; align-self: start; }
+  .aas-review-label, .aas-review-val { grid-column: 2; }
+  .aas-quote { padding: 12px 14px; }
+  .aas-quote-text { font-size: 16px; }
+  .aas-track-name { display: none; }
+  .aas-track-line { top: 17px; }
+  .aas-track-dot { width: 34px; height: 34px; }
+  .aas-phase { padding: 8px 10px; gap: 8px; grid-template-columns: 20px minmax(0, 1fr) auto; }
+}

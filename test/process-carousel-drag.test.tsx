@@ -116,4 +116,39 @@ describe('ProcessCarousel finger drag', () => {
     pointer(track, 'pointerUp', 200, 900);
     expect(track.style.transform).toBe('translateX(0px)');
   });
+
+  // apple.com-style paddles replace the old looping Swipe button: ‹ › step
+  // one card, and the one facing an end is disabled.
+  it('the ‹ › buttons step one card and disable at either end', () => {
+    const { container, track } = setup();
+    const [prev, next] = container.querySelectorAll<HTMLButtonElement>('.process-swipe-nav .process-swipe-arrow');
+    expect(prev.disabled).toBe(true);
+    expect(next.disabled).toBe(false);
+    act(() => { fireEvent.click(next); });
+    expect(track.style.transform).toBe('translateX(-375px)');
+    expect(prev.disabled).toBe(false);
+    act(() => { fireEvent.click(next); });
+    expect(next.disabled).toBe(true);
+    act(() => { fireEvent.click(prev); });
+    expect(track.style.transform).toBe('translateX(-375px)');
+    expect(container.querySelector('.process-swipe-btn')).toBeNull();
+  });
+
+  // Tech Stack on phones: apple.com-style text tabs replace the dots and ‹ ›.
+  it('with tabs, shows one tab per card that jumps to it, and no dots or arrows', () => {
+    const cards = [0, 1, 2].map(n => createElement(Card, { key: n, n }));
+    const tabs = ['A', 'B', 'C'].map(label => ({ label, color: '#60a5fa' }));
+    const { container } = render(createElement(ProcessCarousel, { cards, tabs }));
+    const track = container.querySelector<HTMLElement>('.process-column-grid--inhouse')!;
+    const tabEls = container.querySelectorAll<HTMLButtonElement>('.process-tabs [role="tab"]');
+    expect(tabEls).toHaveLength(3);
+    expect(container.querySelector('.process-swipe-controls, .process-swipe-nav')).toBeNull();
+    expect(container.querySelector('.process-scroll-wrap')!.classList).toContain('process-scroll-wrap--tabs');
+    expect(tabEls[0].getAttribute('aria-selected')).toBe('true');
+    act(() => { fireEvent.click(tabEls[2]); });
+    expect(track.style.transform).toBe('translateX(-750px)');
+    expect(tabEls[2].getAttribute('aria-selected')).toBe('true');
+    expect(tabEls[2].querySelector('.process-tab-fill')).not.toBeNull();
+    expect(tabEls[0].querySelector('.process-tab-fill')).toBeNull();
+  });
 });

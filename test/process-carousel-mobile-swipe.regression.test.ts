@@ -26,7 +26,8 @@ describe('Design Process is a 1-per-page full-width carousel on phones', () => {
   });
 
   it('the mobile track is a horizontal flex strip, not a grid', () => {
-    const track = mobileBlock.match(/\.process-column-grid--inhouse \{[^}]*\}/)?.[0];
+    // \n + 6 spaces: the base rule, not a `.process-scroll-wrap--process …` override
+    const track = mobileBlock.match(/\n {6}\.process-column-grid--inhouse \{[^}]*\}/)?.[0];
     expect(track).toMatch(/display:\s*flex;/);
     expect(track).toMatch(/flex-wrap:\s*nowrap;/);
     expect(track).toMatch(/touch-action:\s*pan-y;/);
@@ -35,7 +36,7 @@ describe('Design Process is a 1-per-page full-width carousel on phones', () => {
     expect(track).toMatch(/padding:\s*12px 16px;/);
     // Wider than the 16px side room, so no neighbour shows at rest.
     expect(track).toMatch(/gap:\s*32px;/);
-    const slot = mobileBlock.match(/\.process-column-grid--inhouse \.process-swipe-slot \{[^}]*\}/)?.[0];
+    const slot = mobileBlock.match(/\n {6}\.process-column-grid--inhouse \.process-swipe-slot \{[^}]*\}/)?.[0];
     expect(slot).toMatch(/flex:\s*0 0 100%;/);
   });
 
@@ -56,14 +57,13 @@ describe('Design Process is a 1-per-page full-width carousel on phones', () => {
 
   // Regression: tapping a card on a phone showed its hover glow cut off by
   // the wrap's clip. Every carousel card shadow now has spread = -blur, so
-  // it stays inside the card's width and only falls downward.
-  it('reshapes the carousel card shadows to fall only downward (spread = -blur)', () => {
+  // it stays inside the card's width and only falls downward. (Light mode
+  // uses a full neumorphism pair instead: process-carousel-light-shadow.)
+  it('reshapes the dark carousel card shadows to fall only downward (spread = -blur)', () => {
     const rules = [
       /\.process-scroll-wrap \.process-card--has-img\.border-glow-card \{[^}]*\}/,
       /\.process-scroll-wrap \.process-card > \.card-hover-shadow,\s*\.process-scroll-wrap--tech \.tech-item-wrap::after \{[^}]*\}/,
       /\.process-scroll-wrap--tech \.tech-item \{\s*box-shadow[^}]*\}/,
-      /:root\[data-theme="light"\] \.process-scroll-wrap \.process-card\.border-glow-card,[^{]*\{[^}]*\}/,
-      /:root\[data-theme="light"\] \.process-scroll-wrap \.process-card:hover,[^{]*\{[^}]*\}/,
     ];
     for (const re of rules) {
       const block = mobileBlock.match(re)?.[0];
@@ -75,13 +75,13 @@ describe('Design Process is a 1-per-page full-width carousel on phones', () => {
   });
 
   it('the track stretches the cards (beats the desktop flex-start rule)', () => {
-    const track = mobileBlock.match(/\.process-column-grid--inhouse \{[^}]*\}/)?.[0];
+    const track = mobileBlock.match(/\n {6}\.process-column-grid--inhouse \{[^}]*\}/)?.[0];
     expect(track).toMatch(/align-items:\s*stretch;/);
   });
 
   it('no peek styling: neighbours are not dimmed or shrunk', () => {
     expect(mobileBlock).not.toMatch(/\.process-swipe-slot\.is-current/);
-    const slot = mobileBlock.match(/\.process-column-grid--inhouse \.process-swipe-slot \{[^}]*\}/)?.[0];
+    const slot = mobileBlock.match(/\n {6}\.process-column-grid--inhouse \.process-swipe-slot \{[^}]*\}/)?.[0];
     expect(slot).not.toMatch(/opacity|scale\(/);
   });
 
@@ -107,15 +107,31 @@ describe('Design Process is a 1-per-page full-width carousel on phones', () => {
     expect(fn).not.toMatch(/card\.getBoundingClientRect\(\)/);
   });
 
-  it('centres the dots and the Swipe button on the card axis', () => {
+  it('centres the dots and the ‹ › buttons on the card axis', () => {
     const controls = mobileBlock.match(/\.process-swipe-controls \{[^}]*\}/)?.[0];
     expect(controls).toMatch(/left:\s*0;\s*right:\s*0;/);
-    const btn = mobileBlock.match(/\.process-swipe-btn \{[^}]*\}/)?.[0];
+    const btn = mobileBlock.match(/\.process-swipe-nav \{[^}]*\}/)?.[0];
     expect(btn).toMatch(/left:\s*50%;/);
     expect(btn).toMatch(/transform:\s*translateX\(-50%\);/);
   });
 
-  it('shows the dots and Swipe button on phones', () => {
-    expect(mobileBlock).not.toMatch(/\.process-swipe-controls,\s*\.process-swipe-btn \{\s*display:\s*none !important;/);
+  // apple.com phone carousel for Design Process (variant "process"): the next
+  // card peeks in, dots sit on the left and ‹ › on the right, on one row.
+  // The base rules above stay for Tech Stack's full-width page.
+  it('Design Process peeks the next card, with centred dots and ‹ › on the right', () => {
+    expect(tsx.match(/<ProcessCarousel\n\s+variant="process"/g)).toHaveLength(2);
+    const slot = mobileBlock.match(/\.process-scroll-wrap--process \.process-column-grid--inhouse \.process-swipe-slot \{[^}]*\}/)?.[0];
+    expect(slot).toMatch(/flex:\s*0 0 calc\(100% - 36px\);/);
+    const track = mobileBlock.match(/\.process-scroll-wrap--process \.process-column-grid--inhouse \{[^}]*\}/)?.[0];
+    expect(track).toMatch(/gap:\s*16px;/);
+    const dots = mobileBlock.match(/\.process-scroll-wrap--process \.process-swipe-controls \{[^}]*\}/)?.[0];
+    // dots centred on the row (the base rule's justify-content: center)
+    expect(dots).toMatch(/left:\s*16px;\s*right:\s*16px;/);
+    const nav = mobileBlock.match(/\.process-scroll-wrap--process \.process-swipe-nav \{[^}]*\}/)?.[0];
+    expect(nav).toMatch(/left:\s*auto;\s*right:\s*16px;\s*transform:\s*none;/);
+  });
+
+  it('shows the dots and ‹ › buttons on phones', () => {
+    expect(mobileBlock).not.toMatch(/\.process-swipe-controls,\s*\.process-swipe-nav \{\s*display:\s*none !important;/);
   });
 });

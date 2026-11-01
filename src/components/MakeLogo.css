@@ -1,0 +1,16 @@
+/* Make mark as Make's app icon: white on the brand purple (--make). */
+.make-logo {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--make-logo-size, 14px);
+  height: var(--make-logo-size, 14px);
+  border-radius: 28%;
+  background: var(--make);
+  color: #fff;
+  vertical-align: -0.15em;
+}
+.make-logo svg {
+  width: 68%;
+  height: 68%;
+}
