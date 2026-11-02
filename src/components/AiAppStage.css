@@ -1060,15 +1060,16 @@
   .aas-front { left: -20px; width: 262px; }
 }
 /* Phone stage: no room beside the window, so only the client's phone,
-   small, over the window's lower-right corner. Its bottom (bezel and
-   input bar) is cut off flush with the window's bottom edge, as if it
-   rose out of the frame. */
+   small, in the lower-right corner. It runs past the window out to the
+   viewer frame and is cut off at the frame's inner edge (16px padding
+   past the window; the 33px corner less its 1px border), as if it rose
+   out of the stage's corner. */
 @container aas-stage (max-width: 420px) {
   .aas-phone {
     top: auto;
-    bottom: -48px;
-    clip-path: inset(-40px -40px 48px -40px);
-    right: -6px;
+    right: -26px;
+    bottom: -56px;
+    clip-path: inset(-40px 10px 40px -40px round 0 0 32px 0);
     width: 112px;
     height: 226px;
     padding: 5px;
