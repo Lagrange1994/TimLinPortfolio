@@ -31,16 +31,13 @@ beforeEach(() => { vi.useFakeTimers(); });
 afterEach(() => { vi.useRealTimers(); });
 
 describe('Design Process cards on touch screens', () => {
-  it('marks the card in view as current, following the slide', () => {
+  // A colour illustration on the card in view was tried and dropped: the
+  // cards read as always coloured. They stay white on touch screens.
+  it('does not single out the card in view', () => {
     const cards = [0, 1, 2].map(n => createElement('div', { key: n }, `card ${n}`));
     const { container } = render(createElement(ProcessCarousel, { cards, variant: 'process' }));
-    const current = () => Array.from(container.querySelectorAll('.process-swipe-slot'), s => s.classList.contains('is-current'));
-    expect(current()).toEqual([true, false, false]);
-    const track = container.querySelector<HTMLElement>('.process-column-grid--inhouse')!;
-    act(() => { track.dispatchEvent(new Event('rise-settled', { bubbles: true })); });
-    act(() => { vi.advanceTimersByTime(1500); }); // autoplay armed
-    act(() => { vi.advanceTimersByTime(6500); }); // fallback advance
-    expect(current()).toEqual([false, true, false]);
+    expect(container.querySelectorAll('.process-swipe-slot.is-current')).toHaveLength(0);
+    expect(read('src/styles/portfolio.css')).not.toMatch(/is-current \.border-glow-card/);
   });
 
   it('BorderGlow follows a mouse but not a finger', () => {
@@ -57,14 +54,14 @@ describe('Design Process cards on touch screens', () => {
     expect(card.style.getPropertyValue('--sc-x')).toBe('30px');
   });
 
-  it('ignores sticky :hover in the carousels and colours the current card instead', () => {
+  it('ignores sticky :hover in the carousels and keeps the white illustration', () => {
     const css = read('src/styles/portfolio.css');
     const block = css.slice(css.indexOf('    @media (hover: none) {\n      .process-scroll-wrap'));
     const body = block.slice(0, block.indexOf('\n    }\n') + 6);
     expect(body).toMatch(/\.process-scroll-wrap :is\(\.process-card, \.tech-item\):hover \{\s*animation: none;\s*transform: none;/);
     expect(body).toMatch(/\.process-scroll-wrap \.process-card:hover > \.card-hover-shadow/);
     expect(body).toMatch(/\.process-scroll-wrap \.border-glow-card:hover \.process-card-bg-img--color \{ opacity: 0; \}/);
-    expect(body).toMatch(/\.process-swipe-slot\.is-current \.border-glow-card \.process-card-bg-img--color \{ opacity: 1; \}/);
-    expect(body).toMatch(/\.process-swipe-slot\.is-current \.border-glow-card \.process-card-bg-img--light \{ opacity: 1; \}/);
+    expect(body).toMatch(/\.process-scroll-wrap \.border-glow-card:hover \.process-card-bg-img--white \{ opacity: 1; \}/);
+    expect(body).toMatch(/\.border-glow-card:hover \.process-card-bg-img--light-white \{ opacity: 1; \}/);
   });
 });

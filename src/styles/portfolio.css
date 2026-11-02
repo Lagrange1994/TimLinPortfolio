@@ -3690,8 +3690,7 @@
        ring started repainting every frame, the card lifted and its hover
        shadow faded in — all right as the finger began to drag, so swipes
        stuttered, and the leftover shadow sat over the ‹ › below. Here the
-       cards ignore :hover; the card in view shows its colour illustration
-       instead (.is-current, set by ProcessCarousel once a swipe settles). */
+       cards ignore :hover and keep their white illustration. */
     @media (hover: none) {
       .process-scroll-wrap :is(.process-card, .tech-item):hover {
         animation: none;
@@ -3705,11 +3704,6 @@
       .process-scroll-wrap .border-glow-card:hover .process-card-bg-img--white { opacity: 1; }
       :root[data-theme="light"] .process-scroll-wrap .border-glow-card:hover .process-card-bg-img--light { opacity: 0; }
       :root[data-theme="light"] .process-scroll-wrap .border-glow-card:hover .process-card-bg-img--light-white { opacity: 1; }
-
-      .process-scroll-wrap .process-swipe-slot.is-current .border-glow-card .process-card-bg-img--color { opacity: 1; }
-      .process-scroll-wrap .process-swipe-slot.is-current .border-glow-card .process-card-bg-img--white { opacity: 0; }
-      :root[data-theme="light"] .process-scroll-wrap .process-swipe-slot.is-current .border-glow-card .process-card-bg-img--light { opacity: 1; }
-      :root[data-theme="light"] .process-scroll-wrap .process-swipe-slot.is-current .border-glow-card .process-card-bg-img--light-white { opacity: 0; }
     }
 
     /* border-glow-inner 填滿卡片，flex 底部對齊文字 */

@@ -1052,7 +1052,7 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
           return (
             <div
               key={i}
-              className={`process-swipe-slot${i >= offset && i < offset + visible ? ' is-current' : ''}`}
+              className="process-swipe-slot"
               style={{ marginTop, transition: dragging ? 'none' : 'margin-top .45s cubic-bezier(.22,.61,.36,1)' }}
             >
               {card}
