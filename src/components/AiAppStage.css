@@ -89,6 +89,7 @@
   white-space: nowrap;
 }
 .aas-title b { color: var(--text); font-weight: 600; }
+.aas-title-ticket { font-family: var(--font-code); font-size: 11px; color: var(--text-70); }
 .aas-title-sep { margin: 0 8px; opacity: .5; }
 .aas-status {
   margin-left: auto;
@@ -271,7 +272,22 @@
 .ch-slack { --ch: var(--secondary); }
 .ch-note { --ch: var(--badge-amber); }
 .aas-msg-body { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
-.aas-msg-from { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text); }
+.aas-msg-from { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; font-weight: 600; color: var(--text); }
+.aas-msg-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aas-msg-from > :not(.aas-msg-name) { flex-shrink: 0; }
+/* The message has been filed as DR-248 (the hand-off to Intake). */
+.aas-msg-ticket {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--acc) 45%, transparent);
+  font: 600 9.5px/1.4 var(--font-code);
+  letter-spacing: .04em;
+  color: var(--acc);
+}
+.aas-msg-ticket i { font-size: 9px; }
 .aas-msg-text { font-size: 12.5px; color: var(--text-50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .aas-msg-new {
   padding: 1px 7px;
@@ -283,6 +299,28 @@
   text-transform: uppercase;
 }
 .aas-msg-time { font: 11px var(--font-code); color: var(--text-50); }
+.aas-msg-side { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+/* The keyword route the LINE bot answered with. */
+.aas-msg-route {
+  --rt: var(--text-50);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--rt) 13%, transparent);
+  font: 600 9.5px/1.5 var(--font-code);
+  letter-spacing: .02em;
+  color: var(--rt);
+  white-space: nowrap;
+}
+.aas-msg-route i { font-size: 10px; }
+.rt-form { --rt: var(--badge-purple); }
+.rt-note { --rt: var(--badge-amber); }
+.rt-slack { --rt: var(--secondary); }
+.rt-ai { --rt: var(--acc); }
+.rt-mail { --rt: var(--badge-blue); }
+.rt-line { --rt: var(--line); }
 .aas-unread { width: 7px; height: 7px; border-radius: 50%; background: var(--acc); flex-shrink: 0; }
 
 /* 02 Intake */
@@ -298,6 +336,24 @@
 }
 .aas-progress-check { color: var(--ok); font-size: 16px; }
 .aas-intake { display: grid; grid-template-columns: minmax(0, 0.9fr) 52px minmax(0, 1.3fr); align-items: center; flex: 1; min-height: 0; }
+.aas-chat { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+/* The bot's auto-reply: the request-form link card, LINE-green, right side. */
+.aas-reply { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.aas-reply-tag { font: 9.5px var(--font-code); letter-spacing: .06em; text-transform: uppercase; color: var(--text-50); }
+.aas-reply-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border-radius: 14px 4px 14px 14px;
+  background: color-mix(in oklab, var(--line) 13%, var(--w-panel));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--line) 35%, transparent);
+  font: 600 12px/1.3 var(--font);
+  color: var(--text);
+  white-space: nowrap;
+}
+.aas-reply-card i { color: var(--line); font-size: 14px; }
+.aas-reply-card i:last-child { font-size: 11px; }
 .aas-bubble {
   position: relative;
   padding: 14px 16px 22px;
@@ -397,6 +453,14 @@
 .aas-missing { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .aas-missing li { position: relative; padding-left: 14px; font-size: 12.5px; line-height: 1.5; color: var(--text-70); }
 .aas-missing li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 5px; height: 5px; border-radius: 50%; background: var(--warn); }
+.aas-block.is-ask { --tone: var(--info); }
+.aas-block.is-trend { --tone: var(--secondary); }
+.aas-trends { display: flex; flex-direction: column; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.aas-trends li { position: relative; padding-left: 14px; font-size: 12px; line-height: 1.45; color: var(--text-70); }
+.aas-trends li::before { content: ""; position: absolute; left: 2px; top: .6em; width: 5px; height: 5px; border-radius: 1px; background: var(--secondary); }
+.aas-block-to { margin-left: auto; letter-spacing: .04em; text-transform: none; color: var(--info); }
+.aas-questions { display: flex; flex-direction: column; gap: 5px; margin: 0; padding: 0 0 0 18px; font-size: 12.5px; line-height: 1.5; color: var(--text-70); }
+.aas-questions li::marker { font: 600 10.5px var(--font-code); color: var(--info); }
 .aas-conf {
   --tone: var(--acc);
   display: flex;
@@ -436,6 +500,28 @@
 .aas-stat-num { font: 600 22px/1.1 var(--font); letter-spacing: -.02em; color: var(--text); font-variant-numeric: tabular-nums; }
 .aas-stat-bar { height: 3px; border-radius: 2px; background: var(--w-panel-line); overflow: hidden; }
 .aas-stat-fill { display: block; height: 100%; background: var(--tone); transform-origin: left center; }
+/* Requests per day, last 7 days; today's bar in the accent. */
+.aas-spark {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--w-panel);
+  box-shadow: inset 0 0 0 1px var(--w-panel-line);
+}
+.aas-spark-head { display: flex; flex-direction: column; gap: 5px; }
+.aas-spark-head .aas-stat-label i { color: var(--acc); }
+.aas-spark-sum { font: 11px var(--font-code); color: var(--text-50); white-space: nowrap; }
+.aas-spark-sum b { font-weight: 600; color: var(--text); }
+.aas-spark-bars { display: flex; align-items: flex-end; gap: 5px; width: 46%; height: 32px; margin-left: auto; }
+.aas-spark-bar {
+  flex: 1;
+  border-radius: 3px 3px 1px 1px;
+  background: color-mix(in oklab, var(--acc) 32%, transparent);
+  transform-origin: center bottom;
+}
+.aas-spark-bar.is-today { background: var(--acc); }
 .aas-table { display: flex; flex-direction: column; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--w-panel-line); overflow: hidden; }
 .aas-table-head, .aas-row {
   display: grid;
@@ -459,11 +545,41 @@
   border-top: 1px solid var(--w-line);
   font-size: 12.5px;
   color: var(--text-70);
-  background: color-mix(in oklab, var(--acc) calc(var(--flash) * 16%), transparent);
+  background: color-mix(in oklab, var(--acc) calc(var(--row-tint, 0%) + var(--flash) * 16%), transparent);
 }
+.aas-row > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .aas-row > span:first-child { color: var(--text); }
+/* DR-248 — the request the other screens follow — stays marked. */
+.aas-row.is-current { --row-tint: 7%; box-shadow: inset 2px 0 0 var(--acc); }
+.aas-row.is-current > span:first-child { color: var(--acc); font-weight: 600; }
 
 /* 05 Review */
+.aas-initials {
+  display: inline-grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--acc);
+  color: #fff;
+  font: 700 8px/1 var(--font);
+}
+.aas-meta .ph-clock { color: var(--text-50); }
+/* Hand-over line from AI Brief. */
+.aas-from {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--w-panel);
+  box-shadow: inset 0 0 0 1px var(--w-panel-line);
+  font: 11.5px/1.3 var(--font-code);
+  color: var(--text-50);
+}
+.aas-from i { color: var(--acc); font-size: 13px; }
+.aas-from b { font-weight: 600; color: var(--text); }
 .aas-approve { position: relative; display: inline-grid; }
 .aas-approve > span {
   grid-area: 1 / 1;
@@ -564,10 +680,10 @@
 .aas-phases { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--w-panel-line); overflow: hidden; }
 .aas-phase {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto;
+  grid-template-columns: 24px minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 10px;
-  padding: 9px 14px;
+  padding: 8px 14px;
   transition: background-color .35s;
 }
 .aas-phase + .aas-phase { border-top: 1px solid var(--w-line); }
@@ -576,17 +692,22 @@
 .aas-phase-text b { font-size: 12.5px; font-weight: 600; color: var(--text); }
 .aas-phase-text span { font-size: 11.5px; color: var(--text-50); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .aas-badge.is-queued { --tone: var(--text-50); background: transparent; }
+.aas-phase-date { font: 10.5px var(--font-code); color: var(--text-50); white-space: nowrap; }
+.aas-phase.is-now .aas-phase-date { color: var(--text); }
 
 /* Narrow stage (small desktops, ~1024px): stack the two-column screens */
 @container (max-width: 700px) {
   .aas-screen { padding: 18px; }
   .aas-intake { grid-template-columns: 1fr; gap: 10px; align-items: start; }
-  .aas-pipe { display: none; }
+  .aas-pipe, .aas-reply { display: none; }
+  /* Workflow carries the Figma line here too: tighter phase rows. */
+  .aas-phase { padding-block: 6px; }
   /* Stacked, the brief is taller than the window: the two confidence
      cards share a row and Initial Direction drops out at this width. */
   .aas-brief { grid-template-columns: 1fr; align-content: start; }
   .aas-brief-side { display: grid; grid-template-columns: 1fr 1fr; }
   .aas-brief-side > .aas-block { display: none; }
+  .aas-brief-col > .aas-block.is-ask { display: none; }
   .aas-chips { display: none; }
 }
 
@@ -634,4 +755,19 @@
   .aas-track-line { top: 17px; }
   .aas-track-dot { width: 34px; height: 34px; }
   .aas-phase { padding: 8px 10px; gap: 8px; grid-template-columns: 20px minmax(0, 1fr) auto; }
+  /* No room on a phone: the week chart, Brief hand-over line and phase
+     dates drop out; the DR-248 thread still runs through title + rows. */
+  .aas-spark, .aas-from, .aas-phase-date { display: none; }
+  /* Room for the sender next to → DR-248: the unread dot already marks the
+     row as new, so the NEW pill and the chip's arrow go. */
+  .aas-msg-new, .aas-msg-ticket i { display: none; }
+  /* The route keeps its icon; the label would squeeze the message. */
+  .aas-msg-route-label { display: none; }
+  .aas-msg-route { padding: 2px 5px; }
+  /* Intake: the auto-reply card doesn't fit above the form here. */
+  .aas-reply { display: none; }
+  /* Review is ~20px taller than the phone window: the reviewer is already
+     named in the header, so the quote's byline goes, and rows tighten. */
+  .aas-quote-by { display: none; }
+  .aas-review-row { padding-block: 8px; }
 }

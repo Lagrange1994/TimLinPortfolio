@@ -45,6 +45,7 @@ describe('How I Use AI viewer — performance', () => {
     const fx = skills.slice(skills.indexOf('const pills = Array.from(pillRefs.current'), skills.indexOf('}, [expandedAiCard, isViewer, isCompact, t, viewerResizeTick]);'));
     const read = fx.indexOf('const sizes = pills.map');
     expect(read).toBeGreaterThan(fx.indexOf("gsap.set(p.li, { clearProps: 'width' })"));
+    expect(fx.indexOf('gsap.set(p.li, sizes[i])')).toBeGreaterThan(read);
     expect(fx.indexOf('gsap.to(p.li')).toBeGreaterThan(read);
   });
 

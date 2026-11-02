@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useRef, useMemo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useState, useRef, useMemo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent, type AnimationEvent as ReactAnimationEvent } from 'react';
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
@@ -238,7 +238,7 @@ function makeAiCards(t: Record<string, string>) {
       ),
       title: 'Request Sources',
       summary: t.ai_sources_sum,
-      tags: ['LINE', 'Email', 'Form', 'Slack'],
+      tags: ['LINE', 'Form', 'Make'],
       pipeline: null as string[] | null,
       pipelineIcons: undefined as (string | string[] | null)[] | undefined,
       flourish: null as ReactNode | null,
@@ -795,6 +795,9 @@ const STAIR_STEP = 32;
 const SWIPE_TRANSITION = 'transform .45s cubic-bezier(.22,.61,.36,1)';
 // Release speed (px/ms) that turns a short drag into a page turn.
 const SWIPE_FLICK_PX_PER_MS = 0.35;
+// The countdown fill (process-dot-progress, 6s) advances the carousel on its
+// animationend; this timer only covers a fill that never runs.
+const AUTOPLAY_FALLBACK_MS = 6500;
 
 function processVisibleCount(isMobile: boolean) {
   return isMobile ? PROCESS_VISIBLE_MOBILE : PROCESS_VISIBLE;
@@ -969,14 +972,23 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
   // the old interval's phase running underneath. This keeps the dot-fill
   // animation below (also keyed on `offset`, see render) in sync with when
   // the *next* auto-advance actually happens, instead of drifting apart.
+  // The fill's own animationend is what advances (advanceOnFill below), so
+  // the bar and the slide can't drift apart: a phone throttles timers
+  // (backgrounded tab, app switch) but not the CSS animation, and a
+  // separate 6s timer then slid the card while the bar sat full or half-way.
+  // This timer is only the fallback for when no fill is running.
   useEffect(() => {
     if (maxOffset === 0 || dragging || !risen) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const id = setTimeout(() => {
       setOffset(o => (o >= maxOffset ? 0 : o + 1));
-    }, 6000);
+    }, AUTOPLAY_FALLBACK_MS);
     return () => clearTimeout(id);
   }, [maxOffset, dragging, risen, offset]);
+
+  const advanceOnFill = (e: ReactAnimationEvent) => {
+    if (e.animationName === 'process-dot-progress') setOffset(o => (o >= maxOffset ? 0 : o + 1));
+  };
 
   const translatePx = -(offset * cardStepPx);
   const dotCount = maxOffset + 1;
@@ -1010,7 +1022,7 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
               >
                 <span className="process-tab-label">{tab.label}</span>
                 <span className="process-tab-bar" aria-hidden="true">
-                  {on && <span key={offset} className={`process-tab-fill${autoplayLive ? ' is-timing' : ''}`} />}
+                  {on && <span key={offset} className={`process-tab-fill${autoplayLive ? ' is-timing' : ''}`} onAnimationEnd={advanceOnFill} />}
                 </span>
               </button>
             );
@@ -1054,7 +1066,7 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
             <div className="process-swipe-dots">
               {Array.from({ length: dotCount }).map((_, i) => (
                 <span key={i} className={`process-swipe-dot${i === offset ? ' active' : ''}`}>
-                  {i === offset && autoplayLive && <span key={offset} className="process-swipe-dot-fill" />}
+                  {i === offset && autoplayLive && <span key={offset} className="process-swipe-dot-fill" onAnimationEnd={advanceOnFill} />}
                 </span>
               ))}
             </div>
@@ -2124,10 +2136,13 @@ export function AiIntakeSection() {
       const sizes = pills.map(p => ({ width: p.target.offsetWidth, height: p.target.offsetHeight }));
       const tween = { duration: snap ? 0 : AI_PILL_MORPH_S, ease: 'power3.inOut', overwrite: 'auto' as const };
       pills.forEach((p, i) => {
-        // Compact: the open card is centred in its row, so the <li> itself
-        // has to grow sideways too (it grows out from the middle). Desktop:
-        // the <li> keeps the closed pill's width and the card overhangs it.
-        gsap.to(p.li, { ...(isCompact ? sizes[i] : { height: sizes[i].height }), ...tween });
+        // Compact: the <li> takes its new size at once (the + / icon swap is
+        // only ~6px) while the background still eases. A tweening row would
+        // let the row's scroll snap lock onto a mid-morph position, leaving
+        // the current pill short of its spot at the start. Desktop: the <li>
+        // keeps the closed pill's width and the card overhangs it.
+        if (isCompact) gsap.set(p.li, sizes[i]);
+        else gsap.to(p.li, { height: sizes[i].height, ...tween });
         gsap.to(p.bg, { ...sizes[i], ...tween });
       });
     });
@@ -2135,7 +2150,7 @@ export function AiIntakeSection() {
 
   // Compact: a pill is a tab — tapping it puts that step's content under the
   // row (.ai-compact-summary) and its demo on stage; the row then scrolls the
-  // current pill to its centre (without moving the page).
+  // current pill to its left edge (without moving the page).
   const openStep = (id: string) => selectAiStep(id);
   useEffect(() => {
     if (!isCompact || !expandedAiCard) return;
@@ -2143,8 +2158,23 @@ export function AiIntakeSection() {
     const row = li?.parentElement;
     if (!li || !row) return;
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    row.scrollTo?.({ left: li.offsetLeft - (row.clientWidth - li.offsetWidth) / 2, behavior: reduced ? 'auto' : 'smooth' });
-  }, [isCompact, expandedAiCard]);
+    // Sizes from each pill's own label box (its final size, whatever the
+    // morph above is doing to the <li>).
+    const cs = getComputedStyle(row);
+    const gap = parseFloat(cs.columnGap) || 0;
+    const padL = parseFloat(cs.paddingLeft) || 0;
+    const width = (el: Element) => el.querySelector<HTMLElement>('.ai-pill-open')?.offsetWidth ?? (el as HTMLElement).offsetWidth;
+    // Room after the last pill (.ai-pills::after) so the last few can reach
+    // the left edge too, instead of stopping where the row runs out.
+    const last = row.lastElementChild;
+    if (last) {
+      const tail = row.clientWidth - padL - (parseFloat(cs.paddingRight) || 0) - width(last) - gap;
+      row.style.setProperty('--ai-pills-tail', `${Math.max(0, tail)}px`);
+    }
+    let left = padL - (parseFloat(cs.scrollPaddingLeft) || 0);
+    for (let el = row.firstElementChild; el && el !== li; el = el.nextElementSibling) left += width(el) + gap;
+    row.scrollTo?.({ left, behavior: reduced ? 'auto' : 'smooth' });
+  }, [isCompact, expandedAiCard, viewerResizeTick]);
 
   // Cursor position for a pill's hover glow layers, written straight to the
   // background element (no re-render). Mouse only: a touch tap would leave

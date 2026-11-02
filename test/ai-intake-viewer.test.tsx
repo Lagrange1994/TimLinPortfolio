@@ -262,3 +262,73 @@ describe('How I Use AI — compact viewer (≤960px, Apple phone layout)', () =>
     expect(container.querySelector('.ai-pill-close')).toBeNull();
   });
 });
+
+// The six screens follow one request, DR-248, from Celine's LINE message to
+// the delivery plan, and their details agree with each other.
+describe('How I Use AI — the DR-248 thread across the screens', () => {
+  it('names DR-248 in the title bar and marks it on every hand-off', () => {
+    const { q, panel } = setup();
+    expect(q('.aas-title-ticket')!.textContent).toContain('DR-248');
+    // Inbox: the LINE message is filed as DR-248, at the time Intake shows
+    const first = panel('sources').querySelector('.aas-msg')!;
+    expect(first.querySelector('.aas-msg-ticket')!.textContent).toBe('DR-248');
+    const arrived = first.querySelector('.aas-msg-time')!.textContent;
+    expect(panel('intake').querySelector('.aas-bubble-time')!.textContent).toBe(arrived);
+    // …where the bot's keyword route answered with the UI/UX form she filled in
+    expect(first.querySelector('.aas-msg-route')!.textContent).toBe('UI/UX form');
+    expect(panel('intake').querySelector('.aas-reply-card')!.textContent).toContain('UI/UX request form');
+    expect(panel('intake').querySelector('.aas-meta')!.textContent).toContain('UI/UX form');
+    // AI Brief: three questions for the three gaps
+    expect(panel('ai').querySelectorAll('.aas-missing li')).toHaveLength(3);
+    expect(panel('ai').querySelectorAll('.aas-questions li')).toHaveLength(3);
+    // Tracker: DR-248 is the highlighted row, fresh out of the brief
+    const row = panel('tracking').querySelector('.aas-row.is-current')!;
+    expect(row.textContent).toContain('DR-248');
+    expect(row.textContent).toContain('Brief ready');
+    // Review: picks up the brief's gaps; Workflow: kicks off once approved
+    expect(panel('human').querySelector('.aas-from')!.textContent).toMatch(/3 gaps → 1 resolved, 2 risks/);
+    expect(panel('workflow').querySelector('.aas-meta')!.textContent).toContain('Approved in Review');
+  });
+
+  // Mirrors Tim's real Make flows, kept tool-generic: a LINE OA keyword
+  // router (forms / FAQ / services / hand-off, AI for the rest), a request
+  // form → Sheets, an AI brief fed with design-trend RSS, a LINE + Gmail
+  // ping to himself, and a Figma file built from the design system.
+  it('follows the real intake flow without naming the AI vendor', () => {
+    const { panel, container } = setup();
+    const routes = Array.from(panel('sources').querySelectorAll('.aas-msg-route'), el => el.textContent);
+    expect(routes).toEqual(expect.arrayContaining(['UI/UX form', 'Quote form', 'Graphic form', 'AI expand', 'Services', 'To Tim']));
+    expect(panel('ai').querySelectorAll('.aas-trends li').length).toBeGreaterThan(0);
+    expect(panel('human').querySelector('.aas-from')!.textContent).toContain('LINE + Gmail');
+    expect(panel('workflow').querySelector('.aas-from')!.textContent).toContain('Figma file ready');
+    expect(container.querySelector('.aas-window')!.textContent).not.toMatch(/Claude|Gemini|Tally/);
+  });
+
+  it('keeps the Tracker numbers consistent', () => {
+    const { panel } = setup();
+    const p = panel('tracking');
+    const stats = Array.from(p.querySelectorAll('.aas-stat-num'), el => Number(el.textContent));
+    expect(stats.reduce((a, b) => a + b, 0)).toBe(Number(p.querySelector('.aas-records')!.textContent));
+    expect(p.querySelectorAll('.aas-spark-bar')).toHaveLength(7);
+  });
+
+  it('dates every Workflow phase inside Intake\'s Jun 03 — Jun 17 window', () => {
+    const { panel } = setup();
+    const dates = Array.from(panel('workflow').querySelectorAll('.aas-phase-date'), el => el.textContent);
+    expect(dates).toHaveLength(5);
+    expect(dates[0]).toMatch(/^Jun 03/);
+    expect(dates[4]).toMatch(/Jun 14–17$/);
+  });
+});
+
+// Regression: the Tracker's "Synced" pill is a header child, so the header
+// stagger zeroes its opacity first; a later .from() then captured 0 as its
+// end value and the pill stayed invisible after the intro.
+it('the Tracker sync pill is visible once its intro has played', () => {
+  const { q, pill } = setup();
+  const advance = (s: number) => act(() => { gsap.updateRoot(gsap.ticker.time + s); });
+  act(() => { fireEvent.click(pill('tracking')); });
+  advance(0.5);
+  advance(3);
+  expect(q('#ai-stage-tracking .aas-sync-pill')!.style.opacity).not.toBe('0');
+});
