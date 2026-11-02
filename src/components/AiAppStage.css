@@ -771,3 +771,319 @@
   .aas-quote-by { display: none; }
   .aas-review-row { padding-block: 8px; }
 }
+
+/* ── Around the window (ClientPhone / FlowPanel / HandoffCard) ──
+   Layered like a product shot: the client's phone half out past the
+   window's right edge, a floating panel in front over its lower-left
+   corner. The stage keeps a strip free on its right (--aas-sat-out) for
+   the phone's outer half, so it covers less of the window. */
+.ai-viewer .ai-stage { container: aas-stage / inline-size; }
+@media (min-width: 640px) {
+  .ai-viewer .ai-stage {
+    --aas-sat-out: clamp(36px, 4.4vw, 64px);
+    margin-right: var(--aas-sat-out);
+  }
+}
+
+.aas-sat {
+  --w-panel: var(--ai-doc-idle-bg);
+  --w-panel-line: var(--border);
+  --ok: var(--badge-green);
+  --acc: var(--ai-accent, var(--primary));
+  position: absolute;
+  font-family: var(--font);
+  color: var(--text);
+}
+:root[data-theme="light"] .aas-sat {
+  --w-panel: #ffffff;
+  --w-panel-line: rgba(58, 58, 66, 0.09);
+}
+
+/* Client phone: dark hardware frame in both themes, the screen follows
+   the theme. */
+.aas-phone {
+  z-index: 2;
+  top: 50%;
+  right: calc(-1 * var(--aas-sat-out, 0px));
+  width: 156px;
+  height: 318px;
+  padding: 6px;
+  border-radius: 30px;
+  translate: var(--dx, 0px) calc(-44% + var(--dy, 0px));
+  background: #0d0e13;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .14), 0 28px 56px -12px rgba(0, 0, 0, .55), var(--card-edge);
+}
+.aas-phone-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 24px;
+  background: #1a1c23;
+}
+:root[data-theme="light"] .aas-phone-screen { background: #eef1f6; }
+.aas-phone-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 20px 10px 8px;
+  border-bottom: 1px solid var(--w-panel-line);
+  background: var(--w-panel);
+}
+.aas-phone-avatar {
+  display: grid;
+  place-items: center;
+  flex: 0 0 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #06c755;
+  color: #fff;
+  font: 700 8.5px/1 var(--font);
+}
+.aas-phone-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font: 600 10.5px/1.2 var(--font);
+  white-space: nowrap;
+}
+.aas-phone-name > * { overflow: hidden; text-overflow: ellipsis; }
+.aas-phone-name b { font-weight: 600; }
+.aas-phone-name small { font-size: 8.5px; font-weight: 500; color: var(--text-50); }
+.aas-phone-thread {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  min-height: 0;
+  padding: 8px;
+  overflow: hidden;
+}
+.aas-chat-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 88%;
+  flex-shrink: 0;
+  font-size: 9.5px;
+  line-height: 1.35;
+}
+.aas-chat-msg[hidden] { display: none; }
+.aas-chat-msg.is-me { align-self: flex-end; align-items: flex-end; }
+.aas-chat-msg.is-oa { align-self: flex-start; }
+.aas-chat-msg time { font-size: 8px; color: var(--text-50); }
+.aas-chat-bubble {
+  padding: 5px 8px;
+  border-radius: 11px;
+  background: var(--w-panel);
+  box-shadow: inset 0 0 0 1px var(--w-panel-line);
+}
+.aas-chat-msg.is-me .aas-chat-bubble {
+  border-bottom-right-radius: 4px;
+  background: #06c755;
+  box-shadow: none;
+  color: #fff;
+}
+.aas-chat-msg.is-oa .aas-chat-bubble { border-bottom-left-radius: 4px; }
+.aas-chat-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--w-panel);
+  box-shadow: inset 0 0 0 1px var(--w-panel-line);
+}
+.aas-chat-card > i { font-size: 15px; color: var(--acc); }
+.aas-chat-card b { display: block; font-weight: 600; }
+.aas-chat-card small { display: block; font-size: 8px; color: var(--text-50); }
+.aas-chat-chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.aas-chat-chips span {
+  padding: 2px 6px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, #06c755 55%, transparent);
+  color: #06c755;
+  font-size: 8.5px;
+  font-weight: 600;
+}
+.aas-chat-msg.is-new { animation: aas-msg-in .4s var(--d, 0s) cubic-bezier(.22, .61, .36, 1) both; }
+@keyframes aas-msg-in {
+  from { opacity: 0; transform: translateY(8px) scale(.96); }
+}
+.aas-phone-input {
+  padding: 6px 8px 12px;
+  background: var(--w-panel);
+  border-top: 1px solid var(--w-panel-line);
+}
+.aas-phone-input span {
+  display: block;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--text) 7%, transparent);
+  color: var(--text-50);
+  font-size: 9px;
+}
+
+/* Front panels: one per step, stacked in the same spot; the open step's
+   fades up while the others fade out. */
+.aas-front {
+  z-index: 3;
+  left: -28px;
+  bottom: -26px;
+  width: 296px;
+  padding: 12px 14px 14px;
+  border-radius: 16px;
+  background: color-mix(in oklab, var(--bg-safe) 82%, transparent);
+  box-shadow: 0 0 0 1px var(--border), 0 24px 48px -16px rgba(0, 0, 0, .5), var(--card-edge);
+  backdrop-filter: blur(14px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  translate: var(--dx, 0px) var(--dy, 0px);
+  transition: opacity .35s ease, transform .45s cubic-bezier(.22, .61, .36, 1), visibility 0s .45s;
+  pointer-events: none;
+}
+:root[data-theme="light"] .aas-front {
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(58, 58, 66, 0.09), 0 20px 40px -18px rgba(58, 58, 66, .35);
+  backdrop-filter: none;
+}
+.aas-front.is-on {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: .15s, .15s, 0s;
+}
+.aas-sat-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 12px;
+  font-size: 11px;
+  color: var(--text-50);
+}
+.aas-sat-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.aas-sat-title b { color: var(--text); font-weight: 600; }
+.aas-sat-run {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--ok);
+}
+.aas-sat-run.is-ok i { font-size: 12px; }
+
+/* Make-style module bubbles on a dotted connector that keeps flowing. */
+.aas-flow-nodes {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0 4px;
+  list-style: none;
+}
+.aas-flow-nodes::before {
+  content: '';
+  position: absolute;
+  top: 19px;
+  left: 26px;
+  right: 26px;
+  height: 2px;
+  background: radial-gradient(circle, color-mix(in oklab, var(--text) 40%, transparent) 1px, transparent 1.5px) 0 50% / 7px 2px repeat-x;
+}
+.aas-flow.is-on .aas-flow-nodes::before { animation: aas-flow-dash 1s linear infinite; }
+@keyframes aas-flow-dash { to { background-position: 7px 50%; } }
+.aas-flow-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.aas-flow-dot {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--tn);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--tn) 22%, transparent);
+  color: #fff;
+  font-size: 18px;
+}
+.aas-flow-label { font-size: 10px; font-weight: 600; color: var(--text-50); }
+.tn-line { --tn: #06c755; }
+.tn-router { --tn: #8b5cf6; }
+.tn-ai { --tn: #6c63ff; }
+.tn-form { --tn: #ec4899; }
+.tn-sheets { --tn: #16a34a; }
+.tn-rss { --tn: #f97316; }
+.tn-json { --tn: #64748b; }
+.tn-mail { --tn: #ef4444; }
+.aas-flow.is-on .aas-flow-node { animation: aas-node-in .45s calc(var(--i) * .12s + .3s) cubic-bezier(.34, 1.56, .64, 1) both; }
+@keyframes aas-node-in { from { opacity: 0; transform: scale(.6); } }
+
+/* Handoff: what the build partner received. */
+.aas-handoff-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.aas-handoff-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11.5px;
+}
+.aas-handoff-list li > i {
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--acc) 16%, transparent);
+  color: var(--acc);
+  font-size: 15px;
+}
+.aas-handoff-list b { display: block; font-weight: 600; }
+.aas-handoff-list small { display: block; font-size: 10px; color: var(--text-50); }
+.aas-handoff.is-on li { animation: aas-msg-in .4s calc(var(--i) * .12s + .3s) cubic-bezier(.22, .61, .36, 1) both; }
+
+/* Desktop: grab the phone or the front panel and move it (useSatDrag). */
+@media (min-width: 961px) {
+  .aas-sat[data-drag] { cursor: grab; touch-action: none; user-select: none; }
+  .aas-front.is-on { pointer-events: auto; }
+  .aas-sat.is-dragging { z-index: 4; cursor: grabbing; }
+}
+
+/* Narrow desktop / tablet stage: smaller pieces. */
+@container aas-stage (max-width: 620px) {
+  .aas-phone { width: 128px; height: 262px; border-radius: 26px; }
+  .aas-phone-screen { border-radius: 20px; }
+  .aas-front { left: -20px; width: 262px; }
+}
+/* Phone stage: no room beside the window, so only the client's phone,
+   small, over the window's lower-right corner. Its bottom (bezel and
+   input bar) is cut off flush with the window's bottom edge, as if it
+   rose out of the frame. */
+@container aas-stage (max-width: 420px) {
+  .aas-phone {
+    top: auto;
+    bottom: -48px;
+    clip-path: inset(-40px -40px 48px -40px);
+    right: -6px;
+    width: 112px;
+    height: 226px;
+    padding: 5px;
+    border-radius: 22px;
+    translate: none;
+  }
+  .aas-phone-screen { border-radius: 17px; }
+  .aas-phone-head { padding-top: 14px; }
+  .aas-front { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aas-chat-msg.is-new,
+  .aas-flow.is-on .aas-flow-node,
+  .aas-flow.is-on .aas-flow-nodes::before,
+  .aas-handoff.is-on li { animation: none; }
+  .aas-front { transition: none; }
+}

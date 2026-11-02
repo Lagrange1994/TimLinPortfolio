@@ -9,7 +9,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 const viewport = vi.hoisted(() => ({ desktop: true }));
 vi.hoisted(() => {
   window.matchMedia = ((q: string) => ({
-    matches: q === '(max-width: 960px)' ? !viewport.desktop : false,
+    matches: q === '(max-width: 960px)' ? !viewport.desktop : q === '(min-width: 961px)' ? viewport.desktop : false,
     media: q,
     onchange: null,
     addEventListener() {}, removeEventListener() {},
@@ -331,4 +331,95 @@ it('the Tracker sync pill is visible once its intro has played', () => {
   advance(0.5);
   advance(3);
   expect(q('#ai-stage-tracking .aas-sync-pill')!.style.opacity).not.toBe('0');
+});
+
+// Around the window: the client's LINE thread on a phone, the Make scenario
+// behind each step in front, and the partner handoff on the last step.
+describe('How I Use AI — the client, partner and Make views around the window', () => {
+  const visible = (root: Element) => Array.from(root.querySelectorAll<HTMLElement>('.aas-chat-msg')).filter(m => !m.hidden);
+
+  it('grows the client chat one step at a time', () => {
+    const { q, pill } = setup();
+    const phone = q('.aas-phone')!;
+    const counts: number[] = [];
+    for (const id of ['sources', 'intake', 'ai', 'tracking', 'human', 'workflow']) {
+      act(() => { fireEvent.click(pill(id)); });
+      counts.push(visible(phone).length);
+      // only the latest step's messages animate in
+      const fresh = phone.querySelectorAll('.aas-chat-msg.is-new');
+      expect(fresh.length).toBeGreaterThan(0);
+      fresh.forEach(m => expect((m as HTMLElement).hidden).toBe(false));
+    }
+    expect(counts).toEqual([...counts].sort((a, b) => a - b));
+    expect(counts[0]).toBeLessThan(counts[5]);
+    expect(phone.textContent).toContain('Onboarding redesign for the new tier');
+    expect(phone.textContent).toContain('Kickoff Jun 03');
+  });
+
+  it('shows the current Make scenario in front, and the handoff on the last step', () => {
+    const { q, container, pill } = setup();
+    const on = () => Array.from(container.querySelectorAll('.aas-front.is-on'));
+    act(() => { fireEvent.click(pill('ai')); });
+    expect(on()).toHaveLength(1);
+    expect(on()[0].textContent).toContain('AI brief');
+    expect(Array.from(on()[0].querySelectorAll('.aas-flow-label'), l => l.textContent)).toEqual(['RSS', 'AI', 'JSON', 'Sheets']);
+    act(() => { fireEvent.click(pill('workflow')); });
+    expect(on()).toHaveLength(1);
+    expect(on()[0].classList.contains('aas-handoff')).toBe(true);
+    expect(on()[0].textContent).toContain('Figma');
+    // hidden panels stay out of the accessibility tree
+    container.querySelectorAll('.aas-front:not(.is-on)').forEach(f => expect(f.getAttribute('aria-hidden')).toBe('true'));
+    expect(q('.ai-stage')!.textContent).not.toMatch(/Claude|Gemini|Tally/);
+  });
+
+  // jsdom has no layout: give the viewer frame a box to keep drags inside.
+  const fakeLayout = () => vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+    return this.classList.contains('ai-viewer') ? new DOMRect(-100, -100, 200, 200) : new DOMRect(0, 0, 0, 0);
+  });
+
+  it('drags the phone and the front panels together on desktop', () => {
+    fakeLayout();
+    const { q, container } = setup();
+    const phone = q('.aas-phone')!;
+    fireEvent.pointerDown(phone, { button: 0, clientX: 100, clientY: 100, pointerId: 1 });
+    fireEvent.pointerMove(phone, { clientX: 60, clientY: 130, pointerId: 1 });
+    fireEvent.pointerUp(phone, { pointerId: 1 });
+    expect(phone.style.getPropertyValue('--dx')).toBe('-40px');
+    expect(phone.style.getPropertyValue('--dy')).toBe('30px');
+    expect(phone.classList.contains('is-dragging')).toBe(false);
+    // every front panel shares one offset
+    const front = container.querySelector<HTMLElement>('.aas-front.is-on')!;
+    fireEvent.pointerDown(front, { button: 0, clientX: 0, clientY: 0, pointerId: 2 });
+    fireEvent.pointerMove(front, { clientX: 25, clientY: -10, pointerId: 2 });
+    fireEvent.pointerUp(front, { pointerId: 2 });
+    container.querySelectorAll<HTMLElement>('.aas-front').forEach(f => {
+      expect(f.style.getPropertyValue('--dx')).toBe('25px');
+      expect(f.style.getPropertyValue('--dy')).toBe('-10px');
+    });
+    // moves after release don't drag it
+    fireEvent.pointerMove(front, { clientX: 300, clientY: 300, pointerId: 2 });
+    expect(front.style.getPropertyValue('--dx')).toBe('25px');
+    vi.restoreAllMocks();
+  });
+
+  it('keeps a dragged piece inside the viewer frame', () => {
+    fakeLayout();
+    const { q } = setup();
+    const phone = q('.aas-phone')!;
+    fireEvent.pointerDown(phone, { button: 0, clientX: 0, clientY: 0, pointerId: 1 });
+    fireEvent.pointerMove(phone, { clientX: -5000, clientY: 5000, pointerId: 1 });
+    fireEvent.pointerUp(phone, { pointerId: 1 });
+    expect(phone.style.getPropertyValue('--dx')).toBe('-100px');
+    expect(phone.style.getPropertyValue('--dy')).toBe('100px');
+    vi.restoreAllMocks();
+  });
+
+  it('does not drag on the compact (phone/tablet) layout', () => {
+    viewport.desktop = false;
+    const { q } = setup();
+    const phone = q('.aas-phone')!;
+    fireEvent.pointerDown(phone, { button: 0, clientX: 100, clientY: 100, pointerId: 1 });
+    fireEvent.pointerMove(phone, { clientX: 10, clientY: 10, pointerId: 1 });
+    expect(phone.style.getPropertyValue('--dx')).toBe('');
+  });
 });

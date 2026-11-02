@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react';
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import MakeLogo from './MakeLogo';
@@ -627,6 +627,180 @@ function WorkflowScreen({ active, t }: { active: boolean; t: T }) {
   );
 }
 
+/* ── Around the window ──────────────────────────────────── */
+// Pieces that sit outside the app window, layered like a product shot: the
+// client's own LINE thread on a phone (it grows as DR-248 moves along), and
+// in front, the Make scenario behind the current step — or, on the last
+// step, the handoff a build partner receives. Same request, other people's
+// view of it.
+
+type ChatMsg = {
+  step: number;
+  from: 'me' | 'oa';
+  text?: string;
+  time?: string;
+  chips?: string[];
+  card?: { icon: string; title: string; sub: string };
+};
+
+// Celine's side of the thread. Times line up with the window's screens.
+const CHAT: ChatMsg[] = [
+  { step: 0, from: 'me', text: 'Onboarding redesign for the new tier — Jun 17?', time: ARRIVED_AT },
+  { step: 0, from: 'oa', text: 'Hi Celine! What do you need?', chips: ['Quote', 'UI/UX form', 'Talk to Tim'] },
+  { step: 1, from: 'oa', card: { icon: 'ph-fill ph-clipboard-text', title: 'UI/UX request form', sub: 'About 3 min' } },
+  { step: 1, from: 'me', text: 'Done, form sent.', time: FORM_AT },
+  { step: 2, from: 'oa', card: { icon: 'ph-fill ph-sparkle', title: '3 quick questions', sub: 'Before we start' } },
+  { step: 3, from: 'me', text: 'Answered all three.', time: '11:01' },
+  { step: 3, from: 'oa', card: { icon: 'ph-fill ph-chart-bar', title: `${TICKET} · In progress`, sub: 'Track it any time' } },
+  { step: 4, from: 'oa', card: { icon: 'ph-fill ph-check-circle', title: 'Brief approved', sub: 'By Tim · 11:05' } },
+  { step: 5, from: 'oa', card: { icon: 'ph-fill ph-rocket-launch', title: 'Kickoff Jun 03', sub: 'Delivery Jun 17' } },
+];
+
+type SatProps = { onDragStart: (e: ReactPointerEvent<HTMLElement>) => void };
+
+function ClientPhone({ step, onDragStart }: { step: number } & SatProps) {
+  return (
+    <div className="aas-sat aas-phone" data-drag="phone" onPointerDown={onDragStart} aria-label="The client's LINE chat">
+      <div className="aas-phone-screen">
+        <div className="aas-phone-head">
+          <span className="aas-phone-avatar" aria-hidden="true">TL</span>
+          <span className="aas-phone-name"><b>Tim Lin Design</b><small>LINE Official</small></span>
+        </div>
+        <div className="aas-phone-thread">
+          {CHAT.map((m, i) => (
+            <div
+              key={i}
+              className={`aas-chat-msg is-${m.from}${m.step === step ? ' is-new' : ''}`}
+              hidden={m.step > step}
+              // New messages of a step land one after another.
+              style={{ '--d': `${CHAT.filter((x, j) => j < i && x.step === m.step).length * 0.5 + 0.35}s` } as CSSProperties}
+            >
+              {m.text && <span className="aas-chat-bubble">{m.text}</span>}
+              {m.card && (
+                <span className="aas-chat-card">
+                  <i className={m.card.icon} aria-hidden="true" />
+                  <span><b>{m.card.title}</b><small>{m.card.sub}</small></span>
+                </span>
+              )}
+              {m.chips && <span className="aas-chat-chips">{m.chips.map(c => <span key={c}>{c}</span>)}</span>}
+              {m.time && <time>{m.time}</time>}
+            </div>
+          ))}
+        </div>
+        <div className="aas-phone-input" aria-hidden="true"><span>Aa</span></div>
+      </div>
+    </div>
+  );
+}
+
+type FlowNode = { icon: string; label: string; tone: string };
+const N = {
+  line: { icon: 'ph-fill ph-chat-circle-text', label: 'LINE', tone: 'line' },
+  router: { icon: 'ph-bold ph-git-branch', label: 'Router', tone: 'router' },
+  reply: { icon: 'ph-fill ph-chat-circle-text', label: 'Reply', tone: 'line' },
+  ai: { icon: 'ph-fill ph-sparkle', label: 'AI', tone: 'ai' },
+  form: { icon: 'ph-fill ph-clipboard-text', label: 'Form', tone: 'form' },
+  sheets: { icon: 'ph-fill ph-grid-four', label: 'Sheets', tone: 'sheets' },
+  rss: { icon: 'ph-fill ph-browsers', label: 'RSS', tone: 'rss' },
+  json: { icon: 'ph-fill ph-file-text', label: 'JSON', tone: 'json' },
+  gmail: { icon: 'ph-fill ph-envelope-simple', label: 'Gmail', tone: 'mail' },
+} satisfies Record<string, FlowNode>;
+
+// The real scenarios' modules behind each screen (vendor-neutral names for
+// the AI and the form tool).
+const FLOWS: Record<string, { name: string; nodes: FlowNode[] }> = {
+  sources: { name: 'LINE intake', nodes: [N.line, N.router, N.reply, N.ai] },
+  intake: { name: 'Request form', nodes: [N.form, N.sheets, N.router] },
+  ai: { name: 'AI brief', nodes: [N.rss, N.ai, N.json, N.sheets] },
+  tracking: { name: 'Tracker sync', nodes: [N.sheets, N.router, N.line] },
+  human: { name: 'Notify reviewer', nodes: [N.router, N.line, N.gmail] },
+};
+
+function FlowPanel({ id, on, onDragStart }: { id: string; on: boolean } & SatProps) {
+  const flow = FLOWS[id];
+  return (
+    <div className={`aas-sat aas-front aas-flow${on ? ' is-on' : ''}`} data-drag="front" onPointerDown={onDragStart} aria-hidden={!on}>
+      <div className="aas-sat-head">
+        <MakeLogo size={14} />
+        <span className="aas-sat-title">Scenario · <b>{flow.name}</b></span>
+        <span className="aas-sat-run"><span className="aas-live-dot" />Running</span>
+      </div>
+      <ol className="aas-flow-nodes">
+        {flow.nodes.map((n, i) => (
+          <li key={i} className={`aas-flow-node tn-${n.tone}`} style={{ '--i': i } as CSSProperties}>
+            <span className="aas-flow-dot"><i className={n.icon} aria-hidden="true" /></span>
+            <span className="aas-flow-label">{n.label}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+// What the build partner gets once the plan is set.
+function HandoffCard({ on, onDragStart }: { on: boolean } & SatProps) {
+  return (
+    <div className={`aas-sat aas-front aas-handoff${on ? ' is-on' : ''}`} data-drag="front" onPointerDown={onDragStart} aria-hidden={!on}>
+      <div className="aas-sat-head">
+        <span className="aas-initials">AK</span>
+        <span className="aas-sat-title">Handoff → <b>@dev.alex</b></span>
+        <span className="aas-sat-run is-ok"><i className="ph-fill ph-check-circle" aria-hidden="true" />Shared</span>
+      </div>
+      <ul className="aas-handoff-list">
+        <li style={{ '--i': 0 } as CSSProperties}><i className="ph-fill ph-frame-corners" aria-hidden="true" /><span><b>{TICKET} Onboarding</b><small>Figma · 12 frames</small></span></li>
+        <li style={{ '--i': 1 } as CSSProperties}><i className="ph-fill ph-file-text" aria-hidden="true" /><span><b>Specs &amp; tokens</b><small>From the design system</small></span></li>
+        <li style={{ '--i': 2 } as CSSProperties}><i className="ph-fill ph-clock" aria-hidden="true" /><span><b>Build Jun 12–17</b><small>Review on Jun 13</small></span></li>
+      </ul>
+    </div>
+  );
+}
+
+// Desktop: the phone and the front panel can be dragged around the viewer.
+// The offset is a CSS variable pair (--dx / --dy) written straight to the
+// DOM, no re-render per move. All front panels share one offset, so the
+// next step's panel shows up wherever the last one was left.
+const DRAG_MQ = '(min-width: 961px)';
+type DragGroup = 'phone' | 'front';
+
+function useSatDrag() {
+  const offsets = useRef<Record<DragGroup, { x: number; y: number }>>({ phone: { x: 0, y: 0 }, front: { x: 0, y: 0 } });
+  return (e: ReactPointerEvent<HTMLElement>) => {
+    if (e.button !== 0 || !window.matchMedia?.(DRAG_MQ).matches) return;
+    const el = e.currentTarget;
+    const group = el.dataset.drag as DragGroup;
+    const peers = Array.from(el.parentElement?.querySelectorAll<HTMLElement>(`[data-drag="${group}"]`) ?? [el]);
+    const start = { ...offsets.current[group] };
+    const sx = e.clientX;
+    const sy = e.clientY;
+    // Keep it inside the viewer frame.
+    const r = el.getBoundingClientRect();
+    const box = el.closest('.ai-viewer')?.getBoundingClientRect();
+    const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), hi);
+    e.preventDefault();
+    try { el.setPointerCapture?.(e.pointerId); } catch { /* synthetic pointer: no capture */ }
+    el.classList.add('is-dragging');
+    const move = (ev: PointerEvent) => {
+      const dx = box ? clamp(ev.clientX - sx, box.left - r.left, box.right - r.right) : ev.clientX - sx;
+      const dy = box ? clamp(ev.clientY - sy, box.top - r.top, box.bottom - r.bottom) : ev.clientY - sy;
+      const pos = { x: start.x + dx, y: start.y + dy };
+      offsets.current[group] = pos;
+      peers.forEach(p => {
+        p.style.setProperty('--dx', `${pos.x}px`);
+        p.style.setProperty('--dy', `${pos.y}px`);
+      });
+    };
+    const end = () => {
+      el.classList.remove('is-dragging');
+      el.removeEventListener('pointermove', move);
+      el.removeEventListener('pointerup', end);
+      el.removeEventListener('pointercancel', end);
+    };
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', end);
+  };
+}
+
 /* ── Window ─────────────────────────────────────────────── */
 
 const SCREENS: Record<string, (p: { active: boolean; t: T }) => ReactNode> = {
@@ -649,7 +823,11 @@ export default function AiAppStage({ steps, active }: {
   const tt = t as unknown as T;
   // No cursor-following tint/glow/edge ring: the window stays a calm
   // screenshot; only the hover radar ripple (CSS) remains.
+  const step = Math.max(0, steps.findIndex(s => s.id === active));
+  const onDragStart = useSatDrag();
+  const current = active ?? steps[0]?.id;
   return (
+    <>
     <div className="aas-window">
       <div className="aas-titlebar">
         <span className="aas-lights" aria-hidden="true"><i /><i /><i /></span>
@@ -681,5 +859,9 @@ export default function AiAppStage({ steps, active }: {
         </div>
       </div>
     </div>
+    <ClientPhone step={step} onDragStart={onDragStart} />
+    {Object.keys(FLOWS).map(id => <FlowPanel key={id} id={id} on={current === id} onDragStart={onDragStart} />)}
+    <HandoffCard on={current === 'workflow'} onDragStart={onDragStart} />
+    </>
   );
 }
