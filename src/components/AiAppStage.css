@@ -1057,7 +1057,7 @@
 @container aas-stage (max-width: 620px) {
   .aas-phone { width: 128px; height: 262px; border-radius: 26px; }
   .aas-phone-screen { border-radius: 20px; }
-  .aas-front { left: -20px; width: 262px; }
+  .aas-front { width: 262px; }
 }
 /* Phone stage: no room beside the window, so only the client's phone,
    small, in the lower-right corner. It runs past the window out to the
@@ -1081,7 +1081,61 @@
   .aas-front { display: none; }
 }
 
+/* Desktop: the window gives up room on its right and below, and the
+   phone and the front panel sit mostly out there, so the window's
+   screens stay readable. The phone reaches into the viewer's side padding
+   (14px short of the frame), the panel into the gap beside the pill rail;
+   both bottoms stop 14px above the frame's bottom edge. */
+@media (min-width: 961px) {
+  .ai-viewer .ai-stage {
+    --aas-sat-below: 56px;
+    --aas-sat-reach: calc(var(--aas-sat-out) + clamp(32px, 3.4vw, 48px) - 14px);
+    margin-bottom: var(--aas-sat-below);
+  }
+  .aas-phone {
+    top: auto;
+    right: calc(-1 * var(--aas-sat-reach));
+    bottom: calc(-1 * (var(--aas-sat-below) + 26px));
+    translate: var(--dx, 0px) var(--dy, 0px);
+  }
+  .aas-front {
+    left: calc(-1 * clamp(48px, 6vw, 90px));
+    bottom: calc(-1 * (var(--aas-sat-below) + 26px));
+  }
+}
+
+/* Hover ripple, like the window's (.ai-stage::after in portfolio.css): a
+   faint ring easing ~9px out, on its own layer (transform/opacity only).
+   --rx / --ry: the scale that grows each piece's ring by about 18px. */
+.aas-sat::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: calc(var(--sat-r) + 8px);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, var(--radar-alpha));
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.aas-phone { --sat-r: 30px; --rx: 1.1; --ry: 1.05; }
+.aas-front { --sat-r: 16px; --rx: 1.058; --ry: 1.12; }
+.aas-sat:hover::after { animation: aas-sat-radar 3s ease-out infinite; }
+@keyframes aas-sat-radar {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(var(--rx), var(--ry)); opacity: 0; }
+}
+:root[data-theme="light"] .aas-sat::after { display: none; }
+
+/* Narrow desktop stage: the gap beside the pill rail is too small to
+   reach into, so the panel keeps to the window's edge. */
+@media (min-width: 961px) {
+  @container aas-stage (max-width: 620px) {
+    .aas-front { left: -12px; }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .aas-sat:hover::after { animation: none; }
   .aas-chat-msg.is-new,
   .aas-flow.is-on .aas-flow-node,
   .aas-flow.is-on .aas-flow-nodes::before,

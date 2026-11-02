@@ -1,5 +1,5 @@
 import { render, fireEvent, act, cleanup } from '@testing-library/react';
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // How I Use AI on desktop (>960px) is an Apple-style product viewer: a
 // column of step pills on the left, one open at a time as a summary card,
@@ -59,6 +59,7 @@ function setup({ inView = true } = {}) {
 
 afterEach(() => {
   cleanup();
+  localStorage.removeItem('lang');
   observers.length = 0;
   viewport.desktop = true;
 });
@@ -93,6 +94,7 @@ describe('How I Use AI — desktop viewer', () => {
   });
 
   it('the app window has no sidebar of its own; its title bar names the open screen', () => {
+    localStorage.setItem('lang', 'en');
     const { q, pill } = setup();
     expect(q('.aas-side')).toBeNull();
     expect(q('.aas-title b')?.textContent).toBe('Inbox');
@@ -266,6 +268,7 @@ describe('How I Use AI — compact viewer (≤960px, Apple phone layout)', () =>
 // The six screens follow one request, DR-248, from Celine's LINE message to
 // the delivery plan, and their details agree with each other.
 describe('How I Use AI — the DR-248 thread across the screens', () => {
+  beforeEach(() => { localStorage.setItem('lang', 'en'); });
   it('names DR-248 in the title bar and marks it on every hand-off', () => {
     const { q, panel } = setup();
     expect(q('.aas-title-ticket')!.textContent).toContain('DR-248');
@@ -336,6 +339,7 @@ it('the Tracker sync pill is visible once its intro has played', () => {
 // Around the window: the client's LINE thread on a phone, the Make scenario
 // behind each step in front, and the partner handoff on the last step.
 describe('How I Use AI — the client, partner and Make views around the window', () => {
+  beforeEach(() => { localStorage.setItem('lang', 'en'); });
   const visible = (root: Element) => Array.from(root.querySelectorAll<HTMLElement>('.aas-chat-msg')).filter(m => !m.hidden);
 
   it('grows the client chat one step at a time', () => {
@@ -354,7 +358,7 @@ describe('How I Use AI — the client, partner and Make views around the window'
     expect(counts[0]).toBeLessThan(counts[5]);
     expect(phone.textContent).toContain('Onboarding redesign for the new tier');
     expect(phone.textContent).toContain('Kickoff Jun 03');
-  });
+  }, 15000); // six full step intros: slow when the whole suite runs in parallel
 
   it('shows the current Make scenario in front, and the handoff on the last step', () => {
     const { q, container, pill } = setup();
@@ -421,5 +425,34 @@ describe('How I Use AI — the client, partner and Make views around the window'
     fireEvent.pointerDown(phone, { button: 0, clientX: 100, clientY: 100, pointerId: 1 });
     fireEvent.pointerMove(phone, { clientX: 10, clientY: 10, pointerId: 1 });
     expect(phone.style.getPropertyValue('--dx')).toBe('');
+  });
+});
+
+// Chinese mode: the mockup's content (messages, form values, statuses, the
+// client's chat, the handoff) is Chinese apart from product names; the app
+// chrome (title bar, meta lines, chips, column labels, dates) and the Make
+// panel stay in English, as the products themselves would show them.
+describe('How I Use AI — the mockup in Chinese', () => {
+  it('writes the content in Chinese and keeps the chrome and Make panel English', () => {
+    localStorage.setItem('lang', 'zh');
+    const { q, pill, panel, container } = setup();
+    // chrome
+    expect(q('.aas-title b')!.textContent).toBe('Inbox');
+    expect(q('.aas-status')!.textContent).toBe('Live');
+    expect(panel('tracking').querySelector('.aas-sync-pill')!.textContent).toContain('Synced');
+    expect(panel('workflow').querySelector('.aas-phase-date')!.textContent).toBe('Jun 03–04');
+    // content
+    expect(panel('sources').querySelector('.aas-msg-route')!.textContent).toBe('UI/UX 表單');
+    expect(panel('sources').querySelector('.aas-msg-text')!.textContent).toContain('6/17 前可以嗎');
+    expect(panel('intake').querySelector('.aas-reply-card')!.textContent).toBe('UI/UX 需求表單');
+    expect(panel('tracking').querySelector('.aas-row.is-current')!.textContent).toContain('簡報完成');
+    const phone = q('.aas-phone')!;
+    expect(phone.textContent).toContain('LINE 官方帳號');
+    expect(phone.textContent).not.toMatch(/Kickoff|Done, form sent|What do you need/);
+    act(() => { fireEvent.click(pill('ai')); });
+    const flow = container.querySelector('.aas-front.is-on')!;
+    expect(flow.textContent).toContain('Scenario');
+    expect(flow.textContent).toContain('AI brief');
+    expect(Array.from(flow.querySelectorAll('.aas-flow-label'), l => l.textContent)).toEqual(['RSS', 'AI', 'JSON', 'Sheets']);
   });
 });

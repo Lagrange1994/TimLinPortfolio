@@ -11,14 +11,13 @@ import './AiAppStage.css';
 // when it stops being active, so switching back replays it from scratch and
 // reduced-motion / no-JS visitors just see the final state.
 //
-// New UI chrome strings are English on purpose: the homepage GenSen font is
-// subset to the characters translations.ts already uses, so new Chinese text
-// here could render in a fallback face. Content comes from the existing
-// ai_* translation keys.
+// The mockup's UI copy is bilingual (COPY below); content shared with the
+// step cards comes from the ai_* translation keys.
 
 export type AiStageStep = { id: string; title: string };
 
 type T = Record<string, string>;
+type ScreenProps = { active: boolean; t: T; c: Copy };
 
 // The one request every screen follows: Celine's LINE message (Inbox) →
 // form (Intake) → brief → tracker row → review → workflow plan.
@@ -26,14 +25,179 @@ const TICKET = 'DR-248';
 const ARRIVED_AT = '10:42'; // the LINE message's timestamp, shown in Inbox + Intake
 const FORM_AT = '10:58'; // when Celine sent the request form the bot replied with
 
-const NAV_LABELS: Record<string, string> = {
-  sources: 'Inbox',
-  intake: 'Intake',
-  ai: 'AI Brief',
-  tracking: 'Tracker',
-  human: 'Review',
-  workflow: 'Workflow',
+// The mockup's own UI copy, both languages. Proper nouns (LINE, Make,
+// Sheets, Figma, Gmail, RSS, JSON, DR-248, UI/UX, Web/App, P1, OKR, names
+// and handles) stay as they are in Chinese too. Longer content shared with
+// the step cards lives in translations.ts (the ai_* keys).
+const COPY_EN = {
+  nav: { sources: 'Inbox', intake: 'Intake', ai: 'AI Brief', tracking: 'Tracker', human: 'Review', workflow: 'Workflow' } as Record<string, string>,
+  system: 'Intake System',
+  live: 'Live',
+  // Inbox
+  inboxMeta: 'new · LINE OA · auto-routed',
+  keywordRouter: 'Keyword router',
+  isNew: 'New',
+  filedAs: 'Filed as',
+  unread: 'unread',
+  routes: { uiux: 'UI/UX form', quote: 'Quote form', graphic: 'Graphic form', ai: 'AI expand', services: 'Services', human: 'To Tim' },
+  inbox: [
+    'Onboarding redesign for the new tier — Jun 17?',
+    'How much for a 5-page website?',
+    'New logo and menu for our café',
+    'A booking app for my gym? Not sure what we need',
+    'What kind of design work do you take on?',
+    'Can I talk to Tim directly?',
+  ],
+  yesterday: 'Yday',
+  monday: 'Mon',
+  // Intake
+  formMeta: 'UI/UX form',
+  bubble: 'Hi Tim — we need the onboarding redesigned for the new pricing tier before Jun 17. It\'s on the Q3 OKR. Can you take it?',
+  autoReply: 'Auto-reply',
+  requestForm: 'UI/UX request form',
+  fieldVals: ['LINE — @pm.celine', 'Web/App · Mobile', 'Redesign onboarding for new pricing tier', 'Jun 03 — Jun 17', 'P1 — Quarterly OKR', 'celine.h@firm.co'],
+  high: 'HIGH',
+  // Brief
+  briefTitle: 'AI Brief · DR-248',
+  briefMeta: 'Brief ready · 4.2s · saved to Sheets',
+  draft: 'AI · Draft',
+  trendRefs: 'Trend refs · RSS',
+  trends: ['Pricing tables that explain, not upsell', 'Progressive onboarding checklists'],
+  // Tracker
+  records: 'records · Google Sheets',
+  synced: 'Synced · just now',
+  stats: ['New', 'In progress', 'Review', 'Done'],
+  intake7d: 'Intake · 7 days',
+  week: (w: number, d: number) => `<b>${w}</b> this week · <b>${d}</b> today`,
+  perDay: 'Requests per day, last 7 days',
+  cols: ['ID', 'Form', 'Type', 'Status', 'Updated'],
+  forms: { uiux: 'UI/UX form', graphic: 'Graphic form', web: 'Web form' },
+  graphic: 'Graphic',
+  status: { brief: 'Brief ready', review: 'Review', done: 'Done', progress: 'In progress' },
+  when: ['just now', '1h', '1d', '2d'],
+  // Review
+  reviewer: 'Reviewer · Tim Lin ·',
+  due: 'Due Jun 17',
+  approved: 'Approved · 11:05',
+  reviewing: 'Reviewing',
+  sentToYou: 'Brief sent to you · LINE + Gmail ·',
+  gaps: (g: number, r: number, k: number) => `<b>${g}</b> gaps → <b>${r}</b> resolved, <b>${k}</b> risks`,
+  // Workflow
+  wfMeta: 'Approved in Review · kickoff Jun 03',
+  eta: 'ETA Jun 17',
+  figmaReady: 'Figma file ready ·',
+  figmaPages: '· pages from the design system',
+  phaseDates: ['Jun 03–04', 'Jun 05–06', 'Jun 07–11', 'Jun 12–13', 'Jun 14–17'],
+  // Client phone
+  phoneLabel: "The client's LINE chat",
+  official: 'LINE Official',
+  chat: {
+    hi: 'Hi Celine! What do you need?',
+    chips: ['Quote', 'UI/UX form', 'Talk to Tim'],
+    form: ['UI/UX request form', 'About 3 min'],
+    sent: 'Done, form sent.',
+    questions: ['3 quick questions', 'Before we start'],
+    answered: 'Answered all three.',
+    progress: ['In progress', 'Track it any time'],
+    approved: ['Brief approved', 'By Tim · 11:05'],
+    kickoff: ['Kickoff Jun 03', 'Delivery Jun 17'],
+  },
+  // Make panel + handoff
+  scenario: 'Scenario ·',
+  running: 'Running',
+  flowNames: { sources: 'LINE intake', intake: 'Request form', ai: 'AI brief', tracking: 'Tracker sync', human: 'Notify reviewer' } as Record<string, string>,
+  nodes: { router: 'Router', reply: 'Reply', form: 'Form' },
+  handoff: 'Handoff →',
+  shared: 'Shared',
+  handoffItems: [
+    ['DR-248 Onboarding', 'Figma · 12 frames'],
+    ['Specs & tokens', 'From the design system'],
+    ['Build Jun 12–17', 'Review on Jun 13'],
+  ],
 };
+type Copy = typeof COPY_EN;
+const COPY_ZH: Copy = {
+  // App chrome (title bar, mono meta lines, chips, stat and column labels,
+  // system states, dates) reads like the product's own UI: English.
+  nav: COPY_EN.nav,
+  system: COPY_EN.system,
+  live: COPY_EN.live,
+  inboxMeta: COPY_EN.inboxMeta,
+  keywordRouter: COPY_EN.keywordRouter,
+  isNew: COPY_EN.isNew,
+  filedAs: '已建檔為',
+  unread: '未讀',
+  routes: { uiux: 'UI/UX 表單', quote: '報價表單', graphic: '平面設計表單', ai: 'AI 整理', services: '服務總覽', human: '轉接 Tim' },
+  inbox: [
+    '新方案的導覽流程要改版，6/17 前可以嗎？',
+    '做一個 5 頁的網站大概多少錢？',
+    '小店想換新 logo 和品牌設計',
+    '想做健身房預約 App，但不確定需要什麼',
+    '請問你們接哪些類型的設計案？',
+    '可以直接找 Tim 談嗎？',
+  ],
+  yesterday: '週二',
+  monday: '週一',
+  formMeta: COPY_EN.formMeta,
+  bubble: 'Hi Tim，新的定價方案上線前，要先改版新用戶導覽，6/17 前要完成，這是 Q3 的 OKR。可以接嗎？',
+  autoReply: COPY_EN.autoReply,
+  requestForm: 'UI/UX 需求表單',
+  fieldVals: ['LINE — @pm.celine', 'Web/App · 行動版', '為新定價方案改版新用戶導覽', '6/03 — 6/17', 'P1 — Q3 OKR', 'celine.h@firm.co'],
+  high: '高',
+  briefTitle: 'AI 簡報 · DR-248',
+  briefMeta: COPY_EN.briefMeta,
+  draft: COPY_EN.draft,
+  trendRefs: COPY_EN.trendRefs,
+  trends: ['說明清楚、不硬推銷的價格表', '漸進式的新手導覽清單'],
+  records: COPY_EN.records,
+  synced: COPY_EN.synced,
+  stats: COPY_EN.stats,
+  intake7d: COPY_EN.intake7d,
+  week: COPY_EN.week,
+  perDay: '近 7 天每日需求數',
+  cols: COPY_EN.cols,
+  forms: { uiux: 'UI/UX 表單', graphic: '平面設計表單', web: '網站表單' },
+  graphic: '平面設計',
+  status: { brief: '簡報完成', review: '審查中', done: '已完成', progress: '進行中' },
+  when: ['1 分鐘前', '1 小時', '1 天', '2 天'],
+  reviewer: COPY_EN.reviewer,
+  due: COPY_EN.due,
+  approved: COPY_EN.approved,
+  reviewing: COPY_EN.reviewing,
+  sentToYou: COPY_EN.sentToYou,
+  gaps: COPY_EN.gaps,
+  wfMeta: COPY_EN.wfMeta,
+  eta: COPY_EN.eta,
+  figmaReady: COPY_EN.figmaReady,
+  figmaPages: COPY_EN.figmaPages,
+  phaseDates: COPY_EN.phaseDates,
+  phoneLabel: '客戶的 LINE 對話',
+  official: 'LINE 官方帳號',
+  chat: {
+    hi: 'Hi Celine！請問需要什麼服務？',
+    chips: ['報價', 'UI/UX 表單', '找 Tim'],
+    form: ['UI/UX 需求表單', '約 3 分鐘'],
+    sent: '填好了，已送出。',
+    questions: ['開工前想先確認 3 件事', '請回覆'],
+    answered: '三題都回覆了。',
+    progress: ['進行中', '隨時可查進度'],
+    approved: ['簡報已通過', 'Tim · 11:05'],
+    kickoff: ['6/03 開工', '6/17 交付'],
+  },
+  // The Make panel stays in English: it's Make's own UI, mostly product names.
+  scenario: COPY_EN.scenario,
+  running: COPY_EN.running,
+  flowNames: COPY_EN.flowNames,
+  nodes: COPY_EN.nodes,
+  handoff: '交接 →',
+  shared: '已分享',
+  handoffItems: [
+    ['DR-248 Onboarding', 'Figma · 12 個畫面'],
+    ['規格與 tokens', '來自設計系統'],
+    ['6/12–17 開發', '6/13 檢查'],
+  ],
+};
+const COPY: Record<string, Copy> = { en: COPY_EN, zh: COPY_ZH };
 
 const prefersReduced = () =>
   typeof window !== 'undefined' && (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
@@ -118,24 +282,26 @@ function countUp(tl: gsap.core.Timeline, el: HTMLElement | undefined, at: gsap.P
 // list, or a hand-off to Tim); anything it can't match goes to AI, which
 // expands the request first. Each row shows the route its message took.
 const ROUTES = {
-  uiux: { label: 'UI/UX form', icon: 'ph-fill ph-clipboard-text', tone: 'form' },
-  quote: { label: 'Quote form', icon: 'ph-fill ph-currency-circle-dollar', tone: 'note' },
-  graphic: { label: 'Graphic form', icon: 'ph-fill ph-palette', tone: 'slack' },
-  ai: { label: 'AI expand', icon: 'ph-fill ph-sparkle', tone: 'ai' },
-  services: { label: 'Services', icon: 'ph-fill ph-squares-four', tone: 'mail' },
-  human: { label: 'To Tim', icon: 'ph-fill ph-users-three', tone: 'line' },
+  uiux: { icon: 'ph-fill ph-clipboard-text', tone: 'form' },
+  quote: { icon: 'ph-fill ph-currency-circle-dollar', tone: 'note' },
+  graphic: { icon: 'ph-fill ph-palette', tone: 'slack' },
+  ai: { icon: 'ph-fill ph-sparkle', tone: 'ai' },
+  services: { icon: 'ph-fill ph-squares-four', tone: 'mail' },
+  human: { icon: 'ph-fill ph-users-three', tone: 'line' },
 } as const;
-const INBOX: { route: keyof typeof ROUTES; from: string; text: string; time: string }[] = [
+// Message text is COPY.inbox[i]; 'yday' / 'mon' are translated times.
+const INBOX: { route: keyof typeof ROUTES; from: string; time: string }[] = [
   // Row 0 is DR-248's source message — it gets the UI/UX request form.
-  { route: 'uiux', from: '@pm.celine', text: 'Onboarding redesign for the new tier — Jun 17?', time: ARRIVED_AT },
-  { route: 'quote', from: '@studio.kai', text: 'How much for a 5-page website?', time: '10:16' },
-  { route: 'graphic', from: '@mei.bakery', text: 'New logo and menu for our café', time: '09:51' },
-  { route: 'ai', from: '@ryan.fit', text: 'A booking app for my gym? Not sure what we need', time: '08:30' },
-  { route: 'services', from: '@amy.hr', text: 'What kind of design work do you take on?', time: 'Yday' },
-  { route: 'human', from: '@jason.ops', text: 'Can I talk to Tim directly?', time: 'Mon' },
+  { route: 'uiux', from: '@pm.celine', time: ARRIVED_AT },
+  { route: 'quote', from: '@studio.kai', time: '10:16' },
+  { route: 'graphic', from: '@mei.bakery', time: '09:51' },
+  { route: 'ai', from: '@ryan.fit', time: '08:30' },
+  { route: 'services', from: '@amy.hr', time: 'yday' },
+  { route: 'human', from: '@jason.ops', time: 'mon' },
 ];
+const msgTime = (time: string, c: Copy) => (time === 'yday' ? c.yesterday : time === 'mon' ? c.monday : time);
 
-function InboxScreen({ active, t }: { active: boolean; t: T }) {
+function InboxScreen({ active, t, c }: ScreenProps) {
   const ref = useRef<HTMLDivElement>(null);
   useScreenIntro(active, ref, (tl, q) => {
     const [fresh, ...rest] = q('.aas-msg');
@@ -156,10 +322,10 @@ function InboxScreen({ active, t }: { active: boolean; t: T }) {
       <header className="aas-screen-head">
         <div>
           <h4>{t.ai_d_recent}</h4>
-          <p className="aas-meta"><span className="aas-count">{INBOX.length}</span> new · LINE OA · auto-routed</p>
+          <p className="aas-meta"><span className="aas-count">{INBOX.length}</span> {c.inboxMeta}</p>
         </div>
         <div className="aas-chips">
-          <span className="aas-chip"><MakeLogo size={12} /> Keyword router</span>
+          <span className="aas-chip"><MakeLogo size={12} /> {c.keywordRouter}</span>
         </div>
       </header>
       <div className="aas-toast" aria-hidden="true"><i className="ph-fill ph-chat-circle-text" /> {t.ai_sources_loading}</div>
@@ -172,21 +338,21 @@ function InboxScreen({ active, t }: { active: boolean; t: T }) {
               <span className="aas-msg-body">
                 <span className="aas-msg-from">
                   <span className="aas-msg-name">{m.from}</span>
-                  {i === 0 && <span className="aas-msg-new">New</span>}
+                  {i === 0 && <span className="aas-msg-new">{c.isNew}</span>}
                   {i === 0 && (
-                    <span className="aas-msg-ticket" title={`Filed as ${TICKET}`}>
+                    <span className="aas-msg-ticket" title={`${c.filedAs} ${TICKET}`}>
                       <i className="ph-bold ph-arrow-right" aria-hidden="true" />{TICKET}
                     </span>
                   )}
                 </span>
-                <span className="aas-msg-text">{m.text}</span>
+                <span className="aas-msg-text">{c.inbox[i]}</span>
               </span>
               <span className="aas-msg-side">
-                <span className="aas-msg-time">{m.time}</span>
+                <span className="aas-msg-time">{msgTime(m.time, c)}</span>
                 {/* The auto-reply the router sent back. */}
-                <span className={`aas-msg-route rt-${r.tone}`} title={r.label}><i className={r.icon} aria-hidden="true" /><span className="aas-msg-route-label">{r.label}</span></span>
+                <span className={`aas-msg-route rt-${r.tone}`} title={c.routes[m.route]}><i className={r.icon} aria-hidden="true" /><span className="aas-msg-route-label">{c.routes[m.route]}</span></span>
               </span>
-              {i < 2 && <span className="aas-unread" aria-label="unread" />}
+              {i < 2 && <span className="aas-unread" aria-label={c.unread} />}
             </li>
           );
         })}
@@ -197,7 +363,7 @@ function InboxScreen({ active, t }: { active: boolean; t: T }) {
 
 /* ── 02 Intake ──────────────────────────────────────────── */
 
-function IntakeScreen({ active, t }: { active: boolean; t: T }) {
+function IntakeScreen({ active, t, c }: ScreenProps) {
   const ref = useRef<HTMLDivElement>(null);
   useScreenIntro(active, ref, (tl, q, restore) => {
     const fields = q('.aas-field');
@@ -229,20 +395,14 @@ function IntakeScreen({ active, t }: { active: boolean; t: T }) {
       .fromTo(q('.aas-progress'), { '--done': 0 }, { '--done': 1, duration: 0.4 }, at)
       .from(q('.aas-progress-check'), { scale: 0, duration: 0.4, ease: 'back.out(3)' }, at);
   }, [t]);
-  const fields: [string, ReactNode][] = [
-    [t.ai_f_source, 'LINE — @pm.celine'],
-    [t.ai_f_projtype, 'Web/App · Mobile'],
-    [t.ai_f_goal, 'Redesign onboarding for new pricing tier'],
-    [t.ai_f_timeline, 'Jun 03 — Jun 17'],
-    [t.ai_f_priority_lbl, 'P1 — Quarterly OKR'],
-    [t.ai_f_contact, 'celine.h@firm.co'],
-  ];
+  const labels = [t.ai_f_source, t.ai_f_projtype, t.ai_f_goal, t.ai_f_timeline, t.ai_f_priority_lbl, t.ai_f_contact];
+  const fields: [string, ReactNode][] = labels.map((l, i) => [l, c.fieldVals[i]]);
   return (
     <div ref={ref} className="aas-screen-inner">
       <header className="aas-screen-head">
         <div>
           <h4>{t.ai_d_req_form}</h4>
-          <p className="aas-meta">UI/UX form · {FORM_AT} · <MakeLogo size={13} /> → Sheets</p>
+          <p className="aas-meta">{c.formMeta} · {FORM_AT} · <MakeLogo size={13} /> → Sheets</p>
         </div>
         <div className="aas-progress">
           <span className="aas-progress-label">{t.ai_f_complete}</span>
@@ -256,12 +416,12 @@ function IntakeScreen({ active, t }: { active: boolean; t: T }) {
         <div className="aas-chat">
           <div className="aas-bubble">
             <div className="aas-bubble-from"><span className="aas-avatar ch-line"><i className="ph-fill ph-chat-circle-text" /></span>Celine · PM <em>LINE</em></div>
-            <p>Hi Tim — we need the onboarding redesigned for the new pricing tier before Jun 17. It&apos;s on the Q3 OKR. Can you take it?</p>
+            <p>{c.bubble}</p>
             <span className="aas-bubble-time">{ARRIVED_AT}</span>
           </div>
           <div className="aas-reply">
-            <span className="aas-reply-tag">Auto-reply</span>
-            <span className="aas-reply-card"><i className="ph-fill ph-clipboard-text" aria-hidden="true" />UI/UX request form<i className="ph-bold ph-arrow-right" aria-hidden="true" /></span>
+            <span className="aas-reply-tag">{c.autoReply}</span>
+            <span className="aas-reply-card"><i className="ph-fill ph-clipboard-text" aria-hidden="true" />{c.requestForm}<i className="ph-bold ph-arrow-right" aria-hidden="true" /></span>
           </div>
         </div>
         <div className="aas-pipe" aria-hidden="true">
@@ -274,7 +434,7 @@ function IntakeScreen({ active, t }: { active: boolean; t: T }) {
               <span className="aas-field-label">{label}</span>
               <span className="aas-field-val">
                 <span>{value}</span>
-                {i === 4 && <span className="aas-badge is-danger">HIGH</span>}
+                {i === 4 && <span className="aas-badge is-danger">{c.high}</span>}
               </span>
             </div>
           ))}
@@ -286,9 +446,7 @@ function IntakeScreen({ active, t }: { active: boolean; t: T }) {
 
 /* ── 03 AI Brief ────────────────────────────────────────── */
 
-const TRENDS = ['Pricing tables that explain, not upsell', 'Progressive onboarding checklists'];
-
-function BriefScreen({ active, t }: { active: boolean; t: T }) {
+function BriefScreen({ active, t, c }: ScreenProps) {
   const ref = useRef<HTMLDivElement>(null);
   useScreenIntro(active, ref, (tl, q, restore) => {
     const state = q('.aas-ai-state')[0];
@@ -315,10 +473,10 @@ function BriefScreen({ active, t }: { active: boolean; t: T }) {
     <div ref={ref} className="aas-screen-inner">
       <header className="aas-screen-head">
         <div>
-          <h4>AI Brief · DR-248</h4>
-          <p className="aas-meta aas-ai-state"><i className="ph-fill ph-check-circle" aria-hidden="true" /> Brief ready · 4.2s · saved to Sheets</p>
+          <h4>{c.briefTitle}</h4>
+          <p className="aas-meta aas-ai-state"><i className="ph-fill ph-check-circle" aria-hidden="true" /> {c.briefMeta}</p>
         </div>
-        <span className="aas-chip is-accent"><i className="ph-fill ph-sparkle" aria-hidden="true" /> AI · Draft</span>
+        <span className="aas-chip is-accent"><i className="ph-fill ph-sparkle" aria-hidden="true" /> {c.draft}</span>
       </header>
       <div className="aas-brief">
         <div className="aas-skeleton" aria-hidden="true">
@@ -355,7 +513,7 @@ function BriefScreen({ active, t }: { active: boolean; t: T }) {
           </div>
           <div className="aas-conf is-warn">
             <span className="aas-conf-label"><i className="ph-fill ph-star" aria-hidden="true" />{t.ai_d_priority_lbl}</span>
-            <span className="aas-conf-row"><b>P1 · HIGH</b><span><span className="aas-conf-num">87</span>%</span></span>
+            <span className="aas-conf-row"><b>P1 · {c.high}</b><span><span className="aas-conf-num">87</span>%</span></span>
             <span className="aas-conf-bar"><span className="aas-conf-fill" style={{ width: '87%' }} /></span>
           </div>
           <div className="aas-block is-ok">
@@ -365,9 +523,9 @@ function BriefScreen({ active, t }: { active: boolean; t: T }) {
           {/* The flow reads current design-trend articles (RSS) into the
               prompt, so the brief cites what it leaned on. */}
           <div className="aas-block is-trend">
-            <h5><i className="ph-fill ph-file-text" aria-hidden="true" />Trend refs · RSS</h5>
+            <h5><i className="ph-fill ph-file-text" aria-hidden="true" />{c.trendRefs}</h5>
             <ul className="aas-trends">
-              {TRENDS.map(a => <li key={a}>{a}</li>)}
+              {c.trends.map(a => <li key={a}>{a}</li>)}
             </ul>
           </div>
         </aside>
@@ -380,27 +538,28 @@ function BriefScreen({ active, t }: { active: boolean; t: T }) {
 
 // A plausible pipeline: most requests are done, a handful in flight.
 // The four add up to the 142 records in the header.
+// Labels: COPY.stats, same order.
 const STATS = [
-  { label: 'New', n: 6, tone: 'info' },
-  { label: 'In progress', n: 14, tone: 'ok' },
-  { label: 'Review', n: 9, tone: 'warn' },
-  { label: 'Done', n: 113, tone: 'muted' },
+  { n: 6, tone: 'info' },
+  { n: 14, tone: 'ok' },
+  { n: 9, tone: 'warn' },
+  { n: 113, tone: 'muted' },
 ];
 const RECORDS = STATS.reduce((sum, s) => sum + s.n, 0);
 // Requests filed per day, last 7 days; today is a morning so far — the four
 // Inbox messages stamped today.
 const INTAKE_7D = [9, 12, 8, 14, 11, 7, 4];
-const ROWS = [
-  // DR-248 has just come out of AI Brief and waits for review.
-  // `src` is the request form the LINE bot sent; `type` the form router's
-  // two case lanes (Web/App UI gets the AI brief + Figma file).
-  { id: TICKET, src: 'UI/UX form', type: 'Web/App UI', status: 'Brief ready', tone: 'now', when: 'just now' },
-  { id: 'DR-247', src: 'Graphic form', type: 'Graphic', status: 'Review', tone: 'warn', when: '1h' },
-  { id: 'DR-246', src: 'Web form', type: 'Web/App UI', status: 'Done', tone: 'muted', when: '1d' },
-  { id: 'DR-245', src: 'Graphic form', type: 'Graphic', status: 'In progress', tone: 'ok', when: '2d' },
+// DR-248 has just come out of AI Brief and waits for review.
+// `src` is the request form the LINE bot sent; `type` the form router's
+// two case lanes (Web/App UI gets the AI brief + Figma file).
+const rowsFor = (c: Copy) => [
+  { id: TICKET, src: c.forms.uiux, type: 'Web/App UI', status: c.status.brief, tone: 'now', when: c.when[0] },
+  { id: 'DR-247', src: c.forms.graphic, type: c.graphic, status: c.status.review, tone: 'warn', when: c.when[1] },
+  { id: 'DR-246', src: c.forms.web, type: 'Web/App UI', status: c.status.done, tone: 'muted', when: c.when[2] },
+  { id: 'DR-245', src: c.forms.graphic, type: c.graphic, status: c.status.progress, tone: 'ok', when: c.when[3] },
 ];
 
-function TrackerScreen({ active, t }: { active: boolean; t: T }) {
+function TrackerScreen({ active, t, c }: ScreenProps) {
   const ref = useRef<HTMLDivElement>(null);
   useScreenIntro(active, ref, (tl, q, restore) => {
     const [fresh, ...rest] = q('.aas-row');
@@ -425,24 +584,24 @@ function TrackerScreen({ active, t }: { active: boolean; t: T }) {
       <header className="aas-screen-head">
         <div>
           <h4>{t.ai_d_sheets_lbl}</h4>
-          <p className="aas-meta"><span className="aas-records">{RECORDS}</span> records · Google Sheets</p>
+          <p className="aas-meta"><span className="aas-records">{RECORDS}</span> {c.records}</p>
         </div>
-        <span className="aas-chip aas-sync-pill"><span className="aas-live-dot" />Synced · just now</span>
+        <span className="aas-chip aas-sync-pill"><span className="aas-live-dot" />{c.synced}</span>
       </header>
       <div className="aas-stats">
-        {STATS.map(s => (
-          <div key={s.label} className={`aas-stat is-${s.tone}`}>
-            <span className="aas-stat-label">{s.label}</span>
+        {STATS.map((s, i) => (
+          <div key={s.tone} className={`aas-stat is-${s.tone}`}>
+            <span className="aas-stat-label">{c.stats[i]}</span>
             <span className="aas-stat-num">{s.n}</span>
             {/* Share of all records. */}
             <span className="aas-stat-bar"><span className="aas-stat-fill" style={{ width: `${Math.max(4, Math.round((s.n / RECORDS) * 100))}%` }} /></span>
           </div>
         ))}
       </div>
-      <div className="aas-spark" role="img" aria-label={`Requests per day, last 7 days: ${INTAKE_7D.join(', ')}`}>
+      <div className="aas-spark" role="img" aria-label={`${c.perDay}: ${INTAKE_7D.join(', ')}`}>
         <span className="aas-spark-head">
-          <span className="aas-stat-label"><i className="ph-fill ph-chart-bar" aria-hidden="true" /> Intake · 7 days</span>
-          <span className="aas-spark-sum"><b>{INTAKE_7D.reduce((a, b) => a + b, 0)}</b> this week · <b>{INTAKE_7D[INTAKE_7D.length - 1]}</b> today</span>
+          <span className="aas-stat-label"><i className="ph-fill ph-chart-bar" aria-hidden="true" /> {c.intake7d}</span>
+          <span className="aas-spark-sum" dangerouslySetInnerHTML={{ __html: c.week(INTAKE_7D.reduce((a, b) => a + b, 0), INTAKE_7D[INTAKE_7D.length - 1]) }} />
         </span>
         <span className="aas-spark-bars" aria-hidden="true">
           {INTAKE_7D.map((n, i) => (
@@ -456,9 +615,9 @@ function TrackerScreen({ active, t }: { active: boolean; t: T }) {
       </div>
       <div className="aas-table" role="table" aria-label={t.ai_d_sheets_lbl}>
         <div className="aas-table-head" role="row">
-          <span role="columnheader">ID</span><span role="columnheader">Form</span><span role="columnheader">Type</span><span role="columnheader">Status</span><span role="columnheader">Updated</span>
+          {c.cols.map(h => <span key={h} role="columnheader">{h}</span>)}
         </div>
-        {ROWS.map(r => (
+        {rowsFor(c).map(r => (
           <div key={r.id} className={`aas-row${r.id === TICKET ? ' is-current' : ''}`} role="row">
             <span role="cell" className="aas-mono">{r.id}</span>
             <span role="cell">{r.src}</span>
@@ -474,7 +633,7 @@ function TrackerScreen({ active, t }: { active: boolean; t: T }) {
 
 /* ── 05 Review ──────────────────────────────────────────── */
 
-function ReviewScreen({ active, t }: { active: boolean; t: T }) {
+function ReviewScreen({ active, t, c }: ScreenProps) {
   const ref = useRef<HTMLDivElement>(null);
   useScreenIntro(active, ref, (tl, q, restore) => {
     const btn = q('.aas-approve')[0];
@@ -505,11 +664,11 @@ function ReviewScreen({ active, t }: { active: boolean; t: T }) {
       <header className="aas-screen-head">
         <div>
           <h4>{t.ai_d_assessment_lbl}</h4>
-          <p className="aas-meta"><span className="aas-initials" aria-hidden="true">TL</span>Reviewer · Tim Lin · <i className="ph-bold ph-clock" aria-hidden="true" /> Due Jun 17</p>
+          <p className="aas-meta"><span className="aas-initials" aria-hidden="true">TL</span>{c.reviewer} <i className="ph-bold ph-clock" aria-hidden="true" /> {c.due}</p>
         </div>
         <span className="aas-approve">
-          <span className="aas-approve-done"><i className="ph-fill ph-check-circle" aria-hidden="true" /> Approved · 11:05</span>
-          <span className="aas-approve-wait"><span className="aas-dots"><i /><i /><i /></span> Reviewing</span>
+          <span className="aas-approve-done"><i className="ph-fill ph-check-circle" aria-hidden="true" /> {c.approved}</span>
+          <span className="aas-approve-wait"><span className="aas-dots"><i /><i /><i /></span> {c.reviewing}</span>
         </span>
       </header>
       {/* How the brief reached Tim: the flow pushes it to his own LINE and
@@ -517,7 +676,7 @@ function ReviewScreen({ active, t }: { active: boolean; t: T }) {
           (strategy row); the other two stay open as risks. */}
       <p className="aas-from">
         <i className="ph-fill ph-envelope-simple" aria-hidden="true" />
-        Brief sent to you · LINE + Gmail · <b>3</b> gaps → <b>1</b> resolved, <b>2</b> risks
+        {c.sentToYou} <span dangerouslySetInnerHTML={{ __html: c.gaps(3, 1, 2) }} />
       </p>
       <div className="aas-review">
         {rows.map(([label, value, cls]) => (
@@ -542,9 +701,9 @@ function ReviewScreen({ active, t }: { active: boolean; t: T }) {
 const PHASE_ICONS = ['ph-fill ph-magnifying-glass', 'ph-fill ph-tree-structure', 'ph-fill ph-palette', 'ph-fill ph-check-circle', 'ph-fill ph-rocket-launch'];
 const PHASE_STATIC = 2; // what the screen shows at rest / with reduced motion
 // Intake's Jun 03 — Jun 17 window, split across the five phases.
-const PHASE_DATES = ['Jun 03–04', 'Jun 05–06', 'Jun 07–11', 'Jun 12–13', 'Jun 14–17'];
+// Dates: COPY.phaseDates.
 
-function WorkflowScreen({ active, t }: { active: boolean; t: T }) {
+function WorkflowScreen({ active, t, c }: ScreenProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [phase, setPhase] = useState(PHASE_STATIC);
   useEffect(() => {
@@ -591,15 +750,15 @@ function WorkflowScreen({ active, t }: { active: boolean; t: T }) {
       <header className="aas-screen-head">
         <div>
           <h4>{t.ai_d_phases_lbl}</h4>
-          <p className="aas-meta"><i className="ph-fill ph-check-circle" aria-hidden="true" /> Approved in Review · kickoff Jun 03</p>
+          <p className="aas-meta"><i className="ph-fill ph-check-circle" aria-hidden="true" /> {c.wfMeta}</p>
         </div>
-        <span className="aas-chip"><i className="ph-fill ph-rocket-launch" aria-hidden="true" /> ETA Jun 17</span>
+        <span className="aas-chip"><i className="ph-fill ph-rocket-launch" aria-hidden="true" /> {c.eta}</span>
       </header>
       {/* Web/App UI cases also get a Figma file, built by the flow from the
           design system — the Design phase starts from it, not a blank page. */}
       <p className="aas-from">
         <i className="ph-fill ph-frame-corners" aria-hidden="true" />
-        Figma file ready · <b>DR-248 Onboarding</b> · pages from the design system
+        {c.figmaReady} <b>DR-248 Onboarding</b> {c.figmaPages}
       </p>
       <div className="aas-track">
         <span className="aas-track-line"><span className="aas-track-fill" /></span>
@@ -617,7 +776,7 @@ function WorkflowScreen({ active, t }: { active: boolean; t: T }) {
             <li key={n} className={`aas-phase is-${key}`}>
               <span className="aas-mono aas-dim">{String(i + 1).padStart(2, '0')}</span>
               <span className="aas-phase-text"><b>{n}</b><span>{descs[i]}</span></span>
-              <span className="aas-phase-date">{PHASE_DATES[i]}</span>
+              <span className="aas-phase-date">{c.phaseDates[i]}</span>
               <span className={`aas-badge is-${key}`}>{label}</span>
             </li>
           );
@@ -644,36 +803,40 @@ type ChatMsg = {
 };
 
 // Celine's side of the thread. Times line up with the window's screens.
-const CHAT: ChatMsg[] = [
-  { step: 0, from: 'me', text: 'Onboarding redesign for the new tier — Jun 17?', time: ARRIVED_AT },
-  { step: 0, from: 'oa', text: 'Hi Celine! What do you need?', chips: ['Quote', 'UI/UX form', 'Talk to Tim'] },
-  { step: 1, from: 'oa', card: { icon: 'ph-fill ph-clipboard-text', title: 'UI/UX request form', sub: 'About 3 min' } },
-  { step: 1, from: 'me', text: 'Done, form sent.', time: FORM_AT },
-  { step: 2, from: 'oa', card: { icon: 'ph-fill ph-sparkle', title: '3 quick questions', sub: 'Before we start' } },
-  { step: 3, from: 'me', text: 'Answered all three.', time: '11:01' },
-  { step: 3, from: 'oa', card: { icon: 'ph-fill ph-chart-bar', title: `${TICKET} · In progress`, sub: 'Track it any time' } },
-  { step: 4, from: 'oa', card: { icon: 'ph-fill ph-check-circle', title: 'Brief approved', sub: 'By Tim · 11:05' } },
-  { step: 5, from: 'oa', card: { icon: 'ph-fill ph-rocket-launch', title: 'Kickoff Jun 03', sub: 'Delivery Jun 17' } },
-];
+const chatFor = (c: Copy): ChatMsg[] => {
+  const card = (icon: string, [title, sub]: string[]) => ({ icon, title, sub });
+  return [
+    { step: 0, from: 'me', text: c.inbox[0], time: ARRIVED_AT },
+    { step: 0, from: 'oa', text: c.chat.hi, chips: c.chat.chips },
+    { step: 1, from: 'oa', card: card('ph-fill ph-clipboard-text', c.chat.form) },
+    { step: 1, from: 'me', text: c.chat.sent, time: FORM_AT },
+    { step: 2, from: 'oa', card: card('ph-fill ph-sparkle', c.chat.questions) },
+    { step: 3, from: 'me', text: c.chat.answered, time: '11:01' },
+    { step: 3, from: 'oa', card: card('ph-fill ph-chart-bar', [`${TICKET} · ${c.chat.progress[0]}`, c.chat.progress[1]]) },
+    { step: 4, from: 'oa', card: card('ph-fill ph-check-circle', c.chat.approved) },
+    { step: 5, from: 'oa', card: card('ph-fill ph-rocket-launch', c.chat.kickoff) },
+  ];
+};
 
 type SatProps = { onDragStart: (e: ReactPointerEvent<HTMLElement>) => void };
 
-function ClientPhone({ step, onDragStart }: { step: number } & SatProps) {
+function ClientPhone({ step, c, onDragStart }: { step: number; c: Copy } & SatProps) {
+  const chat = chatFor(c);
   return (
-    <div className="aas-sat aas-phone" data-drag="phone" onPointerDown={onDragStart} aria-label="The client's LINE chat">
+    <div className="aas-sat aas-phone" data-drag="phone" onPointerDown={onDragStart} aria-label={c.phoneLabel}>
       <div className="aas-phone-screen">
         <div className="aas-phone-head">
           <span className="aas-phone-avatar" aria-hidden="true">TL</span>
-          <span className="aas-phone-name"><b>Tim Lin Design</b><small>LINE Official</small></span>
+          <span className="aas-phone-name"><b>Tim Lin Design</b><small>{c.official}</small></span>
         </div>
         <div className="aas-phone-thread">
-          {CHAT.map((m, i) => (
+          {chat.map((m, i) => (
             <div
               key={i}
               className={`aas-chat-msg is-${m.from}${m.step === step ? ' is-new' : ''}`}
               hidden={m.step > step}
               // New messages of a step land one after another.
-              style={{ '--d': `${CHAT.filter((x, j) => j < i && x.step === m.step).length * 0.5 + 0.35}s` } as CSSProperties}
+              style={{ '--d': `${chat.filter((x, j) => j < i && x.step === m.step).length * 0.5 + 0.35}s` } as CSSProperties}
             >
               {m.text && <span className="aas-chat-bubble">{m.text}</span>}
               {m.card && (
@@ -682,7 +845,7 @@ function ClientPhone({ step, onDragStart }: { step: number } & SatProps) {
                   <span><b>{m.card.title}</b><small>{m.card.sub}</small></span>
                 </span>
               )}
-              {m.chips && <span className="aas-chat-chips">{m.chips.map(c => <span key={c}>{c}</span>)}</span>}
+              {m.chips && <span className="aas-chat-chips">{m.chips.map(x => <span key={x}>{x}</span>)}</span>}
               {m.time && <time>{m.time}</time>}
             </div>
           ))}
@@ -696,10 +859,10 @@ function ClientPhone({ step, onDragStart }: { step: number } & SatProps) {
 type FlowNode = { icon: string; label: string; tone: string };
 const N = {
   line: { icon: 'ph-fill ph-chat-circle-text', label: 'LINE', tone: 'line' },
-  router: { icon: 'ph-bold ph-git-branch', label: 'Router', tone: 'router' },
-  reply: { icon: 'ph-fill ph-chat-circle-text', label: 'Reply', tone: 'line' },
+  router: { icon: 'ph-bold ph-git-branch', label: 'router', tone: 'router' },
+  reply: { icon: 'ph-fill ph-chat-circle-text', label: 'reply', tone: 'line' },
   ai: { icon: 'ph-fill ph-sparkle', label: 'AI', tone: 'ai' },
-  form: { icon: 'ph-fill ph-clipboard-text', label: 'Form', tone: 'form' },
+  form: { icon: 'ph-fill ph-clipboard-text', label: 'form', tone: 'form' },
   sheets: { icon: 'ph-fill ph-grid-four', label: 'Sheets', tone: 'sheets' },
   rss: { icon: 'ph-fill ph-browsers', label: 'RSS', tone: 'rss' },
   json: { icon: 'ph-fill ph-file-text', label: 'JSON', tone: 'json' },
@@ -707,29 +870,30 @@ const N = {
 } satisfies Record<string, FlowNode>;
 
 // The real scenarios' modules behind each screen (vendor-neutral names for
-// the AI and the form tool).
-const FLOWS: Record<string, { name: string; nodes: FlowNode[] }> = {
-  sources: { name: 'LINE intake', nodes: [N.line, N.router, N.reply, N.ai] },
-  intake: { name: 'Request form', nodes: [N.form, N.sheets, N.router] },
-  ai: { name: 'AI brief', nodes: [N.rss, N.ai, N.json, N.sheets] },
-  tracking: { name: 'Tracker sync', nodes: [N.sheets, N.router, N.line] },
-  human: { name: 'Notify reviewer', nodes: [N.router, N.line, N.gmail] },
+// the AI and the form tool). Names: COPY.flowNames; a lower-case node label
+// is a COPY.nodes key, the rest are product names.
+const FLOWS: Record<string, FlowNode[]> = {
+  sources: [N.line, N.router, N.reply, N.ai],
+  intake: [N.form, N.sheets, N.router],
+  ai: [N.rss, N.ai, N.json, N.sheets],
+  tracking: [N.sheets, N.router, N.line],
+  human: [N.router, N.line, N.gmail],
 };
+const nodeLabel = (label: string, c: Copy) => c.nodes[label as keyof Copy['nodes']] ?? label;
 
-function FlowPanel({ id, on, onDragStart }: { id: string; on: boolean } & SatProps) {
-  const flow = FLOWS[id];
+function FlowPanel({ id, on, c, onDragStart }: { id: string; on: boolean; c: Copy } & SatProps) {
   return (
     <div className={`aas-sat aas-front aas-flow${on ? ' is-on' : ''}`} data-drag="front" onPointerDown={onDragStart} aria-hidden={!on}>
       <div className="aas-sat-head">
         <MakeLogo size={14} />
-        <span className="aas-sat-title">Scenario · <b>{flow.name}</b></span>
-        <span className="aas-sat-run"><span className="aas-live-dot" />Running</span>
+        <span className="aas-sat-title">{c.scenario} <b>{c.flowNames[id]}</b></span>
+        <span className="aas-sat-run"><span className="aas-live-dot" />{c.running}</span>
       </div>
       <ol className="aas-flow-nodes">
-        {flow.nodes.map((n, i) => (
+        {FLOWS[id].map((n, i) => (
           <li key={i} className={`aas-flow-node tn-${n.tone}`} style={{ '--i': i } as CSSProperties}>
             <span className="aas-flow-dot"><i className={n.icon} aria-hidden="true" /></span>
-            <span className="aas-flow-label">{n.label}</span>
+            <span className="aas-flow-label">{nodeLabel(n.label, c)}</span>
           </li>
         ))}
       </ol>
@@ -738,18 +902,20 @@ function FlowPanel({ id, on, onDragStart }: { id: string; on: boolean } & SatPro
 }
 
 // What the build partner gets once the plan is set.
-function HandoffCard({ on, onDragStart }: { on: boolean } & SatProps) {
+const HANDOFF_ICONS = ['ph-fill ph-frame-corners', 'ph-fill ph-file-text', 'ph-fill ph-clock'];
+
+function HandoffCard({ on, c, onDragStart }: { on: boolean; c: Copy } & SatProps) {
   return (
     <div className={`aas-sat aas-front aas-handoff${on ? ' is-on' : ''}`} data-drag="front" onPointerDown={onDragStart} aria-hidden={!on}>
       <div className="aas-sat-head">
         <span className="aas-initials">AK</span>
-        <span className="aas-sat-title">Handoff → <b>@dev.alex</b></span>
-        <span className="aas-sat-run is-ok"><i className="ph-fill ph-check-circle" aria-hidden="true" />Shared</span>
+        <span className="aas-sat-title">{c.handoff} <b>@dev.alex</b></span>
+        <span className="aas-sat-run is-ok"><i className="ph-fill ph-check-circle" aria-hidden="true" />{c.shared}</span>
       </div>
       <ul className="aas-handoff-list">
-        <li style={{ '--i': 0 } as CSSProperties}><i className="ph-fill ph-frame-corners" aria-hidden="true" /><span><b>{TICKET} Onboarding</b><small>Figma · 12 frames</small></span></li>
-        <li style={{ '--i': 1 } as CSSProperties}><i className="ph-fill ph-file-text" aria-hidden="true" /><span><b>Specs &amp; tokens</b><small>From the design system</small></span></li>
-        <li style={{ '--i': 2 } as CSSProperties}><i className="ph-fill ph-clock" aria-hidden="true" /><span><b>Build Jun 12–17</b><small>Review on Jun 13</small></span></li>
+        {c.handoffItems.map(([title, sub], i) => (
+          <li key={i} style={{ '--i': i } as CSSProperties}><i className={HANDOFF_ICONS[i]} aria-hidden="true" /><span><b>{title}</b><small>{sub}</small></span></li>
+        ))}
       </ul>
     </div>
   );
@@ -803,7 +969,7 @@ function useSatDrag() {
 
 /* ── Window ─────────────────────────────────────────────── */
 
-const SCREENS: Record<string, (p: { active: boolean; t: T }) => ReactNode> = {
+const SCREENS: Record<string, (p: ScreenProps) => ReactNode> = {
   sources: InboxScreen,
   intake: IntakeScreen,
   ai: BriefScreen,
@@ -819,8 +985,9 @@ export default function AiAppStage({ steps, active }: {
   steps: AiStageStep[];
   active: string | null;
 }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const tt = t as unknown as T;
+  const c = COPY[lang] ?? COPY_EN;
   // No cursor-following tint/glow/edge ring: the window stays a calm
   // screenshot; only the hover radar ripple (CSS) remains.
   const step = Math.max(0, steps.findIndex(s => s.id === active));
@@ -833,11 +1000,11 @@ export default function AiAppStage({ steps, active }: {
         <span className="aas-lights" aria-hidden="true"><i /><i /><i /></span>
         {/* Every screen is the same request, DR-248, moving through the system. */}
         <span className="aas-title">
-          <span className="aas-title-root">Intake System<span className="aas-title-sep">/</span></span>
+          <span className="aas-title-root">{c.system}<span className="aas-title-sep">/</span></span>
           <span className="aas-title-ticket">{TICKET}<span className="aas-title-sep">/</span></span>
-          <b>{active ? NAV_LABELS[active] : 'Inbox'}</b>
+          <b>{c.nav[active ?? 'sources']}</b>
         </span>
-        <span className="aas-status"><span className="aas-live-dot" />Live</span>
+        <span className="aas-status"><span className="aas-live-dot" />{c.live}</span>
       </div>
       <div className="aas-body">
         <div className="aas-main">
@@ -852,16 +1019,16 @@ export default function AiAppStage({ steps, active }: {
                 aria-label={s.title}
                 aria-hidden={!isActive}
               >
-                {Screen && <Screen active={isActive} t={tt} />}
+                {Screen && <Screen active={isActive} t={tt} c={c} />}
               </section>
             );
           })}
         </div>
       </div>
     </div>
-    <ClientPhone step={step} onDragStart={onDragStart} />
-    {Object.keys(FLOWS).map(id => <FlowPanel key={id} id={id} on={current === id} onDragStart={onDragStart} />)}
-    <HandoffCard on={current === 'workflow'} onDragStart={onDragStart} />
+    <ClientPhone step={step} c={c} onDragStart={onDragStart} />
+    {Object.keys(FLOWS).map(id => <FlowPanel key={id} id={id} on={current === id} c={c} onDragStart={onDragStart} />)}
+    <HandoffCard on={current === 'workflow'} c={c} onDragStart={onDragStart} />
     </>
   );
 }
