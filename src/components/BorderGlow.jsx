@@ -22,6 +22,9 @@ const BorderGlow = ({
     // portfolio.css's light-mode block) — skip the getBoundingClientRect +
     // setProperty calls per pointermove, they'd paint nothing.
     if (document.documentElement.getAttribute('data-theme') === 'light') return;
+    // A finger dragging the phone carousel: no glow to follow, and a rect
+    // read + 4 style writes per move made the swipe stutter.
+    if (e.pointerType === 'touch') return;
     const rect = card.getBoundingClientRect();
     const x = `${e.clientX - rect.left}px`;
     const y = `${e.clientY - rect.top}px`;
