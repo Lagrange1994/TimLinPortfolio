@@ -821,7 +821,10 @@
   border-radius: 24px;
   background: #1a1c23;
 }
-:root[data-theme="light"] .aas-phone-screen { background: #eef1f6; }
+/* Light: three whites across the stage: the page/viewer #F7FAFC, sunken
+   surfaces (the window, this screen) the window's lavender --bg-hover,
+   raised cards (bubbles, panels) #fff. It used to be its own blue-grey. */
+:root[data-theme="light"] .aas-phone-screen { background: var(--bg-hover); }
 .aas-phone-head {
   display: flex;
   align-items: center;

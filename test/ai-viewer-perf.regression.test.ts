@@ -43,6 +43,15 @@ describe('How I Use AI viewer — performance', () => {
     expect(desk).toMatch(/\.aas-front \{[^}]*left: calc\(-1 \* clamp\(48px, 6vw, 90px\)\);/);
   });
 
+  // Light mode uses three whites across the stage: page #F7FAFC, sunken
+  // surfaces in the window's lavender, raised cards #fff. The phone screen
+  // had its own blue-grey.
+  it('gives the light-mode phone screen the window\'s sunken lavender', () => {
+    expect(stage).toMatch(/:root\[data-theme="light"\] \.aas-phone-screen \{ background: var\(--bg-hover\); \}/);
+    expect(stage).not.toMatch(/#eef1f6/i);
+    expect(stage).toMatch(/:root\[data-theme="light"\] \.aas-window \{\n  --w-bg: var\(--bg-hover\);/);
+  });
+
   it('drops the backdrop blur on the opaque light-mode stage', () => {
     const light = site.match(/:root\[data-theme="light"\] \.ai-viewer \{([^}]*)\}/)![1];
     expect(light).toMatch(/backdrop-filter: none;/);

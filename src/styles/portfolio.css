@@ -357,7 +357,7 @@
       /* Glass Indigo / Fuji Dusk / Fuji Dusk / Violet Haze — a 4-stop pastel
          palette from the same blend tool as w_bg.svg, replacing the earlier
          ad-hoc #F0EAD6 base guess with a real matched set. */
-      --frame-glow-base: #F8FBFD;
+      --frame-glow-base: #F7FAFC; /* = --neu-bg, the light page white (was #F8FBFD) */
       --frame-glow-2: #BA99FF;
       --frame-glow-3: #D5ACFB;
       --frame-glow-4: #FECEFF;
@@ -1182,7 +1182,8 @@
     }
 
     .theme-switch.theme-switch--light {
-      background: #ECECF1;
+      /* Light whites: page #F7FAFC, sunken lavender --bg-hover, raised #fff. */
+      background: var(--bg-hover);
       border: 1px solid rgba(58, 58, 66, 0.18);
     }
 
@@ -5091,8 +5092,11 @@
       --mcp-fg-rgb: 58, 58, 66;
       --mcp-surface: var(--bg-hover);
       --mcp-card-bg: #ffffff;
-      --mcp-code-bg: #F3F1FA;
-      --mcp-code-editor-bg: #FBFAFD;
+      /* The light whites: the code window sits sunken (--bg-hover), its
+         editor raised (#fff). The tab track stays a deeper lavender, the
+         one step below the scale, or it would vanish on the window. */
+      --mcp-code-bg: var(--bg-hover);
+      --mcp-code-editor-bg: #ffffff;
       --mcp-code-tab-bg: #E4E1F0;
       --mcp-string: #1a7a43;
     }
