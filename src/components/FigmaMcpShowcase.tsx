@@ -327,18 +327,12 @@ const CODE_CARD_HTML = `
 // as if unscaled, and the wrapper's height is simply that measured height
 // times the same scale factor. No hand-picked pixel values anywhere.
 const MCP_DESIGN_WIDTH = 640;
-// Where on the scroll-zoom track the live-edit loop starts: halfway
-// through the zoom (.mcp-zoom's animation-range is contain 0% → 50%, in
-// portfolio.css), once the Figma mockup is mostly in view.
-const LOOP_START = 0.25;
 
 // header: the section's "Figma MCP" heading. It renders inside the pinned
 // frame so it stays on screen (upper quarter) while the zoom plays.
 export default function FigmaMcpShowcase({ header }: { header?: ReactNode } = {}) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const zoomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -380,55 +374,17 @@ export default function FigmaMcpShowcase({ header }: { header?: ReactNode } = {}
     };
   }, []);
 
-  // The live-edit loop (.mcp-ops cursors etc.) plays from its very start
-  // (the Desktop page) once there is something to watch: the grid is on
-  // screen and, where the scroll zoom runs, the zoom is halfway through
-  // (LOOP_START of the track). Each time it goes live every loop is rewound
-  // to 0s, so no one lands mid-story; .is-live just flips
+  // The live-edit loop (.mcp-ops cursors etc.) plays only while the grid is
+  // on screen and picks up wherever it paused; .is-live just flips
   // animation-play-state.
   useEffect(() => {
     const grid = gridRef.current;
-    const track = trackRef.current;
-    const zoomLayer = zoomRef.current;
-    if (!grid || !track || !zoomLayer || typeof IntersectionObserver === 'undefined') return;
-    let visible = false;
-    let live = false;
-    let pending = false;
-    let disposed = false;
-    const farEnough = () => {
-      // no zoom here (phones, reduced motion, no scroll-driven animations)
-      if (getComputedStyle(zoomLayer).animationName !== 'mcp-zoom-out') return true;
-      const r = track.getBoundingClientRect();
-      const len = r.height - window.innerHeight;
-      return len > 0 && -r.top / len >= LOOP_START;
-    };
-    const update = () => {
-      const next = visible && farEnough();
-      if (next === live) return;
-      live = next;
-      if (live) {
-        for (const a of grid.getAnimations?.({ subtree: true }) ?? []) {
-          if (/^mcp-(op|tim|ai|chat)/.test((a as CSSAnimation).animationName ?? '')) a.currentTime = 0;
-        }
-      }
-      grid.classList.toggle('is-live', live);
-    };
-    const schedule = () => {
-      if (pending) return;
-      pending = true;
-      requestAnimationFrame(() => { pending = false; if (!disposed) update(); });
-    };
+    if (!grid || typeof IntersectionObserver === 'undefined') return;
     const io = new IntersectionObserver(entries => {
-      visible = entries.some(e => e.isIntersecting);
-      schedule();
+      grid.classList.toggle('is-live', entries.some(e => e.isIntersecting));
     });
     io.observe(grid);
-    window.addEventListener('scroll', schedule, { passive: true });
-    return () => {
-      disposed = true;
-      io.disconnect();
-      window.removeEventListener('scroll', schedule);
-    };
+    return () => io.disconnect();
   }, []);
 
   // Scroll zoom-out (Apple product page style), all in CSS: .mcp-scroll is a
@@ -437,13 +393,13 @@ export default function FigmaMcpShowcase({ header }: { header?: ReactNode } = {}
   // card and shrinks to the full grid, then the hub, trails and code card
   // come in. Its own layer, so the phone scale-sync on .mcp-grid is untouched.
   return (
-    <div className="mcp-scroll" ref={trackRef}>
+    <div className="mcp-scroll">
     <div className="mcp-bleed">
       {header}
       {/* rides the track's band: measured while stuck, a sticky element's
           own band lands in the wrong place and the reveal never fires */}
       <div className="mcp-grid-wrap rise-card" data-rise-with=".mcp-scroll" aria-hidden="true" ref={wrapRef}>
-        <div className="mcp-zoom" ref={zoomRef}>
+        <div className="mcp-zoom">
         <div className="mcp-grid" ref={gridRef}>
           <div className="mcp-card" dangerouslySetInnerHTML={{ __html: FIGMA_CARD_HTML }} />
           <div className="mcp-card code-card" dangerouslySetInnerHTML={{ __html: CODE_CARD_HTML }} />

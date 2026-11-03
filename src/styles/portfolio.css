@@ -5243,20 +5243,20 @@
       }
     }
 
-    /* Live edits on the Figma mockup: one 16s loop of Figma + MCP at work.
-         0–12%  Tim opens the Desktop page, switches to Components (sidebar)
-        16–21%  hovers Card / Primary, clicks: selected, properties update
-        22–48%  VS Code: Tim's prompt, Claude calls get_design_context
+    /* Live edits on the Figma mockup: one 20s loop of Figma + MCP at work.
+         0–10%  Tim opens the Desktop page, switches to Components (sidebar)
+        13–17%  hovers Card / Primary, clicks: selected, properties update
+        18–48%  VS Code: Tim's prompt, Claude calls get_design_context
                 (Claude's cursor reads the selection), Card.tsx is written
                 line by line, "+13"
-        52–66%  Tim selects the button and clicks again to set its fill
+        52–63%  Tim selects the button and clicks again to set its fill
                 to the accent token; Card.tsx line 7 syncs
-        66–81%  double-clicks the Mobile Card title and retypes it
-        85–96%  opens comment 1 ("Gap 16px?"); Claude answers in the
+        63–75%  double-clicks the Mobile Card title and retypes it
+        78–97%  opens comment 1 ("Gap 16px?"); Claude answers in the
                 thread and widens the gap through use_figma; back to the
                 Desktop page
        Claude's cursor is only there while MCP is at work (reading the
-       selection 25–37%, answering the comment 86–97%), and the hub and
+       selection 20–40%, answering the comment 79–98%), and the hub and
        trails flow fast only during those calls: Figma -> code for
        get_design_context, code -> Figma for use_figma.
        Cursors: a layer the canvas's size (inset: 0) so translate % is canvas
@@ -5295,11 +5295,11 @@
       --cur-c: var(--primary);
       color: var(--cur-c);
       translate: var(--p-btn-x) 0;
-      animation: mcp-tim-x 16s cubic-bezier(.45, 0, .25, 1) infinite var(--mcp-play);
+      animation: mcp-tim-x 20s cubic-bezier(.45, 0, .25, 1) infinite var(--mcp-play);
     }
     .mcp-cur-y {
       translate: 0 var(--p-btn-y);
-      animation: mcp-tim-y 16s cubic-bezier(.2, .6, .3, 1) infinite var(--mcp-play);
+      animation: mcp-tim-y 20s cubic-bezier(.2, .6, .3, 1) infinite var(--mcp-play);
     }
     .mcp-cur--ai {
       --cur-c: var(--secondary);
@@ -5311,7 +5311,7 @@
       animation-name: mcp-ai-y;
     }
     /* Claude shows up only while an MCP call is at work */
-    .mcp-cur--ai .mcp-cur-in { opacity: 0; animation: mcp-ai-show 16s linear infinite var(--mcp-play); }
+    .mcp-cur--ai .mcp-cur-in { opacity: 0; animation: mcp-ai-show 20s linear infinite var(--mcp-play); }
     .mcp-cur-in {
       position: absolute;
       left: 0;
@@ -5319,7 +5319,7 @@
       transform-origin: 2px 2px;
       filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .3));
     }
-    .mcp-cur--tim .mcp-cur-in { animation: mcp-tim-click 16s linear infinite var(--mcp-play); }
+    .mcp-cur--tim .mcp-cur-in { animation: mcp-tim-click 20s linear infinite var(--mcp-play); }
     .mcp-cur-arrow { display: block; }
     .mcp-cur-tag {
       position: absolute;
@@ -5342,20 +5342,20 @@
       border-radius: 999px;
       border: 1.5px solid var(--cur-c);
       opacity: 0;
-      animation: mcp-tim-ring 16s ease-out infinite var(--mcp-play);
+      animation: mcp-tim-ring 20s ease-out infinite var(--mcp-play);
     }
 
     /* Pages sidebar + page swap */
-    .mcp-op-pg { animation: mcp-op-pg-on 16s linear infinite var(--mcp-play); }
+    .mcp-op-pg { animation: mcp-op-pg-on 20s linear infinite var(--mcp-play); }
     .mcp-op-pg--desk { animation-name: mcp-op-pg-off; }
-    .mcp-op-pg > span:last-child { animation: mcp-op-pg-text-on 16s linear infinite var(--mcp-play); }
+    .mcp-op-pg > span:last-child { animation: mcp-op-pg-text-on 20s linear infinite var(--mcp-play); }
     .mcp-op-pg--desk > span:last-child { animation-name: mcp-op-pg-text-off; }
-    .mcp-op-page { animation: mcp-op-page-in 16s ease-out infinite var(--mcp-play); }
+    .mcp-op-page { animation: mcp-op-page-in 20s ease-out infinite var(--mcp-play); }
     .mcp-op-desk-page {
       position: absolute;
       inset: 22px 20px 20px;
       opacity: 0;
-      animation: mcp-op-page-out 16s ease-out infinite var(--mcp-play);
+      animation: mcp-op-page-out 20s ease-out infinite var(--mcp-play);
     }
     .mcp-op-desk-label {
       position: absolute;
@@ -5419,20 +5419,20 @@
       border-radius: 9px;
       pointer-events: none;
       opacity: 0;
-      animation: mcp-op-card-hover 16s linear infinite var(--mcp-play);
+      animation: mcp-op-card-hover 20s linear infinite var(--mcp-play);
     }
     .mcp-op-sel {
       position: absolute;
       inset: 0;
       z-index: 1;
       pointer-events: none;
-      animation: mcp-op-card-sel 16s linear infinite var(--mcp-play);
+      animation: mcp-op-card-sel 20s linear infinite var(--mcp-play);
     }
     .mcp-op-btn {
       position: relative;
       outline: 1.5px solid transparent;
       outline-offset: 2px;
-      animation: mcp-op-btn-sel 16s linear infinite var(--mcp-play);
+      animation: mcp-op-btn-sel 20s linear infinite var(--mcp-play);
     }
     .mcp-op-btn::after {
       content: '';
@@ -5441,14 +5441,14 @@
       border-radius: inherit;
       background: var(--secondary);
       opacity: 0;
-      animation: mcp-op-recolor 16s linear infinite var(--mcp-play);
+      animation: mcp-op-recolor 20s linear infinite var(--mcp-play);
     }
     .mcp-op-type {
       transform-origin: left center;
       outline: 1px solid transparent;
       outline-offset: 3px;
-      animation: mcp-op-type 16s steps(14, end) infinite var(--mcp-play),
-                 mcp-op-title-sel 16s linear infinite var(--mcp-play);
+      animation: mcp-op-type 20s steps(14, end) infinite var(--mcp-play),
+                 mcp-op-title-sel 20s linear infinite var(--mcp-play);
     }
     .mcp-op-comment {
       position: absolute;
@@ -5470,7 +5470,7 @@
       transform-origin: top left;
       opacity: 0;
       scale: .4;
-      animation: mcp-op-comment 16s cubic-bezier(.3, 1.4, .5, 1) infinite var(--mcp-play);
+      animation: mcp-op-comment 20s cubic-bezier(.3, 1.4, .5, 1) infinite var(--mcp-play);
     }
     .mcp-cm { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
     .mcp-cm-av {
@@ -5490,13 +5490,13 @@
     .mcp-cm-reply {
       padding-top: 5px;
       border-top: 1px solid rgba(var(--mcp-fg-rgb), 0.08);
-      animation: mcp-cm-reply 16s ease-out infinite var(--mcp-play);
+      animation: mcp-cm-reply 20s ease-out infinite var(--mcp-play);
     }
     /* what Claude changes: the Components panel's gap, 8px -> 16px (the
        rows slide down 4 / 8px) with Figma's pink spacing marker */
     .mcp-op-gap { position: relative; }
-    .mcp-op-gap > div:nth-child(2) { animation: mcp-op-gap1 16s cubic-bezier(.3, 0, .2, 1) infinite var(--mcp-play); }
-    .mcp-op-gap > div:nth-child(3) { animation: mcp-op-gap2 16s cubic-bezier(.3, 0, .2, 1) infinite var(--mcp-play); }
+    .mcp-op-gap > div:nth-child(2) { animation: mcp-op-gap1 20s cubic-bezier(.3, 0, .2, 1) infinite var(--mcp-play); }
+    .mcp-op-gap > div:nth-child(3) { animation: mcp-op-gap2 20s cubic-bezier(.3, 0, .2, 1) infinite var(--mcp-play); }
     .mcp-op-gap::after {
       content: '16';
       position: absolute;
@@ -5508,18 +5508,18 @@
       color: #f472b6;
       font: 600 7px/12px system-ui, sans-serif;
       opacity: 0;
-      animation: mcp-op-gap-mark 16s linear infinite var(--mcp-play);
+      animation: mcp-op-gap-mark 20s linear infinite var(--mcp-play);
     }
 
     /* Hub and trails: a slow, dim drift, fast and bright only while an MCP
        call runs (Figma -> code, then code -> Figma), the hub pulsing */
-    .mcp-trail-line { animation: mcp-op-trail 16s linear infinite var(--mcp-play); }
-    .mcp-hub-pill { animation: mcp-op-hub 16s ease-in-out infinite var(--mcp-play); }
-    .mcp-hub-ring { opacity: 0; animation: mcp-op-hub-ring 16s ease-out infinite var(--mcp-play); }
+    .mcp-trail-line { animation: mcp-op-trail 20s linear infinite var(--mcp-play); }
+    .mcp-hub-pill { animation: mcp-op-hub 20s cubic-bezier(.37, 0, .63, 1) infinite var(--mcp-play); }
+    .mcp-hub-ring { opacity: 0; animation: mcp-op-hub-ring 20s cubic-bezier(.22, 1, .36, 1) infinite var(--mcp-play); }
 
     /* VS Code: Card.tsx lines 3–15 are what Claude writes, one by one
-       (--i staggers each line 1% of the loop), and line 7 syncs the fill */
-    .mcp-op-ln { animation: mcp-op-ln 16s ease-out infinite backwards var(--mcp-play); animation-delay: calc(var(--i, 0) * .16s); }
+       (--i staggers each line by .16s), and line 7 syncs the fill */
+    .mcp-op-ln { animation: mcp-op-ln 20s ease-out infinite backwards var(--mcp-play); animation-delay: calc(var(--i, 0) * .16s); }
     .mcp-op-line::before {
       content: '';
       position: absolute;
@@ -5527,7 +5527,7 @@
       background: color-mix(in srgb, var(--secondary) 18%, transparent);
       box-shadow: inset 2px 0 var(--secondary);
       opacity: 0;
-      animation: mcp-op-flash 16s linear infinite var(--mcp-play);
+      animation: mcp-op-flash 20s linear infinite var(--mcp-play);
     }
     /* Claude's chat: Tim's prompt, the Figma MCP tool call, the result */
     .mcp-chat {
@@ -5547,7 +5547,7 @@
       box-shadow: 0 10px 24px rgba(0, 0, 0, .3);
       font: 9.5px/1.3 system-ui, sans-serif;
       color: rgba(var(--mcp-fg-rgb), 0.75);
-      animation: mcp-chat 16s cubic-bezier(.2, .8, .3, 1) infinite var(--mcp-play);
+      animation: mcp-chat 20s cubic-bezier(.2, .8, .3, 1) infinite var(--mcp-play);
     }
     .mcp-chat-head { display: flex; align-items: center; gap: 5px; font-weight: 600; color: rgb(var(--mcp-fg-rgb)); }
     .mcp-chat-user {
@@ -5556,7 +5556,7 @@
       padding: 4px 8px;
       border-radius: 8px 8px 2px 8px;
       background: rgba(var(--mcp-fg-rgb), 0.08);
-      animation: mcp-chat-user 16s ease-out infinite var(--mcp-play);
+      animation: mcp-chat-user 20s ease-out infinite var(--mcp-play);
     }
     .mcp-chat-tool, .mcp-chat-done {
       display: flex;
@@ -5568,8 +5568,8 @@
       white-space: nowrap;
       overflow: hidden;
     }
-    .mcp-chat-tool { animation: mcp-chat-tool 16s ease-out infinite var(--mcp-play); }
-    .mcp-chat-done { animation: mcp-chat-done 16s ease-out infinite var(--mcp-play); }
+    .mcp-chat-tool { animation: mcp-chat-tool 20s ease-out infinite var(--mcp-play); }
+    .mcp-chat-done { animation: mcp-chat-done 20s ease-out infinite var(--mcp-play); }
     .mcp-chat-tool .mcp-mono, .mcp-chat-done .mcp-mono { font-size: 9px; }
     .mcp-chat-done em { margin-left: auto; font-style: normal; color: #34d399; }
     .mcp-chat-st { position: relative; width: 9px; height: 9px; flex: none; }
@@ -5581,9 +5581,9 @@
       border-top-color: var(--secondary);
       opacity: 0;
       animation: mcp-chat-spin .8s linear infinite var(--mcp-play),
-                 mcp-chat-spinning 16s linear infinite var(--mcp-play);
+                 mcp-chat-spinning 20s linear infinite var(--mcp-play);
     }
-    .mcp-chat-ok { position: absolute; inset: 0; animation: mcp-chat-ok 16s linear infinite var(--mcp-play); }
+    .mcp-chat-ok { position: absolute; inset: 0; animation: mcp-chat-ok 20s linear infinite var(--mcp-play); }
     .mcp-chat-write { animation-name: mcp-chat-write; }
     .mcp-chat-write .mcp-chat-spin { animation-name: mcp-chat-spin, mcp-chat-spinning2; }
     .mcp-chat-write .mcp-chat-ok { animation-name: mcp-chat-ok2; }
@@ -5594,195 +5594,200 @@
        85 (click 86.5), aside 91 so the thread reads, back to the Desktop
        page 99 */
     @keyframes mcp-tim-x {
-      0%, 4%      { translate: var(--p-pgdesk-x) 0; }
-      9%, 12%     { translate: var(--p-pgcomp-x) 0; }
-      18%, 24%    { translate: var(--p-card-x) 0; }
-      28%, 48%    { translate: var(--p-rest-x) 0; }
-      53%, 64%    { translate: var(--p-btn-x) 0; }
-      68%, 81%    { translate: var(--p-title-x) 0; }
-      85%, 87.5%  { translate: var(--p-badge-x) 0; }
-      91%, 95%    { translate: var(--p-rest-x) 0; }
-      99%, 100%   { translate: var(--p-pgdesk-x) 0; }
+      0%, 3.2%      { translate: var(--p-pgdesk-x) 0; }
+      7.2%, 9.6%     { translate: var(--p-pgcomp-x) 0; }
+      14.4%, 19.2%    { translate: var(--p-card-x) 0; }
+      25.34%, 48.4%    { translate: var(--p-rest-x) 0; }
+      52.4%, 61.2%    { translate: var(--p-btn-x) 0; }
+      64.4%, 74.8%    { translate: var(--p-title-x) 0; }
+      78%, 80%  { translate: var(--p-badge-x) 0; }
+      84.65%, 96%    { translate: var(--p-rest-x) 0; }
+      99.2%, 100%   { translate: var(--p-pgdesk-x) 0; }
     }
     @keyframes mcp-tim-y {
-      0%, 4%      { translate: 0 var(--p-pgdesk-y); }
-      9%, 12%     { translate: 0 var(--p-pgcomp-y); }
-      18%, 24%    { translate: 0 var(--p-card-y); }
-      28%, 48%    { translate: 0 var(--p-rest-y); }
-      53%, 64%    { translate: 0 var(--p-btn-y); }
-      68%, 81%    { translate: 0 var(--p-title-y); }
-      85%, 87.5%  { translate: 0 var(--p-badge-y); }
-      91%, 95%    { translate: 0 var(--p-rest-y); }
-      99%, 100%   { translate: 0 var(--p-pgdesk-y); }
+      0%, 3.2%      { translate: 0 var(--p-pgdesk-y); }
+      7.2%, 9.6%     { translate: 0 var(--p-pgcomp-y); }
+      14.4%, 19.2%    { translate: 0 var(--p-card-y); }
+      25.34%, 48.4%    { translate: 0 var(--p-rest-y); }
+      52.4%, 61.2%    { translate: 0 var(--p-btn-y); }
+      64.4%, 74.8%    { translate: 0 var(--p-title-y); }
+      78%, 80%  { translate: 0 var(--p-badge-y); }
+      84.65%, 96%    { translate: 0 var(--p-rest-y); }
+      99.2%, 100%   { translate: 0 var(--p-pgdesk-y); }
     }
     /* Claude: reads the selection 25–37 (while get_design_context spins),
        out of sight while it writes Card.tsx, then answers comment 1 87–96 */
     @keyframes mcp-ai-x {
-      0%, 25%     { translate: var(--p-read1-x) 0; }
-      33%, 36.5%  { translate: var(--p-read2-x) 0; }
-      40%, 86%    { translate: var(--p-cpre-x) 0; }
-      89.5%, 96%  { translate: var(--p-reply-x) 0; }
+      0%, 20%     { translate: var(--p-read1-x) 0; }
+      35.22%, 39.2%  { translate: var(--p-read2-x) 0; }
+      42%, 78.8%    { translate: var(--p-cpre-x) 0; }
+      81.6%, 96.8%  { translate: var(--p-reply-x) 0; }
       100%        { translate: var(--p-read1-x) 0; }
     }
     @keyframes mcp-ai-y {
-      0%, 25%     { translate: 0 var(--p-read1-y); }
-      33%, 36.5%  { translate: 0 var(--p-read2-y); }
-      40%, 86%    { translate: 0 var(--p-cpre-y); }
-      89.5%, 96%  { translate: 0 var(--p-reply-y); }
+      0%, 20%     { translate: 0 var(--p-read1-y); }
+      35.22%, 39.2%  { translate: 0 var(--p-read2-y); }
+      42%, 78.8%    { translate: 0 var(--p-cpre-y); }
+      81.6%, 96.8%  { translate: 0 var(--p-reply-y); }
       100%        { translate: 0 var(--p-read1-y); }
     }
     @keyframes mcp-ai-show {
-      0%, 23.5%, 38%, 85.5%, 97.5%, 100% { opacity: 0; }
-      25%, 36.5%, 87%, 96% { opacity: 1; }
+      0%, 18.8%, 40.4%, 78.4%, 98%, 100% { opacity: 0; }
+      20%, 39.2%, 79.6%, 96.8% { opacity: 1; }
     }
     @keyframes mcp-tim-click {
-      0%, 9.6%, 10.6%, 19.6%, 20.6%, 54.6%, 55.6%, 60.6%, 61.6%,
-      69.2%, 69.8%, 70.4%, 71%, 86.1%, 87.1%, 100% { scale: 1; }
-      10.1%, 20.1%, 55.1%, 61.1%, 69.5%, 70.7%, 86.6% { scale: .82; }
+      0%, 7.68%, 8.48%, 15.68%, 16.48%, 53.68%, 54.48%, 58.48%, 59.28%,
+      65.36%, 65.84%, 66.32%, 66.8%, 78.88%, 79.68%, 100% { scale: 1; }
+      8.08%, 16.08%, 54.08%, 58.88%, 65.6%, 66.56%, 79.28% { scale: .82; }
     }
     @keyframes mcp-tim-ring {
-      0%, 10%, 14%, 20%, 24%, 55%, 59%, 61%, 65%, 69.5%, 73.5%, 86.5%, 90.5%, 100% { opacity: 0; scale: .3; }
-      10.1%, 20.1%, 55.1%, 61.1%, 69.6%, 86.6% { opacity: .9; scale: .3; }
-      13.5%, 23.5%, 58.5%, 64.5%, 73%, 90% { opacity: 0; scale: 1.4; }
+      0%, 8%, 11.2%, 16%, 19.2%, 54%, 57.2%, 58.8%, 62%, 65.6%, 68.8%, 79.2%, 82.4%, 100% { opacity: 0; scale: .3; }
+      8.08%, 16.08%, 54.08%, 58.88%, 65.68%, 79.28% { opacity: .9; scale: .3; }
+      10.8%, 18.8%, 56.8%, 61.6%, 68.4%, 82% { opacity: 0; scale: 1.4; }
     }
     @keyframes mcp-op-pg-on {
-      0%, 10.3%, 98.5%, 100% { background-color: transparent; }
-      10.8%, 97.5% { background-color: rgba(var(--mcp-fg-rgb), 0.07); }
+      0%, 8.24%, 98.8%, 100% { background-color: transparent; }
+      8.64%, 98% { background-color: rgba(var(--mcp-fg-rgb), 0.07); }
     }
     @keyframes mcp-op-pg-off {
-      0%, 10.3%, 98.5%, 100% { background-color: rgba(var(--mcp-fg-rgb), 0.07); }
-      10.8%, 97.5% { background-color: transparent; }
+      0%, 8.24%, 98.8%, 100% { background-color: rgba(var(--mcp-fg-rgb), 0.07); }
+      8.64%, 98% { background-color: transparent; }
     }
     @keyframes mcp-op-pg-text-on {
-      0%, 10.3%, 98.5%, 100% { color: rgba(var(--mcp-fg-rgb), 0.65); }
-      10.8%, 97.5% { color: rgb(var(--mcp-fg-rgb)); }
+      0%, 8.24%, 98.8%, 100% { color: rgba(var(--mcp-fg-rgb), 0.65); }
+      8.64%, 98% { color: rgb(var(--mcp-fg-rgb)); }
     }
     @keyframes mcp-op-pg-text-off {
-      0%, 10.3%, 98.5%, 100% { color: rgb(var(--mcp-fg-rgb)); }
-      10.8%, 97.5% { color: rgba(var(--mcp-fg-rgb), 0.65); }
+      0%, 8.24%, 98.8%, 100% { color: rgb(var(--mcp-fg-rgb)); }
+      8.64%, 98% { color: rgba(var(--mcp-fg-rgb), 0.65); }
     }
     @keyframes mcp-op-page-in {
-      0%, 10.5%, 99%, 100% { opacity: 0; translate: 0 6px; }
-      13.5%, 97% { opacity: 1; translate: 0 0; }
+      0%, 8.4%, 99.2%, 100% { opacity: 0; translate: 0 6px; }
+      10.8%, 97.6% { opacity: 1; translate: 0 0; }
     }
     @keyframes mcp-op-page-out {
-      0%, 10.5%, 99.5%, 100% { opacity: 1; }
-      12%, 97.5% { opacity: 0; }
+      0%, 8.4%, 99.6%, 100% { opacity: 1; }
+      9.6%, 98% { opacity: 0; }
     }
     @keyframes mcp-op-card-hover {
-      0%, 15.5%, 20.3%, 100% { opacity: 0; }
-      16.5%, 20% { opacity: 1; }
+      0%, 12.4%, 16.24%, 100% { opacity: 0; }
+      13.2%, 16% { opacity: 1; }
     }
     @keyframes mcp-op-card-sel {
-      0%, 20%, 55.2%, 100% { opacity: 0; }
-      20.4%, 54.8% { opacity: 1; }
+      0%, 16%, 54.16%, 100% { opacity: 0; }
+      16.32%, 53.84% { opacity: 1; }
     }
     @keyframes mcp-op-btn-sel {
-      0%, 51.5%, 67%, 100% { outline-color: transparent; }
-      52.5%, 54.9% { outline-color: rgba(56, 189, 248, .55); }
-      55.1%, 66% { outline-color: #38bdf8; }
+      0%, 51.2%, 63.6%, 100% { outline-color: transparent; }
+      52%, 53.92% { outline-color: rgba(56, 189, 248, .55); }
+      54.08%, 62.8% { outline-color: #38bdf8; }
     }
     @keyframes mcp-op-title-sel {
-      0%, 65.5%, 82%, 100% { outline-color: transparent; }
-      66.5%, 69.4% { outline-color: rgba(56, 189, 248, .55); }
-      69.6%, 81% { outline-color: #38bdf8; }
+      0%, 62.4%, 75.6%, 100% { outline-color: transparent; }
+      63.2%, 65.52% { outline-color: rgba(56, 189, 248, .55); }
+      65.68%, 74.8% { outline-color: #38bdf8; }
     }
     @keyframes mcp-op-recolor {
-      0%, 61.1%, 98%, 100% { opacity: 0; }
-      62.5%, 96% { opacity: 1; }
+      0%, 58.88%, 98.4%, 100% { opacity: 0; }
+      60%, 96.8% { opacity: 1; }
     }
     @keyframes mcp-op-type {
-      0%, 71%, 100% { scale: 1 1; }
-      71.5% { scale: .04 1; }
-      80.5% { scale: 1 1; }
+      0%, 66.8%, 100% { scale: 1 1; }
+      67.2% { scale: .04 1; }
+      74.4% { scale: 1 1; }
     }
     @keyframes mcp-op-comment {
-      0%, 86.6%, 100% { opacity: 0; scale: .4; }
-      88.5%, 96.5% { opacity: 1; scale: 1; }
-      98% { opacity: 0; scale: .9; }
+      0%, 79.28%, 100% { opacity: 0; scale: .4; }
+      80.8%, 97.2% { opacity: 1; scale: 1; }
+      98.4% { opacity: 0; scale: .9; }
     }
     @keyframes mcp-cm-reply {
-      0%, 90%, 100% { opacity: 0; translate: 0 4px; }
-      91%, 99% { opacity: 1; translate: 0 0; }
+      0%, 82%, 100% { opacity: 0; translate: 0 4px; }
+      84.65%, 99.2% { opacity: 1; translate: 0 0; }
     }
     @keyframes mcp-op-gap1 {
-      0%, 91.5%, 100% { translate: 0 0; }
-      93%, 97% { translate: 0 4px; }
+      0%, 86.9%, 100% { translate: 0 0; }
+      93.66%, 97.6% { translate: 0 4px; }
     }
     @keyframes mcp-op-gap2 {
-      0%, 91.5%, 100% { translate: 0 0; }
-      93%, 97% { translate: 0 8px; }
+      0%, 86.9%, 100% { translate: 0 0; }
+      93.66%, 97.6% { translate: 0 8px; }
     }
     @keyframes mcp-op-gap-mark {
-      0%, 91.5%, 96.5%, 100% { opacity: 0; }
-      92.5%, 95.5% { opacity: 1; }
+      0%, 86.9%, 97.2%, 100% { opacity: 0; }
+      91.41%, 96.4% { opacity: 1; }
     }
-    /* dash period 16 (6 + 10): drift ~ -24 over 25%; get_design_context
-       25.5–34 runs it forward fast; use_figma 90.5–93.2 runs it back */
+    /* dash period 16 (6 + 10): a steady drift (~16 per second) all loop;
+       get_design_context 20.4–37.2 runs it forward faster, use_figma
+       82.4–94.56 runs it back. Each call eases in and out on a sine curve,
+       averaging ~4.5x the drift (peak ~7x): a gentle swell, no jolt. */
     @keyframes mcp-op-trail {
       0%       { stroke-dashoffset: 0; opacity: .45; }
-      25.5%    { stroke-dashoffset: -24; opacity: .45; }
-      26.5%, 33% { opacity: 1; }
-      34%      { stroke-dashoffset: -344; opacity: .45; }
-      90.5%    { stroke-dashoffset: -400; opacity: .45; }
-      91.2%, 92.5% { opacity: 1; }
-      93.2%    { stroke-dashoffset: -240; opacity: .45; }
-      100%     { stroke-dashoffset: -256; opacity: .45; }
+      20.4%    { stroke-dashoffset: -64; opacity: .45; animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+      26.33%, 31.27% { opacity: 1; animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+      37.2%    { stroke-dashoffset: -304; opacity: .45; }
+      82.4%    { stroke-dashoffset: -448; opacity: .45; animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+      87.35%, 89.61% { opacity: 1; animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+      94.56%   { stroke-dashoffset: -304; opacity: .45; }
+      100%     { stroke-dashoffset: -320; opacity: .45; }
     }
+    /* the hub pulses three times for get_design_context, once for
+       use_figma, each pulse a sine swell peaking with its ripple */
     @keyframes mcp-op-hub {
-      0%, 25.5%, 28.5%, 31.5%, 34%, 90.5%, 93.5%, 100% { scale: 1; }
-      27%, 30%, 33%, 92% { scale: 1.07; }
+      0%, 20.4%, 26.13%, 31.86%, 37.6%, 82.4%, 95.2%, 100% { scale: 1; }
+      23.17%, 28.9%, 34.63%, 89.16% { scale: 1.06; }
     }
+    /* ripples fade in, then spread and fade on an ease-out curve */
     @keyframes mcp-op-hub-ring {
-      0%, 25.5%, 90.5%, 100% { opacity: 0; scale: 1; }
-      25.6%, 28.1%, 30.6%, 90.6% { opacity: .9; scale: 1; }
-      28%, 30.5%, 33%, 93% { opacity: 0; scale: 1.6; }
+      0%, 20.4%, 26.13%, 31.86%, 82.4%, 100% { opacity: 0; scale: 1; }
+      21.19%, 26.92%, 32.65%, 84.2% { opacity: .9; scale: 1.04; }
+      25.93%, 31.67%, 37.2%, 94.64% { opacity: 0; scale: 1.6; }
     }
     @keyframes mcp-op-ln {
-      0%, 35% { opacity: 0; translate: -4px 0; }
-      36%, 96% { opacity: 1; translate: 0 0; }
-      98%, 100% { opacity: 0; translate: 0 0; }
+      0%, 38% { opacity: 0; translate: -4px 0; }
+      38.8%, 96.8% { opacity: 1; translate: 0 0; }
+      98.4%, 100% { opacity: 0; translate: 0 0; }
     }
     @keyframes mcp-op-flash {
-      0%, 63%, 72%, 100% { opacity: 0; }
-      64.5%, 69% { opacity: 1; }
+      0%, 60.4%, 67.6%, 100% { opacity: 0; }
+      61.6%, 65.2% { opacity: 1; }
     }
     @keyframes mcp-chat {
-      0%, 21.5%, 98%, 100% { opacity: 0; translate: 0 10px; }
-      23%, 96% { opacity: 1; translate: 0 0; }
+      0%, 17.2%, 98.4%, 100% { opacity: 0; translate: 0 10px; }
+      18.4%, 96.8% { opacity: 1; translate: 0 0; }
     }
     @keyframes mcp-chat-user {
-      0%, 22.5%, 98%, 100% { opacity: 0; translate: 6px 0; }
-      23.5%, 97% { opacity: 1; translate: 0 0; }
+      0%, 18%, 98.4%, 100% { opacity: 0; translate: 6px 0; }
+      18.8%, 97.6% { opacity: 1; translate: 0 0; }
     }
     @keyframes mcp-chat-tool {
-      0%, 24.5%, 98%, 100% { opacity: 0; translate: 0 4px; }
-      25.5%, 97% { opacity: 1; translate: 0 0; }
+      0%, 19.6%, 98.4%, 100% { opacity: 0; translate: 0 4px; }
+      20.4%, 97.6% { opacity: 1; translate: 0 0; }
     }
     @keyframes mcp-chat-done {
-      0%, 47.5%, 98%, 100% { opacity: 0; translate: 0 4px; }
-      48.5%, 97% { opacity: 1; translate: 0 0; }
+      0%, 48%, 98.4%, 100% { opacity: 0; translate: 0 4px; }
+      48.8%, 97.6% { opacity: 1; translate: 0 0; }
     }
     @keyframes mcp-chat-spin { to { rotate: 1turn; } }
     @keyframes mcp-chat-spinning {
-      0%, 25%, 34%, 100% { opacity: 0; }
-      25.5%, 33.5% { opacity: 1; }
+      0%, 20%, 37.2%, 100% { opacity: 0; }
+      20.4%, 36.21% { opacity: 1; }
     }
     @keyframes mcp-chat-write {
-      0%, 90%, 98%, 100% { opacity: 0; translate: 0 4px; }
-      91%, 97% { opacity: 1; translate: 0 0; }
+      0%, 82%, 98.4%, 100% { opacity: 0; translate: 0 4px; }
+      84.65%, 97.6% { opacity: 1; translate: 0 0; }
     }
     @keyframes mcp-chat-spinning2 {
-      0%, 90.5%, 93%, 100% { opacity: 0; }
-      91%, 92.6% { opacity: 1; }
+      0%, 82.4%, 93.66%, 100% { opacity: 0; }
+      84.65%, 91.86% { opacity: 1; }
     }
     @keyframes mcp-chat-ok2 {
-      0%, 92.8%, 100% { opacity: 0; scale: .5; }
-      93.5%, 97% { opacity: 1; scale: 1; }
+      0%, 92.76%, 100% { opacity: 0; scale: .5; }
+      94.8%, 97.6% { opacity: 1; scale: 1; }
     }
     @keyframes mcp-chat-ok {
-      0%, 33.8%, 100% { opacity: 0; scale: .5; }
-      34.6%, 97% { opacity: 1; scale: 1; }
+      0%, 36.8%, 100% { opacity: 0; scale: .5; }
+      37.68%, 97.6% { opacity: 1; scale: 1; }
     }
     /* Tablet and phone hide the Pages sidebar: Tim starts on the canvas
        and the page swap plays without the click target. */

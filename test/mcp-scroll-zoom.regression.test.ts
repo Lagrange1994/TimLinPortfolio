@@ -12,7 +12,7 @@ const block = css.slice(css.indexOf('@supports (animation-timeline: view()) {'))
 
 describe('Figma MCP scroll zoom-out', () => {
   it('nests track > bleed > wrap > zoom > grid, so the phone scale-sync keeps its own layer', () => {
-    expect(tsx).toMatch(/className="mcp-scroll" ref=\{trackRef\}>\s*<div className="mcp-bleed">[\s\S]*?<div className="mcp-grid-wrap[^"]*"[^>]*>\s*<div className="mcp-zoom" ref=\{zoomRef\}>\s*<div className="mcp-grid" ref=\{gridRef\}>/);
+    expect(tsx).toMatch(/className="mcp-scroll">\s*<div className="mcp-bleed">[\s\S]*?<div className="mcp-grid-wrap[^"]*"[^>]*>\s*<div className="mcp-zoom">\s*<div className="mcp-grid" ref=\{gridRef\}>/);
   });
 
   // Measured while stuck, the sticky wrap's own ScrollTrigger band landed in
