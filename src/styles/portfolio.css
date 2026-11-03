@@ -5800,7 +5800,7 @@
        mockup, as before the live edits existed. */
     @media (prefers-reduced-motion: reduce), (max-width: 767px) {
       .mcp-cur, .mcp-cur-y, .mcp-cur-in, .mcp-cur-ring, .mcp-op-btn, .mcp-op-btn::after,
-      .mcp-op-line::before, .mcp-op-type, .mcp-op-gap > div, .mcp-op-gap::after, .mcp-cm-reply,
+      .mcp-op-line::before, .mcp-op-type, .mcp-op-gap > div:nth-child(n), .mcp-op-gap::after, .mcp-cm-reply,
       .mcp-trail-line, .mcp-hub-pill, .mcp-hub-ring,
       .mcp-op-comment, .mcp-op-pg, .mcp-op-pg > span:last-child, .mcp-op-page,
       .mcp-op-desk-page, .mcp-op-hover, .mcp-op-sel, .mcp-op-ln, .mcp-chat, .mcp-chat-user,

@@ -270,9 +270,11 @@ describe('Figma MCP live edits', () => {
     // the keyframes on an element already listed)
     const animated = new Set(Array.from(ops.matchAll(/\n {4}([^\n{@]+?) \{[^}]*animation: mcp-/g), m => m[1].trim()));
     for (const sel of animated) for (const one of sel.split(/,\s*/)) {
-      // modifiers and :nth-child variants are covered by their base selector
-      if (one.includes('--') || one.includes(':nth-child')) continue;
-      expect(list, one).toContain(one.replace(/^\.mcp-scroll /, ''));
+      // modifiers are covered by their base selector. :nth-child(N) rules
+      // outrank a plain off-switch (the gap rows kept looping on phones),
+      // so they need an equally specific :nth-child(n) one
+      if (one.includes('--')) continue;
+      expect(list, one).toContain(one.replace(/^\.mcp-scroll /, '').replace(/:nth-child\(\d+\)/, ':nth-child(n)'));
     }
     expect(rm).toMatch(/\.mcp-op-desk-page \{ display: none; \}/);
   });
