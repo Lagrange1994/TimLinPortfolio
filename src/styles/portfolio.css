@@ -4980,7 +4980,9 @@
        rhythm copied verbatim from .ai-chips-header (How I Use AI section). */
     .figma-mcp-header {
       text-align: center;
-      margin-top: 120px;
+      /* --mcp-head-gap: set on .mcp-scroll (the heading renders inside the
+         showcase's pinned frame, see FigmaMcpShowcase) */
+      margin-top: var(--mcp-head-gap, 120px);
       margin-bottom: 0;
     }
     .figma-mcp-header h3 {
@@ -5179,29 +5181,35 @@
     /* Scroll zoom-out (see FigmaMcpShowcase.tsx). .mcp-scroll is a tall
        track; while it scrolls past, .mcp-bleed sticks to the viewport and
        the track's view-timeline plays the steps below. Browsers without
-       scroll-driven animations, and reduced motion, keep the plain grid. */
+       scroll-driven animations, reduced motion and phones (< 768px) keep
+       the plain grid. */
     @supports (animation-timeline: view()) {
-      @media (prefers-reduced-motion: no-preference) {
+      @media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
         .mcp-scroll {
           height: 240svh;
           view-timeline: --mcp-zoom block;
         }
+        /* The heading sits in the upper quarter (clear of the navbar) and
+           stays there while the zoom plays; the grid follows below it. */
         .mcp-scroll .mcp-bleed {
           position: sticky;
           top: 0;
           height: 100svh;
           display: flex;
           flex-direction: column;
-          justify-content: center;
+          justify-content: flex-start;
+          padding-top: max(96px, 12svh);
           /* the zoomed grid is cut at the screen edges, both axes */
           overflow: clip;
         }
-        .mcp-scroll .mcp-grid-wrap { margin-top: 0; }
+        .mcp-scroll .figma-mcp-header { margin: 0; }
+        .mcp-scroll .mcp-grid-wrap { margin-top: clamp(28px, 5svh, 56px); }
 
         /* 0–50%: zoomed in on the Figma card (centred: its centre sits at
-           ~24.4% of the grid), shrinking to the full grid. */
+           ~24.4% of the grid), shrinking to the full grid. Anchored at the
+           top so the zoomed grid grows down, never over the heading. */
         .mcp-zoom {
-          transform-origin: 24.4% 50%;
+          transform-origin: 24.4% 0;
           animation: mcp-zoom-out cubic-bezier(.3, 0, .2, 1) both;
           animation-timeline: --mcp-zoom;
           animation-range: contain 0% contain 50%;
@@ -5235,15 +5243,28 @@
       }
     }
 
-    /* Live edits on the Figma mockup: a 12s loop. Tim opens the file on the
-       Desktop page and switches to Components in the Pages sidebar, then
-       recolours the
-       Card / Primary button (Claude pushes it to Card.tsx: line 7 flashes),
-       retypes the Mobile Card title and opens comment 1; Claude's cursor
-       tweaks the dashboard chart. Each cursor is a layer the canvas's size
-       (inset: 0), so translate % lands on canvas coordinates; the stops are
-       the --p-* vars on .mcp-ops. Compositor-only (transform / opacity), and
-       paused unless .mcp-grid.is-live (on screen, see FigmaMcpShowcase). */
+    /* Live edits on the Figma mockup: one 16s loop of Figma + MCP at work.
+         0–12%  Tim opens the Desktop page, switches to Components (sidebar)
+        16–21%  hovers Card / Primary, clicks: selected, properties update
+        22–48%  VS Code: Tim's prompt, Claude calls get_design_context
+                (Claude's cursor reads the selection), Card.tsx is written
+                line by line, "+13"
+        52–66%  Tim selects the button and clicks again to set its fill
+                to the accent token; Card.tsx line 7 syncs
+        66–81%  double-clicks the Mobile Card title and retypes it
+        85–96%  opens comment 1 ("Gap 16px?"); Claude answers in the
+                thread and widens the gap through use_figma; back to the
+                Desktop page
+       Claude's cursor is only there while MCP is at work (reading the
+       selection 25–37%, answering the comment 86–97%), and the hub and
+       trails flow fast only during those calls: Figma -> code for
+       get_design_context, code -> Figma for use_figma.
+       Cursors: a layer the canvas's size (inset: 0) so translate % is canvas
+       coordinates; x and y on two nested layers with different easing, so
+       each move is an arc, slowing into the target before the click. Stops
+       are the --p-*-x / --p-*-y vars on .mcp-ops. Compositor-only where it
+       moves (transform / opacity), and paused unless .mcp-grid.is-live (on
+       screen, see FigmaMcpShowcase). */
     .mcp-grid { --mcp-play: paused; }
     .mcp-grid.is-live { --mcp-play: running; }
     .mcp-ops {
@@ -5252,32 +5273,45 @@
       z-index: 6;
       pointer-events: none;
       /* x in % of the canvas (its columns are fr), y in px (its rows are
-         fixed px, while the canvas height follows the code card). The two
-         page items sit in the sidebar, left of the canvas: plain px. */
-      --p-pg-desk: -80px 159px;
-      --p-pg-comp: -80px 91px;
-      --p-comp: 28% 222px;
-      --p-btn: 88% 296px;
-      --p-title: 86% 102px;
-      --p-badge: 48% 205px;
-      --p-dash: 21% 43px;
-      --p-chart: 23% 119px;
-      --p-kpi: 45% 73px;
-      --p-chip: 26% 262px;
+         fixed px, while the canvas height follows the code card). Sidebar
+         page items sit left of the canvas: px from its edge. */
+      --p-pgdesk-x: -80px;            --p-pgdesk-y: 159px;
+      --p-pgcomp-x: -80px;            --p-pgcomp-y: 91px;
+      --p-card-x: 66%;                --p-card-y: 250px;
+      --p-rest-x: 58%;                --p-rest-y: 362px;
+      --p-btn-x: 88%;                 --p-btn-y: 296px;
+      --p-title-x: 86%;               --p-title-y: 102px;
+      --p-badge-x: 48%;               --p-badge-y: 205px;
+      --p-read1-x: 56%;               --p-read1-y: 228px;
+      --p-read2-x: 90%;               --p-read2-y: 252px;
+      --p-cpre-x: 80%;                --p-cpre-y: 330px;
+      --p-reply-x: 60%;               --p-reply-y: 250px;
     }
-    .mcp-cur {
+    .mcp-cur, .mcp-cur-y {
       position: absolute;
       inset: 0;
+    }
+    .mcp-cur {
       --cur-c: var(--primary);
       color: var(--cur-c);
-      translate: var(--p-comp);
-      animation: mcp-tim-path 12s cubic-bezier(.45, 0, .25, 1) infinite var(--mcp-play);
+      translate: var(--p-btn-x) 0;
+      animation: mcp-tim-x 16s cubic-bezier(.45, 0, .25, 1) infinite var(--mcp-play);
+    }
+    .mcp-cur-y {
+      translate: 0 var(--p-btn-y);
+      animation: mcp-tim-y 16s cubic-bezier(.2, .6, .3, 1) infinite var(--mcp-play);
     }
     .mcp-cur--ai {
       --cur-c: var(--secondary);
-      translate: var(--p-dash);
-      animation-name: mcp-ai-path;
+      translate: var(--p-read2-x) 0;
+      animation-name: mcp-ai-x;
     }
+    .mcp-cur--ai .mcp-cur-y {
+      translate: 0 var(--p-read2-y);
+      animation-name: mcp-ai-y;
+    }
+    /* Claude shows up only while an MCP call is at work */
+    .mcp-cur--ai .mcp-cur-in { opacity: 0; animation: mcp-ai-show 16s linear infinite var(--mcp-play); }
     .mcp-cur-in {
       position: absolute;
       left: 0;
@@ -5285,7 +5319,7 @@
       transform-origin: 2px 2px;
       filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .3));
     }
-    .mcp-cur--tim .mcp-cur-in { animation: mcp-tim-click 12s linear infinite var(--mcp-play); }
+    .mcp-cur--tim .mcp-cur-in { animation: mcp-tim-click 16s linear infinite var(--mcp-play); }
     .mcp-cur-arrow { display: block; }
     .mcp-cur-tag {
       position: absolute;
@@ -5308,18 +5342,20 @@
       border-radius: 999px;
       border: 1.5px solid var(--cur-c);
       opacity: 0;
-      animation: mcp-tim-ring 12s ease-out infinite var(--mcp-play);
+      animation: mcp-tim-ring 16s ease-out infinite var(--mcp-play);
     }
-    .mcp-op-pg { animation: mcp-op-pg-on 12s linear infinite var(--mcp-play); }
+
+    /* Pages sidebar + page swap */
+    .mcp-op-pg { animation: mcp-op-pg-on 16s linear infinite var(--mcp-play); }
     .mcp-op-pg--desk { animation-name: mcp-op-pg-off; }
-    .mcp-op-pg > span:last-child { animation: mcp-op-pg-text-on 12s linear infinite var(--mcp-play); }
+    .mcp-op-pg > span:last-child { animation: mcp-op-pg-text-on 16s linear infinite var(--mcp-play); }
     .mcp-op-pg--desk > span:last-child { animation-name: mcp-op-pg-text-off; }
-    .mcp-op-page { animation: mcp-op-page-in 12s ease-out infinite var(--mcp-play); }
+    .mcp-op-page { animation: mcp-op-page-in 16s ease-out infinite var(--mcp-play); }
     .mcp-op-desk-page {
       position: absolute;
       inset: 22px 20px 20px;
       opacity: 0;
-      animation: mcp-op-page-out 12s ease-out infinite var(--mcp-play);
+      animation: mcp-op-page-out 16s ease-out infinite var(--mcp-play);
     }
     .mcp-op-desk-label {
       position: absolute;
@@ -5374,7 +5410,30 @@
     }
     .mcp-op-desk-zoom .mcp-dash-donut > div { inset: 16px !important; }
     .mcp-op-desk-zoom .mcp-dash-donut-row > div:last-child { gap: 6px !important; }
-    .mcp-op-btn { position: relative; }
+    /* Figma's hover outline and selection on Card / Primary, the button
+       and the Mobile Card title */
+    .mcp-op-hover {
+      position: absolute;
+      inset: -1px;
+      border: 1px solid #38bdf8;
+      border-radius: 9px;
+      pointer-events: none;
+      opacity: 0;
+      animation: mcp-op-card-hover 16s linear infinite var(--mcp-play);
+    }
+    .mcp-op-sel {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      animation: mcp-op-card-sel 16s linear infinite var(--mcp-play);
+    }
+    .mcp-op-btn {
+      position: relative;
+      outline: 1.5px solid transparent;
+      outline-offset: 2px;
+      animation: mcp-op-btn-sel 16s linear infinite var(--mcp-play);
+    }
     .mcp-op-btn::after {
       content: '';
       position: absolute;
@@ -5382,8 +5441,85 @@
       border-radius: inherit;
       background: var(--secondary);
       opacity: 0;
-      animation: mcp-op-recolor 12s linear infinite var(--mcp-play);
+      animation: mcp-op-recolor 16s linear infinite var(--mcp-play);
     }
+    .mcp-op-type {
+      transform-origin: left center;
+      outline: 1px solid transparent;
+      outline-offset: 3px;
+      animation: mcp-op-type 16s steps(14, end) infinite var(--mcp-play),
+                 mcp-op-title-sel 16s linear infinite var(--mcp-play);
+    }
+    .mcp-op-comment {
+      position: absolute;
+      top: 8px;
+      left: calc(100% - 2px);
+      z-index: 3;
+      width: 118px;
+      box-sizing: border-box;
+      padding: 6px 7px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      border-radius: 8px 8px 8px 2px;
+      font: 8.5px/1.25 system-ui, sans-serif;
+      color: rgba(var(--mcp-fg-rgb), 0.8);
+      background: var(--mcp-card-bg);
+      border: 1px solid rgba(var(--mcp-fg-rgb), 0.12);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, .28);
+      transform-origin: top left;
+      opacity: 0;
+      scale: .4;
+      animation: mcp-op-comment 16s cubic-bezier(.3, 1.4, .5, 1) infinite var(--mcp-play);
+    }
+    .mcp-cm { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+    .mcp-cm-av {
+      width: 12px;
+      height: 12px;
+      flex: none;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      /* on the accent fills: literal white, both themes */
+      background: var(--primary);
+      color: #fff;
+      font: 700 7px/1 system-ui, sans-serif;
+      font-style: normal;
+    }
+    .mcp-cm-av.is-ai { background: var(--secondary); }
+    .mcp-cm-reply {
+      padding-top: 5px;
+      border-top: 1px solid rgba(var(--mcp-fg-rgb), 0.08);
+      animation: mcp-cm-reply 16s ease-out infinite var(--mcp-play);
+    }
+    /* what Claude changes: the Components panel's gap, 8px -> 16px (the
+       rows slide down 4 / 8px) with Figma's pink spacing marker */
+    .mcp-op-gap { position: relative; }
+    .mcp-op-gap > div:nth-child(2) { animation: mcp-op-gap1 16s cubic-bezier(.3, 0, .2, 1) infinite var(--mcp-play); }
+    .mcp-op-gap > div:nth-child(3) { animation: mcp-op-gap2 16s cubic-bezier(.3, 0, .2, 1) infinite var(--mcp-play); }
+    .mcp-op-gap::after {
+      content: '16';
+      position: absolute;
+      left: 62%;
+      top: 25px;
+      height: 12px;
+      padding-left: 3px;
+      border-left: 1px solid #f472b6;
+      color: #f472b6;
+      font: 600 7px/12px system-ui, sans-serif;
+      opacity: 0;
+      animation: mcp-op-gap-mark 16s linear infinite var(--mcp-play);
+    }
+
+    /* Hub and trails: a slow, dim drift, fast and bright only while an MCP
+       call runs (Figma -> code, then code -> Figma), the hub pulsing */
+    .mcp-trail-line { animation: mcp-op-trail 16s linear infinite var(--mcp-play); }
+    .mcp-hub-pill { animation: mcp-op-hub 16s ease-in-out infinite var(--mcp-play); }
+    .mcp-hub-ring { opacity: 0; animation: mcp-op-hub-ring 16s ease-out infinite var(--mcp-play); }
+
+    /* VS Code: Card.tsx lines 3–15 are what Claude writes, one by one
+       (--i staggers each line 1% of the loop), and line 7 syncs the fill */
+    .mcp-op-ln { animation: mcp-op-ln 16s ease-out infinite backwards var(--mcp-play); animation-delay: calc(var(--i, 0) * .16s); }
     .mcp-op-line::before {
       content: '';
       position: absolute;
@@ -5391,133 +5527,288 @@
       background: color-mix(in srgb, var(--secondary) 18%, transparent);
       box-shadow: inset 2px 0 var(--secondary);
       opacity: 0;
-      animation: mcp-op-flash 12s linear infinite var(--mcp-play);
+      animation: mcp-op-flash 16s linear infinite var(--mcp-play);
     }
-    .mcp-op-type {
-      transform-origin: left center;
-      animation: mcp-op-type 12s steps(14, end) infinite var(--mcp-play);
-    }
-    .mcp-op-bars > span {
-      transform-origin: bottom;
-      animation: mcp-op-bar 12s ease-in-out infinite var(--mcp-play);
-    }
-    .mcp-op-bars > span:nth-child(even) { animation-name: mcp-op-bar-alt; }
-    .mcp-op-comment {
+    /* Claude's chat: Tim's prompt, the Figma MCP tool call, the result */
+    .mcp-chat {
       position: absolute;
-      top: 8px;
-      left: calc(100% - 2px);
-      z-index: 3;
-      width: 74px;
+      right: 10px;
+      bottom: 10px;
+      z-index: 2;
+      width: min(214px, 72%);
       box-sizing: border-box;
-      padding: 7px;
+      padding: 8px 9px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      border-radius: 8px 8px 8px 2px;
+      gap: 6px;
+      border-radius: 10px;
       background: var(--mcp-card-bg);
-      border: 1px solid rgba(var(--mcp-fg-rgb), 0.12);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, .28);
-      transform-origin: top left;
+      border: 1px solid rgba(var(--mcp-fg-rgb), 0.1);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, .3);
+      font: 9.5px/1.3 system-ui, sans-serif;
+      color: rgba(var(--mcp-fg-rgb), 0.75);
+      animation: mcp-chat 16s cubic-bezier(.2, .8, .3, 1) infinite var(--mcp-play);
+    }
+    .mcp-chat-head { display: flex; align-items: center; gap: 5px; font-weight: 600; color: rgb(var(--mcp-fg-rgb)); }
+    .mcp-chat-user {
+      align-self: flex-end;
+      max-width: 86%;
+      padding: 4px 8px;
+      border-radius: 8px 8px 2px 8px;
+      background: rgba(var(--mcp-fg-rgb), 0.08);
+      animation: mcp-chat-user 16s ease-out infinite var(--mcp-play);
+    }
+    .mcp-chat-tool, .mcp-chat-done {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(var(--mcp-fg-rgb), 0.08);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .mcp-chat-tool { animation: mcp-chat-tool 16s ease-out infinite var(--mcp-play); }
+    .mcp-chat-done { animation: mcp-chat-done 16s ease-out infinite var(--mcp-play); }
+    .mcp-chat-tool .mcp-mono, .mcp-chat-done .mcp-mono { font-size: 9px; }
+    .mcp-chat-done em { margin-left: auto; font-style: normal; color: #34d399; }
+    .mcp-chat-st { position: relative; width: 9px; height: 9px; flex: none; }
+    .mcp-chat-spin {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      border: 1.5px solid rgba(var(--mcp-fg-rgb), 0.2);
+      border-top-color: var(--secondary);
       opacity: 0;
-      scale: .4;
-      animation: mcp-op-comment 12s cubic-bezier(.3, 1.4, .5, 1) infinite var(--mcp-play);
+      animation: mcp-chat-spin .8s linear infinite var(--mcp-play),
+                 mcp-chat-spinning 16s linear infinite var(--mcp-play);
     }
-    .mcp-op-comment span {
-      height: 4px;
-      border-radius: 2px;
-      background: rgba(var(--mcp-fg-rgb), 0.2);
-    }
-    .mcp-op-comment span:first-child { width: 40%; background: var(--secondary); opacity: .7; }
-    .mcp-op-comment span:last-child { width: 70%; }
+    .mcp-chat-ok { position: absolute; inset: 0; animation: mcp-chat-ok 16s linear infinite var(--mcp-play); }
+    .mcp-chat-write { animation-name: mcp-chat-write; }
+    .mcp-chat-write .mcp-chat-spin { animation-name: mcp-chat-spin, mcp-chat-spinning2; }
+    .mcp-chat-write .mcp-chat-ok { animation-name: mcp-chat-ok2; }
 
-    @keyframes mcp-tim-path {
-      0%, 3%    { translate: var(--p-pg-desk); }
-      9%, 12%   { translate: var(--p-pg-comp); }
-      20%, 30%  { translate: var(--p-btn); }
-      40%, 60%  { translate: var(--p-title); }
-      68%, 88%  { translate: var(--p-badge); }
-      97%, 100% { translate: var(--p-pg-desk); }
+    /* Tim: desk 0–4, sidebar Components 9 (click 10), Card / Primary 18
+       (click 20), aside while Claude works 28–48, button 53 (click 55 to
+       select, 61 to set the fill), title 68 (double-click 69.5), comment
+       85 (click 86.5), aside 91 so the thread reads, back to the Desktop
+       page 99 */
+    @keyframes mcp-tim-x {
+      0%, 4%      { translate: var(--p-pgdesk-x) 0; }
+      9%, 12%     { translate: var(--p-pgcomp-x) 0; }
+      18%, 24%    { translate: var(--p-card-x) 0; }
+      28%, 48%    { translate: var(--p-rest-x) 0; }
+      53%, 64%    { translate: var(--p-btn-x) 0; }
+      68%, 81%    { translate: var(--p-title-x) 0; }
+      85%, 87.5%  { translate: var(--p-badge-x) 0; }
+      91%, 95%    { translate: var(--p-rest-x) 0; }
+      99%, 100%   { translate: var(--p-pgdesk-x) 0; }
     }
-    @keyframes mcp-ai-path {
-      0%, 14%   { translate: var(--p-dash); }
-      22%, 34%  { translate: var(--p-chart); }
-      46%, 56%  { translate: var(--p-kpi); }
-      70%, 85%  { translate: var(--p-chip); }
-      100%      { translate: var(--p-dash); }
+    @keyframes mcp-tim-y {
+      0%, 4%      { translate: 0 var(--p-pgdesk-y); }
+      9%, 12%     { translate: 0 var(--p-pgcomp-y); }
+      18%, 24%    { translate: 0 var(--p-card-y); }
+      28%, 48%    { translate: 0 var(--p-rest-y); }
+      53%, 64%    { translate: 0 var(--p-btn-y); }
+      68%, 81%    { translate: 0 var(--p-title-y); }
+      85%, 87.5%  { translate: 0 var(--p-badge-y); }
+      91%, 95%    { translate: 0 var(--p-rest-y); }
+      99%, 100%   { translate: 0 var(--p-pgdesk-y); }
+    }
+    /* Claude: reads the selection 25–37 (while get_design_context spins),
+       out of sight while it writes Card.tsx, then answers comment 1 87–96 */
+    @keyframes mcp-ai-x {
+      0%, 25%     { translate: var(--p-read1-x) 0; }
+      33%, 36.5%  { translate: var(--p-read2-x) 0; }
+      40%, 86%    { translate: var(--p-cpre-x) 0; }
+      89.5%, 96%  { translate: var(--p-reply-x) 0; }
+      100%        { translate: var(--p-read1-x) 0; }
+    }
+    @keyframes mcp-ai-y {
+      0%, 25%     { translate: 0 var(--p-read1-y); }
+      33%, 36.5%  { translate: 0 var(--p-read2-y); }
+      40%, 86%    { translate: 0 var(--p-cpre-y); }
+      89.5%, 96%  { translate: 0 var(--p-reply-y); }
+      100%        { translate: 0 var(--p-read1-y); }
+    }
+    @keyframes mcp-ai-show {
+      0%, 23.5%, 38%, 85.5%, 97.5%, 100% { opacity: 0; }
+      25%, 36.5%, 87%, 96% { opacity: 1; }
     }
     @keyframes mcp-tim-click {
-      0%, 9.5%, 11.5%, 22.5%, 25%, 69%, 72%, 100% { scale: 1; }
-      10.5%, 23.5%, 70.5% { scale: .82; }
+      0%, 9.6%, 10.6%, 19.6%, 20.6%, 54.6%, 55.6%, 60.6%, 61.6%,
+      69.2%, 69.8%, 70.4%, 71%, 86.1%, 87.1%, 100% { scale: 1; }
+      10.1%, 20.1%, 55.1%, 61.1%, 69.5%, 70.7%, 86.6% { scale: .82; }
     }
     @keyframes mcp-tim-ring {
-      0%, 10%, 18%, 23.5%, 31%, 70%, 78%, 100% { opacity: 0; scale: .3; }
-      10.5%, 24%, 70.5% { opacity: .9; scale: .3; }
-      17%, 30%, 77% { opacity: 0; scale: 1.4; }
+      0%, 10%, 14%, 20%, 24%, 55%, 59%, 61%, 65%, 69.5%, 73.5%, 86.5%, 90.5%, 100% { opacity: 0; scale: .3; }
+      10.1%, 20.1%, 55.1%, 61.1%, 69.6%, 86.6% { opacity: .9; scale: .3; }
+      13.5%, 23.5%, 58.5%, 64.5%, 73%, 90% { opacity: 0; scale: 1.4; }
     }
-    /* Pages sidebar: Desktop selected until the click at 10.5%, then
-       Components; back to Desktop as the loop restarts */
     @keyframes mcp-op-pg-on {
-      0%, 10.5%, 96%, 100% { background-color: transparent; }
-      11%, 95% { background-color: rgba(var(--mcp-fg-rgb), 0.07); }
+      0%, 10.3%, 98.5%, 100% { background-color: transparent; }
+      10.8%, 97.5% { background-color: rgba(var(--mcp-fg-rgb), 0.07); }
     }
     @keyframes mcp-op-pg-off {
-      0%, 10.5%, 96%, 100% { background-color: rgba(var(--mcp-fg-rgb), 0.07); }
-      11%, 95% { background-color: transparent; }
+      0%, 10.3%, 98.5%, 100% { background-color: rgba(var(--mcp-fg-rgb), 0.07); }
+      10.8%, 97.5% { background-color: transparent; }
     }
     @keyframes mcp-op-pg-text-on {
-      0%, 10.5%, 96%, 100% { color: rgba(var(--mcp-fg-rgb), 0.65); }
-      11%, 95% { color: rgb(var(--mcp-fg-rgb)); }
+      0%, 10.3%, 98.5%, 100% { color: rgba(var(--mcp-fg-rgb), 0.65); }
+      10.8%, 97.5% { color: rgb(var(--mcp-fg-rgb)); }
     }
     @keyframes mcp-op-pg-text-off {
-      0%, 10.5%, 96%, 100% { color: rgb(var(--mcp-fg-rgb)); }
-      11%, 95% { color: rgba(var(--mcp-fg-rgb), 0.65); }
+      0%, 10.3%, 98.5%, 100% { color: rgb(var(--mcp-fg-rgb)); }
+      10.8%, 97.5% { color: rgba(var(--mcp-fg-rgb), 0.65); }
     }
     @keyframes mcp-op-page-in {
-      0%, 11%, 96%, 100% { opacity: 0; translate: 0 6px; }
-      14%, 94% { opacity: 1; translate: 0 0; }
+      0%, 10.5%, 99%, 100% { opacity: 0; translate: 0 6px; }
+      13.5%, 97% { opacity: 1; translate: 0 0; }
     }
     @keyframes mcp-op-page-out {
-      0%, 10.5%, 96%, 100% { opacity: 1; }
-      12%, 95% { opacity: 0; }
+      0%, 10.5%, 99.5%, 100% { opacity: 1; }
+      12%, 97.5% { opacity: 0; }
+    }
+    @keyframes mcp-op-card-hover {
+      0%, 15.5%, 20.3%, 100% { opacity: 0; }
+      16.5%, 20% { opacity: 1; }
+    }
+    @keyframes mcp-op-card-sel {
+      0%, 20%, 55.2%, 100% { opacity: 0; }
+      20.4%, 54.8% { opacity: 1; }
+    }
+    @keyframes mcp-op-btn-sel {
+      0%, 51.5%, 67%, 100% { outline-color: transparent; }
+      52.5%, 54.9% { outline-color: rgba(56, 189, 248, .55); }
+      55.1%, 66% { outline-color: #38bdf8; }
+    }
+    @keyframes mcp-op-title-sel {
+      0%, 65.5%, 82%, 100% { outline-color: transparent; }
+      66.5%, 69.4% { outline-color: rgba(56, 189, 248, .55); }
+      69.6%, 81% { outline-color: #38bdf8; }
     }
     @keyframes mcp-op-recolor {
-      0%, 23.5%, 92%, 100% { opacity: 0; }
-      26%, 88% { opacity: 1; }
-    }
-    @keyframes mcp-op-flash {
-      0%, 27%, 44%, 100% { opacity: 0; }
-      30%, 38% { opacity: 1; }
+      0%, 61.1%, 98%, 100% { opacity: 0; }
+      62.5%, 96% { opacity: 1; }
     }
     @keyframes mcp-op-type {
-      0%, 41%, 100% { scale: 1 1; }
-      41.5% { scale: .04 1; }
-      58% { scale: 1 1; }
-    }
-    @keyframes mcp-op-bar {
-      0%, 23%, 36%, 100% { scale: 1 1; }
-      27% { scale: 1 .45; }
-      32% { scale: 1 1.15; }
-    }
-    @keyframes mcp-op-bar-alt {
-      0%, 23%, 36%, 100% { scale: 1 1; }
-      27% { scale: 1 1.3; }
-      32% { scale: 1 .7; }
+      0%, 71%, 100% { scale: 1 1; }
+      71.5% { scale: .04 1; }
+      80.5% { scale: 1 1; }
     }
     @keyframes mcp-op-comment {
-      0%, 71%, 100% { opacity: 0; scale: .4; }
-      74%, 86% { opacity: 1; scale: 1; }
-      90% { opacity: 0; scale: .9; }
+      0%, 86.6%, 100% { opacity: 0; scale: .4; }
+      88.5%, 96.5% { opacity: 1; scale: 1; }
+      98% { opacity: 0; scale: .9; }
+    }
+    @keyframes mcp-cm-reply {
+      0%, 90%, 100% { opacity: 0; translate: 0 4px; }
+      91%, 99% { opacity: 1; translate: 0 0; }
+    }
+    @keyframes mcp-op-gap1 {
+      0%, 91.5%, 100% { translate: 0 0; }
+      93%, 97% { translate: 0 4px; }
+    }
+    @keyframes mcp-op-gap2 {
+      0%, 91.5%, 100% { translate: 0 0; }
+      93%, 97% { translate: 0 8px; }
+    }
+    @keyframes mcp-op-gap-mark {
+      0%, 91.5%, 96.5%, 100% { opacity: 0; }
+      92.5%, 95.5% { opacity: 1; }
+    }
+    /* dash period 16 (6 + 10): drift ~ -24 over 25%; get_design_context
+       25.5–34 runs it forward fast; use_figma 90.5–93.2 runs it back */
+    @keyframes mcp-op-trail {
+      0%       { stroke-dashoffset: 0; opacity: .45; }
+      25.5%    { stroke-dashoffset: -24; opacity: .45; }
+      26.5%, 33% { opacity: 1; }
+      34%      { stroke-dashoffset: -344; opacity: .45; }
+      90.5%    { stroke-dashoffset: -400; opacity: .45; }
+      91.2%, 92.5% { opacity: 1; }
+      93.2%    { stroke-dashoffset: -240; opacity: .45; }
+      100%     { stroke-dashoffset: -256; opacity: .45; }
+    }
+    @keyframes mcp-op-hub {
+      0%, 25.5%, 28.5%, 31.5%, 34%, 90.5%, 93.5%, 100% { scale: 1; }
+      27%, 30%, 33%, 92% { scale: 1.07; }
+    }
+    @keyframes mcp-op-hub-ring {
+      0%, 25.5%, 90.5%, 100% { opacity: 0; scale: 1; }
+      25.6%, 28.1%, 30.6%, 90.6% { opacity: .9; scale: 1; }
+      28%, 30.5%, 33%, 93% { opacity: 0; scale: 1.6; }
+    }
+    @keyframes mcp-op-ln {
+      0%, 35% { opacity: 0; translate: -4px 0; }
+      36%, 96% { opacity: 1; translate: 0 0; }
+      98%, 100% { opacity: 0; translate: 0 0; }
+    }
+    @keyframes mcp-op-flash {
+      0%, 63%, 72%, 100% { opacity: 0; }
+      64.5%, 69% { opacity: 1; }
+    }
+    @keyframes mcp-chat {
+      0%, 21.5%, 98%, 100% { opacity: 0; translate: 0 10px; }
+      23%, 96% { opacity: 1; translate: 0 0; }
+    }
+    @keyframes mcp-chat-user {
+      0%, 22.5%, 98%, 100% { opacity: 0; translate: 6px 0; }
+      23.5%, 97% { opacity: 1; translate: 0 0; }
+    }
+    @keyframes mcp-chat-tool {
+      0%, 24.5%, 98%, 100% { opacity: 0; translate: 0 4px; }
+      25.5%, 97% { opacity: 1; translate: 0 0; }
+    }
+    @keyframes mcp-chat-done {
+      0%, 47.5%, 98%, 100% { opacity: 0; translate: 0 4px; }
+      48.5%, 97% { opacity: 1; translate: 0 0; }
+    }
+    @keyframes mcp-chat-spin { to { rotate: 1turn; } }
+    @keyframes mcp-chat-spinning {
+      0%, 25%, 34%, 100% { opacity: 0; }
+      25.5%, 33.5% { opacity: 1; }
+    }
+    @keyframes mcp-chat-write {
+      0%, 90%, 98%, 100% { opacity: 0; translate: 0 4px; }
+      91%, 97% { opacity: 1; translate: 0 0; }
+    }
+    @keyframes mcp-chat-spinning2 {
+      0%, 90.5%, 93%, 100% { opacity: 0; }
+      91%, 92.6% { opacity: 1; }
+    }
+    @keyframes mcp-chat-ok2 {
+      0%, 92.8%, 100% { opacity: 0; scale: .5; }
+      93.5%, 97% { opacity: 1; scale: 1; }
+    }
+    @keyframes mcp-chat-ok {
+      0%, 33.8%, 100% { opacity: 0; scale: .5; }
+      34.6%, 97% { opacity: 1; scale: 1; }
     }
     /* Tablet and phone hide the Pages sidebar: Tim starts on the canvas
        and the page swap plays without the click target. */
     @media (max-width: 1024px) {
-      .mcp-ops { --p-pg-desk: 28% 222px; --p-pg-comp: 40% 150px; }
+      .mcp-ops { --p-pgdesk-x: 28%; --p-pgdesk-y: 222px; --p-pgcomp-x: 40%; --p-pgcomp-y: 150px; }
     }
-    @media (prefers-reduced-motion: reduce) {
-      .mcp-cur, .mcp-cur-in, .mcp-cur-ring, .mcp-op-btn::after, .mcp-op-line::before,
-      .mcp-op-type, .mcp-op-bars > span, .mcp-op-comment,
-      .mcp-op-pg, .mcp-op-pg > span:last-child, .mcp-op-page, .mcp-op-desk-page { animation: none; }
+    /* Reduced motion and phones (< 768px): no loop; the finished state
+       (Components page, card selected, code written) without the Desktop
+       page. Phones also drop the cursors and Claude's chat: the static
+       mockup, as before the live edits existed. */
+    @media (prefers-reduced-motion: reduce), (max-width: 767px) {
+      .mcp-cur, .mcp-cur-y, .mcp-cur-in, .mcp-cur-ring, .mcp-op-btn, .mcp-op-btn::after,
+      .mcp-op-line::before, .mcp-op-type, .mcp-op-gap > div, .mcp-op-gap::after, .mcp-cm-reply,
+      .mcp-trail-line, .mcp-hub-pill, .mcp-hub-ring,
+      .mcp-op-comment, .mcp-op-pg, .mcp-op-pg > span:last-child, .mcp-op-page,
+      .mcp-op-desk-page, .mcp-op-hover, .mcp-op-sel, .mcp-op-ln, .mcp-chat, .mcp-chat-user,
+      .mcp-chat-tool, .mcp-chat-done, .mcp-chat-spin, .mcp-chat-ok { animation: none; }
       .mcp-op-desk-page { display: none; }
+    }
+    @media (max-width: 767px) {
+      .mcp-ops, .mcp-chat, .mcp-op-hover { display: none; }
+    }
+    /* phones keep the trails and hub ring they always had */
+    @media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+      .mcp-trail-line { animation: mcpDashFlow 6s linear infinite; }
+      .mcp-hub-ring { opacity: 1; animation: aiRingP 3s ease-out infinite; }
     }
 
     /* Tablet: the two mockups' own inner side panels (Pages / file tree)
@@ -8511,8 +8802,8 @@
          The Figma MCP heading's 120px desktop margin left a big empty gap
          under the Swipe button; 56px here (+ the wrap's own 12px below
          the button). */
-      .process-scroll-wrap--tech + .figma-mcp-header {
-        margin-top: 56px;
+      .process-scroll-wrap--tech + .mcp-scroll {
+        --mcp-head-gap: 56px;
       }
       /* Same 68px rhythm for the How I Use AI chips heading under the viewer
          (its 40px margin-bottom collapses into this). */

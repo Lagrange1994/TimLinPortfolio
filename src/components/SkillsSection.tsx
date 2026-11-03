@@ -1295,11 +1295,16 @@ function TechStackSection() {
           </div>
           ]}
         />
-        <div className="figma-mcp-header rise-soft">
-          <h3>{t.figma_mcp_title}</h3>
-          <p dangerouslySetInnerHTML={{ __html: t.figma_mcp_desc }} />
-        </div>
-        <FigmaMcpShowcase />
+        {/* the heading pins with the showcase; it rides the track's reveal
+            band for the same reason the grid does (see FigmaMcpShowcase) */}
+        <FigmaMcpShowcase
+          header={
+            <div className="figma-mcp-header rise-soft" data-rise-with=".mcp-scroll">
+              <h3>{t.figma_mcp_title}</h3>
+              <p dangerouslySetInnerHTML={{ __html: t.figma_mcp_desc }} />
+            </div>
+          }
+        />
       </section>
   );
 }

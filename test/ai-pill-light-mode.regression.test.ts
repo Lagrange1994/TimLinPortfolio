@@ -36,7 +36,8 @@ describe('How I Use AI pills in light mode', () => {
   // Phones: the chips heading sits 68px below the viewer — the Figma MCP
   // heading's gap to its cards (56 + 12).
   it('spaces the phone chips heading 68px below the viewer', () => {
-    expect(css).toMatch(/\.process-scroll-wrap--tech \+ \.figma-mcp-header \{\s*margin-top: 56px;/);
+    // the heading now renders inside .mcp-scroll; the gap rides a var
+    expect(css).toMatch(/\.process-scroll-wrap--tech \+ \.mcp-scroll \{\s*--mcp-head-gap: 56px;/);
     expect(css).toMatch(/\.ai-viewer \+ \.ai-chips-header \{\s*margin-top: 68px;/);
   });
 

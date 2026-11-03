@@ -28,8 +28,9 @@ describe('Tech Stack is a swipe carousel on phones only', () => {
   });
 
   it('tightens the gap from the Swipe button to the Figma MCP heading', () => {
-    const rule = mobileBlock.match(/\.process-scroll-wrap--tech \+ \.figma-mcp-header \{[^}]*\}/)?.[0];
-    expect(rule).toMatch(/margin-top:\s*56px;/);
+    // the heading renders inside the showcase's .mcp-scroll track now
+    const rule = mobileBlock.match(/\.process-scroll-wrap--tech \+ \.mcp-scroll \{[^}]*\}/)?.[0];
+    expect(rule).toMatch(/--mcp-head-gap:\s*56px;/);
   });
 
   it('stacks title, description and code inside the narrow carousel card', () => {

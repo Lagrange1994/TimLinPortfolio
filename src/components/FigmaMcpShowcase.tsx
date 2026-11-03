@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 
 // Two response-native cards (Figma design canvas mockup + VS Code mockup)
 // bridged by a centered "Figma MCP" hub — same shell mechanics as the
@@ -150,8 +150,11 @@ const FIGMA_CARD_HTML = `
           <span style="position: absolute; top: -16px; left: 0; font-size: 9px; color: rgba(var(--mcp-fg-rgb),0.5);">Components</span>
           <span style="position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; border-radius: 999px 999px 999px 2px; background: var(--secondary); color: #fff; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; z-index: 1;">1</span>
           <!-- comment thread Tim opens on badge 1 -->
-          <div class="mcp-op-comment"><span></span><span></span><span></span></div>
-          <div style="box-sizing: border-box; height: 128px; background: var(--mcp-card-bg); border: 1px solid rgba(var(--mcp-fg-rgb),0.09); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="mcp-op-comment">
+            <div class="mcp-cm"><i class="mcp-cm-av">T</i><span>Gap 16px?</span></div>
+            <div class="mcp-cm mcp-cm-reply"><i class="mcp-cm-av is-ai"><svg width="7" height="7" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 11 L14 13 L12 20 L10 13 L3 11 L10 9 Z" fill="#fff"></path></svg></i><span>Done · updated via MCP</span></div>
+          </div>
+          <div class="mcp-op-gap" style="box-sizing: border-box; height: 128px; background: var(--mcp-card-bg); border: 1px solid rgba(var(--mcp-fg-rgb),0.09); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 5px;">
               <span style="width: 40px; height: 15px; border-radius: 6px; background: var(--primary);"></span>
               <span style="width: 46px; height: 15px; border-radius: 6px; border: 1px solid var(--primary);"></span>
@@ -171,13 +174,17 @@ const FIGMA_CARD_HTML = `
         </div>
 
         <div style="position: relative;">
-          <span style="position: absolute; top: -20px; left: -2px; padding: 2px 7px; border-radius: 4px; background: #38bdf8; color: #0f0f10; font-size: 9px; font-weight: 700;">Card / Primary</span>
           <span style="position: absolute; top: -28px; right: 8px; width: 16px; height: 16px; border-radius: 999px 999px 2px 999px; background: var(--secondary); color: #fff; font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center;">2</span>
-          <div style="position: absolute; inset: -3px; border: 2px solid #38bdf8; border-radius: 11px; pointer-events: none;"></div>
-          <span style="position: absolute; top: -3px; left: -3px; width: 6px; height: 6px; background: #fff; border: 1.5px solid #38bdf8; transform: translate(-50%, -50%);"></span>
-          <span style="position: absolute; top: -3px; right: -3px; width: 6px; height: 6px; background: #fff; border: 1.5px solid #38bdf8; transform: translate(50%, -50%);"></span>
-          <span style="position: absolute; bottom: -3px; left: -3px; width: 6px; height: 6px; background: #fff; border: 1.5px solid #38bdf8; transform: translate(-50%, 50%);"></span>
-          <span style="position: absolute; bottom: -3px; right: -3px; width: 6px; height: 6px; background: #fff; border: 1.5px solid #38bdf8; transform: translate(50%, 50%);"></span>
+          <!-- hover outline, then the selection Tim clicks into place -->
+          <div class="mcp-op-hover"></div>
+          <div class="mcp-op-sel">
+            <span style="position: absolute; top: -20px; left: -2px; padding: 2px 7px; border-radius: 4px; background: #38bdf8; color: #0f0f10; font-size: 9px; font-weight: 700;">Card / Primary</span>
+            <div style="position: absolute; inset: -3px; border: 2px solid #38bdf8; border-radius: 11px; pointer-events: none;"></div>
+            <span style="position: absolute; top: -3px; left: -3px; width: 6px; height: 6px; background: #fff; border: 1.5px solid #38bdf8; transform: translate(-50%, -50%);"></span>
+            <span style="position: absolute; top: -3px; right: -3px; width: 6px; height: 6px; background: #fff; border: 1.5px solid #38bdf8; transform: translate(50%, -50%);"></span>
+            <span style="position: absolute; bottom: -3px; left: -3px; width: 6px; height: 6px; background: #fff; border: 1.5px solid #38bdf8; transform: translate(-50%, 50%);"></span>
+            <span style="position: absolute; bottom: -3px; right: -3px; width: 6px; height: 6px; background: #fff; border: 1.5px solid #38bdf8; transform: translate(50%, 50%);"></span>
+          </div>
           <div style="box-sizing: border-box; height: 128px; background: var(--mcp-card-bg); border: 1px solid rgba(var(--mcp-fg-rgb),0.08); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
             <div style="height: 46px; border-radius: 6px; background: rgba(var(--mcp-fg-rgb),0.12); flex: none;"></div>
             <span style="width: 80%; height: 6px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.22); display: block;"></span>
@@ -201,10 +208,11 @@ const FIGMA_CARD_HTML = `
 
       <!-- live edits: Tim's cursor and Claude's (via MCP), see .mcp-ops -->
       <div class="mcp-ops">
-        <div class="mcp-cur mcp-cur--tim"><div class="mcp-cur-in"><i class="mcp-cur-ring"></i>${CURSOR_SVG}<span class="mcp-cur-tag">Tim</span></div></div>
-        <div class="mcp-cur mcp-cur--ai"><div class="mcp-cur-in">${CURSOR_SVG}<span class="mcp-cur-tag">Claude</span></div></div>
+        <div class="mcp-cur mcp-cur--tim"><div class="mcp-cur-y"><div class="mcp-cur-in"><i class="mcp-cur-ring"></i>${CURSOR_SVG}<span class="mcp-cur-tag">Tim</span></div></div></div>
+        <div class="mcp-cur mcp-cur--ai"><div class="mcp-cur-y"><div class="mcp-cur-in">${CURSOR_SVG}<span class="mcp-cur-tag">Claude</span></div></div></div>
       </div>
     </div>
+
   </div>
 `;
 
@@ -247,25 +255,34 @@ const CODE_CARD_HTML = `
       <div class="mcp-mono" style="font-size: 12.5px; line-height: 1.75; color: rgba(var(--mcp-fg-rgb),0.82);">
         <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">1</span><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 34px; height: 8px; border-radius: 3px; background: var(--secondary); opacity: 0.55;"></span><span style="display: inline-block; width: 28px; height: 8px; border-radius: 3px; background: #38bdf8; opacity: 0.55;"></span><span style="display: inline-block; width: 22px; height: 8px; border-radius: 3px; background: var(--secondary); opacity: 0.55;"></span><span style="display: inline-block; width: 68px; height: 8px; border-radius: 3px; background: var(--mcp-string); opacity: 0.55;"></span></span></div>
         <div style="display: flex;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">2</span></div>
-        <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">3</span><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 58px; height: 8px; border-radius: 3px; background: var(--secondary); opacity: 0.55;"></span><span style="display: inline-block; width: 26px; height: 8px; border-radius: 3px; background: #38bdf8; opacity: 0.55;"></span><span style="display: inline-block; width: 18px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
-        <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">4</span><span style="padding-left: 18px; display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 42px; height: 8px; border-radius: 3px; background: var(--secondary); opacity: 0.55;"></span><span style="display: inline-block; width: 10px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
-        <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">5</span><span style="padding-left: 36px; display: flex; align-items: center;"><span style="display: inline-block; width: 26px; height: 8px; border-radius: 3px; background: #38bdf8; opacity: 0.55;"></span></span></div>
-        <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">6</span><span style="padding-left: 54px; display: flex; align-items: center;"><span style="display: inline-block; width: 48px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
-        <div class="mcp-op-line" style="display: flex; align-items: center; position: relative;">
+        <div class="mcp-op-ln" style="--i: 0; display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">3</span><span style="display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 58px; height: 8px; border-radius: 3px; background: var(--secondary); opacity: 0.55;"></span><span style="display: inline-block; width: 26px; height: 8px; border-radius: 3px; background: #38bdf8; opacity: 0.55;"></span><span style="display: inline-block; width: 18px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
+        <div class="mcp-op-ln" style="--i: 1; display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">4</span><span style="padding-left: 18px; display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 42px; height: 8px; border-radius: 3px; background: var(--secondary); opacity: 0.55;"></span><span style="display: inline-block; width: 10px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
+        <div class="mcp-op-ln" style="--i: 2; display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">5</span><span style="padding-left: 36px; display: flex; align-items: center;"><span style="display: inline-block; width: 26px; height: 8px; border-radius: 3px; background: #38bdf8; opacity: 0.55;"></span></span></div>
+        <div class="mcp-op-ln" style="--i: 3; display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">6</span><span style="padding-left: 54px; display: flex; align-items: center;"><span style="display: inline-block; width: 48px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
+        <div class="mcp-op-line mcp-op-ln" style="--i: 4; display: flex; align-items: center; position: relative;">
           <span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">7</span>
           <span style="padding-left: 72px; display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 56px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span><span style="display: inline-block; width: 58px; height: 8px; border-radius: 3px; background: var(--mcp-string); opacity: 0.55;"></span></span>
           <svg width="14" height="14" viewBox="0 0 24 24" style="position: absolute; left: 4px; top: 2px; filter: drop-shadow(0 0 4px var(--secondary));">
             <path d="M12 2 L14 9 L21 11 L14 13 L12 20 L10 13 L3 11 L10 9 Z" fill="var(--secondary)"></path>
           </svg>
         </div>
-        <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">8</span><span style="padding-left: 72px; display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 40px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span><span style="display: inline-block; width: 52px; height: 8px; border-radius: 3px; background: var(--mcp-string); opacity: 0.55;"></span></span></div>
-        <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">9</span><span style="padding-left: 72px; display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 64px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span><span style="display: inline-block; width: 30px; height: 8px; border-radius: 3px; background: var(--mcp-string); opacity: 0.55;"></span><span class="mcp-cursor-blink" style="display: inline-block; width: 1.5px; height: 12px; background: rgb(var(--mcp-fg-rgb));"></span></span></div>
-        <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">10</span><span style="padding-left: 54px; display: flex; align-items: center;"><span style="display: inline-block; width: 16px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
-        <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">11</span><span style="padding-left: 36px; display: flex; align-items: center;"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
-        <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">12</span><span style="padding-left: 54px; display: flex; align-items: center;"><span style="display: inline-block; width: 74px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.14);"></span></span></div>
-        <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">13</span><span style="padding-left: 36px; display: flex; align-items: center;"><span style="display: inline-block; width: 32px; height: 8px; border-radius: 3px; background: #38bdf8; opacity: 0.55;"></span></span></div>
-        <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">14</span><span style="padding-left: 18px; display: flex; align-items: center;"><span style="display: inline-block; width: 14px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
-        <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">15</span><span style="display: flex; align-items: center;"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
+        <div class="mcp-op-ln" style="--i: 5; display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">8</span><span style="padding-left: 72px; display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 40px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span><span style="display: inline-block; width: 52px; height: 8px; border-radius: 3px; background: var(--mcp-string); opacity: 0.55;"></span></span></div>
+        <div class="mcp-op-ln" style="--i: 6; display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">9</span><span style="padding-left: 72px; display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 64px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span><span style="display: inline-block; width: 30px; height: 8px; border-radius: 3px; background: var(--mcp-string); opacity: 0.55;"></span><span class="mcp-cursor-blink" style="display: inline-block; width: 1.5px; height: 12px; background: rgb(var(--mcp-fg-rgb));"></span></span></div>
+        <div class="mcp-op-ln" style="--i: 7; display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">10</span><span style="padding-left: 54px; display: flex; align-items: center;"><span style="display: inline-block; width: 16px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
+        <div class="mcp-op-ln" style="--i: 8; display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">11</span><span style="padding-left: 36px; display: flex; align-items: center;"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
+        <div class="mcp-op-ln" style="--i: 9; display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">12</span><span style="padding-left: 54px; display: flex; align-items: center;"><span style="display: inline-block; width: 74px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.14);"></span></span></div>
+        <div class="mcp-op-ln" style="--i: 10; display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">13</span><span style="padding-left: 36px; display: flex; align-items: center;"><span style="display: inline-block; width: 32px; height: 8px; border-radius: 3px; background: #38bdf8; opacity: 0.55;"></span></span></div>
+        <div class="mcp-op-ln" style="--i: 11; display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">14</span><span style="padding-left: 18px; display: flex; align-items: center;"><span style="display: inline-block; width: 14px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
+        <div class="mcp-op-ln" style="--i: 12; display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">15</span><span style="display: flex; align-items: center;"><span style="display: inline-block; width: 8px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
+      </div>
+
+      <!-- Claude in VS Code, calling the Figma MCP server on Tim's selection -->
+      <div class="mcp-chat">
+        <div class="mcp-chat-head"><svg width="10" height="10" viewBox="0 0 24 24"><path d="M12 2 L14 9 L21 11 L14 13 L12 20 L10 13 L3 11 L10 9 Z" fill="var(--secondary)"></path></svg>Claude</div>
+        <div class="mcp-chat-user">Build the selected Figma frame</div>
+        <div class="mcp-chat-tool"><span class="mcp-chat-st"><i class="mcp-chat-spin"></i><svg class="mcp-chat-ok" width="9" height="9" viewBox="0 0 12 12"><path d="M2 6.5 L5 9 L10 3" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="mcp-mono">figma · get_design_context</span></div>
+        <div class="mcp-chat-done"><span class="mcp-mono">Card.tsx</span><em>+13</em></div>
+        <div class="mcp-chat-tool mcp-chat-write"><span class="mcp-chat-st"><i class="mcp-chat-spin"></i><svg class="mcp-chat-ok" width="9" height="9" viewBox="0 0 12 12"><path d="M2 6.5 L5 9 L10 3" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="mcp-mono">figma · use_figma</span></div>
       </div>
     </div>
 
@@ -310,10 +327,18 @@ const CODE_CARD_HTML = `
 // as if unscaled, and the wrapper's height is simply that measured height
 // times the same scale factor. No hand-picked pixel values anywhere.
 const MCP_DESIGN_WIDTH = 640;
+// Where on the scroll-zoom track the live-edit loop starts: halfway
+// through the zoom (.mcp-zoom's animation-range is contain 0% → 50%, in
+// portfolio.css), once the Figma mockup is mostly in view.
+const LOOP_START = 0.25;
 
-export default function FigmaMcpShowcase() {
+// header: the section's "Figma MCP" heading. It renders inside the pinned
+// frame so it stays on screen (upper quarter) while the zoom plays.
+export default function FigmaMcpShowcase({ header }: { header?: ReactNode } = {}) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -355,16 +380,55 @@ export default function FigmaMcpShowcase() {
     };
   }, []);
 
-  // The live-edit loop (.mcp-ops cursors etc.) only plays while the grid is
-  // on screen: .is-live sets animation-play-state, so it resumes in place.
+  // The live-edit loop (.mcp-ops cursors etc.) plays from its very start
+  // (the Desktop page) once there is something to watch: the grid is on
+  // screen and, where the scroll zoom runs, the zoom is halfway through
+  // (LOOP_START of the track). Each time it goes live every loop is rewound
+  // to 0s, so no one lands mid-story; .is-live just flips
+  // animation-play-state.
   useEffect(() => {
     const grid = gridRef.current;
-    if (!grid || typeof IntersectionObserver === 'undefined') return;
+    const track = trackRef.current;
+    const zoomLayer = zoomRef.current;
+    if (!grid || !track || !zoomLayer || typeof IntersectionObserver === 'undefined') return;
+    let visible = false;
+    let live = false;
+    let pending = false;
+    let disposed = false;
+    const farEnough = () => {
+      // no zoom here (phones, reduced motion, no scroll-driven animations)
+      if (getComputedStyle(zoomLayer).animationName !== 'mcp-zoom-out') return true;
+      const r = track.getBoundingClientRect();
+      const len = r.height - window.innerHeight;
+      return len > 0 && -r.top / len >= LOOP_START;
+    };
+    const update = () => {
+      const next = visible && farEnough();
+      if (next === live) return;
+      live = next;
+      if (live) {
+        for (const a of grid.getAnimations?.({ subtree: true }) ?? []) {
+          if (/^mcp-(op|tim|ai|chat)/.test((a as CSSAnimation).animationName ?? '')) a.currentTime = 0;
+        }
+      }
+      grid.classList.toggle('is-live', live);
+    };
+    const schedule = () => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => { pending = false; if (!disposed) update(); });
+    };
     const io = new IntersectionObserver(entries => {
-      grid.classList.toggle('is-live', entries.some(e => e.isIntersecting));
+      visible = entries.some(e => e.isIntersecting);
+      schedule();
     });
     io.observe(grid);
-    return () => io.disconnect();
+    window.addEventListener('scroll', schedule, { passive: true });
+    return () => {
+      disposed = true;
+      io.disconnect();
+      window.removeEventListener('scroll', schedule);
+    };
   }, []);
 
   // Scroll zoom-out (Apple product page style), all in CSS: .mcp-scroll is a
@@ -373,12 +437,13 @@ export default function FigmaMcpShowcase() {
   // card and shrinks to the full grid, then the hub, trails and code card
   // come in. Its own layer, so the phone scale-sync on .mcp-grid is untouched.
   return (
-    <div className="mcp-scroll">
+    <div className="mcp-scroll" ref={trackRef}>
     <div className="mcp-bleed">
+      {header}
       {/* rides the track's band: measured while stuck, a sticky element's
           own band lands in the wrong place and the reveal never fires */}
       <div className="mcp-grid-wrap rise-card" data-rise-with=".mcp-scroll" aria-hidden="true" ref={wrapRef}>
-        <div className="mcp-zoom">
+        <div className="mcp-zoom" ref={zoomRef}>
         <div className="mcp-grid" ref={gridRef}>
           <div className="mcp-card" dangerouslySetInnerHTML={{ __html: FIGMA_CARD_HTML }} />
           <div className="mcp-card code-card" dangerouslySetInnerHTML={{ __html: CODE_CARD_HTML }} />
