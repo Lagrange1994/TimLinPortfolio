@@ -32,9 +32,9 @@ const build = () => {
   const q = (s: string) => viewer.querySelector<HTMLElement>(s)!;
   return { viewer, win: q('.aas-window'), rail: q('.ai-viewer-rail'), phone: q('.aas-phone'), front: q('.aas-front.is-on'), offs: Array.from(viewer.querySelectorAll<HTMLElement>('.aas-front:not(.is-on)')) };
 };
-const rise = (target: HTMLElement) => {
+const rise = (target: HTMLElement, dir: 1 | -1 = 1) => {
   const tl = gsap.timeline({ paused: true });
-  target.dispatchEvent(new CustomEvent<RiseStartDetail>(RISE_START_EVENT, { bubbles: true, detail: { tl, dir: 1, riseY: 28 } }));
+  target.dispatchEvent(new CustomEvent<RiseStartDetail>(RISE_START_EVENT, { bubbles: true, detail: { tl, dir, riseY: 28 } }));
   return tl;
 };
 const tweenOf = (tl: gsap.core.Timeline, el: HTMLElement) =>
@@ -83,6 +83,18 @@ describe('How I Use AI viewer entrance', () => {
     expect(rise(rail).getChildren().length).toBe(0);
     detach();
     expect(rise(viewer).getChildren().length).toBe(0);
+  });
+
+  // Scrolling up the stage drops in from above: the window mirrors, the
+  // sideways pieces keep their directions.
+  it('drops the window in from above when scrolling up, sideways pieces unchanged', () => {
+    const { viewer, win, rail, phone, front } = build();
+    attachAiViewerEntrance(viewer);
+    rise(viewer, -1);
+    expect(gsap.getProperty(win, 'y')).toBe(-ENTER_Y);
+    expect(gsap.getProperty(rail, 'x')).toBe(-ENTER_X);
+    expect(front.style.translate).toBe(`${-ENTER_X}px 0px`);
+    expect(gsap.getProperty(phone, 'x')).toBe(ENTER_X);
   });
 
   it('skips pieces a layout does not show (phone stage: no front panel)', () => {

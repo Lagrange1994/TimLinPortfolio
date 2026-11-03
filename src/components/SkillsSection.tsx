@@ -1310,11 +1310,17 @@ function TechStackSection() {
   );
 }
 
+// The viewer step the visitor last picked. It lives outside the component
+// so the lazy unit can unmount (and replay its entrance on the way back,
+// like every other section) without losing the visitor's place.
+let lastViewerStep: string | null = null;
+export function resetAiViewerStep() { lastViewerStep = null; }
+
 // MY SKILLS + HOW I USE AI (merged)
 export function AiIntakeSection() {
   const { t } = useLang();
   const aiCards = useMemo(() => makeAiCards(t), [t]);
-  const [expandedAiCard, setExpandedAiCard] = useState<string | null>(null);
+  const [expandedAiCard, setExpandedAiCard] = useState<string | null>(() => (AI_LEGACY_CARDS ? null : lastViewerStep));
   // Mirrors the Design Workflow card's AiFlowStepper (its "progress bar")
   // so the phase list below can cycle each row's status pill in lockstep.
   const [wfActive, setWfActive] = useState(0);
@@ -2054,6 +2060,7 @@ export function AiIntakeSection() {
   const selectAiStep = (id: string) => {
     if (id === expandedRef.current) return;
     expandedRef.current = id;
+    lastViewerStep = id;
     setExpandedAiCard(id);
   };
   const selectAiStepRef = useRef(selectAiStep);
@@ -2343,12 +2350,7 @@ export function AiIntakeSection() {
           </div>
         );
       })()}
-      <div
-        className="ai-stage"
-        // Step 01 is the viewer's own default, not something the visitor
-        // picked — only hold the section mounted once they've moved on.
-        data-lazy-keep={expandedAiCard && expandedAiCard !== AI_VIEWER_FIRST ? '' : undefined}
-      >
+      <div className="ai-stage">
         <AiAppStage steps={aiCards} active={expandedAiCard} />
       </div>
     </div>

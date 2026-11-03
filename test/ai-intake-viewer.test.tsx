@@ -36,7 +36,7 @@ vi.hoisted(() => {
 });
 
 import { gsap } from 'gsap';
-import { AiIntakeSection } from '../src/components/SkillsSection';
+import { AiIntakeSection, resetAiViewerStep } from '../src/components/SkillsSection';
 import { LangProvider } from '../src/context/LangContext';
 
 function scrollIntoView(el: Element) {
@@ -59,6 +59,7 @@ function setup({ inView = true } = {}) {
 
 afterEach(() => {
   cleanup();
+  resetAiViewerStep();
   localStorage.removeItem('lang');
   observers.length = 0;
   viewport.desktop = true;
@@ -204,11 +205,16 @@ describe('How I Use AI — desktop viewer', () => {
     expect(pill('sources').getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('only holds the lazy unit mounted once the visitor picked a step other than the default', () => {
-    const { q, pill } = setup();
-    expect(q('[data-lazy-keep]')).toBeNull();
-    act(() => { fireEvent.click(pill('ai')); });
-    expect(q('[data-lazy-keep]')?.classList.contains('ai-stage')).toBe(true);
+  // The lazy unit unmounts like every other section (so the entrance
+  // replays on the way back); the picked step survives the remount.
+  it('never holds the lazy unit mounted, and reopens the picked step after a remount', () => {
+    const first = setup();
+    act(() => { fireEvent.click(first.pill('ai')); });
+    expect(first.q('[data-lazy-keep]')).toBeNull();
+    first.unmount();
+    const again = setup({ inView: false });
+    expect(again.pill('ai').getAttribute('aria-expanded')).toBe('true');
+    expect(again.pill('sources').getAttribute('aria-expanded')).toBe('false');
   });
 });
 

@@ -8,11 +8,13 @@ import { RISE_START_EVENT, type RiseStartDetail } from './useRiseReveal';
 //     fades in from the left,
 //   - the front panel (Make flow, or the handoff card on step 06) from the left,
 //   - the client's LINE phone from the right.
+// Scrolling up, the stage drops in from above (dir -1), so the window drops
+// in too; the sideways pieces keep their directions.
 // Reduced motion never fires the rise, so nothing here runs and everything
 // stays where the CSS puts it.
 export const ENTER_X = 56;       // px each piece travels sideways
 export const ENTER_Y = 40;       // px the app window rises
-export const ENTER_AT = 0.18;    // s into the stage's rise
+export const ENTER_AT = 0.32;    // s into the stage's rise: the stage leads, its pieces follow
 export const ENTER_STAGGER = 0.14;
 export const ENTER_DUR = 0.9;
 const EASE = 'power3.out';
@@ -20,7 +22,7 @@ const EASE = 'power3.out';
 export function attachAiViewerEntrance(viewer: HTMLElement): () => void {
   const onRise = (e: Event) => {
     if (e.target !== viewer) return;
-    const { tl } = (e as CustomEvent<RiseStartDetail>).detail;
+    const { tl, dir } = (e as CustomEvent<RiseStartDetail>).detail;
     const rail = viewer.querySelector<HTMLElement>('.ai-viewer-rail');
     // Only the panel that is showing: the others sit at opacity 0 and must
     // stay there.
@@ -31,7 +33,7 @@ export function attachAiViewerEntrance(viewer: HTMLElement): () => void {
     // Window, rail and phone have no transform of their own, so they move
     // on x / y directly.
     if (win) {
-      tl.fromTo(win, { y: ENTER_Y, autoAlpha: 0 },
+      tl.fromTo(win, { y: dir * ENTER_Y, autoAlpha: 0 },
         { y: 0, autoAlpha: 1, duration: ENTER_DUR, ease: EASE, clearProps: 'transform,opacity,visibility' }, ENTER_AT);
     }
     if (rail) {
