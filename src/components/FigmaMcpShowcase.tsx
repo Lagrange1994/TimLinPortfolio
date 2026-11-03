@@ -12,6 +12,67 @@ import { useEffect, useRef } from 'react';
 // badges, the hub label) stay literal white on purpose: their background is
 // always the accent color, never the neutral surface, so they never need to
 // flip between themes.
+const CURSOR_SVG = '<svg class="mcp-cur-arrow" width="14" height="18" viewBox="0 0 14 18"><path d="M1 1 L1 15 L5 11.5 L7.6 17 L10 16 L7.4 10.6 L12.6 10.6 Z" fill="currentColor" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"></path></svg>';
+
+// The Desktop Dashboard skeleton: drawn small in its frame on the Components
+// page, and at full size as the Desktop page (see .mcp-op-desk-zoom).
+const DASHBOARD_SKELETON = `
+            <div style="width: 16px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 2px; color: rgba(var(--mcp-fg-rgb),0.32);">
+              <span style="color: var(--primary);"><svg width="10" height="10" viewBox="0 0 12 12"><rect x="1" y="1" width="4.5" height="4.5" rx="1" fill="currentColor"></rect><rect x="6.5" y="1" width="4.5" height="4.5" rx="1" fill="currentColor"></rect><rect x="1" y="6.5" width="4.5" height="4.5" rx="1" fill="currentColor"></rect><rect x="6.5" y="6.5" width="4.5" height="4.5" rx="1" fill="currentColor"></rect></svg></span>
+              <svg width="10" height="10" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="2.6" rx="1" fill="currentColor"></rect><rect x="1" y="5.2" width="10" height="1.8" rx="0.9" fill="currentColor" fill-opacity="0.7"></rect><rect x="1" y="8.6" width="6" height="1.8" rx="0.9" fill="currentColor" fill-opacity="0.7"></rect></svg>
+              <svg width="10" height="10" viewBox="0 0 12 12"><path d="M1 1 H6 L11 6 L6 11 L1 6 Z" fill="none" stroke="currentColor" stroke-width="1.2"></path><circle cx="3.2" cy="3.2" r="0.9" fill="currentColor"></circle></svg>
+              <svg width="10" height="10" viewBox="0 0 12 12"><circle cx="6" cy="3.6" r="2.1" fill="currentColor"></circle><path d="M1.6 11 C1.6 7.6 10.4 7.6 10.4 11 Z" fill="currentColor"></path></svg>
+              <svg width="10" height="10" viewBox="0 0 12 12"><rect x="1" y="6" width="2.2" height="5" fill="currentColor"></rect><rect x="4.9" y="3" width="2.2" height="8" fill="currentColor"></rect><rect x="8.8" y="1" width="2.2" height="10" fill="currentColor"></rect></svg>
+              <svg width="10" height="10" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4" fill="none" stroke="currentColor" stroke-width="1.2"></circle><circle cx="6" cy="6" r="1.2" fill="currentColor"></circle></svg>
+            </div>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px;">
+                <div style="background: rgba(var(--mcp-fg-rgb),0.045); border: 1px solid rgba(var(--mcp-fg-rgb),0.07); border-radius: 5px; padding: 4px 6px; display: flex; flex-direction: column; gap: 4px;">
+                  <span style="width: 55%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.16); display: block;"></span>
+                  <span style="width: 75%; height: 7px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.28); display: block;"></span>
+                </div>
+                <div style="background: rgba(var(--mcp-fg-rgb),0.045); border: 1px solid rgba(var(--mcp-fg-rgb),0.07); border-radius: 5px; padding: 4px 6px; display: flex; flex-direction: column; gap: 4px;">
+                  <span style="width: 45%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.16); display: block;"></span>
+                  <span style="width: 60%; height: 7px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.28); display: block;"></span>
+                </div>
+                <div style="background: rgba(var(--mcp-fg-rgb),0.045); border: 1px solid rgba(var(--mcp-fg-rgb),0.07); border-radius: 5px; padding: 4px 6px; display: flex; flex-direction: column; gap: 4px;">
+                  <span style="width: 60%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.16); display: block;"></span>
+                  <span style="width: 40%; height: 7px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.28); display: block;"></span>
+                </div>
+                <div style="background: rgba(var(--mcp-fg-rgb),0.045); border: 1px solid rgba(var(--mcp-fg-rgb),0.07); border-radius: 5px; padding: 4px 6px; display: flex; flex-direction: column; gap: 4px;">
+                  <span style="width: 50%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.16); display: block;"></span>
+                  <span style="width: 65%; height: 7px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.28); display: block;"></span>
+                </div>
+              </div>
+              <div style="display: flex; gap: 5px; flex: 1; min-height: 0;">
+                <div style="flex: 1; min-width: 0; background: rgba(var(--mcp-fg-rgb),0.035); border: 1px solid rgba(var(--mcp-fg-rgb),0.06); border-radius: 5px; padding: 5px; display: flex; flex-direction: column; gap: 3px;">
+                  <span style="width: 65%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.16); display: block;"></span>
+                  <div class="mcp-op-bars" style="display: flex; align-items: flex-end; gap: 2px; height: 34px;">
+                    <span style="flex: 1; height: 40%; border-radius: 1px 1px 0 0; background: rgba(var(--mcp-fg-rgb),0.16);"></span>
+                    <span style="flex: 1; height: 60%; border-radius: 1px 1px 0 0; background: rgba(var(--mcp-fg-rgb),0.16);"></span>
+                    <span style="flex: 1; height: 45%; border-radius: 1px 1px 0 0; background: rgba(var(--mcp-fg-rgb),0.16);"></span>
+                    <span style="flex: 1; height: 85%; border-radius: 1px 1px 0 0; background: rgba(var(--mcp-fg-rgb),0.16);"></span>
+                    <span style="flex: 1; height: 55%; border-radius: 1px 1px 0 0; background: rgba(var(--mcp-fg-rgb),0.16);"></span>
+                    <span style="flex: 1; height: 100%; border-radius: 1px 1px 0 0; background: rgba(var(--mcp-fg-rgb),0.16);"></span>
+                  </div>
+                </div>
+                <div style="flex: 1; min-width: 0; background: rgba(var(--mcp-fg-rgb),0.035); border: 1px solid rgba(var(--mcp-fg-rgb),0.06); border-radius: 5px; padding: 5px; display: flex; flex-direction: column; gap: 4px;">
+                  <span style="width: 70%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.16); display: block;"></span>
+                  <div class="mcp-dash-donut-row" style="display: flex; align-items: center; gap: 5px;">
+                    <div class="mcp-dash-donut" style="position: relative; width: 28px; height: 28px; flex: none; border-radius: 999px; background: rgba(var(--mcp-fg-rgb),0.14);">
+                      <div style="position: absolute; inset: 7px; border-radius: 999px; background: var(--mcp-card-bg);"></div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                      <span style="width: 32px; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.14); display: block;"></span>
+                      <span style="width: 26px; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.14); display: block;"></span>
+                      <span style="width: 30px; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.14); display: block;"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+`;
+
 const FIGMA_CARD_HTML = `
   <!-- top chrome -->
   <div style="height: 44px; flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 16px; border-bottom: 1px solid rgba(var(--mcp-fg-rgb),0.07);">
@@ -44,15 +105,15 @@ const FIGMA_CARD_HTML = `
           <span style="width: 14px; height: 14px; border-radius: 4px; background: linear-gradient(135deg, var(--primary)55, var(--secondary)55);"></span>
           <span style="font-size: 11.5px; color: rgba(var(--mcp-fg-rgb),0.65);">Cover</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 6px; background: rgba(var(--mcp-fg-rgb),0.07);">
+        <div class="mcp-op-pg mcp-op-pg--comp" style="display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 6px; background: rgba(var(--mcp-fg-rgb),0.07);">
           <span style="width: 14px; height: 14px; border-radius: 4px; background: linear-gradient(135deg, var(--primary), #38bdf8);"></span>
-          <span style="font-size: 11.5px; color: rgb(var(--mcp-fg-rgb)); font-weight: 600;">Components</span>
+          <span style="font-size: 11.5px; color: rgb(var(--mcp-fg-rgb));">Components</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 6px;">
           <span style="width: 14px; height: 14px; border-radius: 4px; background: linear-gradient(135deg, var(--primary)55, var(--secondary)55);"></span>
           <span style="font-size: 11.5px; color: rgba(var(--mcp-fg-rgb),0.65);">Mobile</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 6px;">
+        <div class="mcp-op-pg mcp-op-pg--desk" style="display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 6px;">
           <span style="width: 14px; height: 14px; border-radius: 4px; background: linear-gradient(135deg, var(--primary)55, var(--secondary)55);"></span>
           <span style="font-size: 11.5px; color: rgba(var(--mcp-fg-rgb),0.65);">Desktop</span>
         </div>
@@ -60,67 +121,14 @@ const FIGMA_CARD_HTML = `
     </div>
 
     <!-- canvas -->
-    <div style="flex: 1; min-width: 0; box-sizing: border-box; padding: 22px 20px 20px; display: flex; flex-direction: column; gap: 14px; background-image: radial-gradient(rgba(var(--mcp-fg-rgb),0.08) 1px, transparent 1px); background-size: 18px 18px;">
+    <div class="mcp-canvas" style="position: relative; flex: 1; min-width: 0; box-sizing: border-box; padding: 22px 20px 20px; display: flex; flex-direction: column; gap: 14px; background-image: radial-gradient(rgba(var(--mcp-fg-rgb),0.08) 1px, transparent 1px); background-size: 18px 18px;">
 
       <!-- row 1: Desktop Dashboard + Mobile Card -->
-      <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px;">
+      <div class="mcp-op-page" style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 14px;">
         <div style="position: relative;">
           <span style="position: absolute; top: -16px; left: 0; font-size: 9px; color: rgba(var(--mcp-fg-rgb),0.5);">Desktop Dashboard</span>
           <div style="box-sizing: border-box; height: 168px; background: var(--mcp-card-bg); border: 1px solid rgba(var(--mcp-fg-rgb),0.09); border-radius: 8px; padding: 8px; display: flex; gap: 6px;">
-            <div style="width: 16px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: 2px; color: rgba(var(--mcp-fg-rgb),0.32);">
-              <span style="color: var(--primary);"><svg width="10" height="10" viewBox="0 0 12 12"><rect x="1" y="1" width="4.5" height="4.5" rx="1" fill="currentColor"></rect><rect x="6.5" y="1" width="4.5" height="4.5" rx="1" fill="currentColor"></rect><rect x="1" y="6.5" width="4.5" height="4.5" rx="1" fill="currentColor"></rect><rect x="6.5" y="6.5" width="4.5" height="4.5" rx="1" fill="currentColor"></rect></svg></span>
-              <svg width="10" height="10" viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="2.6" rx="1" fill="currentColor"></rect><rect x="1" y="5.2" width="10" height="1.8" rx="0.9" fill="currentColor" fill-opacity="0.7"></rect><rect x="1" y="8.6" width="6" height="1.8" rx="0.9" fill="currentColor" fill-opacity="0.7"></rect></svg>
-              <svg width="10" height="10" viewBox="0 0 12 12"><path d="M1 1 H6 L11 6 L6 11 L1 6 Z" fill="none" stroke="currentColor" stroke-width="1.2"></path><circle cx="3.2" cy="3.2" r="0.9" fill="currentColor"></circle></svg>
-              <svg width="10" height="10" viewBox="0 0 12 12"><circle cx="6" cy="3.6" r="2.1" fill="currentColor"></circle><path d="M1.6 11 C1.6 7.6 10.4 7.6 10.4 11 Z" fill="currentColor"></path></svg>
-              <svg width="10" height="10" viewBox="0 0 12 12"><rect x="1" y="6" width="2.2" height="5" fill="currentColor"></rect><rect x="4.9" y="3" width="2.2" height="8" fill="currentColor"></rect><rect x="8.8" y="1" width="2.2" height="10" fill="currentColor"></rect></svg>
-              <svg width="10" height="10" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4" fill="none" stroke="currentColor" stroke-width="1.2"></circle><circle cx="6" cy="6" r="1.2" fill="currentColor"></circle></svg>
-            </div>
-            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
-              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px;">
-                <div style="background: rgba(var(--mcp-fg-rgb),0.045); border: 1px solid rgba(var(--mcp-fg-rgb),0.07); border-radius: 5px; padding: 4px 6px; display: flex; flex-direction: column; gap: 4px;">
-                  <span style="width: 55%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.16); display: block;"></span>
-                  <span style="width: 75%; height: 7px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.28); display: block;"></span>
-                </div>
-                <div style="background: rgba(var(--mcp-fg-rgb),0.045); border: 1px solid rgba(var(--mcp-fg-rgb),0.07); border-radius: 5px; padding: 4px 6px; display: flex; flex-direction: column; gap: 4px;">
-                  <span style="width: 45%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.16); display: block;"></span>
-                  <span style="width: 60%; height: 7px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.28); display: block;"></span>
-                </div>
-                <div style="background: rgba(var(--mcp-fg-rgb),0.045); border: 1px solid rgba(var(--mcp-fg-rgb),0.07); border-radius: 5px; padding: 4px 6px; display: flex; flex-direction: column; gap: 4px;">
-                  <span style="width: 60%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.16); display: block;"></span>
-                  <span style="width: 40%; height: 7px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.28); display: block;"></span>
-                </div>
-                <div style="background: rgba(var(--mcp-fg-rgb),0.045); border: 1px solid rgba(var(--mcp-fg-rgb),0.07); border-radius: 5px; padding: 4px 6px; display: flex; flex-direction: column; gap: 4px;">
-                  <span style="width: 50%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.16); display: block;"></span>
-                  <span style="width: 65%; height: 7px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.28); display: block;"></span>
-                </div>
-              </div>
-              <div style="display: flex; gap: 5px; flex: 1; min-height: 0;">
-                <div style="flex: 1; min-width: 0; background: rgba(var(--mcp-fg-rgb),0.035); border: 1px solid rgba(var(--mcp-fg-rgb),0.06); border-radius: 5px; padding: 5px; display: flex; flex-direction: column; gap: 3px;">
-                  <span style="width: 65%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.16); display: block;"></span>
-                  <div style="display: flex; align-items: flex-end; gap: 2px; height: 34px;">
-                    <span style="flex: 1; height: 40%; border-radius: 1px 1px 0 0; background: rgba(var(--mcp-fg-rgb),0.16);"></span>
-                    <span style="flex: 1; height: 60%; border-radius: 1px 1px 0 0; background: rgba(var(--mcp-fg-rgb),0.16);"></span>
-                    <span style="flex: 1; height: 45%; border-radius: 1px 1px 0 0; background: rgba(var(--mcp-fg-rgb),0.16);"></span>
-                    <span style="flex: 1; height: 85%; border-radius: 1px 1px 0 0; background: rgba(var(--mcp-fg-rgb),0.16);"></span>
-                    <span style="flex: 1; height: 55%; border-radius: 1px 1px 0 0; background: rgba(var(--mcp-fg-rgb),0.16);"></span>
-                    <span style="flex: 1; height: 100%; border-radius: 1px 1px 0 0; background: rgba(var(--mcp-fg-rgb),0.16);"></span>
-                  </div>
-                </div>
-                <div style="flex: 1; min-width: 0; background: rgba(var(--mcp-fg-rgb),0.035); border: 1px solid rgba(var(--mcp-fg-rgb),0.06); border-radius: 5px; padding: 5px; display: flex; flex-direction: column; gap: 4px;">
-                  <span style="width: 70%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.16); display: block;"></span>
-                  <div style="display: flex; align-items: center; gap: 5px;">
-                    <div style="position: relative; width: 28px; height: 28px; flex: none; border-radius: 999px; background: rgba(var(--mcp-fg-rgb),0.14);">
-                      <div style="position: absolute; inset: 7px; border-radius: 999px; background: var(--mcp-card-bg);"></div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 3px;">
-                      <span style="width: 32px; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.14); display: block;"></span>
-                      <span style="width: 26px; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.14); display: block;"></span>
-                      <span style="width: 30px; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.14); display: block;"></span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            ${DASHBOARD_SKELETON}
           </div>
         </div>
 
@@ -128,7 +136,7 @@ const FIGMA_CARD_HTML = `
           <span style="position: absolute; top: -16px; left: 0; font-size: 9px; color: rgba(var(--mcp-fg-rgb),0.5); white-space: nowrap;">Mobile Card</span>
           <div style="box-sizing: border-box; height: 168px; background: var(--mcp-card-bg); border: 1px solid rgba(var(--mcp-fg-rgb),0.09); border-radius: 14px; padding: 8px; display: flex; flex-direction: column; gap: 6px;">
             <div style="height: 62px; border-radius: 8px; background: rgba(var(--mcp-fg-rgb),0.12); flex: none;"></div>
-            <span style="width: 85%; height: 6px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.22); display: block;"></span>
+            <span class="mcp-op-type" style="width: 85%; height: 6px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.22); display: block;"></span>
             <span style="width: 45%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.14); display: block;"></span>
             <span style="width: 40%; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.22); display: block;"></span>
             <span style="margin-top: auto; height: 17px; border-radius: 5px; background: rgba(var(--mcp-fg-rgb),0.14); display: block;"></span>
@@ -137,10 +145,12 @@ const FIGMA_CARD_HTML = `
       </div>
 
       <!-- row 2: Components + Card/Primary (selected) -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+      <div class="mcp-op-page" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
         <div style="position: relative;">
           <span style="position: absolute; top: -16px; left: 0; font-size: 9px; color: rgba(var(--mcp-fg-rgb),0.5);">Components</span>
           <span style="position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; border-radius: 999px 999px 999px 2px; background: var(--secondary); color: #fff; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; z-index: 1;">1</span>
+          <!-- comment thread Tim opens on badge 1 -->
+          <div class="mcp-op-comment"><span></span><span></span><span></span></div>
           <div style="box-sizing: border-box; height: 128px; background: var(--mcp-card-bg); border: 1px solid rgba(var(--mcp-fg-rgb),0.09); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 5px;">
               <span style="width: 40px; height: 15px; border-radius: 6px; background: var(--primary);"></span>
@@ -174,12 +184,26 @@ const FIGMA_CARD_HTML = `
             <span style="width: 40%; height: 4px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.14); display: block;"></span>
             <div style="display: flex; align-items: center; justify-content: space-between;">
               <span style="width: 32px; height: 8px; border-radius: 2px; background: rgba(var(--mcp-fg-rgb),0.22);"></span>
-              <span style="width: 44px; height: 15px; border-radius: 4px; background: var(--primary);"></span>
+              <span class="mcp-op-btn" style="width: 44px; height: 15px; border-radius: 4px; background: var(--primary);"></span>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- the Desktop page, shown until Tim switches to Components: the same
+           Desktop Dashboard skeleton, scaled up to fill the canvas -->
+      <div class="mcp-op-desk-page">
+        <span class="mcp-op-desk-label">Desktop Dashboard</span>
+        <div class="mcp-op-desk-frame">
+          <div class="mcp-op-desk-zoom">${DASHBOARD_SKELETON}</div>
+        </div>
+      </div>
+
+      <!-- live edits: Tim's cursor and Claude's (via MCP), see .mcp-ops -->
+      <div class="mcp-ops">
+        <div class="mcp-cur mcp-cur--tim"><div class="mcp-cur-in"><i class="mcp-cur-ring"></i>${CURSOR_SVG}<span class="mcp-cur-tag">Tim</span></div></div>
+        <div class="mcp-cur mcp-cur--ai"><div class="mcp-cur-in">${CURSOR_SVG}<span class="mcp-cur-tag">Claude</span></div></div>
+      </div>
     </div>
   </div>
 `;
@@ -227,7 +251,7 @@ const CODE_CARD_HTML = `
         <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">4</span><span style="padding-left: 18px; display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 42px; height: 8px; border-radius: 3px; background: var(--secondary); opacity: 0.55;"></span><span style="display: inline-block; width: 10px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
         <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">5</span><span style="padding-left: 36px; display: flex; align-items: center;"><span style="display: inline-block; width: 26px; height: 8px; border-radius: 3px; background: #38bdf8; opacity: 0.55;"></span></span></div>
         <div style="display: flex; align-items: center;"><span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">6</span><span style="padding-left: 54px; display: flex; align-items: center;"><span style="display: inline-block; width: 48px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span></span></div>
-        <div style="display: flex; align-items: center; position: relative;">
+        <div class="mcp-op-line" style="display: flex; align-items: center; position: relative;">
           <span style="width: 34px; flex: none; text-align: right; padding-right: 14px; color: rgba(var(--mcp-fg-rgb),0.22);">7</span>
           <span style="padding-left: 72px; display: flex; align-items: center; gap: 6px;"><span style="display: inline-block; width: 56px; height: 8px; border-radius: 3px; background: rgba(var(--mcp-fg-rgb),0.18);"></span><span style="display: inline-block; width: 58px; height: 8px; border-radius: 3px; background: var(--mcp-string); opacity: 0.55;"></span></span>
           <svg width="14" height="14" viewBox="0 0 24 24" style="position: absolute; left: 4px; top: 2px; filter: drop-shadow(0 0 4px var(--secondary));">
@@ -331,9 +355,30 @@ export default function FigmaMcpShowcase() {
     };
   }, []);
 
+  // The live-edit loop (.mcp-ops cursors etc.) only plays while the grid is
+  // on screen: .is-live sets animation-play-state, so it resumes in place.
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(entries => {
+      grid.classList.toggle('is-live', entries.some(e => e.isIntersecting));
+    });
+    io.observe(grid);
+    return () => io.disconnect();
+  }, []);
+
+  // Scroll zoom-out (Apple product page style), all in CSS: .mcp-scroll is a
+  // tall track whose view-timeline drives the animations, .mcp-bleed sticks
+  // to the viewport while it plays. .mcp-zoom starts zoomed on the Figma
+  // card and shrinks to the full grid, then the hub, trails and code card
+  // come in. Its own layer, so the phone scale-sync on .mcp-grid is untouched.
   return (
+    <div className="mcp-scroll">
     <div className="mcp-bleed">
-      <div className="mcp-grid-wrap rise-card" aria-hidden="true" ref={wrapRef}>
+      {/* rides the track's band: measured while stuck, a sticky element's
+          own band lands in the wrong place and the reveal never fires */}
+      <div className="mcp-grid-wrap rise-card" data-rise-with=".mcp-scroll" aria-hidden="true" ref={wrapRef}>
+        <div className="mcp-zoom">
         <div className="mcp-grid" ref={gridRef}>
           <div className="mcp-card" dangerouslySetInnerHTML={{ __html: FIGMA_CARD_HTML }} />
           <div className="mcp-card code-card" dangerouslySetInnerHTML={{ __html: CODE_CARD_HTML }} />
@@ -382,7 +427,9 @@ export default function FigmaMcpShowcase() {
             </div>
           </div>
         </div>
+        </div>
       </div>
+    </div>
     </div>
   );
 }
