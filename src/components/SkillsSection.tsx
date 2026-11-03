@@ -9,6 +9,7 @@ import PolicyPill from './PolicyPill';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from './GoogleGeminiEffect';
 import FigmaMcpShowcase from './FigmaMcpShowcase';
 import AiAppStage from './AiAppStage';
+import { attachAiViewerEntrance } from '../utils/aiViewerEntrance';
 import LazyUnit from './LazyUnit';
 import { processCardLayers, useProcessCardThemes, type ProcessTheme } from '../utils/processCardImages';
 
@@ -2062,6 +2063,13 @@ export function AiIntakeSection() {
     expandedRef.current = expandedAiCard;
     selectAiStepRef.current = selectAiStep;
   });
+
+  // Entrance: the stage rises in from below (rise-card); the rail and the
+  // front panel come in from the left, the LINE phone from the right.
+  useEffect(() => {
+    if (!isViewer || !viewerRef.current) return;
+    return attachAiViewerEntrance(viewerRef.current);
+  }, [isViewer]);
 
   // Open step 01 the first time the viewer scrolls into view, so its demo
   // plays where it can be seen (it replays after a lazy-unit remount too).
