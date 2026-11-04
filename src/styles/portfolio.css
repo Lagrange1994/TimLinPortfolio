@@ -5186,7 +5186,8 @@
     @supports (animation-timeline: view()) {
       @media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
         .mcp-scroll {
-          height: 240svh;
+          position: relative;
+          height: 340svh;
           view-timeline: --mcp-zoom block;
         }
         /* The heading sits in the upper quarter (clear of the navbar) and
@@ -5202,41 +5203,97 @@
           /* the zoomed grid is cut at the screen edges, both axes */
           overflow: clip;
         }
-        .mcp-scroll .figma-mcp-header { margin: 0; }
+        /* fades out as the closing zoom starts, so the VS Code card can
+           use the whole frame below the navbar */
+        .mcp-scroll .figma-mcp-header {
+          margin: 0;
+          animation: mcp-head-out linear both;
+          animation-timeline: --mcp-zoom;
+          animation-range: contain 52% contain 62%;
+        }
         .mcp-scroll .mcp-grid-wrap { margin-top: clamp(28px, 5svh, 56px); }
 
-        /* 0–50%: zoomed in on the Figma card (centred: its centre sits at
-           ~24.4% of the grid), shrinking to the full grid. Anchored at the
-           top so the zoomed grid grows down, never over the heading. */
+        /* 0–29%: zoomed in on the Figma card (centred: its centre sits at
+           ~24.4% of the grid), shrinking to the full grid. 29–52% holds the
+           full grid, then 52–80% zooms in on the VS Code card, the mirror
+           of the opening shot (its centre sits at ~75.3%). Anchored at the
+           top so the zoomed grid grows down, never over the heading. One
+           animation, so the two zooms never fight over scale/translate. */
         .mcp-zoom {
+    /* scroll marker for the VS Code close-up; only the zoom track shows it */
+    .mcp-code-cue {
+      display: none;
+      position: absolute;
+      left: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+    }
           transform-origin: 24.4% 0;
-          animation: mcp-zoom-out cubic-bezier(.3, 0, .2, 1) both;
+          animation: mcp-zoom-out linear both;
           animation-timeline: --mcp-zoom;
-          animation-range: contain 0% contain 50%;
+          animation-range: contain 0% contain 80%;
         }
-        /* 45–65% hub, 50–75% code card, 55–75% trails; 75–100% holds. */
+        /* 26–38% hub, 29–44% code card, 32–44% trails; 80–100% holds the
+           VS Code close-up. During the closing zoom (52–66%) the hub and
+           trails dim and Claude's panel lights up, so the eye goes to the
+           AI writing the code. */
         .mcp-scroll .mcp-hub {
-          animation: mcp-hub-in ease-out both;
-          animation-timeline: --mcp-zoom;
-          animation-range: contain 45% contain 65%;
+          animation: mcp-hub-in ease-out both, mcp-dim linear both;
+          animation-timeline: --mcp-zoom, --mcp-zoom;
+          animation-range: contain 26% contain 38%, contain 52% contain 66%;
         }
         .mcp-scroll .mcp-trail-svg {
-          animation: mcp-fade-in linear both;
-          animation-timeline: --mcp-zoom;
-          animation-range: contain 55% contain 75%;
+          animation: mcp-fade-in linear both, mcp-dim linear both;
+          animation-timeline: --mcp-zoom, --mcp-zoom;
+          animation-range: contain 32% contain 44%, contain 52% contain 66%;
         }
         .mcp-scroll .mcp-card.code-card {
           animation: mcp-code-in ease-out both;
           animation-timeline: --mcp-zoom;
-          animation-range: contain 50% contain 75%;
+          animation-range: contain 29% contain 44%;
         }
         /* keeps the hover radar the other cards have */
         .mcp-scroll .mcp-card.code-card:hover {
           animation: mcp-code-in ease-out both, card-radar 3s ease-out infinite;
           animation-timeline: --mcp-zoom, auto;
-          animation-range: contain 50% contain 75%, normal;
+          animation-range: contain 29% contain 44%, normal;
         }
-        @keyframes mcp-zoom-out { from { translate: 25.6% 0; scale: 2; } }
+        /* The AI is the point of the close-up: Claude's panel grows from its
+           corner and lights up. Its own live-edit loop (opacity/translate,
+           see "Live edits" below) keeps running alongside. */
+        .mcp-scroll .mcp-chat {
+          transform-origin: 100% 100%;
+          animation: mcp-chat 20s cubic-bezier(.2, .8, .3, 1) infinite var(--mcp-play), mcp-ai-focus ease-out both;
+          animation-timeline: auto, --mcp-zoom;
+          animation-range: normal, contain 56% contain 80%;
+        }
+        /* Marker the showcase's IntersectionObserver watches: on screen from
+           68% of the track on, as the closing zoom lands; the loop then
+           moves on to Claude writing Card.tsx (FigmaMcpShowcase.tsx). */
+        .mcp-code-cue {
+          display: block;
+          top: calc(100svh + 240svh * .68);
+        }
+        /* keyframe % are of the 0–80% range: 36.5% = 29%, 65% = 52%. The
+           close-up's scale and offset come from FigmaMcpShowcase.tsx
+           (--mcp-fit-*): as large as the whole card fits the frame. */
+        @keyframes mcp-zoom-out {
+          0% { translate: 25.6% 0; scale: 2; animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+          36.5%, 65% { translate: 0% 0; scale: 1; animation-timing-function: cubic-bezier(.45, 0, .2, 1); }
+          100% { translate: var(--mcp-fit-x, -76.2%) var(--mcp-fit-y, 0px); scale: var(--mcp-fit-s, 2); }
+        }
+        @keyframes mcp-head-out { to { opacity: 0; translate: 0 -24px; } }
+        @keyframes mcp-dim { to { filter: opacity(.3); } }
+        @keyframes mcp-ai-focus {
+          to {
+            scale: 1.22;
+            border-color: color-mix(in srgb, var(--primary) 60%, transparent);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, .3),
+              0 0 0 1px color-mix(in srgb, var(--primary) 30%, transparent),
+              0 12px 40px -6px color-mix(in srgb, var(--primary) 55%, transparent);
+          }
+        }
         @keyframes mcp-hub-in { from { opacity: 0; scale: .6; } }
         @keyframes mcp-fade-in { from { opacity: 0; } }
         @keyframes mcp-code-in { from { opacity: 0; translate: 48px 0; } }

@@ -69,6 +69,28 @@ describe('Figma MCP live edits', () => {
     expect(add).not.toHaveBeenCalledWith('scroll', expect.anything(), expect.anything());
   });
 
+  // The closing zoom on VS Code: when its marker comes on screen the loop
+  // moves on to the coding, once per arrival, and leaves .is-live alone.
+  it('jumps the loop to the coding when the close-up marker comes on screen', () => {
+    const { container } = setup();
+    const grid = container.querySelector('.mcp-grid')! as HTMLElement & { getAnimations: () => unknown[] };
+    const cue = container.querySelector('.mcp-code-cue')!;
+    const loop = { currentTime: 1000, effect: { getTiming: () => ({ duration: 20000, delay: 0 }) } };
+    grid.getAnimations = () => [loop];
+    const atCue = (isIntersecting: boolean) =>
+      act(() => ioCallback!([{ isIntersecting, target: cue } as unknown as IntersectionObserverEntry], {} as IntersectionObserver));
+    fire(true);
+    atCue(true);
+    expect(loop.currentTime).toBe(3500);
+    expect(grid.classList.contains('is-live')).toBe(true);
+    loop.currentTime = 1000;
+    atCue(true);
+    expect(loop.currentTime).toBe(1000); // still there: no second jump
+    atCue(false);
+    atCue(true);
+    expect(loop.currentTime).toBe(3500);
+  });
+
   it('renders without IntersectionObserver (stays paused)', () => {
     vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
     vi.stubGlobal('IntersectionObserver', undefined);

@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { fitCodeCard, jumpToCoding } from '../utils/mcpCodeFocus';
 
 // Two response-native cards (Figma design canvas mockup + VS Code mockup)
 // bridged by a centered "Figma MCP" hub — same shell mechanics as the
@@ -333,6 +334,9 @@ const MCP_DESIGN_WIDTH = 640;
 export default function FigmaMcpShowcase({ header }: { header?: ReactNode } = {}) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const bleedRef = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef<HTMLDivElement>(null);
+  const cueRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const wrap = wrapRef.current;
@@ -377,29 +381,82 @@ export default function FigmaMcpShowcase({ header }: { header?: ReactNode } = {}
   // The live-edit loop (.mcp-ops cursors etc.) plays only while the grid is
   // on screen and picks up wherever it paused; .is-live just flips
   // animation-play-state.
+  // The same observer watches .mcp-code-cue, a marker in the scroll track
+  // that comes on screen as the closing zoom on the VS Code card lands: the
+  // loop then moves on to Claude writing Card.tsx (once per arrival), so
+  // the close-up shows the coding.
   useEffect(() => {
     const grid = gridRef.current;
     if (!grid || typeof IntersectionObserver === 'undefined') return;
+    const cue = cueRef.current;
+    let cued = false;
     const io = new IntersectionObserver(entries => {
-      grid.classList.toggle('is-live', entries.some(e => e.isIntersecting));
+      const own = entries.filter(e => !cue || e.target !== cue);
+      if (own.length) grid.classList.toggle('is-live', own.some(e => e.isIntersecting));
+      const atCue = entries.find(e => cue && e.target === cue);
+      if (!atCue) return;
+      if (atCue.isIntersecting && !cued && typeof grid.getAnimations === 'function') {
+        jumpToCoding(grid.getAnimations({ subtree: true }));
+      }
+      cued = atCue.isIntersecting;
     });
     io.observe(grid);
+    if (cue) io.observe(cue);
     return () => io.disconnect();
+  }, []);
+
+  // How close the closing zoom gets: the whole VS Code card fits the pinned
+  // frame, centred below the heading's spot. Measured with the zoom (and
+  // the card's own slide-in) switched off, then handed to the keyframes as
+  // --mcp-fit-*.
+  useEffect(() => {
+    const bleed = bleedRef.current;
+    const layer = zoomRef.current;
+    const wrap = wrapRef.current;
+    const card = layer?.querySelector<HTMLElement>('.mcp-card.code-card');
+    if (!bleed || !layer || !wrap || !card) return;
+    const measure = () => {
+      layer.style.animation = 'none';
+      card.style.animation = 'none';
+      const f = bleed.getBoundingClientRect();
+      const z = layer.getBoundingClientRect();
+      const c = card.getBoundingClientRect();
+      const head = bleed.firstElementChild !== wrap ? bleed.firstElementChild?.getBoundingClientRect() : undefined;
+      layer.style.animation = '';
+      card.style.animation = '';
+      if (!f.width || !c.width) return;
+      const rel = (r: DOMRect) => ({ x: r.left - f.left, y: r.top - f.top, w: r.width, h: r.height });
+      const fit = fitCodeCard({ w: f.width, h: f.height }, rel(z), rel(c), head ? head.top - f.top : z.top - f.top);
+      layer.style.setProperty('--mcp-fit-s', fit.scale.toFixed(4));
+      layer.style.setProperty('--mcp-fit-x', `${fit.x.toFixed(1)}px`);
+      layer.style.setProperty('--mcp-fit-y', `${fit.y.toFixed(1)}px`);
+    };
+    measure();
+    // the wrap's rise (y + squash) skews a measurement taken mid-reveal
+    wrap.addEventListener('rise-settled', measure);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(bleed);
+    observer?.observe(wrap);
+    return () => {
+      wrap.removeEventListener('rise-settled', measure);
+      observer?.disconnect();
+    };
   }, []);
 
   // Scroll zoom-out (Apple product page style), all in CSS: .mcp-scroll is a
   // tall track whose view-timeline drives the animations, .mcp-bleed sticks
   // to the viewport while it plays. .mcp-zoom starts zoomed on the Figma
   // card and shrinks to the full grid, then the hub, trails and code card
-  // come in. Its own layer, so the phone scale-sync on .mcp-grid is untouched.
+  // come in; scrolling on, it zooms in on the VS Code card. Its own layer,
+  // so the phone scale-sync on .mcp-grid is untouched.
   return (
     <div className="mcp-scroll">
-    <div className="mcp-bleed">
+    <div className="mcp-bleed" ref={bleedRef}>
       {header}
       {/* rides the track's band: measured while stuck, a sticky element's
           own band lands in the wrong place and the reveal never fires */}
       <div className="mcp-grid-wrap rise-card" data-rise-with=".mcp-scroll" aria-hidden="true" ref={wrapRef}>
-        <div className="mcp-zoom">
+        <div className="mcp-zoom" ref={zoomRef}>
         <div className="mcp-grid" ref={gridRef}>
           <div className="mcp-card" dangerouslySetInnerHTML={{ __html: FIGMA_CARD_HTML }} />
           <div className="mcp-card code-card" dangerouslySetInnerHTML={{ __html: CODE_CARD_HTML }} />
@@ -451,6 +508,7 @@ export default function FigmaMcpShowcase({ header }: { header?: ReactNode } = {}
         </div>
       </div>
     </div>
+    <div className="mcp-code-cue" ref={cueRef} aria-hidden="true" />
     </div>
   );
 }
