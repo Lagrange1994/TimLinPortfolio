@@ -3,7 +3,8 @@ import { motion, LayoutGroup } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
 import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
-import { portfolioWallMaskPath, DEFAULT_RADIUS, computeWallHeight } from '../utils/portfolioMask';
+import { portfolioWallMorphPath, DEFAULT_RADIUS, computeWallHeight, type WallMaskArgs } from '../utils/portfolioMask';
+import { wallShapeProgress } from '../utils/portfolioZoom';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import { attachPortfolioSkeleton } from '../utils/portfolioSkeleton';
@@ -467,14 +468,21 @@ export default function PortfolioSection() {
     // for the synchronous duration of one measure (no paint in between) gives
     // the true resting rects at any point of the entrance, so the wall can
     // rise together with the text instead of fading in after it.
+    // The section's own scroll zoom (scale, see .portfolio-scroll in
+    // portfolio.css) is switched off for the measure too: it scales every
+    // rect but not clientWidth/clientHeight, so the notch would be cut for
+    // the zoomed size.
     function apply() {
       const els = [label!, title!, sub!, frame!];
       const saved = els.map(el => el.style.transform);
+      const savedAnim = section!.style.animation;
       els.forEach(el => { el.style.transform = 'none'; });
+      section!.style.animation = 'none';
       try {
         applyAtRest();
       } finally {
         els.forEach((el, i) => { el.style.transform = saved[i]; });
+        section!.style.animation = savedAnim;
       }
     }
 
@@ -579,14 +587,12 @@ export default function PortfolioSection() {
       // rounded corner (button radius + LEG_GAP_PADDING), not the button's
       // bare radius alone.
       const notch2BottomRadius = isDesktopBreakpoint ? 40 : isMobileBreakpoint ? legTopRadius : undefined;
-      const d = portfolioWallMaskPath(w, h, notch1W, notch1H, notch2W, notch2H, legGapH, legGapW, radius, legTopRadius, undefined, notch2BottomRadius);
-      pathEl!.setAttribute('d', d);
-      // Contains the marquee cards (see .portfolio-wall-clip's own comment
-      // in the JSX below). fillEl uses this exact same `d` string, not a
-      // separately-computed approximation — see .portfolio-wall-fill in
-      // portfolio.css for why that match has to be exact, not just close.
-      clipEl!.style.clipPath = `path('${d}')`;
-      fillEl!.style.clipPath = `path('${d}')`;
+      shape = {
+        args: [w, h, notch1W, notch1H, notch2W, notch2H, legGapH, legGapW, radius, legTopRadius, undefined, notch2BottomRadius],
+        wallX: wallRect.left - sectionRect.left,
+        wallY: wallTopPx,
+      };
+      drawShape();
       // Flush the button's own bottom edge against the wall's actual bottom
       // edge. Built from wallTopPx + h (the same values just used to place
       // the wall itself), not a fresh getBoundingClientRect() on the wall —
@@ -610,6 +616,67 @@ export default function PortfolioSection() {
       viewAllRow!.style.right = `${rowRightPx}px`;
       viewAllRow!.style.width = 'max-content';
     }
+
+    // The notched shape, and where the wall sits in the section, from the
+    // last measure. drawShape() cuts it: in full, or — during the Portfolio
+    // scroll zoom-in (see .portfolio-scroll in portfolio.css) — still
+    // forming in from the browser window's edges.
+    let shape: { args: WallMaskArgs; wallX: number; wallY: number } | null = null;
+    let drawnT = -1;
+    function drawShape() {
+      if (!shape) return;
+      const t = wallShapeProgress(section!);
+      // The window, in the wall's own (unzoomed) coordinates, from wherever
+      // the section sits right now (sliding in, or stuck). It forms while
+      // the section is still zoomed, so undo the current scale about its
+      // origin: a screen point X sits at origin + (X - origin) / scale.
+      const cs = getComputedStyle(section!);
+      const s = parseFloat(cs.scale) || 1;
+      const [ox, oy] = cs.transformOrigin.split(' ').map(v => parseFloat(v) || 0);
+      const track = section!.parentElement!.getBoundingClientRect();
+      const secX = sectionLeft();
+      const secY = Math.min(Math.max(track.top, stickyTop()), track.bottom - section!.offsetHeight);
+      const toWallX = (X: number) => ox + (X - secX - ox) / s - shape!.wallX;
+      const toWallY = (Y: number) => oy + (Y - secY - oy) / s - shape!.wallY;
+      const from = {
+        x0: toWallX(0),
+        y0: toWallY(0),
+        x1: toWallX(document.documentElement.clientWidth),
+        y1: toWallY(window.innerHeight),
+      };
+      const d = portfolioWallMorphPath(shape.args, from, t);
+      drawnT = t;
+      pathEl!.setAttribute('d', d);
+      // Contains the marquee cards (see .portfolio-wall-clip's own comment
+      // in the JSX below). fillEl uses this exact same `d` string, not a
+      // separately-computed approximation — see .portfolio-wall-fill in
+      // portfolio.css for why that match has to be exact, not just close.
+      // The one exception is sliding in: the cards' clip reaches the top of
+      // the screen, so the tilted rows show uncut above the track, but the
+      // panel fill stops at the track's top instead of covering the section
+      // above. They meet again as the shape forms.
+      clipEl!.style.clipPath = `path('${d}')`;
+      const fillD = t < 1 && track.top > 0
+        ? portfolioWallMorphPath(shape.args, { ...from, y0: toWallY(track.top) }, t)
+        : d;
+      fillEl!.style.clipPath = `path('${fillD}')`;
+    }
+    // layout px, unaffected by the zoom's scale
+    function sectionLeft() {
+      const track = section!.parentElement!;
+      return track.getBoundingClientRect().left + (track.clientWidth - section!.offsetWidth) / 2;
+    }
+    function stickyTop() { return parseFloat(getComputedStyle(section!).top) || 0; }
+    // Redraws while the shape is forming, and once more as it completes.
+    let raf = 0;
+    function onScroll() {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        if (wallShapeProgress(section!) < 1 || drawnT < 1) drawShape();
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
 
     let ro: ResizeObserver | null = null;
 
@@ -637,6 +704,8 @@ export default function PortfolioSection() {
     return () => {
       ro?.disconnect();
       section!.removeEventListener(WALL_GEOMETRY_EVENT, onWallGeometry);
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(raf);
     };
   }, [lang, expanded]);
 
@@ -1189,8 +1258,12 @@ export default function PortfolioSection() {
       // extra offset) so "My Portfolio"'s gap to the navbar doesn't shift
       // when expanding into the bento grid.
       const headerOffset = header ? header.offsetHeight : 80;
-      const targetScrollY = portfolioSec
-        ? portfolioSec.getBoundingClientRect().top + window.pageYOffset - headerOffset
+      // While folded the section sticks inside its zoom track, so its own
+      // rect moves with the scroll; the track's top is where the section
+      // sits once expanded (the track collapses around the grid).
+      const anchor = portfolioSec?.closest<HTMLElement>('.portfolio-scroll') ?? portfolioSec;
+      const targetScrollY = anchor
+        ? anchor.getBoundingClientRect().top + window.pageYOffset - headerOffset
         : 0;
 
       document.documentElement.style.overflowAnchor = 'none';
@@ -1213,6 +1286,10 @@ export default function PortfolioSection() {
 
   return (
     <div className="section-wrapper">
+      {/* Scroll zoom-in track (see .portfolio-scroll in portfolio.css): the
+          section sticks inside it while the camera pulls back to the wall.
+          data-zoom-track lets nav jumps land past the zoom (navHeader.ts). */}
+      <div className="portfolio-scroll" data-zoom-track="">
       <section id="portfolio" className={`section${expanded ? ' portfolio-expanded' : ''}`} data-lazy-keep={expanded || activeFilter !== 'all' ? '' : undefined}>
         <div className="portfolio-header">
           <div className="section-label rise-soft" data-rise-y={PORTFOLIO_RISE_Y} style={{ marginBottom: 0 }}>My Portfolio</div>
@@ -1361,6 +1438,7 @@ export default function PortfolioSection() {
           </button>
         </div>
       </section>
+      </div>
     </div>
   );
 }

@@ -100,7 +100,7 @@ function roundedOrthogonalPath(vertices: Vertex[]): string {
   return cmds.join(' ') + ' Z';
 }
 
-export function portfolioWallMaskPath(
+function wallVertices(
   w: number,
   h: number,
   notch1W: number,
@@ -122,7 +122,7 @@ export function portfolioWallMaskPath(
   // caller can tune it without affecting the leg gap's bottom-left corner,
   // which still shares the tight-radius below.
   notch2BottomRadius = radius / 2,
-): string {
+): Vertex[] {
   const n1w = Math.max(0, Math.min(notch1W, w));
   const n1h = Math.max(0, Math.min(notch1H, h));
   const n2w = Math.max(0, Math.min(notch2W, n1w));
@@ -159,6 +159,42 @@ export function portfolioWallMaskPath(
     { x: w, y: 0, r: radius },
   ];
 
-  return roundedOrthogonalPath(vertices);
+  return vertices;
+}
+
+export type WallMaskArgs = Parameters<typeof wallVertices>;
+
+export function portfolioWallMaskPath(...args: WallMaskArgs): string {
+  return roundedOrthogonalPath(wallVertices(...args));
+}
+// A rectangle in the wall's own coordinates (e.g. the browser window).
+export interface MorphRect { x0: number; y0: number; x1: number; y1: number }
+
+// The shape forming from a plain rectangle (the browser window, for the
+// Portfolio scroll zoom-in). The outer edges close in from the rectangle to
+// the wall's box at the pace of t, and the notches and leg gap open out of
+// the current corners at t² — nothing at first, then growing with the frame
+// instead of showing up full-size as soon as it moves. Each corner keeps its
+// place relative to the edges it hangs off (left or right, top or bottom,
+// whichever is nearer), so every edge stays horizontal or vertical and
+// t = 1 lands exactly on the wall's own shape.
+function morphFrom(to: Vertex[], rect: MorphRect, t: number, w: number, h: number): Vertex[] {
+  const e = Math.max(0, Math.min(1, t));
+  const n = e * e;
+  const left = rect.x0 + (0 - rect.x0) * e;
+  const right = rect.x1 + (w - rect.x1) * e;
+  const top = rect.y0 + (0 - rect.y0) * e;
+  const bottom = rect.y1 + (h - rect.y1) * e;
+  return to.map(v => ({
+    x: v.x <= w / 2 ? left + v.x * n : right - (w - v.x) * n,
+    y: v.y <= h / 2 ? top + v.y * n : bottom - (h - v.y) * n,
+    r: v.r * n,
+  }));
+}
+
+// The notched wall shape part-way from `from` (t 0) to its own (t 1).
+export function portfolioWallMorphPath(args: WallMaskArgs, from: MorphRect, t: number): string {
+  if (t >= 1) return portfolioWallMaskPath(...args);
+  return roundedOrthogonalPath(morphFrom(wallVertices(...args), from, t, args[0], args[1]));
 }
 

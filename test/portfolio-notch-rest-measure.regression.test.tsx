@@ -81,4 +81,28 @@ describe('portfolio notch is measured at rest, mid-entrance', () => {
     // The in-flight transforms are put back untouched.
     els.forEach(el => expect(el.style.transform).toBe('translateY(28px)'));
   });
+
+  // The scroll zoom-in scales the whole section: every rect grows with it
+  // but clientWidth/Height don't, so apply() measures with it switched off.
+  it('measures with the section\'s scroll zoom switched off, then hands it back', () => {
+    render(<LangProvider><PortfolioSection /></LangProvider>);
+    const section = document.getElementById('portfolio')!;
+    const frame = document.querySelector<HTMLElement>('.portfolio-wall-frame')!;
+    const path = document.querySelector('.portfolio-wall-outline path')!;
+    const seen: string[] = [];
+    const prev = Element.prototype.getBoundingClientRect;
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      if (this === section) seen.push(section.style.animation);
+      return prev.call(this);
+    };
+    act(() => {
+      frame.style.top = '200px';
+      section.style.animation = 'pf-zoom-in';
+      section.dispatchEvent(new Event('wall-geometry'));
+    });
+    expect(path.getAttribute('d')).toBeTruthy();
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen.every(a => a === 'none')).toBe(true);
+    expect(section.style.animation).toBe('pf-zoom-in');
+  });
 });

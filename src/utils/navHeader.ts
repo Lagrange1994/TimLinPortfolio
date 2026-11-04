@@ -67,6 +67,18 @@ function stopAnimatedScroll() {
   cleanupInput = null;
 }
 
+// A section that sticks inside a scroll-zoom track ([data-zoom-track], e.g.
+// Portfolio) moves with the scroll, so its own rect is no landing spot, and
+// the track's top is where the zoom starts. Land at the track's end instead,
+// where the zoom has finished: the section's document top if it sat at the
+// bottom of its track. null when the target isn't stuck in a track.
+export function zoomTrackRestTop(target: HTMLElement): number | null {
+  const track = target.parentElement?.closest<HTMLElement>('[data-zoom-track]');
+  if (!track || getComputedStyle(target).position !== 'sticky') return null;
+  const trackTop = track.getBoundingClientRect().top + window.scrollY;
+  return trackTop + track.offsetHeight - target.offsetHeight;
+}
+
 function desiredScrollY(target: HTMLElement): number {
   // A lazily unmounted section (LazyUnit) is a zero-size anchor span with the
   // section's id; once the real section mounts the span is removed, and a
@@ -75,7 +87,7 @@ function desiredScrollY(target: HTMLElement): number {
     parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue('--nav-h')
     ) || 0;
-  const absTop = target.getBoundingClientRect().top + window.scrollY;
+  const absTop = zoomTrackRestTop(target) ?? target.getBoundingClientRect().top + window.scrollY;
   const max = document.documentElement.scrollHeight - window.innerHeight;
   return Math.min(Math.max(absTop - navH, 0), max);
 }

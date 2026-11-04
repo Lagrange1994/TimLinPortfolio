@@ -4442,6 +4442,92 @@
       }
     }
 
+    /* Scroll zoom-in (Apple product page style, see PortfolioSection.tsx
+       and utils/portfolioZoom.ts). .portfolio-scroll is a track 150svh
+       taller than the section; while it scrolls past, #portfolio sticks
+       under the navbar and its view-timeline plays, all at once over 0–70%:
+       the section zooms from 1.5× (on the wall's centre) to 1×, the wall's
+       shape closes in from the window's edges with its notches opening
+       (drawn by PortfolioSection.tsx, on the zoom's own curve), the
+       outline fades in (0–30%), the headline and button as the frame and its
+       notches are about to land (58–70%).
+       70–100% holds.
+       Expanded (grid) view, phones, reduced motion and browsers without
+       scroll-driven animations keep the plain section. */
+    @supports (animation-timeline: view()) {
+      @media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+        .portfolio-scroll {
+          /* The zoomed section is cut at the screen's sides only. Not top
+             or bottom: on the way in, a cut there sliced the tilted wall
+             with a straight line — instead the wall's own tilted rows
+             show, and PortfolioSection.tsx keeps its panel fill from
+             spilling above the track. */
+          overflow-x: clip;
+          overflow-y: visible;
+          view-timeline: --pf-zoom block;
+        }
+        /* the extra length, as content (sticky is held inside the track's
+           content box, so padding wouldn't give it room to stick) */
+        .portfolio-scroll::after {
+          content: '';
+          display: block;
+          height: calc(150svh / var(--z, 1));
+        }
+        .portfolio-scroll > #portfolio {
+          position: sticky;
+          top: var(--nav-h, 72px);
+          /* the wall is centred in the room below the navbar */
+          transform-origin: 50% calc((100dvh / var(--z, 1) - var(--nav-h, 72px)) / 2);
+          animation: pf-zoom-in cubic-bezier(.3, 0, .2, 1) both;
+          animation-timeline: --pf-zoom;
+          animation-range: contain 0% contain 70%;
+        }
+        .portfolio-scroll > #portfolio .portfolio-wall-outline {
+          animation: pf-fade-in linear both;
+          animation-timeline: --pf-zoom;
+          animation-range: contain 0% contain 30%;
+        }
+        /* The light theme's drop-shadow filter only paints inside the
+           frame's own box (plus the shadow's reach), which would cut the
+           full-bleed wall and its forming shape off at the old rectangle.
+           Off until the shape has nearly formed, then it eases in. */
+        .portfolio-scroll > #portfolio .portfolio-wall-frame {
+          animation: pf-shadow-in linear both;
+          animation-timeline: --pf-zoom;
+          animation-range: contain 0% contain 70%;
+        }
+        /* opacity/visibility only: the notch is cut from these rects */
+        .portfolio-scroll > #portfolio .portfolio-header,
+        .portfolio-scroll > #portfolio #toggle-portfolio-view {
+          animation: pf-ui-in ease-out both;
+          animation-timeline: --pf-zoom;
+          animation-range: contain 58% contain 70%;
+        }
+        .portfolio-scroll:has(> #portfolio.portfolio-expanded) {
+          overflow: visible;
+          view-timeline: none;
+        }
+        .portfolio-scroll:has(> #portfolio.portfolio-expanded)::after { display: none; }
+        .portfolio-scroll > #portfolio.portfolio-expanded {
+          position: relative;
+          animation: none;
+        }
+        /* Off with the timeline, not just left on it: an animation whose
+           timeline goes away (view-timeline: none above) is paused at 0%
+           and stays there when the timeline comes back — headline and
+           button stayed hidden after Fold. Switched off here, they start
+           fresh on the restored timeline. */
+        .portfolio-scroll > #portfolio.portfolio-expanded :is(.portfolio-header, #toggle-portfolio-view, .portfolio-wall-outline, .portfolio-wall-frame) {
+          animation: none;
+        }
+        @keyframes pf-zoom-in { from { scale: 1.5; } }
+        @keyframes pf-fade-in { from { opacity: 0; } }
+        /* % of 0–70%: 90% = 63% of the track */
+        @keyframes pf-shadow-in { 0%, 90% { filter: none; } }
+        @keyframes pf-ui-in { from { opacity: 0; visibility: hidden; } }
+      }
+    }
+
     /* Same neumorphism drop-shadow pair as the hero panel's
        #bg-panel-shadow — see that rule's comment. */
     :root[data-theme="light"] .portfolio-wall-frame {
@@ -5123,6 +5209,15 @@
       background: var(--mcp-code-bg);
     }
     .mcp-mono { font-family: var(--mono); }
+    /* scroll marker for the VS Code close-up; only the zoom track shows it */
+    .mcp-code-cue {
+      display: none;
+      position: absolute;
+      left: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+    }
 
     /* MCP hub — centered on the grid's own gap (not a fixed pixel offset),
        so it stays put in the seam between the two cards at any width. */
@@ -5220,15 +5315,6 @@
            top so the zoomed grid grows down, never over the heading. One
            animation, so the two zooms never fight over scale/translate. */
         .mcp-zoom {
-    /* scroll marker for the VS Code close-up; only the zoom track shows it */
-    .mcp-code-cue {
-      display: none;
-      position: absolute;
-      left: 0;
-      width: 1px;
-      height: 1px;
-      pointer-events: none;
-    }
           transform-origin: 24.4% 0;
           animation: mcp-zoom-out linear both;
           animation-timeline: --mcp-zoom;
