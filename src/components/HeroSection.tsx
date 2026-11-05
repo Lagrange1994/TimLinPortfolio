@@ -814,7 +814,7 @@ export default function HeroSection() {
               className="btn-glass"
               style={{ padding: '12px 28px', borderRadius: '9999px' }}
               data-scroll-to="contact"
-              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              onClick={() => scrollToSectionAligned('contact')}
             >
               Contact Me
             </button>
