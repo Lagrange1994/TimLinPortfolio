@@ -4465,6 +4465,9 @@
           overflow-x: clip;
           overflow-y: visible;
           view-timeline: --pf-zoom block;
+          /* room for the 1.5× wall's top rows, which reach above the
+             track, so they don't run into the chips rows before it */
+          margin-top: calc(22svh / var(--z, 1));
         }
         /* the extra length, as content (sticky is held inside the track's
            content box, so padding wouldn't give it room to stick) */
