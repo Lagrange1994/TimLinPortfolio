@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
+import { autoScrollSkips } from './navHeader';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -30,6 +31,7 @@ const DUR = 1.05;
 const POS_EASE = 'elastic.out(0.8, 0.75)'; // soft single-bounce rise
 const RISE_Y = 28; // px each item travels by default (data-rise-y overrides)
 const STRETCH_EASE = 'elastic.out(0.8, 0.55)'; // gentler squash/stretch spring
+const SKIP_SPEED = 40; // reveal speed-up while an auto-scroll flies past (~30ms)
 
 // Shared with elements that must rise in lockstep with a .rise-soft item but
 // can't be .rise-soft themselves (PortfolioSection's notched wall frame).
@@ -198,6 +200,12 @@ export function setupRiseReveal(sections: HTMLElement[]): () => void {
             // (the longer of the two parallel tweens above) — relying on the
             // timeline's auto-advancing cursor after two position:0 inserts is
             // not guaranteed to land at the true end.
+            // A nav/CTA auto-scroll flying past this section on its way
+            // elsewhere: play the whole reveal (and anything riding on its
+            // timeline via RISE_START_EVENT) at once, so only the target
+            // section animates. Callbacks still fire in order.
+            if (autoScrollSkips(section)) tl.delay(0).timeScale(SKIP_SPEED);
+
             tl.call(
               () => {
                 // portfolio.css gives .rise-card/.rise-soft will-change up front

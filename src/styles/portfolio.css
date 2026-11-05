@@ -4523,6 +4523,13 @@
         .portfolio-scroll > #portfolio.portfolio-expanded :is(.portfolio-header, #toggle-portfolio-view, .portfolio-wall-outline, .portfolio-wall-frame) {
           animation: none;
         }
+        /* A nav/CTA auto-scroll to another section (navHeader.ts) flies
+           past the plain, formed wall: no zoom. The track keeps its length,
+           so the landing spot doesn't move. */
+        :root[data-auto-scroll]:not([data-auto-scroll="portfolio"]) .portfolio-scroll > #portfolio,
+        :root[data-auto-scroll]:not([data-auto-scroll="portfolio"]) .portfolio-scroll > #portfolio :is(.portfolio-header, #toggle-portfolio-view, .portfolio-wall-outline, .portfolio-wall-frame) {
+          animation: none;
+        }
         @keyframes pf-zoom-in { from { scale: 1.5; } }
         @keyframes pf-fade-in { from { opacity: 0; } }
         /* % of 0–70%: 90% = 63% of the track */
@@ -5363,6 +5370,13 @@
         .mcp-code-cue {
           display: block;
           top: calc(100svh + 240svh * .68);
+        }
+        /* A nav/CTA auto-scroll (navHeader.ts) never targets this section,
+           so it flies past the plain grid: no zoom, nothing fading. Claude's
+           panel keeps its rule: restating its animation would restart the
+           live-edit loop out of step with the rest. */
+        :root[data-auto-scroll] .mcp-scroll :is(.mcp-zoom, .figma-mcp-header, .mcp-hub, .mcp-trail-svg, .mcp-card.code-card) {
+          animation: none;
         }
         /* keyframe % are of the 0–80% range: 36.5% = 29%, 65% = 52%. The
            close-up's scale and offset come from FigmaMcpShowcase.tsx

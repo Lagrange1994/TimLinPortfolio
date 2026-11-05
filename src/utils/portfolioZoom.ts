@@ -3,6 +3,8 @@
 // the section zooms from 1.5× to 1×, the wall's shape closes in from the
 // browser window's edges with its notches opening (drawn here, frame by
 // frame), the outline fades in, then the headline and button. 70–100% holds.
+import { autoScrollSkips } from './navHeader';
+
 export const SHAPE_FROM = 0;
 export const SHAPE_TO = 0.7;
 
@@ -35,9 +37,12 @@ export const ZOOM_EASE = [0.3, 0, 0.2, 1] as const;
 // 0–1 for how formed the wall's shape is. 1 whenever the section isn't stuck
 // in its track: phones, reduced motion, expanded grid view, no
 // scroll-driven animations — the plain wall, as before.
+// Also 1 while a nav/CTA auto-scroll flies past on its way to another
+// section (its zoom is off then too, see portfolio.css).
 export function wallShapeProgress(section: HTMLElement): number {
   const track = section.parentElement?.closest<HTMLElement>('[data-zoom-track]');
   if (!track || getComputedStyle(section).position !== 'sticky') return 1;
+  if (autoScrollSkips(section)) return 1;
   const p = trackProgress(track);
   const t = (p - SHAPE_FROM) / (SHAPE_TO - SHAPE_FROM);
   if (t <= 0) return 0;

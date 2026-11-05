@@ -5,7 +5,7 @@ import { PROJECTS } from '../data/projects';
 import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
 import { portfolioWallMorphPath, DEFAULT_RADIUS, computeWallHeight, type WallMaskArgs } from '../utils/portfolioMask';
 import { wallShapeProgress } from '../utils/portfolioZoom';
-import { scrollToSectionAligned } from '../utils/navHeader';
+import { scrollToSectionAligned, AUTO_SCROLL_END_EVENT } from '../utils/navHeader';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import { attachPortfolioSkeleton } from '../utils/portfolioSkeleton';
 import { fixedUiFootprint } from '../utils/fixedUiFootprint';
@@ -677,6 +677,9 @@ export default function PortfolioSection() {
       });
     }
     window.addEventListener('scroll', onScroll, { passive: true });
+    // an auto-scroll that held the shape formed has ended: redraw where it
+    // stopped (no scroll event follows)
+    window.addEventListener(AUTO_SCROLL_END_EVENT, drawShape);
 
     let ro: ResizeObserver | null = null;
 
@@ -705,6 +708,7 @@ export default function PortfolioSection() {
       ro?.disconnect();
       section!.removeEventListener(WALL_GEOMETRY_EVENT, onWallGeometry);
       window.removeEventListener('scroll', onScroll);
+      window.removeEventListener(AUTO_SCROLL_END_EVENT, drawShape);
       cancelAnimationFrame(raf);
     };
   }, [lang, expanded]);

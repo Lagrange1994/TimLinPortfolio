@@ -60,11 +60,33 @@ window.addEventListener('touchstart', () => { lastTouchAt = performance.now(); }
 let rafId: number | null = null;
 let cleanupInput: (() => void) | null = null;
 
+// While a nav/CTA auto-scroll runs, <html data-auto-scroll="<target id>">
+// marks it: the sections it flies past skip their entrance and scroll-zoom
+// animations (portfolio.css, useRiseReveal.ts, PortfolioSection.tsx), so
+// only the target section animates. Cleared, with AUTO_SCROLL_END_EVENT on
+// window, once the scroll stops (landed or taken over by the user).
+export const AUTO_SCROLL_END_EVENT = 'auto-scroll-end';
+export function autoScrollTarget(): string | null {
+  return document.documentElement.dataset.autoScroll ?? null;
+}
+// True while an auto-scroll is flying past `section` on its way elsewhere.
+export function autoScrollSkips(section: Element): boolean {
+  const id = autoScrollTarget();
+  if (id == null) return false;
+  if (section.id === id) return false;
+  const target = document.getElementById(id);
+  return !(target && section.contains(target));
+}
+
 function stopAnimatedScroll() {
   if (rafId != null) cancelAnimationFrame(rafId);
   rafId = null;
   if (cleanupInput) cleanupInput();
   cleanupInput = null;
+  if (autoScrollTarget() != null) {
+    delete document.documentElement.dataset.autoScroll;
+    window.dispatchEvent(new Event(AUTO_SCROLL_END_EVENT));
+  }
 }
 
 // A section that sticks inside a scroll-zoom track ([data-zoom-track], e.g.
@@ -112,13 +134,14 @@ function easeInOutCubic(p: number): number {
   return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
 }
 
-function animateScrollTo(getTargetY: () => number) {
+function animateScrollTo(getTargetY: () => number, targetId: string) {
   stopAnimatedScroll();
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     window.scrollTo(0, getTargetY());
     return;
   }
+  document.documentElement.dataset.autoScroll = targetId;
 
   const startY = window.scrollY;
   const distance = Math.abs(getTargetY() - startY);
@@ -180,7 +203,7 @@ function animateScrollTo(getTargetY: () => number) {
 
 export function scrollToSectionAligned(id: string) {
   if (id === 'home') {
-    animateScrollTo(() => 0);
+    animateScrollTo(() => 0, 'home');
     return;
   }
   if (!document.getElementById(id)) return;
@@ -191,5 +214,5 @@ export function scrollToSectionAligned(id: string) {
   animateScrollTo(() => {
     const target = document.getElementById(id);
     return target ? desiredScrollY(target) : window.scrollY;
-  });
+  }, id);
 }
