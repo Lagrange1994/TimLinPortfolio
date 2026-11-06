@@ -49,7 +49,7 @@ describe('How I Use AI viewer — performance', () => {
   it('gives the light-mode phone screen the window\'s sunken lavender', () => {
     expect(stage).toMatch(/:root\[data-theme="light"\] \.aas-phone-screen \{ background: var\(--bg-hover\); \}/);
     expect(stage).not.toMatch(/#eef1f6/i);
-    expect(stage).toMatch(/:root\[data-theme="light"\] \.aas-window \{\n  --w-bg: var\(--bg-hover\);/);
+    expect(stage).toMatch(/:root\[data-theme="light"\] \.aas-window \{\n {2}--w-bg: var\(--bg-hover\);/);
   });
 
   it('drops the backdrop blur on the opaque light-mode stage', () => {
