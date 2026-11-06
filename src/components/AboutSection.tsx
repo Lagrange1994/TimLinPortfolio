@@ -8,10 +8,13 @@ import { scrollToSectionAligned } from '../utils/navHeader';
 // Enforcement/Healthcare/Environmental Monitoring/Entertainment), reused
 // from the portfolio project images rather than duplicated assets.
 const DOMAIN_COVERS = [
-  { label: 'Law Enforcement', img: './img/my_portfolio/police.webp' },
+  // police, environmental bureau, reservoir, airport, zoo
+  { label: 'Public Sector', img: './img/my_portfolio/police.webp' },
   { label: 'Healthcare', img: './img/my_portfolio/student.webp' },
-  { label: 'Environmental Monitoring', img: './img/my_portfolio/enviroment.webp' },
+  { label: 'Transport', img: './img/my_portfolio/Taoyuan_MRT.webp' },
+  { label: 'Finance', img: './img/my_portfolio/coin.webp' },
   { label: 'Entertainment', img: './img/my_portfolio/stream.webp' },
+  { label: 'Manufacturing', img: './img/my_portfolio/CNC.webp' },
 ];
 
 // The portfolio projects behind each intro card's claims, in the order of
@@ -31,20 +34,16 @@ function ProofTags({ labels, links }: { labels: string; links: string[] }) {
 }
 
 export default function AboutSection() {
-  const { t, lang } = useLang();
+  const { t } = useLang();
 
-  // Service Domains caption ("警政・環保・醫療・娛樂" / "Police · Environmental
-  // · Healthcare · Entertainment") — split into two 2-noun halves so a
-  // tablet/mobile-only line break (.domains-caption-break, CSS-hidden on
-  // desktop) can land cleanly between the 2nd and 3rd noun instead of
-  // wrapping wherever the narrower column happens to run out of width.
-  // English is long enough to need that same break on desktop too (see
-  // .domains-caption-break--en), where the Chinese caption still fits on
-  // one line.
+  // Service Domains caption: the six industries in two lines of three
+  // ("公部門・醫療・交通" / "金融・娛樂・製造"), so it never wraps
+  // mid-list wherever the column runs out of width.
   const domainsSeparator = t.about_domains_summary.includes('・') ? '・' : ' · ';
   const domainsWords = t.about_domains_summary.split(/[・·]/).map(w => w.trim());
-  const domainsFirstHalf = domainsWords.slice(0, 2).join(domainsSeparator);
-  const domainsSecondHalf = domainsWords.slice(2).join(domainsSeparator);
+  const domainsHalf = Math.ceil(domainsWords.length / 2);
+  const domainsFirstHalf = domainsWords.slice(0, domainsHalf).join(domainsSeparator);
+  const domainsSecondHalf = domainsWords.slice(domainsHalf).join(domainsSeparator);
 
   // Profile card 3D tilt — pointer-based, no gate or filter (restored to the
   // original working behavior). An earlier matchMedia('(hover:none)') gate
@@ -339,7 +338,7 @@ export default function AboutSection() {
           <div className="bento-card bento-violet card-spotlight sc-card bento-area-intro1 rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro1_label}</div>
-            <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_intro1_short }} />
+            <p className="bento-text bento-points" dangerouslySetInnerHTML={{ __html: t.about_intro1_short }} />
             <ProofTags labels={t.about_tags_systems} links={SYSTEMS_LINKS} />
             <div className="about-float" aria-hidden="true">
               <div className="about-float-box about-float-box--center">
@@ -358,7 +357,7 @@ export default function AboutSection() {
           <div className="bento-card bento-cyan card-spotlight sc-card bento-area-intro2 rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro2_label}</div>
-            <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_intro2_short }} />
+            <p className="bento-text bento-points" dangerouslySetInnerHTML={{ __html: t.about_intro2_short }} />
             <ProofTags labels={t.about_tags_visuals} links={VISUAL_LINKS} />
             <div className="about-orbit" aria-hidden="true">
               <div className="about-orbit-ring">
@@ -434,7 +433,7 @@ export default function AboutSection() {
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_stat_domains_label}</div>
             <div className="bento-num-center">
-              <div className="stat-num-wrap" data-value="4">
+              <div className="stat-num-wrap" data-value={String(DOMAIN_COVERS.length)}>
                 <div className="digit-col">
                   <div className="digit-col-inner">
                     {[0,1,2,3,4,5,6,7,8,9].map(n => <span key={n}>{n}</span>)}
@@ -444,12 +443,11 @@ export default function AboutSection() {
             </div>
             <p className="bento-caption">
               {domainsFirstHalf}
-              <span className="domains-caption-sep">{domainsSeparator}</span>
-              <br className={`domains-caption-break${lang === 'en' ? ' domains-caption-break--en' : ''}`} />
+              <br />
               {domainsSecondHalf}
             </p>
             <div className="domain-swap-stage">
-              <CardSwap width={216} height={144} cardDistance={28} verticalDistance={24} skewAmount={4} delay={3400} pauseOnHover>
+              <CardSwap width={216} height={144} cardDistance={18} verticalDistance={16} skewAmount={4} delay={3400} pauseOnHover>
                 {DOMAIN_COVERS.map((d, i) => (
                   <Card key={d.label} customClass="domain-cover-card">
                     <img src={d.img} alt={d.label} loading="lazy" />

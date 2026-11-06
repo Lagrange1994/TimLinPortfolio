@@ -56,6 +56,27 @@ describe('About content', () => {
     expect(translations.zh.about_intro1_short).toContain('減法');
     expect(translations.zh.about_intro2_short).toContain('跟著環境');
     for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_intro2_label).toBe('Context-Driven Visuals');
+    // both cards read as labelled rows, the same rows in both languages
+    expect((tsx.match(/className="bento-text bento-points"/g) ?? []).length).toBe(2);
+    expect(css).toMatch(/\.bento-text\.bento-points \{[^}]*grid-template-columns: max-content 1fr;/);
+    // each row label is a capsule with an icon from the self-hosted subset
+    expect(css).toMatch(/\.bento-point-label \{[^}]*border-radius: 9999px;/);
+    const icons = readFileSync(resolve(root, 'src/styles/icon-faces.css'), 'utf8');
+    for (const lang of ['zh', 'en'] as const) {
+      for (const key of ['about_intro1_short', 'about_intro2_short'] as const) {
+        const labels = translations[lang][key].match(/<span class="bento-point-label">.*?<\/span>/g)!;
+        for (const l of labels) {
+          const icon = l.match(/<i class="ph-bold (ph-[a-z-]+)" aria-hidden="true"><\/i>/)?.[1];
+          expect(icon, l).toBeTruthy();
+          expect(icons).toContain(`.ph-bold.${icon}:before`);
+        }
+      }
+    }
+    const rows = (h: string) => (h.match(/class="bento-point-label"/g) ?? []).length;
+    for (const [key, n] of [['about_intro1_short', 4], ['about_intro2_short', 3]] as const) {
+      expect(rows(translations.zh[key])).toBe(n);
+      expect(rows(translations.en[key])).toBe(n);
+    }
     // the tags back the examples in the copy: the Hsinchu app, the Kaohsiung
     // repair flow and the TMU radar chart; the CNC sim and the finance game
     expect(links('SYSTEMS_LINKS')).toEqual(['project_02.html', 'project_03.html', 'project_11.html']);
@@ -92,7 +113,10 @@ describe('About content', () => {
     expect(css).toMatch(/"photo intro intro stats stats"\s*"photo workflow workflow workflow workflow";/);
     // the intro cards split their column evenly; the stats keep their own rows
     expect(css).toMatch(/\.about-col--intro \{[^}]*grid-template-rows: 1fr 1fr;/);
-    expect(css).toMatch(/\.about-col--stats \{[^}]*grid-template-rows: auto 1fr;/);
+    // the three stat cards share one height: desktop column, tablet and phone rows
+    expect(css).toMatch(/\.about-col--stats \{[^}]*grid-template-rows: 1fr 1fr;/);
+    expect(css).toContain('grid-template-rows: auto auto auto 1fr 1fr;');
+    expect(css).toContain('grid-template-rows: auto auto auto auto 1fr 1fr auto;');
     expect((css.match(/\.about-col \{\s*display: contents;\s*\}/g) ?? []).length).toBe(2);
   });
 
@@ -100,6 +124,19 @@ describe('About content', () => {
     expect(css).not.toMatch(/\.bento-area-domains \.digit-col-inner span \{[^}]*cqh/);
     expect(css).not.toContain('container-name: domains-num');
     expect(css).toMatch(/\.bento-area-domains \{ grid-area: domains; min-height: 240px; \}/);
+  });
+
+  it('Service Domains counts the six industries the case studies cover (public sector as one)', () => {
+    const covers = tsx.match(/const DOMAIN_COVERS = \[([\s\S]*?)\];/)![1].match(/label: '/g)!.length;
+    expect(covers).toBe(6);
+    expect(translations.zh.about_domain_labels.split('|')[0]).toBe('公部門');
+    expect(tsx).toContain('data-value={String(DOMAIN_COVERS.length)}');
+    for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_domains_summary.split(/[・·]/)).toHaveLength(covers);
+    // every cover image is a real file
+    for (const [, img] of tsx.matchAll(/img: '\.\/(img\/my_portfolio\/[^']+)'/g)) expect(existsSync(resolve(root, 'public', img)), img).toBe(true);
+    // the caption is two lines of three, at every width
+    expect(tsx).toMatch(/\{domainsFirstHalf\}\s*<br \/>\s*\{domainsSecondHalf\}/);
+    expect(css).not.toContain('domains-caption-break');
   });
 
   it('Projects Delivered counts the portfolio', () => {

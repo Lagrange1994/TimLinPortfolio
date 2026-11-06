@@ -36,8 +36,8 @@ export const translations = {
     about_lead: `我替警政、醫療與公部門設計每天要用的系統：先到現場看人怎麼用，再把龐雜流程刪減、整理成一眼看懂的介面，一路做到開發交付。`,
     // About bento: short card copy (the full about_p1–p3 stay as the chat
     // bot's context, api/_chat-core.ts). Tags: label per linked project.
-    about_intro1_short: `先到現場場勘、訪談，再做減法：拿掉非核心功能，把大螢幕後台收進手機；規則變成看得見的狀態，像報修五節點、自評與師評雷達圖。以 <strong>Figma</strong>、<strong>Adobe XD</strong> 設計，讀寫 <strong>HTML / CSS</strong>、<strong>React / Vue</strong>，和工程師對規格。`,
-    about_intro2_short: `視覺跟著環境走：工廠沿用機台燈號，理財遊戲用莫蘭迪色減壓。3D 以 <strong>Blender</strong>、<strong>Spline</strong>、<strong>Dora</strong> 製作，<strong>React + WebGL</strong> 上線；平面用 <strong>Photoshop</strong>、<strong>Illustrator</strong>、<strong>Lightroom</strong>。`,
+    about_intro1_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>研究</span><span>到現場場勘，訪談第一線使用者</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-frame-corners" aria-hidden="true"></i>減法</span><span>拿掉非核心功能，把大螢幕後台收進手機</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-flow-arrow" aria-hidden="true"></i>規則</span><span>變成看得見的狀態：報修五節點、自評與師評雷達圖</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-sketch-logo" aria-hidden="true"></i>工具</span><span><strong>Figma</strong>、<strong>Adobe XD</strong> 設計；讀寫 <strong>HTML / CSS</strong>、<strong>React / Vue</strong>，和工程師對規格</span></span>`,
+    about_intro2_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-palette" aria-hidden="true"></i>原則</span><span>視覺跟著環境走：工廠沿用機台燈號，理財遊戲用莫蘭迪色減壓</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-cube" aria-hidden="true"></i>3D</span><span><strong>Blender</strong>、<strong>Spline</strong>、<strong>Dora</strong>，<strong>React + WebGL</strong> 上線</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-film-strip" aria-hidden="true"></i>平面</span><span><strong>Photoshop</strong>、<strong>Illustrator</strong>、<strong>Lightroom</strong></span></span>`,
     about_ai_short: `客戶從 <strong>LINE</strong> 或表單送出需求，<strong>Make</strong> 交給 <strong>Claude</strong> 摘要分類、寫入 <strong>Google Sheets</strong>，再分流回覆；第一次通話前，我已掌握預算與時程。`,
     about_ai_more: '看完整流程',
     about_tags_systems: '新竹警政 App|高雄報修系統|北醫學習護照',
@@ -50,9 +50,9 @@ export const translations = {
     about_stat_years_label: 'Years In Practice',
     about_stat_projects_label: 'Projects Delivered',
     about_stat_domains_label: 'Service Domains',
-    about_domains_summary: '警政・環保・醫療・娛樂',
+    about_domains_summary: '公部門・醫療・交通・金融・娛樂・製造',
     // Service Domains cover labels, in DOMAIN_COVERS order (AboutSection)
-    about_domain_labels: '警政|醫療|環保|娛樂',
+    about_domain_labels: '公部門|醫療|交通|金融|娛樂|製造',
     about_ai_label: 'AI-Powered Workflow',
     // tech stack
     tech_sub: '我不是工程師，但我能讀懂程式、修改邏輯、 <br>有效縮短設計與開發之間的溝通距離。',
@@ -317,8 +317,8 @@ export const translations = {
     about_headline:
       'Product designer who tames complex systems,<br><span class="gradient-text">with 3D interactive development and AI workflow integration built in</span>',
     about_lead: `I design the systems police, hospitals and public agencies use every day: I start on site to see how people work, then cut and reorganise complex flows into screens you can read at a glance, all the way to development.`,
-    about_intro1_short: `I start on site with observation and interviews, then subtract: cutting non-core features and fitting a wall-screen back office into a phone. Rules become visible states, like a five-step repair flow or a self-vs-mentor radar chart. I design in <strong>Figma</strong> and <strong>Adobe XD</strong>, and read <strong>HTML / CSS</strong> and <strong>React / Vue</strong> to settle specs with engineers.`,
-    about_intro2_short: `Visuals follow the setting: machine signal lights for a factory UI, calm Morandi tones for a finance game. 3D is built in <strong>Blender</strong>, <strong>Spline</strong> and <strong>Dora</strong> and shipped with <strong>React + WebGL</strong>; graphics and photos go through <strong>Photoshop</strong>, <strong>Illustrator</strong> and <strong>Lightroom</strong>.`,
+    about_intro1_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>Research</span><span>On site, observing and interviewing frontline users</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-frame-corners" aria-hidden="true"></i>Subtract</span><span>Cut non-core features; fit a wall-screen back office into a phone</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-flow-arrow" aria-hidden="true"></i>Rules</span><span>Made visible: a five-step repair flow, a self-vs-mentor radar chart</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-sketch-logo" aria-hidden="true"></i>Tools</span><span><strong>Figma</strong> and <strong>Adobe XD</strong>; I read <strong>HTML / CSS</strong> and <strong>React / Vue</strong> to settle specs with engineers</span></span>`,
+    about_intro2_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-palette" aria-hidden="true"></i>Principle</span><span>Visuals follow the setting: factory signal lights, calm Morandi tones for a finance game</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-cube" aria-hidden="true"></i>3D</span><span><strong>Blender</strong>, <strong>Spline</strong> and <strong>Dora</strong>, shipped with <strong>React + WebGL</strong></span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-film-strip" aria-hidden="true"></i>Graphics</span><span><strong>Photoshop</strong>, <strong>Illustrator</strong> and <strong>Lightroom</strong></span></span>`,
     about_ai_short: `Requests from <strong>LINE</strong> or a form go through <strong>Make</strong>: <strong>Claude</strong> summarises and classifies them, <strong>Google Sheets</strong> logs them, then replies are routed, so I know the budget and timeline before the first call.`,
     about_ai_more: 'See the full workflow',
     about_tags_systems: 'Hsinchu police app|Kaohsiung repair system|TMU learning passport',
@@ -331,8 +331,8 @@ export const translations = {
     about_stat_years_label: 'Years In Practice',
     about_stat_projects_label: 'Projects Delivered',
     about_stat_domains_label: 'Service Domains',
-    about_domains_summary: 'Police · Environmental · Healthcare · Entertainment',
-    about_domain_labels: 'Law Enforcement|Healthcare|Environmental|Entertainment',
+    about_domains_summary: 'Public Sector · Healthcare · Transport · Finance · Entertainment · Manufacturing',
+    about_domain_labels: 'Public Sector|Healthcare|Transport|Finance|Entertainment|Manufacturing',
     about_ai_label: 'AI-Powered Workflow',
     // tech stack
     tech_sub:

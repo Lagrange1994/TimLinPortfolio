@@ -2809,13 +2809,15 @@
       grid-template-rows: 1fr 1fr;
     }
 
+    /* Years / Projects and Service Domains split the column evenly, so the
+       three stat cards read as one set (same height, same digit size). */
     .about-col--stats {
       grid-area: stats;
       grid-template-columns: 1fr 1fr;
       grid-template-areas:
         "years projects"
         "domains domains";
-      grid-template-rows: auto 1fr;
+      grid-template-rows: 1fr 1fr;
     }
 
     .about-photo {
@@ -2858,22 +2860,6 @@
       margin-top: 0;
     }
 
-    /* Base (desktop): keep the inline "・" separator, hide the line break —
-       overridden the other way for tablet/mobile at the 1024px breakpoint
-       below. Must stay ahead of that media block in source order, since a
-       media-scoped rule doesn't win a same-specificity tie against a later
-       unconditional rule just because its condition matches. */
-    .domains-caption-break {
-      display: none;
-    }
-
-    /* English domain names ("Police · Environmental · Healthcare ·
-       Entertainment") are too long to fit the desktop Domains card on one
-       line like the Chinese caption does — force the break on regardless
-       of viewport when AboutSection flags the English locale. */
-    .domains-caption-break--en {
-      display: block;
-    }
     .bento-area-workflow { grid-area: workflow; }
 
     /* Domain CardSwap — now the Service Domains card's own background layer
@@ -3304,18 +3290,6 @@
        pass at end of file). The narrow tablet bento cells used to drop to
        24px here — removed so every card at the same width matches. */
     @media (max-width: 1024px) {
-
-      /* Domains caption — swap the inline separator for the line break so
-         "警政・環保・醫療・娛樂" reads as two nouns per line instead of
-         wrapping wherever the narrower tablet/mobile column runs out of
-         width. */
-      .domains-caption-sep {
-        display: none;
-      }
-
-      .domains-caption-break {
-        display: block;
-      }
     }
 
     /* Title/body proportions unified with the How I Use AI cards
@@ -3342,6 +3316,55 @@
       line-height: 1.6;
       color: var(--text-70);
     }
+
+    /* About intro cards: the copy as labelled rows (研究 / 減法 / 規則 /
+       工具…), labels in one column so the rows line up. */
+    .bento-text.bento-points {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      column-gap: 14px;
+      row-gap: 6px;
+    }
+
+    .bento-point { display: contents; }
+
+    /* Chinese wraps at punctuation and spaces, not mid-word (莫|蘭迪).
+       Not on phones: the column is too narrow, every comma would break. */
+    @media (min-width: 768px) {
+      /* the label column takes room from the text: give the rows a little
+         more of the card than the plain 75% copy (still clear of the art) */
+      .bento-area-intro1 .bento-text.bento-points,
+      .bento-area-intro2 .bento-text.bento-points { max-width: 84%; }
+
+      .bento-point > span:last-child {
+        word-break: keep-all;
+        overflow-wrap: anywhere;
+      }
+    }
+
+    /* the row label: a small capsule with an icon, sitting on the row's
+       first text line */
+    .bento-point-label {
+      display: inline-flex;
+      align-items: center;
+      justify-self: start;
+      align-self: start;
+      gap: 5px;
+      height: 22px;
+      margin-top: 1px;
+      padding: 0 10px 0 8px;
+      border-radius: 9999px;
+      border: 1px solid color-mix(in oklab, var(--text) 14%, transparent);
+      background: color-mix(in oklab, var(--text) 5%, transparent);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      color: var(--text-70);
+      white-space: nowrap;
+    }
+
+    .bento-point-label i { font-size: 13px; }
 
     /* About intro cards: the projects behind the claim, each a link to its
        page. Same width as the text, clear of the card's icon art. */
@@ -8406,8 +8429,8 @@
 
       .about-grid {
         grid-template-columns: repeat(24, 1fr);
-        /* own row count: drop the desktop row sizing */
-        grid-template-rows: none;
+        /* own rows; the stats rows (years/projects, domains) match */
+        grid-template-rows: auto auto auto 1fr 1fr;
         grid-template-areas:
           "headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline"
           "photo photo photo photo photo photo photo photo intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1"
@@ -8769,7 +8792,8 @@
 
       .about-grid {
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: none;
+        /* the stats rows (years/projects, domains) match */
+        grid-template-rows: auto auto auto auto 1fr 1fr auto;
         grid-template-areas:
           "photo photo"
           "headline headline"
