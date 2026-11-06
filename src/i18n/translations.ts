@@ -51,6 +51,8 @@ export const translations = {
     about_stat_projects_label: 'Projects Delivered',
     about_stat_domains_label: 'Service Domains',
     about_domains_summary: '警政・環保・醫療・娛樂',
+    // Service Domains cover labels, in DOMAIN_COVERS order (AboutSection)
+    about_domain_labels: '警政|醫療|環保|娛樂',
     about_ai_label: 'AI-Powered Workflow',
     // tech stack
     tech_sub: '我不是工程師，但我能讀懂程式、修改邏輯、 <br>有效縮短設計與開發之間的溝通距離。',
@@ -330,6 +332,7 @@ export const translations = {
     about_stat_projects_label: 'Projects Delivered',
     about_stat_domains_label: 'Service Domains',
     about_domains_summary: 'Police · Environmental · Healthcare · Entertainment',
+    about_domain_labels: 'Law Enforcement|Healthcare|Environmental|Entertainment',
     about_ai_label: 'AI-Powered Workflow',
     // tech stack
     tech_sub:

@@ -2781,9 +2781,7 @@
       grid-template-columns: 2fr 1.7fr 1.7fr 1.3fr 1.3fr;
       grid-template-areas:
         "headline headline headline headline headline"
-        "photo intro1 intro1 years projects"
-        "photo intro2 intro2 domains domains"
-        "photo industry industry domains domains"
+        "photo intro intro stats stats"
         "photo workflow workflow workflow workflow";
       gap: 12px;
       /* align-items defaults to stretch — intro1/intro2/domains (and every
@@ -2791,6 +2789,33 @@
          lines up with the row above the workflow card. Only the photo
          opts out (align-self below), since its aspect-ratio'd ProfileCard
          shouldn't be force-stretched taller than its own content. */
+    }
+
+    /* Desktop: the middle splits into two independent columns (see
+       AboutSection.tsx) — the intro cards as equal halves, and the stats
+       (Years / Projects over Service Domains). Each sizes on its own, so
+       their row lines needn't meet; the taller column sets the row and
+       the other stretches. Twins (.bento-shadow) share their card's area
+       inside the column. */
+    .about-col {
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .about-col--intro {
+      grid-area: intro;
+      grid-template-areas: "intro1" "intro2";
+      grid-template-rows: 1fr 1fr;
+    }
+
+    .about-col--stats {
+      grid-area: stats;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "years projects"
+        "domains domains";
+      grid-template-rows: auto 1fr;
     }
 
     .about-photo {
@@ -2817,48 +2842,11 @@
     .bento-area-projects { grid-area: projects; }
     .bento-area-domains { grid-area: domains; min-height: 240px; }
 
-    /* Years/Projects' digit sizes off the shared vw-based clamp() (below),
-       which stays small and leaves .bento-num-center's flex:1 area mostly
-       empty — fine there since those cards have nothing else to fill it
-       with. Domains wants the opposite: keep flex:1 (so the number's box
-       still claims the leftover space between label and caption) but size
-       the digit itself off that box's actual resolved height instead of a
-       fixed clamp, so it grows/shrinks to fill whatever room the card
-       ends up with. container-type:size turns .bento-num-center into a
-       query container so cqh below can read its own height. The digit's
-       own box is sized to 75cqh (not 100) so it stays smaller than
-       .bento-num-center — the leftover 25cqh is then split evenly above
-       and below by .bento-num-center's own align-items:center (base rule),
-       keeping the label→digit and digit→caption gaps equal instead of the
-       digit touching both edges. */
-    .bento-area-domains .bento-num-center {
-      container-type: size;
-      container-name: domains-num;
-    }
-
-    .bento-area-domains .stat-num-wrap,
-    .bento-area-domains .digit-col {
-      height: 75cqh;
-    }
-
-    .bento-area-domains .digit-col-inner span {
-      /* Sized off the query container (cqh), not a % of .digit-col-inner
-         (an auto-height flex column that percentages can't resolve
-         against) — and matches .digit-col's own 75cqh exactly so the roll
-         animation's cellH (col.offsetHeight, see AboutSection.tsx) still
-         lines up with each digit's actual rendered height. */
-      height: 75cqh;
-      line-height: 1;
-      font-size: 60cqh;
-      /* line-height:1 centers the *line box*, not the glyph — this font's
-         ascent/descent aren't symmetric around the em square, so the ink
-         itself sat ~25px closer to the top edge than the bottom even
-         though the box-level gaps above measured equal. Flex-centering
-         the actual text content fixes the optical (not just box) gap. */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    /* Service Domains' digit uses the shared stat size (.stat-num-wrap /
+       .digit-col / .digit-col-inner span below), the same as Years /
+       Projects. It used to scale off its box (cqh), which also broke the
+       roll: the wheel measures one cell height when it starts, and the
+       box changing size afterwards left it stopped on the wrong digit. */
 
     /* .bento-caption's own margin-top (2px, shared rule) would otherwise
        stack on top of .bento-card's flex gap for the digit→caption side
@@ -2886,7 +2874,6 @@
     .domains-caption-break--en {
       display: block;
     }
-    .bento-area-industry { grid-area: industry; }
     .bento-area-workflow { grid-area: workflow; }
 
     /* Domain CardSwap — now the Service Domains card's own background layer
@@ -2938,6 +2925,27 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+    }
+
+    /* The industry each cover stands for, top-left (the stack overflows the
+       card's bottom-right, so that corner always shows): a small dark
+       capsule over the photo, above the grain, the same in both themes. */
+    .domain-cover-label {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 1;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      background: rgba(10, 9, 18, 0.62);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.3;
+      white-space: nowrap;
+      pointer-events: none;
     }
 
     .about-h2 {
@@ -3074,34 +3082,12 @@
       margin-bottom: 14px;
     }
 
-    .domain-chip {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-size: 11px;
-      font-family: var(--mono);
-      font-weight: 600;
-      border: 1px solid rgba(74, 222, 128, 0.28);
-      background: rgba(74, 222, 128, 0.07);
-      color: rgba(74, 222, 128, 0.85);
-    }
-
-    /* Light mode: this mint green at dark-mode opacities nearly disappears
-       against the now-light bento card. Same hue, darker/more saturated so
-       border+text hold contrast on white. */
-    :root[data-theme="light"] .domain-chip {
-      border-color: rgba(22, 163, 74, 0.35);
-      background: rgba(22, 163, 74, 0.1);
-      color: #15803D;
-    }
-
     /* ── Bento card styling ── padding/gap lifted from inpublic.studio's
        "Our focus is simple" section; corner shape + border background
        match the How I Use AI cards (.ai-card in the section above); the
        hover radar ring is shared (see HOVER RADAR RING below).
        Equal-height cells (intro1/intro2 spanning 2 rows,
-       years/projects/domains/industry in a 2x2) come for free from CSS
+       years/projects/domains in a 2x2) come for free from CSS
        Grid's default align-items:stretch. */
     /* Premium glass surface shared by About Me (.bento-card) and How I Use
        AI (.ai-card): grain + a colored glow washing down from the top edge
@@ -3491,47 +3477,6 @@
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
-    }
-
-    /* Industry Focus — label + marquee share one row; the chip track is
-       duplicated in JSX and scrolls exactly -50% for a seamless loop. */
-    .industry-row {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      min-width: 0;
-    }
-
-    .industry-label {
-      flex-shrink: 0;
-      white-space: nowrap;
-    }
-
-    .ai-chips-marquee {
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      -webkit-mask: linear-gradient(90deg, transparent, white 8%, white 92%, transparent);
-      mask: linear-gradient(90deg, transparent, white 8%, white 92%, transparent);
-    }
-
-    .ai-chips-track {
-      display: flex;
-      flex-wrap: nowrap;
-      width: max-content;
-      gap: 6px;
-      animation: industry-chips-scroll 14s linear infinite;
-    }
-
-    @keyframes industry-chips-scroll {
-      from { transform: translateX(0); }
-      to { transform: translateX(-50%); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .ai-chips-track {
-        animation: none;
-      }
     }
 
     .ai-chip {
@@ -8449,19 +8394,26 @@
          into exact equal thirds (photo/intro1/intro2, 8 cols each) while
          every other row keeps its original 8-col-equivalent ratio — years/
          projects/workflow at 2/2/4 (→6/6/12 of 24), domains/workflow at
-         4/4 (→12/12), industry full-width. Row 1's width no longer needs to
+         4/4 (→12/12). Row 1's width no longer needs to
          match row 2's column boundaries (that requirement was dropped);
          only .about-photo's align-self:stretch (below) still keeps all
          three row-1 cards equal height. */
+      /* the desktop column wrappers (AboutSection) step aside: the cards
+         sit straight in this grid */
+      .about-col {
+        display: contents;
+      }
+
       .about-grid {
         grid-template-columns: repeat(24, 1fr);
+        /* own row count: drop the desktop row sizing */
+        grid-template-rows: none;
         grid-template-areas:
           "headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline"
           "photo photo photo photo photo photo photo photo intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1"
           "photo photo photo photo photo photo photo photo intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2"
           "years years years years years years projects projects projects projects projects projects workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow"
-          "domains domains domains domains domains domains domains domains domains domains domains domains workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow"
-          "industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry industry";
+          "domains domains domains domains domains domains domains domains domains domains domains domains workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow";
         gap: 16px;
       }
 
@@ -8808,10 +8760,16 @@
 
       /* About — mostly single column; years/projects still pair up, but
          domains (now a dominant CardSwap background card) takes the full
-         width and industry drops to its own full-width row below it,
-         matching the tablet/desktop "single marquee banner" treatment. */
+         width. */
+      /* the desktop column wrappers (AboutSection) step aside: the cards
+         sit straight in this grid */
+      .about-col {
+        display: contents;
+      }
+
       .about-grid {
         grid-template-columns: 1fr 1fr;
+        grid-template-rows: none;
         grid-template-areas:
           "photo photo"
           "headline headline"
@@ -8819,7 +8777,6 @@
           "intro2 intro2"
           "years projects"
           "domains domains"
-          "industry industry"
           "workflow workflow";
         gap: 14px;
       }
@@ -8829,19 +8786,6 @@
          that follows it on mobile's single-column stack. */
       .about-photo {
         margin-bottom: 24px;
-      }
-
-      /* Industry Focus — too narrow at mobile width for label + marquee to
-         share a row (see base .industry-row), so stack the chip track under
-         the title instead. */
-      .industry-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-      }
-
-      .ai-chips-marquee {
-        width: 100%;
       }
 
       /* Domain CardSwap — mobile drops the min-height (below) so the card's
@@ -11113,7 +11057,6 @@
       .line-banner,
       .mcp-card,
       .process-card,
-      .bento-area-industry,
       .cta-strip,
       /* Hover-shadow / overlay layers hardcode the desktop 48px squircle
          instead of inheriting — without these they stayed 48px behind a

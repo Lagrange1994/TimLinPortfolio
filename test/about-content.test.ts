@@ -55,6 +55,28 @@ describe('About content', () => {
     expect(skills).toMatch(/<section id="my-skills"[^>]*>\s*<div className="section-label rise-soft">How I Use AI<\/div>/);
   });
 
+  it('each Service Domains cover carries its industry label, in both languages', () => {
+    const covers = tsx.match(/const DOMAIN_COVERS = \[([\s\S]*?)\];/)![1].match(/label: '/g)!.length;
+    for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_domain_labels.split('|')).toHaveLength(covers);
+    expect(tsx).toMatch(/<span className="domain-cover-label" aria-hidden="true">\{t\.about_domain_labels\.split\('\|'\)\[i\]\}<\/span>/);
+    expect(css).toMatch(/\.domain-cover-label \{[^}]*position: absolute;[^}]*top: 8px;[^}]*left: 8px;/);
+  });
+
+  it('desktop: intro cards and stats are two independent columns; tablet/phone unwrap them', () => {
+    expect(tsx).toMatch(/<div className="about-col about-col--intro">[\s\S]*bento-area-intro1[\s\S]*bento-area-intro2[\s\S]*?<\/div>\s*<div className="about-col about-col--stats">[\s\S]*bento-area-years[\s\S]*bento-area-projects[\s\S]*bento-area-domains/);
+    expect(css).toMatch(/"photo intro intro stats stats"\s*"photo workflow workflow workflow workflow";/);
+    // the intro cards split their column evenly; the stats keep their own rows
+    expect(css).toMatch(/\.about-col--intro \{[^}]*grid-template-rows: 1fr 1fr;/);
+    expect(css).toMatch(/\.about-col--stats \{[^}]*grid-template-rows: auto 1fr;/);
+    expect((css.match(/\.about-col \{\s*display: contents;\s*\}/g) ?? []).length).toBe(2);
+  });
+
+  it('Service Domains’ digit is the shared stat size (no cqh fill that threw the roll off)', () => {
+    expect(css).not.toMatch(/\.bento-area-domains \.digit-col-inner span \{[^}]*cqh/);
+    expect(css).not.toContain('container-name: domains-num');
+    expect(css).toMatch(/\.bento-area-domains \{ grid-area: domains; min-height: 240px; \}/);
+  });
+
   it('Projects Delivered counts the portfolio', () => {
     const value = Number(tsx.match(/bento-area-projects[\s\S]*?data-value="(\d+)"/)![1]);
     expect(value).toBe(PROJECTS.length);

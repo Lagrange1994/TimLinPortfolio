@@ -330,6 +330,11 @@ export default function AboutSection() {
             </div>
           </div>
 
+          {/* Desktop: two independent columns beside the photo — the intro
+              cards (equal halves) and the stats; their row splits don't have
+              to line up. Tablet/phone: display:contents, so the cards sit in
+              the grid as before. */}
+          <div className="about-col about-col--intro">
           {/* Intro cards — the bio prose (about_p1/about_p2) */}
           <div className="bento-card bento-violet card-spotlight sc-card bento-area-intro1 rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
@@ -385,6 +390,9 @@ export default function AboutSection() {
           </div>
           <span className="bento-shadow bento-area-intro2" aria-hidden="true" />
 
+          </div>
+
+          <div className="about-col about-col--stats">
           <div className="bento-card card-spotlight sc-card bento-area-years rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_stat_years_label}</div>
@@ -442,9 +450,12 @@ export default function AboutSection() {
             </p>
             <div className="domain-swap-stage">
               <CardSwap width={216} height={144} cardDistance={28} verticalDistance={24} skewAmount={4} delay={3400} pauseOnHover>
-                {DOMAIN_COVERS.map(d => (
+                {DOMAIN_COVERS.map((d, i) => (
                   <Card key={d.label} customClass="domain-cover-card">
                     <img src={d.img} alt={d.label} loading="lazy" />
+                    {/* the industry each cover stands for (was the
+                        Industry Focus card's chips) */}
+                    <span className="domain-cover-label" aria-hidden="true">{t.about_domain_labels.split('|')[i]}</span>
                   </Card>
                 ))}
               </CardSwap>
@@ -453,25 +464,7 @@ export default function AboutSection() {
           </div>
           <span className="bento-shadow bento-area-domains" aria-hidden="true" />
 
-          <div className="bento-card bento-violet card-spotlight sc-card bento-area-industry rise-card">
-            <span className="card-glass-highlight" aria-hidden="true" />
-            <div className="industry-row">
-              <div className="bento-label industry-label">Industry Focus</div>
-              <div className="ai-chips-marquee">
-                <div className="ai-chips-track">
-                  <span className="domain-chip">Law Enforcement</span>
-                  <span className="domain-chip">Healthcare</span>
-                  <span className="domain-chip">Environmental Monitoring</span>
-                  <span className="domain-chip">Entertainment</span>
-                  <span className="domain-chip" aria-hidden="true">Law Enforcement</span>
-                  <span className="domain-chip" aria-hidden="true">Healthcare</span>
-                  <span className="domain-chip" aria-hidden="true">Environmental Monitoring</span>
-                  <span className="domain-chip" aria-hidden="true">Entertainment</span>
-                </div>
-              </div>
-            </div>
           </div>
-          <span className="bento-shadow bento-area-industry" aria-hidden="true" />
 
           <div className="bento-card bento-spectrum card-spotlight sc-card bento-card--wide bento-area-workflow rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
