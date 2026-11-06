@@ -1,13 +1,13 @@
 # About Me 修改紀錄與後續建議
 
 > 給新對話用的交接文件。開新對話時貼上：「先讀 `docs/about-me-revision.md`，再繼續 About Me 的修改。」
-> 最後更新：2026-11-06。對應下面第 3 節的 6 個 commit（截至這天只有本文件已 push，那 6 個還在本機 main）。commit 用標題辨識，因為 rebase 後 hash 會變：`git log --oneline --grep="(about)\|(fonts)"`。
+> 最後更新：2026-11-06。對應下面第 3 節的 7 個 commit（截至這天都還在本機 main，沒有 push）。commit 用標題辨識，因為 rebase 後 hash 會變：`git log --oneline --grep="(about)\|(fonts)"`。
 
 ---
 
 ## 1. 現在的 About Me 長什麼樣
 
-主頁 `#about` 區塊（`src/components/AboutSection.tsx`）。內容：一個 headline、一行 lead，下面是一組 bento 卡片。
+主頁 `#about` 區塊（`src/components/AboutSection.tsx`）。內容：一個 headline、一行 lead，下面是一組 bento 卡片。版面是「B 版面」：三條設計原則獨立成一列，緊接在 headline 下方，照片下方有一張接案中卡。
 
 ### 卡片與內容
 
@@ -15,10 +15,15 @@
 |---|---|---|
 | Headline | 「讓複雜系統變得可被掌控的產品設計師，兼具 3D 互動開發與 AI 工作流整合能力」 | `about_headline` |
 | Lead | 我替警政、醫療與公部門設計每天要用的系統：先到現場看人怎麼用，再把龐雜流程刪減、整理成一眼看懂的介面，一路做到開發交付。 | `about_lead` |
+| **原則 01** 環境決定視覺 | 指揮中心用深色高對比，夜間巡邏加強對比、單手可操作，航空站用漸層藍傳達度假感。標籤：警政影像系統（01）、恆春航空站（10） | `about_principle1_title` / `_text` / `_tags` |
+| **原則 02** 先刪減再設計 | 拿掉非核心功能：把大螢幕後台收進手機，報修系統先專注設備妥善率。標籤：新竹警政 App（02）、高雄報修系統（03） | `about_principle2_*` |
+| **原則 03** 讓規則看得見 | 把流程變成看得見的狀態：申請拆成須知、資格、日期、表單四步，自評與師評疊成一張雷達圖。標籤：石門水庫網站（07）、北醫學習護照（11） | `about_principle3_*` |
+| ↳ 原則的作品連結 | 每張原則卡的標籤連結 | `PRINCIPLES`（`{ n, links }`） |
 | 照片卡 | ProfileCard（3D tilt） | — |
-| **Systems Design** | 4 行分類：研究 / 減法 / 規則 / 工具（每個小標是帶 icon 的膠囊） | `about_intro1_label`、`about_intro1_short` |
-| ↳ 作品標籤 | 新竹警政 App（project_02）、高雄報修系統（project_03）、北醫學習護照（project_11） | `about_tags_systems` + `SYSTEMS_LINKS` |
-| **Context-Driven Visuals** | 3 行分類：原則 / 3D / 平面 | `about_intro2_label`、`about_intro2_short` |
+| **接案中卡** | 綠點 +「接案中」；合作｜全職、合約、顧問皆可；地點｜台灣 UTC+8，可遠端或混合；「聯絡我 →」膠囊按鈕（捲到 `#contact`）。內容來自 `data/tim-faq.md`。高度依內容，不撐滿左欄 | `about_cta_status`、`about_cta_text`、`about_cta_button` |
+| **Systems Design** | 3 行分類：研究 / 交付 / 工具（每個小標是帶 icon 的膠囊） | `about_intro1_label`、`about_intro1_short` |
+| ↳ 作品標籤 | 台南智慧簽巡（project_04）、新竹環保局後台（project_09）、警政影像系統（project_01） | `about_tags_systems` + `SYSTEMS_LINKS` |
+| **Context-Driven Visuals** | 3 行分類：配色 / 3D / 平面 | `about_intro2_label`、`about_intro2_short` |
 | ↳ 作品標籤 | CNC 3D 模擬器（project_13）、存保理財遊戲（project_12） | `about_tags_visuals` + `VISUAL_LINKS` |
 | Years In Practice | 5+ | `data-value="5"` |
 | Projects Delivered | 13+（= `PROJECTS.length`） | `data-value="13"` |
@@ -29,15 +34,16 @@
 
 - Systems Design
   - 🔍 研究｜到現場場勘，訪談第一線使用者
-  - ⛶ 減法｜拿掉非核心功能，把大螢幕後台收進手機
-  - ↗ 規則｜變成看得見的狀態：報修五節點、自評與師評雷達圖
+  - ↗ 交付｜定地圖與即時資料規格，必要時自己寫前端
   - ◆ 工具｜**Figma**、**Adobe XD** 設計；讀寫 **HTML / CSS**、**React / Vue**，和工程師對規格
 - Context-Driven Visuals
-  - 🎨 原則｜視覺跟著環境走：工廠沿用機台燈號，理財遊戲用莫蘭迪色減壓
+  - 🎨 配色｜工廠沿用機台燈號，理財遊戲用莫蘭迪色減壓
   - ⬡ 3D｜**Blender**、**Spline**、**Dora**，**React + WebGL** 上線
   - 🎞 平面｜**Photoshop**、**Illustrator**、**Lightroom**
 
-圖示（Phosphor bold，已在 icon subset 裡）：研究 `magnifying-glass`、減法 `frame-corners`、規則 `flow-arrow`、工具 `sketch-logo`、原則 `palette`、3D `cube`、平面 `film-strip`。英文標籤：Research / Subtract / Rules / Tools、Principle / 3D / Graphics。
+原本的「減法」「規則」兩行，和 Visuals 的「原則」，已經搬到原則列，技能卡不再重複。
+
+圖示（Phosphor bold，已在 icon subset 裡）：研究 `magnifying-glass`、交付 `flow-arrow`、工具 `sketch-logo`、配色 `palette`、3D `cube`、平面 `film-strip`；接案卡的合作 `chat-circle-text`、地點 `map-pin`。英文標籤：Research / Delivery / Tools、Colour / 3D / Graphics、Work / Based。
 
 **Service Domains 的分類依據**
 
@@ -50,18 +56,18 @@
 | 娛樂 | Love Two 直播 App（08） |
 | 製造 | CNC 3D 模擬器（13） |
 
-> **2026-11-06 版面 B（未 commit）：** 三條原則（環境決定視覺／先刪減再設計／讓規則看得見）獨立成一列（`about_principleN_*`、`PRINCIPLES`），放在 headline 下方；照片下方加「接案中」卡（`about_cta_*`，按鈕捲到 `#contact`）。技能卡因此改成：Systems Design = 研究／交付／工具，Visuals = 配色／3D／平面，作品標籤也跟著換。桌機 grid 改為 `"profile principles×4" "profile intro intro stats stats" "profile workflow×4"`，左欄 `.about-col--profile` = 照片 + CTA（`auto auto`，CTA 用內容高度，不撐滿）；平板與手機在 headline 後加 p1–p3，CTA 放最後。下面的表格和 grid 描述是改版前的。
-
 ### 版面（grid）
 
 - **桌機（≥1025px）：** `.about-grid` 有 5 欄。
   - 欄寬是 `2fr 1.7fr 1.7fr 1.3fr 1.3fr`。
-  - 區域是 `"headline…" "photo intro intro stats stats" "photo workflow workflow workflow workflow"`。
+  - 區域是 `"headline…" "profile principles×4" "profile intro intro stats stats" "profile workflow×4"`。
+  - 左欄 `.about-col--profile`：照片在上、接案中卡在下（`grid-template-rows: auto auto` + `align-content: start`）。接案卡用內容高度，所以它下方、AI 卡左邊會留一塊空白。
+  - 原則列 `.about-col--principles`：3 欄等寬（`"p1 p2 p3"`）。
   - 中間是兩個獨立欄位，彼此的列高不必對齊：
     - `.about-col--intro`：Systems Design 和 Visuals 上下平分（`1fr 1fr`）。
-    - `.about-col--stats`：Years 和 Projects 一列，Domains 一列，也是 `1fr 1fr` 平分，所以三張數字卡一樣高（1440 寬時都是 258px）。
-- **平板（768–1024px）：** 24 欄的 grid，`.about-col` 設成 `display: contents`，數據兩列也平分（`auto auto auto 1fr 1fr`）。
-- **手機（≤767px）：** 2 欄的 grid，`.about-col` 設成 `display: contents`，數據兩列平分（`auto auto auto auto 1fr 1fr auto`）。
+    - `.about-col--stats`：Years 和 Projects 一列，Domains 一列，也是 `1fr 1fr` 平分，所以三張數字卡一樣高。
+- **平板（768–1024px）：** 24 欄的 grid，所有 `.about-col` 設成 `display: contents`。順序：headline → 原則三張並排（各 8 欄）→ 照片 + Systems / Visuals → 數據與 AI → 接案卡（滿版）。列高 `auto auto auto auto 1fr 1fr auto`，數據兩列平分。
+- **手機（≤767px）：** 2 欄的 grid，`.about-col` 設成 `display: contents`。順序：照片 → headline → 原則 01–03 → Systems → Visuals → Years / Projects → Domains → AI → 接案卡。列高 `auto ×7, 1fr 1fr, auto auto`。新卡片（`.bento-area-p1–p3`、`.bento-area-cta`）已加進手機 20px 圓角清單。
 - **數字大小：** 三個數字都用同一組 clamp 大小（`.stat-num-wrap` / `.digit-col-inner span`）。**Service Domains 的數字不能用 cqh 依卡片高度縮放**，原因見第 5 節。
 
 ---
@@ -114,6 +120,14 @@
 | feat(about): rewrite the bento story around how the case studies work | 依作品分析重寫敘事：lead、Systems Design、Visuals 改名為 Context-Driven Visuals、標籤改成文案裡提到的例子、AI 卡加上成果 |
 | feat(about): labelled rows, six service domains, even stat cards | 兩張技能卡改成分類分行，小標是帶 icon 的膠囊；Service Domains 精簡成 6 類（公部門合併）；三張數字卡等高 |
 | fix(fonts): re-cut GenSen from the original OTFs so new copy has glyphs | 修缺字：用原始 OTF 重新產生 GenSen 字型檔（1,232 → 1,360 字），首頁小字型檔跟著更新，並加測試 |
+| feat(about): layout B, principles row and availability card | 三條原則獨立成一列，放在 headline 下方，每張有例句和作品標籤；照片下方加接案中卡（合作、地點、「聯絡我 →」），高度依內容；技能卡拿掉搬走的行（Systems = 研究／交付／工具，Visuals = 配色／3D／平面），作品標籤重新分配；三個斷點的 grid 跟著改；本文件第 4 節的 zoom 動畫改成可以再提 |
+
+**B 版面是怎麼來的：** 參考網路上作品集 About 的寫法（NN/g、uxfol.io、UX Design Institute 等），共識是：使用者只會掃讀、headline 一句講清楚、要有一個好記的強項、給成果、聯絡要方便。畫了三種版面讓使用者選：
+- A：只補照片下的空白。
+- B：原則先行。
+- C：左右分欄，左側固定不動。
+
+使用者選了 B。
 
 ---
 
@@ -126,6 +140,7 @@
 - **Service Domains 的數字：** 要跟 Years、Projects 一樣大，不能被壓矮。
 - **網格：** 左邊兩張技能卡和右邊三張數字卡的列高可以錯開；需要的話可以重改 grid 的包覆方式。
 - **Service Domains 的分類：** 要精簡，公部門合成一類。
+- **接案中卡：** 不要自行撐開去填滿左欄，用內容本身的高度。
 - **回覆和文件：** 一律用繁體中文（專有名詞除外）；只貼修改到的程式片段；commit 和 push 都要等使用者說了才做。
 
 ---
@@ -155,8 +170,10 @@
   - 軟體名稱和粗體。
   - 分類行數、膠囊和 icon。
   - 作品標籤的連結真的存在。
+  - 原則列：3 張、每張的標題、例句、標籤數量跟 `PRINCIPLES` 的連結數一致，連結都是真的作品。
+  - 接案卡：按鈕捲到 `#contact`，左欄是 `auto auto` + `align-content: start`。
   - 6 個產業。
-  - 兩欄結構和等高的數據列。
+  - 桌機的 grid 區域字串、兩欄結構和等高的數據列；平板與手機的列高字串。
   - Projects 的數字等於作品數量。
 
   改內容時要一起更新這些測試。
@@ -165,18 +182,20 @@
 
 ## 6. 還沒做的建議（依優先順序）
 
-1. **Push。** 6 個 commit 還在本機。線上站每次都會多下載 R、M、B 三個完整字型檔（約 900 KB），push 之後才會解決。
-2. **照片下方的空白（桌機）。** 照片卡用 `align-self: start`，下面、AI 卡左邊留了一塊空白。可以：
-   - 讓照片撐滿整欄；或
-   - 在照片下方加一張「接案中 + 聯絡我」卡，這是之前計畫裡的決定 4。
-3. **照片卡的接案狀態和聯絡 CTA。** 在照片卡加「接案中」狀態和聯絡按鈕，連到 `#contact`。
-4. **聊天機器人的段落跟新敘事不一致。** `about_p1`–`about_p3` 還是舊說法：只提警政、環保、醫院，還用彩色 span。建議依第 2 節的結論改寫，讓聊天機器人的回答跟 About 一致。
-5. **Service Domains 數字的位置。** 數字比 Years、Projects 高約 17px（手機差更多），因為那兩張的標題折成兩行。要完全對齊，可以把數字固定在同樣的高度。
-6. **手機和平板的細節（原 Phase 3）。**
+已完成：~~接案狀態與聯絡 CTA~~、~~原則獨立成卡~~（B 版面）。
+
+1. **Push。** 7 個 commit 還在本機。線上站每次都會多下載 R、M、B 三個完整字型檔（約 900 KB），push 之後才會解決。
+2. **縮短 headline。** 現在這句同時講了產品設計、3D、AI 三件事。建議只留主軸，例如「我把警政、醫療與公部門的複雜流程，做成第一線人員一眼看懂的介面。」，3D 和 AI 交給下面的卡片。
+3. **接案卡下方的空白（桌機）。** 接案卡用內容高度，所以它下方、AI 卡左邊還有空白（使用者接受這樣）。如果之後要處理，不要把接案卡撐高，可以考慮放別的內容。
+4. **成果數字。** Years / Projects / Domains 只講了數量。若有實際成效（例如報修處理時間、自評完成率、留存率），可以換一張數字卡。需要使用者提供真實數字，不要自己編。
+5. **一句個人色彩。** 例如為什麼喜歡到現場看使用者怎麼用。需要使用者本人的素材。
+6. **原則列的 zoom 進場（備選）。** 只讓原則列從大縮回 bento 的位置，其他卡照常進場；或改成點技能卡才展開。上次「逐張縮回」的做法已否決，不要重做。
+7. **聊天機器人的段落跟新敘事不一致。** `about_p1`–`about_p3` 還是舊說法：只提警政、環保、醫院，還用彩色 span。建議依第 2 節和原則列改寫，讓聊天機器人的回答跟 About 一致。
+8. **Service Domains 數字的位置。** 數字比 Years、Projects 高約 17px（手機差更多），因為那兩張的標題折成兩行。要完全對齊，可以把數字固定在同樣的高度。
+9. **手機和平板的細節（原 Phase 3）。**
    - 手機版三個數字是否並排成一列。
    - 手機是否隱藏 CardSwap。
    - 整體間距調整。
-7. **原則卡（備選）。** 作品分析的三條原則（環境決定視覺、先刪減再設計、讓規則看得見）目前分散寫在兩張技能卡裡。也可以獨立成一張「Design Principles」卡，放在照片下方的空白，順便解決第 2 點。
 
 ---
 
@@ -186,7 +205,7 @@
   ```bash
   npm test
   ```
-  - 目前 1071 個全部通過。
+  - 目前 1072 個全部通過。
   - 跑之前確認背景沒有其他重的工作。
 - **Lint：**
   ```bash
