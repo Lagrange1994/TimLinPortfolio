@@ -43,6 +43,24 @@ describe('GenSen font faces', () => {
     }
   });
 
+  // Regression: the full files were cut once (Aug 2026) from the copy of the
+  // time; characters added since (沿, 襯, 刪…) were not in any GenSen file
+  // and showed in the system font. Fix: subset-fonts.py --full.
+  it('every Chinese character in the site copy is in each weight’s full file', () => {
+    const sources = [
+      'src/i18n/translations.ts',
+      ...fs.readdirSync(path.join(root, 'src/components')).map(f => `src/components/${f}`),
+      ...fs.readdirSync(path.join(root, 'src/projects')).map(f => `src/projects/${f}`),
+    ].filter(f => /\.(ts|tsx|jsx)$/.test(f));
+    const cjk = new Set<string>();
+    for (const f of sources) for (const c of fs.readFileSync(path.join(root, f), 'utf8')) if (/[㐀-鿿]/.test(c)) cjk.add(c);
+    expect(cjk.size).toBeGreaterThan(1000);
+    for (const full of faces.filter(f => !f.file[2])) {
+      const missing = [...cjk].filter(c => !inRange(full.range!, c.codePointAt(0)!));
+      expect(missing.join(''), full.file[0]).toBe('');
+    }
+  });
+
   it('every character the homepage renders in a weight is served by a page or hero layer, not the full file', () => {
     const chars: Record<string, string> = JSON.parse(fs.readFileSync(path.join(root, 'scripts/gensen-homepage-chars.json'), 'utf8'));
     // CSS font matching: the face the browser picks for each requested weight.
