@@ -1,7 +1,7 @@
 # About Me 修改紀錄與後續建議
 
 > 給新對話用的交接文件。開新對話時貼上：「先讀 `docs/about-me-revision.md`，再繼續 About Me 的修改。」
-> 最後更新：2026-11-06。對應 commit：`6281e16` → `74d9f9d`（截至這天都還沒 push 到 origin/main）。
+> 最後更新：2026-11-06。對應下面第 3 節的 6 個 commit（截至這天只有本文件已 push，那 6 個還在本機 main）。commit 用標題辨識，因為 rebase 後 hash 會變：`git log --oneline --grep="(about)\|(fonts)"`。
 
 ---
 
@@ -104,14 +104,14 @@
 
 ## 3. 已完成的修改（依 commit）
 
-| Commit | 內容 |
+| Commit 標題 | 內容 |
 |---|---|
-| `6281e16` | 卡片改用短文案（`about_*_short`）；加作品標籤（膠囊連結）；AI 卡加「看完整流程 →」，放在流程圖下方；Projects 改成 13；bento 文字 15px |
-| `1727e85` | 拿掉 Industry Focus 卡，產業名稱改成 Service Domains 封面上的標籤；中間改成兩個獨立欄；Domains 數字改回共用大小 |
-| `b907a43` | 技能卡寫進軟體名稱；彩色文字改成粗體；拿掉「直播 App」標籤 |
-| `73f87b0` | 依作品分析重寫敘事：lead、Systems Design、Visuals 改名為 Context-Driven Visuals、標籤改成文案裡提到的例子、AI 卡加上成果 |
-| `522cf62` | 兩張技能卡改成分類分行，小標是帶 icon 的膠囊；Service Domains 精簡成 6 類（公部門合併）；三張數字卡等高 |
-| `74d9f9d` | 修缺字：用原始 OTF 重新產生 GenSen 字型檔（1,232 → 1,360 字），首頁小字型檔跟著更新，並加測試 |
+| feat(about): shorter card copy, project tags and a link to How I Use AI | 卡片改用短文案（`about_*_short`）；加作品標籤（膠囊連結）；AI 卡加「看完整流程 →」，放在流程圖下方；Projects 改成 13；bento 文字 15px |
+| feat(about): merge Industry Focus into Service Domains, two-column middle | 拿掉 Industry Focus 卡，產業名稱改成 Service Domains 封面上的標籤；中間改成兩個獨立欄；Domains 數字改回共用大小 |
+| feat(about): name skills and tools in the card copy, bold instead of colour | 技能卡寫進軟體名稱；彩色文字改成粗體；拿掉「直播 App」標籤 |
+| feat(about): rewrite the bento story around how the case studies work | 依作品分析重寫敘事：lead、Systems Design、Visuals 改名為 Context-Driven Visuals、標籤改成文案裡提到的例子、AI 卡加上成果 |
+| feat(about): labelled rows, six service domains, even stat cards | 兩張技能卡改成分類分行，小標是帶 icon 的膠囊；Service Domains 精簡成 6 類（公部門合併）；三張數字卡等高 |
+| fix(fonts): re-cut GenSen from the original OTFs so new copy has glyphs | 修缺字：用原始 OTF 重新產生 GenSen 字型檔（1,232 → 1,360 字），首頁小字型檔跟著更新，並加測試 |
 
 ---
 
