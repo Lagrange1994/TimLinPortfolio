@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Fragment, useEffect } from 'react';
 import { useLang } from '../context/LangContext';
 import CardSwap, { Card } from './CardSwap';
 import AiFlowStepper from './AiFlowStepper';
@@ -19,11 +19,19 @@ const DOMAIN_COVERS = [
 
 // The portfolio projects behind each intro card's claims, in the order of
 // the card's tag labels (about_tags_systems / about_tags_visuals).
-const SYSTEMS_LINKS = ['project_02.html', 'project_03.html', 'project_11.html'];
+const SYSTEMS_LINKS = ['project_04.html', 'project_09.html', 'project_01.html'];
 const VISUAL_LINKS = ['project_13.html', 'project_12.html'];
 
+// The three design principles row (about_principleN_*), each with the
+// projects behind it, in the order of its tag labels.
+const PRINCIPLES = [
+  { n: 1, links: ['project_01.html', 'project_10.html'] },
+  { n: 2, links: ['project_02.html', 'project_03.html'] },
+  { n: 3, links: ['project_07.html', 'project_11.html'] },
+] as const;
+
 // A row of tags, each opening the project that proves the card's point.
-function ProofTags({ labels, links }: { labels: string; links: string[] }) {
+function ProofTags({ labels, links }: { labels: string; links: readonly string[] }) {
   return (
     <div className="about-proof">
       {labels.split('|').map((label, i) => (
@@ -308,6 +316,29 @@ export default function AboutSection() {
             <p className="about-lead rise-soft" dangerouslySetInnerHTML={{ __html: t.about_lead }} />
           </div>
 
+          {/* Design principles: their own row under the headline (desktop:
+              one 3-column strip beside the photo). */}
+          <div className="about-col about-col--principles">
+            {PRINCIPLES.map(({ n, links }) => {
+              const key = `about_principle${n}` as const;
+              return (
+                <Fragment key={n}>
+                  <div className={`bento-card card-spotlight sc-card bento-principle bento-area-p${n} rise-card`}>
+                    <span className="card-glass-highlight" aria-hidden="true" />
+                    <span className="bento-principle-num" aria-hidden="true">{String(n).padStart(2, '0')}</span>
+                    <div className="bento-label">{t[`${key}_title`]}</div>
+                    <p className="bento-text">{t[`${key}_text`]}</p>
+                    <ProofTags labels={t[`${key}_tags`]} links={links} />
+                  </div>
+                  <span className={`bento-shadow bento-area-p${n}`} aria-hidden="true" />
+                </Fragment>
+              );
+            })}
+          </div>
+
+          {/* Desktop: photo with the availability card filling the rest of
+              the left column. Tablet/phone: display:contents. */}
+          <div className="about-col about-col--profile">
           <div className="about-photo rise-card">
             <div className="pc-card-wrapper" id="profile-card-wrap">
               <div className="pc-behind"></div>
@@ -327,6 +358,20 @@ export default function AboutSection() {
                 </section>
               </div>
             </div>
+          </div>
+
+          <div className="bento-card card-spotlight sc-card bento-area-cta rise-card">
+            <span className="card-glass-highlight" aria-hidden="true" />
+            <div className="about-status">
+              <span className="about-status-dot" aria-hidden="true" />
+              {t.about_cta_status}
+            </div>
+            <p className="bento-text bento-points about-cta-points" dangerouslySetInnerHTML={{ __html: t.about_cta_text }} />
+            <button type="button" className="about-proof-tag about-more" onClick={() => scrollToSectionAligned('contact')}>
+              {t.about_cta_button} <span aria-hidden="true">→</span>
+            </button>
+          </div>
+          <span className="bento-shadow bento-area-cta" aria-hidden="true" />
           </div>
 
           {/* Desktop: two independent columns beside the photo — the intro

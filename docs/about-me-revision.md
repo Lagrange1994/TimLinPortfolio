@@ -50,6 +50,8 @@
 | 娛樂 | Love Two 直播 App（08） |
 | 製造 | CNC 3D 模擬器（13） |
 
+> **2026-11-06 版面 B（未 commit）：** 三條原則（環境決定視覺／先刪減再設計／讓規則看得見）獨立成一列（`about_principleN_*`、`PRINCIPLES`），放在 headline 下方；照片下方加「接案中」卡（`about_cta_*`，按鈕捲到 `#contact`）。技能卡因此改成：Systems Design = 研究／交付／工具，Visuals = 配色／3D／平面，作品標籤也跟著換。桌機 grid 改為 `"profile principles×4" "profile intro intro stats stats" "profile workflow×4"`，左欄 `.about-col--profile` = 照片 + CTA（`auto auto`，CTA 用內容高度，不撐滿）；平板與手機在 headline 後加 p1–p3，CTA 放最後。下面的表格和 grid 描述是改版前的。
+
 ### 版面（grid）
 
 - **桌機（≥1025px）：** `.about-grid` 有 5 欄。
@@ -117,7 +119,7 @@
 
 ## 4. 使用者的偏好與已否決的方向（不要再提）
 
-- **Zoom 動畫：** About 的 zoom 階段改成「詳細圖文再逐張縮回 bento」→ 使用者覺得效果太差，已經全部還原。不要再做。
+- **Zoom 動畫：** 不是禁區，可以再提。但上次的做法「詳細圖文再逐張縮回 bento」效果太差、已全部還原，不要照原樣重做；新提案要說清楚跟那版差在哪。
 - **連結樣式：** MacBook 官網那種藍色文字連結或膠囊 → 改回上一版。
 - **「看完整流程」按鈕：** 不要玻璃按鈕，要跟作品標籤一樣的膠囊（`about-proof-tag about-more`），位置在流程圖下方。
 - **文字強調：** 不要彩色（`text-primary` / `text-secondary` / `text-purple`），專有名詞和軟體用 `<strong>` 粗體。

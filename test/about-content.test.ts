@@ -53,8 +53,11 @@ describe('About content', () => {
 
   it('the bento tells the case-study story: on site, subtract, visuals by context', () => {
     expect(translations.zh.about_lead).toContain('現場');
-    expect(translations.zh.about_intro1_short).toContain('減法');
-    expect(translations.zh.about_intro2_short).toContain('跟著環境');
+    // the three principles now have their own row (layout B)
+    expect(translations.zh.about_principle1_title).toBe('環境決定視覺');
+    expect(translations.zh.about_principle2_title).toBe('先刪減再設計');
+    expect(translations.zh.about_principle3_title).toBe('讓規則看得見');
+    expect(translations.zh.about_intro1_short).toContain('現場');
     for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_intro2_label).toBe('Context-Driven Visuals');
     // both cards read as labelled rows, the same rows in both languages
     expect((tsx.match(/className="bento-text bento-points"/g) ?? []).length).toBe(2);
@@ -63,7 +66,7 @@ describe('About content', () => {
     expect(css).toMatch(/\.bento-point-label \{[^}]*border-radius: 9999px;/);
     const icons = readFileSync(resolve(root, 'src/styles/icon-faces.css'), 'utf8');
     for (const lang of ['zh', 'en'] as const) {
-      for (const key of ['about_intro1_short', 'about_intro2_short'] as const) {
+      for (const key of ['about_intro1_short', 'about_intro2_short', 'about_cta_text'] as const) {
         const labels = translations[lang][key].match(/<span class="bento-point-label">.*?<\/span>/g)!;
         for (const l of labels) {
           const icon = l.match(/<i class="ph-bold (ph-[a-z-]+)" aria-hidden="true"><\/i>/)?.[1];
@@ -73,14 +76,36 @@ describe('About content', () => {
       }
     }
     const rows = (h: string) => (h.match(/class="bento-point-label"/g) ?? []).length;
-    for (const [key, n] of [['about_intro1_short', 4], ['about_intro2_short', 3]] as const) {
+    for (const [key, n] of [['about_intro1_short', 3], ['about_intro2_short', 3]] as const) {
       expect(rows(translations.zh[key])).toBe(n);
       expect(rows(translations.en[key])).toBe(n);
     }
-    // the tags back the examples in the copy: the Hsinchu app, the Kaohsiung
-    // repair flow and the TMU radar chart; the CNC sim and the finance game
-    expect(links('SYSTEMS_LINKS')).toEqual(['project_02.html', 'project_03.html', 'project_11.html']);
+    // the tags back the copy: Tainan patrol and the environment backend
+    // (site research), the police video system (specs); the CNC sim and the
+    // finance game
+    expect(links('SYSTEMS_LINKS')).toEqual(['project_04.html', 'project_09.html', 'project_01.html']);
     expect(links('VISUAL_LINKS')).toEqual(['project_13.html', 'project_12.html']);
+  });
+
+  it('layout B: a principles row and an availability card linking to #contact', () => {
+    const principles = [...tsx.matchAll(/\{ n: (\d), links: (\[[^\]]*\]) \}/g)]
+      .map(m => ({ n: Number(m[1]), links: JSON.parse(m[2].replace(/'/g, '"')) as string[] }));
+    expect(principles.map(p => p.n)).toEqual([1, 2, 3]);
+    for (const { n, links: pages } of principles) {
+      for (const lang of ['zh', 'en'] as const) {
+        const t = translations[lang] as Record<string, string>;
+        expect(t[`about_principle${n}_title`]).toBeTruthy();
+        expect(t[`about_principle${n}_text`]).toBeTruthy();
+        expect(t[`about_principle${n}_tags`].split('|')).toHaveLength(pages.length);
+      }
+      for (const page of pages) expect(PROJECTS.some(p => p.link === page), page).toBe(true);
+    }
+    expect(tsx).toContain(`scrollToSectionAligned('contact')`);
+    for (const lang of ['zh', 'en'] as const) {
+      for (const k of ['about_cta_status', 'about_cta_text', 'about_cta_button'] as const) expect(translations[lang][k]).toBeTruthy();
+    }
+    expect(css).toMatch(/\.about-col--principles \{[^}]*grid-template-areas: "p1 p2 p3";/);
+    expect(css).toMatch(/\.about-col--profile \{[^}]*grid-template-areas: "photo" "cta";[^}]*grid-template-rows: auto auto;[^}]*align-content: start;/);
   });
 
   it('one tag per linked project, every link a real project page', () => {
@@ -110,13 +135,13 @@ describe('About content', () => {
 
   it('desktop: intro cards and stats are two independent columns; tablet/phone unwrap them', () => {
     expect(tsx).toMatch(/<div className="about-col about-col--intro">[\s\S]*bento-area-intro1[\s\S]*bento-area-intro2[\s\S]*?<\/div>\s*<div className="about-col about-col--stats">[\s\S]*bento-area-years[\s\S]*bento-area-projects[\s\S]*bento-area-domains/);
-    expect(css).toMatch(/"photo intro intro stats stats"\s*"photo workflow workflow workflow workflow";/);
+    expect(css).toMatch(/"profile principles principles principles principles"\s*"profile intro intro stats stats"\s*"profile workflow workflow workflow workflow";/);
     // the intro cards split their column evenly; the stats keep their own rows
     expect(css).toMatch(/\.about-col--intro \{[^}]*grid-template-rows: 1fr 1fr;/);
     // the three stat cards share one height: desktop column, tablet and phone rows
     expect(css).toMatch(/\.about-col--stats \{[^}]*grid-template-rows: 1fr 1fr;/);
-    expect(css).toContain('grid-template-rows: auto auto auto 1fr 1fr;');
     expect(css).toContain('grid-template-rows: auto auto auto auto 1fr 1fr auto;');
+    expect(css).toContain('grid-template-rows: auto auto auto auto auto auto auto 1fr 1fr auto auto;');
     expect((css.match(/\.about-col \{\s*display: contents;\s*\}/g) ?? []).length).toBe(2);
   });
 

@@ -2781,8 +2781,9 @@
       grid-template-columns: 2fr 1.7fr 1.7fr 1.3fr 1.3fr;
       grid-template-areas:
         "headline headline headline headline headline"
-        "photo intro intro stats stats"
-        "photo workflow workflow workflow workflow";
+        "profile principles principles principles principles"
+        "profile intro intro stats stats"
+        "profile workflow workflow workflow workflow";
       gap: 12px;
       /* align-items defaults to stretch — intro1/intro2/domains (and every
          other bento card) fill their full row height so their bottom edge
@@ -2820,11 +2821,62 @@
       grid-template-rows: 1fr 1fr;
     }
 
+    /* Layout B: the three design principles as one strip beside the photo,
+       right under the headline. */
+    .about-col--principles {
+      grid-area: principles;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-areas: "p1 p2 p3";
+    }
+
+    /* Left column: the photo at its own ratio, the availability card
+       under it at its own content height (not stretched to the column). */
+    .about-col--profile {
+      grid-area: profile;
+      grid-template-areas: "photo" "cta";
+      grid-template-rows: auto auto;
+      align-content: start;
+    }
+
     .about-photo {
       grid-area: photo;
       align-self: start;
       display: flex;
       flex-direction: column;
+    }
+
+    .bento-area-p1 { grid-area: p1; }
+    .bento-area-p2 { grid-area: p2; }
+    .bento-area-p3 { grid-area: p3; }
+    .bento-area-cta { grid-area: cta; }
+
+    .bento-principle .about-proof { max-width: 100%; }
+
+    .bento-principle-num {
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--text-50);
+    }
+
+    .about-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-heading);
+      font-size: 20px;
+      font-weight: 500;
+      line-height: 1.1;
+      color: var(--text);
+    }
+
+    .about-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 0 4px rgba(52, 211, 153, .18);
     }
 
     /* Mobile-only line break: hidden at desktop/tablet, shown < 768px (see the
@@ -8430,13 +8482,15 @@
       .about-grid {
         grid-template-columns: repeat(24, 1fr);
         /* own rows; the stats rows (years/projects, domains) match */
-        grid-template-rows: auto auto auto 1fr 1fr;
+        grid-template-rows: auto auto auto auto 1fr 1fr auto;
         grid-template-areas:
           "headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline"
+          "p1 p1 p1 p1 p1 p1 p1 p1 p2 p2 p2 p2 p2 p2 p2 p2 p3 p3 p3 p3 p3 p3 p3 p3"
           "photo photo photo photo photo photo photo photo intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1"
           "photo photo photo photo photo photo photo photo intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2"
           "years years years years years years projects projects projects projects projects projects workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow"
-          "domains domains domains domains domains domains domains domains domains domains domains domains workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow";
+          "domains domains domains domains domains domains domains domains domains domains domains domains workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow"
+          "cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta";
         gap: 16px;
       }
 
@@ -8793,15 +8847,19 @@
       .about-grid {
         grid-template-columns: 1fr 1fr;
         /* the stats rows (years/projects, domains) match */
-        grid-template-rows: auto auto auto auto 1fr 1fr auto;
+        grid-template-rows: auto auto auto auto auto auto auto 1fr 1fr auto auto;
         grid-template-areas:
           "photo photo"
           "headline headline"
+          "p1 p1"
+          "p2 p2"
+          "p3 p3"
           "intro1 intro1"
           "intro2 intro2"
           "years projects"
           "domains domains"
-          "workflow workflow";
+          "workflow workflow"
+          "cta cta";
         gap: 14px;
       }
 
@@ -11077,6 +11135,10 @@
       .bento-area-projects,
       .bento-area-domains,
       .bento-area-workflow,
+      .bento-area-p1,
+      .bento-area-p2,
+      .bento-area-p3,
+      .bento-area-cta,
       .contact-card,
       .line-banner,
       .mcp-card,
