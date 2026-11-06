@@ -121,7 +121,8 @@ describe('ProcessCarousel finger drag', () => {
   // one card, and the one facing an end is disabled.
   it('the ‹ › buttons step one card and disable at either end', () => {
     const { container, track } = setup();
-    const [prev, next] = container.querySelectorAll<HTMLButtonElement>('.process-swipe-nav .process-swipe-arrow');
+    // (the play/pause button leads the same row)
+    const [prev, next] = container.querySelectorAll<HTMLButtonElement>('.process-swipe-nav .process-swipe-arrow:not(.autoplay-toggle)');
     expect(prev.disabled).toBe(true);
     expect(next.disabled).toBe(false);
     act(() => { fireEvent.click(next); });

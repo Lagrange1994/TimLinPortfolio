@@ -8,6 +8,7 @@ import PriorityQueueFlow from './PriorityQueueFlow';
 import PolicyPill from './PolicyPill';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from './GoogleGeminiEffect';
 import FigmaMcpShowcase from './FigmaMcpShowcase';
+import PlayPauseButton from './PlayPauseButton';
 import AiAppStage from './AiAppStage';
 import { attachAiViewerEntrance } from '../utils/aiViewerEntrance';
 import LazyUnit from './LazyUnit';
@@ -855,6 +856,9 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
   const dragRef = useRef({ active: false, startX: 0, dx: 0, lastX: 0, lastT: 0, vx: 0 });
   const [cardStepPx, setCardStepPx] = useState(0);
   const [risen, setRisen] = useState(false);
+  // The play/pause button in the ‹ › row: paused holds the countdown
+  // (fill frozen where it is) until played again.
+  const [paused, setPaused] = useState(false);
 
   // Hold off autoplay until the cards have finished useRiseReveal's scroll-in
   // animation, instead of starting immediately on mount — otherwise the
@@ -979,13 +983,13 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
   // separate 6s timer then slid the card while the bar sat full or half-way.
   // This timer is only the fallback for when no fill is running.
   useEffect(() => {
-    if (maxOffset === 0 || dragging || !risen) return;
+    if (maxOffset === 0 || dragging || !risen || paused) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const id = setTimeout(() => {
       setOffset(o => (o >= maxOffset ? 0 : o + 1));
     }, AUTOPLAY_FALLBACK_MS);
     return () => clearTimeout(id);
-  }, [maxOffset, dragging, risen, offset]);
+  }, [maxOffset, dragging, risen, offset, paused]);
 
   const advanceOnFill = (e: ReactAnimationEvent) => {
     if (e.animationName === 'process-dot-progress') setOffset(o => (o >= maxOffset ? 0 : o + 1));
@@ -998,6 +1002,10 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
   // before the autoplay effect above is actually allowed to advance, so the
   // dot would show "full" long before the carousel really slides.
   const autoplayLive = maxOffset > 0 && !dragging && risen && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Only when there is an autoplay to stop (not under reduced motion).
+  const canAutoplay = maxOffset > 0 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const toggle = canAutoplay && <PlayPauseButton className="process-swipe-arrow" paused={paused} onToggle={() => setPaused(p => !p)} />;
 
   if (mobileOnly && !isMobile) return <div className={className}>{cards}</div>;
 
@@ -1023,7 +1031,7 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
               >
                 <span className="process-tab-label">{tab.label}</span>
                 <span className="process-tab-bar" aria-hidden="true">
-                  {on && <span key={offset} className={`process-tab-fill${autoplayLive ? ' is-timing' : ''}`} onAnimationEnd={advanceOnFill} />}
+                  {on && <span key={offset} className={`process-tab-fill${autoplayLive ? ' is-timing' : ''}${paused ? ' is-paused' : ''}`} onAnimationEnd={advanceOnFill} />}
                 </span>
               </button>
             );
@@ -1061,13 +1069,15 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
           );
         })}
       </div>
+      {/* tabs mode has no ‹ › row: the button gets one of its own */}
+      {showTabs && toggle && <div className="process-tabs-controls">{toggle}</div>}
       {!showTabs && maxOffset > 0 && (
         <>
           <div className="process-swipe-controls">
             <div className="process-swipe-dots">
               {Array.from({ length: dotCount }).map((_, i) => (
                 <span key={i} className={`process-swipe-dot${i === offset ? ' active' : ''}`}>
-                  {i === offset && autoplayLive && <span key={offset} className="process-swipe-dot-fill" onAnimationEnd={advanceOnFill} />}
+                  {i === offset && autoplayLive && <span key={offset} className={`process-swipe-dot-fill${paused ? ' is-paused' : ''}`} onAnimationEnd={advanceOnFill} />}
                 </span>
               ))}
             </div>
@@ -1076,6 +1086,8 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
               buttons, the one facing an end greyed out. Autoplay still
               loops back to the start on its own. */}
           <div className="process-swipe-nav">
+            {/* play/pause leads the ‹ › row, same round button */}
+            {toggle}
             <button
               type="button"
               className="process-swipe-arrow"
@@ -1112,7 +1124,7 @@ function DesignProcessSection() {
   const processThemes = useProcessCardThemes(sectionRef);
 
   return (
-      <section className="section" ref={sectionRef}>
+      <section className="section section-band" ref={sectionRef}>
         <div className="section-label rise-soft">My Design Process</div>
         <div className="process-dual">
           <div className="process-column">
@@ -2357,7 +2369,7 @@ export function AiIntakeSection() {
   );
 
   return (
-      <section id="my-skills" className="section">
+      <section id="my-skills" className="section section-band">
         <div className="section-label rise-soft">How I Use AI</div>
         <h2 className="about-h2 rise-soft" style={{ letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
           AI-Assisted Design <span className="gradient-text">Intake System</span>

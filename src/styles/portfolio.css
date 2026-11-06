@@ -66,6 +66,8 @@
       --primary: #6C63FF;
       --secondary: #FF6584;
       --bg: #0A0912;
+      /* every other section's background (.section-band) */
+      --band: #110F1D;
       /* Flat stand-in for --bg used everywhere the real value would trigger
          an image fetch/decode/paint before it's safe to show one — see
          #bg-scene's own comment. Same flat value as --bg in dark mode
@@ -379,6 +381,7 @@
       /* w_bg.svg fully disabled — flat tone (same as --bg-safe). To restore:
          url('/img/w_bg.svg') center / cover no-repeat */
       --bg: #F7FAFC;
+      --band: #EDF1F7;
       /* Flat stand-in for --bg — see the base :root's own comment on this
          token. This is the one theme where it actually differs from --bg:
          matches the flat color index.html's inline pre-hydration <style>
@@ -880,9 +883,11 @@
     }
 
     /* ── LAYOUT ── */
+    /* Apple product page rhythm: generous room between sections and no
+       divider lines; every other section sits on a full-width --band tone
+       instead (.section-band below). */
     .section {
-      padding: 80px 48px;
-      border-bottom: 1px solid var(--border);
+      padding: clamp(112px, calc(14svh / var(--z, 1)), 168px) 48px;
       max-width: 1440px;
       margin: 0 auto;
       /* Lets scrollIntoView land each section's border-box top flush with
@@ -890,6 +895,18 @@
          (its first child) is exactly the section's own padding-top —
          consistent across every section without per-section offset math. */
       scroll-margin-top: var(--nav-h);
+    }
+    /* The sticky Portfolio wall sizes itself to the room inside its own
+       padding; it keeps the old 80px (its track already has room above). */
+    #portfolio.section {
+      padding-top: 80px;
+      padding-bottom: 80px;
+    }
+    /* Full-bleed band behind a section that is itself capped at 1440px: a
+       border-image fill pushed out past both sides. Paint only, so no
+       layout change, no clipping of the content, no horizontal scroll. */
+    .section-band {
+      border-image: linear-gradient(var(--band), var(--band)) fill 0 / / 0 100vmax;
     }
 
     /* Reserve document flow while an initial React.lazy section is loading.
@@ -3828,10 +3845,10 @@
       gap: 0;
     }
 
+    /* In-house and Freelance are set apart by room, not a divider line */
     .process-column + .process-column {
-      border-top: 1px solid var(--border);
       padding-top: 32px;
-      margin-top: 32px;
+      margin-top: 48px;
     }
 
     /* Big section-title styling — matches .about-h2 (heading font, ~2rem),
@@ -4049,7 +4066,7 @@
          the padding since they're in normal flow. */
       .process-column + .process-column {
         padding-top: 32px;
-        margin-top: 32px;
+        margin-top: clamp(64px, calc(9svh / var(--z, 1)), 112px);
       }
 
       /* Pin the column label to the same Y as the rightmost (highest) card's
@@ -4149,6 +4166,19 @@
     @keyframes process-dot-progress {
       from { transform: scaleX(0); }
       to { transform: scaleX(1); }
+    }
+
+    /* the play/pause button (first in the ‹ › row) holds the countdown */
+    .process-swipe-dot-fill.is-paused,
+    .process-tab-fill.is-paused {
+      animation-play-state: paused;
+    }
+
+    /* Tech Stack's tabs on phones have no ‹ › row: its own, on the right */
+    .process-tabs-controls {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 12px;
     }
 
     /* ‹ › — apple.com's product-carousel paddles: a pair of round, softly
@@ -5426,8 +5456,7 @@
        moves (transform / opacity), and paused unless .mcp-grid.is-live (on
        screen, see FigmaMcpShowcase). */
     .mcp-grid { --mcp-play: paused; }
-    .mcp-grid.is-live { --mcp-play: running; }
-    .mcp-ops {
+    .mcp-grid.is-live { --mcp-play: running; }    .mcp-ops {
       position: absolute;
       inset: 0;
       z-index: 6;
@@ -8332,7 +8361,11 @@
     /* ── TABLET (768px – 1024px only) ── */
     @media (min-width: 768px) and (max-width: 1024px) {
       .section {
-        padding: 60px 32px;
+        padding: 96px 32px;
+      }
+      #portfolio.section {
+        padding-top: 60px;
+        padding-bottom: 60px;
       }
 
       /* Matches .section's own side padding above, so .mcp-bleed's
@@ -8610,7 +8643,11 @@
 
       /* General */
       .section {
-        padding: 36px 16px;
+        padding: 64px 16px;
+      }
+      #portfolio.section {
+        padding-top: 36px;
+        padding-bottom: 36px;
       }
 
       /* Matches .section's own side padding above, so .mcp-bleed's
@@ -8916,11 +8953,14 @@
         flex: 0 0 calc(100% - 36px);
         width: calc(100% - 36px);
       }
+      /* dots on the left: centred, they'd run into the ‹ › row now that
+         it carries the play/pause button too */
       .process-scroll-wrap--process .process-swipe-controls {
         left: 16px;
         right: 16px;
         bottom: 12px;
         height: 40px;
+        align-items: flex-start;
       }
       .process-scroll-wrap--process .process-swipe-nav {
         left: auto;

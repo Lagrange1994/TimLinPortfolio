@@ -22,7 +22,7 @@ describe('.mcp-bleed respects the 4K scale lock', () => {
     expect(block).toMatch(/padding: 0 calc\(max\(0px, \(100vw \/ var\(--z, 1\) - 1440px\) \/ 2\) \+ 48px\);/);
     const section = css.match(/\n {4}\.section \{[\s\S]*?\n {4}\}/)?.[0] ?? '';
     expect(section).toMatch(/max-width: 1440px;/);
-    expect(section).toMatch(/padding: 80px 48px;/);
+    expect(section).toMatch(/padding: [^;]+ 48px;/);
   });
 
   it('has no bare 100vw / 50vw left', () => {
