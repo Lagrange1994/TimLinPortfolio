@@ -51,6 +51,17 @@ describe('About content', () => {
     }
   });
 
+  it('the bento tells the case-study story: on site, subtract, visuals by context', () => {
+    expect(translations.zh.about_lead).toContain('現場');
+    expect(translations.zh.about_intro1_short).toContain('減法');
+    expect(translations.zh.about_intro2_short).toContain('跟著環境');
+    for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_intro2_label).toBe('Context-Driven Visuals');
+    // the tags back the examples in the copy: the Hsinchu app, the Kaohsiung
+    // repair flow and the TMU radar chart; the CNC sim and the finance game
+    expect(links('SYSTEMS_LINKS')).toEqual(['project_02.html', 'project_03.html', 'project_11.html']);
+    expect(links('VISUAL_LINKS')).toEqual(['project_13.html', 'project_12.html']);
+  });
+
   it('one tag per linked project, every link a real project page', () => {
     for (const [key, name] of [['about_tags_systems', 'SYSTEMS_LINKS'], ['about_tags_visuals', 'VISUAL_LINKS']] as const) {
       const pages = links(name);
