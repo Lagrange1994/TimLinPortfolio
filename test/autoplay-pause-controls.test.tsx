@@ -38,7 +38,7 @@ function setupCarousel(tabs = false) {
   act(() => { track.dispatchEvent(new Event('rise-settled', { bubbles: true })); });
   act(() => { vi.advanceTimersByTime(1500); });
   const activeDot = () => [...utils.container.querySelectorAll('.process-swipe-dot')].findIndex(d => d.classList.contains('active'));
-  const toggle = () => utils.container.querySelector<HTMLButtonElement>('.autoplay-toggle')!;
+  const toggle = () => utils.container.querySelector<HTMLButtonElement>('.process-swipe-nav .autoplay-toggle')!;
   return { ...utils, activeDot, toggle };
 }
 
@@ -68,12 +68,24 @@ describe('ProcessCarousel play/pause', () => {
     expect(activeDot()).toBe(1);
   });
 
-  it('tabs mode (phones) gets its own row for the button', () => {
+  it('phones: a second button right after the dots pill, sharing the same state', () => {
+    const { container, toggle } = setupCarousel();
+    const controls = container.querySelector('.process-swipe-controls')!;
+    const phone = controls.querySelector<HTMLButtonElement>(':scope > .autoplay-toggle.process-swipe-toggle--phone')!;
+    expect(phone.previousElementSibling!.classList.contains('process-swipe-dots')).toBe(true);
+    expect(toggle().classList.contains('process-swipe-toggle--nav')).toBe(true);
+    fireEvent.click(phone);
+    expect(toggle().getAttribute('aria-label')).toBe('Play animation');
+    expect(phone.getAttribute('aria-label')).toBe('Play animation');
+    // CSS: hidden off phones; on phones the pill + button centred, no ‹ ›
+    expect(css).toMatch(/\.process-swipe-controls > \.process-swipe-toggle--phone \{\s*display: none;/);
+  });
+
+  it('tabs mode (Tech Stack on phones) has no button', () => {
     mq.phone = true;
-    const { container, toggle } = setupCarousel(true);
-    expect(toggle().parentElement!.className).toBe('process-tabs-controls');
-    fireEvent.click(toggle());
-    expect(container.querySelector('.process-tab-fill')!.classList.contains('is-paused')).toBe(true);
+    const { container } = setupCarousel(true);
+    expect(container.querySelector('.autoplay-toggle')).toBeNull();
+    expect(container.querySelector('.process-tabs-controls')).toBeNull();
   });
 
   it('no button under reduced motion (nothing plays)', () => {

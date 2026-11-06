@@ -4174,11 +4174,10 @@
       animation-play-state: paused;
     }
 
-    /* Tech Stack's tabs on phones have no ‹ › row: its own, on the right */
-    .process-tabs-controls {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 12px;
+    /* the phone copy of play/pause (beside the dots pill) — only on phones,
+       see the Design Process phone block */
+    .process-swipe-controls > .process-swipe-toggle--phone {
+      display: none;
     }
 
     /* ‹ › — apple.com's product-carousel paddles: a pair of round, softly
@@ -8938,10 +8937,11 @@
       /* Design Process (variant "process") on phones — apple.com's phone
          carousels: the card stops 36px short of the column so the next one
          peeks in (20px + the 16px side room up to the screen-edge clip), the
-         gap tightens to 16px, and the controls share one row under the
-         cards: dots centred, ‹ › on the right (on the card edge).
-         Bottom up: 12px, ‹ › (40px), then 12px + the track's 12px to the
-         card. Tech Stack keeps the full-width page (its tabs). */
+         gap tightens to 16px, and the controls are one centred group under
+         the cards: the dots in a pill, the play/pause button beside it, no
+         ‹ › (swiping turns the page).
+         Bottom up: 12px, controls (40px), then 12px + the track's 12px to
+         the card. Tech Stack keeps the full-width page (its tabs). */
       .process-scroll-wrap.process-scroll-wrap--process {
         padding-bottom: 64px;
       }
@@ -8953,19 +8953,30 @@
         flex: 0 0 calc(100% - 36px);
         width: calc(100% - 36px);
       }
-      /* dots on the left: centred, they'd run into the ‹ › row now that
-         it carries the play/pause button too */
       .process-scroll-wrap--process .process-swipe-controls {
         left: 16px;
         right: 16px;
         bottom: 12px;
         height: 40px;
-        align-items: flex-start;
+        flex-direction: row;
+        gap: 10px;
+      }
+      .process-scroll-wrap--process .process-swipe-dots {
+        height: 40px;
+        padding: 0 18px;
+        border-radius: 9999px;
+        background: color-mix(in oklab, var(--text) 10%, transparent);
+        box-shadow: inset 0 0 0 1px var(--border);
+      }
+      :root[data-theme="light"] .process-scroll-wrap--process .process-swipe-dots {
+        background: var(--neu-bg);
+        box-shadow: var(--neu-raised-sm);
+      }
+      .process-scroll-wrap--process .process-swipe-controls > .process-swipe-toggle--phone {
+        display: grid;
       }
       .process-scroll-wrap--process .process-swipe-nav {
-        left: auto;
-        right: 16px;
-        transform: none;
+        display: none;
       }
 
       /* .process-column-grid--inhouse (the class ProcessCarousel actually

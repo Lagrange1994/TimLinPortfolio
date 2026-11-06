@@ -118,21 +118,26 @@ describe('Design Process is a 1-per-page full-width carousel on phones', () => {
   // apple.com phone carousel for Design Process (variant "process"): the next
   // card peeks in, dots sit on the left and ‹ › on the right, on one row.
   // The base rules above stay for Tech Stack's full-width page.
-  it('Design Process peeks the next card, with dots on the left and play/pause + ‹ › on the right', () => {
+  it('Design Process peeks the next card, with the dots pill and play/pause centred as one group', () => {
     expect(tsx.match(/<ProcessCarousel\n\s+variant="process"/g)).toHaveLength(2);
     const slot = mobileBlock.match(/\.process-scroll-wrap--process \.process-column-grid--inhouse \.process-swipe-slot \{[^}]*\}/)?.[0];
     expect(slot).toMatch(/flex:\s*0 0 calc\(100% - 36px\);/);
     const track = mobileBlock.match(/\.process-scroll-wrap--process \.process-column-grid--inhouse \{[^}]*\}/)?.[0];
     expect(track).toMatch(/gap:\s*16px;/);
     const dots = mobileBlock.match(/\.process-scroll-wrap--process \.process-swipe-controls \{[^}]*\}/)?.[0];
-    // left-aligned: centred, the dots run into the play/pause + ‹ › row at 375px
+    // one row, centred by the base rule's justify-content
     expect(dots).toMatch(/left:\s*16px;\s*right:\s*16px;/);
-    expect(dots).toMatch(/align-items:\s*flex-start;/);
+    expect(dots).toMatch(/flex-direction:\s*row;/);
+    expect(dots).not.toMatch(/align-items:\s*flex-start;/);
+    const pill = mobileBlock.match(/\.process-scroll-wrap--process \.process-swipe-dots \{[^}]*\}/)?.[0];
+    expect(pill).toMatch(/border-radius:\s*9999px;/);
+    expect(mobileBlock).toMatch(/\.process-scroll-wrap--process \.process-swipe-controls > \.process-swipe-toggle--phone \{\s*display:\s*grid;/);
+    // no ‹ › on phones: swiping turns the page
     const nav = mobileBlock.match(/\.process-scroll-wrap--process \.process-swipe-nav \{[^}]*\}/)?.[0];
-    expect(nav).toMatch(/left:\s*auto;\s*right:\s*16px;\s*transform:\s*none;/);
+    expect(nav).toMatch(/display:\s*none;/);
   });
 
-  it('shows the dots and ‹ › buttons on phones', () => {
+  it('keeps the dots on phones', () => {
     expect(mobileBlock).not.toMatch(/\.process-swipe-controls,\s*\.process-swipe-nav \{\s*display:\s*none !important;/);
   });
 });

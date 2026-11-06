@@ -1005,7 +1005,9 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
 
   // Only when there is an autoplay to stop (not under reduced motion).
   const canAutoplay = maxOffset > 0 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const toggle = canAutoplay && <PlayPauseButton className="process-swipe-arrow" paused={paused} onToggle={() => setPaused(p => !p)} />;
+  const toggle = (where: string) => canAutoplay && (
+    <PlayPauseButton className={`process-swipe-arrow process-swipe-toggle--${where}`} paused={paused} onToggle={() => setPaused(p => !p)} />
+  );
 
   if (mobileOnly && !isMobile) return <div className={className}>{cards}</div>;
 
@@ -1069,10 +1071,11 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
           );
         })}
       </div>
-      {/* tabs mode has no ‹ › row: the button gets one of its own */}
-      {showTabs && toggle && <div className="process-tabs-controls">{toggle}</div>}
       {!showTabs && maxOffset > 0 && (
         <>
+          {/* phones (apple.com's phone carousels): the dots in a pill with
+              the play/pause button beside it, centred; wider screens keep
+              the button in the ‹ › row (CSS shows one or the other) */}
           <div className="process-swipe-controls">
             <div className="process-swipe-dots">
               {Array.from({ length: dotCount }).map((_, i) => (
@@ -1081,13 +1084,14 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
                 </span>
               ))}
             </div>
+            {toggle('phone')}
           </div>
           {/* Apple-style ‹ › pair (apple.com product carousels): round
               buttons, the one facing an end greyed out. Autoplay still
               loops back to the start on its own. */}
           <div className="process-swipe-nav">
             {/* play/pause leads the ‹ › row, same round button */}
-            {toggle}
+            {toggle('nav')}
             <button
               type="button"
               className="process-swipe-arrow"
