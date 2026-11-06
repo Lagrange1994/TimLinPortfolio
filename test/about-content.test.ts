@@ -25,15 +25,29 @@ describe('About content', () => {
     }
   });
 
-  it('short copy is short, in both languages', () => {
+  it('card copy stays shorter than the full paragraphs, in both languages', () => {
+    const strip = (h: string) => h.replace(/<[^>]+>/g, '');
     for (const lang of ['zh', 'en'] as const) {
       const t = translations[lang];
-      for (const k of ['about_intro1_short', 'about_intro2_short', 'about_ai_short'] as const) {
-        const text = t[k].replace(/<[^>]+>/g, '');
-        expect(text.length).toBeLessThan(lang === 'zh' ? 70 : 180);
-        expect(text.length).toBeLessThan(t[k === 'about_ai_short' ? 'about_p3' : k === 'about_intro1_short' ? 'about_p1' : 'about_p2'].length / 2);
-      }
+      expect(strip(t.about_intro1_short).length).toBeLessThan(strip(t.about_p1).length);
+      expect(strip(t.about_intro2_short).length).toBeLessThan(strip(t.about_p2).length);
+      expect(strip(t.about_ai_short).length).toBeLessThan(strip(t.about_p3).length / 2);
       expect(t.about_ai_more).toBeTruthy();
+    }
+  });
+
+  it('the intro cards name the key skills and software', () => {
+    for (const lang of ['zh', 'en'] as const) {
+      const t = translations[lang];
+      for (const tool of ['Figma', 'Adobe XD', 'HTML / CSS', 'React / Vue']) expect(t.about_intro1_short).toContain(tool);
+      for (const tool of ['Blender', 'Spline', 'Dora', 'WebGL', 'Photoshop', 'Illustrator', 'Lightroom']) expect(t.about_intro2_short).toContain(tool);
+      // names stand out in bold, not in colour
+      for (const key of ['about_intro1_short', 'about_intro2_short'] as const) {
+        expect(t[key]).not.toMatch(/text-(primary|secondary)/);
+        expect(t[key]).toContain(key === 'about_intro1_short' ? '<strong>Figma</strong>' : '<strong>Blender</strong>');
+      }
+      expect(t.about_ai_short).not.toMatch(/text-purple/);
+      expect(t.about_ai_short).toContain('<strong>Claude</strong>');
     }
   });
 

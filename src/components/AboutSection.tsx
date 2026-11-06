@@ -17,7 +17,7 @@ const DOMAIN_COVERS = [
 // The portfolio projects behind each intro card's claims, in the order of
 // the card's tag labels (about_tags_systems / about_tags_visuals).
 const SYSTEMS_LINKS = ['project_01.html', 'project_09.html', 'project_11.html'];
-const VISUAL_LINKS = ['project_13.html', 'project_08.html'];
+const VISUAL_LINKS = ['project_13.html'];
 
 // A row of tags, each opening the project that proves the card's point.
 function ProofTags({ labels, links }: { labels: string; links: string[] }) {
