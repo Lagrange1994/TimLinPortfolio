@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useLang } from '../context/LangContext';
 import CardSwap, { Card } from './CardSwap';
 import AiFlowStepper from './AiFlowStepper';
+import { scrollToSectionAligned } from '../utils/navHeader';
 
 // One representative project cover per Service Domains chip (Law
 // Enforcement/Healthcare/Environmental Monitoring/Entertainment), reused
@@ -12,6 +13,22 @@ const DOMAIN_COVERS = [
   { label: 'Environmental Monitoring', img: './img/my_portfolio/enviroment.webp' },
   { label: 'Entertainment', img: './img/my_portfolio/stream.webp' },
 ];
+
+// The portfolio projects behind each intro card's claims, in the order of
+// the card's tag labels (about_tags_systems / about_tags_visuals).
+const SYSTEMS_LINKS = ['project_01.html', 'project_09.html', 'project_11.html'];
+const VISUAL_LINKS = ['project_13.html', 'project_08.html'];
+
+// A row of tags, each opening the project that proves the card's point.
+function ProofTags({ labels, links }: { labels: string; links: string[] }) {
+  return (
+    <div className="about-proof">
+      {labels.split('|').map((label, i) => (
+        <a key={links[i]} className="about-proof-tag" href={links[i]}>{label}</a>
+      ))}
+    </div>
+  );
+}
 
 export default function AboutSection() {
   const { t, lang } = useLang();
@@ -317,7 +334,8 @@ export default function AboutSection() {
           <div className="bento-card bento-violet card-spotlight sc-card bento-area-intro1 rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro1_label}</div>
-            <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p1 }} />
+            <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_intro1_short }} />
+            <ProofTags labels={t.about_tags_systems} links={SYSTEMS_LINKS} />
             <div className="about-float" aria-hidden="true">
               <div className="about-float-box about-float-box--center">
                 <img src="./img/others/Figma_logo.png" alt="" />
@@ -335,7 +353,8 @@ export default function AboutSection() {
           <div className="bento-card bento-cyan card-spotlight sc-card bento-area-intro2 rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro2_label}</div>
-            <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p2 }} />
+            <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_intro2_short }} />
+            <ProofTags labels={t.about_tags_visuals} links={VISUAL_LINKS} />
             <div className="about-orbit" aria-hidden="true">
               <div className="about-orbit-ring">
                 <div className="about-orbit-node" style={{ ['--angle' as string]: '-90deg' }}>
@@ -386,7 +405,7 @@ export default function AboutSection() {
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_stat_projects_label}</div>
             <div className="bento-num-center">
-              <div className="stat-num-wrap" data-value="10">
+              <div className="stat-num-wrap" data-value="13">
                 <div className="digit-col">
                   <div className="digit-col-inner">
                     {[0,1,2,3,4,5,6,7,8,9].map(n => <span key={n}>{n}</span>)}
@@ -457,7 +476,7 @@ export default function AboutSection() {
           <div className="bento-card bento-spectrum card-spotlight sc-card bento-card--wide bento-area-workflow rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_ai_label}</div>
-            <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_p3 }} />
+            <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_ai_short }} />
             <AiFlowStepper
               steps={['Make', 'Claude', 'Sheets', 'LINE / Email']}
               icons={[
@@ -467,6 +486,11 @@ export default function AboutSection() {
                 ['https://cdn.simpleicons.org/line/ffffff', 'https://cdn.simpleicons.org/gmail/ffffff'],
               ]}
             />
+            {/* the full workflow lives in How I Use AI (#my-skills); same
+                capsule as the intro cards' project tags, under the diagram */}
+            <button type="button" className="about-proof-tag about-more" onClick={() => scrollToSectionAligned('my-skills')}>
+              {t.about_ai_more} <span aria-hidden="true">→</span>
+            </button>
           </div>
           <span className="bento-shadow bento-area-workflow" aria-hidden="true" />
 
