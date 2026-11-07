@@ -9,7 +9,7 @@ import { fitCodeCard, jumpToCoding } from '../utils/mcpCodeFocus';
 // is skeleton/placeholder shapes
 // on purpose (see FigmaMcpShowcase's earlier history): no real text, numbers
 // or fake screenshots, just structural bars. Text/icons drawn on top of a
-// colored button or gradient tile (Share, the "SC" avatar, selection
+// colored button or gradient tile (Share, the "TL" avatar, selection
 // badges, the hub label) stay literal white on purpose: their background is
 // always the accent color, never the neutral surface, so they never need to
 // flip between themes.
@@ -91,7 +91,7 @@ const FIGMA_CARD_HTML = `
     </div>
     <div style="display: flex; align-items: center; gap: 10px;">
       <span style="padding: 5px 12px; border-radius: 6px; background: var(--primary); color: #fff; font-size: 10.5px; font-weight: 600;">Share</span>
-      <span style="width: 22px; height: 22px; flex: none; border-radius: 999px; background: linear-gradient(135deg, var(--secondary), #38bdf8); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 700;">SC</span>
+      <span style="width: 22px; height: 22px; flex: none; border-radius: 999px; background: linear-gradient(135deg, var(--secondary), #38bdf8); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 9px; font-weight: 700;">TL</span>
     </div>
   </div>
 
