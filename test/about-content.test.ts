@@ -187,6 +187,9 @@ describe('About content', () => {
     expect(css).toMatch(/\.bento-area-workflow \.afs-step \{\s*gap: 6px;\s*box-sizing: border-box;\s*height: 28px;\s*padding: 0 12px;/);
     expect(css).toMatch(/\.bento-area-workflow \.afs-label-sep \{\s*font-size: 12\.5px;\s*line-height: 1\.3;/);
     expect(css).not.toContain('.ai-flow-stepper::after');
+    // a minimum gap under the copy, even when the card is only as tall as
+    // its content
+    expect(css).toMatch(/\.bento-area-workflow \.ai-flow-stepper \{[^}]*padding-top: 20px;/);
     // kept out of the "lift every child above the spotlight" rule
     expect(css).toContain(':not(.about-float):not(.stat-glass-icon):not(.notch-outline) {');
     // Projects keeps its own (green) colour
@@ -213,7 +216,7 @@ describe('About content', () => {
   it('the AI card hands off to How I Use AI (#my-skills)', () => {
     expect(tsx).toContain(`scrollToSectionAligned('my-skills')`);
     const skills = readFileSync(resolve(root, 'src/components/SkillsSection.tsx'), 'utf8');
-    expect(skills).toMatch(/<section id="my-skills"[^>]*>\s*<div className="section-label rise-soft">How I Use AI<\/div>/);
+    expect(skills).toMatch(/<section id="my-skills"[^>]*>\s*<div ref=\{aiLabelRef\} className="section-label rise-soft">How I Use AI<\/div>/);
   });
 
   it('each Service Domains cover carries its industry label, in both languages', () => {

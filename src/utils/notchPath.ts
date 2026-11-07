@@ -59,6 +59,33 @@ function cornerPath(corners: Corner[]): string {
   return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join(' ') + ' Z';
 }
 
+// A top-left notch in two steps, like My Portfolio's wall headline: the
+// first (n1w × n1h) holds the label and title, the second, narrower one
+// (n2w × n2h) under it holds the subtitle. Card corners are `r` in `shape`;
+// the notch's own turns are round, `ri`. A second step as wide as the first
+// (or wider) folds into one notch.
+export function stairNotchPath(
+  w: number,
+  h: number,
+  { n1w, n1h, n2w, n2h, r, ri, shape = 'squircle' }: {
+    n1w: number; n1h: number; n2w: number; n2h: number; r: number; ri: number; shape?: CornerShape;
+  },
+): string {
+  const k = (x: number, y: number, rr: number, s: CornerShape = shape): Corner => ({ x, y, r: rr, shape: s });
+  const x1 = Math.max(0, Math.min(n1w, w));
+  const x2 = Math.max(0, Math.min(n2w, w));
+  const y1 = Math.max(0, Math.min(n1h, h));
+  const y2 = Math.max(y1, Math.min(n1h + n2h, h));
+  if (x2 >= x1 - 0.5) {
+    const x = Math.max(x1, x2);
+    return cornerPath([k(x, 0, r), k(w, 0, r), k(w, h, r), k(0, h, r), k(0, y2, r), k(x, y2, ri, 'round')]);
+  }
+  return cornerPath([
+    k(x1, 0, r), k(w, 0, r), k(w, h, r), k(0, h, r), k(0, y2, r),
+    k(x2, y2, ri, 'round'), k(x2, y1, ri, 'round'), k(x1, y1, ri, 'round'),
+  ]);
+}
+
 // w/h: the card's border box. nw/nh: the notch's width/height. r: the
 // card's own corner radius, in its corner `shape`. nr: the notch's two
 // outer ends (same shape). nf: its inner corner — always a circular arc,

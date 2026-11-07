@@ -3277,6 +3277,10 @@
       margin-left: calc(var(--nw) - 12px);
       max-width: calc(100% + 12px - var(--nw));
       margin-bottom: calc(-1 * (var(--th) + 24px) + (var(--th) - 28px));
+      /* minimum gap under the copy when the card is only as tall as its
+         content (the auto top margin is 0 then); the bottom stays put, so
+         the chips keep their alignment with the button */
+      padding-top: 20px;
     }
 
     /* step chips the size of the cards' project tags (.about-proof-tag:
@@ -12179,6 +12183,40 @@
       backdrop-filter: blur(1rem);
       box-shadow: var(--card-shadow-md), var(--card-edge);
       transition: border-color .4s;
+    }
+
+    /* Desktop: My Portfolio's top-left notch, with the section's label,
+       title and subtitle sitting in it (utils/aiStageNotch.ts sets
+       data-ai-notch and the vars on the section). The card moves up level
+       with the label, its columns move up as far as the notch lets each
+       (--ai-rail-top / --ai-stage-top), and one outline path clips it and
+       is stroked as its border (the CSS border is hidden; border-color
+       stays readable for the stroke). */
+    [data-ai-notch] .ai-viewer {
+      margin-top: var(--ai-viewer-mt, 72px);
+      padding-top: 0;
+      align-items: start;
+      /* hidden, not a plain rectangle, until the path is measured */
+      clip-path: var(--ai-notch-clip, inset(0 0 100% 0));
+      border-image: linear-gradient(transparent, transparent) 1;
+      /* the clip cuts the card's own shadow (the shell casts it in light
+         mode) */
+      box-shadow: none;
+    }
+
+    /* Until the notch is measured the card stays hidden, so it never shows
+       as a plain rectangle first. */
+    @media (min-width: 961px) {
+      .ai-viewer { clip-path: var(--ai-notch-clip, inset(0 0 100% 0)); }
+    }
+
+    [data-ai-notch] .ai-viewer-rail { margin-top: var(--ai-rail-top, 40px); }
+    [data-ai-notch] .ai-stage { margin-top: var(--ai-stage-top, 40px); }
+
+    .ai-viewer-outline { z-index: 2; }
+
+    :root[data-theme="light"] [data-ai-notch] .ai-viewer-shell {
+      filter: drop-shadow(8px 8px 9px var(--neu-shadow-dark)) drop-shadow(-8px -8px 9px var(--neu-shadow-light));
     }
 
     /* Per-step accent, shared by the pill (node, open tint) and the card glow:

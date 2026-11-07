@@ -11,6 +11,7 @@ import FigmaMcpShowcase from './FigmaMcpShowcase';
 import PlayPauseButton from './PlayPauseButton';
 import AiAppStage from './AiAppStage';
 import { attachAiViewerEntrance } from '../utils/aiViewerEntrance';
+import { attachStageNotch } from '../utils/aiStageNotch';
 import LazyUnit from './LazyUnit';
 import { processCardLayers, useProcessCardThemes, type ProcessTheme } from '../utils/processCardImages';
 
@@ -1370,6 +1371,13 @@ export function AiIntakeSection() {
     return () => mq.removeEventListener?.('change', onChange);
   }, []);
   const viewerRef = useRef<HTMLDivElement>(null);
+  // the section's label / title / subtitle, which sit in the viewer's
+  // top-left notch, and the outline drawn along it (utils/aiStageNotch.ts)
+  const aiLabelRef = useRef<HTMLDivElement>(null);
+  const aiTitleRef = useRef<HTMLHeadingElement>(null);
+  const aiSubRef = useRef<HTMLParagraphElement>(null);
+  const aiOutlineRef = useRef<SVGSVGElement>(null);
+  const aiOutlinePathRef = useRef<SVGPathElement>(null);
   const pillRefs = useRef<Map<string, HTMLLIElement>>(new Map());
 
   // Toggle the bento "has-expanded" class imperatively (not via React's className prop) —
@@ -2094,6 +2102,14 @@ export function AiIntakeSection() {
     return attachAiViewerEntrance(viewerRef.current);
   }, [isViewer]);
 
+  // My Portfolio's top-left notch, cut round the section's headline.
+  useLayoutEffect(() => {
+    const v = viewerRef.current, l = aiLabelRef.current, t = aiTitleRef.current, s = aiSubRef.current;
+    const svg = aiOutlineRef.current, p = aiOutlinePathRef.current;
+    if (!isViewer || !v || !l || !t || !s || !svg || !p) return;
+    return attachStageNotch(v, l, t, s, svg, p);
+  }, [isViewer]);
+
   // Open step 01 the first time the viewer scrolls into view, so its demo
   // plays where it can be seen (it replays after a lazy-unit remount too).
   useEffect(() => {
@@ -2253,11 +2269,16 @@ export function AiIntakeSection() {
   const aiViewer = (
     // One card holds both the pill rail and the demo (Apple's viewer keeps
     // its controls inside the product stage); its glow follows the open step.
+    // The shell casts the card's shadow, which the notch clip would cut.
+    <div className="ai-viewer-shell">
     <div
       className={`ai-viewer rise-card${isCompact ? ' is-compact' : ''}`}
       ref={viewerRef}
       data-accent={aiCards[Math.max(viewerIndex, 0)].variant}
     >
+      <svg ref={aiOutlineRef} className="notch-outline ai-viewer-outline" aria-hidden="true">
+        <path ref={aiOutlinePathRef} fill="none" />
+      </svg>
       {isCompact && viewerIndex >= 0 && aiCards[viewerIndex].badge && (
         <span className="ai-focal-badge ai-stage-badge">{aiCards[viewerIndex].badge}</span>
       )}
@@ -2370,15 +2391,17 @@ export function AiIntakeSection() {
         <AiAppStage steps={aiCards} active={expandedAiCard} />
       </div>
     </div>
+    </div>
   );
 
   return (
       <section id="my-skills" className="section section-band">
-        <div className="section-label rise-soft">How I Use AI</div>
-        <h2 className="about-h2 rise-soft" style={{ letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
+        <div ref={aiLabelRef} className="section-label rise-soft">How I Use AI</div>
+        <h2 ref={aiTitleRef} className="about-h2 rise-soft" style={{ letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
           AI-Assisted Design <span className="gradient-text">Intake System</span>
         </h2>
         <p
+          ref={aiSubRef}
           className="ai-sub rise-soft"
           style={{ fontSize: '14px', marginBottom: '-32px', maxWidth: 392 }}
           dangerouslySetInnerHTML={{ __html: t.ai_sub }}
