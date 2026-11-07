@@ -524,16 +524,11 @@
       color: var(--primary);
     }
 
-    /* .bento-label, .tech-name and .ai-card h3 are deliberately excluded from
-       the shared light-mode headline rule above: each of their cards already
-       carries its own accent hue on its glyph/icon/border (About's bento-
-       violet/cyan/human/purple/spectrum, Skills' tech-item icon colors, and
-       the ai-card variants) to tell same-section cards apart. Forcing every
-       title to the same --primary purple on top of that fought the per-card
-       accent instead of reading as its own category — a card whose accent
-       already IS purple doubled down on it, while a cyan/green card's title
-       fought its own icon. Titles stay neutral in both themes; the
-       glyph/icon/border accent does the differentiating. */
+    /* .bento-label, .tech-name and .ai-card h3 are excluded from the shared
+       light-mode headline rule above: forcing every title to the same
+       --primary fought each card's own accent. About's bento titles are big
+       fading display type instead (see the --tone block); this neutral rule
+       is the fallback for the rest. */
     :root[data-theme="light"] .bento-label,
     :root[data-theme="light"] .tech-name,
     :root[data-theme="light"] .ai-card h3 {
@@ -2850,7 +2845,93 @@
     .bento-area-p3 { grid-area: p3; }
     .bento-area-cta { grid-area: cta; }
 
-    .bento-principle .about-proof { max-width: 100%; }
+    /* Notched cards (NotchCard in AboutSection): the project tags sit in a
+       gap cut out of the card's bottom-left corner. The wrapper takes the
+       grid area; card, hover shadow and tags stack in its one cell. --tw/
+       --th are the tags' measured size; the notch adds --ng around them.
+       The shape is one outline path (NotchCard / utils/notchPath.ts, the
+       same approach as My Portfolio's wall): it clips the card and is
+       stroked as its border, so the border runs unbroken round the notch. */
+    .about-notch {
+      --ng: 10px;
+      --nr: 18px;
+      --nw: calc(var(--tw, 0px) + var(--ng));
+      --nh: calc(var(--th, 0px) + var(--ng));
+      /* the notch's inner corner: concentric with the round end of what
+         sits in it (its radius, plus the gap) */
+      --nf: calc(var(--pr, 14px) + var(--ng));
+      display: grid;
+      min-width: 0;
+    }
+
+    .about-notch > * { grid-area: 1 / 1; }
+
+    .about-notch > .about-notch-tags {
+      align-self: end;
+      justify-self: start;
+      width: max-content;
+      /* leave the card's right band at least ~40px past the notch */
+      max-width: calc(100% - var(--ng) - var(--nr) - 24px);
+      margin-top: 0;
+      z-index: 3;
+    }
+
+    .bento-card.has-notch {
+      padding-bottom: calc(var(--nh) + 14px);
+    }
+
+    /* Right-hand notch (NotchCard side="right", Contact's LINE banner and
+       open-for-work strip): the outline is mirrored in notchPath(). Each
+       card sets its own padding to keep clear of the notch. */
+    .about-notch.notch-right > .about-notch-tags { justify-self: end; }
+
+    /* The card is cut to the outline path; its own CSS border is hidden
+       (border-image paints over it, while border-color stays readable for
+       the stroke) and the outline SVG draws it along the path instead. */
+    .about-notch > .has-notch {
+      clip-path: var(--notch-clip, none);
+      border-image: linear-gradient(transparent, transparent) 1;
+      /* the clip-path already contains everything; .sc-card's
+         overflow:hidden would clip the outline stroke (it sits on the
+         border, outside the padding box) and eat parts of the border */
+      overflow: visible;
+    }
+
+    .notch-outline {
+      position: absolute;
+      z-index: 4;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    /* The cursor ring on notched cards is the outline's second path
+       (NotchCard), not .sc-card::after's two-layer content-box mask,
+       which only follows a rounded rect. */
+    .about-notch > .has-notch::after { display: none; }
+
+    .notch-ring {
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+
+    .has-notch:hover .notch-ring { opacity: 1; }
+
+    :root[data-theme="light"] .notch-ring { display: none; }
+
+    /* Hover shadow on notched cards: a drop-shadow on the wrapper, so it
+       follows the outline (card + what sits in the notch) instead of the
+       rectangular .bento-shadow / .card-shadow-wrap::after, which left a
+       dark layer under the notch. Centred (no y offset), so it doesn't pool
+       in the notch either. Light mode keeps its own neumorphic filter. */
+    .about-notch > .bento-shadow,
+    .card-shadow-wrap:has(> .about-notch)::after { display: none; }
+
+    .about-notch { transition: filter 0.3s ease; }
+
+    :root:not([data-theme="light"]) .about-notch:not(.contact-line-notch):has(> .has-notch:hover) {
+      filter: drop-shadow(0 0 28px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 22px rgba(var(--ai-focal-rgb), 0.3));
+    }
+
 
     .bento-principle-num {
       font-family: var(--font-heading);
@@ -2866,9 +2947,11 @@
       gap: 10px;
       font-family: var(--font-heading);
       font-size: 20px;
-      font-weight: 500;
+      font-weight: 700;
       line-height: 1.1;
-      color: var(--text);
+      /* same as the other card titles (.bento-label at opacity .5), as a
+         colour so the green dot keeps its full strength */
+      color: color-mix(in oklab, var(--text) 50%, transparent);
     }
 
     .about-status-dot {
@@ -2975,7 +3058,8 @@
       z-index: 1;
       padding: 3px 9px;
       border-radius: 9999px;
-      background: rgba(10, 9, 18, 0.62);
+      /* each cover's own key colour (DOMAIN_COVERS tone), not plain dark */
+      background: color-mix(in oklab, var(--label-bg, rgb(10, 9, 18)) 90%, transparent);
       -webkit-backdrop-filter: blur(6px);
       backdrop-filter: blur(6px);
       color: #fff;
@@ -3108,6 +3192,210 @@
       font-weight: 700;
       font-family: var(--font-heading);
       line-height: clamp(2.75rem, 6vw, 4.5rem);
+    }
+
+    /* Years / Projects / Service Domains: a saturated gradient tile with
+       one huge number in a multicolour gradient (below). Label at the
+       bottom. Same in both themes (the light-mode
+       card block is outranked on purpose). The digit size stays a fixed
+       clamp (not cqh): the wheel measures one cell when it starts. */
+    .bento-card.bento-stat-big,
+    :root[data-theme="light"] .bento-card.bento-stat-big,
+    :root[data-theme="light"] .bento-card.bento-stat-big:hover {
+      --big: clamp(4.5rem, 6.4vw, 6.25rem);
+      background:
+        var(--noise-grain) 0 0 / 180px 180px repeat,
+        radial-gradient(90% 70% at 25% 105%, var(--tone-glow), transparent 70%),
+        linear-gradient(160deg, var(--tone-deep) 0%, var(--tone-vivid) 55%, var(--tone-bright) 100%) !important;
+      border-color: rgba(255, 255, 255, .22) !important;
+    }
+
+    .bento-stat-big .bento-label {
+      order: 2;
+      color: rgba(255, 255, 255, .92);
+    }
+
+    .bento-stat-big .bento-num-center { align-items: flex-start; }
+
+    /* Service Domains as a gradient tile too: the industry caption goes
+       white with the label, and the dark scrim (made for text over the
+       cover photos on the dark card) steps aside. */
+    .bento-stat-big .bento-caption {
+      order: 1;
+      color: rgba(255, 255, 255, .85);
+    }
+
+    .bento-stat-big > .domains-scrim { display: none; }
+
+    /* Years / Projects: a big frosted-glass icon tile in the bottom-right
+       corner (the intro cards' .about-float-box glass, scaled up), pushed
+       past the card's right and bottom edges so the card crops it, tilted
+       and gently floating, behind the text. */
+    .stat-glass-icon {
+      position: absolute;
+      right: -24px;
+      bottom: -24px;
+      z-index: 1;
+      width: 120px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 32px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08));
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 10px 24px rgba(10, 9, 18, 0.18);
+      transform: rotate(-10deg);
+      animation: stat-glass-float 6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Systems Design's floating badges and Visuals' orbit: the whole art
+       group scaled up from its bottom-right anchor so it fills more of the
+       card (overlapping the copy a little is fine — it sits behind it).
+       `scale` (not transform) so it stacks on the groups' own animations. */
+    .about-float,
+    .about-orbit {
+      scale: 1.8;
+      transform-origin: 100% 100%;
+    }
+
+    /* About's AI workflow card: the step chips start just right of the
+       notch button, left-aligned, their top edge level with the button's
+       top. Chips are a fixed 28px tall (the project tags' height), so the
+       stepper's last row bottom goes at (--th - 28px) above the card's
+       bottom: the margin cancels the card's notch padding
+       (--nh + 14px = --th + 24px) and adds that back. Wrapped rows grow
+       upward. margin-left / max-width keep it in the band right of the
+       notch (card padding is 24px; 12px gap after the notch). Phones: too
+       narrow beside the notch, so the chips stay above it. */
+    .bento-area-workflow .ai-flow-stepper {
+      align-self: flex-start;
+      justify-content: flex-start;
+      margin-left: calc(var(--nw) - 12px);
+      max-width: calc(100% + 12px - var(--nw));
+      margin-bottom: calc(-1 * (var(--th) + 24px) + (var(--th) - 28px));
+    }
+
+    /* step chips the size of the cards' project tags (.about-proof-tag:
+       5px 12px, 12.5px text) — a step up from the stepper's own small
+       inline size used elsewhere */
+    .bento-area-workflow .afs-step {
+      gap: 6px;
+      box-sizing: border-box;
+      height: 28px;
+      padding: 0 12px;
+    }
+
+    .bento-area-workflow .afs-label,
+    .bento-area-workflow .afs-label-sep {
+      font-size: 12.5px;
+      line-height: 1.3;
+    }
+
+    .bento-area-workflow .afs-icon {
+      width: 14px;
+      height: 14px;
+    }
+
+    .bento-area-workflow i.afs-icon { font-size: 13px; }
+
+    .bento-area-workflow .afs-connector {
+      width: 18px;
+      margin: 0 6px;
+    }
+
+    @media (max-width: 767px) {
+      .bento-area-workflow .ai-flow-stepper {
+        margin-left: 0;
+        max-width: none;
+        margin-bottom: 0;
+      }
+    }
+
+    /* the orbit sits a little lower, more of it cropped by the bottom edge */
+    .about-orbit { translate: 0 40px; }
+
+    @media (max-width: 767px) {
+      .about-float,
+      .about-orbit { scale: 1.5; }
+
+      .about-orbit { translate: 0 28px; }
+    }
+
+    .stat-glass-icon i {
+      font-size: 58px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    @keyframes stat-glass-float {
+      0%, 100% { transform: rotate(-10deg) translateY(0); }
+      50% { transform: rotate(-10deg) translateY(-6px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .stat-glass-icon { animation: none; }
+    }
+
+    @media (max-width: 767px) {
+      .stat-glass-icon {
+        right: -16px;
+        bottom: -16px;
+        width: 84px;
+        height: 84px;
+        border-radius: 22px;
+      }
+
+      .stat-glass-icon i { font-size: 40px; }
+    }
+
+    .bento-card.bento-stat-big .stat-num-wrap,
+    .bento-card.bento-stat-big .digit-col {
+      height: var(--big);
+    }
+
+    .bento-card.bento-stat-big .digit-col-inner span,
+    :root[data-theme="light"] .bento-card.bento-stat-big .digit-col-inner span {
+      height: var(--big);
+      line-height: var(--big);
+      font-size: var(--big);
+      font-weight: 800;
+      letter-spacing: -.04em;
+    }
+
+    /* The big number in the tile's own colour family, much lighter than
+       the tile (a near-white tint to a bright neighbouring hue), clipped to
+       the glyphs. A soft dark drop-shadow lifts it off the colour
+       (text-shadow would show through clipped text). */
+    .bento-card.bento-stat-big {
+      --big-ink: linear-gradient(135deg,
+        oklch(from rgb(var(--tone)) .97 .05 h) 0%,
+        oklch(from rgb(var(--tone)) .92 .11 calc(h + 15)) 55%,
+        oklch(from rgb(var(--tone)) .86 .16 calc(h + 30)) 100%);
+    }
+
+    .bento-card.bento-stat-big .digit-col-inner span,
+    :root[data-theme="light"] .bento-card.bento-stat-big .digit-col-inner span,
+    .bento-stat-big .stat-suffix.bento-accent,
+    :root[data-theme="light"] .bento-stat-big .stat-suffix.bento-accent {
+      background: var(--big-ink);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+
+    .bento-card.bento-stat-big .stat-num-wrap {
+      filter: drop-shadow(0 4px 10px rgba(10, 9, 18, .35));
+    }
+
+    .bento-stat-big .stat-suffix.bento-accent,
+    :root[data-theme="light"] .bento-stat-big .stat-suffix.bento-accent {
+      align-self: flex-start;
+      font-size: calc(var(--big) * .55);
+      line-height: 1;
     }
 
     .block-title {
@@ -3465,6 +3753,128 @@
       cursor: pointer;
       white-space: nowrap;
     }
+
+    /* Each card's own theme colour (the one its border and glow are tinted
+       with, see .bento-cyan etc.) as --tone, plus vivid / bright versions
+       for the big-number tiles and the notch buttons. The notch wrapper
+       reads its card's colour with :has(), since the button sits beside
+       the card, not inside it. */
+    .bento-card,
+    .about-notch { --tone: 108, 99, 255; }
+
+    .bento-card.bento-cyan, .about-notch:has(> .bento-cyan) { --tone: var(--ai-cyan-rgb); }
+    .bento-card.bento-purple, .about-notch:has(> .bento-purple) { --tone: var(--ai-purple-rgb); }
+    .bento-card.bento-violet, .about-notch:has(> .bento-violet) { --tone: var(--ai-violet-rgb); }
+    .bento-card.bento-human, .about-notch:has(> .bento-human) { --tone: var(--ai-human-rgb); }
+    .bento-card.bento-spectrum, .about-notch:has(> .bento-spectrum) { --tone: var(--ai-spectrum-rgb); }
+
+    .bento-card,
+    .about-notch {
+      --tone-deep: oklch(from rgb(var(--tone)) .52 .24 h);
+      --tone-vivid: oklch(from rgb(var(--tone)) .66 .25 h);
+      --tone-bright: oklch(from rgb(var(--tone)) .8 .2 calc(h + 25));
+      --tone-glow: oklch(from rgb(var(--tone)) .88 .16 calc(h + 25) / .9);
+    }
+
+    /* Card titles (not the big-number tiles): the usual size and place
+       (.bento-label), solid text colour, heavy, at half strength. */
+    .bento-card:not(.bento-stat-big) .bento-label,
+    :root[data-theme="light"] .bento-card:not(.bento-stat-big) .bento-label {
+      font-weight: 800;
+      opacity: .5;
+      color: var(--text);
+    }
+
+    /* The cards' action buttons (Get in touch, See the full workflow): a
+       bigger capsule in the card's own colour, vivid, sitting in the
+       card's bottom-left notch. */
+    .about-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 46px;
+      padding: 0 22px;
+      border: 0;
+      border-radius: 9999px;
+      background: linear-gradient(120deg, var(--tone-vivid), var(--tone-bright));
+      color: #fff;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: 0 8px 24px -8px var(--tone-vivid);
+      transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
+    }
+
+    .about-action > span { transition: transform .2s ease; }
+
+    /* Availability card: the same fill and border as Contact's "open for
+       work" strip (.cta-strip), and its gradient glass button
+       (.btn-glass.btn-grad) at the notch-button size. Light mode's shared
+       card block still swaps both cards to the neumorphic fill. */
+    .bento-card.about-cta-card {
+      background: linear-gradient(135deg, rgba(108, 99, 255, 0.12), rgba(255, 101, 132, 0.06));
+      border-color: rgba(108, 99, 255, 0.25);
+    }
+
+    .bento-card.about-cta-card:hover {
+      border-color: rgba(108, 99, 255, 0.4);
+    }
+
+    .btn-glass.btn-grad.about-cta-btn {
+      height: 46px;
+      padding: 0 22px;
+      border-radius: 9999px;
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Project tags in a notch sit on one larger capsule (the tray), filled
+       with the card's own colour at 20% opacity. */
+    .about-notch-tags:has(> .about-proof-tag) {
+      gap: 6px;
+      padding: 6px;
+      border-radius: 20px;
+      background: linear-gradient(120deg,
+        color-mix(in oklab, var(--tone-vivid) 20%, transparent),
+        color-mix(in oklab, var(--tone-bright) 20%, transparent));
+      /* the cards' liquid-glass edge: a tinted 1px border, the inset top
+         sheen, blur behind, and the fading top highlight line (::before,
+         same as .card-glass-highlight) */
+      position: relative;
+      border: 1px solid rgba(var(--tone), .34);
+      box-shadow: var(--card-edge);
+      backdrop-filter: blur(1rem);
+    }
+
+    .about-notch-tags:has(> .about-proof-tag)::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: 14%;
+      right: 14%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .4), transparent);
+      pointer-events: none;
+    }
+
+    /* Light mode: the tray is a raised white-card capsule like the cards
+       around it — plain --neu-bg (no tint) and the neumorphic double
+       shadow (the translucent fill alone barely cast one). */
+    :root[data-theme="light"] .about-notch-tags:has(> .about-proof-tag) {
+      background: var(--neu-bg);
+      box-shadow: var(--neu-raised-sm);
+    }
+
+    .about-action:hover {
+      filter: saturate(1.15) brightness(1.08);
+      box-shadow: 0 10px 30px -8px var(--tone-bright);
+    }
+
+    .about-action:hover > span { transform: translateX(3px); }
 
     .bento-accent {
       background: var(--grad);
@@ -6870,14 +7280,6 @@
       line-height: 1.5;
     }
 
-    .line-cta {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
     .line-btn {
       display: inline-flex;
       align-items: center;
@@ -6885,8 +7287,9 @@
       background: var(--line);
       color: #fff;
       border: none;
-      border-radius: 10px;
-      padding: 10px 18px;
+      /* a capsule, sitting in the banner's notch (NotchCard) */
+      border-radius: 9999px;
+      padding: 10px 20px;
       min-height: 44px;
       box-sizing: border-box;
       font-size: 13px;
@@ -6910,6 +7313,43 @@
 
     .line-id span {
       color: var(--line);
+    }
+
+    /* Notched Contact cards (NotchCard side="right"): the LINE button and
+       Send Email sit in a notch cut out of the bottom-right corner, so the
+       copy keeps clear of that column (phones: of that row). The mask
+       cuts the banner's own green glow, so the wrapper casts it instead. */
+    .contact-line-notch {
+      margin-bottom: 14px;
+      filter: drop-shadow(0 6px 16px rgba(6, 199, 85, 0.18)) drop-shadow(0 0 32px rgba(var(--shadow-far), 0.22));
+    }
+
+    .line-banner.has-notch {
+      grid-template-columns: 52px 1fr;
+      margin-bottom: 0;
+      padding-right: calc(var(--nw) + 16px);
+    }
+
+    .line-banner.has-notch .line-id { margin-top: 6px; }
+
+    /* the green rim (normally ::before, which can't follow the notch) is
+       drawn by the notch outline instead; off in light mode, like the rim */
+    .line-banner.has-notch {
+      --notch-stroke: var(--line);
+      --notch-stroke-w: 1.5px;
+    }
+
+    .line-banner.has-notch::before { display: none; }
+
+    :root[data-theme="light"] .line-banner.has-notch { --notch-stroke: transparent; }
+
+    .cta-strip.has-notch { padding-right: calc(var(--nw) + 12px); }
+
+    @media (max-width: 767px) {
+      .line-banner.has-notch {
+        grid-template-columns: 1fr;
+        padding: 16px 16px calc(var(--nh) + 12px);
+      }
     }
 
     .contact-card {
@@ -7423,7 +7863,7 @@
        this rule's higher specificity (3 :not() clauses vs. that rule's 1
        descendant class) overrides their own position/z-index and breaks
        the layering both rely on. */
-    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay):not(.domains-scrim):not(.domain-swap-stage):not(.about-orbit):not(.about-float) {
+    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay):not(.domains-scrim):not(.domain-swap-stage):not(.about-orbit):not(.about-float):not(.stat-glass-icon):not(.notch-outline) {
       position: relative;
       z-index: 2;
     }
@@ -8641,17 +9081,9 @@
         grid-template-columns: 1fr;
       }
 
-      /* Line banner — stack: icon+text row, CTA drops to its own full-width row */
+      /* Line banner — icon + text; the LINE button sits in its notch */
       .line-banner {
         grid-template-columns: 52px 1fr;
-      }
-
-      .line-cta {
-        grid-column: 1 / -1;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 14px;
       }
 
       /* Nav */
@@ -9331,14 +9763,6 @@
          doesn't crowd right up against the icon on narrow screens. */
       .line-title {
         white-space: pre-line;
-      }
-
-      .line-cta {
-        grid-column: 1 / -1;
-        flex-direction: row-reverse;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 12px;
       }
 
       .contact-headline,
@@ -11139,6 +11563,7 @@
       .bento-area-p2,
       .bento-area-p3,
       .bento-area-cta,
+      .about-notch > .bento-card,
       .contact-card,
       .line-banner,
       .mcp-card,
@@ -11414,6 +11839,18 @@
     :root[data-theme="light"] .contact-card:hover {
       border-color: transparent !important;
       box-shadow: var(--neu-raised-hover) !important;
+    }
+
+    /* Notched About cards: the mask would cut the card's own box-shadow
+       away, so the wrapper casts the same two shadows (drop-shadow follows
+       the notch, and the tags get the raised look too). */
+    :root[data-theme="light"] .about-notch > .has-notch,
+    :root[data-theme="light"] .about-notch > .has-notch:hover {
+      box-shadow: none !important;
+    }
+
+    :root[data-theme="light"] .about-notch {
+      filter: drop-shadow(8px 8px 9px var(--neu-shadow-dark)) drop-shadow(-8px -8px 9px var(--neu-shadow-light));
     }
 
     /* .process-card overrides the shared -raised/-raised-hover shadow above

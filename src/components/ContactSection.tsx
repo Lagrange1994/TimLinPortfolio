@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import SpecularOverlay from './SpecularOverlay';
+import NotchCard from './NotchCard';
 import {
   Accordion,
   AccordionItem,
@@ -93,7 +94,28 @@ export default function ContactSection() {
           </h2>
           <p className="contact-sub rise-soft">{t.contact_sub}</p>
 
-          <div className="line-banner rise-card sc-card">
+          {/* LINE: the add-friend button sits in a notch cut out of the
+              banner's bottom-right corner; the account ID moves up under
+              the copy. */}
+          <NotchCard
+            area="contact-line-notch"
+            side="right"
+            shadow={false}
+            className="line-banner rise-card sc-card"
+            notch={
+            <a
+              className="line-btn"
+              href="https://line.me/R/ti/p/@072fubpj"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0" />
+              </svg>
+              <span>{t.line_btn}</span>
+            </a>
+            }
+          >
             <div className="line-icon-box">
               <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
                 <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0" />
@@ -103,22 +125,9 @@ export default function ContactSection() {
               <div className="line-eyebrow">{t.line_eyebrow}</div>
               <div className="line-title">{t.line_title}</div>
               <div className="line-desc">{t.line_desc}</div>
-            </div>
-            <div className="line-cta">
-              <a
-                className="line-btn"
-                href="https://line.me/R/ti/p/@072fubpj"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
-                  <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0" />
-                </svg>
-                <span>{t.line_btn}</span>
-              </a>
               <div className="line-id">官方帳號 <span>@072fubpj</span></div>
             </div>
-          </div>
+          </NotchCard>
 
           <div className="contact-faq-layout">
             <div className="contact-left-panel">
@@ -171,7 +180,24 @@ export default function ContactSection() {
               </div>
 
               <div className="card-shadow-wrap">
-              <div className="cta-strip sc-card rise-card">
+              {/* Send Email sits in a notch cut out of the strip's
+                  bottom-right corner */}
+              <NotchCard
+                area="contact-cta-notch"
+                side="right"
+                shadow={false}
+                className="cta-strip sc-card rise-card"
+                notch={
+                  <button
+                    ref={sendEmailRef}
+                    className="btn-glass btn-grad"
+                    style={{ padding: '9px 20px', borderRadius: '9999px', fontSize: '12px', whiteSpace: 'nowrap', flexShrink: 0 }}
+                    onClick={() => { window.location.href = 'mailto:lyfun0202@gmail.com'; }}
+                  >
+                    Send Email ↗
+                  </button>
+                }
+              >
                 <div className="cta-txt">
                   <strong>{t.open_for_work}</strong><br />
                   <span className="cta-txt-sub">{t.open_for_work_sub}</span>
@@ -180,21 +206,13 @@ export default function ContactSection() {
                     <span>24h Avg. Response</span>
                   </div>
                 </div>
-                <button
-                  ref={sendEmailRef}
-                  className="btn-glass btn-grad"
-                  style={{ padding: '9px 20px', borderRadius: '9999px', fontSize: '12px', whiteSpace: 'nowrap', flexShrink: 0 }}
-                  onClick={() => { window.location.href = 'mailto:lyfun0202@gmail.com'; }}
-                >
-                  Send Email ↗
-                </button>
                 <SpecularOverlay
                   targetRef={sendEmailRef}
                   lineColor="#FF6584"
                   baseColor="#6C63FF"
                   proximity={220}
                 />
-              </div>
+              </NotchCard>
               </div>
             </div>
 

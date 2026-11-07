@@ -10,6 +10,7 @@ import { PROJECTS } from '../src/data/projects';
 const root = resolve(__dirname, '..');
 const tsx = readFileSync(resolve(root, 'src/components/AboutSection.tsx'), 'utf8');
 const css = readFileSync(resolve(root, 'src/styles/portfolio.css'), 'utf8');
+const notchTsx = readFileSync(resolve(root, 'src/components/NotchCard.tsx'), 'utf8');
 const links = (name: string) => JSON.parse(tsx.match(new RegExp(`const ${name} = (\\[[^\\]]*\\]);`))![1].replace(/'/g, '"')) as string[];
 
 describe('About content', () => {
@@ -101,11 +102,100 @@ describe('About content', () => {
       for (const page of pages) expect(PROJECTS.some(p => p.link === page), page).toBe(true);
     }
     expect(tsx).toContain(`scrollToSectionAligned('contact')`);
+    // each principle card is labelled, not just numbered
+    expect(tsx).toContain(`<span className="bento-principle-num">Design Principle {String(n).padStart(2, '0')}</span>`);
     for (const lang of ['zh', 'en'] as const) {
       for (const k of ['about_cta_status', 'about_cta_text', 'about_cta_button'] as const) expect(translations[lang][k]).toBeTruthy();
     }
     expect(css).toMatch(/\.about-col--principles \{[^}]*grid-template-areas: "p1 p2 p3";/);
     expect(css).toMatch(/\.about-col--profile \{[^}]*grid-template-areas: "photo" "cta";[^}]*grid-template-rows: auto auto;[^}]*align-content: start;/);
+  });
+
+  it('notched cards: tags and action buttons sit in a bottom-left notch', () => {
+    // principles (one map), intro1, intro2, workflow, cta
+    expect((tsx.match(/<NotchCard\b/g) ?? []).length).toBe(5);
+    for (const area of ['bento-area-p${n}', 'bento-area-intro1', 'bento-area-intro2', 'bento-area-workflow', 'bento-area-cta']) {
+      expect(tsx).toMatch(new RegExp(`<NotchCard\\s+(key=\\{n\\}\\s+)?area=[{"\`]+${area.replace(/[${}]/g, '\\$&')}`));
+    }
+    // the notch is measured from the tags; jsdom has no ResizeObserver
+    expect(notchTsx).toContain(`typeof ResizeObserver === 'undefined'`);
+    expect(tsx).toContain("import NotchCard from './NotchCard';");
+    // one outline path (like My Portfolio's wall) clips the card and is
+    // stroked as its border, so the border runs round the notch; no mask
+    expect(css).toMatch(/\.about-notch > \.has-notch \{\s*clip-path: var\(--notch-clip, none\);\s*border-image: linear-gradient\(transparent, transparent\) 1;/);
+    expect(notchTsx).toContain("w.style.setProperty('--notch-clip', `path('${d}')`);");
+    expect(notchTsx).toContain('<svg ref={svg} className="notch-outline" aria-hidden="true">');
+    expect(notchTsx).toContain('<path ref={outline} fill="none" />');
+    expect(css.slice(css.indexOf('Notched cards (NotchCard'), css.indexOf('.notch-outline {'))).not.toMatch(/mask-image|mask-position/);
+    // the clip cuts the card's own box-shadow, so light mode shadows the wrapper
+    expect(css).toMatch(/:root\[data-theme="light"\] \.about-notch \{\s*filter: drop-shadow/);
+    // both action buttons: the bigger capsule in the card's own colour
+    expect((tsx.match(/className="about-more about-action"/g) ?? []).length).toBe(1);
+    // the availability title reads "Open for opportunities", in bold
+    for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_cta_status).toBe('Open for opportunities');
+    expect(translations.zh.about_cta_text).toContain('接受全職 / 兼職 / 專案合作');
+    expect(css).toMatch(/\.about-status \{[^}]*font-weight: 700;[^}]*color: color-mix\(in oklab, var\(--text\) 50%, transparent\);/);
+    // the availability card copies Contact's "open for work" strip: its
+    // fill/border and its gradient glass button
+    expect(tsx).toContain('className="bento-card card-spotlight sc-card about-cta-card rise-card"');
+    expect(tsx).toContain(`className="about-more btn-glass btn-grad about-cta-btn" onClick={() => scrollToSectionAligned('contact')}`);
+    expect(css).toMatch(/\.bento-card\.about-cta-card \{\s*background: linear-gradient\(135deg, rgba\(108, 99, 255, 0\.12\), rgba\(255, 101, 132, 0\.06\)\);\s*border-color: rgba\(108, 99, 255, 0\.25\);/);
+    expect(css).toMatch(/\.about-action \{[^}]*height: 46px;[^}]*background: linear-gradient\(120deg, var\(--tone-vivid\), var\(--tone-bright\)\);/);
+    // the notch's inner corner is concentric with the capsule's round end
+    expect(css).toMatch(/--nf: calc\(var\(--pr, 14px\) \+ var\(--ng\)\);/);
+    expect(notchTsx).toContain(`setProperty('--pr'`);
+    // project tags sit on one tray capsule: the card's colour at 20%
+    expect(css).toMatch(/\.about-notch-tags:has\(> \.about-proof-tag\) \{[^}]*border-radius: 20px;[^}]*color-mix\(in oklab, var\(--tone-vivid\) 20%, transparent\)/);
+    // with the cards' liquid-glass edge: tinted border, inset sheen, top highlight
+    expect(css).toMatch(/\.about-notch-tags:has\(> \.about-proof-tag\) \{[^}]*border: 1px solid rgba\(var\(--tone\), \.34\);[^}]*box-shadow: var\(--card-edge\);/);
+    expect(css).toMatch(/\.about-notch-tags:has\(> \.about-proof-tag\)::before \{[^}]*linear-gradient\(90deg, transparent, rgba\(255, 255, 255, \.4\), transparent\)/);
+    // light mode: the tray is a raised white-card capsule
+    expect(css).toMatch(/:root\[data-theme="light"\] \.about-notch-tags:has\(> \.about-proof-tag\) \{\s*background: var\(--neu-bg\);\s*box-shadow: var\(--neu-raised-sm\);/);
+    // the tags rise with their card, not on a later band of their own
+    expect(notchTsx).toContain('data-rise-with={`.${area} > .has-notch`}');
+  });
+
+  it('each card colour variant feeds --tone, on the card and its notch wrapper', () => {
+    for (const v of ['cyan', 'purple', 'violet', 'human', 'spectrum']) {
+      expect(css).toContain(`.bento-card.bento-${v}, .about-notch:has(> .bento-${v}) { --tone: var(--ai-${v}-rgb); }`);
+    }
+    expect(css).toMatch(/--tone-vivid: oklch\(from rgb\(var\(--tone\)\)/);
+    // card titles: usual size and place, solid text colour at half
+    // strength; no per-card colour or gradient; gradient tiles excluded
+    expect(css).not.toContain('--tone-title');
+    const title = css.match(/\.bento-card:not\(\.bento-stat-big\) \.bento-label,[^{]*\{([^}]*)\}/)![1];
+    expect(title).not.toMatch(/font-size|margin|gradient|background-clip/);
+    expect(title).toMatch(/font-weight: 800;\s*opacity: \.5;\s*color: var\(--text\);/);
+  });
+
+  it('Years / Projects / Domains: a vivid tile in the card colour, the number in a multicolour gradient', () => {
+    for (const area of ['years', 'projects', 'domains']) expect(tsx).toMatch(new RegExp(`bento-stat-big bento-area-${area}`));
+    // the phone rules shrinking Service Domains' digit must not win over it
+    expect(css).toMatch(/\.bento-card\.bento-stat-big \.digit-col-inner span,/);
+    // Years / Projects: a big frosted-glass icon tile, bottom-right
+    expect(tsx).toMatch(/bento-area-years rise-card">\s*<span className="card-glass-highlight" aria-hidden="true" \/>\s*<div className="stat-glass-icon" aria-hidden="true"><i className="ph-bold ph-clock" \/><\/div>/);
+    expect(tsx).toMatch(/bento-area-projects rise-card">\s*<span className="card-glass-highlight" aria-hidden="true" \/>\s*<div className="stat-glass-icon" aria-hidden="true"><i className="ph-bold ph-squares-four" \/><\/div>/);
+    // big, and pushed past the right / bottom edges so the card crops it
+    expect(css).toMatch(/\.stat-glass-icon \{[^}]*position: absolute;[^}]*right: -24px;[^}]*bottom: -24px;[^}]*width: 120px;[^}]*backdrop-filter: blur\(8px\);/);
+    // the intro cards' icon art takes a bigger share of the card
+    expect(css).toMatch(/\.about-float,\s*\.about-orbit \{\s*scale: 1\.8;\s*transform-origin: 100% 100%;/);
+    expect(css).toContain('.about-orbit { translate: 0 40px; }');
+    // the workflow card's step chips start right of the notch button,
+    // left-aligned, their top edge level with the button's top
+    expect(css).toMatch(/\.bento-area-workflow \.ai-flow-stepper \{\s*align-self: flex-start;\s*justify-content: flex-start;\s*margin-left: calc\(var\(--nw\) - 12px\);\s*max-width: calc\(100% \+ 12px - var\(--nw\)\);\s*margin-bottom: calc\(-1 \* \(var\(--th\) \+ 24px\) \+ \(var\(--th\) - 28px\)\);/);
+    // step chips the size of the project tags: a fixed 28px, 12.5px text
+    expect(css).toMatch(/\.bento-area-workflow \.afs-step \{\s*gap: 6px;\s*box-sizing: border-box;\s*height: 28px;\s*padding: 0 12px;/);
+    expect(css).toMatch(/\.bento-area-workflow \.afs-label-sep \{\s*font-size: 12\.5px;\s*line-height: 1\.3;/);
+    expect(css).not.toContain('.ai-flow-stepper::after');
+    // kept out of the "lift every child above the spotlight" rule
+    expect(css).toContain(':not(.about-float):not(.stat-glass-icon):not(.notch-outline) {');
+    // Projects keeps its own (green) colour
+    expect(tsx).toContain('bento-card bento-human card-spotlight sc-card bento-stat-big bento-area-projects');
+    expect(css).toMatch(/\.bento-card\.bento-stat-big,[\s\S]*?linear-gradient\(160deg, var\(--tone-deep\) 0%, var\(--tone-vivid\) 55%, var\(--tone-bright\) 100%\) !important;/);
+    expect(css).toMatch(/\.bento-stat-big \.digit-col-inner span,[^{]*\{[^}]*font-size: var\(--big\);/);
+    // the number in the tile's own colour family, lighter than the tile
+    expect(css).toMatch(/--big-ink: linear-gradient\(135deg,\s*oklch\(from rgb\(var\(--tone\)\) \.97 \.05 h\)/);
+    expect(css).toMatch(/\.bento-card\.bento-stat-big \.digit-col-inner span,[^{]*\{\s*background: var\(--big-ink\);[^}]*background-clip: text;[^}]*-webkit-text-fill-color: transparent;/);
   });
 
   it('one tag per linked project, every link a real project page', () => {
@@ -129,7 +219,10 @@ describe('About content', () => {
   it('each Service Domains cover carries its industry label, in both languages', () => {
     const covers = tsx.match(/const DOMAIN_COVERS = \[([\s\S]*?)\];/)![1].match(/label: '/g)!.length;
     for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_domain_labels.split('|')).toHaveLength(covers);
-    expect(tsx).toMatch(/<span className="domain-cover-label" aria-hidden="true">\{t\.about_domain_labels\.split\('\|'\)\[i\]\}<\/span>/);
+    expect(tsx).toContain(`<span className="domain-cover-label" aria-hidden="true" style={{ ['--label-bg' as string]: d.tone }}>{t.about_domain_labels.split('|')[i]}</span>`);
+    // each label takes its cover's key colour, not plain dark
+    expect((tsx.match(/img: '\.\/img\/my_portfolio\/[^']+', tone: '#[0-9A-F]{6}' \}/g) ?? []).length).toBe(6);
+    expect(css).toMatch(/\.domain-cover-label \{[^}]*background: color-mix\(in oklab, var\(--label-bg/);
     expect(css).toMatch(/\.domain-cover-label \{[^}]*position: absolute;[^}]*top: 8px;[^}]*left: 8px;/);
   });
 

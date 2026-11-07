@@ -36,7 +36,7 @@ export function computeWallHeight(contentHeight: number, capPx: number): number 
   return Math.max(0, Math.min(contentHeight, capPx));
 }
 
-type Vertex = { x: number; y: number; r: number };
+export type Vertex = { x: number; y: number; r: number };
 
 // Rounds every corner of a closed orthogonal polygon (axis-aligned edges
 // only) with a per-vertex radius, clamped so neighbouring corners on a short
@@ -45,7 +45,7 @@ type Vertex = { x: number; y: number; r: number };
 // to both edges by construction, so it's correct for convex AND concave
 // (reflex) turns with no separate direction/winding logic to get wrong,
 // unlike a circular-arc sweep which needs to know which way to turn.
-function roundedOrthogonalPath(vertices: Vertex[]): string {
+export function roundedOrthogonalPath(vertices: Vertex[]): string {
   const count = vertices.length;
 
   // Two corners sharing an edge can't both keep their full requested radius

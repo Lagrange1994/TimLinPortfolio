@@ -1,7 +1,8 @@
-import { Fragment, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLang } from '../context/LangContext';
 import CardSwap, { Card } from './CardSwap';
 import AiFlowStepper from './AiFlowStepper';
+import NotchCard from './NotchCard';
 import { scrollToSectionAligned } from '../utils/navHeader';
 
 // One representative project cover per Service Domains chip (Law
@@ -9,12 +10,12 @@ import { scrollToSectionAligned } from '../utils/navHeader';
 // from the portfolio project images rather than duplicated assets.
 const DOMAIN_COVERS = [
   // police, environmental bureau, reservoir, airport, zoo
-  { label: 'Public Sector', img: './img/my_portfolio/police.webp' },
-  { label: 'Healthcare', img: './img/my_portfolio/student.webp' },
-  { label: 'Transport', img: './img/my_portfolio/Taoyuan_MRT.webp' },
-  { label: 'Finance', img: './img/my_portfolio/coin.webp' },
-  { label: 'Entertainment', img: './img/my_portfolio/stream.webp' },
-  { label: 'Manufacturing', img: './img/my_portfolio/CNC.webp' },
+  { label: 'Public Sector', img: './img/my_portfolio/police.webp', tone: '#24589A' },
+  { label: 'Healthcare', img: './img/my_portfolio/student.webp', tone: '#7A1A22' },
+  { label: 'Transport', img: './img/my_portfolio/Taoyuan_MRT.webp', tone: '#7B4FD6' },
+  { label: 'Finance', img: './img/my_portfolio/coin.webp', tone: '#7E8C2E' },
+  { label: 'Entertainment', img: './img/my_portfolio/stream.webp', tone: '#12907E' },
+  { label: 'Manufacturing', img: './img/my_portfolio/CNC.webp', tone: '#2F78B8' },
 ];
 
 // The portfolio projects behind each intro card's claims, in the order of
@@ -30,15 +31,11 @@ const PRINCIPLES = [
   { n: 3, links: ['project_07.html', 'project_11.html'] },
 ] as const;
 
-// A row of tags, each opening the project that proves the card's point.
-function ProofTags({ labels, links }: { labels: string; links: readonly string[] }) {
-  return (
-    <div className="about-proof">
-      {labels.split('|').map((label, i) => (
-        <a key={links[i]} className="about-proof-tag" href={links[i]}>{label}</a>
-      ))}
-    </div>
-  );
+// The project tags behind a card's claim, each a link to its page.
+function proofTags(labels: string, links: readonly string[]) {
+  return labels.split('|').map((label, i) => (
+    <a key={links[i]} className="about-proof-tag" href={links[i]}>{label}</a>
+  ));
 }
 
 export default function AboutSection() {
@@ -322,16 +319,17 @@ export default function AboutSection() {
             {PRINCIPLES.map(({ n, links }) => {
               const key = `about_principle${n}` as const;
               return (
-                <Fragment key={n}>
-                  <div className={`bento-card card-spotlight sc-card bento-principle bento-area-p${n} rise-card`}>
-                    <span className="card-glass-highlight" aria-hidden="true" />
-                    <span className="bento-principle-num" aria-hidden="true">{String(n).padStart(2, '0')}</span>
-                    <div className="bento-label">{t[`${key}_title`]}</div>
-                    <p className="bento-text">{t[`${key}_text`]}</p>
-                    <ProofTags labels={t[`${key}_tags`]} links={links} />
-                  </div>
-                  <span className={`bento-shadow bento-area-p${n}`} aria-hidden="true" />
-                </Fragment>
+                <NotchCard
+                  key={n}
+                  area={`bento-area-p${n}`}
+                  className="bento-card card-spotlight sc-card bento-principle rise-card"
+                  notch={proofTags(t[`${key}_tags`], links)}
+                >
+                  <span className="card-glass-highlight" aria-hidden="true" />
+                  <span className="bento-principle-num">Design Principle {String(n).padStart(2, '0')}</span>
+                  <div className="bento-label">{t[`${key}_title`]}</div>
+                  <p className="bento-text">{t[`${key}_text`]}</p>
+                </NotchCard>
               );
             })}
           </div>
@@ -360,18 +358,22 @@ export default function AboutSection() {
             </div>
           </div>
 
-          <div className="bento-card card-spotlight sc-card bento-area-cta rise-card">
+          <NotchCard
+            area="bento-area-cta"
+            className="bento-card card-spotlight sc-card about-cta-card rise-card"
+            notch={
+              <button type="button" className="about-more btn-glass btn-grad about-cta-btn" onClick={() => scrollToSectionAligned('contact')}>
+                {t.about_cta_button} <span aria-hidden="true">→</span>
+              </button>
+            }
+          >
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="about-status">
               <span className="about-status-dot" aria-hidden="true" />
               {t.about_cta_status}
             </div>
             <p className="bento-text bento-points about-cta-points" dangerouslySetInnerHTML={{ __html: t.about_cta_text }} />
-            <button type="button" className="about-proof-tag about-more" onClick={() => scrollToSectionAligned('contact')}>
-              {t.about_cta_button} <span aria-hidden="true">→</span>
-            </button>
-          </div>
-          <span className="bento-shadow bento-area-cta" aria-hidden="true" />
+          </NotchCard>
           </div>
 
           {/* Desktop: two independent columns beside the photo — the intro
@@ -380,11 +382,14 @@ export default function AboutSection() {
               the grid as before. */}
           <div className="about-col about-col--intro">
           {/* Intro cards — the bio prose (about_p1/about_p2) */}
-          <div className="bento-card bento-violet card-spotlight sc-card bento-area-intro1 rise-card">
+          <NotchCard
+            area="bento-area-intro1"
+            className="bento-card bento-violet card-spotlight sc-card rise-card"
+            notch={proofTags(t.about_tags_systems, SYSTEMS_LINKS)}
+          >
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro1_label}</div>
             <p className="bento-text bento-points" dangerouslySetInnerHTML={{ __html: t.about_intro1_short }} />
-            <ProofTags labels={t.about_tags_systems} links={SYSTEMS_LINKS} />
             <div className="about-float" aria-hidden="true">
               <div className="about-float-box about-float-box--center">
                 <img src="./img/others/Figma_logo.png" alt="" />
@@ -396,14 +401,16 @@ export default function AboutSection() {
                 <i className="ph-bold ph-flow-arrow" />
               </div>
             </div>
-          </div>
-          <span className="bento-shadow bento-area-intro1" aria-hidden="true" />
+          </NotchCard>
 
-          <div className="bento-card bento-cyan card-spotlight sc-card bento-area-intro2 rise-card">
+          <NotchCard
+            area="bento-area-intro2"
+            className="bento-card bento-cyan card-spotlight sc-card rise-card"
+            notch={proofTags(t.about_tags_visuals, VISUAL_LINKS)}
+          >
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro2_label}</div>
             <p className="bento-text bento-points" dangerouslySetInnerHTML={{ __html: t.about_intro2_short }} />
-            <ProofTags labels={t.about_tags_visuals} links={VISUAL_LINKS} />
             <div className="about-orbit" aria-hidden="true">
               <div className="about-orbit-ring">
                 <div className="about-orbit-node" style={{ ['--angle' as string]: '-90deg' }}>
@@ -431,14 +438,14 @@ export default function AboutSection() {
                 </div>
               </div>
             </div>
-          </div>
-          <span className="bento-shadow bento-area-intro2" aria-hidden="true" />
+          </NotchCard>
 
           </div>
 
           <div className="about-col about-col--stats">
-          <div className="bento-card card-spotlight sc-card bento-area-years rise-card">
+          <div className="bento-card card-spotlight sc-card bento-stat-big bento-area-years rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
+            <div className="stat-glass-icon" aria-hidden="true"><i className="ph-bold ph-clock" /></div>
             <div className="bento-label">{t.about_stat_years_label}</div>
             <div className="bento-num-center">
               <div className="stat-num-wrap" data-value="5">
@@ -453,8 +460,9 @@ export default function AboutSection() {
           </div>
           <span className="bento-shadow bento-area-years" aria-hidden="true" />
 
-          <div className="bento-card bento-human card-spotlight sc-card bento-area-projects rise-card">
+          <div className="bento-card bento-human card-spotlight sc-card bento-stat-big bento-area-projects rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
+            <div className="stat-glass-icon" aria-hidden="true"><i className="ph-bold ph-squares-four" /></div>
             <div className="bento-label">{t.about_stat_projects_label}</div>
             <div className="bento-num-center">
               <div className="stat-num-wrap" data-value="13">
@@ -474,7 +482,7 @@ export default function AboutSection() {
           </div>
           <span className="bento-shadow bento-area-projects" aria-hidden="true" />
 
-          <div className="bento-card bento-purple card-spotlight sc-card bento-area-domains rise-card">
+          <div className="bento-card bento-purple card-spotlight sc-card bento-stat-big bento-area-domains rise-card">
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_stat_domains_label}</div>
             <div className="bento-num-center">
@@ -498,7 +506,7 @@ export default function AboutSection() {
                     <img src={d.img} alt={d.label} loading="lazy" />
                     {/* the industry each cover stands for (was the
                         Industry Focus card's chips) */}
-                    <span className="domain-cover-label" aria-hidden="true">{t.about_domain_labels.split('|')[i]}</span>
+                    <span className="domain-cover-label" aria-hidden="true" style={{ ['--label-bg' as string]: d.tone }}>{t.about_domain_labels.split('|')[i]}</span>
                   </Card>
                 ))}
               </CardSwap>
@@ -509,7 +517,17 @@ export default function AboutSection() {
 
           </div>
 
-          <div className="bento-card bento-spectrum card-spotlight sc-card bento-card--wide bento-area-workflow rise-card">
+          {/* the full workflow lives in How I Use AI (#my-skills): a bold
+              action button in the card's notch */}
+          <NotchCard
+            area="bento-area-workflow"
+            className="bento-card bento-spectrum card-spotlight sc-card bento-card--wide rise-card"
+            notch={
+              <button type="button" className="about-more about-action" onClick={() => scrollToSectionAligned('my-skills')}>
+                {t.about_ai_more} <span aria-hidden="true">→</span>
+              </button>
+            }
+          >
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_ai_label}</div>
             <p className="bento-text" dangerouslySetInnerHTML={{ __html: t.about_ai_short }} />
@@ -522,13 +540,7 @@ export default function AboutSection() {
                 ['https://cdn.simpleicons.org/line/ffffff', 'https://cdn.simpleicons.org/gmail/ffffff'],
               ]}
             />
-            {/* the full workflow lives in How I Use AI (#my-skills); same
-                capsule as the intro cards' project tags, under the diagram */}
-            <button type="button" className="about-proof-tag about-more" onClick={() => scrollToSectionAligned('my-skills')}>
-              {t.about_ai_more} <span aria-hidden="true">→</span>
-            </button>
-          </div>
-          <span className="bento-shadow bento-area-workflow" aria-hidden="true" />
+          </NotchCard>
 
         </div>
       </section>
