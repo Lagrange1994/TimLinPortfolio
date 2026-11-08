@@ -2284,7 +2284,14 @@ export function AiIntakeSection() {
           rise entrance (transform + opacity) drops a clip on itself. */}
       <div className="ai-viewer-skin" aria-hidden="true">
         <svg ref={aiOutlineRef} className="notch-outline ai-viewer-outline">
+          <defs>
+            <radialGradient id="ai-viewer-ring-glow" gradientUnits="userSpaceOnUse" cx="-500" cy="-500" r="280">
+              <stop offset="0" stopColor="#fff" stopOpacity="0.32" />
+              <stop offset="0.7" stopColor="#fff" stopOpacity="0" />
+            </radialGradient>
+          </defs>
           <path ref={aiOutlinePathRef} fill="none" />
+          <path className="notch-ring" fill="none" stroke="url(#ai-viewer-ring-glow)" />
         </svg>
       </div>
       {isCompact && viewerIndex >= 0 && aiCards[viewerIndex].badge && (

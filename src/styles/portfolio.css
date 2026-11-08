@@ -2840,6 +2840,51 @@
       flex-direction: column;
     }
 
+    /* Desktop: one set of row lines for all three columns. The intro/stats
+       band is split into its two rows on the outer grid, and the intro,
+       stats and profile columns take them by subgrid — so the photo ends
+       exactly on intro1 / Years-Projects' bottom edge, and the availability
+       card on intro2 / Service Domains', instead of the photo's own aspect
+       ratio landing a few px off. The photo stretches to its rows (never
+       squatter than its own ratio, like the tablet layout). */
+    @media (min-width: 1025px) {
+      .about-grid {
+        grid-template-areas:
+          "headline headline headline headline headline"
+          "profile principles principles principles principles"
+          "profile intro intro stats stats"
+          "profile intro intro stats stats"
+          "profile workflow workflow workflow workflow";
+      }
+
+      .about-col--intro,
+      .about-col--stats {
+        grid-template-rows: subgrid;
+      }
+
+      .about-col--profile {
+        grid-template-rows: subgrid;
+        grid-template-areas: "photo" "photo" "cta" ".";
+        align-content: normal;
+      }
+
+      .about-photo {
+        align-self: stretch;
+        container-type: inline-size;
+      }
+
+      .about-photo .pc-card-wrapper,
+      .about-photo .pc-card-shell {
+        height: 100%;
+      }
+
+      .about-photo .pc-card {
+        height: 100%;
+        aspect-ratio: unset;
+        min-height: calc(100cqw / 0.718);
+      }
+    }
+
     .bento-area-p1 { grid-area: p1; }
     .bento-area-p2 { grid-area: p2; }
     .bento-area-p3 { grid-area: p3; }
@@ -3687,8 +3732,9 @@
       margin-top: 2px;
     }
 
+    /* 14px: no bigger than the section's lead (.about-lead), which opens it */
     .bento-text {
-      font-size: 15px;
+      font-size: 14px;
       line-height: 1.6;
       color: var(--text-70);
     }
@@ -12296,7 +12342,7 @@
       background-image:
         var(--noise-grain),
         radial-gradient(var(--ai-stage-dot) 1px, transparent 1px),
-        radial-gradient(820px 480px at 72% 0%, color-mix(in oklab, var(--ai-accent, var(--primary)) 20%, transparent), transparent 65%),
+        radial-gradient(1150px 680px at 72% 0%, color-mix(in oklab, var(--ai-accent, var(--primary)) 32%, transparent), transparent 70%),
         linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
       background-size: 180px 180px, 18px 18px, auto, auto;
       background-repeat: repeat, repeat, no-repeat, no-repeat;
@@ -12347,7 +12393,7 @@
       background-image:
         var(--noise-grain),
         radial-gradient(var(--ai-stage-dot) 1px, transparent 1px),
-        radial-gradient(820px 480px at 72% 0%, color-mix(in oklab, var(--ai-accent, var(--primary)) 20%, transparent), transparent 65%),
+        radial-gradient(1150px 680px at 72% 0%, color-mix(in oklab, var(--ai-accent, var(--primary)) 32%, transparent), transparent 70%),
         linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
       background-size: 180px 180px, 18px 18px, auto, auto;
       background-repeat: repeat, repeat, no-repeat, no-repeat;
@@ -12357,6 +12403,32 @@
       background: radial-gradient(var(--ai-stage-dot) 1px, transparent 1px) 0 0 / 18px 18px, var(--neu-bg);
       backdrop-filter: none;
     }
+
+    /* The border effect of About's grid cards (.bento-card / NotchCard):
+       the same faint white hairline (not the step's accent), the inset top
+       sheen and fading glass highlight line along the top edge (right of
+       the notch, --ai-notch-x), and on hover the outline's glow ring that
+       follows the pointer (.notch-ring, aiStageNotch.ts). */
+    [data-ai-notch] .ai-viewer { border-color: rgba(255, 255, 255, 0.14); }
+
+    [data-ai-notch] .ai-viewer-skin { box-shadow: var(--card-edge); }
+
+    [data-ai-notch] .ai-viewer-skin::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      --seg: calc(100% - var(--ai-notch-x, 40%));
+      left: calc(var(--ai-notch-x, 40%) + var(--seg) * .12);
+      right: calc(var(--seg) * .12);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .32), transparent);
+      pointer-events: none;
+    }
+
+    [data-ai-notch] .ai-viewer:hover .notch-ring { opacity: 1; }
+
+    :root[data-theme="light"] [data-ai-notch] .ai-viewer-skin { box-shadow: none; }
+    :root[data-theme="light"] [data-ai-notch] .ai-viewer-skin::after { display: none; }
 
     [data-ai-notch] .ai-viewer-rail { margin-top: var(--ai-rail-top, 40px); }
 

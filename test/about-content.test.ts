@@ -271,4 +271,24 @@ describe('About content', () => {
     const value = Number(tsx.match(/bento-area-projects[\s\S]*?data-value="(\d+)"/)![1]);
     expect(value).toBe(PROJECTS.length);
   });
+
+  // Desktop: the profile, intro and stats columns share the outer grid's row
+  // lines (subgrid), so the photo and availability card end exactly on the
+  // middle cards' edges instead of the photo's aspect ratio landing off.
+  it('desktop columns share row lines through subgrid', () => {
+    const start = css.indexOf('@media (min-width: 1025px) {\r\n      .about-grid {') >= 0
+      ? css.indexOf('@media (min-width: 1025px) {\r\n      .about-grid {')
+      : css.indexOf('@media (min-width: 1025px) {\n      .about-grid {');
+    expect(start).toBeGreaterThan(-1);
+    const block = css.slice(start, start + 1600);
+    expect(block).toMatch(/"profile intro intro stats stats"\s*"profile intro intro stats stats"/);
+    expect(block).toMatch(/\.about-col--intro,\s*\.about-col--stats \{\s*grid-template-rows: subgrid;/);
+    expect(block).toMatch(/\.about-col--profile \{\s*grid-template-rows: subgrid;\s*grid-template-areas: "photo" "photo" "cta" "\.";/);
+    expect(block).toMatch(/\.about-photo \.pc-card \{[^}]*min-height: calc\(100cqw \/ 0\.718\);/);
+  });
+
+  it('card body text is no bigger than the section lead', () => {
+    expect(css).toMatch(/\.bento-text \{\s*font-size: 14px;/);
+    expect(css).toMatch(/\.about-lead \{[^}]*font-size: 14px;/);
+  });
 });

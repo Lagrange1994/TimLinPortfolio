@@ -183,12 +183,17 @@ export function attachStageNotch(
   path: SVGPathElement,
 ): () => void {
   const host = viewer.closest('section') ?? viewer.parentElement!;
+  // About's card border effect: a second path along the outline, stroked
+  // with a radial glow that follows the pointer (NotchCard's .notch-ring)
+  const ring = svg.querySelector<SVGPathElement>('.notch-ring');
+  const glow = svg.querySelector<SVGRadialGradientElement>('radialGradient');
   const mq = typeof window.matchMedia === 'function' ? window.matchMedia(STAGE_NOTCH_MQ) : null;
 
   const clear = () => {
     delete host.dataset.aiNotch;
-    for (const v of ['--ai-viewer-mt', '--ai-rail-top', '--ai-stage-top', '--ai-notch-clip', '--ai-viewer-bw', '--ai-flow-h']) host.style.removeProperty(v);
+    for (const v of ['--ai-viewer-mt', '--ai-rail-top', '--ai-stage-top', '--ai-notch-clip', '--ai-viewer-bw', '--ai-flow-h', '--ai-notch-x']) host.style.removeProperty(v);
     path.removeAttribute('d');
+    ring?.removeAttribute('d');
   };
 
   const sync = () => {
@@ -235,6 +240,9 @@ export function attachStageNotch(
       bay: navBay(viewer, (parseFloat(cs.borderLeftWidth) || 0)),
     });
     host.style.setProperty('--ai-notch-clip', `path('${d}')`);
+    // where the card's top edge starts (right of the notch): the glass
+    // highlight line runs along that edge only
+    host.style.setProperty('--ai-notch-x', `${n.n1w}px`);
     // the border, drawn along the outline (the CSS border is hidden); twice
     // the width, since the clip keeps only the inner half
     const bw = parseFloat(cs.borderTopWidth) || 0;
@@ -246,7 +254,17 @@ export function attachStageNotch(
     path.setAttribute('d', d);
     path.setAttribute('stroke', cs.borderTopColor);
     path.setAttribute('stroke-width', String(bw * 2));
+    ring?.setAttribute('d', d);
+    ring?.setAttribute('stroke-width', '2');
   };
+
+  const onMove = (e: MouseEvent) => {
+    if (!glow) return;
+    const r = viewer.getBoundingClientRect();
+    glow.setAttribute('cx', String(e.clientX - r.left));
+    glow.setAttribute('cy', String(e.clientY - r.top));
+  };
+  viewer.addEventListener('mousemove', onMove);
 
   sync();
   // once more as the card starts rising in, from the settled layout
@@ -265,6 +283,7 @@ export function attachStageNotch(
 
   return () => {
     live = false;
+    viewer.removeEventListener('mousemove', onMove);
     ro?.disconnect();
     mo?.disconnect();
     mq?.removeEventListener?.('change', sync);

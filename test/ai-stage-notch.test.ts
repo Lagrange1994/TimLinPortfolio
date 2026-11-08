@@ -117,4 +117,30 @@ describe('wiring', () => {
     expect(css).toMatch(/\[data-ai-notch\] \.ai-viewer \{[^}]*background: none;\s*backdrop-filter: none;\s*border-image: linear-gradient\(transparent, transparent\) 1;/);
     expect(css).not.toMatch(/\[data-ai-notch\] \.ai-viewer \{[^}]*clip-path/);
   });
+
+  // About's grid-card border effect: the white hairline, the top sheen and
+  // highlight line, and the pointer-following glow ring on hover
+  it('the stage wears the About cards’ border effect', () => {
+    expect(css).toContain('[data-ai-notch] .ai-viewer { border-color: rgba(255, 255, 255, 0.14); }');
+    expect(css).toContain('[data-ai-notch] .ai-viewer-skin { box-shadow: var(--card-edge); }');
+    expect(css).toMatch(/\[data-ai-notch\] \.ai-viewer-skin::after \{[^}]*left: calc\(var\(--ai-notch-x, 40%\) \+ var\(--seg\) \* \.12\);[^}]*linear-gradient\(90deg, transparent, rgba\(255, 255, 255, \.32\), transparent\)/);
+    expect(css).toContain('[data-ai-notch] .ai-viewer:hover .notch-ring { opacity: 1; }');
+    expect(tsx).toContain('<path className="notch-ring" fill="none" stroke="url(#ai-viewer-ring-glow)" />');
+  });
+
+  it('the glow ring follows the pointer, and stops once detached', async () => {
+    const { attachStageNotch } = await import('../src/utils/aiStageNotch');
+    document.body.innerHTML = `<section><div id="l"></div><div id="t"></div><div id="s"></div>
+      <div class="ai-viewer"><svg><defs><radialGradient cx="-500" cy="-500"></radialGradient></defs>
+      <path id="p"></path><path class="notch-ring"></path></svg></div></section>`;
+    const q = <T extends Element>(s: string) => document.querySelector<T>(s)!;
+    const viewer = q<HTMLElement>('.ai-viewer');
+    const detach = attachStageNotch(viewer, q('#l'), q('#t'), q('#s'), q<SVGSVGElement>('svg'), q<SVGPathElement>('#p'));
+    const glow = q('radialGradient');
+    viewer.dispatchEvent(new MouseEvent('mousemove', { clientX: 120, clientY: 40 }));
+    expect([glow.getAttribute('cx'), glow.getAttribute('cy')]).toEqual(['120', '40']);
+    detach();
+    viewer.dispatchEvent(new MouseEvent('mousemove', { clientX: 300, clientY: 90 }));
+    expect(glow.getAttribute('cx')).toBe('120');
+  });
 });
