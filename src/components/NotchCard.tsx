@@ -19,7 +19,9 @@ const NOTCH_END_RADIUS = 18;
 export default function NotchCard({ area, className, notch, children, side = 'left', shadow = true, badge }: {
   area: string;
   className: string;
-  notch: ReactNode;
+  // what sits in the notch; without it the card is a plain card (no notch
+  // cut, its own CSS border), still with the badge
+  notch?: ReactNode;
   children: ReactNode;
   side?: 'left' | 'right';
   // About's sibling hover-shadow span (.bento-shadow)
@@ -110,10 +112,11 @@ export default function NotchCard({ area, className, notch, children, side = 'le
     };
   }, [side]);
   const sideClass = side === 'right' ? ' notch-right' : '';
+  const hasNotch = notch != null && notch !== false;
   return (
     <div ref={wrap} className={`about-notch${sideClass} ${area}`}>
-      <div ref={card} className={`${className} has-notch`}>
-        <svg ref={svg} className="notch-outline" aria-hidden="true">
+      <div ref={card} className={`${className} about-notch-card${hasNotch ? ' has-notch' : ''}`}>
+        {hasNotch && <svg ref={svg} className="notch-outline" aria-hidden="true">
           <defs>
             <radialGradient ref={glow} id={glowId} gradientUnits="userSpaceOnUse" cx="-500" cy="-500" r="280">
               <stop offset="0" stopColor="#fff" stopOpacity="0.32" />
@@ -122,15 +125,15 @@ export default function NotchCard({ area, className, notch, children, side = 'le
           </defs>
           <path ref={outline} fill="none" />
           <path ref={ring} className="notch-ring" fill="none" stroke={`url(#${glowId})`} />
-        </svg>
+        </svg>}
         {children}
       </div>
       {shadow && <span className="bento-shadow" aria-hidden="true" />}
       {badge && (
-        <div className="about-notch-badge rise-soft" data-rise-with={`.${area} > .has-notch`} data-rise-lock="">{badge}</div>
+        <div className="about-notch-badge rise-soft" data-rise-with={`.${area} > .about-notch-card`} data-rise-lock="">{badge}</div>
       )}
       {/* rises with its card (same trigger, same squash), as one piece */}
-      <div ref={tags} className="about-proof about-notch-tags rise-soft" data-rise-with={`.${area} > .has-notch`} data-rise-lock="">{notch}</div>
+      {hasNotch && <div ref={tags} className="about-proof about-notch-tags rise-soft" data-rise-with={`.${area} > .has-notch`} data-rise-lock="">{notch}</div>}
     </div>
   );
 }

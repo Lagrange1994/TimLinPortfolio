@@ -17,7 +17,7 @@ describe('homepage GPU layer trims', () => {
     expect(block).not.toBeNull();
     for (const sel of [
       '.scroller-inner .tag-capsule', '.process-step-badge', '.ai-step-badge',
-      '.ai-card-toggle', '.about-orbit-node', '.about-float-box', '.contact-card .slink',
+      '.ai-card-toggle', '.contact-card .slink',
     ]) expect(block![0]).toContain(sel);
     expect(block![0]).toMatch(/backdrop-filter:\s*none !important;/);
   });

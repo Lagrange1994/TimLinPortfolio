@@ -61,6 +61,21 @@
 :root[data-theme="light"] .aas-block.is-ok { background: color-mix(in oklab, var(--ok) 7%, var(--w-panel)); }
 :root[data-theme="light"] .aas-quote { background: color-mix(in oklab, var(--acc) 9%, var(--w-panel)); }
 :root[data-theme="light"] .aas-table-head { background: rgba(58, 58, 66, 0.035); }
+/* Light mode: the coloured pieces (callouts, badges, chips, the reply card,
+   the quote) drop their coloured hairline — a faint tint alone, like the
+   site's light badges (About's Design Principle capsules). Grey panel
+   lines stay. */
+:root[data-theme="light"] :is(.aas-block.is-warn, .aas-block.is-ok, .aas-quote, .aas-reply-card,
+  .aas-badge, .aas-chip.is-accent, .aas-approve-done) { box-shadow: none; }
+:root[data-theme="light"] .aas-toast { box-shadow: var(--card-shadow-sm); }
+:root[data-theme="light"] .aas-msg-ticket {
+  box-shadow: none;
+  background: color-mix(in oklab, var(--acc) 10%, transparent);
+}
+:root[data-theme="light"] .aas-chat-chips span {
+  box-shadow: none;
+  background: color-mix(in oklab, #06c755 12%, transparent);
+}
 
 /* Hover ripple: drawn by .ai-stage::after in portfolio.css (a compositor-only
    ring), not an animated outline here, which repainted the whole window. */

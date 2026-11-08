@@ -2,8 +2,8 @@ import { stairNotchPath, type EdgeBay } from './notchPath';
 import { RISE_START_EVENT } from './useRiseReveal';
 
 // How I Use AI: the viewer (the stage card) gets My Portfolio's top-left
-// notch, with the section's title and subtitle sitting in it (the card's
-// top edge is level with the title; the label sits above the card). Same
+// notch, with the section's subtitle sitting in it (the card's top edge is
+// level with the subtitle; the label and the title sit above the card). Same
 // approach as the wall and the About notches: one outline path, measured
 // from the live text, clips the card's surface and is stroked as its border.
 //
@@ -22,21 +22,12 @@ export const STAGE_NOTCH_MQ = '(min-width: 961px)';
 
 export type StageNotch = { n1w: number; n1h: number; n2w: number; n2h: number };
 
-// The two steps from the text's extents, all relative to the card's
-// top-left corner: label + title in the first, the subtitle in the second.
-export function stageNotchSize(
-  { labelRight, titleRight, titleBottom, subRight, subBottom }: {
-    labelRight: number; titleRight: number; titleBottom: number; subRight: number; subBottom: number;
-  },
-  pad = STAGE_NOTCH_PAD,
-): StageNotch {
-  const n1h = titleBottom + pad;
-  return {
-    n1w: Math.max(labelRight, titleRight) + pad,
-    n1h,
-    n2w: subRight + pad,
-    n2h: Math.max(0, subBottom + pad - n1h),
-  };
+// The notch round the subtitle alone: one step, from its text extents
+// relative to the card's top-left corner (the label and the title sit above
+// the card).
+export function subNotchSize({ subRight, subBottom }: { subRight: number; subBottom: number }, pad = STAGE_NOTCH_PAD): StageNotch {
+  const w = subRight + pad;
+  return { n1w: w, n1h: subBottom + pad, n2w: w, n2h: 0 };
 }
 
 // Gap between the notch and the content under it.
@@ -203,19 +194,14 @@ export function attachStageNotch(
     // out): the phone's bottom lines up with that panel's bottom
     const flowH = Math.max(0, ...[...viewer.querySelectorAll<HTMLElement>('.aas-front.aas-flow')].map(el => el.offsetHeight));
     if (flowH) host.style.setProperty('--ai-flow-h', `${flowH}px`);
-    // the card's top edge level with the title's top (not the label's: the
-    // card mustn't stand up past the title; the label sits above the card)
+    // the card's top edge level with the subtitle's top: the label and the
+    // title sit above the card, only the subtitle in its notch
     const mt = parseFloat(getComputedStyle(viewer).marginTop) || 0;
-    const shift = docOffset(viewer).y - docOffset(title).y;
+    const shift = docOffset(viewer).y - docOffset(sub).y;
     if (Math.abs(shift) > 0.5) host.style.setProperty('--ai-viewer-mt', `${mt - shift}px`);
 
     const v = docOffset(viewer);
-    const titleBottom = docOffset(title).y + title.offsetHeight - v.y;
-    const n = stageNotchSize({
-      // the label is above the card, so only the title widens the first step
-      labelRight: 0,
-      titleRight: textRight(title) - v.x,
-      titleBottom,
+    const n = subNotchSize({
       subRight: textRight(sub) - v.x,
       subBottom: docOffset(sub).y + sub.offsetHeight - v.y,
     });

@@ -45,7 +45,9 @@ describe('About content', () => {
       // names stand out in bold, not in colour
       for (const key of ['about_intro1_short', 'about_intro2_short'] as const) {
         expect(t[key]).not.toMatch(/text-(primary|secondary)/);
-        expect(t[key]).toContain(key === 'about_intro1_short' ? '<strong>Figma</strong>' : '<strong>Blender</strong>');
+        expect(t[key]).toContain(key === 'about_intro1_short'
+          ? '<strong class="tool-name"><img class="tool-logo" src="./img/others/Figma_logo.png" alt="" />Figma</strong>'
+          : '<strong class="tool-name"><img class="tool-logo" src="./img/others/Blender_logo.png" alt="" />Blender</strong>');
       }
       expect(t.about_ai_short).not.toMatch(/text-purple/);
       expect(t.about_ai_short).toContain('<strong>Claude</strong>');
@@ -89,17 +91,15 @@ describe('About content', () => {
   });
 
   it('layout B: a principles row and an availability card linking to #contact', () => {
-    const principles = [...tsx.matchAll(/\{ n: (\d), links: (\[[^\]]*\]) \}/g)]
-      .map(m => ({ n: Number(m[1]), links: JSON.parse(m[2].replace(/'/g, '"')) as string[] }));
-    expect(principles.map(p => p.n)).toEqual([1, 2, 3]);
-    for (const { n, links: pages } of principles) {
+    // a general rule and a scene each: no project tags any more
+    expect(tsx).toContain('const PRINCIPLES = [1, 2, 3] as const;');
+    for (const n of [1, 2, 3]) {
       for (const lang of ['zh', 'en'] as const) {
         const t = translations[lang] as Record<string, string>;
         expect(t[`about_principle${n}_title`]).toBeTruthy();
         expect(t[`about_principle${n}_text`]).toBeTruthy();
-        expect(t[`about_principle${n}_tags`].split('|')).toHaveLength(pages.length);
+        expect(t[`about_principle${n}_tags`]).toBeUndefined();
       }
-      for (const page of pages) expect(PROJECTS.some(p => p.link === page), page).toBe(true);
     }
     expect(tsx).toContain(`scrollToSectionAligned('contact')`);
     // each principle card is labelled, not just numbered
@@ -108,7 +108,7 @@ describe('About content', () => {
     expect(tsx).not.toContain('bento-principle-num');
     // outside the clipped card, rising glued to it
     const notch = readFileSync(resolve(root, 'src/components/NotchCard.tsx'), 'utf8');
-    expect(notch).toContain('<div className="about-notch-badge rise-soft" data-rise-with={`.${area} > .has-notch`} data-rise-lock="">{badge}</div>');
+    expect(notch).toContain('<div className="about-notch-badge rise-soft" data-rise-with={`.${area} > .about-notch-card`} data-rise-lock="">{badge}</div>');
     for (const lang of ['zh', 'en'] as const) {
       for (const k of ['about_cta_status', 'about_cta_text', 'about_cta_button'] as const) expect(translations[lang][k]).toBeTruthy();
     }
@@ -145,7 +145,10 @@ describe('About content', () => {
     expect(tsx).toContain('className="bento-card card-spotlight sc-card about-cta-card rise-card"');
     expect(tsx).toContain(`className="about-more btn-glass btn-grad about-cta-btn" onClick={() => scrollToSectionAligned('contact')}`);
     expect(css).toMatch(/\.bento-card\.about-cta-card \{\s*background: linear-gradient\(135deg, rgba\(108, 99, 255, 0\.12\), rgba\(255, 101, 132, 0\.06\)\);\s*border-color: rgba\(108, 99, 255, 0\.25\);/);
-    expect(css).toMatch(/\.about-action \{[^}]*height: 46px;[^}]*background: linear-gradient\(120deg, var\(--tone-vivid\), var\(--tone-bright\)\);/);
+    // the workflow action is a secondary button: the GitHub / Email glass pill
+    expect(css).toMatch(/\.about-action \{[^}]*height: 46px;[^}]*background: var\(--noise-grain\) 0 0 \/ 180px 180px repeat, var\(--glass-bg-premium\);[^}]*color: var\(--text\);/);
+    expect(css).toContain(':root[data-theme="light"] .about-action { color: oklch(from rgb(108, 99, 255) .5 .2 h); }');
+    expect(css).toMatch(/:root\[data-theme="light"\] \.about-action \{[^}]*box-shadow: var\(--neu-raised-sm\);/);
     // the notch's inner corner is concentric with the capsule's round end
     expect(css).toMatch(/--nf: calc\(var\(--pr, 14px\) \+ var\(--ng\)\);/);
     expect(notchTsx).toContain(`setProperty('--pr'`);
@@ -184,9 +187,20 @@ describe('About content', () => {
     expect(tsx).toMatch(/bento-area-projects rise-card">\s*<span className="card-glass-highlight" aria-hidden="true" \/>\s*<div className="stat-glass-icon" aria-hidden="true"><i className="ph-bold ph-squares-four" \/><\/div>/);
     // big, and pushed past the right / bottom edges so the card crops it
     expect(css).toMatch(/\.stat-glass-icon \{[^}]*position: absolute;[^}]*right: -24px;[^}]*bottom: -24px;[^}]*width: 120px;[^}]*backdrop-filter: blur\(8px\);/);
-    // the intro cards' icon art takes a bigger share of the card
-    expect(css).toMatch(/\.about-float,\s*\.about-orbit \{\s*scale: 1\.8;\s*transform-origin: 100% 100%;/);
-    expect(css).toContain('.about-orbit { translate: 0 40px; }');
+    // the principle cards: the intro cards' top-down tint, in the capsules' purple
+    expect(css).toMatch(/\.bento-card\.bento-principle \{\s*--card-tint: rgba\(108, 99, 255, \.24\);\s*border-color: rgba\(108, 99, 255, \.34\);/);
+    // each tile its own page colour, purple to blue: #8A2BE2, #6C63FF, #00D4FF
+    expect(css).toContain('.about-grid .bento-card.bento-stat-big.bento-area-years { --tone: 138, 43, 226; }');
+    expect(css).toContain('.about-grid .bento-card.bento-stat-big.bento-area-projects { --tone: 108, 99, 255; }');
+    expect(css).toContain('.about-grid .bento-card.bento-stat-big.bento-area-domains { --tone: 0, 212, 255; }');
+    // dark mode: deep and low-light, from each tile's own colour
+    expect(css).toMatch(/:root:not\(\[data-theme="light"\]\) \.about-grid \.bento-card\.bento-stat-big \{\s*--tone-deep: oklch\(from rgb\(var\(--tone\)\) \.3 \.13 h\);/);
+    // light mode: same size, faded so it doesn't fight the label
+    expect(css).toMatch(/:root\[data-theme="light"\] \.stat-glass-icon \{[^}]*opacity: \.4;/);
+    // the intro cards carry no floating icon art: the logos sit inline in the copy
+    expect(tsx).not.toMatch(/about-float|about-orbit/);
+    expect(css).not.toMatch(/\.about-float|\.about-orbit/);
+    expect(css).toMatch(/\.tool-logo \{[^}]*width: 1\.05em;/);
     // the workflow card's step chips start right of the notch button,
     // left-aligned, their top edge level with the button's top
     expect(css).toMatch(/\.bento-area-workflow \.ai-flow-stepper \{\s*align-self: flex-start;\s*justify-content: flex-start;\s*margin-left: calc\(var\(--nw\) - 12px\);\s*max-width: calc\(100% \+ 12px - var\(--nw\)\);\s*margin-bottom: calc\(-1 \* \(var\(--th\) \+ 24px\) \+ \(var\(--th\) - 28px\)\);/);
@@ -198,7 +212,7 @@ describe('About content', () => {
     // its content
     expect(css).toMatch(/\.bento-area-workflow \.ai-flow-stepper \{[^}]*padding-top: 20px;/);
     // kept out of the "lift every child above the spotlight" rule
-    expect(css).toContain(':not(.about-float):not(.stat-glass-icon):not(.notch-outline) {');
+    expect(css).toContain(':not(.domain-swap-stage):not(.stat-glass-icon):not(.notch-outline):not(.principle-art) {');
     // Projects keeps its own (green) colour
     expect(tsx).toContain('bento-card bento-human card-spotlight sc-card bento-stat-big bento-area-projects');
     expect(css).toMatch(/\.bento-card\.bento-stat-big,[\s\S]*?linear-gradient\(160deg, var\(--tone-deep\) 0%, var\(--tone-vivid\) 55%, var\(--tone-bright\) 100%\) !important;/);
@@ -283,8 +297,65 @@ describe('About content', () => {
     const block = css.slice(start, start + 1600);
     expect(block).toMatch(/"profile intro intro stats stats"\s*"profile intro intro stats stats"/);
     expect(block).toMatch(/\.about-col--intro,\s*\.about-col--stats \{\s*grid-template-rows: subgrid;/);
-    expect(block).toMatch(/\.about-col--profile \{\s*grid-template-rows: subgrid;\s*grid-template-areas: "photo" "photo" "cta" "\.";/);
-    expect(block).toMatch(/\.about-photo \.pc-card \{[^}]*min-height: calc\(100cqw \/ 0\.718\);/);
+    // the profile column stops at the intro/stats band: the photo keeps its
+    // ratio, the availability card its content height, a free slot below;
+    // the workflow card runs the full width
+    expect(block).toMatch(/"profile intro intro stats stats"\s*"workflow workflow workflow workflow workflow"/);
+    expect(block).toMatch(/\.about-col--profile \{\s*grid-template-rows: auto auto 1fr;\s*grid-template-areas: "photo" "cta" "slot";/);
+    expect(block).not.toContain('.about-photo .pc-card');
+  });
+
+  // Principles as "one general line + scene": the copy names no project, no
+  // project tags (so no notch), and a scene fills each card's lower half on
+  // a dot-grid stage (02 drawn; 01 / 03 the stage for now)
+  it('principles: one general line and a scene across the lower half', () => {
+    const named: Record<number, string[]> = {
+      1: ['指揮中心', '航空站', 'command centre', 'airport'],
+      2: ['報修', '大螢幕', 'repair', 'wall-screen'],
+      3: ['雷達圖', '須知', 'radar', 'eligibility'],
+    };
+    for (const n of [1, 2, 3]) for (const lang of ['zh', 'en'] as const) {
+      const text = (translations[lang] as Record<string, string>)[`about_principle${n}_text`];
+      for (const project of named[n]) expect(text).not.toContain(project);
+    }
+    // no notch prop on the principle cards
+    const card = tsx.slice(tsx.indexOf('{PRINCIPLES.map(n => {'), tsx.indexOf('</NotchCard>', tsx.indexOf('{PRINCIPLES.map(n => {')));
+    expect(card).not.toContain('notch=');
+    expect(card).toContain('{n === 2 ? <PrincipleArtSubtract /> : <div className="principle-stage" aria-hidden="true" />}');
+    expect(css).toMatch(/\.principle-stage \{[^}]*min-height: 160px;/);
+    // a NotchCard without a notch: no notch class, outline or tags
+    expect(notchTsx).toContain("className={`${className} about-notch-card${hasNotch ? ' has-notch' : ''}`}");
+    expect(notchTsx).toContain('{hasNotch && <div ref={tags}');
+    const art = readFileSync(resolve(root, 'src/components/PrincipleArt.tsx'), 'utf8');
+    expect(art).toContain('<div className="principle-stage" aria-hidden="true">');
+    expect(art).toContain('className="principle-art principle-art--subtract"');
+    expect((art.match(/className="pa-bit pa-cut"/g) ?? []).length).toBe(5);
+    expect((art.match(/className="pa-cta"/g) ?? []).length).toBe(1);
+    expect(css).toMatch(/\.principle-stage \{\s*flex: 1 1 0;/);
+    expect(css).toMatch(/\.bento-principle:hover \.principle-art \.pa-cut \{ opacity: 0;/);
+    // light mode: the plain card casts its own shadow, the wrapper none
+    expect(css).toContain(':root[data-theme="light"] .about-notch:not(:has(> .has-notch)) { filter: none; }');
+  });
+
+  // the slot under the availability card: GitHub and Email, buttons only,
+  // the same links as Contact's; desktop only
+  it('the profile column ends in GitHub / Email link buttons on desktop', () => {
+    const contact = readFileSync(resolve(root, 'src/components/ContactSection.tsx'), 'utf8');
+    const url = tsx.match(/const GITHUB_URL = '([^']+)';/)![1];
+    const email = tsx.match(/const EMAIL = '([^']+)';/)![1];
+    expect(contact).toContain(`href="${url}"`);
+    expect(contact).toContain(`mailto:${email}`);
+    // the two buttons in one row first, then a dated "Now" card
+    expect(tsx).toMatch(/const NOW_UPDATED = '\d{4}\.\d{2}';/);
+    for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_now).toBeTruthy();
+    expect(tsx).toMatch(/<div className="about-links rise-card">\s*<div className="about-link-row">\s*<a className="about-link-btn" href=\{GITHUB_URL\} target="_blank" rel="noreferrer">[\s\S]*?<a className="about-link-btn" href=\{`mailto:\$\{EMAIL\}`\}>[\s\S]*?<div className="about-now">[\s\S]*?NOW · \{NOW_UPDATED\}[\s\S]*?\{t\.about_now\}/);
+    expect((tsx.match(/className="about-link-btn"/g) ?? []).length).toBe(2);
+    expect(css).toMatch(/\.about-link-row \{\s*display: grid;\s*grid-template-columns: 1fr 1fr;/);
+    // hidden by default, shown in the desktop slot (the later rule wins)
+    const hidden = css.indexOf('.about-links { display: none; }');
+    const shown = css.search(/\.about-links \{\s*grid-area: slot;\s*display: grid;/);
+    expect(hidden).toBeGreaterThan(-1);
+    expect(shown).toBeGreaterThan(hidden);
   });
 
   it('card body text is no bigger than the section lead', () => {

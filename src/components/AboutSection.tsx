@@ -3,6 +3,7 @@ import { useLang } from '../context/LangContext';
 import CardSwap, { Card } from './CardSwap';
 import AiFlowStepper from './AiFlowStepper';
 import NotchCard from './NotchCard';
+import { PrincipleArtSubtract } from './PrincipleArt';
 import { scrollToSectionAligned } from '../utils/navHeader';
 
 // One representative project cover per Service Domains chip (Law
@@ -23,13 +24,17 @@ const DOMAIN_COVERS = [
 const SYSTEMS_LINKS = ['project_04.html', 'project_09.html', 'project_01.html'];
 const VISUAL_LINKS = ['project_13.html', 'project_12.html'];
 
-// The three design principles row (about_principleN_*), each with the
-// projects behind it, in the order of its tag labels.
-const PRINCIPLES = [
-  { n: 1, links: ['project_01.html', 'project_10.html'] },
-  { n: 2, links: ['project_02.html', 'project_03.html'] },
-  { n: 3, links: ['project_07.html', 'project_11.html'] },
-] as const;
+// When the "Now" card (about_now) was last brought up to date: change it
+// with the copy, so the card shows the page is kept current.
+const NOW_UPDATED = '2026.11';
+
+// The profile column's link buttons (the same as Contact's)
+const GITHUB_URL = 'https://github.com/Lagrange1994';
+const EMAIL = 'lyfun0202@gmail.com';
+
+// The three design principles row (about_principleN_*): a one-line
+// general rule and a scene illustration each, no project tags.
+const PRINCIPLES = [1, 2, 3] as const;
 
 // The project tags behind a card's claim, each a link to its page.
 function proofTags(labels: string, links: readonly string[]) {
@@ -316,19 +321,21 @@ export default function AboutSection() {
           {/* Design principles: their own row under the headline (desktop:
               one 3-column strip beside the photo). */}
           <div className="about-col about-col--principles">
-            {PRINCIPLES.map(({ n, links }) => {
+            {PRINCIPLES.map(n => {
               const key = `about_principle${n}` as const;
               return (
                 <NotchCard
                   key={n}
                   area={`bento-area-p${n}`}
                   className="bento-card card-spotlight sc-card bento-principle rise-card"
-                  notch={proofTags(t[`${key}_tags`], links)}
                   badge={<><span className="about-notch-badge-dot" aria-hidden="true" />DESIGN PRINCIPLE · {String(n).padStart(2, '0')}</>}
                 >
                   <span className="card-glass-highlight" aria-hidden="true" />
                   <div className="bento-label">{t[`${key}_title`]}</div>
                   <p className="bento-text">{t[`${key}_text`]}</p>
+                  {/* the principle as a scene, across the card's lower half
+                      (01 / 03: the stage only, their scenes still to come) */}
+                  {n === 2 ? <PrincipleArtSubtract /> : <div className="principle-stage" aria-hidden="true" />}
                 </NotchCard>
               );
             })}
@@ -374,6 +381,30 @@ export default function AboutSection() {
             </div>
             <p className="bento-text bento-points about-cta-points" dangerouslySetInnerHTML={{ __html: t.about_cta_text }} />
           </NotchCard>
+
+          {/* Desktop: the room under the availability card holds the links
+              as one row of buttons (the same ones as Contact's), then what
+              I'm working on now */}
+          <div className="about-links rise-card">
+            <div className="about-link-row">
+            <a className="about-link-btn" href={GITHUB_URL} target="_blank" rel="noreferrer">
+              <svg className="about-link-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.483 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836a9.59 9.59 0 012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z" />
+              </svg>
+              <span className="about-link-name">GitHub</span>
+              <i className="ph-bold ph-arrow-right about-link-arrow" aria-hidden="true" />
+            </a>
+            <a className="about-link-btn" href={`mailto:${EMAIL}`}>
+              <i className="ph-bold ph-envelope-simple about-link-icon" aria-hidden="true" />
+              <span className="about-link-name">Email</span>
+              <i className="ph-bold ph-arrow-right about-link-arrow" aria-hidden="true" />
+            </a>
+            </div>
+            <div className="about-now">
+              <span className="about-now-label"><span className="about-now-dot" aria-hidden="true" />NOW · {NOW_UPDATED}</span>
+              <span className="about-now-text">{t.about_now}</span>
+            </div>
+          </div>
           </div>
 
           {/* Desktop: two independent columns beside the photo — the intro
@@ -390,17 +421,6 @@ export default function AboutSection() {
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro1_label}</div>
             <p className="bento-text bento-points" dangerouslySetInnerHTML={{ __html: t.about_intro1_short }} />
-            <div className="about-float" aria-hidden="true">
-              <div className="about-float-box about-float-box--center">
-                <img src="./img/others/Figma_logo.png" alt="" />
-              </div>
-              <div className="about-float-box about-float-box--left">
-                <img src="./img/others/Adobe_XD_logo.png" alt="" />
-              </div>
-              <div className="about-float-box about-float-box--right">
-                <i className="ph-bold ph-flow-arrow" />
-              </div>
-            </div>
           </NotchCard>
 
           <NotchCard
@@ -411,33 +431,6 @@ export default function AboutSection() {
             <span className="card-glass-highlight" aria-hidden="true" />
             <div className="bento-label">{t.about_intro2_label}</div>
             <p className="bento-text bento-points" dangerouslySetInnerHTML={{ __html: t.about_intro2_short }} />
-            <div className="about-orbit" aria-hidden="true">
-              <div className="about-orbit-ring">
-                <div className="about-orbit-node" style={{ ['--angle' as string]: '-90deg' }}>
-                  <div className="about-orbit-icon"><img src="./img/others/Blender_logo.png" alt="" /></div>
-                </div>
-                <div className="about-orbit-node" style={{ ['--angle' as string]: '-18deg' }}>
-                  <div className="about-orbit-icon"><img src="./img/others/Spline_logo.webp" alt="" /></div>
-                </div>
-                <div className="about-orbit-node" style={{ ['--angle' as string]: '54deg' }}>
-                  <div className="about-orbit-icon"><img src="./img/others/Dora_logo.png" alt="" /></div>
-                </div>
-                <div className="about-orbit-node" style={{ ['--angle' as string]: '126deg' }}>
-                  <div className="about-orbit-icon"><i className="ph-bold ph-cube" /></div>
-                </div>
-                <div className="about-orbit-node" style={{ ['--angle' as string]: '198deg' }}>
-                  <div className="about-orbit-icon"><i className="ph-bold ph-browser" /></div>
-                </div>
-              </div>
-              <div className="about-orbit-ring about-orbit-ring--inner">
-                <div className="about-orbit-node about-orbit-node--inner" style={{ ['--angle' as string]: '45deg' }}>
-                  <div className="about-orbit-icon about-orbit-icon--inner"><i className="ph-bold ph-film-strip" /></div>
-                </div>
-                <div className="about-orbit-node about-orbit-node--inner" style={{ ['--angle' as string]: '225deg' }}>
-                  <div className="about-orbit-icon about-orbit-icon--inner"><i className="ph-bold ph-sparkle" /></div>
-                </div>
-              </div>
-            </div>
           </NotchCard>
 
           </div>

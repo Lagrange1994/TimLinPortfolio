@@ -2840,13 +2840,13 @@
       flex-direction: column;
     }
 
-    /* Desktop: one set of row lines for all three columns. The intro/stats
-       band is split into its two rows on the outer grid, and the intro,
-       stats and profile columns take them by subgrid — so the photo ends
-       exactly on intro1 / Years-Projects' bottom edge, and the availability
-       card on intro2 / Service Domains', instead of the photo's own aspect
-       ratio landing a few px off. The photo stretches to its rows (never
-       squatter than its own ratio, like the tablet layout). */
+    /* Desktop: the intro/stats band is split into its two rows on the
+       outer grid, and the intro and stats columns take them by subgrid, so
+       their row lines meet. The profile column stops at that band's bottom:
+       the photo keeps its own ratio (the taller principle row would
+       otherwise stretch it long), and the availability card sits right
+       under it at its own height. The workflow card below runs the full
+       width. */
     @media (min-width: 1025px) {
       .about-grid {
         grid-template-areas:
@@ -2854,7 +2854,7 @@
           "profile principles principles principles principles"
           "profile intro intro stats stats"
           "profile intro intro stats stats"
-          "profile workflow workflow workflow workflow";
+          "workflow workflow workflow workflow workflow";
       }
 
       .about-col--intro,
@@ -2862,26 +2862,134 @@
         grid-template-rows: subgrid;
       }
 
+      /* the availability card at its own content height; the room left
+         under it (down to the intro/stats band's bottom) holds the links */
       .about-col--profile {
-        grid-template-rows: subgrid;
-        grid-template-areas: "photo" "photo" "cta" ".";
-        align-content: normal;
+        grid-template-rows: auto auto 1fr;
+        grid-template-areas: "photo" "cta" "slot";
+        align-content: stretch;
       }
 
-      .about-photo {
-        align-self: stretch;
-        container-type: inline-size;
-      }
+    }
 
-      .about-photo .pc-card-wrapper,
-      .about-photo .pc-card-shell {
-        height: 100%;
-      }
+    /* Under the availability card (desktop only: tablet and phone have no
+       room left there, and Contact carries the same links): GitHub and
+       Email as one row of glass capsules (the arrow nudging on hover), then
+       a "Now" card (what I'm working on lately, dated, a live dot). */
+    .about-links { display: none; }
 
-      .about-photo .pc-card {
-        height: 100%;
-        aspect-ratio: unset;
-        min-height: calc(100cqw / 0.718);
+    .about-now {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+      min-height: 0;
+      padding: 12px 22px;
+      border-radius: 28px;
+      corner-shape: squircle;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: var(--noise-grain) 0 0 / 180px 180px repeat, var(--glass-bg-premium);
+      box-shadow: var(--card-edge);
+      backdrop-filter: blur(1rem);
+    }
+
+    .about-now-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      color: var(--text-50);
+    }
+
+    /* live: a soft pulse */
+    .about-now-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 0 0 rgba(52, 211, 153, .55);
+      animation: about-now-pulse 2.4s ease-out infinite;
+    }
+
+    @keyframes about-now-pulse {
+      0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, .55); }
+      70%, 100% { box-shadow: 0 0 0 7px rgba(52, 211, 153, 0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .about-now-dot { animation: none; }
+    }
+
+    .about-now-text {
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--text);
+    }
+
+    .about-link-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .about-link-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: var(--noise-grain) 0 0 / 180px 180px repeat, var(--glass-bg-premium);
+      box-shadow: var(--card-edge);
+      backdrop-filter: blur(1rem);
+      /* plain text in dark mode; light mode turns it the About purple */
+      color: var(--text);
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform .25s ease, border-color .3s, box-shadow .3s;
+    }
+
+    .about-link-icon { width: 18px; height: 18px; font-size: 18px; flex: none; }
+
+    .about-link-name { flex: 1; }
+
+    .about-link-arrow {
+      font-size: 18px;
+      transition: transform .2s ease;
+    }
+
+    :root[data-theme="light"] .about-link-btn { color: oklch(from rgb(108, 99, 255) .5 .2 h); }
+
+    .about-link-btn:hover { transform: translateY(-3px); border-color: rgba(255, 255, 255, 0.28); }
+    .about-link-btn:hover .about-link-arrow { transform: translateX(3px); }
+    .about-link-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+    :root[data-theme="light"] .about-now,
+    :root[data-theme="light"] .about-link-btn {
+      background: var(--neu-bg);
+      border-color: transparent;
+      box-shadow: var(--neu-raised-sm);
+      backdrop-filter: none;
+    }
+
+    :root[data-theme="light"] .about-link-btn:hover { box-shadow: var(--neu-raised-sm-hover); }
+
+    @media (min-width: 1025px) {
+      /* after the hidden-by-default rule above, so it wins */
+      .about-links {
+        grid-area: slot;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 12px;
+        min-height: 0;
       }
     }
 
@@ -3017,7 +3125,89 @@
 
     /* the card's first line was the number; the title now leads, clear of
        the capsule */
-    .bento-principle.has-notch { padding-top: 30px; }
+    .bento-principle { padding-top: 30px; }
+
+    /* Principle diagrams (PrincipleArt.tsx): a card without project tags
+       (no notch) gives its whole lower half to the diagram, under the
+       one-line rule — it takes the room left in the row's height, centred.
+       Lines in the card's ink, the kept action in its colour. On hover the
+       non-core blocks drop out and the action lights up. */
+    .principle-stage {
+      flex: 1 1 0;
+      /* room for a scene, not just an icon */
+      min-height: 160px;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+      border-radius: 24px;
+      corner-shape: squircle;
+      /* the Figma MCP mockup canvas's dot grid, on a faint tint of the card */
+      background:
+        radial-gradient(var(--pa-dot) 1px, transparent 1px) 0 0 / 14px 14px,
+        color-mix(in oklab, rgb(var(--tone)) 8%, transparent);
+      border: 1px solid rgba(255, 255, 255, .07);
+      pointer-events: none;
+      --pa-dot: rgba(255, 255, 255, .09);
+      --pa-ink: rgba(255, 255, 255, .34);
+      --pa-fill: rgba(255, 255, 255, .14);
+      --pa-accent: var(--tone-bright);
+    }
+
+    :root[data-theme="light"] .principle-stage {
+      background:
+        radial-gradient(var(--pa-dot) 1px, transparent 1px) 0 0 / 14px 14px,
+        color-mix(in oklab, rgb(var(--tone)) 4%, transparent);
+      border-color: transparent;
+      /* flat: only a faint tint marks the stage, no pressed-in shadow */
+      box-shadow: none;
+      --pa-dot: color-mix(in oklab, var(--text) 6%, transparent);
+      --pa-ink: color-mix(in oklab, var(--text) 32%, transparent);
+      --pa-fill: color-mix(in oklab, var(--text) 10%, transparent);
+      --pa-accent: oklch(from rgb(var(--tone)) .55 .2 h);
+    }
+
+    .principle-art {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-height: 132px;
+      overflow: visible;
+    }
+
+    .principle-art :is(.pa-frame, .pa-arrow, .pa-phone) {
+      fill: none;
+      stroke: var(--pa-ink);
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .principle-art .pa-phone { stroke: var(--pa-accent); }
+    /* light mode: one accent per scene, only the kept action is coloured */
+    :root[data-theme="light"] .principle-art .pa-phone { stroke: var(--pa-ink); }
+    .principle-art .pa-bit { fill: var(--pa-fill); }
+    .principle-art .pa-cta { fill: var(--pa-accent); }
+
+    .principle-art :is(.pa-cut, .pa-cta) {
+      transform-box: fill-box;
+      transform-origin: center;
+      transition: opacity .35s ease, transform .35s ease;
+    }
+
+    .bento-principle:hover .principle-art .pa-cut { opacity: 0; transform: scale(.6); }
+    .bento-principle:hover .principle-art .pa-cut:nth-of-type(3) { transition-delay: .05s; }
+    .bento-principle:hover .principle-art .pa-cut:nth-of-type(4) { transition-delay: .1s; }
+    .bento-principle:hover .principle-art .pa-cut:nth-of-type(5) { transition-delay: .15s; }
+    .bento-principle:hover .principle-art .pa-cta {
+      transform: scale(1.12);
+      filter: drop-shadow(0 0 4px var(--pa-accent));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .principle-art :is(.pa-cut, .pa-cta) { transition: none; }
+    }
 
     .about-status {
       display: inline-flex;
@@ -3287,6 +3477,25 @@
       border-color: rgba(255, 255, 255, .22) !important;
     }
 
+    /* the stat tiles take the page's own purple-to-blue colours (the chat
+       button's --grad-logo and --primary): violet #8A2BE2, the primary
+       #6C63FF, then the cyan-blue #00D4FF — each its own, one family */
+    .about-grid .bento-card.bento-stat-big.bento-area-years { --tone: 138, 43, 226; }
+    .about-grid .bento-card.bento-stat-big.bento-area-projects { --tone: 108, 99, 255; }
+    .about-grid .bento-card.bento-stat-big.bento-area-domains { --tone: 0, 212, 255; }
+
+    /* dark mode: each tile's colour, deep and low-light, lifting across
+       the tile in its own hue (a hue drift turns the cyan tile green), with
+       a faint glow of its own colour at the foot, so the tiles sit in the
+       dark page instead of glowing out */
+    :root:not([data-theme="light"]) .about-grid .bento-card.bento-stat-big {
+      --tone-deep: oklch(from rgb(var(--tone)) .3 .13 h);
+      --tone-vivid: oklch(from rgb(var(--tone)) .38 .15 h);
+      --tone-bright: oklch(from rgb(var(--tone)) .46 .14 h);
+      --tone-glow: oklch(from rgb(var(--tone)) .62 .15 h / .35);
+      border-color: rgba(255, 255, 255, .1) !important;
+    }
+
     .bento-stat-big .bento-label {
       order: 2;
       color: rgba(255, 255, 255, .92);
@@ -3303,11 +3512,9 @@
     }
 
     .bento-stat-big > .domains-scrim { display: none; }
-
     /* Years / Projects: a big frosted-glass icon tile in the bottom-right
-       corner (the intro cards' .about-float-box glass, scaled up), pushed
-       past the card's right and bottom edges so the card crops it, tilted
-       and gently floating, behind the text. */
+       corner, pushed past the card's right and bottom edges so the card
+       crops it, tilted and gently floating, behind the text. */
     .stat-glass-icon {
       position: absolute;
       right: -24px;
@@ -3329,14 +3536,30 @@
       pointer-events: none;
     }
 
-    /* Systems Design's floating badges and Visuals' orbit: the whole art
-       group scaled up from its bottom-right anchor so it fills more of the
-       card (overlapping the copy a little is fine — it sits behind it).
-       `scale` (not transform) so it stacks on the groups' own animations. */
-    .about-float,
-    .about-orbit {
-      scale: 1.8;
-      transform-origin: 100% 100%;
+    .stat-glass-icon i {
+      font-size: 58px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    @keyframes stat-glass-float {
+      0%, 100% { transform: rotate(-10deg) translateY(0); }
+      50% { transform: rotate(-10deg) translateY(-6px); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .stat-glass-icon { animation: none; }
+    }
+
+    @media (max-width: 767px) {
+      .stat-glass-icon {
+        right: -16px;
+        bottom: -16px;
+        width: 84px;
+        height: 84px;
+        border-radius: 22px;
+      }
+
+      .stat-glass-icon i { font-size: 40px; }
     }
 
     /* About's AI workflow card: the step chips start just right of the
@@ -3394,42 +3617,6 @@
         max-width: none;
         margin-bottom: 0;
       }
-    }
-
-    /* the orbit sits a little lower, more of it cropped by the bottom edge */
-    .about-orbit { translate: 0 40px; }
-
-    @media (max-width: 767px) {
-      .about-float,
-      .about-orbit { scale: 1.5; }
-
-      .about-orbit { translate: 0 28px; }
-    }
-
-    .stat-glass-icon i {
-      font-size: 58px;
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    @keyframes stat-glass-float {
-      0%, 100% { transform: rotate(-10deg) translateY(0); }
-      50% { transform: rotate(-10deg) translateY(-6px); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .stat-glass-icon { animation: none; }
-    }
-
-    @media (max-width: 767px) {
-      .stat-glass-icon {
-        right: -16px;
-        bottom: -16px;
-        width: 84px;
-        height: 84px;
-        border-radius: 22px;
-      }
-
-      .stat-glass-icon i { font-size: 40px; }
     }
 
     .bento-card.bento-stat-big .stat-num-wrap,
@@ -3676,6 +3863,12 @@
       --card-tint: rgba(var(--ai-human-rgb),  .2);
       border-color: rgba(var(--ai-human-rgb),  .3);
     }
+    /* the design principles: the same top-down tint as the intro cards,
+       in their capsules' purple (the About tone, --primary) */
+    .bento-card.bento-principle {
+      --card-tint: rgba(108, 99, 255, .24);
+      border-color: rgba(108, 99, 255, .34);
+    }
     .bento-card.bento-spectrum {
       --card-tint-shape: 420px 260px at 50% 0%;
       --card-tint: rgba(var(--ai-spectrum-rgb),  .22);
@@ -3753,11 +3946,6 @@
     /* Chinese wraps at punctuation and spaces, not mid-word (莫|蘭迪).
        Not on phones: the column is too narrow, every comma would break. */
     @media (min-width: 768px) {
-      /* the label column takes room from the text: give the rows a little
-         more of the card than the plain 75% copy (still clear of the art) */
-      .bento-area-intro1 .bento-text.bento-points,
-      .bento-area-intro2 .bento-text.bento-points { max-width: 84%; }
-
       .bento-point > span:last-child {
         word-break: keep-all;
         overflow-wrap: anywhere;
@@ -3787,6 +3975,19 @@
     }
 
     .bento-point-label i { font-size: 13px; }
+
+    /* a tool named in the copy carries its own logo, inline, so the card
+       needs no floating icon art beside the text */
+    .tool-name { white-space: nowrap; }
+
+    .tool-logo {
+      display: inline-block;
+      width: 1.05em;
+      height: 1.05em;
+      margin-right: .3em;
+      vertical-align: -.15em;
+      object-fit: contain;
+    }
 
     /* About intro cards: the projects behind the claim, each a link to its
        page. Same width as the text, clear of the card's icon art. */
@@ -3867,30 +4068,36 @@
       color: var(--text);
     }
 
-    /* The cards' action buttons (Get in touch, See the full workflow): a
-       bigger capsule in the card's own colour, vivid, sitting in the
-       card's bottom-left notch. */
+    /* The workflow card's action (See the full workflow): a secondary
+       button, the same glass pill as the GitHub / Email links
+       (.about-link-btn), so 聯絡我 stays the section's one primary
+       action. Sits in the card's bottom-left notch. */
     .about-action {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       height: 46px;
       padding: 0 22px;
-      border: 0;
+      border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 9999px;
-      background: linear-gradient(120deg, var(--tone-vivid), var(--tone-bright));
-      color: #fff;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, .25);
-      font-family: inherit;
+      background: var(--noise-grain) 0 0 / 180px 180px repeat, var(--glass-bg-premium);
+      box-shadow: var(--card-edge);
+      backdrop-filter: blur(1rem);
+      /* plain text in dark mode; light mode turns it the About purple */
+      color: var(--text);
+      font-family: var(--font-heading);
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       white-space: nowrap;
       cursor: pointer;
-      box-shadow: 0 8px 24px -8px var(--tone-vivid);
-      transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
+      transition: transform .25s ease, border-color .3s, box-shadow .3s;
     }
 
+    :root[data-theme="light"] .about-action { color: oklch(from rgb(108, 99, 255) .5 .2 h); }
+
     .about-action > span { transition: transform .2s ease; }
+
+    .about-action:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 
     /* Availability card: the same fill and border as Contact's "open for
        work" strip (.cta-strip), and its gradient glass button
@@ -3956,11 +4163,7 @@
     :root[data-theme="light"] .about-notch-tags:has(> .about-proof-tag)::before { display: none; }
     :root[data-theme="light"] .about-notch-tags > .about-proof-tag { border-color: transparent; }
 
-    .about-action:hover {
-      filter: saturate(1.15) brightness(1.08);
-      box-shadow: 0 10px 30px -8px var(--tone-bright);
-    }
-
+    .about-action:hover { transform: translateY(-3px); border-color: rgba(255, 255, 255, 0.28); }
     .about-action:hover > span { transform: translateX(3px); }
 
     /* Light mode: the saturated pieces (the big-number tiles, the notch
@@ -3980,22 +4183,21 @@
     /* the principles' capsules: Tech Stack's light .tech-level-badge — a
        faint tint, a coloured hairline and coloured text, no shadow */
     :root[data-theme="light"] .about-notch > .about-notch-badge {
-      background: rgba(var(--tone), .12);
-      border: 1px solid rgba(var(--tone), .5);
+      background: rgba(var(--tone), .08);
+      border: 1px solid transparent;
       color: oklch(from rgb(var(--tone)) .45 .17 h);
       box-shadow: none;
     }
 
+    /* light: the GitHub / Email links' raised pill, no colour */
     :root[data-theme="light"] .about-action {
-      color: var(--tone-ink);
-      text-shadow: none;
-      box-shadow: 0 8px 22px -10px rgba(var(--tone), .55), inset 0 1px 0 rgba(255, 255, 255, .7);
+      background: var(--neu-bg);
+      border-color: transparent;
+      box-shadow: var(--neu-raised-sm);
+      backdrop-filter: none;
     }
 
-    :root[data-theme="light"] .about-action:hover {
-      filter: saturate(1.2);
-      box-shadow: 0 10px 26px -10px rgba(var(--tone), .65), inset 0 1px 0 rgba(255, 255, 255, .7);
-    }
+    :root[data-theme="light"] .about-action:hover { box-shadow: var(--neu-raised-sm-hover); }
 
     /* the tile itself: no colour, the plain light card (--neu-bg), its
        number, label and icon carrying the colour instead */
@@ -4027,15 +4229,17 @@
       color: var(--text-70);
     }
 
-    :root[data-theme="light"] .stat-glass-icon i {
-      color: var(--tone-ink);
-    }
-
-    /* white glass would vanish on the white tile: a faint tint of the
-       card's colour instead */
+    /* light mode: the icon tile stays the same size but steps back, so it
+       no longer competes with the label it overlaps */
     :root[data-theme="light"] .stat-glass-icon {
       background: linear-gradient(135deg, rgba(var(--tone), .14), rgba(var(--tone), .05));
       border-color: rgba(var(--tone), .22);
+      box-shadow: none;
+      opacity: .4;
+    }
+
+    :root[data-theme="light"] .stat-glass-icon i {
+      color: var(--tone-ink);
     }
 
     .bento-accent {
@@ -7460,7 +7664,7 @@
       text-decoration: none;
       white-space: nowrap;
       font-family: var(--font);
-      /* About's 聯絡我 button (.about-action): a drop shadow in its own
+      /* like About's 聯絡我 button: a drop shadow in its own
          colour, plus a soft halo round it */
       box-shadow:
         0 8px 24px -8px color-mix(in oklab, var(--line) 90%, transparent),
@@ -8035,7 +8239,7 @@
        this rule's higher specificity (3 :not() clauses vs. that rule's 1
        descendant class) overrides their own position/z-index and breaks
        the layering both rely on. */
-    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay):not(.domains-scrim):not(.domain-swap-stage):not(.about-orbit):not(.about-float):not(.stat-glass-icon):not(.notch-outline) {
+    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay):not(.domains-scrim):not(.domain-swap-stage):not(.stat-glass-icon):not(.notch-outline):not(.principle-art) {
       position: relative;
       z-index: 2;
     }
@@ -8060,266 +8264,6 @@
        for the same fade in white instead, still legible over the photos. */
     :root[data-theme="light"] .domains-scrim {
       background: linear-gradient(to top right, rgba(247, 250, 252, 0.82) 0%, rgba(247, 250, 252, 0) 65%);
-    }
-
-    /* Immersive Visuals card — bio text keeps to 3/4 width, leaving the
-       right-hand quarter as breathing room for the orbit. The orbit itself
-       is sized bigger than that reserved quarter and anchored past the
-       card's own bottom-right edge, the same "dominant, allowed to overhang
-       past the corner" treatment as .domain-swap-stage above — .sc-card's
-       overflow:hidden clips it for free, so it reads as partially cropped
-       by the card edge instead of neatly boxed in. */
-    .bento-area-intro2 .bento-text {
-      max-width: 75%;
-    }
-
-    /* Icons ride a single rotating ring but each counter-rotates in its own
-       inner wrapper so they stay upright instead of spinning in place —
-       same technique reactbits.dev uses for its "Well Organized" bento
-       card. --radius is a percentage (not px) so the ring keeps its icons
-       proportionally spaced as .about-orbit's own size changes across
-       breakpoints. */
-    .about-orbit {
-      position: absolute;
-      right: -24px;
-      bottom: -24px;
-      width: 140px;
-      height: 140px;
-      z-index: 0;
-      opacity: 0.45;
-      pointer-events: none;
-    }
-
-    .about-orbit-ring {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      animation: about-orbit-spin 26s linear infinite;
-    }
-
-    .about-orbit-node {
-      --angle: 0deg;
-      --radius: 50%;
-      position: absolute;
-      top: calc(50% + (var(--radius) * sin(var(--angle))));
-      left: calc(50% + (var(--radius) * cos(var(--angle))));
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      /* Frosted glass chip — white-only gradient (brighter top-left,
-         fading out) instead of a flat tint, so each node still reads as
-         its own glass surface. */
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06));
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      transform: translate(-50%, -50%);
-    }
-
-    .about-orbit-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 100%;
-      animation: about-orbit-spin-rev 26s linear infinite;
-    }
-
-    .about-orbit-node img {
-      width: 16px;
-      height: 16px;
-      object-fit: contain;
-      filter: grayscale(1) brightness(1.6);
-    }
-
-    .about-orbit-node i {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.55);
-    }
-
-    /* Inner track: same ring/node mechanism, smaller and counter-rotating
-       against the outer ring for a two-layer orbit (retrograde parallax). */
-    .about-orbit-ring--inner {
-      inset: 27%;
-      border-color: rgba(255, 255, 255, 0.1);
-      animation: about-orbit-spin-rev 18s linear infinite;
-    }
-
-    .about-orbit-node--inner {
-      width: 22px;
-      height: 22px;
-    }
-
-    .about-orbit-icon--inner {
-      animation: about-orbit-spin 18s linear infinite;
-    }
-
-    .about-orbit-node--inner i {
-      font-size: 11px;
-    }
-
-    @keyframes about-orbit-spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    @keyframes about-orbit-spin-rev {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(-360deg); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .about-orbit-ring,
-      .about-orbit-icon,
-      .about-orbit-ring--inner,
-      .about-orbit-icon--inner {
-        animation: none;
-      }
-    }
-
-    /* Light mode: same problem as .about-float-box above — the white ring
-       border, white glass nodes, and grayscale-then-brightened (near-white)
-       icons were tuned for a dark card and wash out on the now-light
-       bento card. Dark-tinted ring/glass, and invert(1) on top of the same
-       base filter to flip the icon silhouette dark. */
-    :root[data-theme="light"] .about-orbit-ring {
-      border-color: rgba(58, 58, 66, 0.16);
-    }
-
-    :root[data-theme="light"] .about-orbit-ring--inner {
-      border-color: rgba(58, 58, 66, 0.12);
-    }
-
-    :root[data-theme="light"] .about-orbit-node {
-      background: linear-gradient(135deg, rgba(58, 58, 66, 0.1), rgba(58, 58, 66, 0.03));
-      border-color: rgba(58, 58, 66, 0.14);
-    }
-
-    /* The brand logos (Blender/Spline/Dora) have much larger solid-fill
-       areas than the Phosphor line icons sharing this ring, so the same
-       invert(1) treatment reads as a heavy dark blob next to the light,
-       thin-stroke icons. Cut opacity so its "ink" roughly matches the
-       Phosphor icons' var(--text-50) alpha instead of sitting fully
-       opaque. */
-    :root[data-theme="light"] .about-orbit-node img {
-      filter: grayscale(1) brightness(1.6) invert(1);
-      opacity: 0.45;
-    }
-
-    :root[data-theme="light"] .about-orbit-node i {
-      color: var(--text-50);
-    }
-
-    /* Systems Design card — mirrors Immersive Visuals' corner treatment
-       (reserved text width + overhanging bottom-right decoration), but the
-       decoration itself is a straight port of reactbits.dev's "Visual
-       Editors" bento card: three badges that idle-float independently via
-       looping keyframes (source uses a per-frame sine offset; a CSS
-       ease-in-out loop reads the same on a static badge cluster). */
-    .bento-area-intro1 .bento-text {
-      max-width: 75%;
-    }
-
-    .about-float {
-      position: absolute;
-      right: -10px;
-      bottom: -6px;
-      width: 150px;
-      height: 108px;
-      z-index: 0;
-      opacity: 0.45;
-      pointer-events: none;
-    }
-
-    .about-float-box {
-      position: absolute;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 14px;
-      /* Frosted glass chip — white-only gradient (brighter top-left,
-         fading out) instead of a flat tint, so each badge still reads as
-         its own glass surface. */
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06));
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-    }
-
-    .about-float-box--center {
-      width: 48px;
-      height: 48px;
-      top: 2px;
-      left: 51px;
-      animation: about-float-a 5.5s ease-in-out infinite;
-    }
-
-    .about-float-box--left {
-      width: 38px;
-      height: 38px;
-      top: 58px;
-      left: 6px;
-      animation: about-float-b 6.5s ease-in-out infinite;
-    }
-
-    .about-float-box--right {
-      width: 38px;
-      height: 38px;
-      top: 58px;
-      right: 6px;
-      animation: about-float-c 6s ease-in-out infinite;
-    }
-
-    .about-float-box img {
-      width: 22px;
-      height: 22px;
-      object-fit: contain;
-      filter: grayscale(1) brightness(1.6);
-    }
-
-    .about-float-box i {
-      font-size: 16px;
-      color: rgba(255, 255, 255, 0.55);
-    }
-
-    @keyframes about-float-a {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
-    }
-
-    @keyframes about-float-b {
-      0%, 100% { transform: rotate(-12deg) translate(0, 0); }
-      50% { transform: rotate(-12deg) translate(-4px, 4px); }
-    }
-
-    @keyframes about-float-c {
-      0%, 100% { transform: rotate(12deg) translate(0, 0); }
-      50% { transform: rotate(12deg) translate(4px, 4px); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .about-float-box {
-        animation: none;
-      }
-    }
-
-    /* Light mode: the white-tinted glass chip + grayscale-then-brightened
-       (near-white) icon were tuned for a dark card — both wash out to
-       invisible against the now-light bento card. Dark-tinted glass
-       instead, and invert(1) on top of the same base filter (which is
-       already a flattened near-white silhouette) to flip it dark. */
-    :root[data-theme="light"] .about-float-box {
-      background: linear-gradient(135deg, rgba(58, 58, 66, 0.1), rgba(58, 58, 66, 0.03));
-      border-color: rgba(58, 58, 66, 0.14);
-    }
-
-    :root[data-theme="light"] .about-float-box img {
-      filter: grayscale(1) brightness(1.6) invert(1);
-    }
-
-    :root[data-theme="light"] .about-float-box i {
-      color: var(--text-50);
     }
 
     /* ── PROFILE CARD (React Bits) ── */
@@ -8697,9 +8641,11 @@
       --behind-glow-size: 55%;
     }
 
+    /* same surface and lift as every other light card (--neu-bg,
+       --neu-raised), so the photo doesn't sink into the page */
     :root[data-theme="light"] .pc-card {
-      background: linear-gradient(160deg, #FEFDFA 0%, #F1EDE4 100%);
-      box-shadow: rgba(var(--shadow-near), 0.18) calc((var(--pointer-from-left)*10px) - 3px) calc((var(--pointer-from-top)*20px) - 6px) 20px -5px;
+      background: var(--neu-bg);
+      box-shadow: var(--neu-raised);
     }
 
     :root[data-theme="light"] .pc-inside {
@@ -11407,7 +11353,7 @@
        .skill-pill's fully-opaque glass treatment (own opacity, not the
        dark-mode ambient fade) so the word cloud stays legible. */
     :root[data-theme="light"] .ai-word-cloud span{background-color:var(--glass-bg);border-color:var(--glass-border);opacity:1 !important}
-    /* Idle-float, same technique as .about-float-box (Systems Design card):
+    /* Idle-float, a gentle looping bob:
        each word keeps its own static --word-rotate baseline and drifts a few
        px on top via keyframes; 4 variants + staggered delays via nth-child
        so the cloud doesn't bob in visible unison. */
@@ -11861,45 +11807,6 @@
       .line-desc {
         font-size: 12px;
       }
-
-      /* Immersive Visuals orbit — mobile cards use 16px padding (not the
-         desktop 24px), so shrink+match the overhang to that padding value
-         to keep the same "cropped by the corner" proportions. */
-      .about-orbit {
-        right: -16px;
-        bottom: -16px;
-        width: 100px;
-        height: 100px;
-      }
-
-      /* Systems Design float — same corner-padding match as .about-orbit
-         above. */
-      .about-float {
-        right: -4px;
-        bottom: -2px;
-        width: 110px;
-        height: 80px;
-      }
-
-      .about-float-box--center {
-        width: 36px;
-        height: 36px;
-        left: 37px;
-      }
-
-      .about-float-box--left,
-      .about-float-box--right {
-        width: 28px;
-        height: 28px;
-      }
-
-      .about-float-box--left {
-        left: 4px;
-      }
-
-      .about-float-box--right {
-        right: 4px;
-      }
     }
 
     /* Profile card shine — the only remaining touch "stuck after tap"
@@ -12024,6 +11931,9 @@
     :root[data-theme="light"] .about-notch {
       filter: drop-shadow(8px 8px 9px var(--neu-shadow-dark)) drop-shadow(-8px -8px 9px var(--neu-shadow-light));
     }
+
+    /* a NotchCard without a notch casts its own box-shadow (no clip to cut it) */
+    :root[data-theme="light"] .about-notch:not(:has(> .has-notch)) { filter: none; }
 
     /* .process-card overrides the shared -raised/-raised-hover shadow above
        with the -tight scale: it sits inside .process-scroll-wrap, an
@@ -12203,24 +12113,24 @@
       box-shadow: var(--neu-raised-sm-hover) !important;
     }
 
-    /* 淺色板：.tech-level-badge 實心漸層膠囊改空心，跟 .ai-focal-badge 同一套
-       處理——透明底、彩色邊框跟文字，不用滿版漸層色塊。 */
+    /* 淺色板：.tech-level-badge 跟 About grid 的 Design Principle 膠囊同款——
+       淡色底、無邊框、彩色文字，不用滿版漸層色塊。 */
     :root[data-theme="light"] .tech-level-badge {
       box-shadow: none !important;
     }
     :root[data-theme="light"] .tech-level-badge.html-item {
-      background: rgba(59, 130, 246, .12) !important;
-      border: 1px solid rgba(59, 130, 246, .5) !important;
+      background: rgba(59, 130, 246, .08) !important;
+      border: 1px solid transparent !important;
       color: #2563EB !important;
     }
     :root[data-theme="light"] .tech-level-badge.js-item {
-      background: rgba(249, 115, 22, .12) !important;
-      border: 1px solid rgba(249, 115, 22, .5) !important;
+      background: rgba(249, 115, 22, .08) !important;
+      border: 1px solid transparent !important;
       color: #C2410C !important;
     }
     :root[data-theme="light"] .tech-level-badge.react-item {
-      background: rgba(108, 99, 255, .12) !important;
-      border: 1px solid rgba(108, 99, 255, .5) !important;
+      background: rgba(108, 99, 255, .08) !important;
+      border: 1px solid transparent !important;
       color: #4C46B6 !important;
     }
 
@@ -12289,8 +12199,6 @@
     .process-step-badge,
     .ai-step-badge,
     .ai-card-toggle,
-    .about-orbit-node,
-    .about-float-box,
     .contact-card .slink {
       -webkit-backdrop-filter: none !important;
       backdrop-filter: none !important;
@@ -12534,8 +12442,8 @@
     :root[data-theme="light"] .ai-viewer .ai-pill .ai-focal-badge,
     :root[data-theme="light"] .ai-viewer .ai-stage-badge {
       /* opaque: it sits on the card edge, which would show through */
-      background: color-mix(in oklab, var(--ai-accent) 12%, var(--neu-bg));
-      border: 1px solid color-mix(in oklab, var(--ai-accent) 50%, transparent);
+      background: color-mix(in oklab, var(--ai-accent) 8%, var(--neu-bg));
+      border: 1px solid transparent;
       color: color-mix(in oklab, var(--ai-accent) 75%, #000);
       box-shadow: none;
     }

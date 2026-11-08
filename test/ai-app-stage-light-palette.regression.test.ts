@@ -43,4 +43,13 @@ describe('AI app window in light mode', () => {
       expect(stage).toMatch(new RegExp(`:root\\[data-theme="light"\\] ${esc} \\{ background: color-mix\\(in oklab, var\\(--[a-z]+\\) \\d+%, var\\(--w-panel\\)\\); \\}`));
     }
   });
+
+  it('coloured pieces drop their coloured hairline, a faint tint alone', () => {
+    const rule = stage.match(/:root\[data-theme="light"\] :is\(([^)]*)\) \{ box-shadow: none; \}/);
+    expect(rule).not.toBeNull();
+    for (const sel of ['.aas-block.is-warn', '.aas-block.is-ok', '.aas-quote', '.aas-reply-card', '.aas-badge', '.aas-chip.is-accent', '.aas-approve-done'])
+      expect(rule![1]).toContain(sel);
+    expect(stage).toMatch(/:root\[data-theme="light"\] \.aas-msg-ticket \{\s*box-shadow: none;/);
+    expect(stage).toMatch(/:root\[data-theme="light"\] \.aas-chat-chips span \{\s*box-shadow: none;/);
+  });
 });

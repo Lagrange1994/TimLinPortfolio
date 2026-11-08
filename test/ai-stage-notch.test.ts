@@ -12,7 +12,7 @@ vi.hoisted(() => {
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { stairNotchPath } from '../src/utils/notchPath';
-import { stageNotchSize, stageContentTops, navBaySize, NAV_BAY_END, STAGE_NOTCH_PAD } from '../src/utils/aiStageNotch';
+import { subNotchSize, stageContentTops, navBaySize, NAV_BAY_END, STAGE_NOTCH_PAD } from '../src/utils/aiStageNotch';
 
 // How I Use AI's stage card: My Portfolio's two-step top-left notch round
 // the section's label/title/subtitle, as one outline path.
@@ -68,14 +68,14 @@ describe('nav bay', () => {
   });
 });
 
-describe('stageNotchSize', () => {
-  it('pads round label + title, then the subtitle', () => {
-    const n = stageNotchSize({ labelRight: 120, titleRight: 640, titleBottom: 90, subRight: 380, subBottom: 150 });
+describe('subNotchSize', () => {
+  it('one step, padded round the subtitle alone (the title sits above the card)', () => {
+    const n = subNotchSize({ subRight: 380, subBottom: 40 });
     expect(n).toEqual({
-      n1w: 640 + STAGE_NOTCH_PAD,
-      n1h: 90 + STAGE_NOTCH_PAD,
+      n1w: 380 + STAGE_NOTCH_PAD,
+      n1h: 40 + STAGE_NOTCH_PAD,
       n2w: 380 + STAGE_NOTCH_PAD,
-      n2h: 150 - 90,
+      n2h: 0,
     });
   });
 });
