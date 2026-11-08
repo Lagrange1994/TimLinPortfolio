@@ -139,7 +139,7 @@ describe('About content', () => {
     // the availability title reads "Open for opportunities", in bold
     for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_cta_status).toBe('Open for opportunities');
     expect(translations.zh.about_cta_text).toContain('接受全職 / 兼職 / 專案合作');
-    expect(css).toMatch(/\.about-status \{[^}]*font-weight: 700;[^}]*color: color-mix\(in oklab, var\(--text\) 50%, transparent\);/);
+    expect(css).toMatch(/\.about-status \{[^}]*font-weight: 700;[^}]*color: var\(--text\);/);
     // the availability card copies Contact's "open for work" strip: its
     // fill/border and its gradient glass button
     expect(tsx).toContain('className="bento-card card-spotlight sc-card about-cta-card rise-card"');
@@ -170,7 +170,9 @@ describe('About content', () => {
     expect(css).not.toContain('--tone-title');
     const title = css.match(/\.bento-card:not\(\.bento-stat-big\) \.bento-label,[^{]*\{([^}]*)\}/)![1];
     expect(title).not.toMatch(/font-size|margin|gradient|background-clip/);
-    expect(title).toMatch(/font-weight: 800;\s*opacity: \.5;\s*color: var\(--text\);/);
+    // full text colour, like Tech Stack's .tech-name (no half-strength fade)
+    expect(title).toMatch(/font-weight: 800;\s*color: var\(--text\);/);
+    expect(title).not.toContain('opacity');
   });
 
   it('Years / Projects / Domains: a vivid tile in the card colour, the number in a multicolour gradient', () => {

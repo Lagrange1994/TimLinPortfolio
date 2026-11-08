@@ -2982,9 +2982,8 @@
       font-size: 20px;
       font-weight: 700;
       line-height: 1.1;
-      /* same as the other card titles (.bento-label at opacity .5), as a
-         colour so the green dot keeps its full strength */
-      color: color-mix(in oklab, var(--text) 50%, transparent);
+      /* same as the other card titles (.bento-label) */
+      color: var(--text);
     }
 
     .about-status-dot {
@@ -3814,11 +3813,11 @@
     }
 
     /* Card titles (not the big-number tiles): the usual size and place
-       (.bento-label), solid text colour, heavy, at half strength. */
+       (.bento-label), heavy, in full text colour like Tech Stack's card
+       titles (.tech-name). */
     .bento-card:not(.bento-stat-big) .bento-label,
     :root[data-theme="light"] .bento-card:not(.bento-stat-big) .bento-label {
       font-weight: 800;
-      opacity: .5;
       color: var(--text);
     }
 
@@ -3904,7 +3903,12 @@
     :root[data-theme="light"] .about-notch-tags:has(> .about-proof-tag) {
       background: var(--neu-bg);
       box-shadow: var(--neu-raised-sm);
+      border-color: transparent;
     }
+
+    /* light mode: the capsules (tray and tags) carry no outline */
+    :root[data-theme="light"] .about-notch-tags:has(> .about-proof-tag)::before { display: none; }
+    :root[data-theme="light"] .about-notch-tags > .about-proof-tag { border-color: transparent; }
 
     .about-action:hover {
       filter: saturate(1.15) brightness(1.08);
@@ -3967,10 +3971,10 @@
       filter: drop-shadow(0 4px 10px rgba(255, 255, 255, .6));
     }
 
-    /* only the number is coloured: the label greys like the other cards'
-       titles (.bento-label, half-strength text), the caption like body text */
+    /* only the number is coloured: the label takes the other cards' title
+       colour (.bento-label), the caption greys like body text */
     :root[data-theme="light"] .bento-stat-big .bento-label {
-      color: color-mix(in oklab, var(--text) 50%, transparent);
+      color: var(--text);
     }
 
     :root[data-theme="light"] .bento-stat-big .bento-caption {
@@ -7410,11 +7414,21 @@
       text-decoration: none;
       white-space: nowrap;
       font-family: var(--font);
-      transition: opacity .2s;
+      /* About's 聯絡我 button (.about-action): a drop shadow in its own
+         colour, plus a soft halo round it */
+      box-shadow:
+        0 8px 24px -8px color-mix(in oklab, var(--line) 90%, transparent),
+        0 0 22px -4px color-mix(in oklab, var(--line) 45%, transparent),
+        inset 0 1px 0 rgba(255, 255, 255, .25);
+      transition: opacity .2s, box-shadow .2s ease;
     }
 
     .line-btn:hover {
       opacity: .88;
+      box-shadow:
+        0 10px 30px -8px var(--line),
+        0 0 28px -4px color-mix(in oklab, var(--line) 55%, transparent),
+        inset 0 1px 0 rgba(255, 255, 255, .25);
     }
 
     .line-id {
