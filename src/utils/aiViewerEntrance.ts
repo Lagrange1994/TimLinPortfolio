@@ -23,7 +23,9 @@ export function attachAiViewerEntrance(viewer: HTMLElement): () => void {
   const onRise = (e: Event) => {
     if (e.target !== viewer) return;
     const { tl, dir } = (e as CustomEvent<RiseStartDetail>).detail;
-    const rail = viewer.querySelector<HTMLElement>('.ai-viewer-rail');
+    // The pills only: the step buttons beside them sit in the card's notch
+    // and stay put on the card.
+    const rail = viewer.querySelector<HTMLElement>('.ai-pills-wrap');
     // Only the panel that is showing: the others sit at opacity 0 and must
     // stay there.
     const front = viewer.querySelector<HTMLElement>('.aas-front.is-on');

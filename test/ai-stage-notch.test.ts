@@ -12,7 +12,7 @@ vi.hoisted(() => {
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { stairNotchPath } from '../src/utils/notchPath';
-import { stageNotchSize, stageContentTops, STAGE_NOTCH_PAD } from '../src/utils/aiStageNotch';
+import { stageNotchSize, stageContentTops, navBaySize, NAV_BAY_END, STAGE_NOTCH_PAD } from '../src/utils/aiStageNotch';
 
 // How I Use AI's stage card: My Portfolio's two-step top-left notch round
 // the section's label/title/subtitle, as one outline path.
@@ -51,6 +51,23 @@ describe('stairNotchPath', () => {
   });
 });
 
+describe('nav bay', () => {
+  it('cuts a bay into the left edge, inner corners concentric with the buttons', () => {
+    const bay = navBaySize({ top: 300, bottom: 392, right: 36, radius: 18 }, 10);
+    expect(bay).toEqual({ top: 290, bottom: 402, w: 46, ri: 28, ro: NAV_BAY_END });
+    // the bay's top inner corner shares the top button's centre (18, 318)
+    expect([bay.w - bay.ri, bay.top + bay.ri]).toEqual([18, 318]);
+  });
+
+  it('adds four corners to the outline, its depth on the left edge', () => {
+    const o = { n1w: 600, n1h: 120, n2w: 400, n2h: 60, r: 48, ri: 24 };
+    const d = stairNotchPath(1200, 700, { ...o, bay: { top: 290, bottom: 402, w: 46, ri: 28, ro: 18 } });
+    expect((d.match(/[ML] /g) ?? []).length).toBe(12 * 13);
+    const a = pts(d);
+    expect(a.some((v, i) => i % 2 === 0 && Math.abs(v - 46) < 0.01 && a[i + 1] > 290 && a[i + 1] < 402)).toBe(true);
+  });
+});
+
 describe('stageNotchSize', () => {
   it('pads round label + title, then the subtitle', () => {
     const n = stageNotchSize({ labelRight: 120, titleRight: 640, titleBottom: 90, subRight: 380, subBottom: 150 });
@@ -70,8 +87,15 @@ describe('stageContentTops', () => {
     expect(stageContentTops(n, { rail: 40, stage: 560 }, 24)).toEqual({ rail: 166 + 24, stage: 106 + 24 });
     // narrow screens: the app window starts under the subtitle too
     expect(stageContentTops(n, { rail: 40, stage: 380 }, 24).stage).toBe(166 + 24);
-    // right of the whole notch: straight to the top
-    expect(stageContentTops(n, { rail: 40, stage: 700 }, 24).stage).toBe(24);
+    // right of the whole notch: still no higher than the title step
+    expect(stageContentTops(n, { rail: 40, stage: 700 }, 24).stage).toBe(106 + 24);
+  });
+
+  it('the whole mockup centres on the progress rail beside it', () => {
+    // rail from 190, its middle 300 down; the mockup's middle 200 down
+    expect(stageContentTops(n, { rail: 40, stage: 560, centre: { railMid: 300, groupMid: 200 } }, 24).stage).toBe(190 + 100);
+    // a mockup taller than the rail still clears the notch
+    expect(stageContentTops(n, { rail: 40, stage: 560, centre: { railMid: 100, groupMid: 400 } }, 24).stage).toBe(106 + 24);
   });
 
   it('pieces reaching past the column clear the notch too', () => {
@@ -84,10 +108,13 @@ describe('stageContentTops', () => {
 describe('wiring', () => {
   it('the viewer is clipped and stroked along the notch on desktop', () => {
     expect(tsx).toContain('return attachStageNotch(v, l, t, s, svg, p);');
-    expect(tsx).toContain('<svg ref={aiOutlineRef} className="notch-outline ai-viewer-outline" aria-hidden="true">');
+
     expect(tsx).toContain('<div className="ai-viewer-shell">');
-    // never a plain rectangle first: hidden until the notch is measured
-    expect(css).toContain('.ai-viewer { clip-path: var(--ai-notch-clip, inset(0 0 100% 0)); }');
-    expect(css).toMatch(/\[data-ai-notch\] \.ai-viewer \{[^}]*[^}]*clip-path: var\(--ai-notch-clip, inset\(0 0 100% 0\)\);[^}]*border-image: linear-gradient\(transparent, transparent\) 1;/);
+    // the clip sits on the untransformed skin (the rising viewer paints
+    // unclipped mid-entrance), hidden until the notch is measured
+    expect(tsx).toMatch(/<div className="ai-viewer-skin" aria-hidden="true">\s*<svg ref=\{aiOutlineRef\}/);
+    expect(css).toMatch(/\[data-ai-notch\] \.ai-viewer-skin \{[^}]*clip-path: var\(--ai-notch-clip, inset\(0 0 100% 0\)\);[^}]*backdrop-filter: blur\(1rem\);/);
+    expect(css).toMatch(/\[data-ai-notch\] \.ai-viewer \{[^}]*background: none;\s*backdrop-filter: none;\s*border-image: linear-gradient\(transparent, transparent\) 1;/);
+    expect(css).not.toMatch(/\[data-ai-notch\] \.ai-viewer \{[^}]*clip-path/);
   });
 });

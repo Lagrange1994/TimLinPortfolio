@@ -103,7 +103,12 @@ describe('About content', () => {
     }
     expect(tsx).toContain(`scrollToSectionAligned('contact')`);
     // each principle card is labelled, not just numbered
-    expect(tsx).toContain(`<span className="bento-principle-num">Design Principle {String(n).padStart(2, '0')}</span>`);
+    // the number rides the card's top border as a capsule (NotchCard badge)
+    expect(tsx).toContain(`badge={<><span className="about-notch-badge-dot" aria-hidden="true" />DESIGN PRINCIPLE · {String(n).padStart(2, '0')}</>}`);
+    expect(tsx).not.toContain('bento-principle-num');
+    // outside the clipped card, rising glued to it
+    const notch = readFileSync(resolve(root, 'src/components/NotchCard.tsx'), 'utf8');
+    expect(notch).toContain('<div className="about-notch-badge rise-soft" data-rise-with={`.${area} > .has-notch`} data-rise-lock="">{badge}</div>');
     for (const lang of ['zh', 'en'] as const) {
       for (const k of ['about_cta_status', 'about_cta_text', 'about_cta_button'] as const) expect(translations[lang][k]).toBeTruthy();
     }
@@ -216,7 +221,7 @@ describe('About content', () => {
   it('the AI card hands off to How I Use AI (#my-skills)', () => {
     expect(tsx).toContain(`scrollToSectionAligned('my-skills')`);
     const skills = readFileSync(resolve(root, 'src/components/SkillsSection.tsx'), 'utf8');
-    expect(skills).toMatch(/<section id="my-skills"[^>]*>\s*<div ref=\{aiLabelRef\} className="section-label rise-soft">How I Use AI<\/div>/);
+    expect(skills).toMatch(/<section id="my-skills"[^>]*>\s*<div ref=\{aiLabelRef\} className="section-label rise-soft"[^>]*>How I Use AI<\/div>/);
   });
 
   it('each Service Domains cover carries its industry label, in both languages', () => {

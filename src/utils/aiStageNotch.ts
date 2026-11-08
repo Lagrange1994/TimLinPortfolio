@@ -1,10 +1,11 @@
-import { stairNotchPath } from './notchPath';
+import { stairNotchPath, type EdgeBay } from './notchPath';
 import { RISE_START_EVENT } from './useRiseReveal';
 
 // How I Use AI: the viewer (the stage card) gets My Portfolio's top-left
-// notch, with the section's label, title and subtitle sitting in it. Same
+// notch, with the section's title and subtitle sitting in it (the card's
+// top edge is level with the title; the label sits above the card). Same
 // approach as the wall and the About notches: one outline path, measured
-// from the live text, clips the card and is stroked as its border.
+// from the live text, clips the card's surface and is stroked as its border.
 //
 // Everything is measured with offsetLeft/offsetTop (blind to the rise
 // entrance's transforms) plus a text range for each line's right end (the
@@ -42,35 +43,115 @@ export function stageNotchSize(
 export const STAGE_NOTCH_GAP = 24;
 
 // How far down each column must start: below every notch step that spans
-// its left edge. `pieces` are what the app window column shows past its
-// own box (the window, the front panel), as left edge + top relative to the
-// column's top: each must clear the notch too, so nothing gets cut.
+// its left edge. `pieces` are what the app window column shows (the window,
+// the phone, the front panel), as left edge + top relative to the column's
+// top: each must clear the notch too, so nothing gets cut. `centre` lines
+// the middle of that whole mockup (railMid / groupMid, each from its own
+// column's top) up with the middle of the progress rail beside it.
 export function stageContentTops(
   n: StageNotch,
-  { rail, stage, pieces = [] }: { rail: number; stage: number; pieces?: { x: number; top: number }[] },
+  { rail, stage, pieces = [], centre }: {
+    rail: number; stage: number; pieces?: { x: number; top: number }[];
+    centre?: { railMid: number; groupMid: number };
+  },
   gap = STAGE_NOTCH_GAP,
 ) {
   const clear = (x: number) => (x < n.n2w ? n.n1h + n.n2h : x < n.n1w ? n.n1h : 0) + gap;
+  const railTop = clear(rail);
   return {
-    rail: clear(rail),
-    stage: Math.max(clear(stage), ...pieces.map(p => clear(p.x) - p.top)),
+    rail: railTop,
+    // centred on the rail, and never higher than the title step's bottom
+    // or the notch allows
+    stage: Math.max(
+      centre ? railTop + centre.railMid - centre.groupMid : 0,
+      n.n1h + gap,
+      clear(stage),
+      ...pieces.map(p => clear(p.x) - p.top),
+    ),
   };
 }
 
-// The columns' left edges inside the card and the stage's pieces (offsets,
-// so the entrance's transforms don't count).
+// The columns' left edges inside the card, and the mockup's pieces and
+// middle against the progress rail's. The pieces are measured at rest:
+// their entrance transforms are lifted for the one synchronous measure (as
+// My Portfolio's wall does), and the card's own rise scale is divided out.
 function columns(viewer: HTMLElement) {
   const rail = viewer.querySelector<HTMLElement>('.ai-viewer-rail');
   const stage = viewer.querySelector<HTMLElement>('.ai-stage');
+  const track = viewer.querySelector<HTMLElement>('.ai-rail-track');
   const v = docOffset(viewer);
   const s = stage ? docOffset(stage) : v;
-  const pieces = stage
-    ? [...stage.querySelectorAll<HTMLElement>('.aas-window, .aas-front')].map(el => {
-      const o = docOffset(el);
-      return { x: o.x - v.x, top: o.y - s.y };
-    })
-    : [];
-  return { rail: rail ? docOffset(rail).x - v.x : 0, stage: s.x - v.x, pieces };
+  const out = { rail: rail ? docOffset(rail).x - v.x : 0, stage: s.x - v.x };
+  if (!stage) return out;
+
+  const items = [...stage.querySelectorAll<HTMLElement>('.aas-window, .aas-phone, .aas-front.is-on')];
+  // (a drag offset, --dx / --dy, doesn't count either: the mockup is placed
+  // by where its pieces rest, not where someone left them)
+  const saved = items.map(el => [el.style.transform, el.style.translate, el.style.getPropertyValue('--dx'), el.style.getPropertyValue('--dy')]);
+  items.forEach(el => {
+    el.style.transform = ''; el.style.translate = '';
+    el.style.setProperty('--dx', '0px'); el.style.setProperty('--dy', '0px');
+  });
+  const sr = stage.getBoundingClientRect();
+  const k = sr.height / (stage.offsetHeight || 1) || 1;
+  const boxes = items.map(el => ({ el, r: el.getBoundingClientRect() })).filter(({ r }) => r.height > 0)
+    .map(({ el, r }) => ({
+      // the front panel changes with every step: it only has to clear the
+      // notch, the centring goes by the window and the phone (so the
+      // mockup doesn't jump on a step switch)
+      steady: !el.classList.contains('aas-front'),
+      x: (r.left - sr.left) / k + out.stage,
+      top: (r.top - sr.top) / k,
+      bottom: (r.bottom - sr.top) / k,
+    }));
+  items.forEach((el, i) => {
+    el.style.transform = saved[i][0]; el.style.translate = saved[i][1];
+    for (const [k, val] of [['--dx', saved[i][2]], ['--dy', saved[i][3]]]) {
+      if (val) el.style.setProperty(k, val); else el.style.removeProperty(k);
+    }
+  });
+  const steady = boxes.filter(b => b.steady);
+  if (!steady.length) return { ...out, pieces: boxes.map(b => ({ x: b.x, top: b.top })) };
+
+  const groupMid = (Math.min(...steady.map(b => b.top)) + Math.max(...steady.map(b => b.bottom))) / 2;
+  const railMid = rail && track
+    ? docOffset(track).y - docOffset(rail).y + track.offsetHeight / 2
+    : (rail?.offsetHeight ?? 0) / 2;
+  return { ...out, pieces: boxes.map(b => ({ x: b.x, top: b.top })), centre: { railMid, groupMid } };
+}
+
+// Gap between the ⌃ ⌄ buttons and their bay, and the radius of the bay's
+// two ends at the card's edge.
+export const NAV_BAY_GAP = 10;
+export const NAV_BAY_END = 18;
+
+// The bay cut into the card's left edge round the ⌃ ⌄ buttons (which sit
+// flush with that edge, see [data-ai-notch] .ai-viewer-nav): `gap` round
+// them, its inner corners concentric with the round buttons. Box: the
+// buttons' extent in the card's border box.
+export function navBaySize(box: { top: number; bottom: number; right: number; radius: number }, gap = NAV_BAY_GAP): EdgeBay {
+  return {
+    top: box.top - gap,
+    bottom: box.bottom + gap,
+    w: box.right + gap,
+    ri: box.radius + gap,
+    ro: NAV_BAY_END,
+  };
+}
+
+function navBay(viewer: HTMLElement, border: number): EdgeBay | undefined {
+  const btns = [...viewer.querySelectorAll<HTMLElement>('.ai-viewer-nav-btn')];
+  if (!btns.length) return undefined;
+  const v = docOffset(viewer);
+  // offsets of the card's children run from inside its border
+  const at = (el: HTMLElement) => { const o = docOffset(el); return { x: o.x - v.x + border, y: o.y - v.y + border }; };
+  const first = btns[0], last = btns[btns.length - 1];
+  return navBaySize({
+    top: at(first).y,
+    bottom: at(last).y + last.offsetHeight,
+    right: Math.max(...btns.map(b => at(b).x + b.offsetWidth)),
+    radius: Math.min(parseFloat(getComputedStyle(first).borderTopLeftRadius) || 0, first.offsetWidth / 2),
+  });
 }
 
 function docOffset(el: HTMLElement) {
@@ -106,22 +187,28 @@ export function attachStageNotch(
 
   const clear = () => {
     delete host.dataset.aiNotch;
-    for (const v of ['--ai-viewer-mt', '--ai-rail-top', '--ai-stage-top', '--ai-notch-clip']) host.style.removeProperty(v);
+    for (const v of ['--ai-viewer-mt', '--ai-rail-top', '--ai-stage-top', '--ai-notch-clip', '--ai-viewer-bw', '--ai-flow-h']) host.style.removeProperty(v);
     path.removeAttribute('d');
   };
 
   const sync = () => {
     if (!mq?.matches) { clear(); return; }
     host.dataset.aiNotch = '';
-    // the card's top edge level with the label's top
+    // the Make flow panel's height (steps 01–05; hidden ones are still laid
+    // out): the phone's bottom lines up with that panel's bottom
+    const flowH = Math.max(0, ...[...viewer.querySelectorAll<HTMLElement>('.aas-front.aas-flow')].map(el => el.offsetHeight));
+    if (flowH) host.style.setProperty('--ai-flow-h', `${flowH}px`);
+    // the card's top edge level with the title's top (not the label's: the
+    // card mustn't stand up past the title; the label sits above the card)
     const mt = parseFloat(getComputedStyle(viewer).marginTop) || 0;
-    const shift = docOffset(viewer).y - docOffset(label).y;
+    const shift = docOffset(viewer).y - docOffset(title).y;
     if (Math.abs(shift) > 0.5) host.style.setProperty('--ai-viewer-mt', `${mt - shift}px`);
 
     const v = docOffset(viewer);
     const titleBottom = docOffset(title).y + title.offsetHeight - v.y;
     const n = stageNotchSize({
-      labelRight: textRight(label) - v.x,
+      // the label is above the card, so only the title widens the first step
+      labelRight: 0,
       titleRight: textRight(title) - v.x,
       titleBottom,
       subRight: textRight(sub) - v.x,
@@ -145,12 +232,15 @@ export function attachStageNotch(
       r: parseFloat(cs.borderTopLeftRadius) || 0,
       ri: STAGE_NOTCH_TURN,
       shape: /squircle|superellipse\(2\)/.test(cornerShape) ? 'squircle' : 'round',
+      bay: navBay(viewer, (parseFloat(cs.borderLeftWidth) || 0)),
     });
     host.style.setProperty('--ai-notch-clip', `path('${d}')`);
     // the border, drawn along the outline (the CSS border is hidden); twice
     // the width, since the clip keeps only the inner half
     const bw = parseFloat(cs.borderTopWidth) || 0;
-    svg.style.left = svg.style.top = `${-bw}px`;
+    // the skin (and the outline in it) covers the card's border box
+    host.style.setProperty('--ai-viewer-bw', `${bw}px`);
+    svg.style.left = svg.style.top = '0px';
     svg.setAttribute('width', String(w));
     svg.setAttribute('height', String(h));
     path.setAttribute('d', d);

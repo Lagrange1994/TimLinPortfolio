@@ -921,15 +921,16 @@ function HandoffCard({ on, c, onDragStart }: { on: boolean; c: Copy } & SatProps
   );
 }
 
-// Desktop: the phone and the front panel can be dragged around the viewer.
-// The offset is a CSS variable pair (--dx / --dy) written straight to the
-// DOM, no re-render per move. All front panels share one offset, so the
-// next step's panel shows up wherever the last one was left.
+// Desktop: the app window, the phone and the front panel can be dragged
+// around the viewer. The offset is a CSS variable pair (--dx / --dy)
+// written straight to the DOM, no re-render per move. All front panels
+// share one offset, so the next step's panel shows up wherever the last
+// one was left.
 const DRAG_MQ = '(min-width: 961px)';
-type DragGroup = 'phone' | 'front';
+type DragGroup = 'window' | 'phone' | 'front';
 
 function useSatDrag() {
-  const offsets = useRef<Record<DragGroup, { x: number; y: number }>>({ phone: { x: 0, y: 0 }, front: { x: 0, y: 0 } });
+  const offsets = useRef<Record<DragGroup, { x: number; y: number }>>({ window: { x: 0, y: 0 }, phone: { x: 0, y: 0 }, front: { x: 0, y: 0 } });
   return (e: ReactPointerEvent<HTMLElement>) => {
     if (e.button !== 0 || !window.matchMedia?.(DRAG_MQ).matches) return;
     const el = e.currentTarget;
@@ -995,7 +996,7 @@ export default function AiAppStage({ steps, active }: {
   const current = active ?? steps[0]?.id;
   return (
     <>
-    <div className="aas-window">
+    <div className="aas-window" data-drag="window" onPointerDown={onDragStart}>
       <div className="aas-titlebar">
         <span className="aas-lights" aria-hidden="true"><i /><i /><i /></span>
         {/* Every screen is the same request, DR-248, moving through the system. */}

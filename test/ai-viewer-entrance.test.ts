@@ -19,7 +19,7 @@ import { RISE_START_EVENT, type RiseStartDetail } from '../src/utils/useRiseReve
 const build = () => {
   document.body.innerHTML = `
     <div class="ai-viewer">
-      <div class="ai-viewer-rail"></div>
+      <div class="ai-viewer-rail"><div class="ai-pills-wrap"></div><div class="ai-viewer-nav"></div></div>
       <div class="ai-stage">
         <div class="aas-window"></div>
         <div class="aas-sat aas-phone"></div>
@@ -30,7 +30,7 @@ const build = () => {
     </div>`;
   const viewer = document.querySelector<HTMLElement>('.ai-viewer')!;
   const q = (s: string) => viewer.querySelector<HTMLElement>(s)!;
-  return { viewer, win: q('.aas-window'), rail: q('.ai-viewer-rail'), phone: q('.aas-phone'), front: q('.aas-front.is-on'), offs: Array.from(viewer.querySelectorAll<HTMLElement>('.aas-front:not(.is-on)')) };
+  return { viewer, win: q('.aas-window'), rail: q('.ai-pills-wrap'), nav: q('.ai-viewer-nav'), phone: q('.aas-phone'), front: q('.aas-front.is-on'), offs: Array.from(viewer.querySelectorAll<HTMLElement>('.aas-front:not(.is-on)')) };
 };
 const rise = (target: HTMLElement, dir: 1 | -1 = 1) => {
   const tl = gsap.timeline({ paused: true });
@@ -44,9 +44,12 @@ afterEach(() => { document.body.innerHTML = ''; });
 
 describe('How I Use AI viewer entrance', () => {
   it('raises the window, slides the rail and front panel in from the left, the phone from the right', () => {
-    const { viewer, win, rail, phone, front } = build();
+    const { viewer, win, rail, nav, phone, front } = build();
     attachAiViewerEntrance(viewer);
     const tl = rise(viewer);
+    // the step buttons sit in the card's notch: they stay on the card
+    expect(tweenOf(tl, nav)).toBeUndefined();
+    expect(tweenOf(tl, rail.parentElement!)).toBeUndefined();
     // starting state, rendered right away
     expect(gsap.getProperty(rail, 'x')).toBe(-ENTER_X);
     expect(gsap.getProperty(phone, 'x')).toBe(ENTER_X);

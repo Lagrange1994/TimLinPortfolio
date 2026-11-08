@@ -412,6 +412,21 @@ describe('How I Use AI — the client, partner and Make views around the window'
     vi.restoreAllMocks();
   });
 
+  it('drags the app window on its own offset', () => {
+    fakeLayout();
+    const { q } = setup();
+    const win = q('.aas-window')!;
+    expect(win.dataset.drag).toBe('window');
+    fireEvent.pointerDown(win, { button: 0, clientX: 50, clientY: 50, pointerId: 3 });
+    fireEvent.pointerMove(win, { clientX: 70, clientY: 35, pointerId: 3 });
+    fireEvent.pointerUp(win, { pointerId: 3 });
+    expect(win.style.getPropertyValue('--dx')).toBe('20px');
+    expect(win.style.getPropertyValue('--dy')).toBe('-15px');
+    // the phone keeps its own offset
+    expect(q('.aas-phone')!.style.getPropertyValue('--dx')).toBe('');
+    vi.restoreAllMocks();
+  });
+
   it('keeps a dragged piece inside the viewer frame', () => {
     fakeLayout();
     const { q } = setup();

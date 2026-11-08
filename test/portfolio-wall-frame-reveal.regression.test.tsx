@@ -111,10 +111,12 @@ describe('rise grouping plumbing', () => {
   const rise = fs.readFileSync(path.resolve(__dirname, '..', 'src/utils/useRiseReveal.ts'), 'utf8');
   const section = fs.readFileSync(path.resolve(__dirname, '..', 'src/components/PortfolioSection.tsx'), 'utf8');
 
-  it("useRiseReveal lets an item share another item's trigger and skips its column stagger", () => {
+  it("useRiseReveal lets an item share another item's trigger and its column stagger", () => {
     expect(rise).toMatch(/const withSel = el\.dataset\.riseWith;/);
     expect(rise).toMatch(/trigger: triggerEl,\s*start: 'top 70%'/);
-    expect(rise).toMatch(/const delay = el\.dataset\.riseWith \? 0 : colIdx \* COL_DELAY;/);
+    // the rider takes the delay of the item it rides (a notched card's tags
+    // rise with the card, not ahead of it), not a stagger of its own
+    expect(rise).toMatch(/const delay = rideSel \? \(rides && ownDelay\.get\(rides\)\) \|\| 0 : ownDelay\.get\(el\) \?\? 0;/);
   });
 
   it('useRiseReveal announces each rise start with its own timeline as the event detail', () => {
@@ -130,7 +132,7 @@ describe('rise grouping plumbing', () => {
   it('the headline group carries one shared, larger rise distance that useRiseReveal honours', () => {
     expect(section).toMatch(/const PORTFOLIO_RISE_Y = 72;/);
     expect(section.match(/data-rise-y={PORTFOLIO_RISE_Y}/g)).toHaveLength(3);
-    expect(rise).toMatch(/const riseY = Number\(el\.dataset\.riseY\) \|\| RISE_Y;/);
+    expect(rise).toMatch(/const riseY = Number\(\(lockRect \? rides! : el\)\.dataset\.riseY\) \|\| RISE_Y;/);
     expect(rise).toMatch(/y: restY \+ riseY/);
   });
 

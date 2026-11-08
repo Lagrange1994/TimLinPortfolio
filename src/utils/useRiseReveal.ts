@@ -103,29 +103,55 @@ export function setupRiseReveal(sections: HTMLElement[]): () => void {
         const r = el.getBoundingClientRect();
         const base = getBaseTranslate(el);
         const pos = getPositionOffset(el);
-        return { el, relTop: r.top - secTop - base.y - pos.y, left: r.left - base.x - pos.x, restY: base.y };
+        return { el, rect: r, relTop: r.top - secTop - base.y - pos.y, left: r.left - base.x - pos.x, restY: base.y };
       }).sort((a, b) => {
         const ra = Math.round(a.relTop / ROW_BAND);
         const rb = Math.round(b.relTop / ROW_BAND);
         return ra !== rb ? ra - rb : a.left - b.left;
       });
 
+      // Column stagger per item, worked out first so a data-rise-with item
+      // (see below) can take the delay of the item it rides: it moves in
+      // the same beat as that item — e.g. a notched card's tags rise with
+      // the card, not ahead of it when the card is late in its row.
+      const ownDelay = new Map<HTMLElement, number>();
       let baseRowKey = -1, colIdx = 0;
-      measured.forEach(({ el, relTop, restY }) => {
+      measured.forEach(({ el, relTop }) => {
         const key = Math.round(relTop / ROW_BAND);
         if (key !== baseRowKey) { baseRowKey = key; colIdx = 0; } else colIdx++;
-        // A data-rise-with item (see below) moves in the same beat as the
-        // item it's grouped with — no column stagger.
-        const delay = el.dataset.riseWith ? 0 : colIdx * COL_DELAY;
+        ownDelay.set(el, colIdx * COL_DELAY);
+      });
+
+      // Rects taken before any item below gets its starting transform.
+      const rects = new Map(measured.map(m => [m.el, m.rect]));
+
+      measured.forEach(({ el, restY, rect }) => {
+        const rideSel = el.dataset.riseWith;
+        const rides = rideSel ? section.querySelector<HTMLElement>(rideSel) : null;
+        const delay = rideSel ? (rides && ownDelay.get(rides)) || 0 : ownDelay.get(el) ?? 0;
+        // data-rise-lock: move as if glued to the item it rides — same
+        // distance, same squash, round that item's pivot instead of its own.
+        // What sits in a card's notch lives outside the card (the clip would
+        // hide it), so without this the two squash round different edges and
+        // drift apart mid-rise.
+        const lockRect = rides && el.dataset.riseLock !== undefined ? rects.get(rides) : undefined;
         const isCard = el.classList.contains('rise-card');
         // data-rise-y overrides the default rise distance for one item/group.
-        const riseY = Number(el.dataset.riseY) || RISE_Y;
+        const riseY = Number((lockRect ? rides! : el).dataset.riseY) || RISE_Y;
+        // Origin (in this element's own box) of the ridden item's pivot: its
+        // bottom edge rising in, its top edge dropping in.
+        const lockOrigin = (dir: RiseDir) => {
+          const l = lockRect!;
+          return `${l.left + l.width / 2 - rect.left}px ${(dir === 1 ? l.bottom : l.top) - rect.top}px`;
+        };
 
         // Hidden until its trigger fires; the starting y (and, for cards,
         // the squash origin) depend on which way it enters, so they're set
         // again at reveal time.
         gsap.set(el, { autoAlpha: 0, y: restY + riseY });
-        if (isCard) {
+        if (lockRect) {
+          gsap.set(el, { scaleY: 0.82, transformOrigin: lockOrigin(1) });
+        } else if (isCard) {
           gsap.set(el, { scaleY: 0.82, transformOrigin: 'center bottom' });
         } else {
           // Text squash/stretch is a scaleY transform, NOT a line-height
@@ -148,7 +174,8 @@ export function setupRiseReveal(sections: HTMLElement[]): () => void {
           // must still be able to kill it when the unit unmounts).
           ctx.add(() => {
             gsap.set(el, { y: restY + dir * riseY });
-            if (isCard) gsap.set(el, { transformOrigin: dir === 1 ? 'center bottom' : 'center top' });
+            if (lockRect) gsap.set(el, { transformOrigin: lockOrigin(dir) });
+            else if (isCard) gsap.set(el, { transformOrigin: dir === 1 ? 'center bottom' : 'center top' });
 
             const tl = gsap.timeline({ delay });
             tl.to(el, { y: restY, autoAlpha: 1, duration: DUR, ease: POS_EASE }, 0);

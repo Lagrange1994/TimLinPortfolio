@@ -66,6 +66,9 @@ const AI_LEGACY_CARDS = false;
 // label out almost at once, card content in only once the shape is underway).
 const AI_PILL_MORPH_S = 0.5;
 const AI_VIEWER_FIRST = 'sources';
+// The headline sits in the viewer's notch, so it rises glued to the card
+// (useRiseReveal's data-rise-lock), not on its own beat.
+const AI_HEAD_RIDE = { 'data-rise-with': '.ai-viewer', 'data-rise-lock': '' };
 // When the Operating Principle panel starts fading in during the Human
 // Review timeline (see toggle() in the card map) — shared so the quote
 // typewriter effect below can start right after, without duplicating the
@@ -2276,9 +2279,14 @@ export function AiIntakeSection() {
       ref={viewerRef}
       data-accent={aiCards[Math.max(viewerIndex, 0)].variant}
     >
-      <svg ref={aiOutlineRef} className="notch-outline ai-viewer-outline" aria-hidden="true">
-        <path ref={aiOutlinePathRef} fill="none" />
-      </svg>
+      {/* The card's surface (fill, blur, border stroke) when notched: the
+          clip sits on this untransformed layer, not on the viewer, whose
+          rise entrance (transform + opacity) drops a clip on itself. */}
+      <div className="ai-viewer-skin" aria-hidden="true">
+        <svg ref={aiOutlineRef} className="notch-outline ai-viewer-outline">
+          <path ref={aiOutlinePathRef} fill="none" />
+        </svg>
+      </div>
       {isCompact && viewerIndex >= 0 && aiCards[viewerIndex].badge && (
         <span className="ai-focal-badge ai-stage-badge">{aiCards[viewerIndex].badge}</span>
       )}
@@ -2396,13 +2404,14 @@ export function AiIntakeSection() {
 
   return (
       <section id="my-skills" className="section section-band">
-        <div ref={aiLabelRef} className="section-label rise-soft">How I Use AI</div>
-        <h2 ref={aiTitleRef} className="about-h2 rise-soft" style={{ letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
+        <div ref={aiLabelRef} className="section-label rise-soft" {...(isViewer ? AI_HEAD_RIDE : {})}>How I Use AI</div>
+        <h2 ref={aiTitleRef} className="about-h2 rise-soft" {...(isViewer ? AI_HEAD_RIDE : {})} style={{ letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
           AI-Assisted Design <span className="gradient-text">Intake System</span>
         </h2>
         <p
           ref={aiSubRef}
           className="ai-sub rise-soft"
+          {...(isViewer ? AI_HEAD_RIDE : {})}
           style={{ fontSize: '14px', marginBottom: '-32px', maxWidth: 392 }}
           dangerouslySetInnerHTML={{ __html: t.ai_sub }}
         />

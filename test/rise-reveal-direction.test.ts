@@ -169,4 +169,51 @@ describe('setupRiseReveal direction', () => {
     expect(g.triggers).toHaveLength(0);
     expect(() => cleanup()).not.toThrow();
   });
+
+  // data-rise-lock: what sits in a card's notch lives outside the card, so it
+  // squashes round the card's pivot (bottom rising in, top dropping in), at
+  // the card's distance — the two move as one piece.
+  describe('data-rise-lock', () => {
+    const rect = (left: number, top: number, width: number, height: number) =>
+      ({ left, top, width, height, right: left + width, bottom: top + height, x: left, y: top, toJSON() {} }) as DOMRect;
+    function buildNotch() {
+      const section = document.createElement('section');
+      section.innerHTML = `
+        <div class="area"><div class="rise-card has-notch" id="card" data-rise-y="40"></div>
+        <div class="rise-soft" id="tags" data-rise-with=".area > .has-notch" data-rise-lock=""></div></div>`;
+      document.body.appendChild(section);
+      const card = section.querySelector<HTMLElement>('#card')!, tags = section.querySelector<HTMLElement>('#tags')!;
+      card.getBoundingClientRect = () => rect(100, 0, 400, 300);
+      tags.getBoundingClientRect = () => rect(100, 260, 200, 40);
+      return { section, card, tags };
+    }
+    const originOf = (el: Element) => g.sets
+      .filter(a => a[0] === el && (a[1] as { transformOrigin?: string }).transformOrigin)
+      .map(a => (a[1] as { transformOrigin: string }).transformOrigin);
+
+    it('starts the rider squashed round the card bottom, at the card distance', () => {
+      const { section, tags } = buildNotch();
+      setupRiseReveal([section]);
+      expect(originOf(tags)).toEqual(['200px 40px']);
+      expect(g.sets.some(a => a[0] === tags && (a[1] as { y?: number }).y === 40)).toBe(true);
+    });
+
+    it('rides the card trigger and pivots on the card top when dropping in', () => {
+      const { section, card, tags } = buildNotch();
+      setupRiseReveal([section]);
+      // second trigger = the rider's, on the card
+      const trig = g.triggers[1];
+      expect(trig.trigger).toBe(card);
+      trig.onEnterBack(st(200));
+      expect(originOf(tags).at(-1)).toBe('200px -260px');
+      expect(g.sets.some(a => a[0] === tags && (a[1] as { y?: number }).y === -40)).toBe(true);
+    });
+
+    it('without the lock a rider keeps its own top-edge squash', () => {
+      const { section, tags } = buildNotch();
+      tags.removeAttribute('data-rise-lock');
+      setupRiseReveal([section]);
+      expect(originOf(tags)).toEqual(['center top']);
+    });
+  });
 });

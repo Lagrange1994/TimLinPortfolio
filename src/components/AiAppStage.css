@@ -1052,6 +1052,9 @@
 /* Desktop: grab the phone or the front panel and move it (useSatDrag). */
 @media (min-width: 961px) {
   .aas-sat[data-drag] { cursor: grab; touch-action: none; user-select: none; }
+  /* the app window drags too (on its own --dx / --dy, under the pieces) */
+  .aas-window[data-drag] { cursor: grab; touch-action: none; user-select: none; translate: var(--dx, 0px) var(--dy, 0px); }
+  .aas-window.is-dragging { cursor: grabbing; }
   .aas-front.is-on { pointer-events: auto; }
   .aas-sat.is-dragging { z-index: 4; cursor: grabbing; }
 }

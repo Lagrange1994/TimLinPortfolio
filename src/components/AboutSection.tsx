@@ -324,9 +324,9 @@ export default function AboutSection() {
                   area={`bento-area-p${n}`}
                   className="bento-card card-spotlight sc-card bento-principle rise-card"
                   notch={proofTags(t[`${key}_tags`], links)}
+                  badge={<><span className="about-notch-badge-dot" aria-hidden="true" />DESIGN PRINCIPLE · {String(n).padStart(2, '0')}</>}
                 >
                   <span className="card-glass-highlight" aria-hidden="true" />
-                  <span className="bento-principle-num">Design Principle {String(n).padStart(2, '0')}</span>
                   <div className="bento-label">{t[`${key}_title`]}</div>
                   <p className="bento-text">{t[`${key}_text`]}</p>
                 </NotchCard>

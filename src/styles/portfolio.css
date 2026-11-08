@@ -2933,13 +2933,46 @@
     }
 
 
-    .bento-principle-num {
-      font-family: var(--font-heading);
-      font-size: 13px;
+    /* A capsule riding the card's top border (NotchCard's badge, the design
+       principles' number): beside the card in the wrapper's one cell, so
+       the notch clip can't cut its top half, pulled up half its height onto
+       the border line. Filled in the card's colour, which hides the border
+       behind it. */
+    .about-notch > .about-notch-badge {
+      align-self: start;
+      justify-self: end;
+      margin-right: 22px;
+      /* Tech Stack's .tech-level-badge overhang (a margin, not translate:
+         the rise reveal's GSAP transform resets translate to none) */
+      margin-top: -13px;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      background: linear-gradient(120deg, var(--tone-vivid), var(--tone-bright));
+      box-shadow: 0 6px 18px -6px var(--tone-vivid), inset 0 1px 0 rgba(255, 255, 255, .35);
+      color: #0b0a1f;
+      /* text exactly as Tech Stack's level badges (.tech-level-badge) */
+      font-family: var(--mono);
+      font-size: 10px;
       font-weight: 600;
-      letter-spacing: 0.08em;
-      color: var(--text-50);
+      letter-spacing: .14em;
+      white-space: nowrap;
+      pointer-events: none;
     }
+
+    .about-notch-badge-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* the card's first line was the number; the title now leads, clear of
+       the capsule */
+    .bento-principle.has-notch { padding-top: 30px; }
 
     .about-status {
       display: inline-flex;
@@ -3879,6 +3912,81 @@
     }
 
     .about-action:hover > span { transform: translateX(3px); }
+
+    /* Light mode: the saturated pieces (the big-number tiles, the notch
+       action buttons, the principles' border capsules) go pastel — the
+       same tone tokens, lighter and softer — and their white text turns a
+       deep shade of the card's own colour (--tone-ink). */
+    .bento-card,
+    .about-notch { --tone-ink: oklch(from rgb(var(--tone)) .38 .15 h); }
+
+    :root[data-theme="light"] :is(.bento-card, .about-notch) {
+      --tone-deep: oklch(from rgb(var(--tone)) .8 .1 h);
+      --tone-vivid: oklch(from rgb(var(--tone)) .86 .09 h);
+      --tone-bright: oklch(from rgb(var(--tone)) .92 .07 calc(h + 25));
+      --tone-glow: oklch(from rgb(var(--tone)) .97 .04 calc(h + 25) / .9);
+    }
+
+    /* the principles' capsules: Tech Stack's light .tech-level-badge — a
+       faint tint, a coloured hairline and coloured text, no shadow */
+    :root[data-theme="light"] .about-notch > .about-notch-badge {
+      background: rgba(var(--tone), .12);
+      border: 1px solid rgba(var(--tone), .5);
+      color: oklch(from rgb(var(--tone)) .45 .17 h);
+      box-shadow: none;
+    }
+
+    :root[data-theme="light"] .about-action {
+      color: var(--tone-ink);
+      text-shadow: none;
+      box-shadow: 0 8px 22px -10px rgba(var(--tone), .55), inset 0 1px 0 rgba(255, 255, 255, .7);
+    }
+
+    :root[data-theme="light"] .about-action:hover {
+      filter: saturate(1.2);
+      box-shadow: 0 10px 26px -10px rgba(var(--tone), .65), inset 0 1px 0 rgba(255, 255, 255, .7);
+    }
+
+    /* the tile itself: no colour, the plain light card (--neu-bg), its
+       number, label and icon carrying the colour instead */
+    :root[data-theme="light"] .bento-card.bento-stat-big,
+    :root[data-theme="light"] .bento-card.bento-stat-big:hover {
+      background: var(--noise-grain) 0 0 / 180px 180px repeat, var(--neu-bg) !important;
+      border-color: transparent !important;
+    }
+
+    :root[data-theme="light"] .bento-card.bento-stat-big {
+      /* the big number: deep and saturated on the pastel tile */
+      --big-ink: linear-gradient(135deg,
+        oklch(from rgb(var(--tone)) .45 .2 h) 0%,
+        oklch(from rgb(var(--tone)) .55 .2 calc(h + 15)) 55%,
+        oklch(from rgb(var(--tone)) .62 .18 calc(h + 30)) 100%);
+    }
+
+    :root[data-theme="light"] .bento-card.bento-stat-big .stat-num-wrap {
+      filter: drop-shadow(0 4px 10px rgba(255, 255, 255, .6));
+    }
+
+    /* only the number is coloured: the label greys like the other cards'
+       titles (.bento-label, half-strength text), the caption like body text */
+    :root[data-theme="light"] .bento-stat-big .bento-label {
+      color: color-mix(in oklab, var(--text) 50%, transparent);
+    }
+
+    :root[data-theme="light"] .bento-stat-big .bento-caption {
+      color: var(--text-70);
+    }
+
+    :root[data-theme="light"] .stat-glass-icon i {
+      color: var(--tone-ink);
+    }
+
+    /* white glass would vanish on the white tile: a faint tint of the
+       card's colour instead */
+    :root[data-theme="light"] .stat-glass-icon {
+      background: linear-gradient(135deg, rgba(var(--tone), .14), rgba(var(--tone), .05));
+      border-color: rgba(var(--tone), .22);
+    }
 
     .bento-accent {
       background: var(--grad);
@@ -12188,29 +12296,115 @@
     /* Desktop: My Portfolio's top-left notch, with the section's label,
        title and subtitle sitting in it (utils/aiStageNotch.ts sets
        data-ai-notch and the vars on the section). The card moves up level
-       with the label, its columns move up as far as the notch lets each
-       (--ai-rail-top / --ai-stage-top), and one outline path clips it and
-       is stroked as its border (the CSS border is hidden; border-color
-       stays readable for the stroke). */
+       with the label and its columns move up as far as the notch lets each
+       (--ai-rail-top / --ai-stage-top). Like the wall, the clip sits on an
+       untransformed box: the viewer is a .rise-card, and while it rises
+       (transform + opacity) the browser paints it unclipped, a plain
+       rectangle. So the viewer itself drops its surface and .ai-viewer-skin
+       (a plain child covering its border box) carries the fill, blur and
+       the outline stroke, clipped to the path. The CSS border is hidden;
+       border-color stays readable for the stroke. */
     [data-ai-notch] .ai-viewer {
       margin-top: var(--ai-viewer-mt, 72px);
       padding-top: 0;
       align-items: start;
-      /* hidden, not a plain rectangle, until the path is measured */
-      clip-path: var(--ai-notch-clip, inset(0 0 100% 0));
+      isolation: isolate;
+      background: none;
+      backdrop-filter: none;
       border-image: linear-gradient(transparent, transparent) 1;
-      /* the clip cuts the card's own shadow (the shell casts it in light
-         mode) */
+      box-shadow: none;
+    }
+    :root[data-theme="light"] [data-ai-notch] .ai-viewer {
+      background: none;
       box-shadow: none;
     }
 
-    /* Until the notch is measured the card stays hidden, so it never shows
-       as a plain rectangle first. */
-    @media (min-width: 961px) {
-      .ai-viewer { clip-path: var(--ai-notch-clip, inset(0 0 100% 0)); }
+    .ai-viewer-skin { display: none; }
+
+    [data-ai-notch] .ai-viewer-skin {
+      display: block;
+      position: absolute;
+      z-index: -1;
+      inset: calc(-1 * var(--ai-viewer-bw, 1px));
+      pointer-events: none;
+      /* hidden, not a plain rectangle, until the path is measured */
+      clip-path: var(--ai-notch-clip, inset(0 0 100% 0));
+      background-color: var(--glass-bg-premium);
+      background-image:
+        var(--noise-grain),
+        radial-gradient(var(--ai-stage-dot) 1px, transparent 1px),
+        radial-gradient(820px 480px at 72% 0%, color-mix(in oklab, var(--ai-accent, var(--primary)) 20%, transparent), transparent 65%),
+        linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .02));
+      background-size: 180px 180px, 18px 18px, auto, auto;
+      background-repeat: repeat, repeat, no-repeat, no-repeat;
+      backdrop-filter: blur(1rem);
+    }
+    :root[data-theme="light"] [data-ai-notch] .ai-viewer-skin {
+      background: radial-gradient(var(--ai-stage-dot) 1px, transparent 1px) 0 0 / 18px 18px, var(--neu-bg);
+      backdrop-filter: none;
     }
 
     [data-ai-notch] .ai-viewer-rail { margin-top: var(--ai-rail-top, 40px); }
+
+    /* The notched stage has the room to spread the mockup out, so the
+       phone and the front panel cover less of the window (AiAppStage.css
+       sets the base layout): the window leaves a wider strip on its right
+       for the phone and more room below, and the front panel reaches
+       further into the gap beside the (now further left) pills. */
+    @media (min-width: 961px) {
+      /* a wider app window: the rail's column gives back the 24px its pills
+         moved left (into the ⌃ ⌄ column), and the column gap narrows */
+      [data-ai-notch] .ai-viewer {
+        grid-template-columns: calc(var(--ai-rail-w) + var(--ai-nav-col) - 24px) minmax(0, 1fr);
+        column-gap: clamp(20px, 2.4vw, 40px);
+      }
+      /* ...and a shorter one (540 → 500px), its screens set a little
+         tighter so every step still fits (checked at 1440px: the brief and
+         the workflow phases are the tallest) */
+      [data-ai-notch] .ai-viewer .aas-window { height: 500px; }
+      [data-ai-notch] .ai-viewer .aas-screen { padding-block: 16px; }
+      [data-ai-notch] .ai-viewer .aas-screen-inner { gap: 10px; }
+      [data-ai-notch] .ai-viewer .aas-phase { padding-block: 6px; }
+      [data-ai-notch] .ai-viewer :is(.aas-brief-col, .aas-brief-side) { gap: 8px; }
+      [data-ai-notch] .ai-viewer .aas-block { padding-block: 10px; }
+      [data-ai-notch] .ai-viewer .aas-block p { line-height: 1.55; }
+      [data-ai-notch] .ai-viewer .ai-stage {
+        --aas-sat-out: clamp(36px, 6.8vw, 100px);
+        /* room below the window for the tallest front panel (the step 06
+           hand-off card, ~175px) hanging 24px over its edge, 14px above
+           the frame — the phone's bottom stays 14px above it too */
+        --aas-sat-below: 124px;
+      }
+      /* Every step's front panel overlaps the window's bottom edge by the
+         same 24px (its top pinned there, growing down), instead of sitting
+         on the bottom, where the overlap swung with each panel's height. */
+      [data-ai-notch] .ai-viewer .aas-front {
+        left: calc(-1 * clamp(48px, 6vw, 90px));
+        top: calc(100% - 24px);
+        bottom: auto;
+      }
+      /* the phone's bottom level with the Make flow panel's (steps 01–05;
+         --ai-flow-h measured by aiStageNotch.ts). It stays put on step 06,
+         whose taller hand-off card hangs further down. */
+      [data-ai-notch] .ai-viewer .aas-phone {
+        bottom: calc(24px - var(--ai-flow-h, 118px));
+      }
+    }
+    @media (min-width: 961px) {
+      @container aas-stage (max-width: 620px) {
+        [data-ai-notch] .ai-viewer .aas-front { left: -12px; }
+      }
+    }
+
+    /* ⌃ ⌄ sit flush with the card's left edge, in a bay cut into it (like
+       View All Projects in the wall's corner gap); most of the margin they
+       leave is given back on their right, the pills and rail taking 24px
+       of it (they move left, still clear of the bay). The pad is the
+       viewer's own padding-left. */
+    [data-ai-notch] .ai-viewer-nav {
+      margin-left: calc(-1 * clamp(32px, 3.4vw, 48px));
+      margin-right: calc(clamp(32px, 3.4vw, 48px) - 24px);
+    }
     [data-ai-notch] .ai-stage { margin-top: var(--ai-stage-top, 40px); }
 
     .ai-viewer-outline { z-index: 2; }

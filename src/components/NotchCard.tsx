@@ -16,7 +16,7 @@ const NOTCH_END_RADIUS = 18;
 // notch, and its round end sets the notch's inner corner so the two share
 // a centre. Used by About's bento cards and Contact's LINE banner /
 // open-for-work strip.
-export default function NotchCard({ area, className, notch, children, side = 'left', shadow = true }: {
+export default function NotchCard({ area, className, notch, children, side = 'left', shadow = true, badge }: {
   area: string;
   className: string;
   notch: ReactNode;
@@ -24,6 +24,9 @@ export default function NotchCard({ area, className, notch, children, side = 'le
   side?: 'left' | 'right';
   // About's sibling hover-shadow span (.bento-shadow)
   shadow?: boolean;
+  // a capsule sitting on the card's top border (outside the card, which the
+  // notch clip would cut it with)
+  badge?: ReactNode;
 }) {
   const wrap = useRef<HTMLDivElement>(null);
   const card = useRef<HTMLDivElement>(null);
@@ -123,8 +126,11 @@ export default function NotchCard({ area, className, notch, children, side = 'le
         {children}
       </div>
       {shadow && <span className="bento-shadow" aria-hidden="true" />}
-      {/* rises with its card (same trigger), not on its own later band */}
-      <div ref={tags} className="about-proof about-notch-tags rise-soft" data-rise-with={`.${area} > .has-notch`}>{notch}</div>
+      {badge && (
+        <div className="about-notch-badge rise-soft" data-rise-with={`.${area} > .has-notch`} data-rise-lock="">{badge}</div>
+      )}
+      {/* rises with its card (same trigger, same squash), as one piece */}
+      <div ref={tags} className="about-proof about-notch-tags rise-soft" data-rise-with={`.${area} > .has-notch`} data-rise-lock="">{notch}</div>
     </div>
   );
 }
