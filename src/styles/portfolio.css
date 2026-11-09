@@ -3014,6 +3014,10 @@
          sits in it (its radius, plus the gap) */
       --nf: calc(var(--pr, 14px) + var(--ng));
       display: grid;
+      /* one column the card's own width: without it the implicit auto
+         column grows to the tag tray's max-content, so longer (English)
+         tags pushed the card wider than a phone screen */
+      grid-template-columns: minmax(0, 1fr);
       min-width: 0;
     }
 
@@ -3168,47 +3172,6 @@
       --pa-accent: oklch(from rgb(var(--tone)) .55 .2 h);
     }
 
-    .principle-art {
-      display: block;
-      width: 100%;
-      height: 100%;
-      max-height: 132px;
-      overflow: visible;
-    }
-
-    .principle-art :is(.pa-frame, .pa-arrow, .pa-phone) {
-      fill: none;
-      stroke: var(--pa-ink);
-      stroke-width: 1.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .principle-art .pa-phone { stroke: var(--pa-accent); }
-    /* light mode: one accent per scene, only the kept action is coloured */
-    :root[data-theme="light"] .principle-art .pa-phone { stroke: var(--pa-ink); }
-    .principle-art .pa-bit { fill: var(--pa-fill); }
-    .principle-art .pa-cta { fill: var(--pa-accent); }
-
-    .principle-art :is(.pa-cut, .pa-cta) {
-      transform-box: fill-box;
-      transform-origin: center;
-      transition: opacity .35s ease, transform .35s ease;
-    }
-
-    .bento-principle:hover .principle-art .pa-cut { opacity: 0; transform: scale(.6); }
-    .bento-principle:hover .principle-art .pa-cut:nth-of-type(3) { transition-delay: .05s; }
-    .bento-principle:hover .principle-art .pa-cut:nth-of-type(4) { transition-delay: .1s; }
-    .bento-principle:hover .principle-art .pa-cut:nth-of-type(5) { transition-delay: .15s; }
-    .bento-principle:hover .principle-art .pa-cta {
-      transform: scale(1.12);
-      filter: drop-shadow(0 0 4px var(--pa-accent));
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .principle-art :is(.pa-cut, .pa-cta) { transition: none; }
-    }
-
     .about-status {
       display: inline-flex;
       align-items: center;
@@ -3260,6 +3223,11 @@
        what actually makes both gaps equal instead of just close. */
     .bento-area-domains .bento-caption {
       margin-top: 0;
+      /* over the cover stack where a long (English) line reaches it on a
+         phone, readable against the covers */
+      position: relative;
+      z-index: 2;
+      text-shadow: 0 1px 6px rgba(10, 9, 18, .55);
     }
 
     .bento-area-workflow { grid-area: workflow; }
@@ -8239,7 +8207,7 @@
        this rule's higher specificity (3 :not() clauses vs. that rule's 1
        descendant class) overrides their own position/z-index and breaks
        the layering both rely on. */
-    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay):not(.domains-scrim):not(.domain-swap-stage):not(.stat-glass-icon):not(.notch-outline):not(.principle-art) {
+    .bento-card.card-spotlight > *:not(.card-glass-highlight):not(.sc-overlay):not(.domains-scrim):not(.domain-swap-stage):not(.stat-glass-icon):not(.notch-outline) {
       position: relative;
       z-index: 2;
     }

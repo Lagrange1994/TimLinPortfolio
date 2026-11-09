@@ -1,33 +1,53 @@
-// Diagrams for About's design-principle cards: the principle at a glance,
-// filling the card's lower half (a dot-grid stage, like the Figma MCP
-// mockup canvas) under its one-line rule. Drawn in the
-// card's own colour (--tone via CSS).
-//
-// 02 "先刪減再設計": a crowded wide screen becomes a phone holding one main
-// action. On hover the non-core blocks drop out and the action lights up.
-export function PrincipleArtSubtract() {
+import { useLayoutEffect, useRef } from 'react';
+import { sceneContext, sceneRules, sceneSubtract } from './principleScenes';
+import '../styles/principle-art.css';
+
+// The scenes under About's design-principle cards: each principle shown as
+// a small situation on a Figma-like canvas (ported from the Claude Design
+// canvas "Design Principle Animations", see principleScenes.ts). Each scene
+// is a fixed board, scaled to the stage's width.
+
+// The board's own width (its height is in the stage's aspect-ratio).
+export const SCENE_W = 582;
+
+// How far the board scales to fill a stage this wide.
+export function fitScale(width: number): number {
+  return width > 0 ? width / SCENE_W : 1;
+}
+
+function Scene({ id, html }: { id: string; html: string }) {
+  const stage = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = stage.current;
+    if (!el) return;
+    const fit = () => el.style.setProperty('--pa-s', String(fitScale(el.clientWidth)));
+    fit();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   return (
-    <div className="principle-stage" aria-hidden="true">
-    <svg className="principle-art principle-art--subtract" viewBox="0 0 220 84" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-      {/* the wide back-office screen and its stand */}
-      <rect className="pa-frame" x="2" y="4" width="122" height="66" rx="8" />
-      <path className="pa-frame" d="M50 81h26M63 70v11" />
-      {/* features: the core ones stay, the rest drop out */}
-      <rect className="pa-bit" x="11" y="13" width="32" height="12" rx="3" />
-      <rect className="pa-bit pa-cut" x="47" y="13" width="32" height="12" rx="3" />
-      <rect className="pa-bit pa-cut" x="83" y="13" width="32" height="12" rx="3" />
-      <rect className="pa-bit pa-cut" x="11" y="30" width="50" height="16" rx="3" />
-      <rect className="pa-bit pa-cut" x="65" y="30" width="50" height="16" rx="3" />
-      <rect className="pa-bit" x="11" y="51" width="70" height="10" rx="3" />
-      <rect className="pa-bit pa-cut" x="85" y="51" width="30" height="10" rx="3" />
-      {/* becomes */}
-      <path className="pa-arrow" d="M138 31l7 7-7 7" />
-      {/* the phone: one main action */}
-      <rect className="pa-phone" x="160" y="2" width="44" height="80" rx="10" />
-      <rect className="pa-bit" x="168" y="12" width="18" height="5" rx="2.5" />
-      <rect className="pa-bit" x="168" y="23" width="28" height="18" rx="3" />
-      <rect className="pa-cta" x="168" y="64" width="28" height="10" rx="5" />
-    </svg>
+    <div ref={stage} className="principle-stage pa-stage" aria-hidden="true">
+      <div className={`pa-scene pa-scene--${id}`} dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   );
+}
+
+// 01 "環境決定視覺": one screen through three settings — sunlight, night, one
+// hand (the thumb's reach coloured, with its key).
+export function PrincipleArtContext({ modes, reach }: { modes: string[]; reach: string[] }) {
+  return <Scene id="env" html={sceneContext({ modes, reach })} />;
+}
+
+// 02 "先刪減再設計": the non-core parts of a busy screen are selected and
+// removed; what stays moves to the phone, one main action.
+export function PrincipleArtSubtract() {
+  return <Scene id="cut" html={sceneSubtract()} />;
+}
+
+// 03 "讓規則看得見": after sending, a black box with a "?" — then the same
+// flow opened up as steps that light up in turn.
+export function PrincipleArtRules({ states, steps }: { states: string[]; steps: string[] }) {
+  return <Scene id="rule" html={sceneRules({ states, steps })} />;
 }

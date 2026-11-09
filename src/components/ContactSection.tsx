@@ -125,7 +125,7 @@ export default function ContactSection() {
               <div className="line-eyebrow">{t.line_eyebrow}</div>
               <div className="line-title">{t.line_title}</div>
               <div className="line-desc">{t.line_desc}</div>
-              <div className="line-id">官方帳號 <span>@072fubpj</span></div>
+              <div className="line-id">{t.line_id_label} <span>@072fubpj</span></div>
             </div>
           </NotchCard>
 

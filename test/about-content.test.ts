@@ -3,6 +3,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { translations } from '../src/i18n/translations';
 import { PROJECTS } from '../src/data/projects';
+import { chunkLines } from '../src/utils/chunkLines';
 
 // About Me, phase 1 of the revision plan: short card copy, a tag per
 // project behind each intro card's claim, the AI card handing off to How I
@@ -212,7 +213,7 @@ describe('About content', () => {
     // its content
     expect(css).toMatch(/\.bento-area-workflow \.ai-flow-stepper \{[^}]*padding-top: 20px;/);
     // kept out of the "lift every child above the spotlight" rule
-    expect(css).toContain(':not(.domain-swap-stage):not(.stat-glass-icon):not(.notch-outline):not(.principle-art) {');
+    expect(css).toContain(':not(.domain-swap-stage):not(.stat-glass-icon):not(.notch-outline) {');
     // Projects keeps its own (green) colour
     expect(tsx).toContain('bento-card bento-human card-spotlight sc-card bento-stat-big bento-area-projects');
     expect(css).toMatch(/\.bento-card\.bento-stat-big,[\s\S]*?linear-gradient\(160deg, var\(--tone-deep\) 0%, var\(--tone-vivid\) 55%, var\(--tone-bright\) 100%\) !important;/);
@@ -276,8 +277,13 @@ describe('About content', () => {
     for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_domains_summary.split(/[・·]/)).toHaveLength(covers);
     // every cover image is a real file
     for (const [, img] of tsx.matchAll(/img: '\.\/(img\/my_portfolio\/[^']+)'/g)) expect(existsSync(resolve(root, 'public', img)), img).toBe(true);
-    // the caption is two lines of three, at every width
-    expect(tsx).toMatch(/\{domainsFirstHalf\}\s*<br \/>\s*\{domainsSecondHalf\}/);
+    // the caption breaks only between industries: Chinese two lines of
+    // three, English (longer words) three lines of two, clear of the covers
+    expect(tsx).toContain("chunkLines(domainsWords, domainsSeparator === '・' ? 3 : 2, domainsSeparator)");
+    expect(tsx).toContain('{domainsLines.map((line, i) => <span key={line}>{i > 0 && <br />}{line}</span>)}');
+    expect(chunkLines(['a', 'b', 'c', 'd', 'e', 'f'], 3, '・')).toEqual(['a・b・c', 'd・e・f']);
+    expect(chunkLines(['a', 'b', 'c', 'd', 'e', 'f'], 2, ' · ')).toEqual(['a · b', 'c · d', 'e · f']);
+    expect(chunkLines(['a', 'b', 'c'], 2, ' · ')).toEqual(['a · b', 'c']);
     expect(css).not.toContain('domains-caption-break');
   });
 
@@ -321,18 +327,22 @@ describe('About content', () => {
     // no notch prop on the principle cards
     const card = tsx.slice(tsx.indexOf('{PRINCIPLES.map(n => {'), tsx.indexOf('</NotchCard>', tsx.indexOf('{PRINCIPLES.map(n => {')));
     expect(card).not.toContain('notch=');
-    expect(card).toContain('{n === 2 ? <PrincipleArtSubtract /> : <div className="principle-stage" aria-hidden="true" />}');
-    expect(css).toMatch(/\.principle-stage \{[^}]*min-height: 160px;/);
+    // a scene per principle (see principle-art.test.ts for the scenes)
+    expect(card).toContain("{n === 1 ? <PrincipleArtContext modes={t.about_principle1_scenes.split('|')} reach={t.about_principle1_reach.split('|')} />");
+    expect(card).toContain(": n === 2 ? <PrincipleArtSubtract />");
+    expect(card).toContain(": <PrincipleArtRules states={t.about_principle3_states.split('|')} steps={t.about_principle3_steps.split('|')} />}");
+    for (const lang of ['zh', 'en'] as const) {
+      const t = translations[lang];
+      expect(t.about_principle1_scenes.split('|')).toHaveLength(3);
+      expect(t.about_principle1_reach.split('|')).toHaveLength(3);
+      expect(t.about_principle3_states.split('|')).toHaveLength(2);
+      expect(t.about_principle3_steps.split('|')).toHaveLength(3);
+    }
     // a NotchCard without a notch: no notch class, outline or tags
     expect(notchTsx).toContain("className={`${className} about-notch-card${hasNotch ? ' has-notch' : ''}`}");
     expect(notchTsx).toContain('{hasNotch && <div ref={tags}');
-    const art = readFileSync(resolve(root, 'src/components/PrincipleArt.tsx'), 'utf8');
-    expect(art).toContain('<div className="principle-stage" aria-hidden="true">');
-    expect(art).toContain('className="principle-art principle-art--subtract"');
-    expect((art.match(/className="pa-bit pa-cut"/g) ?? []).length).toBe(5);
-    expect((art.match(/className="pa-cta"/g) ?? []).length).toBe(1);
-    expect(css).toMatch(/\.principle-stage \{\s*flex: 1 1 0;/);
-    expect(css).toMatch(/\.bento-principle:hover \.principle-art \.pa-cut \{ opacity: 0;/);
+    // the old hand-drawn art is gone from the site sheet
+    expect(css).not.toMatch(/\.principle-art\b|\.pa-env-sky/);
     // light mode: the plain card casts its own shadow, the wrapper none
     expect(css).toContain(':root[data-theme="light"] .about-notch:not(:has(> .has-notch)) { filter: none; }');
   });
@@ -361,5 +371,31 @@ describe('About content', () => {
   it('card body text is no bigger than the section lead', () => {
     expect(css).toMatch(/\.bento-text \{\s*font-size: 14px;/);
     expect(css).toMatch(/\.about-lead \{[^}]*font-size: 14px;/);
+  });
+});
+
+// English copy that has to fit where the Chinese does
+describe('English layout copy', () => {
+  it('keeps the Tech Stack line to two lines and translates the LINE label', () => {
+    // the subtitle sits in a 392px column with the first card tucked under it
+    // (a -32px margin): a third line would run into that card's badge
+    const second = translations.en.tech_sub.split('<br>')[1].trim();
+    expect(second.length).toBeLessThanOrEqual(52);
+    const contact = readFileSync(resolve(root, 'src/components/ContactSection.tsx'), 'utf8');
+    expect(contact).toContain('<div className="line-id">{t.line_id_label} <span>@072fubpj</span></div>');
+    expect(translations.zh.line_id_label).toBe('官方帳號');
+    expect(translations.en.line_id_label).toBe('Official account');
+    // the reach key: short words, clear of the phone beside it
+    for (const w of translations.en.about_principle1_reach.split('|')) expect(w.length).toBeLessThanOrEqual(5);
+  });
+});
+
+describe('About cards hold their width in every language', () => {
+  it('a notched card is one column its own width, the tag tray wrapping inside it', () => {
+    // (an implicit auto column grew to the English tags' max-content, so the
+    // card ran past a phone screen)
+    expect(css).toMatch(/\.about-notch \{[^}]*display: grid;[^}]*grid-template-columns: minmax\(0, 1fr\);/);
+    // Service Domains' caption sits over the covers where a long line meets them
+    expect(css).toMatch(/\.bento-area-domains \.bento-caption \{[^}]*position: relative;[^}]*z-index: 2;/);
   });
 });

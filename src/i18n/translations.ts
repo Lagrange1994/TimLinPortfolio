@@ -56,6 +56,10 @@ export const translations = {
     about_cta_button: '聯絡我',
     // what I'm working on lately (About's "Now" card; date in AboutSection NOW_UPDATED)
     about_now: '研究 AI 輔助設計流程',
+    about_principle1_scenes: '戶外強光|夜間|單手操作',
+    about_principle1_reach: '好按|可按|難按',
+    about_principle3_states: '規則藏起來|規則看得見',
+    about_principle3_steps: '送出|審核|完成',
     about_p1: `我的設計核心是<strong>讓高複雜度的系統變得可以被人掌控</strong>。過去五年，我為政府與企業客戶主導後台系統設計，交付成果橫跨 <strong>警政雲端智慧影像分析系統</strong>、<strong>環保局數據管理平台</strong> 與 <strong>醫院醫療管理後台</strong>。面對龐雜的業務邏輯，我慣用 <span class="text-primary">Figma</span> 與 <span class="text-primary">Adobe XD</span> 從零梳理資訊架構，最終轉化為直觀、精準的數位工作環境。`,
     about_p2: `除了嚴謹的系統思維，我擅長將<strong>沉浸式視覺</strong>注入介面設計。熟練運用 <span class="text-secondary">Blender</span> 與 <span class="text-secondary">Spline</span> 打造 3D 互動網頁體驗，也具備多媒體娛樂產業與商業專案的完整執行經驗——這讓我的設計能在邏輯嚴密的同時，保有視覺上的驚喜感。`,
     about_p3: `我把 <strong>AI 與自動化</strong>嵌進實際接案流程：當客戶從 LINE 官方帳號或表單送出需求後，Make 會先整理欄位、交由 <span class="text-purple">Claude</span> 摘要需求與判斷類型，再寫入 <span class="text-purple">Google Sheets</span> 作為追蹤資料庫，最後分流發送 LINE 回覆與 Email 通知。這讓我在正式溝通前就能掌握需求背景、預算、時程與風險，回覆更快，也更精準。`,
@@ -202,6 +206,7 @@ export const translations = {
     line_eyebrow: 'Design Consultation · 免費初次諮詢',
     line_title: '有設計需求？\nLINE Bot 會先幫我整理重點',
     line_desc: '留下專案目標、時程與預算後，系統會建立追蹤紀錄並通知我回覆',
+    line_id_label: '官方帳號',
     line_btn: '加入 LINE 聯繫我',
     open_for_work: '接案中',
     open_for_work_sub: '接受全職 /\n兼職 / 專案合作洽談',
@@ -347,6 +352,10 @@ export const translations = {
     about_cta_text: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-chat-circle-text" aria-hidden="true"></i>Work</span><span>Full-time / part-time / project work</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-map-pin" aria-hidden="true"></i>Based</span><span>Taiwan, UTC+8; remote or hybrid</span></span>`,
     about_cta_button: 'Get in touch',
     about_now: 'Exploring AI-assisted design workflows',
+    about_principle1_scenes: 'Sunlight|Night|One hand',
+    about_principle1_reach: 'Easy|OK|Hard',
+    about_principle3_states: 'Rule hidden|Rule visible',
+    about_principle3_steps: 'Send|Review|Done',
     about_p1: `My design focus is <strong>making high-complexity systems feel manageable</strong>. Over the past five years, I have led backend system design for government and enterprise clients, delivering across <strong>Police Cloud Video Analysis Systems</strong>, <strong>Environmental Bureau Data Platforms</strong>, and <strong>Hospital Management Dashboards</strong>. Faced with dense business logic, I use <span class="text-primary">Figma</span> and <span class="text-primary">Adobe XD</span> to untangle information architecture from the ground up, turning it into intuitive, precise digital workspaces.`,
     about_p2: `Beyond systems thinking, I bring <strong>immersive visuals</strong> into interface design. I build 3D interactive web experiences with <span class="text-secondary">Blender</span> and <span class="text-secondary">Spline</span>, drawing on a background in multimedia entertainment and commercial projects. This lets me deliver designs that are logically rigorous and visually memorable.`,
     about_p3: `I embed <strong>AI and automation</strong> directly into my freelance workflow. When a client submits a request through LINE or a form, Make structures the fields, asks <span class="text-purple">Claude</span> to summarise the need and classify the request, saves it to <span class="text-purple">Google Sheets</span>, then routes LINE replies and email notifications. Before the first conversation, I already understand the context, budget, timeline, and risks, so my response is faster and more precise.`,
@@ -360,7 +369,7 @@ export const translations = {
     about_ai_label: 'AI-Powered Workflow',
     // tech stack
     tech_sub:
-      'I read code, modify logic, <br>and bridge the communication gap between design and development.',
+      'I read code and modify logic, <br>closing the gap between design and development.',
     figma_mcp_title: 'Figma MCP',
     figma_mcp_desc:
       'That code literacy goes one step further with Figma MCP: I connect AI directly to Figma so it reads components, tokens, and specs in real time — no screenshots, no manual handoff. Design translates to code in one pass, closing the loop between design and development.',
@@ -513,6 +522,7 @@ export const translations = {
     line_eyebrow: 'Design consultation · Free first chat',
     line_title: 'Have a design need? My LINE Bot helps structure it first.',
     line_desc: 'Share your goal, timeline, and budget. The workflow records it and notifies me to reply.',
+    line_id_label: 'Official account',
     line_btn: 'Add me on LINE',
     open_for_work: 'Open for work',
     open_for_work_sub: 'Available for full-time, part-time, or freelance projects',

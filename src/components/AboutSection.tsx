@@ -3,7 +3,8 @@ import { useLang } from '../context/LangContext';
 import CardSwap, { Card } from './CardSwap';
 import AiFlowStepper from './AiFlowStepper';
 import NotchCard from './NotchCard';
-import { PrincipleArtSubtract } from './PrincipleArt';
+import { PrincipleArtContext, PrincipleArtRules, PrincipleArtSubtract } from './PrincipleArt';
+import { chunkLines } from '../utils/chunkLines';
 import { scrollToSectionAligned } from '../utils/navHeader';
 
 // One representative project cover per Service Domains chip (Law
@@ -46,14 +47,13 @@ function proofTags(labels: string, links: readonly string[]) {
 export default function AboutSection() {
   const { t } = useLang();
 
-  // Service Domains caption: the six industries in two lines of three
-  // ("公部門・醫療・交通" / "金融・娛樂・製造"), so it never wraps
-  // mid-list wherever the column runs out of width.
+  // Service Domains caption: the six industries as whole lines, so it never
+  // wraps mid-list — Chinese two lines of three ("公部門・醫療・交通" /
+  // "金融・娛樂・製造"), English (longer words) three lines of two, which
+  // keeps it clear of the cover stack on the card's right.
   const domainsSeparator = t.about_domains_summary.includes('・') ? '・' : ' · ';
   const domainsWords = t.about_domains_summary.split(/[・·]/).map(w => w.trim());
-  const domainsHalf = Math.ceil(domainsWords.length / 2);
-  const domainsFirstHalf = domainsWords.slice(0, domainsHalf).join(domainsSeparator);
-  const domainsSecondHalf = domainsWords.slice(domainsHalf).join(domainsSeparator);
+  const domainsLines = chunkLines(domainsWords, domainsSeparator === '・' ? 3 : 2, domainsSeparator);
 
   // Profile card 3D tilt — pointer-based, no gate or filter (restored to the
   // original working behavior). An earlier matchMedia('(hover:none)') gate
@@ -333,9 +333,10 @@ export default function AboutSection() {
                   <span className="card-glass-highlight" aria-hidden="true" />
                   <div className="bento-label">{t[`${key}_title`]}</div>
                   <p className="bento-text">{t[`${key}_text`]}</p>
-                  {/* the principle as a scene, across the card's lower half
-                      (01 / 03: the stage only, their scenes still to come) */}
-                  {n === 2 ? <PrincipleArtSubtract /> : <div className="principle-stage" aria-hidden="true" />}
+                  {/* the principle as a scene, across the card's lower half */}
+                  {n === 1 ? <PrincipleArtContext modes={t.about_principle1_scenes.split('|')} reach={t.about_principle1_reach.split('|')} />
+                    : n === 2 ? <PrincipleArtSubtract />
+                    : <PrincipleArtRules states={t.about_principle3_states.split('|')} steps={t.about_principle3_steps.split('|')} />}
                 </NotchCard>
               );
             })}
@@ -488,9 +489,7 @@ export default function AboutSection() {
               </div>
             </div>
             <p className="bento-caption">
-              {domainsFirstHalf}
-              <br />
-              {domainsSecondHalf}
+              {domainsLines.map((line, i) => <span key={line}>{i > 0 && <br />}{line}</span>)}
             </p>
             <div className="domain-swap-stage">
               <CardSwap width={216} height={144} cardDistance={18} verticalDistance={16} skewAmount={4} delay={3400} pauseOnHover>

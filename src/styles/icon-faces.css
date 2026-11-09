@@ -182,9 +182,6 @@
 .ph.ph-arrow-right:before {
   content: "\e06c";
 }
-.ph.ph-browser:before {
-  content: "\e0f4";
-}
 .ph.ph-browsers:before {
   content: "\e0f6";
 }
@@ -337,9 +334,6 @@
 .ph-bold.ph-arrow-right:before {
   content: "\e06c";
 }
-.ph-bold.ph-browser:before {
-  content: "\e0f4";
-}
 .ph-bold.ph-browsers:before {
   content: "\e0f6";
 }
@@ -491,9 +485,6 @@
 }
 .ph-fill.ph-arrow-right:before {
   content: "\e06c";
-}
-.ph-fill.ph-browser:before {
-  content: "\e0f4";
 }
 .ph-fill.ph-browsers:before {
   content: "\e0f6";
