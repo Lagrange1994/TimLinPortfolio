@@ -36,6 +36,15 @@
 
 ---
 
+## 文案語言規則（中文版頁面）
+
+結構與名稱用英文，要讀懂的句子用中文。`test/language-rule.test.ts` 把關。
+
+- **英文**：導覽、區塊眉標（section-label）、區塊大標（h2）、卡片標籤、數字卡標籤、流程步驟名、名稱型分頁（In-house／Freelance）、狀態字（Open for work 等）。
+- **中文**：副標、內文、卡片說明、設計準則標題、按鈕、提問與 FAQ（含 FAQ 分類分頁）、作品描述、聊天訊息。
+- **原文**：專有名詞、工具、品牌、作品名稱（Figma、LINE、Super High Tech CNC 模擬器）。
+- **例外**：示意畫面（AI 舞台、準則動畫、Figma 模擬）裡的文字照該介面語言走，中文頁就用中文。
+
 ## Skill routing
 
 When the user's request matches an available skill, invoke it via the Skill tool. When in doubt, invoke the skill.

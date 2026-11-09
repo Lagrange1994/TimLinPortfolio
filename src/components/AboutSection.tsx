@@ -358,7 +358,7 @@ export default function AboutSection() {
                   <div className="pc-content">
                     <div className="pc-details">
                       <h3>Tim Lin</h3>
-                      <p>UI/UX Designer</p>
+                      <p>UI/UX Product Designer</p>
                     </div>
                   </div>
                 </section>

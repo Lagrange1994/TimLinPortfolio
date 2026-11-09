@@ -11,6 +11,8 @@ import {
 } from './animate-ui/components/headless/accordion';
 import { LayoutGroup } from 'motion/react';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
+import { askTim } from '../utils/askTim';
+import { parseAskList } from '../utils/askList';
 
 export default function ContactSection() {
   const { t } = useLang();
@@ -38,7 +40,6 @@ export default function ContactSection() {
       { q: t.faq_exp_q4, a: t.faq_exp_a4 },
       { q: t.faq_exp_q5, a: t.faq_exp_a5 },
       { q: t.faq_exp_q6, a: t.faq_exp_a6 },
-      { q: t.faq_exp_q7, a: t.faq_exp_a7 },
       { q: t.faq_exp_q8, a: t.faq_exp_a8 },
       { q: t.faq_exp_q9, a: t.faq_exp_a9 },
     ],
@@ -49,13 +50,13 @@ export default function ContactSection() {
       { q: t.faq_biz_q4, a: t.faq_biz_a4 },
       { q: t.faq_biz_q5, a: t.faq_biz_a5 },
       { q: t.faq_biz_q6, a: t.faq_biz_a6 },
-      { q: t.faq_biz_q7, a: t.faq_biz_a7 },
-      { q: t.faq_biz_q8, a: t.faq_biz_a8 },
-      { q: t.faq_biz_q9, a: t.faq_biz_a9 },
     ],
   } as const;
 
   const faqItems = faqTabs[faqTab];
+  // the long tail lives with the chat bot (data/tim-faq.md): a row of
+  // questions under the list that open the chat and ask it
+  const faqMore = parseAskList(faqTab === 'experience' ? t.faq_more_experience : t.faq_more_freelance);
 
   // Spotlight card effect — scoped to this section's own root; see the
   // matching comment in SkillsSection.tsx (all three sections run this same
@@ -292,6 +293,14 @@ export default function ContactSection() {
                     </AccordionItem>
                   ))}
                 </Accordion>
+                <div className="faq-more">
+                  <span className="faq-more-label"><i className="ph-fill ph-sparkle" aria-hidden="true" />{t.faq_more_label}</span>
+                  <div className="faq-more-list">
+                    {faqMore.map(m => (
+                      <button key={m.label} type="button" className="faq-more-btn" onClick={() => askTim(m.q)}>{m.label}</button>
+                    ))}
+                  </div>
+                </div>
               </div>
               </div>
             </div>
@@ -305,7 +314,7 @@ export default function ContactSection() {
           <div style={{ fontSize: '20px', fontWeight: 700, marginBottom: '6px', fontFamily: 'var(--font-heading)' }}>
             <span className="gradient-text-brand">Tim</span><span className="brand-lin">Lin</span>
           </div>
-          <p>UI/UX Designer &amp; Web Developer</p>
+          <p>UI/UX Product Designer</p>
         </div>
         <p>© 2025 Tim Lin. All rights reserved.</p>
       </footer>

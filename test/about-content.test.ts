@@ -51,7 +51,9 @@ describe('About content', () => {
           : '<strong class="tool-name"><img class="tool-logo" src="./img/others/Blender_logo.png" alt="" />Blender</strong>');
       }
       expect(t.about_ai_short).not.toMatch(/text-purple/);
-      expect(t.about_ai_short).toContain('<strong>Claude</strong>');
+      // a teaser: the outcome only; the tools are told in Process and the AI stage
+      for (const tool of ['Make', 'Claude', 'Google Sheets', 'LINE']) expect(t.about_ai_short).not.toContain(tool);
+      expect(t.about_ai_short).toMatch(/<strong>[^<]+<\/strong>/);
     }
   });
 

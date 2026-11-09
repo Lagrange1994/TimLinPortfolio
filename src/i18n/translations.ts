@@ -5,8 +5,8 @@ export const translations = {
     nav_about: 'About',
     nav_portfolio: 'Portfolio',
     nav_contact: 'Contact',
-    nav_tagline_l1: 'UI/UX Designer',
-    nav_tagline_l2: '& Web Developer',
+    nav_tagline_l1: 'UI/UX',
+    nav_tagline_l2: 'Product Designer',
     // loader
     loader_step1: '讀取專案中繼資料',
     loader_step2: '載入視覺素材',
@@ -19,8 +19,8 @@ export const translations = {
     loader_step9: '校準互動與動畫',
     loader_step10: '初始化完成',
     // hero
-    hero_role: 'UI/UX Designer & Web Developer',
-    hero_desc: '致力於打造兼具美學與功能的數位體驗<br>協助企業推動業務成長並深化用戶互動',
+    hero_role: 'UI/UX Product Designer',
+    hero_desc: '讓複雜系統變得可被掌控<br>從現場觀察到開發交付，一路做到底',
     // hero ask strip — shorter labels than the chat panel's own quick
     // questions, which have a wider panel to sit in (see HeroAskStrip).
     hero_ask_label: '有問題？問我的 AI 分身',
@@ -32,13 +32,13 @@ export const translations = {
     hero_ask_q6_label: '英文能力？',
     // about
     about_headline:
-      '讓複雜系統變得可被掌控的<br class="br-mobile">產品設計師<br><span class="gradient-text">兼具 3D 互動開發與 <br class="br-mobile">AI 工作流整合能力</span>',
-    about_lead: `我替警政、醫療與公部門設計每天要用的系統：先到現場看人怎麼用，再把龐雜流程刪減、整理成一眼看懂的介面，一路做到開發交付。`,
+      'Product designer for <span class="gradient-text">complex systems.</span>',
+    about_lead: `讓複雜系統變得可被掌控的產品設計師，兼具 3D 互動開發與 AI 工作流整合能力。<br>我替警政、醫療與公部門設計每天要用的系統：先到現場看人怎麼用，再把龐雜流程刪減、整理成一眼看懂的介面，一路做到開發交付。`,
     // About bento: short card copy (the full about_p1–p3 stay as the chat
     // bot's context, api/_chat-core.ts). Tags: label per linked project.
     about_intro1_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>研究</span><span>到現場場勘，訪談第一線使用者</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-flow-arrow" aria-hidden="true"></i>交付</span><span>定地圖與即時資料規格，必要時自己寫前端</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-sketch-logo" aria-hidden="true"></i>工具</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Figma_logo.png" alt="" />Figma</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Adobe_XD_logo.png" alt="" />Adobe XD</strong> 設計；讀寫 <strong>HTML / CSS</strong>、<strong>React / Vue</strong>，和工程師對規格</span></span>`,
     about_intro2_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-palette" aria-hidden="true"></i>配色</span><span>工廠沿用機台燈號，理財遊戲用莫蘭迪色減壓</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-cube" aria-hidden="true"></i>3D</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Blender_logo.png" alt="" />Blender</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Spline_logo.webp" alt="" />Spline</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Dora_logo.png" alt="" />Dora</strong>，<strong>React + WebGL</strong> 上線</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-film-strip" aria-hidden="true"></i>平面</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Photoshop_logo.png" alt="" />Photoshop</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Illustrator_logo.png" alt="" />Illustrator</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Lightroom_logo.png" alt="" />Lightroom</strong></span></span>`,
-    about_ai_short: `客戶從 <strong>LINE</strong> 或表單送出需求，<strong>Make</strong> 交給 <strong>Claude</strong> 摘要分類、寫入 <strong>Google Sheets</strong>，再分流回覆；第一次通話前，我已掌握預算與時程。`,
+    about_ai_short: `需求一送進來，AI 就先整理好重點；<strong>第一次通話前，我已掌握預算與時程。</strong>`,
     about_ai_more: '看完整流程',
     about_tags_systems: '台南智慧簽巡|新竹環保局後台|警政影像系統',
     about_tags_visuals: 'CNC 3D 模擬器|存保理財遊戲',
@@ -60,7 +60,7 @@ export const translations = {
     about_principle1_reach: '好按|可按|難按',
     about_principle3_states: '規則藏起來|規則看得見',
     about_principle3_steps: '送出|審核|完成',
-    about_p1: `我的設計核心是<strong>讓高複雜度的系統變得可以被人掌控</strong>。過去五年，我為政府與企業客戶主導後台系統設計，交付成果橫跨 <strong>警政雲端智慧影像分析系統</strong>、<strong>環保局數據管理平台</strong> 與 <strong>醫院醫療管理後台</strong>。面對龐雜的業務邏輯，我慣用 <span class="text-primary">Figma</span> 與 <span class="text-primary">Adobe XD</span> 從零梳理資訊架構，最終轉化為直觀、精準的數位工作環境。`,
+    about_p1: `我的設計核心是<strong>讓高複雜度的系統變得可以被人掌控</strong>。五年以上的實務中，我為政府與企業客戶主導後台系統設計，交付成果橫跨 <strong>警政雲端智慧影像分析系統</strong>、<strong>環保局數據管理平台</strong> 與 <strong>醫院醫療管理後台</strong>。面對龐雜的業務邏輯，我慣用 <span class="text-primary">Figma</span> 與 <span class="text-primary">Adobe XD</span> 從零梳理資訊架構，最終轉化為直觀、精準的數位工作環境。`,
     about_p2: `除了嚴謹的系統思維，我擅長將<strong>沉浸式視覺</strong>注入介面設計。熟練運用 <span class="text-secondary">Blender</span> 與 <span class="text-secondary">Spline</span> 打造 3D 互動網頁體驗，也具備多媒體娛樂產業與商業專案的完整執行經驗——這讓我的設計能在邏輯嚴密的同時，保有視覺上的驚喜感。`,
     about_p3: `我把 <strong>AI 與自動化</strong>嵌進實際接案流程：當客戶從 LINE 官方帳號或表單送出需求後，Make 會先整理欄位、交由 <span class="text-purple">Claude</span> 摘要需求與判斷類型，再寫入 <span class="text-purple">Google Sheets</span> 作為追蹤資料庫，最後分流發送 LINE 回覆與 Email 通知。這讓我在正式溝通前就能掌握需求背景、預算、時程與風險，回覆更快，也更精準。`,
     about_intro1_label: 'Systems Design',
@@ -76,7 +76,7 @@ export const translations = {
     tech_sub: '我不是工程師，但我能讀懂程式、修改邏輯、 <br>有效縮短設計與開發之間的溝通距離。',
     figma_mcp_title: 'Figma MCP',
     figma_mcp_desc:
-      '這份程式讀寫能力，<wbr>讓我能更進一步透過 MCP，<wbr>讓 AI 直接讀取 Figma 設計稿的元件、<wbr>Token 與標註規格，<wbr>無需截圖或手動複製。<wbr>設計稿即時轉為程式碼，<wbr>一次對齊，<wbr>徹底縮短設計與開發之間的溝通距離。',
+      '這份程式讀寫能力，<wbr>讓我能更進一步透過 MCP，<wbr>讓 AI 直接讀取 Figma 設計稿的元件、<wbr>Token 與標註規格，<wbr>無需截圖或手動複製。<wbr>設計稿即時轉為程式碼，<wbr>一次對齊，<wbr>不再來回確認。',
     skill_html:
       '熟悉網頁基礎標籤結構與語意化寫法，能獨立閱讀、修改程式碼，有效銜接設計稿與開發實作。',
     skill_js:
@@ -112,8 +112,6 @@ export const translations = {
     fl_desc_05: '提出設計方向、工作項目、時程與報價，讓客戶清楚知道每一階段會收到什麼成果',
     fl_name_06: 'Delivery',
     fl_desc_06: '依里程碑交付 wireframe、高保真設計、互動說明與開發標註，並保留後續追蹤與回覆紀錄',
-    process_policy_title: 'Development Policy',
-    process_policy_body: '每個專案在正式報價前，都會進行基本的需求與風險審查（Project Due Diligence）。這包含技術可行性、資訊安全、資料保護、商業模式以及基本法規風險評估。這個流程的目的不是對客戶進行法律判斷，而是確認專案符合一般軟體開發與商業實務，降低雙方合作風險，確保最終交付的系統能夠穩定且長期營運。',
     process_policy_team_title: 'Team Collaboration',
     process_policy_team_body: 'In-house 專案隸屬產品團隊，設計不是我一個人拍板：需求對齊、進度同步與設計評審都與 PM、工程師、研究員共同進行，重大決策會經過內部評審與跨部門確認。這裡呈現的是流程與方法，實際畫面、數據與客戶名稱皆因公司機密與使用者隱私考量已做遮蔽或省略，不代表原始交付內容。',
     // AI
@@ -129,8 +127,6 @@ export const translations = {
     ai_philosophy:
       '"AI 處理重複性工作，<br>讓我把注意力放在<br>只有設計師能做的決策上。"',
     // AI section — bilingual card content
-    ai_section_label: '我如何使用 AI',
-    ai_heading: 'AI 輔助設計 <span class="gradient-text">需求接收系統</span>',
     ai_sources_title: '請求來源',
     ai_sources_sum: '無論是 PM、主管還是客戶，透過 LINE 或表單送出需求，都會自動彙整到同一個地方。',
     ai_d_recent: '近期來訊',
@@ -208,57 +204,53 @@ export const translations = {
     line_desc: '留下專案目標、時程與預算後，系統會建立追蹤紀錄並通知我回覆',
     line_id_label: '官方帳號',
     line_btn: '加入 LINE 聯繫我',
-    open_for_work: '接案中',
+    open_for_work: 'Open for work',
     open_for_work_sub: '接受全職 /\n兼職 / 專案合作洽談',
     // faq tab labels — split into "about me" vs. "taking on projects"
     faq_tab_experience: '個人能力與專案經驗',
     faq_tab_freelance: '接案類',
+    faq_more_label: '還有其他問題？問我的 AI 分身',
+    faq_more_experience: '遠端工作？|可以遠端工作嗎？;合作方式？|可以接受什麼類型的合作？;目前在找工作嗎？|目前是否開放工作機會？;最近在學什麼？|Tim 最近在研究或學習什麼？;一天怎麼安排？|Tim 平常一天的工作怎麼安排？',
+    faq_more_freelance: '哪些案件會婉拒？|哪些案件可能會被拒絕？;接案前的審查？|接案前會做哪些風險評估？;為什麼要審查？|為什麼要做這些審查？',
     // faq — experience/capability tab (no "接案" wording; that all lives in
     // the biz tab below)
     faq_exp_q1: '你有多少實務經驗？做過哪些類型的專案？',
-    faq_exp_a1: '從事 UI/UX 設計與前端開發 5 年以上，橫跨政府單位、企業產品與自由工作，交付超過 10 個專案，涵蓋後台系統、行銷網站與 3D 互動體驗。',
+    faq_exp_a1: '從事 UI/UX 設計與前端開發 5 年以上，橫跨政府單位、企業產品與自由工作，交付 13 個以上專案，涵蓋後台系統、行銷網站與 3D 互動體驗。',
     faq_exp_q2: '擅長哪種類型的專案？',
     faq_exp_a2: '特別擅長高複雜度的企業後台系統設計，例如警政系統、醫院管理系統、環保局數據平台，同時也有 3D 互動網頁和 B2C 產品的完整執行經驗。',
     faq_exp_q3: '3D 與沉浸式互動網頁是怎麼做出來的？',
-    faq_exp_a3: '使用 Blender 與 Spline 建模，搭配 Three.js 與 GSAP 打造網頁端的 3D 互動與動效，讓介面在邏輯清晰之餘保有視覺驚喜感。',
+    faq_exp_a3: '使用 Blender 與 Spline 建模，搭配 Three.js 與 GSAP 打造網頁端的 3D 互動與動效，讓介面在邏輯清晰之餘保有視覺驚喜感。',
     faq_exp_q4: '設計流程會用到哪些方法與工具？',
     faq_exp_a4: '從使用者訪談、log 分析、資訊架構到高保真稿，全程搭配設計系統確保一致性；工具以 Figma / Adobe XD 為主。',
     faq_exp_q5: '有沒有帶領團隊或 mentor 的經驗？',
     faq_exp_a5: '有。在過去的企業專案中曾帶領設計小組、主導設計方向，並與 PM 和工程師緊密協作。',
     faq_exp_q6: '前端實作能力到什麼程度？會不會寫程式？',
-    faq_exp_a6: '能獨立閱讀並修改程式碼，讀懂邏輯並精準描述問題情境，搭配 AI 工具實現互動功能、動畫效果與資料串接——這個作品集網站本身的互動邏輯即為實際成果。',
-    faq_exp_q7: '如何確保不同裝置的體驗一致（RWD）？',
-    faq_exp_a7: '具備 Flexbox 與 Tailwind 排版實作能力，能獨立處理 RWD 樣式調整，並理解設計決策對前端渲染的影響，確保桌機、平板、手機的體驗一致。',
+    faq_exp_a6: '可以。我能讀寫 HTML／CSS 與 React／Vue，自己動手實作版面、互動與動畫；你正在看的這個網站就是我親手做的。',
     faq_exp_q8: '有沒有無障礙設計（Accessibility）的經驗？',
     faq_exp_a8: '有，設計流程會將無障礙與設計系統一致性一併納入考量，確保元件在不同情境下都能被正確理解與操作。',
     faq_exp_q9: '英文溝通能力如何？',
     faq_exp_a9: '可以使用英文進行工作溝通、撰寫書面文件，以及參與跨國協作。',
     // faq — freelance/business tab (合作模式、報價、接案審查判斷全部在這裡)
     faq_biz_q1: 'In-house 與接案的工作模式有什麼不同？',
-    faq_biz_a1: 'In-house 隸屬產品團隊，與 PM、工程師協作走完整內部設計流程；接案則獨立面對客戶，透過 AI 輔助的需求收件系統管理每個環節。',
+    faq_biz_a1: 'In-house 隸屬產品團隊，與 PM、工程師協作走完整內部設計流程；接案則由我獨立面對客戶，從需求、提案到交付一手負責。',
     faq_biz_q2: '想找你接案，怎麼估價？',
     faq_biz_a2: '依專案範圍、頁面數與技術複雜度報價，設計與開發可分開或整合計算，合作前會提供書面估價單。',
     faq_biz_q3: '怎麼聯絡與追蹤進度？',
-    faq_biz_a3: '透過 LINE 官方帳號或 Email 都可以，需求會經 AI 工作流自動整理並建立追蹤紀錄，重大進度會主動通知。',
-    faq_biz_q4: '你會接受任何系統開發案件嗎？',
-    faq_biz_a4: '不會。除了技術可行性，我也會評估商業模式、法律風險與資安需求；若案件可能違反台灣法律、具高度爭議，或可能對使用者造成重大損害，我有權拒絕合作。',
-    faq_biz_q5: '哪些案件可能會被拒絕？',
-    faq_biz_a5: '包含但不限於：保證收益或投資報酬平台、多層推薦獎金或疑似傳銷系統、假跨境電商代營運商城、虛擬貨幣高風險金流、非法博弈相關服務、洗錢高風險金流、假物流假訂單系統，以及後台可任意修改會員資產或交易紀錄的黑箱功能。若無法確認合法性，通常不會承接。',
-    faq_biz_q6: '接案前會做哪些風險評估？',
-    faq_biz_a6: '每個專案都會先做基本 Due Diligence，包含商業模式是否合理、金流流程是否透明、是否涉及會員制度或推薦獎金、是否涉及虛擬資產或跨境交易、是否存在異常的管理者權限，以及是否符合一般 SaaS 或電商系統設計邏輯。若存在重大疑慮，可能要求補充資料或直接婉拒合作。',
-    faq_biz_q7: '為什麼要做這些審查？',
-    faq_biz_a7: '希望交付的每套系統都能長期、安全且合法地運作。提供系統不只是完成功能，也代表需要對專案的基本合規性負責，建立適當的審查流程有助於降低合作雙方的法律與營運風險。',
-    faq_biz_q8: '如果我的案件比較特殊怎麼辦？',
-    faq_biz_a8: '歡迎先提供專案規格、Wireframe、Flow Chart、商業模式、金流流程與公司資訊，我可以先協助評估技術可行性與開發方向，再決定是否進入正式合作。',
-    faq_biz_q9: '一般案件也需要擔心這些審查嗎？',
-    faq_biz_a9: '完全不用。大部分企業網站、品牌官網、CRM、ERP、預約系統、會員系統、電商平台與 SaaS 專案，都屬於正常開發範圍。只有當需求涉及高風險金流、投資、金融、虛擬資產或其他需要高度合規的商業模式時，我才會進一步了解相關背景。',
+    faq_biz_a3: '透過 LINE 官方帳號或 Email 都可以，每個案件都有追蹤紀錄，重大進度會主動通知。',
+    faq_biz_q4: '接哪些類型的案子？',
+    faq_biz_a4: '企業網站、品牌官網、CRM、ERP、預約、會員、電商與 SaaS 都在範圍內。涉及高風險金流、投資或虛擬資產的需求，報價前會先做基本的合規審查，必要時婉拒。',
+    faq_biz_q5: '接案的合作流程是什麼？',
+    faq_biz_a5: '依 Discovery → Proposal → Wireframe → Design → Deliver 五個階段進行：先釐清需求並提出方案，確認方向後才進入設計與交付。',
+    faq_biz_q6: '如果我的案件比較特殊怎麼辦？',
+    faq_biz_a6: '歡迎先提供專案規格、Wireframe、Flow Chart、商業模式、金流流程與公司資訊，我可以先協助評估技術可行性與開發方向，再決定是否進入正式合作。',
     // chat
-    chat_status: 'AI 助理 · 即時回覆',
+    chat_status: 'AI Assistant · Live reply',
     chat_greeting: 'Hi！我是 Tim 的 AI 助理。想了解 Tim 的設計背景、作品集或合作意願，直接問我吧 👋',
     chat_placeholder: '問任何關於 Tim 的問題…',
     chat_send_aria: '送出',
     chat_empty_error: '請先輸入問題再送出',
     chat_fallback_error: '無法取得回覆，請直接聯繫 Tim。',
+    chat_unavailable: 'AI 助理暫時無法使用，請稍後再試，或直接透過聯絡表單聯繫 Tim。',
     chat_network_error: '連線失敗，請直接透過聯絡表單聯繫 Tim。',
     chat_q1_label: '後台系統',
     chat_q1: 'Tim 有沒有 B2B 後台系統的設計經驗？',
@@ -274,31 +266,31 @@ export const translations = {
     chat_q6: '如何聯繫 Tim？',
     // portfolio
     p1_title: '新竹縣警察局雲端智慧影像分析系統',
-    p1_desc: '警用街頭監視器影像辨識與監測系統介面設計',
+    p1_desc: '從大量監視畫面中比對嫌疑車輛，縮短刑偵過濾時間',
     p2_title: '新竹縣警察局雲端智慧影像分析系統 App',
-    p2_desc: '以手機為主精簡過的警用街頭監視器影像辨識與監測系統介面設計',
+    p2_desc: '把複雜的監控後台精簡成行動版，戶外一眼就能判讀',
     p3_title: '高雄市警察局新世代智慧科技辦案系統',
-    p3_desc: '警用街頭監視器影像辨識與監測系統介面設計',
+    p3_desc: '掌握監視設備妥善率，報修進度從不明變成可追蹤',
     p4_title: '台南市政府警察局智慧簽巡系統',
-    p4_desc: '巡邏員警專用簽到與巡邏紀錄 App 介面設計',
+    p4_desc: '巡邏簽到與路線指引，縮短員警支援反應時間',
     p5_title: '新竹市立動物園管理後台',
-    p5_desc: '人流分析與網站管理介面',
+    p5_desc: '把園區營運數據帶到現場，不必回辦公室也能調度',
     p6_title: '桃園捷運 App',
-    p6_desc: '桃園捷運 App 最新消息欄位的介面修改',
+    p6_desc: '重整點數兌換分類，提升會員兌換意願',
     p7_title: '石門水庫網站',
-    p7_desc: '石門水庫網站新增頁面與介面修改',
+    p7_desc: '把條文改成重點與圖表，降低民眾閱讀負擔',
     p8_title: 'Love-Two Live App UI',
-    p8_desc: '直播 App 提案與設計',
+    p8_desc: '青綠科技感與任務化設計，拉長用戶停留時間',
     p9_title: '新竹縣環保局網站後台',
-    p9_desc: '環保局網站後台新增頁面與改版',
+    p9_desc: '把分散的行政流程整合成一個內部辦公入口',
     p10_title: '恆春航空站',
-    p10_desc: '航空站網站改版提案',
+    p10_desc: '在預算與法規限制下，讓旅客直覺找到航班資訊',
     p11_title: '台北醫學大學臨床醫學教學系統',
-    p11_desc: '醫學院學生用學習歷程資訊管理系統改版與介面設計',
+    p11_desc: '把成績表格變成看得見成長趨勢的儀表板',
     p12_title: '中央存保 Golden House – 購得好房',
-    p12_desc: '中央存保房貸理財宣傳活動網頁小遊戲',
+    p12_desc: '用小遊戲降低房貸理財的學習門檻',
     p13_title: 'Super High Tech CNC 模擬器',
-    p13_desc: '結合 React 與 WebGL 的 3D 工具機模擬系統介面',
+    p13_desc: '長時間操作的暗色 3D 介面，不犧牲資訊密度',
   },
   en: {
     // nav
@@ -306,8 +298,8 @@ export const translations = {
     nav_about: 'About',
     nav_portfolio: 'Portfolio',
     nav_contact: 'Contact',
-    nav_tagline_l1: 'UI/UX Designer',
-    nav_tagline_l2: '& Web Developer',
+    nav_tagline_l1: 'UI/UX',
+    nav_tagline_l2: 'Product Designer',
     // loader
     loader_step1: 'Reading project metadata',
     loader_step2: 'Loading visual assets',
@@ -320,9 +312,9 @@ export const translations = {
     loader_step9: 'Calibrating interactions and motion',
     loader_step10: 'Initialization complete',
     // hero
-    hero_role: 'UI/UX Designer & Web Developer',
+    hero_role: 'UI/UX Product Designer',
     hero_desc:
-      'Dedicated to creating digital experiences that combine aesthetics and function.<br>Helping businesses drive growth and deepen user engagement.',
+      'Making complex systems manageable for the people who run them.<br>From on-site research to developer handoff, end to end.',
     // hero ask strip — shorter labels than the chat panel's own quick
     // questions, which have a wider panel to sit in (see HeroAskStrip).
     hero_ask_label: 'Curious? Ask my AI bot',
@@ -334,11 +326,11 @@ export const translations = {
     hero_ask_q6_label: 'English?',
     // about
     about_headline:
-      'Product designer who tames complex systems,<br><span class="gradient-text">with 3D interactive development and AI workflow integration built in</span>',
-    about_lead: `I design the systems police, hospitals and public agencies use every day: I start on site to see how people work, then cut and reorganise complex flows into screens you can read at a glance, all the way to development.`,
+      'Product designer for <span class="gradient-text">complex systems.</span>',
+    about_lead: `A product designer who tames complex systems, with 3D interactive development and AI workflow integration built in.<br>I design the systems police, hospitals and public agencies use every day: I start on site to see how people work, then cut and reorganise complex flows into screens you can read at a glance, all the way to development.`,
     about_intro1_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>Research</span><span>On site, observing and interviewing frontline users</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-flow-arrow" aria-hidden="true"></i>Delivery</span><span>Specify map and live-data contracts; write the front end when needed</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-sketch-logo" aria-hidden="true"></i>Tools</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Figma_logo.png" alt="" />Figma</strong> and <strong class="tool-name"><img class="tool-logo" src="./img/others/Adobe_XD_logo.png" alt="" />Adobe XD</strong>; I read <strong>HTML / CSS</strong> and <strong>React / Vue</strong> to settle specs with engineers</span></span>`,
     about_intro2_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-palette" aria-hidden="true"></i>Colour</span><span>Factory signal lights; calm Morandi tones for a finance game</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-cube" aria-hidden="true"></i>3D</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Blender_logo.png" alt="" />Blender</strong>, <strong class="tool-name"><img class="tool-logo" src="./img/others/Spline_logo.webp" alt="" />Spline</strong> and <strong class="tool-name"><img class="tool-logo" src="./img/others/Dora_logo.png" alt="" />Dora</strong>, shipped with <strong>React + WebGL</strong></span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-film-strip" aria-hidden="true"></i>Graphics</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Photoshop_logo.png" alt="" />Photoshop</strong>, <strong class="tool-name"><img class="tool-logo" src="./img/others/Illustrator_logo.png" alt="" />Illustrator</strong> and <strong class="tool-name"><img class="tool-logo" src="./img/others/Lightroom_logo.png" alt="" />Lightroom</strong></span></span>`,
-    about_ai_short: `Requests from <strong>LINE</strong> or a form go through <strong>Make</strong>: <strong>Claude</strong> summarises and classifies them, <strong>Google Sheets</strong> logs them, then replies are routed, so I know the budget and timeline before the first call.`,
+    about_ai_short: `Requests are sorted by AI the moment they arrive, so <strong>I know the budget and timeline before the first call.</strong>`,
     about_ai_more: 'See the full workflow',
     about_tags_systems: 'Tainan patrol system|Hsinchu environment backend|Police video system',
     about_tags_visuals: 'CNC 3D simulator|Finance game',
@@ -356,7 +348,7 @@ export const translations = {
     about_principle1_reach: 'Easy|OK|Hard',
     about_principle3_states: 'Rule hidden|Rule visible',
     about_principle3_steps: 'Send|Review|Done',
-    about_p1: `My design focus is <strong>making high-complexity systems feel manageable</strong>. Over the past five years, I have led backend system design for government and enterprise clients, delivering across <strong>Police Cloud Video Analysis Systems</strong>, <strong>Environmental Bureau Data Platforms</strong>, and <strong>Hospital Management Dashboards</strong>. Faced with dense business logic, I use <span class="text-primary">Figma</span> and <span class="text-primary">Adobe XD</span> to untangle information architecture from the ground up, turning it into intuitive, precise digital workspaces.`,
+    about_p1: `My design focus is <strong>making high-complexity systems feel manageable</strong>. Over five-plus years, I have led backend system design for government and enterprise clients, delivering across <strong>Police Cloud Video Analysis Systems</strong>, <strong>Environmental Bureau Data Platforms</strong>, and <strong>Hospital Management Dashboards</strong>. Faced with dense business logic, I use <span class="text-primary">Figma</span> and <span class="text-primary">Adobe XD</span> to untangle information architecture from the ground up, turning it into intuitive, precise digital workspaces.`,
     about_p2: `Beyond systems thinking, I bring <strong>immersive visuals</strong> into interface design. I build 3D interactive web experiences with <span class="text-secondary">Blender</span> and <span class="text-secondary">Spline</span>, drawing on a background in multimedia entertainment and commercial projects. This lets me deliver designs that are logically rigorous and visually memorable.`,
     about_p3: `I embed <strong>AI and automation</strong> directly into my freelance workflow. When a client submits a request through LINE or a form, Make structures the fields, asks <span class="text-purple">Claude</span> to summarise the need and classify the request, saves it to <span class="text-purple">Google Sheets</span>, then routes LINE replies and email notifications. Before the first conversation, I already understand the context, budget, timeline, and risks, so my response is faster and more precise.`,
     about_intro1_label: 'Systems Design',
@@ -372,7 +364,7 @@ export const translations = {
       'I read code and modify logic, <br>closing the gap between design and development.',
     figma_mcp_title: 'Figma MCP',
     figma_mcp_desc:
-      'That code literacy goes one step further with Figma MCP: I connect AI directly to Figma so it reads components, tokens, and specs in real time — no screenshots, no manual handoff. Design translates to code in one pass, closing the loop between design and development.',
+      'That code literacy goes one step further with Figma MCP: I connect AI directly to Figma so it reads components, tokens, and specs in real time — no screenshots, no manual handoff. Design translates to code in one pass, with no back-and-forth.',
     skill_html:
       'Comfortable reading and editing HTML structure. Able to bridge design specs and development implementation directly.',
     skill_js:
@@ -422,8 +414,6 @@ export const translations = {
     fl_name_06: 'Delivery',
     fl_desc_06:
       'I deliver wireframes, high-fidelity designs, interaction notes, and development annotations by milestone, with follow-up records kept in the workflow',
-    process_policy_title: 'Development Policy',
-    process_policy_body: "Before any formal quote, every project goes through a basic requirements and risk review (Project Due Diligence) — covering technical feasibility, information security, data protection, business model, and baseline regulatory risk. The goal isn't to pass legal judgment on the client, but to confirm the project fits normal software-development and business practice, lower risk for both sides, and make sure the system I deliver can run stably for the long term.",
     process_policy_team_title: 'Team Collaboration',
     process_policy_team_body: "In-house work sits inside a product team — design decisions aren't mine alone. Requirements alignment, progress syncs, and design reviews happen together with PMs, engineers, and researchers, and major calls go through internal review and cross-team sign-off. What's shown here is the process and method: real screens, data, and client names are blurred or omitted for confidentiality and user-privacy reasons, and don't represent original deliverables.",
     // AI
@@ -445,8 +435,6 @@ export const translations = {
     ai_philosophy:
       '"AI handles repetitive work,<br>so I can focus on<br>the decisions only a designer can make."',
     // AI section — bilingual card content
-    ai_section_label: 'How I Use AI',
-    ai_heading: 'AI-Assisted Design <span class="gradient-text">Intake System</span>',
     ai_sources_title: 'Request Sources',
     ai_sources_sum: 'Requests from PMs, stakeholders, and clients all land in one place: LINE messages and request forms.',
     ai_d_recent: 'Recent inbound',
@@ -529,22 +517,23 @@ export const translations = {
     // faq tab labels — split into "about me" vs. "taking on projects"
     faq_tab_experience: 'Skills & Experience',
     faq_tab_freelance: 'Taking on Projects',
+    faq_more_label: 'More questions? Ask my AI',
+    faq_more_experience: 'Remote work?|Can Tim work remotely?;Ways to work?|What kinds of collaboration does Tim take on?;Open to roles?|Is Tim open to new opportunities?;Learning lately?|What is Tim learning or exploring lately?;Daily rhythm?|What does a typical workday look like for Tim?',
+    faq_more_freelance: 'What gets declined?|What kinds of projects might Tim decline?;Pre-project review?|What risk review does Tim do before taking a project?;Why the review?|Why does Tim review projects first?',
     // faq — experience/capability tab (no freelance-process wording; that
     // all lives in the biz tab below)
     faq_exp_q1: 'How much experience do you have, and what kinds of projects have you worked on?',
-    faq_exp_a1: '5+ years in UI/UX design and frontend development, spanning government agencies, enterprise products, and independent work — 10+ projects delivered, from admin dashboards to marketing sites and 3D interactive experiences.',
+    faq_exp_a1: '5+ years in UI/UX design and frontend development, spanning government agencies, enterprise products, and independent work — 13+ projects delivered, from admin dashboards to marketing sites and 3D interactive experiences.',
     faq_exp_q2: 'What kinds of projects are you best at?',
     faq_exp_a2: 'Especially strong in high-complexity enterprise backend systems — police/government systems, hospital management systems, environmental-agency data platforms — alongside full delivery experience on 3D interactive web and B2C products.',
     faq_exp_q3: 'How do you build the 3D and immersive interactive experiences?',
-    faq_exp_a3: 'I model in Blender and Spline, then bring it to the web with Three.js and GSAP for interaction and motion — designs that stay logically rigorous while keeping some visual surprise.',
+    faq_exp_a3: 'I model in Blender and Spline, then bring it to the web with Three.js and GSAP for interaction and motion — designs that stay logically rigorous while keeping some visual surprise.',
     faq_exp_q4: "What's your design process and toolkit?",
     faq_exp_a4: 'From user interviews and log analysis to information architecture and high-fidelity mockups, all backed by a design system for consistency. Mainly Figma / Adobe XD.',
     faq_exp_q5: 'Do you have experience leading a team or mentoring?',
     faq_exp_a5: "Yes. In past enterprise projects I've led design teams, driven design direction, and worked closely with PMs and engineers.",
     faq_exp_q6: 'How deep does your frontend implementation go — can you actually code?',
-    faq_exp_a6: "I can read and modify code independently, follow the logic well enough to pinpoint issues precisely, and pair with AI tools to build interactions, animation, and data wiring — this portfolio site's own interaction logic is the proof.",
-    faq_exp_q7: 'How do you keep the experience consistent across devices (RWD)?',
-    faq_exp_a7: 'I implement layouts with Flexbox and Tailwind, handle responsive styling independently, and understand how design decisions affect frontend rendering — keeping desktop, tablet, and mobile experiences consistent.',
+    faq_exp_a6: 'Yes. I read and write HTML / CSS and React / Vue, and build layouts, interactions and animation myself; the site you are looking at is my own work.',
     faq_exp_q8: 'Do you have experience with accessibility design?',
     faq_exp_a8: "Yes — accessibility and design-system consistency are both built into the process, so components stay understandable and operable across contexts.",
     faq_exp_q9: "How's your English communication?",
@@ -552,23 +541,17 @@ export const translations = {
     // faq — freelance/business tab (working modes, pricing, and case-
     // acceptance judgment calls all live here)
     faq_biz_q1: "What's the difference between your in-house and freelance work?",
-    faq_biz_a1: "In-house, I'm part of a product team working through a full design process with PMs and engineers. Freelance, I work directly with clients through an AI-assisted intake system that tracks every step.",
+    faq_biz_a1: "In-house, I'm part of a product team working through a full design process with PMs and engineers. Freelance, I work directly with clients and own everything from brief and proposal to delivery.",
     faq_biz_q2: 'I want to hire you for a project — how do you price it?',
     faq_biz_a2: 'Quotes are based on scope, page count, and technical complexity. Design and development can be quoted separately or together, and you get a written estimate before we start.',
     faq_biz_q3: 'How do we communicate and track progress?',
-    faq_biz_a3: 'LINE or email both work. Requests are automatically organized by an AI workflow into a tracking log, and you get proactively notified on major progress.',
-    faq_biz_q4: 'Do you take on any system development project?',
-    faq_biz_a4: "No. Beyond technical feasibility, I also assess the business model, legal risk, and information-security needs. I reserve the right to decline projects that may violate Taiwanese law, are highly controversial, or could cause significant harm to users.",
-    faq_biz_q5: 'What kinds of projects tend to get declined?',
-    faq_biz_a5: "Including but not limited to: platforms promising guaranteed returns or investment yields, multi-level referral bonus or pyramid-like schemes, fake cross-border e-commerce or storefront-management fronts, high-risk cryptocurrency payment flows, illegal gambling services, high-risk money-laundering flows, fake logistics/order systems, and admin backends that can freely alter member assets or transaction records. If legality can't be confirmed, I generally don't take the project on.",
-    faq_biz_q6: 'What risk assessment do you do before taking on a project?',
-    faq_biz_a6: "Every project starts with basic due diligence: whether the business model is reasonable, whether the payment flow is transparent, whether it involves membership referral bonuses, virtual assets or cross-border transactions, whether there are unusual admin privileges, and whether it fits normal SaaS/e-commerce design logic. If serious concerns come up, I may ask for more information or decline outright.",
-    faq_biz_q7: 'Why go through this review process?',
-    faq_biz_a7: "I want every system I deliver to run safely and legally for the long term. Delivering a system isn't just about shipping features — it also means taking basic responsibility for the project's compliance, and a proper review process lowers legal and operational risk for both sides.",
-    faq_biz_q8: 'If my project is a bit unusual, what should I do?',
-    faq_biz_a8: "Feel free to share the spec, wireframes, flow chart, business model, payment flow, and company information up front — I can help assess technical feasibility and direction first, then decide whether to move into a formal engagement.",
-    faq_biz_q9: 'Do normal projects need to worry about this review?',
-    faq_biz_a9: "Not at all. Most corporate websites, brand sites, CRM/ERP, booking systems, membership systems, e-commerce platforms, and SaaS projects fall within normal development scope. Only projects involving high-risk payment flows, investment, finance, virtual assets, or other business models needing heavy compliance get closer scrutiny.",
+    faq_biz_a3: 'LINE or email both work. Every project has a tracking log, and you get notified proactively on major progress.',
+    faq_biz_q4: 'What kinds of projects do you take on?',
+    faq_biz_a4: 'Business sites, brand sites, CRM, ERP, booking, membership, e-commerce and SaaS are all in scope. Anything touching high-risk payments, investment or virtual assets gets a basic compliance review before a quote, and may be declined.',
+    faq_biz_q5: 'What does working together on a project look like?',
+    faq_biz_a5: 'Five stages: Discovery → Proposal → Wireframe → Design → Deliver. We pin down the needs and agree on a proposal before design and delivery begin.',
+    faq_biz_q6: 'If my project is a bit unusual, what should I do?',
+    faq_biz_a6: "Feel free to share the spec, wireframes, flow chart, business model, payment flow, and company information up front — I can help assess technical feasibility and direction first, then decide whether to move into a formal engagement.",
     // chat
     chat_status: 'AI Assistant · Live reply',
     chat_greeting: "Hi! I am Tim's AI assistant. Ask me anything about his design background, portfolio, or availability 👋",
@@ -576,6 +559,7 @@ export const translations = {
     chat_send_aria: 'Send',
     chat_empty_error: 'Type a question before sending',
     chat_fallback_error: "Could not get a reply. Contact Tim directly.",
+    chat_unavailable: "The AI assistant is temporarily unavailable. Please try again later, or contact Tim through the contact form.",
     chat_network_error: 'Connection failed. Reach out via the contact form.',
     chat_q1_label: 'Backend systems',
     chat_q1: 'Does Tim have experience designing B2B backend systems?',
@@ -591,31 +575,31 @@ export const translations = {
     chat_q6: 'How can I contact Tim?',
     // portfolio
     p1_title: 'Hsinchu County Police Cloud Video Analysis System',
-    p1_desc: 'UI design for police street surveillance image recognition and monitoring system',
+    p1_desc: 'Finds suspect vehicles across camera footage, cutting search time',
     p2_title: 'Hsinchu County Police Video Analysis App',
-    p2_desc: 'Mobile-optimised UI design for police surveillance monitoring system',
+    p2_desc: 'The complex monitoring system, cut down to a phone and readable at a glance outdoors',
     p3_title: 'Kaohsiung Police Smart Investigation System',
-    p3_desc: 'Next-generation smart technology investigation system interface design',
+    p3_desc: 'Tracks camera uptime, so repair status is never a mystery',
     p4_title: 'Tainan Police Smart Patrol System',
-    p4_desc: "App interface design for patrol officers' check-ins and records",
+    p4_desc: 'Patrol check-ins and route guidance, with faster backup response',
     p5_title: 'Hsinchu Zoo Management Dashboard',
-    p5_desc: 'Visitor flow analysis and website management interface',
+    p5_desc: 'Brings park operations data into the field, no trip back to the office',
     p6_title: 'Taoyuan Metro App',
-    p6_desc: 'UI modification for the Latest News section of the MRT App',
+    p6_desc: 'Reorganised point redemption so members actually spend their points',
     p7_title: 'Shihmen Reservoir Website',
-    p7_desc: 'New page creation and interface modification for the reservoir website',
+    p7_desc: 'Turns dense regulations into highlights and charts',
     p8_title: 'Love-Two Live Streaming App UI',
-    p8_desc: 'Proposal and design for a live streaming application',
+    p8_desc: 'A teal, game-like live-stream app built to keep viewers around',
     p9_title: 'Hsinchu Environmental Bureau Backend',
-    p9_desc: "New page additions and redesign for the bureau's backend system",
+    p9_desc: 'One internal hub for scattered admin workflows',
     p10_title: 'Hengchun Airport Website',
-    p10_desc: 'Website redesign proposal for the airport',
+    p10_desc: 'Flight info easy to find, within a tight budget and strict rules',
     p11_title: 'TMU Clinical Teaching System',
-    p11_desc: 'Redesign of the learning portfolio management system for medical students',
+    p11_desc: 'Turns grade tables into a dashboard that shows growth over time',
     p12_title: "CDIC Golden House – Good Home Purchase",
-    p12_desc: "Web mini-game for Central Deposit Insurance Corp's mortgage education campaign",
+    p12_desc: 'A mini-game that makes mortgage basics easy to learn',
     p13_title: 'Super High Tech CNC Simulator',
-    p13_desc: '3D machine tool simulation interface using React and WebGL',
+    p13_desc: 'A dark 3D interface for long sessions, with no loss of information density',
   },
 } as const;
 
@@ -623,9 +607,9 @@ export type Lang = keyof typeof translations;
 export type TranslationKeys = keyof typeof translations['zh'];
 
 export const heroDescTexts: Record<Lang, string[]> = {
-  zh: ['致力於打造兼具美學與功能的數位體驗', '協助企業推動業務成長並深化用戶互動'],
+  zh: ['讓複雜系統變得可被掌控', '從現場觀察到開發交付，一路做到底'],
   en: [
-    'Dedicated to creating digital experiences that combine aesthetics and function.',
-    'Helping businesses drive growth and deepen user engagement.',
+    'Making complex systems manageable for the people who run them.',
+    'From on-site research to developer handoff, end to end.',
   ],
 };

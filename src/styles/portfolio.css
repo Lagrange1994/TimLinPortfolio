@@ -7234,6 +7234,13 @@
       aspect-ratio: unset;
     }
 
+    /* Widened to fill an empty cell (span set inline, see bentoFill.ts).
+       Height of a 1-column card, so its row stays even. */
+    .grid-card-shadow.mb-wide {
+      aspect-ratio: auto;
+      height: calc(var(--bento-col-w, 300px) * 2 / 3);
+    }
+
     /* The lift-on-hover transform lives here (not on .grid-card below) so
        the shadow moves WITH the card instead of staying pinned underneath
        it — same reason MagicBento's magnetic pull/tilt (see
@@ -7345,11 +7352,18 @@
       --overlay-tint: color-mix(in srgb, var(--ph, #000) 25%, #000);
       opacity: 1;
       background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.35) 45%, transparent 75%);
+      /* Stronger at the text band: light thumbnails (#e2e0dc, #f0e7d7…)
+         left the 70%-white description hard to read. */
       background: linear-gradient(to top,
-          rgb(from var(--overlay-tint) r g b / .82) 0%,
-          rgb(from var(--overlay-tint) r g b / .35) 45%,
-          transparent 75%);
+          rgb(from var(--overlay-tint) r g b / .9) 0%,
+          rgb(from var(--overlay-tint) r g b / .6) 35%,
+          transparent 72%);
       transition: opacity .3s, --overlay-tint .6s cubic-bezier(.16, 1, .3, 1);
+    }
+
+    .grid-card .project-desc {
+      color: rgba(255, 255, 255, .88);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
     }
 
     .grid-card:hover .project-overlay {
@@ -7985,6 +7999,58 @@
       display: flex;
       flex-direction: column;
     }
+
+    /* Under the FAQ: the long-tail questions as buttons that open the chat
+       and ask them (askTim) — the page keeps the common ones only. */
+    .faq-more {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .faq-more-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-50);
+    }
+
+    .faq-more-label i { color: var(--primary); font-size: 13px; }
+
+    .faq-more-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .faq-more-btn {
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 9999px;
+      border: 1px solid rgba(108, 99, 255, 0.34);
+      background: rgba(108, 99, 255, 0.1);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: background .2s ease, border-color .2s ease, transform .2s ease;
+    }
+
+    .faq-more-btn:hover { background: rgba(108, 99, 255, 0.2); border-color: rgba(108, 99, 255, 0.55); transform: translateY(-1px); }
+    .faq-more-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+    :root[data-theme="light"] .faq-more-btn {
+      background: rgba(108, 99, 255, 0.08);
+      border-color: transparent;
+      color: oklch(from rgb(108, 99, 255) .5 .2 h);
+    }
+
+    :root[data-theme="light"] .faq-more-btn:hover { background: rgba(108, 99, 255, 0.14); }
 
     .faq-item {
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);

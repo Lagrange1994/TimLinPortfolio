@@ -8,6 +8,7 @@ import { wallShapeProgress } from '../utils/portfolioZoom';
 import { scrollToSectionAligned, AUTO_SCROLL_END_EVENT } from '../utils/navHeader';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import { attachPortfolioSkeleton } from '../utils/portfolioSkeleton';
+import { bentoSpans } from '../utils/bentoFill';
 import { fixedUiFootprint } from '../utils/fixedUiFootprint';
 import { RISE_FROM, RISE_TWEEN, RISE_START_EVENT, type RiseStartDetail } from '../utils/useRiseReveal';
 import gsap from 'gsap';
@@ -126,24 +127,13 @@ function createPortfolioScroller(row: HTMLElement, normalSpeed: number, hoverSpe
   startRAF();
 }
 
-// project9~12 are deprioritized for the bento grid's enlarged slots — picked
-// only if there aren't enough other projects to fill all 3.
-const BENTO_BIG_AVOID_IDS = new Set(['p9', 'p10', 'p11', 'p12']);
+// The enlarged grid slots are curated, not random: the work that best
+// shows "making complex systems manageable" (CNC simulator, video
+// analysis on desktop, and the same system cut down for mobile).
+const BENTO_FEATURED_IDS = ['p13', 'p1', 'p2'];
 
 function getBentoBigIndices(projects: typeof PROJECTS) {
-  const preferred: number[] = [];
-  const avoided: number[] = [];
-  projects.forEach((p, i) => (BENTO_BIG_AVOID_IDS.has(p.id) ? avoided : preferred).push(i));
-
-  const pool = [...preferred];
-  if (pool.length < 3) pool.push(...avoided);
-
-  const picked: number[] = [];
-  while (picked.length < 3 && pool.length) {
-    const i = Math.floor(Math.random() * pool.length);
-    picked.push(pool.splice(i, 1)[0]);
-  }
-  return picked;
+  return BENTO_FEATURED_IDS.map(id => projects.findIndex(p => p.id === id)).filter(i => i >= 0);
 }
 
 const bentoBigIndices = getBentoBigIndices(PROJECTS);
@@ -1232,6 +1222,45 @@ export default function PortfolioSection() {
         }
       );
     }, 120);
+  }, [expanded, activeFilter]);
+
+  // Fill the bento grid's empty cells: widen small cards next to a hole
+  // (see bentoFill.ts). Runs after the filter effect above has hidden the
+  // filtered-out cards, and again when the column count changes.
+  useEffect(() => {
+    if (!expanded) return;
+    const grid = document.getElementById('portfolio-grid');
+    if (!grid) return;
+    const wide = window.matchMedia('(min-width: 1025px)');
+    const mid = window.matchMedia('(min-width: 768px)');
+    const cols = () => (wide.matches ? 4 : mid.matches ? 2 : 1);
+    // A widened card keeps the row height of a 1-column card.
+    const setColWidth = () => {
+      const gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
+      const n = cols();
+      grid.style.setProperty('--bento-col-w', `${(grid.clientWidth - gap * (n - 1)) / n}px`);
+    };
+    const layout = () => {
+      setColWidth();
+      const shown = Array.from(grid.querySelectorAll<HTMLElement>('.grid-card-shadow'))
+        .filter(w => w.style.display !== 'none');
+      const spans = bentoSpans(shown.map(w => ({ big: w.classList.contains('mb-big') })), cols());
+      shown.forEach((w, i) => {
+        const widen = spans[i] > 1 && !(w.classList.contains('mb-big') && cols() >= 4);
+        w.classList.toggle('mb-wide', widen);
+        w.style.gridColumn = widen ? `span ${spans[i]}` : '';
+      });
+    };
+    const ro = new ResizeObserver(setColWidth);
+    layout();
+    ro.observe(grid);
+    wide.addEventListener('change', layout);
+    mid.addEventListener('change', layout);
+    return () => {
+      ro.disconnect();
+      wide.removeEventListener('change', layout);
+      mid.removeEventListener('change', layout);
+    };
   }, [expanded, activeFilter]);
 
   // Save state when clicking project card

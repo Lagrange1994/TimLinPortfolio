@@ -53,18 +53,18 @@ describe('Contact FAQ accordion (Animate UI headless accordion)', () => {
   it('starts fully collapsed — no FAQ item open by default', () => {
     const { container } = render(<LangProvider><ContactSection /></LangProvider>);
     const questions = container.querySelectorAll('.faq-question');
-    expect(questions).toHaveLength(9);
+    expect(questions).toHaveLength(8);
     for (const q of questions) {
       expect(q.getAttribute('aria-expanded')).toBe('false');
     }
   });
 
-  it('switching to the freelance tab shows its own 9 items, also fully collapsed', () => {
+  it('switching to the freelance tab shows its own 6 items, also fully collapsed', () => {
     const { container } = render(<LangProvider><ContactSection /></LangProvider>);
     fireEvent.click(container.querySelector('.faq-tab:nth-of-type(2)')!);
 
     const questions = container.querySelectorAll('.faq-question');
-    expect(questions).toHaveLength(9);
+    expect(questions).toHaveLength(6);
     for (const q of questions) {
       expect(q.getAttribute('aria-expanded')).toBe('false');
     }
@@ -101,5 +101,29 @@ describe('Contact FAQ accordion (Animate UI headless accordion)', () => {
     const questions = container.querySelectorAll('.faq-question');
     expect(questions[0].getAttribute('aria-expanded')).toBe('false');
     expect(questions[0].hasAttribute('data-open')).toBe(false);
+  });
+});
+
+// The long tail of questions is a row of "ask my AI" buttons under the list,
+// answered by the chat bot (data/tim-faq.md) instead of taking up the page.
+describe('Contact FAQ: ask my AI', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    localStorage.setItem('lang', 'en');
+  });
+
+  it('each tab ends in its own questions, and a click asks the chat', () => {
+    const asked: string[] = [];
+    const onAsk = (e: Event) => asked.push((e as CustomEvent<{ q: string }>).detail.q);
+    window.addEventListener('tim:ask', onAsk);
+    const { container } = render(<LangProvider><ContactSection /></LangProvider>);
+    const first = [...container.querySelectorAll<HTMLButtonElement>('.faq-more-btn')].map(b => b.textContent);
+    expect(first).toEqual(['Remote work?', 'Ways to work?', 'Open to roles?', 'Learning lately?', 'Daily rhythm?']);
+    fireEvent.click(container.querySelector('.faq-tab:nth-of-type(2)')!);
+    const btns = [...container.querySelectorAll<HTMLButtonElement>('.faq-more-btn')];
+    expect(btns.map(b => b.textContent)).toEqual(['What gets declined?', 'Pre-project review?', 'Why the review?']);
+    fireEvent.click(btns[0]);
+    expect(asked).toEqual(['What kinds of projects might Tim decline?']);
+    window.removeEventListener('tim:ask', onAsk);
   });
 });

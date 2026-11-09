@@ -55,7 +55,7 @@ describe('ChatPanel reacts to tim:ask', () => {
   beforeEach(() => {
     localStorage.clear();
     localStorage.setItem('lang', 'en');
-    vi.stubGlobal('fetch', vi.fn(async () => ({ json: async () => ({ reply: 'Yes — open to work.' }) })));
+    vi.stubGlobal('fetch', vi.fn(async () => ({ status: 200, ok: true, json: async () => ({ reply: 'Yes — open to work.' }) })));
   });
   afterEach(() => vi.unstubAllGlobals());
 

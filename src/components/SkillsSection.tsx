@@ -1171,7 +1171,6 @@ function DesignProcessSection() {
                 <span>{t.tab_freelance}</span>
               </div>
               <p className="process-column-desc">{t.tab_freelance_desc}</p>
-              <PolicyPill icon="ph-shield-check" label={t.process_policy_title} body={t.process_policy_body} />
             </div>
             <ProcessCarousel
               variant="process"

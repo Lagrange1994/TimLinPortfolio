@@ -94,3 +94,86 @@ describe('generateReply', () => {
     expect(blocked.headers?.['Retry-After']).toMatch(/^\d+$/);
   });
 });
+
+describe('generateReply when Gemini fails', () => {
+  const PREV_KEY = process.env.GEMINI_API_KEY;
+  beforeAll(() => { process.env.GEMINI_API_KEY = 'test-key'; });
+  afterAll(() => { process.env.GEMINI_API_KEY = PREV_KEY; });
+
+  const apiError = (status: number, word: string) => Object.assign(
+    new Error(JSON.stringify({ error: { code: status, status: word, message: 'Your prepayment credits are depleted.' } })),
+    { status },
+  );
+
+  it('402: one calm line for the visitor, the status in the log, and no retry', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    generateContentMock.mockClear();
+    generateContentMock.mockRejectedValueOnce(apiError(402, 'RESOURCE_EXHAUSTED'));
+    const res = await generateReply('Tim 擅長哪種專案？', 'zh', 'fail-402');
+    expect(res.status).toBe(503);
+    expect(res.body.error).toBe('AI 助理暫時無法使用，請稍後再試，或直接透過聯絡表單聯繫 Tim。');
+    expect(JSON.stringify(res.body)).not.toMatch(/RESOURCE_EXHAUSTED|402|credits/);
+    expect(generateContentMock).toHaveBeenCalledTimes(1);
+    expect(log).toHaveBeenCalledWith('Gemini API error: status=402 RESOURCE_EXHAUSTED Your prepayment credits are depleted.');
+    log.mockRestore();
+  });
+
+  it('a network failure (no status) logs status=none and answers in English for lang=en', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    generateContentMock.mockRejectedValueOnce(new TypeError('fetch failed'));
+    const res = await generateReply('What does Tim do?', 'en', 'fail-net');
+    expect(res.status).toBe(503);
+    expect(res.body.error).toMatch(/temporarily unavailable/);
+    expect(log).toHaveBeenCalledWith('Gemini API error: status=none fetch failed');
+    log.mockRestore();
+  });
+});
+
+describe('generateReply spends less', () => {
+  const PREV_KEY = process.env.GEMINI_API_KEY;
+  beforeAll(() => { process.env.GEMINI_API_KEY = 'test-key'; });
+  afterAll(() => { process.env.GEMINI_API_KEY = PREV_KEY; });
+
+  it('a repeated question is answered from the cache, per language', async () => {
+    generateContentMock.mockClear();
+    generateContentMock.mockResolvedValueOnce({ text: 'Tim 可以遠端工作。' });
+    const a = await generateReply('可以遠端工作嗎？', 'zh', 'cache-a');
+    const b = await generateReply('  可以遠端工作嗎？ ', 'zh', 'cache-b');
+    expect(a.body.reply).toBe('Tim 可以遠端工作。');
+    expect(b).toEqual(a);
+    expect(generateContentMock).toHaveBeenCalledTimes(1);
+    generateContentMock.mockResolvedValueOnce({ text: 'Yes, remote is fine.' });
+    const en = await generateReply('可以遠端工作嗎？', 'en', 'cache-c');
+    expect(en.body.reply).toBe('Yes, remote is fine.');
+    expect(generateContentMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('a failed call is not cached', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    generateContentMock.mockClear();
+    generateContentMock.mockRejectedValueOnce(Object.assign(new Error('boom'), { status: 500 }));
+    generateContentMock.mockResolvedValueOnce({ text: 'Back again.' });
+    expect((await generateReply('Is Tim open to roles?', 'en', 'nocache-a')).status).toBe(503);
+    expect((await generateReply('Is Tim open to roles?', 'en', 'nocache-b')).body.reply).toBe('Back again.');
+    expect(generateContentMock).toHaveBeenCalledTimes(2);
+    log.mockRestore();
+  });
+
+  it('failed calls give their daily slot back (60 failures, then a real answer)', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    for (let i = 0; i < 60; i++) {
+      generateContentMock.mockRejectedValueOnce(Object.assign(new Error('x'), { status: 402 }));
+      expect((await generateReply(`Tim 的經驗 ${i}？`, 'zh', `refund-${i}`)).status).toBe(503);
+    }
+    generateContentMock.mockResolvedValueOnce({ text: '五年以上。' });
+    expect(await generateReply('Tim 的經驗有多少年？', 'zh', 'refund-last')).toEqual({ status: 200, body: { reply: '五年以上。' } });
+    log.mockRestore();
+  });
+
+  it('normalizes cache keys: case, spacing and full-width forms', async () => {
+    const { replyCacheKey } = await import('../api/_chat-core');
+    expect(replyCacheKey('en', '  Can  Tim WORK remotely? ')).toBe(replyCacheKey('en', 'can tim work remotely?'));
+    expect(replyCacheKey('zh', 'ＡＩ？')).toBe(replyCacheKey('zh', 'ai?'));
+    expect(replyCacheKey('zh', 'a')).not.toBe(replyCacheKey('en', 'a'));
+  });
+});

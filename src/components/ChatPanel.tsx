@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, Fragment } from 'react';
 import type { ReactNode } from 'react';
 import { useLang } from '../context/LangContext';
 import { ASK_TIM_EVENT } from '../utils/askTim';
+import { chatReplyText } from '../utils/chatReply';
 import type { AskTimDetail } from '../utils/askTim';
 
 interface Message {
@@ -110,12 +111,14 @@ export default function ChatPanel() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: q, lang }),
       });
-      const data = await res.json();
+      // A platform error (timeout, 5xx page) may not be JSON at all.
+      const data: { reply?: string; error?: string } = await res.json().catch(() => ({}));
+      const text = chatReplyText(res.status, data, t);
       setMessages(prev => {
         const next = [...prev];
         const last = next[next.length - 1];
         if (last.loading) {
-          next[next.length - 1] = { role: 'bot', text: data.reply || data.error || t.chat_fallback_error };
+          next[next.length - 1] = { role: 'bot', text };
         }
         return next;
       });
