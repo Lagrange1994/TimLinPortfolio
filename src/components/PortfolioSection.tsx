@@ -8,7 +8,6 @@ import { wallShapeProgress } from '../utils/portfolioZoom';
 import { scrollToSectionAligned, AUTO_SCROLL_END_EVENT } from '../utils/navHeader';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import { attachPortfolioSkeleton } from '../utils/portfolioSkeleton';
-import { bentoSpans } from '../utils/bentoFill';
 import { fixedUiFootprint } from '../utils/fixedUiFootprint';
 import { RISE_FROM, RISE_TWEEN, RISE_START_EVENT, type RiseStartDetail } from '../utils/useRiseReveal';
 import gsap from 'gsap';
@@ -1222,45 +1221,6 @@ export default function PortfolioSection() {
         }
       );
     }, 120);
-  }, [expanded, activeFilter]);
-
-  // Fill the bento grid's empty cells: widen small cards next to a hole
-  // (see bentoFill.ts). Runs after the filter effect above has hidden the
-  // filtered-out cards, and again when the column count changes.
-  useEffect(() => {
-    if (!expanded) return;
-    const grid = document.getElementById('portfolio-grid');
-    if (!grid) return;
-    const wide = window.matchMedia('(min-width: 1025px)');
-    const mid = window.matchMedia('(min-width: 768px)');
-    const cols = () => (wide.matches ? 4 : mid.matches ? 2 : 1);
-    // A widened card keeps the row height of a 1-column card.
-    const setColWidth = () => {
-      const gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
-      const n = cols();
-      grid.style.setProperty('--bento-col-w', `${(grid.clientWidth - gap * (n - 1)) / n}px`);
-    };
-    const layout = () => {
-      setColWidth();
-      const shown = Array.from(grid.querySelectorAll<HTMLElement>('.grid-card-shadow'))
-        .filter(w => w.style.display !== 'none');
-      const spans = bentoSpans(shown.map(w => ({ big: w.classList.contains('mb-big') })), cols());
-      shown.forEach((w, i) => {
-        const widen = spans[i] > 1 && !(w.classList.contains('mb-big') && cols() >= 4);
-        w.classList.toggle('mb-wide', widen);
-        w.style.gridColumn = widen ? `span ${spans[i]}` : '';
-      });
-    };
-    const ro = new ResizeObserver(setColWidth);
-    layout();
-    ro.observe(grid);
-    wide.addEventListener('change', layout);
-    mid.addEventListener('change', layout);
-    return () => {
-      ro.disconnect();
-      wide.removeEventListener('change', layout);
-      mid.removeEventListener('change', layout);
-    };
   }, [expanded, activeFilter]);
 
   // Save state when clicking project card

@@ -38,7 +38,7 @@ export const translations = {
     // bot's context, api/_chat-core.ts). Tags: label per linked project.
     about_intro1_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>研究</span><span>到現場場勘，訪談第一線使用者</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-flow-arrow" aria-hidden="true"></i>交付</span><span>定地圖與即時資料規格，必要時自己寫前端</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-sketch-logo" aria-hidden="true"></i>工具</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Figma_logo.png" alt="" />Figma</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Adobe_XD_logo.png" alt="" />Adobe XD</strong> 設計；讀寫 <strong>HTML / CSS</strong>、<strong>React / Vue</strong>，和工程師對規格</span></span>`,
     about_intro2_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-palette" aria-hidden="true"></i>配色</span><span>工廠沿用機台燈號，理財遊戲用莫蘭迪色減壓</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-cube" aria-hidden="true"></i>3D</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Blender_logo.png" alt="" />Blender</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Spline_logo.webp" alt="" />Spline</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Dora_logo.png" alt="" />Dora</strong>，<strong>React + WebGL</strong> 上線</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-film-strip" aria-hidden="true"></i>平面</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Photoshop_logo.png" alt="" />Photoshop</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Illustrator_logo.png" alt="" />Illustrator</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Lightroom_logo.png" alt="" />Lightroom</strong></span></span>`,
-    about_ai_short: `需求一送進來，AI 就先整理好重點；<strong>第一次通話前，我已掌握預算與時程。</strong>`,
+    about_ai_short: `需求一送進來，AI 就先整理好重點；<strong>第一次通話前，我已掌握需求與時程。</strong>`,
     about_ai_more: '看完整流程',
     about_tags_systems: '台南智慧簽巡|新竹環保局後台|警政影像系統',
     about_tags_visuals: 'CNC 3D 模擬器|存保理財遊戲',
@@ -62,7 +62,7 @@ export const translations = {
     about_principle3_steps: '送出|審核|完成',
     about_p1: `我的設計核心是<strong>讓高複雜度的系統變得可以被人掌控</strong>。五年以上的實務中，我為政府與企業客戶主導後台系統設計，交付成果橫跨 <strong>警政雲端智慧影像分析系統</strong>、<strong>環保局數據管理平台</strong> 與 <strong>醫院醫療管理後台</strong>。面對龐雜的業務邏輯，我慣用 <span class="text-primary">Figma</span> 與 <span class="text-primary">Adobe XD</span> 從零梳理資訊架構，最終轉化為直觀、精準的數位工作環境。`,
     about_p2: `除了嚴謹的系統思維，我擅長將<strong>沉浸式視覺</strong>注入介面設計。熟練運用 <span class="text-secondary">Blender</span> 與 <span class="text-secondary">Spline</span> 打造 3D 互動網頁體驗，也具備多媒體娛樂產業與商業專案的完整執行經驗——這讓我的設計能在邏輯嚴密的同時，保有視覺上的驚喜感。`,
-    about_p3: `我把 <strong>AI 與自動化</strong>嵌進實際接案流程：當客戶從 LINE 官方帳號或表單送出需求後，Make 會先整理欄位、交由 <span class="text-purple">Claude</span> 摘要需求與判斷類型，再寫入 <span class="text-purple">Google Sheets</span> 作為追蹤資料庫，最後分流發送 LINE 回覆與 Email 通知。這讓我在正式溝通前就能掌握需求背景、預算、時程與風險，回覆更快，也更精準。`,
+    about_p3: `我把 <strong>AI 與自動化</strong>嵌進實際接案流程：當客戶從 LINE 官方帳號或表單送出需求後，Make 會先整理欄位、交由 <span class="text-purple">Claude</span> 摘要需求與判斷類型，再寫入 <span class="text-purple">Google Sheets</span> 作為追蹤資料庫，最後分流發送 LINE 回覆與 Email 通知。這讓我在正式溝通前就能掌握需求背景、時程與風險，回覆更快，也更精準。`,
     about_intro1_label: 'Systems Design',
     about_intro2_label: 'Context-Driven Visuals',
     about_stat_years_label: 'Years In Practice',
@@ -101,7 +101,7 @@ export const translations = {
     ih_name_06: 'Iterate',
     ih_desc_06: '根據數據與用戶回饋持續優化，推動設計系統演進',
     fl_name_01: 'Intake',
-    fl_desc_01: '客戶透過 LINE 官方帳號或表單送出需求，系統自動收集專案類型、目標、預算、時程與聯絡資訊',
+    fl_desc_01: '客戶透過 LINE 官方帳號或表單送出需求，系統自動收集專案類型、目標、時程與聯絡資訊',
     fl_name_02: 'AI Brief',
     fl_desc_02: 'Make 將需求整理成結構化摘要，交由 Claude 協助判斷重點、缺口與初步提問方向',
     fl_name_03: 'Triage',
@@ -138,7 +138,7 @@ export const translations = {
     ai_f_projtype: '專案類型',
     ai_f_goal: '目標',
     ai_f_timeline: '時程',
-    ai_f_budget: '預算',
+    ai_f_platform: '平台',
     ai_f_priority_lbl: '優先級',
     ai_f_contact: '聯絡人',
     ai_f_filling: '填寫中…',
@@ -201,7 +201,7 @@ export const translations = {
     contact_sub: '有專案合作需求？歡迎隨時與我聯繫',
     line_eyebrow: 'Design Consultation · 免費初次諮詢',
     line_title: '有設計需求？\nLINE Bot 會先幫我整理重點',
-    line_desc: '留下專案目標、時程與預算後，系統會建立追蹤紀錄並通知我回覆',
+    line_desc: '留下專案目標與時程後，系統會建立追蹤紀錄並通知我回覆',
     line_id_label: '官方帳號',
     line_btn: '加入 LINE 聯繫我',
     open_for_work: 'Open for work',
@@ -219,7 +219,7 @@ export const translations = {
     faq_exp_q2: '擅長哪種類型的專案？',
     faq_exp_a2: '特別擅長高複雜度的企業後台系統設計，例如警政系統、醫院管理系統、環保局數據平台，同時也有 3D 互動網頁和 B2C 產品的完整執行經驗。',
     faq_exp_q3: '3D 與沉浸式互動網頁是怎麼做出來的？',
-    faq_exp_a3: '使用 Blender 與 Spline 建模，搭配 Three.js 與 GSAP 打造網頁端的 3D 互動與動效，讓介面在邏輯清晰之餘保有視覺驚喜感。',
+    faq_exp_a3: '使用 Blender 與 Spline 建模，搭配 Three.js 與 GSAP 打造網頁端的 3D 互動與動效，讓介面在邏輯清晰之餘保有視覺驚喜感。',
     faq_exp_q4: '設計流程會用到哪些方法與工具？',
     faq_exp_a4: '從使用者訪談、log 分析、資訊架構到高保真稿，全程搭配設計系統確保一致性；工具以 Figma / Adobe XD 為主。',
     faq_exp_q5: '有沒有帶領團隊或 mentor 的經驗？',
@@ -238,7 +238,7 @@ export const translations = {
     faq_biz_q3: '怎麼聯絡與追蹤進度？',
     faq_biz_a3: '透過 LINE 官方帳號或 Email 都可以，每個案件都有追蹤紀錄，重大進度會主動通知。',
     faq_biz_q4: '接哪些類型的案子？',
-    faq_biz_a4: '企業網站、品牌官網、CRM、ERP、預約、會員、電商與 SaaS 都在範圍內。涉及高風險金流、投資或虛擬資產的需求，報價前會先做基本的合規審查，必要時婉拒。',
+    faq_biz_a4: '企業網站、品牌官網、CRM、ERP、預約、會員、電商與 SaaS 都在範圍內。涉及高風險金流、投資或虛擬資產的需求，報價前會先做基本的合規審查，必要時婉拒。',
     faq_biz_q5: '接案的合作流程是什麼？',
     faq_biz_a5: '依 Discovery → Proposal → Wireframe → Design → Deliver 五個階段進行：先釐清需求並提出方案，確認方向後才進入設計與交付。',
     faq_biz_q6: '如果我的案件比較特殊怎麼辦？',
@@ -330,7 +330,7 @@ export const translations = {
     about_lead: `A product designer who tames complex systems, with 3D interactive development and AI workflow integration built in.<br>I design the systems police, hospitals and public agencies use every day: I start on site to see how people work, then cut and reorganise complex flows into screens you can read at a glance, all the way to development.`,
     about_intro1_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>Research</span><span>On site, observing and interviewing frontline users</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-flow-arrow" aria-hidden="true"></i>Delivery</span><span>Specify map and live-data contracts; write the front end when needed</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-sketch-logo" aria-hidden="true"></i>Tools</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Figma_logo.png" alt="" />Figma</strong> and <strong class="tool-name"><img class="tool-logo" src="./img/others/Adobe_XD_logo.png" alt="" />Adobe XD</strong>; I read <strong>HTML / CSS</strong> and <strong>React / Vue</strong> to settle specs with engineers</span></span>`,
     about_intro2_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-palette" aria-hidden="true"></i>Colour</span><span>Factory signal lights; calm Morandi tones for a finance game</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-cube" aria-hidden="true"></i>3D</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Blender_logo.png" alt="" />Blender</strong>, <strong class="tool-name"><img class="tool-logo" src="./img/others/Spline_logo.webp" alt="" />Spline</strong> and <strong class="tool-name"><img class="tool-logo" src="./img/others/Dora_logo.png" alt="" />Dora</strong>, shipped with <strong>React + WebGL</strong></span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-film-strip" aria-hidden="true"></i>Graphics</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Photoshop_logo.png" alt="" />Photoshop</strong>, <strong class="tool-name"><img class="tool-logo" src="./img/others/Illustrator_logo.png" alt="" />Illustrator</strong> and <strong class="tool-name"><img class="tool-logo" src="./img/others/Lightroom_logo.png" alt="" />Lightroom</strong></span></span>`,
-    about_ai_short: `Requests are sorted by AI the moment they arrive, so <strong>I know the budget and timeline before the first call.</strong>`,
+    about_ai_short: `Requests are sorted by AI the moment they arrive, so <strong>I know the goals and timeline before the first call.</strong>`,
     about_ai_more: 'See the full workflow',
     about_tags_systems: 'Tainan patrol system|Hsinchu environment backend|Police video system',
     about_tags_visuals: 'CNC 3D simulator|Finance game',
@@ -350,7 +350,7 @@ export const translations = {
     about_principle3_steps: 'Send|Review|Done',
     about_p1: `My design focus is <strong>making high-complexity systems feel manageable</strong>. Over five-plus years, I have led backend system design for government and enterprise clients, delivering across <strong>Police Cloud Video Analysis Systems</strong>, <strong>Environmental Bureau Data Platforms</strong>, and <strong>Hospital Management Dashboards</strong>. Faced with dense business logic, I use <span class="text-primary">Figma</span> and <span class="text-primary">Adobe XD</span> to untangle information architecture from the ground up, turning it into intuitive, precise digital workspaces.`,
     about_p2: `Beyond systems thinking, I bring <strong>immersive visuals</strong> into interface design. I build 3D interactive web experiences with <span class="text-secondary">Blender</span> and <span class="text-secondary">Spline</span>, drawing on a background in multimedia entertainment and commercial projects. This lets me deliver designs that are logically rigorous and visually memorable.`,
-    about_p3: `I embed <strong>AI and automation</strong> directly into my freelance workflow. When a client submits a request through LINE or a form, Make structures the fields, asks <span class="text-purple">Claude</span> to summarise the need and classify the request, saves it to <span class="text-purple">Google Sheets</span>, then routes LINE replies and email notifications. Before the first conversation, I already understand the context, budget, timeline, and risks, so my response is faster and more precise.`,
+    about_p3: `I embed <strong>AI and automation</strong> directly into my freelance workflow. When a client submits a request through LINE or a form, Make structures the fields, asks <span class="text-purple">Claude</span> to summarise the need and classify the request, saves it to <span class="text-purple">Google Sheets</span>, then routes LINE replies and email notifications. Before the first conversation, I already understand the context, timeline, and risks, so my response is faster and more precise.`,
     about_intro1_label: 'Systems Design',
     about_intro2_label: 'Context-Driven Visuals',
     about_stat_years_label: 'Years In Practice',
@@ -398,7 +398,7 @@ export const translations = {
       'Continuously refine based on data and user feedback, driving design system evolution and long-term quality',
     fl_name_01: 'Intake',
     fl_desc_01:
-      'Clients submit requests through LINE or a form, while the system collects project type, goals, budget, timeline, and contact details',
+      'Clients submit requests through LINE or a form, while the system collects project type, goals, timeline, and contact details',
     fl_name_02: 'AI Brief',
     fl_desc_02:
       'Make turns the request into a structured brief, then Claude helps identify key points, missing context, and follow-up questions',
@@ -446,7 +446,7 @@ export const translations = {
     ai_f_projtype: 'Project Type',
     ai_f_goal: 'Goal',
     ai_f_timeline: 'Timeline',
-    ai_f_budget: 'Budget',
+    ai_f_platform: 'Platform',
     ai_f_priority_lbl: 'Priority',
     ai_f_contact: 'Contact',
     ai_f_filling: 'Filling…',
@@ -509,7 +509,7 @@ export const translations = {
     contact_sub: 'Have a project in mind? Get in touch.',
     line_eyebrow: 'Design consultation · Free first chat',
     line_title: 'Have a design need? My LINE Bot helps structure it first.',
-    line_desc: 'Share your goal, timeline, and budget. The workflow records it and notifies me to reply.',
+    line_desc: 'Share your goal and timeline. The workflow records it and notifies me to reply.',
     line_id_label: 'Official account',
     line_btn: 'Add me on LINE',
     open_for_work: 'Open for work',
@@ -527,7 +527,7 @@ export const translations = {
     faq_exp_q2: 'What kinds of projects are you best at?',
     faq_exp_a2: 'Especially strong in high-complexity enterprise backend systems — police/government systems, hospital management systems, environmental-agency data platforms — alongside full delivery experience on 3D interactive web and B2C products.',
     faq_exp_q3: 'How do you build the 3D and immersive interactive experiences?',
-    faq_exp_a3: 'I model in Blender and Spline, then bring it to the web with Three.js and GSAP for interaction and motion — designs that stay logically rigorous while keeping some visual surprise.',
+    faq_exp_a3: 'I model in Blender and Spline, then bring it to the web with Three.js and GSAP for interaction and motion — designs that stay logically rigorous while keeping some visual surprise.',
     faq_exp_q4: "What's your design process and toolkit?",
     faq_exp_a4: 'From user interviews and log analysis to information architecture and high-fidelity mockups, all backed by a design system for consistency. Mainly Figma / Adobe XD.',
     faq_exp_q5: 'Do you have experience leading a team or mentoring?',
@@ -547,7 +547,7 @@ export const translations = {
     faq_biz_q3: 'How do we communicate and track progress?',
     faq_biz_a3: 'LINE or email both work. Every project has a tracking log, and you get notified proactively on major progress.',
     faq_biz_q4: 'What kinds of projects do you take on?',
-    faq_biz_a4: 'Business sites, brand sites, CRM, ERP, booking, membership, e-commerce and SaaS are all in scope. Anything touching high-risk payments, investment or virtual assets gets a basic compliance review before a quote, and may be declined.',
+    faq_biz_a4: 'Business sites, brand sites, CRM, ERP, booking, membership, e-commerce and SaaS are all in scope. Anything touching high-risk payments, investment or virtual assets gets a basic compliance review before a quote, and may be declined.',
     faq_biz_q5: 'What does working together on a project look like?',
     faq_biz_a5: 'Five stages: Discovery → Proposal → Wireframe → Design → Deliver. We pin down the needs and agree on a proposal before design and delivery begin.',
     faq_biz_q6: 'If my project is a bit unusual, what should I do?',

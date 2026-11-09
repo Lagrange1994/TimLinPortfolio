@@ -7233,14 +7233,6 @@
       grid-row: span 2;
       aspect-ratio: unset;
     }
-
-    /* Widened to fill an empty cell (span set inline, see bentoFill.ts).
-       Height of a 1-column card, so its row stays even. */
-    .grid-card-shadow.mb-wide {
-      aspect-ratio: auto;
-      height: calc(var(--bento-col-w, 300px) * 2 / 3);
-    }
-
     /* The lift-on-hover transform lives here (not on .grid-card below) so
        the shadow moves WITH the card instead of staying pinned underneath
        it — same reason MagicBento's magnetic pull/tilt (see

@@ -339,7 +339,7 @@ function makeAiCards(t: Record<string, string>) {
               <div className="field"><label>{t.ai_f_goal}</label><div className="val"><span>Redesign onboarding for new pricing tier</span></div></div>
               <div className="field-row">
                 <div className="field"><label>{t.ai_f_timeline}</label><div className="val"><span>Jun 03 — Jun 17</span></div></div>
-                <div className="field"><label>{t.ai_f_budget}</label><div className="val"><span>Internal</span></div></div>
+                <div className="field"><label>{t.ai_f_platform}</label><div className="val"><span>iOS · Android</span></div></div>
               </div>
               <div className="field field-priority"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><HBadge variant="danger">HIGH</HBadge></div></div>
               <div className="field"><label>{t.ai_f_contact}</label><div className="val"><span>celine.h@firm.co</span></div></div>
