@@ -627,6 +627,17 @@
       overscroll-behavior-x: none;
     }
 
+    /* Form controls don't inherit the page font by default, so a button
+       without its own font-family (theme switch, language menu) fell back
+       to Arial next to the Quicksand nav links. Element selector, so every
+       class that sets its own font still wins. */
+    button,
+    input,
+    select,
+    textarea {
+      font-family: inherit;
+    }
+
     /* Pull-to-refresh containment for JS-driven scrolls (see navHeader.ts
        animateScrollTo) used to live here as `@media (pointer: coarse)`.
        Removed: that media feature reflects the PRIMARY pointing device as
@@ -745,6 +756,34 @@
       z-index: 1;
     }
 
+    /* Two button sizes. Large: a section's main action (hero, View All
+       Projects). Default 44px / 14px: actions inside a card (Send Email,
+       聯絡我). Phones use the default size for both. */
+    .btn-glass.btn-lg {
+      min-height: 56px;
+      padding: 0 32px;
+      font-size: 17px;
+    }
+
+    /* Large button with a trailing icon circle (View All Projects). */
+    .btn-glass.btn-lg.btn-lg-icon {
+      padding: 8px 8px 8px 28px;
+      gap: 12px;
+    }
+
+    @media (max-width: 767px) {
+      .btn-glass.btn-lg {
+        min-height: 44px;
+        padding: 0 24px;
+        font-size: 14px;
+      }
+
+      .btn-glass.btn-lg.btn-lg-icon {
+        padding: 8px 6px 8px 22px;
+        gap: 8px;
+      }
+    }
+
     .btn-glass::before {
       content: '';
       position: absolute;
@@ -807,6 +846,8 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      /* Fills the large button's 56px height less 8px top and bottom
+         (.btn-lg-icon); 28px on phones, where the button is 44px. */
       width: 40px;
       height: 40px;
       min-width: 40px;
@@ -2255,8 +2296,8 @@
         box-shadow: var(--neu-raised-sm);
       }
 
-      /* margin-right:auto absorbs the slack the fixed width leaves over the
-         content (~45px in zh, ~66px in en), parking it between the prompt and
+      /* margin-right:auto absorbs any slack the width leaves over the
+         content, parking it between the prompt and
          the questions — label left, actions right, rather than one lopsided
          pad on whichever end justify-content picks. */
       .hero-ask-label {
@@ -2285,20 +2326,9 @@
         color: transparent;
       }
 
-      /* Outlined, not filled: inside an already-solid capsule a second fill
-         would fight it. 28px tall leaves 8px of capsule showing above and
-         below, which is what makes them read as contained rather than as the
-         capsule's own segments.
-
-         Ink and outline are one desaturated violet — --grad-logo's family
-         pulled well back toward grey, so the pills tint with the theme without
-         competing with the sparkle mark (which keeps the full gradient) or
-         with the prompt beside them, itself the same hue a few steps darker.
-         #5E5590 clears 6.5:1 on white and the prompt's #5A5280 clears 7:1, so
-         the muted treatment stays legible rather than merely faint. The two
-         inks are near enough that the prompt leads on weight and size (13px
-         700 against 12px 500) rather than on contrast; the outline stays at
-         its lighter rgba so the pill shape keeps receding behind its label.
+      /* Filled with a light primary tint, the same chip as the FAQ ask row
+         (.faq-more-btn) so both "ask my AI" entry points match. 28px tall
+         leaves 8px of the capsule showing above and below.
 
          position:relative + overflow:hidden frame the roll: .hero-ask-roll
          spans are absolutely positioned inside and animate through this box,
@@ -2307,13 +2337,15 @@
         position: relative;
         overflow: hidden;
         height: 28px;
-        padding: 0 11px;
+        /* 9px, not the FAQ chip's 14px: the strip's width is fixed, and the
+           13px labels already use most of its slack. */
+        padding: 0 9px;
         border-radius: 9999px;
-        border: 1px solid rgba(114, 106, 160, 0.38);
-        background: transparent;
-        color: #5E5590;
+        border: 1px solid transparent;
+        background: rgba(108, 99, 255, 0.08);
+        color: oklch(from rgb(108, 99, 255) .5 .2 h);
         font-family: var(--font);
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 500;
         white-space: nowrap;
         flex-shrink: 0;
@@ -2322,13 +2354,11 @@
       }
 
       .hero-ask-btn:hover {
-        background: rgba(114, 106, 160, 0.09);
-        border-color: rgba(114, 106, 160, 0.7);
-        color: #453E70;
+        background: rgba(108, 99, 255, 0.14);
       }
 
       .hero-ask-btn:active {
-        background: rgba(114, 106, 160, 0.16);
+        background: rgba(108, 99, 255, 0.2);
       }
 
       /* One label inside a rolling pill. Absolute so the incoming and outgoing
@@ -2950,9 +2980,9 @@
       backdrop-filter: blur(1rem);
       /* plain text in dark mode; light mode turns it the About purple */
       color: var(--text);
-      font-family: var(--font-heading);
+      font-family: var(--font);
       font-size: 15px;
-      font-weight: 700;
+      font-weight: 600;
       text-decoration: none;
       transition: transform .25s ease, border-color .3s, box-shadow .3s;
     }
@@ -4053,9 +4083,9 @@
       backdrop-filter: blur(1rem);
       /* plain text in dark mode; light mode turns it the About purple */
       color: var(--text);
-      font-family: var(--font-heading);
+      font-family: var(--font);
       font-size: 15px;
-      font-weight: 700;
+      font-weight: 600;
       white-space: nowrap;
       cursor: pointer;
       transition: transform .25s ease, border-color .3s, box-shadow .3s;
@@ -4081,11 +4111,11 @@
     }
 
     .btn-glass.btn-grad.about-cta-btn {
-      height: 46px;
+      height: 44px;
       padding: 0 22px;
       border-radius: 9999px;
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 500;
       white-space: nowrap;
     }
 
@@ -5364,11 +5394,11 @@
         .portfolio-scroll > #portfolio.portfolio-expanded :is(.portfolio-header, #toggle-portfolio-view, .portfolio-wall-outline, .portfolio-wall-frame) {
           animation: none;
         }
-        /* A nav/CTA auto-scroll to another section (navHeader.ts) flies
-           past the plain, formed wall: no zoom. The track keeps its length,
-           so the landing spot doesn't move. */
-        :root[data-auto-scroll]:not([data-auto-scroll="portfolio"]) .portfolio-scroll > #portfolio,
-        :root[data-auto-scroll]:not([data-auto-scroll="portfolio"]) .portfolio-scroll > #portfolio :is(.portfolio-header, #toggle-portfolio-view, .portfolio-wall-outline, .portfolio-wall-frame) {
+        /* A nav/CTA auto-scroll (navHeader.ts) shows the plain, formed wall,
+           with no zoom, whether it flies past or lands here. The track keeps
+           its length, so the landing spot doesn't move. */
+        :root[data-auto-scroll] .portfolio-scroll > #portfolio,
+        :root[data-auto-scroll] .portfolio-scroll > #portfolio :is(.portfolio-header, #toggle-portfolio-view, .portfolio-wall-outline, .portfolio-wall-frame) {
           animation: none;
         }
         @keyframes pf-zoom-in { from { scale: 1.5; } }
@@ -8967,7 +8997,9 @@
 
     /* ── FOOTER ── */
     footer {
-      padding: 32px 48px;
+      /* Right side clears #chat-fab (fixed, 3rem wide, 2rem from the edge),
+         which otherwise sat on top of the copyright line. */
+      padding: 32px calc(2rem + 3rem + 24px) 32px 48px;
       max-width: 1440px;
       margin: 0 auto;
       display: flex;
@@ -9842,20 +9874,12 @@
         display: none;
       }
 
-      /* View All Projects — revert to its original (pre-enlargement) size on
-         mobile; PortfolioSection.tsx sets the larger desktop/tablet size
-         inline, so this needs !important to win. font-size falls back to
-         .btn-glass's own 14px (no override here), matching the original. */
-      #toggle-portfolio-view {
-        padding: 8px 6px 8px 22px !important;
-        gap: 8px !important;
-        font-size: 14px !important;
-      }
-
+      /* View All Projects' icon circle at the 44px phone button size
+         (see .btn-lg) */
       .toggle-portfolio-icon-circle {
-        width: 28px !important;
-        height: 28px !important;
-        min-width: 28px !important;
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
       }
 
       /* Contact — single column */

@@ -198,3 +198,50 @@ describe('lazy unit scheduling', () => {
     un.forEach(fn => fn());
   });
 });
+
+// A nav/CTA auto-scroll used to mount every unit it flew past, each a whole
+// section rendered mid-flight, which made the scroll stutter. Now only the
+// target's unit mounts during the flight; the rest wait for the landing.
+describe('lazy units during a nav/CTA auto-scroll', () => {
+  beforeEach(() => {
+    scrollY = 0;
+    Object.defineProperty(window, 'innerHeight', { value: VH, configurable: true });
+    const hero = document.createElement('section');
+    hero.id = 'home';
+    hero.getBoundingClientRect = () => box(0);
+    document.body.appendChild(hero);
+  });
+  afterEach(() => {
+    document.body.innerHTML = '';
+    delete document.documentElement.dataset.autoScroll;
+    vi.useRealTimers();
+  });
+
+  it('mounts only the unit holding the target while flying, the rest on landing', async () => {
+    vi.useFakeTimers();
+    const { loadAutoScrollTarget } = await import('../src/utils/lazyUnit');
+    const { AUTO_SCROLL_END_EVENT } = await import('../src/utils/navHeader');
+    const units = [1, 2, 3, 4].map(i => makeUnit(i));
+    units.forEach(u => { u.state.loaded = false; });
+    const anchor = document.createElement('span');
+    anchor.id = 'contact';
+    units[3].el.appendChild(anchor);
+    units[3].el.setAttribute('data-lazy-unit', 'contact');
+    const unregister = units.map(u => registerLazyUnit(u.handle));
+
+    document.documentElement.dataset.autoScroll = 'contact';
+    scrollY = 2 * SECTION_H; // mid-flight, over unit 2
+    window.dispatchEvent(new Event('scroll'));
+    vi.advanceTimersByTime(50);
+    expect(units.map(u => u.state.loaded)).toEqual([false, false, false, true]);
+    expect(loadAutoScrollTarget()).toBe(true);
+
+    // Landed on unit 4: its neighbours mount now.
+    delete document.documentElement.dataset.autoScroll;
+    scrollY = 4 * SECTION_H;
+    window.dispatchEvent(new Event(AUTO_SCROLL_END_EVENT));
+    expect(units[2].state.loaded).toBe(true);
+    expect(loadAutoScrollTarget()).toBe(false);
+    unregister.forEach(fn => fn());
+  });
+});

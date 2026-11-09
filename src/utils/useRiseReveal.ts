@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import gsap from 'gsap';
 import ScrollTrigger from 'gsap/ScrollTrigger';
-import { autoScrollSkips } from './navHeader';
+import { autoScrollSkips, autoScrollLandsIn, msSinceAutoScrollEnd, AUTO_SCROLL_END_EVENT } from './navHeader';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -32,6 +32,16 @@ const POS_EASE = 'elastic.out(0.8, 0.75)'; // soft single-bounce rise
 const RISE_Y = 28; // px each item travels by default (data-rise-y overrides)
 const STRETCH_EASE = 'elastic.out(0.8, 0.55)'; // gentler squash/stretch spring
 const SKIP_SPEED = 40; // reveal speed-up while an auto-scroll flies past (~30ms)
+// Where a nav/CTA auto-scroll lands, the content fades up instead of the
+// elastic rise: a short, plain rise with no squash, so the finished screen
+// just appears.
+const LAND_Y = 16;
+const LAND_DUR = 0.6;
+const LAND_EASE = 'power2.out';
+const LAND_COL_DELAY = 0.08;
+// A section mounted this soon after a landing (a neighbour LazyUnit loads
+// then) fades up with it instead of waiting to be scrolled back to.
+const LATE_LAND_MS = 1000;
 
 // Shared with elements that must rise in lockstep with a .rise-soft item but
 // can't be .rise-soft themselves (PortfolioSection's notched wall frame).
@@ -41,10 +51,16 @@ export const RISE_FROM = { autoAlpha: 0, y: RISE_Y };
 // the item's own timeline, so a companion element can add its tween to it and
 // stay frame-exact in sync (a separately created tween starts a tick late);
 // `dir` is 1 when the item rises in from below and -1 when it drops in from
-// above, `riseY` the distance it travels.
+// above, `riseY` the distance it travels and `tween` its duration and ease
+// (the fade-up after an auto-scroll lands differs from the scroll rise).
 export const RISE_START_EVENT = 'rise-start';
 export type RiseDir = 1 | -1;
-export interface RiseStartDetail { tl: gsap.core.Timeline; dir: RiseDir; riseY: number }
+export interface RiseStartDetail {
+  tl: gsap.core.Timeline;
+  dir: RiseDir;
+  riseY: number;
+  tween: { duration: number; ease: string };
+}
 
 // Some elements carry their own decorative CSS transform (e.g. Tech Stack's
 // `--stagger-y` staircase offset on .tech-item). GSAP's own transform writes
@@ -79,6 +95,11 @@ function getPositionOffset(el: HTMLElement): { x: number; y: number } {
   return { x: Number.isNaN(left) ? 0 : left, y: Number.isNaN(top) ? 0 : top };
 }
 
+// 'scroll': the item scrolled into its band. 'land': a nav/CTA auto-scroll
+// landed with the item reached or passed (see onLanded).
+type RevealMode = 'scroll' | 'land';
+const justLanded = (): RevealMode => (msSinceAutoScrollEnd() < LATE_LAND_MS ? 'land' : 'scroll');
+
 export function setupRiseReveal(sections: HTMLElement[]): () => void {
   if (!sections.length) return () => {};
 
@@ -91,6 +112,8 @@ export function setupRiseReveal(sections: HTMLElement[]): () => void {
   // band fires onEnter synchronously during ScrollTrigger.create(), and its
   // reveal needs ctx to exist by then.
   const ctx = gsap.context(() => {});
+  // Items whose band a nav/CTA auto-scroll may have skipped (see onLanded).
+  const pending: Array<{ st: ScrollTrigger; reveal: (dir: RiseDir, mode?: RevealMode) => void }> = [];
   ctx.add(() => {
     sections.forEach(section => {
       const all = gsap.utils.toArray<HTMLElement>(
@@ -167,25 +190,30 @@ export function setupRiseReveal(sections: HTMLElement[]): () => void {
         }
 
         let revealed = false;
-        const reveal = (dir: RiseDir) => {
+        const reveal = (dir: RiseDir, mode: RevealMode = 'scroll') => {
           if (revealed) return;
           revealed = true;
+          const landing = mode === 'land';
+          const distance = landing ? LAND_Y : riseY;
+          const tween = landing ? { duration: LAND_DUR, ease: LAND_EASE } : { duration: DUR, ease: POS_EASE };
           // Created after setup, so register with the context (ctx.revert()
           // must still be able to kill it when the unit unmounts).
           ctx.add(() => {
-            gsap.set(el, { y: restY + dir * riseY });
-            if (lockRect) gsap.set(el, { transformOrigin: lockOrigin(dir) });
+            gsap.set(el, { y: restY + dir * distance });
+            if (landing) gsap.set(el, { scaleY: 1 });
+            else if (lockRect) gsap.set(el, { transformOrigin: lockOrigin(dir) });
             else if (isCard) gsap.set(el, { transformOrigin: dir === 1 ? 'center bottom' : 'center top' });
 
-            const tl = gsap.timeline({ delay });
-            tl.to(el, { y: restY, autoAlpha: 1, duration: DUR, ease: POS_EASE }, 0);
+            const tl = gsap.timeline({ delay: landing ? (delay / COL_DELAY) * LAND_COL_DELAY : delay });
+            tl.to(el, { y: restY, autoAlpha: 1, ...tween }, 0);
             tl.call(
-              () => el.dispatchEvent(new CustomEvent<RiseStartDetail>(RISE_START_EVENT, { bubbles: true, detail: { tl, dir, riseY } })),
+              () => el.dispatchEvent(new CustomEvent<RiseStartDetail>(RISE_START_EVENT, { bubbles: true, detail: { tl, dir, riseY: distance, tween } })),
               undefined,
               0
             );
 
-            if (isCard) {
+            // The fade-up after landing is a plain rise: no squash/stretch.
+            if (!landing && isCard) {
               // Many .rise-card elements (process-card, ai-card, tech-item-wrap)
               // also carry backdrop-filter: blur() — animating a transform
               // (scaleY) on an element with an active backdrop-filter forces
@@ -217,7 +245,7 @@ export function setupRiseReveal(sections: HTMLElement[]): () => void {
                   if (hadBackdropFilter) gsap.set(el, { clearProps: 'backdropFilter' });
                 },
               }, 0);
-            } else {
+            } else if (!landing) {
               tl.to(el, { scaleY: 1, duration: DUR * 1.15, ease: STRETCH_EASE }, 0);
             }
 
@@ -231,7 +259,7 @@ export function setupRiseReveal(sections: HTMLElement[]): () => void {
             // elsewhere: play the whole reveal (and anything riding on its
             // timeline via RISE_START_EVENT) at once, so only the target
             // section animates. Callbacks still fire in order.
-            if (autoScrollSkips(section)) tl.delay(0).timeScale(SKIP_SPEED);
+            if (!landing && autoScrollSkips(section)) tl.delay(0).timeScale(SKIP_SPEED);
 
             tl.call(
               () => {
@@ -243,7 +271,7 @@ export function setupRiseReveal(sections: HTMLElement[]): () => void {
                 el.dispatchEvent(new CustomEvent('rise-settled', { bubbles: true }));
               },
               undefined,
-              DUR * 1.15
+              landing ? LAND_DUR : DUR * 1.15
             );
           });
         };
@@ -259,18 +287,42 @@ export function setupRiseReveal(sections: HTMLElement[]): () => void {
         const withSel = el.dataset.riseWith;
         const triggerEl = (withSel && section.querySelector<HTMLElement>(withSel)) || el;
         const inBand = (st: ScrollTrigger) => { const y = st.scroll(); return y >= st.start && y <= st.end; };
-        ScrollTrigger.create({
+        const st = ScrollTrigger.create({
           trigger: triggerEl,
           start: 'top 70%',
           end: 'bottom 30%',
-          onEnter: st => { if (inBand(st)) { reveal(1); st.kill(); } },
-          onEnterBack: st => { if (inBand(st)) { reveal(-1); st.kill(); } },
+          // The section an auto-scroll is landing on holds its items for the
+          // fade-up on landing (onLanded) instead of revealing mid-flight.
+          // Just after a landing (a neighbour mounting late) it fades up too.
+          onEnter: st => { if (inBand(st) && !autoScrollLandsIn(section)) { reveal(1, justLanded()); st.kill(); } },
+          onEnterBack: st => { if (inBand(st) && !autoScrollLandsIn(section)) { reveal(-1, justLanded()); st.kill(); } },
         });
+        pending.push({ st, reveal });
       });
     });
   });
 
-  return () => ctx.revert();
+  // A nav/CTA auto-scroll lands the visitor on a finished screen. Its flight
+  // can jump clean over an item's band (a long jump, a janky frame, or a
+  // lazily mounted section appearing mid-flight), the landing spot puts a
+  // section's label and title above their band, where an item stays hidden
+  // until scrolled back to, and the target section holds its items during
+  // the flight. So on landing, everything the scroll has reached or passed
+  // fades up.
+  const onLanded = () => {
+    pending.forEach(({ st, reveal }) => {
+      if (st.scroll() < st.start) return;
+      reveal(1, 'land');
+      st.kill();
+    });
+  };
+  window.addEventListener(AUTO_SCROLL_END_EVENT, onLanded);
+  if (msSinceAutoScrollEnd() < LATE_LAND_MS) onLanded();
+
+  return () => {
+    window.removeEventListener(AUTO_SCROLL_END_EVENT, onLanded);
+    ctx.revert();
+  };
 }
 
 // Sections that are always mounted (everything outside a LazyUnit) — but

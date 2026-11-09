@@ -121,7 +121,7 @@ describe('rise grouping plumbing', () => {
 
   it('useRiseReveal announces each rise start with its own timeline as the event detail', () => {
     expect(rise).toMatch(/export const RISE_START_EVENT = 'rise-start';/);
-    expect(rise).toMatch(/new CustomEvent<RiseStartDetail>\(RISE_START_EVENT, \{ bubbles: true, detail: \{ tl, dir, riseY \} \}\)/);
+    expect(rise).toMatch(/new CustomEvent<RiseStartDetail>\(RISE_START_EVENT, \{ bubbles: true, detail: \{ tl, dir, riseY: distance, tween \} \}\)/);
   });
 
   it("the headline title and sub ride the label's trigger", () => {

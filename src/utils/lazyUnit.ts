@@ -1,6 +1,8 @@
 // Shared constants + the controller for the lazily unmounted page units
 // (components/LazyUnit.tsx).
 
+import { autoScrollTarget, AUTO_SCROLL_END_EVENT } from './navHeader';
+
 // Wrapper marker: the unit's wrapper div carries data-lazy-unit="<name>".
 export const LAZY_UNIT_ATTR = 'data-lazy-unit';
 
@@ -82,7 +84,26 @@ export function evaluateLazyUnits(allowUnload: boolean) {
   });
 }
 
+/**
+ * During a nav/CTA auto-scroll only the unit holding the target is mounted
+ * (at once, so it is ready to land on). The units the flight passes stay as
+ * they are: mounting a whole section mid-flight stalls the main thread and
+ * makes the scroll stutter, and every section skips its animations then
+ * anyway. Returns false when no auto-scroll is running.
+ */
+export function loadAutoScrollTarget(): boolean {
+  const id = autoScrollTarget();
+  if (id == null) return false;
+  const unitEl = document.getElementById(id)?.closest(`[${LAZY_UNIT_ATTR}]`);
+  if (unitEl) {
+    const unit = Array.from(units).find(u => u.el === unitEl);
+    if (unit && !unit.isLoaded()) unit.load();
+  }
+  return true;
+}
+
 function onScroll() {
+  if (loadAutoScrollTarget()) return;
   if (!rafId) {
     rafId = requestAnimationFrame(() => { rafId = 0; evaluateLazyUnits(false); });
   }
@@ -94,12 +115,21 @@ function onResize() {
   evaluateLazyUnits(false);
 }
 
+// Landed (or the user took over): mount what is near the viewer now, and
+// unmount the rest once things are idle, as after any scroll.
+function onAutoScrollEnd() {
+  evaluateLazyUnits(false);
+  if (idleTimer) clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => { idleTimer = null; evaluateLazyUnits(true); }, UNLOAD_IDLE_MS);
+}
+
 export function registerLazyUnit(unit: LazyUnitHandle): () => void {
   units.add(unit);
   if (!listening) {
     listening = true;
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
+    window.addEventListener(AUTO_SCROLL_END_EVENT, onAutoScrollEnd);
   }
   // First evaluation once the page has settled, so units far from the
   // starting position unmount without waiting for a scroll.
@@ -111,6 +141,7 @@ export function registerLazyUnit(unit: LazyUnitHandle): () => void {
       listening = false;
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener(AUTO_SCROLL_END_EVENT, onAutoScrollEnd);
       if (idleTimer) clearTimeout(idleTimer);
       idleTimer = null;
       if (rafId) cancelAnimationFrame(rafId);

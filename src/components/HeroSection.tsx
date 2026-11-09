@@ -803,16 +803,16 @@ export default function HeroSection() {
           </p>
           <div className="hero-btns hero-btns-seq">
             <button
-              className="btn-glass btn-grad"
-              style={{ padding: '12px 28px', borderRadius: '9999px' }}
+              className="btn-glass btn-grad btn-lg"
+              style={{ borderRadius: '9999px' }}
               data-scroll-to="portfolio"
               onClick={() => scrollToSectionAligned('portfolio')}
             >
               View My Work
             </button>
             <button
-              className="btn-glass"
-              style={{ padding: '12px 28px', borderRadius: '9999px' }}
+              className="btn-glass btn-lg"
+              style={{ borderRadius: '9999px' }}
               data-scroll-to="contact"
               onClick={() => scrollToSectionAligned('contact')}
             >

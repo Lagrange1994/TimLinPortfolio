@@ -61,21 +61,37 @@ let rafId: number | null = null;
 let cleanupInput: (() => void) | null = null;
 
 // While a nav/CTA auto-scroll runs, <html data-auto-scroll="<target id>">
-// marks it: the sections it flies past skip their entrance and scroll-zoom
-// animations (portfolio.css, useRiseReveal.ts, PortfolioSection.tsx), so
-// only the target section animates. Cleared, with AUTO_SCROLL_END_EVENT on
-// window, once the scroll stops (landed or taken over by the user).
+// marks it: every section, the target included, skips its entrance and
+// scroll-zoom animations (portfolio.css, useRiseReveal.ts,
+// PortfolioSection.tsx), so the visitor lands on the finished screen.
+// Cleared, with AUTO_SCROLL_END_EVENT on window, once the scroll stops
+// (landed or taken over by the user); useRiseReveal then shows anything the
+// flight went past without revealing.
 export const AUTO_SCROLL_END_EVENT = 'auto-scroll-end';
 export function autoScrollTarget(): string | null {
   return document.documentElement.dataset.autoScroll ?? null;
 }
-// True while an auto-scroll is flying past `section` on its way elsewhere.
-export function autoScrollSkips(section: Element): boolean {
+// True while an auto-scroll runs: `section`'s animations are skipped,
+// whether the scroll is flying past it or landing on it.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function autoScrollSkips(_section: Element): boolean {
+  return autoScrollTarget() != null;
+}
+// True while an auto-scroll is landing on `section` (it is the target or
+// holds it): its entrance waits for the landing fade-up (useRiseReveal.ts).
+export function autoScrollLandsIn(section: Element): boolean {
   const id = autoScrollTarget();
   if (id == null) return false;
-  if (section.id === id) return false;
+  if (section.id === id) return true;
   const target = document.getElementById(id);
-  return !(target && section.contains(target));
+  return !!target && section.contains(target);
+}
+
+// When the last auto-scroll ended, so a section that mounts just after the
+// landing (LazyUnit loads the neighbours then) can still join its fade-up.
+let lastAutoScrollEnd = -Infinity;
+export function msSinceAutoScrollEnd(): number {
+  return performance.now() - lastAutoScrollEnd;
 }
 
 function stopAnimatedScroll() {
@@ -85,6 +101,7 @@ function stopAnimatedScroll() {
   cleanupInput = null;
   if (autoScrollTarget() != null) {
     delete document.documentElement.dataset.autoScroll;
+    lastAutoScrollEnd = performance.now();
     window.dispatchEvent(new Event(AUTO_SCROLL_END_EVENT));
   }
 }
@@ -123,10 +140,13 @@ function desiredScrollY(target: HTMLElement): number {
 // self-correcting: if content loads and shifts the target mid-flight, the
 // whole curve rescales and still lands exactly on the real resting spot.
 //
-// After the tween completes, a short grace phase gently follows any late
-// layout shift (image decode, scroll-reveal settle) that lands after the
-// curve is already done — small residuals only, so it never feels fast.
-const GRACE_MS = 450; // post-tween window to absorb late reflow
+// After the tween completes, a grace phase gently follows any late layout
+// shift (image decode, scroll-reveal settle, a lazily loaded section that
+// mounts just after the curve ends and lengthens the page). It runs until
+// the target has held still for GRACE_SETTLE_MS, so a section that finishes
+// mounting late is still landed on; GRACE_MAX_MS caps it.
+const GRACE_SETTLE_MS = 200;
+const GRACE_MAX_MS = 2000;
 const GRACE_EASE = 0.18;
 
 // Standard easeInOutCubic: slow start, quick middle, slow finish.
@@ -134,7 +154,11 @@ function easeInOutCubic(p: number): number {
   return p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
 }
 
-function animateScrollTo(getTargetY: () => number, targetId: string) {
+// isReady: whether the target is real yet. A lazily loaded section is a
+// zero-size anchor (or nothing at all) until it mounts; the page is shorter
+// then, so the scroll can sit still at the page bottom, which must not
+// count as landed.
+function animateScrollTo(getTargetY: () => number, targetId: string, isReady: () => boolean = () => true) {
   stopAnimatedScroll();
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -151,6 +175,8 @@ function animateScrollTo(getTargetY: () => number, targetId: string) {
 
   const t0 = performance.now();
   let doneAt: number | null = null; // when the main tween finished (grace start)
+  let lastTarget = NaN; // grace: the target last frame, and since when it held
+  let stillSince = 0;
   let userTookOver = false;
   const onUserInput = () => { userTookOver = true; };
   (['wheel', 'touchstart', 'keydown'] as const).forEach(evt =>
@@ -189,12 +215,15 @@ function animateScrollTo(getTargetY: () => number, targetId: string) {
       window.scrollTo(0, startY + (target - startY) * easeInOutCubic(p));
       if (p >= 1) doneAt = now;
     } else {
-      // Grace: softly track late shifts, then stop once settled or expired.
+      // Grace: softly track late shifts, then stop once landed on a target
+      // that has held still, or when the cap runs out.
       const cur = window.scrollY;
       const diff = target - cur;
       if (Math.abs(diff) < 0.5) window.scrollTo(0, target);
       else window.scrollTo(0, cur + diff * GRACE_EASE);
-      if (now - doneAt > GRACE_MS) { stopAnimatedScroll(); return; }
+      if (Math.abs(target - lastTarget) >= 0.5) { lastTarget = target; stillSince = now; }
+      const settled = Math.abs(diff) < 0.5 && now - stillSince >= GRACE_SETTLE_MS && isReady();
+      if (settled || now - doneAt > GRACE_MAX_MS) { stopAnimatedScroll(); return; }
     }
     rafId = requestAnimationFrame(step);
   };
@@ -214,5 +243,5 @@ export function scrollToSectionAligned(id: string) {
   animateScrollTo(() => {
     const target = document.getElementById(id);
     return target ? desiredScrollY(target) : window.scrollY;
-  }, id);
+  }, id, () => (document.getElementById(id)?.offsetHeight ?? 0) > 0);
 }

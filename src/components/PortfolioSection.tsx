@@ -979,8 +979,10 @@ export default function PortfolioSection() {
       // Added to the label's own timeline (not a fresh tween) so the wall is
       // frame-exact with the text even through a hitchy first frame, and
       // enters from the same side: below when scrolling down, above when up.
-      const { tl, dir, riseY } = (e as CustomEvent<RiseStartDetail>).detail;
-      tl.fromTo(targets, { autoAlpha: 0, y: dir * riseY }, { ...RISE_TWEEN, clearProps: 'transform' }, 0);
+      // Same duration/ease as the label too: the elastic rise on scroll, the
+      // plain fade-up after a nav/CTA auto-scroll lands.
+      const { tl, dir, riseY, tween } = (e as CustomEvent<RiseStartDetail>).detail;
+      tl.fromTo(targets, { autoAlpha: 0, y: dir * riseY }, { ...RISE_TWEEN, ...tween, clearProps: 'transform' }, 0);
     };
     section.addEventListener(RISE_START_EVENT, onRiseStart);
     return () => {
@@ -1418,8 +1420,8 @@ export default function PortfolioSection() {
         <div className="view-all-row">
           <button
             id="toggle-portfolio-view"
-            className="btn-glass btn-grad"
-            style={{ padding: '10px 10px 10px 34px', borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', gap: '12px', border: 'none', cursor: 'pointer', fontSize: '21px' }}
+            className="btn-glass btn-grad btn-lg btn-lg-icon"
+            style={{ borderRadius: '9999px', display: 'inline-flex', alignItems: 'center', border: 'none', cursor: 'pointer' }}
             onClick={handleToggle}
           >
             <span id="toggle-portfolio-text">{expanded ? 'Fold' : 'View All Projects'}</span>

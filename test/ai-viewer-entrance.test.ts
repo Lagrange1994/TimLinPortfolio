@@ -34,7 +34,7 @@ const build = () => {
 };
 const rise = (target: HTMLElement, dir: 1 | -1 = 1) => {
   const tl = gsap.timeline({ paused: true });
-  target.dispatchEvent(new CustomEvent<RiseStartDetail>(RISE_START_EVENT, { bubbles: true, detail: { tl, dir, riseY: 28 } }));
+  target.dispatchEvent(new CustomEvent<RiseStartDetail>(RISE_START_EVENT, { bubbles: true, detail: { tl, dir, riseY: 28, tween: { duration: 1.05, ease: 'elastic.out(0.8, 0.75)' } } }));
   return tl;
 };
 const tweenOf = (tl: gsap.core.Timeline, el: HTMLElement) =>

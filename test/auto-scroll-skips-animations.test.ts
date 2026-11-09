@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { scrollToSectionAligned, autoScrollTarget, autoScrollSkips, AUTO_SCROLL_END_EVENT } from '../src/utils/navHeader';
+import { scrollToSectionAligned, autoScrollTarget, autoScrollSkips, autoScrollLandsIn, AUTO_SCROLL_END_EVENT } from '../src/utils/navHeader';
 import { wallShapeProgress } from '../src/utils/portfolioZoom';
 
 // A nav/CTA auto-scroll marks <html data-auto-scroll="<id>"> while it runs,
-// so sections it flies past skip their entrance and scroll-zoom animations
-// and only the target section animates.
+// so every section, the target included, skips its entrance and scroll-zoom
+// animations: the visitor lands on the finished screen.
 describe('auto-scroll marks its target', () => {
   let frame: FrameRequestCallback | null;
   let now: number;
@@ -68,16 +68,25 @@ describe('autoScrollSkips', () => {
     expect(autoScrollSkips(document.getElementById('about')!)).toBe(false);
   });
 
-  it('skips every section but the target (or the one holding it)', () => {
+  it('skips every section during an auto-scroll, the target and the one holding it too', () => {
     document.documentElement.dataset.autoScroll = 'contact';
     expect(autoScrollSkips(document.getElementById('about')!)).toBe(true);
     expect(autoScrollSkips(document.getElementById('portfolio')!)).toBe(true);
-    expect(autoScrollSkips(document.getElementById('wrap')!)).toBe(false);
+    expect(autoScrollSkips(document.getElementById('wrap')!)).toBe(true);
   });
 
-  it('a section that is the target is not skipped', () => {
+  it('a section that is the target is skipped as well', () => {
     document.documentElement.dataset.autoScroll = 'portfolio';
-    expect(autoScrollSkips(document.getElementById('portfolio')!)).toBe(false);
+    expect(autoScrollSkips(document.getElementById('portfolio')!)).toBe(true);
+  });
+
+  it('autoScrollLandsIn: only the target, or the section holding it, is landed in', () => {
+    expect(autoScrollLandsIn(document.getElementById('wrap')!)).toBe(false);
+    document.documentElement.dataset.autoScroll = 'contact';
+    expect(autoScrollLandsIn(document.getElementById('wrap')!)).toBe(true);
+    expect(autoScrollLandsIn(document.getElementById('about')!)).toBe(false);
+    document.documentElement.dataset.autoScroll = 'portfolio';
+    expect(autoScrollLandsIn(document.getElementById('portfolio')!)).toBe(true);
   });
 });
 
@@ -105,10 +114,10 @@ describe('wallShapeProgress holds the formed wall while flying past', () => {
     expect(wallShapeProgress(s)).toBe(1);
   });
 
-  it('still forms when the auto-scroll targets the portfolio', () => {
+  it('is 1 when the auto-scroll lands on the portfolio too', () => {
     const s = stuckSection();
     document.documentElement.dataset.autoScroll = 'portfolio';
-    expect(wallShapeProgress(s)).toBe(0);
+    expect(wallShapeProgress(s)).toBe(1);
   });
 });
 
@@ -117,8 +126,9 @@ describe('wiring', () => {
   const rise = readFileSync(resolve(__dirname, '../src/utils/useRiseReveal.ts'), 'utf8');
   const pf = readFileSync(resolve(__dirname, '../src/components/PortfolioSection.tsx'), 'utf8');
 
-  it('portfolio zoom is off unless the portfolio is the target', () => {
-    expect(css).toContain(':root[data-auto-scroll]:not([data-auto-scroll="portfolio"]) .portfolio-scroll > #portfolio,');
+  it('portfolio zoom is off during any auto-scroll, landing on it included', () => {
+    expect(css).toContain(':root[data-auto-scroll] .portfolio-scroll > #portfolio,');
+    expect(css).not.toContain(':not([data-auto-scroll="portfolio"])');
   });
 
   it('MCP zoom is off during any auto-scroll, Claude panel loop untouched', () => {
@@ -129,7 +139,7 @@ describe('wiring', () => {
   });
 
   it('rise reveals in skipped sections play at once', () => {
-    expect(rise).toMatch(/if \(autoScrollSkips\(section\)\) tl\.delay\(0\)\.timeScale\(SKIP_SPEED\)/);
+    expect(rise).toMatch(/if \(!landing && autoScrollSkips\(section\)\) tl\.delay\(0\)\.timeScale\(SKIP_SPEED\)/);
   });
 
   it('portfolio redraws its shape when the auto-scroll ends', () => {

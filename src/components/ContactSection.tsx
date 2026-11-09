@@ -192,7 +192,7 @@ export default function ContactSection() {
                   <button
                     ref={sendEmailRef}
                     className="btn-glass btn-grad"
-                    style={{ padding: '9px 20px', borderRadius: '9999px', fontSize: '12px', whiteSpace: 'nowrap', flexShrink: 0 }}
+                    style={{ padding: '9px 20px', borderRadius: '9999px', fontSize: '14px', whiteSpace: 'nowrap', flexShrink: 0 }}
                     onClick={() => { window.location.href = 'mailto:lyfun0202@gmail.com'; }}
                   >
                     Send Email ↗
@@ -316,7 +316,7 @@ export default function ContactSection() {
           </div>
           <p>UI/UX Product Designer</p>
         </div>
-        <p>© 2025 Tim Lin. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Tim Lin. All rights reserved.</p>
       </footer>
     </>
   );

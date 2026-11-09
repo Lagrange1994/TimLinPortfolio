@@ -205,7 +205,7 @@ export const translations = {
     line_id_label: '官方帳號',
     line_btn: '加入 LINE 聯繫我',
     open_for_work: 'Open for work',
-    open_for_work_sub: '接受全職 /\n兼職 / 專案合作洽談',
+    open_for_work_sub: '接受全職、兼職\n與專案合作洽談',
     // faq tab labels — split into "about me" vs. "taking on projects"
     faq_tab_experience: '個人能力與專案經驗',
     faq_tab_freelance: '接案類',
