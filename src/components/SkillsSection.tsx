@@ -1157,7 +1157,7 @@ function DesignProcessSection() {
                     spotlightColor="rgba(108, 99, 255, 0.12)"
                     backgroundSlot={<ProcessCardBg slug={slug} themes={processThemes} />}
                   >
-                    <span className="process-step-badge"><em>{String(i + 1).padStart(2, '0')}</em></span>
+                    <span className="process-step-badge"><span className="about-notch-badge-dot" aria-hidden="true" />STEP · {idx}</span>
                     <div className="process-name">{t[nameKey] as string}</div>
                     <div className="process-desc">{t[descKey] as string}</div>
                   </BorderGlow>
@@ -1186,7 +1186,7 @@ function DesignProcessSection() {
                     spotlightColor="rgba(108, 99, 255, 0.12)"
                     backgroundSlot={<ProcessCardBg slug={slug} themes={processThemes} />}
                   >
-                    <span className="process-step-badge"><em>{idx}</em></span>
+                    <span className="process-step-badge"><span className="about-notch-badge-dot" aria-hidden="true" />STEP · {idx}</span>
                     <div className="process-name">{t[nameKey] as string}</div>
                     <div className="process-desc">{t[descKey] as string}</div>
                   </BorderGlow>

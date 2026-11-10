@@ -159,7 +159,12 @@ describe('About content', () => {
     expect(css).toMatch(/\.about-notch-tags:has\(> \.about-proof-tag\) \{[^}]*border-radius: 20px;[^}]*color-mix\(in oklab, var\(--tone-vivid\) 20%, transparent\)/);
     // with the cards' liquid-glass edge: tinted border, inset sheen, top highlight
     expect(css).toMatch(/\.about-notch-tags:has\(> \.about-proof-tag\) \{[^}]*border: 1px solid rgba\(var\(--tone\), \.34\);[^}]*box-shadow: var\(--card-edge\);/);
-    expect(css).toMatch(/\.about-notch-tags:has\(> \.about-proof-tag\)::before \{[^}]*linear-gradient\(90deg, transparent, rgba\(255, 255, 255, \.4\), transparent\)/);
+    // (the highlight is a background layer on the top border: a ::before
+    // there would be clipped by the tray's sideways scroll)
+    expect(css).toMatch(/\.about-notch-tags:has\(> \.about-proof-tag\) \{[^}]*linear-gradient\(90deg, transparent 14%, rgba\(255, 255, 255, \.4\) 50%, transparent 86%\) top \/ 100% 1px no-repeat border-box/);
+    // too many tags for the tray: one row that scrolls sideways, no wrapping
+    expect(css).toMatch(/\.about-notch-tags:has\(> \.about-proof-tag\) \{[^}]*flex-wrap: nowrap;[^}]*overflow-x: auto;/);
+    expect(css).toMatch(/\.faq-more-list \{[^}]*flex-wrap: nowrap;[^}]*overflow-x: auto;/);
     // light mode: the tray is a raised white-card capsule
     expect(css).toMatch(/:root\[data-theme="light"\] \.about-notch-tags:has\(> \.about-proof-tag\) \{\s*background: var\(--neu-bg\);\s*box-shadow: var\(--neu-raised-sm\);/);
     // the tags rise with their card, not on a later band of their own

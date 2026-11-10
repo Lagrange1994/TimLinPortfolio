@@ -4125,28 +4125,33 @@
       gap: 6px;
       padding: 6px;
       border-radius: 20px;
-      background: linear-gradient(120deg,
-        color-mix(in oklab, var(--tone-vivid) 20%, transparent),
-        color-mix(in oklab, var(--tone-bright) 20%, transparent));
+      /* One row; tags past the tray's max-width scroll sideways inside it
+         (same as the FAQ's .faq-more-list) instead of wrapping. */
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
       /* the cards' liquid-glass edge: a tinted 1px border, the inset top
-         sheen, blur behind, and the fading top highlight line (::before,
-         same as .card-glass-highlight) */
+         sheen, blur behind, and the fading top highlight line (same as
+         .card-glass-highlight). The line is a background layer on the top
+         border, not a ::before: the scroller would clip a pseudo-element
+         sitting on its border, and a background stays put while the tags
+         scroll. */
+      background:
+        linear-gradient(90deg, transparent 14%, rgba(255, 255, 255, .4) 50%, transparent 86%) top / 100% 1px no-repeat border-box,
+        linear-gradient(120deg,
+          color-mix(in oklab, var(--tone-vivid) 20%, transparent),
+          color-mix(in oklab, var(--tone-bright) 20%, transparent)) border-box;
       position: relative;
       border: 1px solid rgba(var(--tone), .34);
       box-shadow: var(--card-edge);
       backdrop-filter: blur(1rem);
     }
 
-    .about-notch-tags:has(> .about-proof-tag)::before {
-      content: '';
-      position: absolute;
-      top: -1px;
-      left: 14%;
-      right: 14%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .4), transparent);
-      pointer-events: none;
-    }
+    .about-notch-tags:has(> .about-proof-tag)::-webkit-scrollbar { display: none; }
+
+    .about-notch-tags > .about-proof-tag { flex: none; }
 
     /* Light mode: the tray is a raised white-card capsule like the cards
        around it — plain --neu-bg (no tint) and the neumorphic double
@@ -4157,8 +4162,6 @@
       border-color: transparent;
     }
 
-    /* light mode: the capsules (tray and tags) carry no outline */
-    :root[data-theme="light"] .about-notch-tags:has(> .about-proof-tag)::before { display: none; }
     :root[data-theme="light"] .about-notch-tags > .about-proof-tag { border-color: transparent; }
 
     .about-action:hover { transform: translateY(-3px); border-color: rgba(255, 255, 255, 0.28); }
@@ -4397,32 +4400,34 @@
       padding: 20px 16px;
     }
 
-    /* Step badge — same treatment as How I Use AI's .ai-step-badge: a small
-       pill that floats half outside the card's top-left corner instead of
-       sitting flush inside it. .border-glow-card sets overflow:visible and
-       the carousel track already carries 12px of padding above its flush
-       (margin-top:0) card, so the -7px protrusion has room to clear both
-       the card edge and the carousel's own clip box without being cut off. */
+    /* Step badge (STEP · 01): the same capsule as the design principles'
+       badge (.about-notch > .about-notch-badge) and Tech Stack's level
+       badges, riding the card's top border on the right, pulled up half
+       its height. .border-glow-card sets overflow:visible; the carousel
+       track keeps 16px above its top card so the clip box doesn't cut it. */
     .process-step-badge {
+      --tone: 108, 99, 255;
       position: absolute;
-      top: -7px;
-      left: 18px;
+      top: -12px;
+      right: 22px;
       z-index: 2;
-      padding: 2px 7px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      background: linear-gradient(120deg,
+        oklch(from rgb(var(--tone)) .66 .25 h),
+        oklch(from rgb(var(--tone)) .8 .2 calc(h + 25)));
+      box-shadow: 0 6px 18px -6px oklch(from rgb(var(--tone)) .66 .25 h), inset 0 1px 0 rgba(255, 255, 255, .35);
+      color: #0b0a1f;
       font-family: var(--mono);
-      font-size: 9.5px;
+      font-size: 10px;
+      font-weight: 600;
       letter-spacing: .14em;
-      color: var(--text-30);
-      background: rgba(12, 9, 18, .85);
-      border: 1px solid rgba(255, 255, 255, .07);
-      border-radius: 4px;
-      backdrop-filter: blur(8px);
-      opacity: .85;
-    }
-    .process-step-badge em {
-      font-style: normal;
-      color: var(--text-50);
-      font-weight: 500;
+      line-height: 1.2;
+      white-space: nowrap;
+      pointer-events: none;
     }
 
     .process-name {
@@ -4651,34 +4656,13 @@
       color: var(--text-70);
     }
 
-    /* Dark mode: the step badge floats over the permanent dark photo scrim,
-       so it keeps near-white values instead of following --text-30/--text-50
-       into light mode's dark ink (that light-mode swap happens below). */
-    .process-card--has-img .process-step-badge {
-      color: rgba(255, 255, 255, .35);
-    }
-
-    .process-card--has-img .process-step-badge em {
-      color: rgba(255, 255, 255, .55);
-    }
-
-    /* The badge's own chip (background/border, set on the base rule above)
-       is hardcoded near-black regardless of --has-img — fine in dark mode,
-       but light mode now renders this whole card as a light neumorphism
-       surface (illustration + scrim + text all swap above), so the badge
-       chip joins the same light-glass treatment every other floating pill
-       uses instead of sitting near-black on a light card. */
+    /* light: the principles' light capsule — a faint tint and coloured
+       text, no shadow */
     :root[data-theme="light"] .process-step-badge {
-      background: var(--glass-bg);
-      border-color: var(--glass-border);
-    }
-
-    :root[data-theme="light"] .process-card--has-img .process-step-badge {
-      color: var(--text-50);
-    }
-
-    :root[data-theme="light"] .process-card--has-img .process-step-badge em {
-      color: var(--text);
+      background: rgba(var(--tone), .08);
+      border: 1px solid transparent;
+      color: oklch(from rgb(var(--tone)) .45 .17 h);
+      box-shadow: none;
     }
 
     .process-dual {
@@ -4935,7 +4919,9 @@
         flex-wrap: nowrap;
         align-items: flex-start;
         gap: 16px;
-        padding: 12px;
+        /* 16px on top: room for the step badges riding the cards' top
+           border (.process-step-badge) inside the wrap's clip */
+        padding: 16px 12px 12px;
         touch-action: pan-y;
         cursor: grab;
         will-change: transform;
@@ -5750,9 +5736,11 @@
       line-height: 1.1;
     }
 
+    /* Card body copy: 14px in --text-70, the same as the About cards
+       (.bento-text) — it is meant to be read, so not the faint --text-50. */
     .tech-desc {
-      font-size: 13.5px;
-      color: var(--text-50);
+      font-size: 14px;
+      color: var(--text-70);
       margin: 10px 0 14px;
       line-height: 1.55;
     }
@@ -7644,9 +7632,10 @@
       margin-bottom: 4px;
     }
 
+    /* Card body copy, same as .tech-desc / .bento-text */
     .line-desc {
-      font-size: 13px;
-      color: var(--text-50);
+      font-size: 14px;
+      color: var(--text-70);
       line-height: 1.5;
     }
 
@@ -7662,8 +7651,9 @@
       padding: 10px 20px;
       min-height: 44px;
       box-sizing: border-box;
-      font-size: 13px;
-      font-weight: 600;
+      /* the in-card button size (Send Email, 聯絡我): 44px / 14px / 500 */
+      font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
       text-decoration: none;
       white-space: nowrap;
@@ -7956,6 +7946,9 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
+      /* a grid item: without this the one-row chip scroller
+         (.faq-more-list) stretches the column instead of scrolling */
+      min-width: 0;
     }
 
     /* One big card (.faq-card, reuses .contact-card's glass-panel look)
@@ -8042,10 +8035,31 @@
 
     .faq-more-label i { color: var(--primary); font-size: 13px; }
 
+    /* One row; when the chips run longer than the card, the row scrolls
+       sideways (like the AI viewer's .ai-pills) instead of wrapping. It
+       bleeds to the card's edges (.contact-card padding: 22px, 16px on
+       phones) so chips slide in from behind them; the vertical padding
+       keeps the hover lift from being clipped. */
     .faq-more-list {
+      --faq-bleed: 22px;
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 8px;
+      margin: -4px calc(-1 * var(--faq-bleed));
+      padding: 4px var(--faq-bleed);
+      overflow-x: auto;
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
+      scroll-padding-inline: var(--faq-bleed);
+      scrollbar-width: none;
+    }
+
+    .faq-more-list::-webkit-scrollbar { display: none; }
+
+    .faq-more-btn { flex: none; }
+
+    @media (max-width: 767px) {
+      .faq-more-list { --faq-bleed: 16px; }
     }
 
     .faq-more-btn {
