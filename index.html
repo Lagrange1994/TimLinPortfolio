@@ -26,13 +26,13 @@
        has data-theme="light" set by the script above before that CSS ever
        loads, and --bg in light mode is the w_bg.svg photo backdrop — once
        that stylesheet DOES land a beat later, the image flashes in before
-       the Loader component (which paints a flat, matching #F7FAFC over
+       the Loader component (which paints a flat, matching #EDF1F7 over
        everything) has mounted to cover it. Pin the exact flat color the
        Loader itself will show, for both themes, so there's nothing to
        flash regardless of how long the JS graph takes. -->
   <style>
     html { background: #0A0912; }
-    html[data-theme="light"] { background: #F7FAFC; }
+    html[data-theme="light"] { background: #EDF1F7; }
 
     /* ── LOADER ──
        Lives here (static markup in <body> + this inline CSS), not in React or
@@ -73,7 +73,7 @@
       color: #fff;
       transition: opacity 0.1s ease, visibility 0.1s ease;
     }
-    html[data-theme="light"] .loader { background: #F7FAFC; color: #3A3A42; }
+    html[data-theme="light"] .loader { background: #EDF1F7; color: #3A3A42; }
     .loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
     .loader-animation { position: relative; width: 65px; height: 65px; }

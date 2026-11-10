@@ -380,14 +380,17 @@
          repaint issues already fought elsewhere in this file. */
       /* w_bg.svg fully disabled — flat tone (same as --bg-safe). To restore:
          url('/img/w_bg.svg') center / cover no-repeat */
-      --bg: #F7FAFC;
-      --band: #EDF1F7;
+      /* page tones: a soft gray-white base and one step deeper for every
+         other section, never plain white (cards stay #F7FAFC, one step
+         lighter, so they lift off both) */
+      --bg: #EDF1F7;
+      --band: #E6EBF2;
       /* Flat stand-in for --bg — see the base :root's own comment on this
          token. This is the one theme where it actually differs from --bg:
          matches the flat color index.html's inline pre-hydration <style>
          and .loader already pin light mode to, so nothing on screen ever
          requests w_bg.svg until body.hero-ready explicitly swaps it in. */
-      --bg-safe: #F7FAFC;
+      --bg-safe: #EDF1F7;
       --bg-card: #F7FAFC;
       --bg-hover: #EFEDF7;
       --border: rgba(23, 15, 45, 0.10);
@@ -397,7 +400,8 @@
          the light bg. -70/-50/-30 fade the same gray toward the page bg
          instead of toward a tinted dark.
          Contrast budget against --bg-card (#F7FAFC) / white, measured:
-           --text-70 ≈ 4.85:1 (passes WCAG AA normal text, 4.5:1)
+           --text-70 ≈ 4.9:1 (0.75 alpha: still ≈ 4.76:1 on the deepest
+                     page tone, --band #E6EBF2) (passes WCAG AA normal text, 4.5:1)
            --text-50 ≈ 2.84:1 (fails AA outright — just short even of the
                                 3:1 large-text floor. Used anyway below as
                                 a deliberate design call where --text-30
@@ -417,7 +421,7 @@
          fade toward near-white instead, so the same names carry different
          real contrast per theme — recheck before reusing a tier as-is. */
       --text: #3A3A42;
-      --text-70: rgba(58, 58, 66, 0.72);
+      --text-70: rgba(58, 58, 66, 0.75);
       --text-50: rgba(58, 58, 66, 0.52);
       --text-30: rgba(58, 58, 66, 0.35);
       --grad: linear-gradient(to right, #5B4FE0, #E8496B);
@@ -763,6 +767,9 @@
       min-height: 56px;
       padding: 0 32px;
       font-size: 17px;
+      /* a one-line label: on tablet the hero pair's narrow column wrapped
+         "View My / Work" onto two lines */
+      white-space: nowrap;
     }
 
     /* Large button with a trailing icon circle (View All Projects). */
@@ -943,6 +950,24 @@
        layout change, no clipping of the content, no horizontal scroll. */
     .section-band {
       border-image: linear-gradient(var(--band), var(--band)) fill 0 / / 0 100vmax;
+    }
+
+    /* Light mode flips the alternation: About, Tech Stack and Portfolio sit
+       on the band, Design Process, How I Use AI and Contact on the page
+       tone. (The hero, #home, is not a .section and keeps the page tone.) */
+    :root[data-theme="light"] .section-band {
+      border-image: none;
+    }
+
+    :root[data-theme="light"] .section:not(.section-band) {
+      border-image: linear-gradient(var(--band), var(--band)) fill 0 / / 0 100vmax;
+    }
+
+    /* Portfolio sticks inside its zoom track (.portfolio-scroll) under the
+       navbar, so the track around it shows; paint it the band too, or the
+       strip above the stuck section reads as a second white. */
+    :root[data-theme="light"] .portfolio-scroll {
+      background: var(--band);
     }
 
     /* Reserve document flow while an initial React.lazy section is loading.
@@ -3260,6 +3285,12 @@
       text-shadow: 0 1px 6px rgba(10, 9, 18, .55);
     }
 
+    /* light mode: no glow round text */
+    :root[data-theme="light"] .bento-area-domains .bento-caption,
+    :root[data-theme="light"] #portfolio .section-label {
+      text-shadow: none;
+    }
+
     .bento-area-workflow { grid-area: workflow; }
 
     /* Domain CardSwap — now the Service Domains card's own background layer
@@ -4217,7 +4248,8 @@
     }
 
     :root[data-theme="light"] .bento-card.bento-stat-big .stat-num-wrap {
-      filter: drop-shadow(0 4px 10px rgba(255, 255, 255, .6));
+      /* light mode: no glow round the digits */
+      filter: none;
     }
 
     /* only the number is coloured: the label takes the other cards' title
@@ -9095,14 +9127,13 @@
         font-size: clamp(1rem, 2.5vw, 1.5rem);
       }
 
-      /* About Me — tablet: 24-col grid (LCM of 8 and 3) so row 1 can split
-         into exact equal thirds (photo/intro1/intro2, 8 cols each) while
-         every other row keeps its original 8-col-equivalent ratio — years/
-         projects/workflow at 2/2/4 (→6/6/12 of 24), domains/workflow at
-         4/4 (→12/12). Row 1's width no longer needs to
-         match row 2's column boundaries (that requirement was dropped);
-         only .about-photo's align-self:stretch (below) still keeps all
-         three row-1 cards equal height. */
+      /* About Me — tablet: 24-col grid. Under the principles (8 cols
+         each), the photo takes half the width at its own ratio (base
+         rule: align-self start, the ProfileCard's 0.718 aspect-ratio),
+         with the three stat cards beside it (years / projects over
+         domains), stretched to the photo's height. The availability card
+         runs the full width under them, then the two intro cards and the
+         workflow card. */
       /* the desktop column wrappers (AboutSection) step aside: the cards
          sit straight in this grid */
       .about-col {
@@ -9111,57 +9142,18 @@
 
       .about-grid {
         grid-template-columns: repeat(24, 1fr);
-        /* own rows; the stats rows (years/projects, domains) match */
-        grid-template-rows: auto auto auto auto 1fr 1fr auto;
+        /* the stats rows at their own heights (domains keeps its 240px
+           CardSwap stage); a taller photo shares its extra between them */
+        grid-template-rows: repeat(7, auto);
         grid-template-areas:
           "headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline"
           "p1 p1 p1 p1 p1 p1 p1 p1 p2 p2 p2 p2 p2 p2 p2 p2 p3 p3 p3 p3 p3 p3 p3 p3"
-          "photo photo photo photo photo photo photo photo intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1"
-          "photo photo photo photo photo photo photo photo intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2"
-          "years years years years years years projects projects projects projects projects projects workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow"
-          "domains domains domains domains domains domains domains domains domains domains domains domains workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow"
-          "cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta";
+          "photo photo photo photo photo photo photo photo photo photo photo photo years years years years years years projects projects projects projects projects projects"
+          "photo photo photo photo photo photo photo photo photo photo photo photo domains domains domains domains domains domains domains domains domains domains domains domains"
+          "cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta cta"
+          "intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2"
+          "workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow workflow";
         gap: 16px;
-      }
-
-      /* Desktop opts .about-photo out of the row's align-items:stretch
-         (base rule, align-self:start) so the ProfileCard's own tall aspect
-         ratio isn't force-stretched. On tablet the photo card is only 2
-         columns tall instead of spanning every row like it does on
-         desktop, so opting out left it stuck at its own short natural
-         height while intro1/intro2 stretch to the row's real height (driven
-         by whichever has the longer bio text) — the row's bottom edge
-         landed at different heights per card instead of one shared edge
-         that meets row 2 below. Stretch it like every other card. */
-      .about-photo {
-        align-self: stretch;
-        /* Establishes a query container so .pc-card's min-height (below)
-           can read this box's own resolved width via cqw — needed since
-           the column width is fluid (fr-based), not a fixed px we could
-           hardcode into a calc(). */
-        container-type: inline-size;
-      }
-
-      /* Ratio doesn't need to stay fixed on tablet (unlike desktop/mobile)
-         — the card is allowed to stretch taller than 0.718 to fill the row
-         and meet row 2 with no gap — but it also shouldn't get squatter
-         (proportionally shorter) than the original photo ratio if row 2's
-         height ever shrinks below that. height:100% is the base (stretch
-         to fill); min-height reconstructs the original 0.718 ratio from
-         the card's own width (via container query units) as a floor, so
-         the used height is effectively max(stretch height, original-ratio
-         height). The actual photo (.avatar) already uses object-fit:cover
-         (see .pc-avatar-content .avatar), so it just crops to whatever box
-         size results instead of distorting. */
-      .about-photo .pc-card-wrapper,
-      .about-photo .pc-card-shell {
-        height: 100%;
-      }
-
-      .about-photo .pc-card {
-        height: 100%;
-        aspect-ratio: unset;
-        min-height: calc(100cqw / 0.718);
       }
 
       /* Profile card overlay text — the 2-col-wide photo cell is narrower

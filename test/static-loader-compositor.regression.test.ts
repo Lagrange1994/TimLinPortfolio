@@ -86,7 +86,7 @@ describe('static homepage loader', () => {
 
   it('pins both themes to the same flat colours the page starts on', () => {
     expect(style).toMatch(/\.loader\s*\{[^}]*background:\s*#0A0912;[^}]*color:\s*#fff;/);
-    expect(style).toMatch(/html\[data-theme="light"\] \.loader\s*\{\s*background:\s*#F7FAFC;\s*color:\s*#3A3A42;/);
+    expect(style).toMatch(/html\[data-theme="light"\] \.loader\s*\{\s*background:\s*#EDF1F7;\s*color:\s*#3A3A42;/);
   });
 
   it('status copy matches translations.ts in both languages', () => {

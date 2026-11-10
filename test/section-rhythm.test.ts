@@ -32,6 +32,13 @@ describe('section rhythm', () => {
     expect(read('src/components/AboutSection.tsx')).not.toContain('section-band');
   });
 
+  it('light mode flips the alternation: the other sections carry the band', () => {
+    expect(css).toMatch(/:root\[data-theme="light"\] \.section-band \{\s*border-image: none;\s*\}/);
+    expect(css).toMatch(/:root\[data-theme="light"\] \.section:not\(\.section-band\) \{\s*border-image: linear-gradient\(var\(--band\), var\(--band\)\) fill 0 \/ \/ 0 100vmax;\s*\}/);
+    // Portfolio sticks inside its zoom track: the track carries the band too
+    expect(css).toMatch(/:root\[data-theme="light"\] \.portfolio-scroll \{\s*background: var\(--band\);\s*\}/);
+  });
+
   it('In-house and Freelance are split by room, not a line', () => {
     expect(rule(/\n {4}\.process-column \+ \.process-column \{[\s\S]*?\n {4}\}/)).not.toMatch(/border-top/);
   });

@@ -265,7 +265,10 @@ describe('About content', () => {
     expect(css).toMatch(/\.about-col--intro \{[^}]*grid-template-rows: 1fr 1fr;/);
     // the three stat cards share one height: desktop column, tablet and phone rows
     expect(css).toMatch(/\.about-col--stats \{[^}]*grid-template-rows: 1fr 1fr;/);
-    expect(css).toContain('grid-template-rows: auto auto auto auto 1fr 1fr auto;');
+    // tablet: the photo at its own ratio, the three stat cards beside it,
+    // the availability card the full width under them
+    expect(css).toContain('grid-template-rows: repeat(7, auto);');
+    expect(css).toMatch(/"photo( photo){11} years( years){5} projects( projects){5}"\s*"photo( photo){11} domains( domains){11}"\s*"cta( cta){23}"/);
     expect(css).toContain('grid-template-rows: auto auto auto auto auto auto auto 1fr 1fr auto auto;');
     expect((css.match(/\.about-col \{\s*display: contents;\s*\}/g) ?? []).length).toBe(2);
   });
