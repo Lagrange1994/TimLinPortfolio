@@ -2,7 +2,8 @@ import { useEffect, useLayoutEffect, useState, useRef, useMemo, type ReactNode, 
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
-import TypingCode, { flatten, toRuns, type CodeVersion, type CodeToken } from './TypingCode';
+import { flatten, toRuns, type CodeToken } from './TypingCode';
+import { HtmlDemo, JsDemo, RwdDemo } from './TechDemos';
 import AiFlowStepper from './AiFlowStepper';
 import PriorityQueueFlow from './PriorityQueueFlow';
 import PolicyPill from './PolicyPill';
@@ -74,65 +75,6 @@ const AI_HEAD_RIDE = { 'data-rise-with': '.ai-viewer', 'data-rise-lock': '' };
 // typewriter effect below can start right after, without duplicating the
 // timeline's own timing math.
 const HUMAN_QUOTE_MS = 1500;
-
-// Two "drafts" per tech-stack code preview — TypingCode loops between them,
-// backspacing to wherever the next draft diverges and typing the rest
-// forward, so the snippet reads as code actively being revised.
-const CSS_CODE_A: CodeVersion = [
-  [{ text: ':root', cls: 'tok-sel' }, { text: ' ' }, { text: '{', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: '--primary', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '   ' }, { text: '#6C63FF', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: '--secondary', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: ' ' }, { text: '#FF6584', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: '--bg', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '        ' }, { text: '#121212', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
-  [{ text: '}', cls: 'tok-muted' }],
-];
-const CSS_CODE_B: CodeVersion = [
-  CSS_CODE_A[0],
-  CSS_CODE_A[1],
-  CSS_CODE_A[2],
-  [{ text: '  ' }, { text: '--bg', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '        ' }, { text: '#0f0f10', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: '--radius', cls: 'tok-prop' }, { text: ':', cls: 'tok-muted' }, { text: '    ' }, { text: '14px', cls: 'tok-val' }, { text: ';', cls: 'tok-muted' }],
-  [{ text: '}', cls: 'tok-muted' }],
-];
-
-const JS_CODE_A: CodeVersion = [
-  [{ text: 'gsap', cls: 'tok-kw' }, { text: '.', cls: 'tok-muted' }, { text: 'to', cls: 'tok-fn' }, { text: '(', cls: 'tok-muted' }, { text: 'h1Words' }, { text: ', {', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: 'opacity', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: ' ' }, { text: '1', cls: 'tok-num' }, { text: ',', cls: 'tok-muted' }, { text: ' ' }, { text: 'y', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: ' ' }, { text: '0', cls: 'tok-num' }, { text: ',', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: 'duration', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: ' ' }, { text: '1.0', cls: 'tok-num' }, { text: ',', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: 'ease', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: '     ' }, { text: "'power3.out'", cls: 'tok-val' }, { text: ',', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: 'stagger', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: '  ' }, { text: '0.11', cls: 'tok-num' }],
-  [{ text: '})', cls: 'tok-muted' }],
-];
-const JS_CODE_B: CodeVersion = [
-  JS_CODE_A[0],
-  JS_CODE_A[1],
-  [{ text: '  ' }, { text: 'duration', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: ' ' }, { text: '0.8', cls: 'tok-num' }, { text: ',', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: 'ease', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: '     ' }, { text: "'expo.out'", cls: 'tok-val' }, { text: ',', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: 'stagger', cls: 'tok-pink' }, { text: ':', cls: 'tok-muted' }, { text: '  ' }, { text: '0.08', cls: 'tok-num' }],
-  JS_CODE_A[5],
-];
-
-const JSX_CODE_A: CodeVersion = [
-  [{ text: '<', cls: 'tok-muted' }, { text: 'BorderGlow', cls: 'tok-sel' }],
-  [{ text: '  ' }, { text: 'className', cls: 'tok-pink' }, { text: '=', cls: 'tok-muted' }, { text: '"process-card"', cls: 'tok-val' }],
-  [{ text: '  ' }, { text: 'glowIntensity', cls: 'tok-pink' }, { text: '={', cls: 'tok-muted' }, { text: '1.1', cls: 'tok-num' }, { text: '}', cls: 'tok-muted' }],
-  [{ text: '>', cls: 'tok-muted' }],
-  [{ text: '  ' }, { text: '{t[nameKey]}', cls: 'tok-fn' }],
-  [{ text: '<', cls: 'tok-muted' }, { text: '/', cls: 'tok-muted' }, { text: 'BorderGlow', cls: 'tok-sel' }, { text: '>', cls: 'tok-muted' }],
-];
-const JSX_CODE_B: CodeVersion = [
-  JSX_CODE_A[0],
-  JSX_CODE_A[1],
-  [{ text: '  ' }, { text: 'glowIntensity', cls: 'tok-pink' }, { text: '={', cls: 'tok-muted' }, { text: '1.3', cls: 'tok-num' }, { text: '}', cls: 'tok-muted' }],
-  JSX_CODE_A[3],
-  JSX_CODE_A[4],
-  JSX_CODE_A[5],
-];
-
-// Fixed line count shared by all three tech-item code previews, so editing
-// any one snippet's content later can't change its card's height (or make
-// the three cards disagree with each other) — see TypingCode's own `lines`
-// prop comment.
-const TECH_CODE_LINES = 6;
 
 function escapeHtml(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -1265,13 +1207,7 @@ function TechStackSection() {
                 </div>
                 <div className="tech-desc">{t.skill_html}</div>
               </div>
-              <div className="tech-code-preview">
-                <div className="tcp-bar">
-                  <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
-                  <span className="tcp-filename">portfolio.css</span>
-                </div>
-                <TypingCode versions={[CSS_CODE_A, CSS_CODE_B]} lines={TECH_CODE_LINES} />
-              </div>
+              <HtmlDemo />
             </div>
             <span className="tech-level-badge html-item">DESIGN-READY</span>
           </div>,
@@ -1284,13 +1220,7 @@ function TechStackSection() {
                 </div>
                 <div className="tech-desc">{t.skill_js}</div>
               </div>
-              <div className="tech-code-preview">
-                <div className="tcp-bar">
-                  <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
-                  <span className="tcp-filename">HeroSection.tsx</span>
-                </div>
-                <TypingCode versions={[JS_CODE_A, JS_CODE_B]} lines={TECH_CODE_LINES} />
-              </div>
+              <JsDemo />
             </div>
             <span className="tech-level-badge js-item">AI-ASSISTED</span>
           </div>,
@@ -1303,13 +1233,7 @@ function TechStackSection() {
                 </div>
                 <div className="tech-desc">{t.skill_css}</div>
               </div>
-              <div className="tech-code-preview">
-                <div className="tcp-bar">
-                  <span className="tcp-dot"/><span className="tcp-dot"/><span className="tcp-dot"/>
-                  <span className="tcp-filename">SkillsSection.tsx</span>
-                </div>
-                <TypingCode versions={[JSX_CODE_A, JSX_CODE_B]} lines={TECH_CODE_LINES} />
-              </div>
+              <RwdDemo />
             </div>
             <span className="tech-level-badge react-item">RESPONSIVE</span>
           </div>

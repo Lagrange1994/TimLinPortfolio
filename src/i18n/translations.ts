@@ -83,6 +83,20 @@ export const translations = {
       '能讀懂程式邏輯並精準描述問題情境，搭配 AI 工具實現互動功能、動畫效果與資料串接——這個作品集網站的互動邏輯即為實際成果。',
     skill_css:
       '具備 Flexbox 與 Tailwind 排版實作能力，能獨立處理 RWD 樣式調整，並理解設計決策對前端渲染的影響。',
+    // tech stack demos (mock screens: in the page's language)
+    td_html_bar: '設計稿 → 程式碼',
+    td_html_figma: 'FIGMA · 首頁',
+    td_html_btn: '聯絡我',
+    td_html_img_alt: '專案圖片',
+    td_html_title: '專案名稱',
+    td_js_bar: '描述需求 → AI → 實際互動',
+    td_js_prompt: '按下按鈕後，卡片從下方淡入上浮',
+    td_js_preview: '預覽',
+    td_js_btn: '顯示卡片',
+    td_rwd_bar: '同一份版面，三種寬度',
+    td_rwd_desktop: 'Desktop · 3 欄',
+    td_rwd_tablet: 'Tablet · 2 欄',
+    td_rwd_phone: 'Phone · 1 欄',
     // design process tabs
     tab_inhouse: 'In-house',
     tab_inhouse_desc: '在企業與政府專案中，我隸屬產品團隊，與 PM、工程師協作，從對齊目標到迭代優化，走完一套完整的內部設計流程。',
@@ -371,6 +385,20 @@ export const translations = {
       'Able to read logic, precisely describe problems, and implement interactions and animations with AI assistance. The interactive logic of this portfolio site demonstrates this workflow.',
     skill_css:
       'Able to implement responsive layouts with Flexbox and Tailwind, adjust styles independently, and understand how design decisions translate to rendered output.',
+    // tech stack demos (mock screens: in the page's language)
+    td_html_bar: 'Design → code',
+    td_html_figma: 'FIGMA · HOME',
+    td_html_btn: 'Contact',
+    td_html_img_alt: 'Project cover',
+    td_html_title: 'Project name',
+    td_js_bar: 'Describe → AI → working interaction',
+    td_js_prompt: 'On click, the card fades in and rises from below',
+    td_js_preview: 'Preview',
+    td_js_btn: 'Show card',
+    td_rwd_bar: 'One layout, three widths',
+    td_rwd_desktop: 'Desktop · 3 columns',
+    td_rwd_tablet: 'Tablet · 2 columns',
+    td_rwd_phone: 'Phone · 1 column',
     // design process tabs
     tab_inhouse: 'In-house',
     tab_inhouse_desc:

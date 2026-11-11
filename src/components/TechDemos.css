@@ -1,0 +1,529 @@
+/* Tech Stack card demos (TechDemos.tsx). They sit in the old code
+   preview's window (.tech-code-preview, .tcp-bar in portfolio.css) and
+   take its place in every layout: the desktop column, the tablet row
+   (about 280px wide) and the phone carousel. Each loop is pure CSS and
+   pauses while the demo is off screen (no data-play). */
+
+.td {
+  --td-panel: rgba(255, 255, 255, 0.06);
+  --td-sub: rgba(255, 255, 255, 0.08);
+  --td-ink: rgba(255, 255, 255, 0.72);
+  --td-faint: rgba(255, 255, 255, 0.42);
+  --td-bar1: rgba(255, 255, 255, 0.42);
+  --td-bar2: rgba(255, 255, 255, 0.2);
+  --td-hl-bg: rgba(96, 165, 250, 0.18);
+  --td-hl-ink: #93c5fd;
+  --td-ring: #60a5fa;
+  --td-brand: #6C63FF;
+  --td-brand-down: #5148E0;
+  --td-warm: #fb923c;
+  --td-lift: 0 6px 18px -8px rgba(0, 0, 0, 0.6);
+}
+
+:root[data-theme="light"] .td {
+  --td-panel: #FFFFFF;
+  --td-sub: #EDF1F7;
+  --td-ink: rgba(58, 58, 66, 0.85);
+  --td-faint: rgba(58, 58, 66, 0.6);
+  --td-bar1: rgba(58, 58, 66, 0.42);
+  --td-bar2: rgba(58, 58, 66, 0.2);
+  --td-hl-bg: rgba(59, 130, 246, 0.14);
+  --td-hl-ink: #1D4ED8;
+  --td-ring: #3B82F6;
+  --td-brand: #5B4FE0;
+  --td-brand-down: #4338CA;
+  --td-warm: #EA580C;
+  --td-lift: 4px 4px 10px var(--neu-shadow-dark), -4px -4px 10px var(--neu-shadow-light);
+}
+
+/* the old snippet's bottom fade would wash out the demo's last row */
+.td::after { display: none; }
+
+.td:not([data-play]) * { animation-play-state: paused; }
+
+.td-body {
+  container-type: inline-size;
+  box-sizing: border-box;
+  /* one height for all three windows (the HTML demo's own), so the cards'
+     windows line up side by side */
+  height: 226px;
+  overflow: hidden;
+  padding: 12px;
+  color: var(--td-ink);
+  font-family: var(--font);
+}
+
+.td-label {
+  font-size: 9.5px;
+  letter-spacing: .12em;
+  color: var(--td-faint);
+}
+
+/* shared mock pieces: bars of text, an image block, a nav strip */
+.td-line {
+  display: block;
+  width: 72%;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--td-bar1);
+}
+
+.td-line--short {
+  width: 46%;
+  height: 4px;
+  background: var(--td-bar2);
+}
+
+.td-img {
+  height: 46px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #C9C2FF, #A9CBFF);
+}
+
+.td-img--warm { background: linear-gradient(135deg, #FFD3B5, #FDBA74); }
+
+.td-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 16px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--td-sub);
+}
+
+.td-logo {
+  width: 18px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--td-brand);
+}
+
+.td-link {
+  width: 11px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--td-bar2);
+}
+
+.td-link:first-of-type { margin-left: auto; }
+
+/* ── HTML / CSS: comp ↔ markup ── */
+.td-html .td-body {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 12px;
+}
+
+.td-comp {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.td-page {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 7px;
+  background: var(--td-panel);
+}
+
+.td-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px;
+  border-radius: 5px;
+  background: var(--td-sub);
+}
+
+.td-btn-wrap {
+  position: relative;
+  align-self: flex-start;
+}
+
+.td-btn {
+  height: 20px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  background: var(--td-brand);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.td-ring {
+  position: absolute;
+  inset: -4px;
+  border: 2px solid var(--td-ring);
+  border-radius: 7px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.td-ring--pill { border-radius: 9999px; }
+
+.td-swatch {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 3px;
+  border-radius: 9999px;
+  background: var(--td-panel);
+  box-shadow: var(--td-lift);
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+}
+
+.td-swatch > span {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--td-brand);
+}
+
+.td-code {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-top: 18px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.td-ln {
+  padding: 1px 5px;
+  border-radius: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.td-ln--in { padding-left: 16px; }
+.td-ln--gap { margin-top: 6px; }
+
+/* four 2s steps: nav, card, button, its colour */
+@keyframes td-s1 { 0%, 23% { opacity: 1; } 25%, 100% { opacity: 0; } }
+@keyframes td-s2 { 0%, 24% { opacity: 0; } 25%, 48% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes td-s3 { 0%, 49% { opacity: 0; } 50%, 73% { opacity: 1; } 75%, 100% { opacity: 0; } }
+@keyframes td-s4 { 0%, 74% { opacity: 0; } 75%, 98% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes td-l1 { 0%, 23% { background: var(--td-hl-bg); color: var(--td-hl-ink); } 25%, 100% { background: transparent; color: inherit; } }
+@keyframes td-l2 { 0%, 24%, 50%, 100% { background: transparent; color: inherit; } 25%, 48% { background: var(--td-hl-bg); color: var(--td-hl-ink); } }
+@keyframes td-l3 { 0%, 49%, 75%, 100% { background: transparent; color: inherit; } 50%, 73% { background: var(--td-hl-bg); color: var(--td-hl-ink); } }
+@keyframes td-l4 { 0%, 74%, 100% { background: transparent; color: inherit; } 75%, 98% { background: var(--td-hl-bg); color: var(--td-hl-ink); } }
+
+.td-s1 { animation: td-s1 8s infinite; }
+.td-s2 { animation: td-s2 8s infinite; }
+.td-s3 { animation: td-s3 8s infinite; }
+.td-s4 { animation: td-s4 8s infinite; }
+.td-l1 { animation: td-l1 8s infinite; }
+.td-l2 { animation: td-l2 8s infinite; }
+.td-l3 { animation: td-l3 8s infinite; }
+.td-l4 { animation: td-l4 8s infinite; }
+
+/* narrow (tablet row, small phones): smaller code, the card's inner
+   lines folded away so each step stays one or two lines */
+@container (max-width: 300px) {
+  .td-html .td-body { gap: 8px; }
+  .td-code { font-size: 9px; padding-top: 14px; }
+  .td-ln--in { display: none; }
+  /* attributes and selectors step aside, so each line keeps its point
+     (the tag, the variable) in the narrow column */
+  .td-attr { display: none; }
+  .td-swatch { font-size: 8px; }
+}
+
+/* ── JavaScript: request → AI → interaction ── */
+.td-js .td-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.td-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.td-ask {
+  align-self: flex-end;
+  max-width: 92%;
+  padding: 7px 10px;
+  border-radius: 12px 12px 4px 12px;
+  background: var(--td-brand);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1.5;
+  opacity: 0;
+}
+
+.td-reply {
+  position: relative;
+  display: grid;
+}
+
+.td-reply > * { grid-area: 1 / 1; }
+
+.td-think {
+  align-self: start;
+  justify-self: start;
+  display: flex;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 12px 12px 12px 4px;
+  background: var(--td-panel);
+  opacity: 0;
+}
+
+.td-think span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--td-warm);
+  animation: td-dot 1s infinite;
+}
+
+.td-think span:nth-child(2) { animation-delay: .2s; }
+.td-think span:nth-child(3) { animation-delay: .4s; }
+
+.td-answer {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 10px;
+  border-radius: 12px 12px 12px 4px;
+  background: var(--td-panel);
+  opacity: 0;
+}
+
+.td-ai {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  color: var(--td-warm);
+}
+
+.td-ai::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.td-snippet {
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.55;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.td-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 7px;
+  background: var(--td-panel);
+}
+
+.td-press-wrap {
+  position: relative;
+  align-self: flex-start;
+}
+
+.td-press {
+  height: 22px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  background: var(--td-brand);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.td-cursor {
+  position: absolute;
+  right: -6px;
+  bottom: -10px;
+  width: 15px;
+  height: 15px;
+  opacity: 0;
+}
+
+.td-cursor path {
+  fill: var(--text);
+  stroke: var(--bg-card, #fff);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.td-rise {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px;
+  border-radius: 6px;
+  background: var(--td-sub);
+  box-shadow: var(--td-lift);
+  opacity: 0;
+}
+
+/* one 9s loop: ask, think, answer, press, the card rises, hold, clear */
+@keyframes td-ask { 0%, 6% { opacity: 0; transform: translateY(8px); } 11%, 90% { opacity: 1; transform: none; } 95%, 100% { opacity: 0; transform: none; } }
+@keyframes td-think { 0%, 18% { opacity: 0; } 21%, 29% { opacity: 1; } 31%, 100% { opacity: 0; } }
+@keyframes td-answer { 0%, 30% { opacity: 0; transform: translateY(8px); } 35%, 90% { opacity: 1; transform: none; } 95%, 100% { opacity: 0; transform: none; } }
+@keyframes td-press { 0%, 52%, 57%, 100% { transform: none; background: var(--td-brand); } 54% { transform: scale(.93); background: var(--td-brand-down); } }
+@keyframes td-cursor { 0%, 44% { opacity: 0; transform: translate(24px, 16px); } 50% { opacity: 1; transform: none; } 54% { opacity: 1; transform: scale(.9); } 58%, 64% { opacity: 1; transform: none; } 68%, 100% { opacity: 0; transform: none; } }
+@keyframes td-rise { 0%, 56% { opacity: 0; transform: translateY(18px); } 66%, 90% { opacity: 1; transform: none; } 95%, 100% { opacity: 0; transform: none; } }
+@keyframes td-dot { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+
+.td-ask { animation: td-ask 9s infinite; }
+.td-think { animation: td-think 9s infinite; }
+.td-answer { animation: td-answer 9s infinite; }
+.td-press { animation: td-press 9s infinite; }
+.td-cursor { animation: td-cursor 9s infinite; }
+.td-rise { animation: td-rise 9s cubic-bezier(.16, 1, .3, 1) infinite; }
+
+@container (max-width: 300px) {
+  .td-js .td-body { grid-template-columns: minmax(0, 1fr); }
+  .td-snippet { font-size: 9px; }
+}
+
+/* ── React / Vue: one flex layout at three widths ── */
+.td-rwd .td-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.td-bp {
+  display: grid;
+  justify-items: center;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--td-brand);
+}
+
+.td-bp > span {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0;
+}
+
+.td-bp > span::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* centred both ways in the room between the label and the rule, so it
+   narrows in from both sides and grows up and down as its tiles wrap: a
+   resized viewport inside a still window, not a card shrinking to a corner */
+.td-frame {
+  align-self: center;
+  margin-block: auto;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 7px;
+  background: var(--td-panel);
+  overflow: hidden;
+}
+
+/* a real wrap: at the frame's full width three tiles fit, at 64% two,
+   at 38% one. The basis follows the demo's own width (cqw of .td-body),
+   so the same three steps happen in every card size. */
+.td-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.td-tile {
+  flex: 1 1 27cqw;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 7px;
+  border-radius: 5px;
+  background: var(--td-sub);
+}
+
+.td-thumb {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #C9C2FF, #A79CFF);
+}
+
+.td-tile--b .td-thumb { background: linear-gradient(135deg, #BFD8FF, #8FBFFF); }
+.td-tile--c .td-thumb { background: linear-gradient(135deg, #FFD3B5, #FDBA74); }
+
+.td-tile-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.td-rule {
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--td-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes td-width { 0%, 26% { width: 100%; } 33%, 59% { width: 64%; } 66%, 92% { width: 38%; } 100% { width: 100%; } }
+@keyframes td-bp1 { 0%, 27% { opacity: 1; } 31%, 96% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes td-bp2 { 0%, 30% { opacity: 0; } 34%, 60% { opacity: 1; } 64%, 100% { opacity: 0; } }
+@keyframes td-bp3 { 0%, 63% { opacity: 0; } 67%, 93% { opacity: 1; } 97%, 100% { opacity: 0; } }
+
+.td-frame { animation: td-width 9s cubic-bezier(.65, 0, .35, 1) infinite; }
+.td-bp-1 { animation: td-bp1 9s infinite; }
+.td-bp-2 { animation: td-bp2 9s infinite; }
+.td-bp-3 { animation: td-bp3 9s infinite; }
+
+/* Reduced motion: no loops; each demo rests on its telling frame */
+@media (prefers-reduced-motion: reduce) {
+  .td * { animation: none !important; }
+  .td-s4, .td-swatch, .td-ask, .td-answer, .td-rise, .td-bp-2 { opacity: 1; }
+  .td-l4 { background: var(--td-hl-bg); color: var(--td-hl-ink); }
+  .td-frame { width: 64%; }
+}
