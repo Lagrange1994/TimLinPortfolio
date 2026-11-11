@@ -7229,7 +7229,7 @@
     .portfolio-grid {
       display: none;
       grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
+      gap: var(--notch-gap); /* the bento gutter */
       margin-bottom: 28px;
     }
 
@@ -7241,7 +7241,7 @@
     #portfolio-grid {
       grid-template-columns: repeat(4, 1fr);
       grid-auto-flow: dense;
-      gap: 14px;
+      gap: var(--notch-gap); /* the bento gutter */
       margin-bottom: 28px;
     }
 
@@ -7257,19 +7257,19 @@
        chasing the squircle exactly — same trade-off already made for
        those other two shadows. Values match .bento-card's own tokens
        (About Me cards) so all three shadow tiers read as one system.
-       border-radius does NOT match CARD_CORNER_RADIUS (44px) in
+       border-radius does NOT match CARD_CORNER_RADIUS (48px) in
        PortfolioSection.tsx 1:1 — box-shadow only ever follows a circular
        arc, and a circle cuts into its corner far more per pixel of radius
        than the JS clip-path's n=5 superellipse does (squircleRectPath in
        squircle.ts): at the 45° point a circle insets ~29% of r, the
        squircle only ~13%. Matching that inset depth instead of the raw
-       radius value (r_circle*(1-cos45) = 44*(1-0.7071^0.4)) gives ~20px —
-       44px read far rounder than the actual clipped photo corner, and
+       radius value (r_circle*(1-cos45) = 48*(1-0.7071^0.4)) gives ~22px —
+       48px read far rounder than the actual clipped photo corner, and
        .bento-card's plain 16px read slightly squarer than it. */
     .grid-card-shadow {
       position: relative;
       aspect-ratio: 3/2;
-      border-radius: 20px;
+      border-radius: 22px;
       box-shadow: var(--card-shadow-md), var(--card-edge);
       transition: transform .3s ease;
     }
@@ -7289,7 +7289,7 @@
 
     /* Opacity-crossfade hover shadow — see .bento-card::after's comment. */
     .grid-card-shadow::after {
-      border-radius: 20px;
+      border-radius: 22px;
     }
 
     .grid-card-shadow > .grid-card {

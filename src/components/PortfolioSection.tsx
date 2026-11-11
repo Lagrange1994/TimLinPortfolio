@@ -4,7 +4,7 @@ import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
 import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
 import { portfolioWallMorphPath, DEFAULT_RADIUS, computeWallHeight, type WallMaskArgs } from '../utils/portfolioMask';
-import { NOTCH_GAP, NOTCH_TEXT_PAD, NOTCH_TURN } from '../utils/notchTokens';
+import { CARD_RADIUS, NOTCH_GAP, NOTCH_TEXT_PAD, NOTCH_TURN } from '../utils/notchTokens';
 import { wallShapeProgress } from '../utils/portfolioZoom';
 import { scrollToSectionAligned, AUTO_SCROLL_END_EVENT } from '../utils/navHeader';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
@@ -25,9 +25,9 @@ gsap.registerPlugin(ScrollTrigger);
 const GRID_CARD_EFFECTS = false;
 
 const SMOOTH_TAU = 0.18;
-// Matches How I Use AI's card corner radius (.ai-card) so the squircle reads
+// The site-wide card corner (utils/notchTokens.ts) so the squircle reads
 // consistently across sections instead of scaling with each card's box size.
-const CARD_CORNER_RADIUS = 44;
+const CARD_CORNER_RADIUS = CARD_RADIUS;
 // Breathing room around the headline/subtitle text inside the wall outline's
 // top-left notches, so the rounded corners don't cut in right at the glyphs.
 // How far the headline text, the wall and the View All button rise from —
