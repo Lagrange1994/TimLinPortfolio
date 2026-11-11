@@ -9,7 +9,7 @@
  * of the bottom by legGapH (both live-measured, from the "View All
  * Projects" button's own width/height plus its padding), leaving an empty
  * gap at the bottom-right for that button. Every corner uses the same
- * `radius` (40px by default, like squircleRectPath but for this outline —
+ * `radius` (48px by default, the site-wide card corner, like squircleRectPath but for this outline —
  * PortfolioSection.tsx passes a smaller value on mobile), except the two
  * corners where the subtitle notch turns (the step at x=notch2W), which use
  * half that radius so that turn can sit closer to the subtitle without the
@@ -22,10 +22,13 @@
  * match, since matching the top corner to the button's own (much larger,
  * pill-shaped) radius would otherwise look oversized next to it.
  */
+import { CARD_RADIUS } from './notchTokens';
 
 const DEFAULT_LEG_GAP_W_RATIO = 1 - 728 / 1328;
 const DEFAULT_LEG_GAP_RATIO = 1 - 548 / 666;
-export const DEFAULT_RADIUS = 40;
+// the site-wide card corner (utils/notchTokens.ts), so the wall's corners
+// and its half-radius turns match every other notched card
+export const DEFAULT_RADIUS = CARD_RADIUS;
 
 // The wall grows to fit its natural card-stack height instead of being
 // scaled to a fixed viewport percentage, but only up to whatever room the

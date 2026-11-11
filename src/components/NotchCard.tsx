@@ -1,10 +1,8 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { notchPath } from '../utils/notchPath';
-
 // Gap between the notch's edge and what sits in it, and the radius of the
-// notch's two outer ends.
-const NOTCH_GAP = 10;
-const NOTCH_END_RADIUS = 18;
+// notch's two outer ends: the site-wide notch sizes.
+import { NOTCH_GAP, NOTCH_TURN as NOTCH_END_RADIUS } from '../utils/notchTokens';
 
 // A card with a notch cut out of a bottom corner (left by default, or
 // right), where its tags or action button sit. Built like My Portfolio's

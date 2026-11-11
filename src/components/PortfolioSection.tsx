@@ -4,6 +4,7 @@ import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
 import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
 import { portfolioWallMorphPath, DEFAULT_RADIUS, computeWallHeight, type WallMaskArgs } from '../utils/portfolioMask';
+import { NOTCH_GAP, NOTCH_TEXT_PAD, NOTCH_TURN } from '../utils/notchTokens';
 import { wallShapeProgress } from '../utils/portfolioZoom';
 import { scrollToSectionAligned, AUTO_SCROLL_END_EVENT } from '../utils/navHeader';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
@@ -34,7 +35,7 @@ const CARD_CORNER_RADIUS = 44;
 // clearly. Carried on the label/title/sub via data-rise-y and read back by
 // the wall-frame effect so all of them travel the same distance.
 const PORTFOLIO_RISE_Y = 72;
-const NOTCH_PADDING = 16;
+const NOTCH_PADDING = NOTCH_TEXT_PAD;
 // Fired on #portfolio whenever the desktop geometry effect sets the wall's
 // top/height, so the notch-mask effect recuts the path for the new position.
 const WALL_GEOMETRY_EVENT = 'wall-geometry';
@@ -55,7 +56,7 @@ const NOTCH2_BOTTOM_PADDING = 6;
 // top-left corner can be made concentric with the button's own pill corner
 // below — concentric circles only line up when the gap is equal on both
 // straight edges, not just one.
-const LEG_GAP_PADDING = 12;
+const LEG_GAP_PADDING = NOTCH_GAP;
 
 function createPortfolioScroller(row: HTMLElement, normalSpeed: number, hoverSpeed: number) {
   const inner = row.querySelector<HTMLElement>('.scroller-inner');
@@ -567,15 +568,16 @@ export default function PortfolioSection() {
       // and leg-bottom turns down with it (see portfolioMask.ts).
       const radius = isMobileBreakpoint ? DEFAULT_RADIUS / 2 : DEFAULT_RADIUS;
       // On desktop, the headline's own top-right corner (above the subtitle
-      // notch entirely) matches the shared `radius` already (40px on
-      // desktop) — see portfolioMask.ts.
+      // notch entirely) matches the shared `radius` already (48px on
+      // desktop) — see portfolioMask.ts. The subtitle step's own turn is a
+      // notch turn like every other (NOTCH_TURN).
       const isDesktopBreakpoint = window.matchMedia('(min-width: 1025px)').matches;
       // On mobile, the subtitle notch's own bottom-right corner matches
       // legTopRadius — the same radius already used for the leg gap's
       // top-left corner, which traces the OUTSIDE of the button's own
       // rounded corner (button radius + LEG_GAP_PADDING), not the button's
       // bare radius alone.
-      const notch2BottomRadius = isDesktopBreakpoint ? 40 : isMobileBreakpoint ? legTopRadius : undefined;
+      const notch2BottomRadius = isDesktopBreakpoint ? NOTCH_TURN : isMobileBreakpoint ? legTopRadius : undefined;
       shape = {
         args: [w, h, notch1W, notch1H, notch2W, notch2H, legGapH, legGapW, radius, legTopRadius, undefined, notch2BottomRadius],
         wallX: wallRect.left - sectionRect.left,

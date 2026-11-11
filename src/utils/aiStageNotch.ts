@@ -1,5 +1,6 @@
 import { stairNotchPath, type EdgeBay } from './notchPath';
 import { RISE_START_EVENT } from './useRiseReveal';
+import { NOTCH_GAP, NOTCH_TEXT_PAD, NOTCH_TURN } from './notchTokens';
 
 // How I Use AI: the viewer (the stage card) gets My Portfolio's top-left
 // notch, with the section's subtitle sitting in it (the card's top edge is
@@ -14,9 +15,9 @@ import { RISE_START_EVENT } from './useRiseReveal';
 // viewer is a .rise-card whose entrance clears its own inline styles.
 
 // Gap between the text and the notch's edges (the wall's NOTCH_PADDING).
-export const STAGE_NOTCH_PAD = 16;
+export const STAGE_NOTCH_PAD = NOTCH_TEXT_PAD;
 // Radius of the notch's own turns.
-export const STAGE_NOTCH_TURN = 24;
+export const STAGE_NOTCH_TURN = NOTCH_TURN;
 // Desktop viewer only; the compact (≤960px) layout keeps its plain card.
 export const STAGE_NOTCH_MQ = '(min-width: 961px)';
 
@@ -113,8 +114,8 @@ function columns(viewer: HTMLElement) {
 
 // Gap between the ⌃ ⌄ buttons and their bay, and the radius of the bay's
 // two ends at the card's edge.
-export const NAV_BAY_GAP = 10;
-export const NAV_BAY_END = 18;
+export const NAV_BAY_GAP = NOTCH_GAP;
+export const NAV_BAY_END = NOTCH_TURN;
 
 // The bay cut into the card's left edge round the ⌃ ⌄ buttons (which sit
 // flush with that edge, see [data-ai-notch] .ai-viewer-nav): `gap` round

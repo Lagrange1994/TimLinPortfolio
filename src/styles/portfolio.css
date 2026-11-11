@@ -1567,6 +1567,16 @@
       color: #fff;
     }
 
+    /* ══ NOTCH SIZES ══ — one size system for every notched card, mirrored
+       from src/utils/notchTokens.ts (the JS that cuts the outlines);
+       test/notch-tokens.test.ts keeps the two in step. */
+    :root {
+      --card-r: 48px;
+      --notch-gap: 12px;
+      --notch-text-pad: 16px;
+      --notch-turn: 24px;
+    }
+
     /* ══ GLASSMORPHISM SYSTEM ══ */
     :root {
       --glass-bg: rgba(30, 30, 30, 0.5);
@@ -3067,8 +3077,8 @@
        same approach as My Portfolio's wall): it clips the card and is
        stroked as its border, so the border runs unbroken round the notch. */
     .about-notch {
-      --ng: 10px;
-      --nr: 18px;
+      --ng: var(--notch-gap);
+      --nr: var(--notch-turn);
       --nw: calc(var(--tw, 0px) + var(--ng));
       --nh: calc(var(--th, 0px) + var(--ng));
       /* the notch's inner corner: concentric with the round end of what
