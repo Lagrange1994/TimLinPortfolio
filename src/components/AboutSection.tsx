@@ -416,6 +416,7 @@ export default function AboutSection() {
           {/* Intro cards — the bio prose (about_p1/about_p2) */}
           <NotchCard
             area="bento-area-intro1"
+            side="right"
             className="bento-card bento-violet card-spotlight sc-card rise-card"
             notch={proofTags(t.about_tags_systems, SYSTEMS_LINKS)}
           >
@@ -426,6 +427,7 @@ export default function AboutSection() {
 
           <NotchCard
             area="bento-area-intro2"
+            side="right"
             className="bento-card bento-cyan card-spotlight sc-card rise-card"
             notch={proofTags(t.about_tags_visuals, VISUAL_LINKS)}
           >

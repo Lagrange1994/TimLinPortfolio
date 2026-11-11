@@ -213,6 +213,8 @@ describe('About content', () => {
     // chips start at the card's left padding, left of the notch, their top
     // edge level with the button's top
     expect(tsx).toMatch(/area="bento-area-workflow"\s*side="right"/);
+    // every About notch sits bottom-right, the intro cards' project tags too
+    for (const a of ['intro1', 'intro2', 'cta']) expect(tsx).toMatch(new RegExp(`area="bento-area-${a}"\\s*side="right"`));
     expect(css).toMatch(/\.bento-area-workflow \.ai-flow-stepper \{\s*align-self: flex-start;\s*justify-content: flex-start;\s*margin-left: 0;\s*max-width: calc\(100% \+ 12px - var\(--nw\)\);\s*margin-bottom: calc\(-1 \* \(var\(--th\) \+ 24px\) \+ \(var\(--th\) - 28px\)\);/);
     // step chips the size of the project tags: a fixed 28px, 12.5px text
     expect(css).toMatch(/\.bento-area-workflow \.afs-step \{\s*gap: 6px;\s*box-sizing: border-box;\s*height: 28px;\s*padding: 0 12px;/);
