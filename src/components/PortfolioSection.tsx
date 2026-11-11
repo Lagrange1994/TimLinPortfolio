@@ -2,7 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState, useCallback, type CSSProp
 import { motion, LayoutGroup } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import { PROJECTS } from '../data/projects';
-import { squircleRectPath, squircleRingMaskUrl } from '../utils/squircle';
+import { squircleRectPath } from '../utils/squircle';
+import { notchPath, notchRingMaskUrl } from '../utils/notchPath';
 import { portfolioWallMorphPath, DEFAULT_RADIUS, computeWallHeight, type WallMaskArgs } from '../utils/portfolioMask';
 import { CARD_RADIUS, NOTCH_GAP, NOTCH_TEXT_PAD, NOTCH_TURN } from '../utils/notchTokens';
 import { wallShapeProgress } from '../utils/portfolioZoom';
@@ -28,6 +29,11 @@ const SMOOTH_TAU = 0.18;
 // The site-wide card corner (utils/notchTokens.ts) so the squircle reads
 // consistently across sections instead of scaling with each card's box size.
 const CARD_CORNER_RADIUS = CARD_RADIUS;
+// The ↗ button in each grid card's bottom-right notch (a card's action
+// always sits there), and the notch cut round it: the site-wide notch
+// sizes, its inner corner concentric with the round button.
+const GRID_GO_SIZE = 44;
+const gridNotch = { nw: GRID_GO_SIZE + NOTCH_GAP, nh: GRID_GO_SIZE + NOTCH_GAP, r: CARD_CORNER_RADIUS, nr: NOTCH_TURN, nf: GRID_GO_SIZE / 2 + NOTCH_GAP, side: 'right' as const };
 // Breathing room around the headline/subtitle text inside the wall outline's
 // top-left notches, so the rounded corners don't cut in right at the glyphs.
 // How far the headline text, the wall and the View All button rise from —
@@ -177,6 +183,12 @@ function ProjectCard({ p, mode, index, t, expanded, activeFilter }: {
   // full-bleed background and is 2400px+ wide, ~15x more pixels than this
   // ripple ever renders at (capped at the grid card's own box size).
   const heroImg = `./img/${p.link.replace('.html', '')}/hero_img_preview.webp`;
+  // where to come back to (scroll, expanded grid, filter) from the project page
+  const remember = () => {
+    sessionStorage.setItem('portfolioScrollY', String(window.scrollY));
+    sessionStorage.setItem('portfolioExpanded', expanded ? 'true' : 'false');
+    sessionStorage.setItem('portfolioActiveFilter', activeFilter);
+  };
   const card = (
     <a
       className={cls}
@@ -187,11 +199,7 @@ function ProjectCard({ p, mode, index, t, expanded, activeFilter }: {
       // Skeleton fill (see .project-card::before) — inline so marquee
       // cloneNode copies carry it too.
       style={{ '--ph': p.color, '--ph2': p.heroColor } as CSSProperties}
-      onClick={() => {
-        sessionStorage.setItem('portfolioScrollY', String(window.scrollY));
-        sessionStorage.setItem('portfolioExpanded', expanded ? 'true' : 'false');
-        sessionStorage.setItem('portfolioActiveFilter', activeFilter);
-      }}
+      onClick={remember}
     >
       <img src={p.img} alt={title} loading="lazy" decoding="async" />
       {mode === 'grid' && (
@@ -236,6 +244,11 @@ function ProjectCard({ p, mode, index, t, expanded, activeFilter }: {
   return (
     <div className={`grid-card-shadow${isBig ? ' mb-big' : ''}`}>
       {card}
+      {/* in the notch, outside the clipped card (the clip would cut it);
+          the same link, left out of the tab order (the card itself is it) */}
+      <a className="grid-card-go" href={p.link} tabIndex={-1} aria-hidden="true" onClick={remember}>
+        <i className="ph-bold ph-arrow-right" />
+      </a>
     </div>
   );
 }
@@ -1014,9 +1027,11 @@ export default function PortfolioSection() {
         const width = box ? box.inlineSize : el.offsetWidth;
         const height = box ? box.blockSize : el.offsetHeight;
         if (width <= 0 || height <= 0) continue;
-        el.style.clipPath = `path('${squircleRectPath(width, height, CARD_CORNER_RADIUS)}')`;
-        if (el.classList.contains('grid-card')) {
-          el.style.setProperty('--ring-mask', squircleRingMaskUrl(width, height, CARD_CORNER_RADIUS, 2));
+        const isGrid = el.classList.contains('grid-card');
+        // grid cards: the bottom-right notch round their ↗ button
+        el.style.clipPath = `path('${isGrid ? notchPath(width, height, gridNotch) : squircleRectPath(width, height, CARD_CORNER_RADIUS)}')`;
+        if (isGrid) {
+          el.style.setProperty('--ring-mask', notchRingMaskUrl(width, height, gridNotch, 2));
           // The ripple span (.grid-card-ripple) grows well past the card's
           // own size so its circle can cover every corner — background-size
           // must stay pinned to the card's actual pixel size (not the

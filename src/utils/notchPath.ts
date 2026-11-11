@@ -117,3 +117,25 @@ export function notchPath(
     ? [k(0, 0, r), k(w, 0, r), k(w, h, r), k(nw, h, nr), k(nw, h - nh, nf, 'round'), k(0, h - nh, nr)]
     : [k(0, 0, r), k(w, 0, r), k(w, h - nh, nr), k(w - nw, h - nh, nf, 'round'), k(w - nw, h, nr), k(0, h, r)]);
 }
+
+// The same shape as a mask for a `thickness`-wide border ring (what
+// squircleRingMaskUrl does for a plain squircle card): the outline, with
+// the outline of the box inset by `thickness` cut out of it (evenodd).
+// The inset box keeps the notch's own size, so the ring runs an even width
+// round the notch too.
+export function notchRingMaskUrl(
+  w: number,
+  h: number,
+  opts: Parameters<typeof notchPath>[2],
+  thickness = 2,
+): string {
+  const outer = notchPath(w, h, opts);
+  const t = thickness;
+  const inner = notchPath(Math.max(w - t * 2, 0), Math.max(h - t * 2, 0), {
+    ...opts,
+    r: Math.max(opts.r - t, 0),
+  }).replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g, (_, x, y) => `${(+x + t).toFixed(2)} ${(+y + t).toFixed(2)}`);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`
+    + `<path fill-rule="evenodd" fill="#fff" d="${outer} ${inner}"/></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}

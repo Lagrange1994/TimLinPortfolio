@@ -7297,6 +7297,54 @@
       height: 100%;
     }
 
+    /* The ↗ in each grid card's bottom-right notch (cut by the clip-path,
+       see gridNotch in PortfolioSection.tsx): the card's action, where
+       every card's action sits. Outside the clipped card, in the wrapper's
+       corner; nudges up-right when the card is hovered. */
+    .grid-card-go {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: var(--tag-bg);
+      color: var(--text);
+      font-size: 18px;
+      text-decoration: none;
+      transition: border-color .3s, background-color .3s, color .3s;
+    }
+
+    /* the subset icon font's → turned to ↗ */
+    .grid-card-go i { transform: rotate(-45deg); transition: transform .25s ease; }
+
+    .grid-card-shadow:hover .grid-card-go {
+      border-color: rgba(108, 99, 255, 0.5);
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .grid-card-shadow:hover .grid-card-go i { transform: translate(2px, -2px) rotate(-45deg); }
+
+    :root[data-theme="light"] .grid-card-go {
+      color: oklch(from rgb(108, 99, 255) .5 .2 h);
+      background: var(--neu-bg);
+      border-color: transparent;
+      box-shadow: var(--neu-raised-sm);
+    }
+
+    :root[data-theme="light"] .grid-card-shadow:hover .grid-card-go {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* the title, copy and tags keep clear of the notch on the right */
+    .grid-card .project-overlay { padding-right: calc(44px + var(--notch-gap) + 12px); }
+
     .grid-card {
       border-radius: 16px;
       overflow: hidden;
