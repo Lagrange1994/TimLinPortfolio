@@ -7201,12 +7201,15 @@
       flex-wrap: wrap;
     }
 
+    /* Opaque, like every other tag: the card's own overlay tint (each
+       project's colour --ph darkened, as .grid-card .project-overlay mixes
+       it; --overlay-tint itself is a registered, non-inheriting property)
+       lifted a step, instead of a see-through white glass */
     .project-tag {
       font-size: 10px;
       padding: 2px 8px;
       border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(4px);
+      background: color-mix(in oklab, color-mix(in srgb, var(--ph, #000) 25%, #000) 82%, #fff);
       border: 1px solid rgba(255, 255, 255, 0.25);
       color: #fff;
     }
