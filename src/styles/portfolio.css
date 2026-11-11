@@ -3173,6 +3173,11 @@
       letter-spacing: .14em;
       white-space: nowrap;
       pointer-events: none;
+      /* the card's own transform transition (.bento-card): the rise reveal
+         writes both transforms every frame, and the card eases each write
+         over 0.25s — without the same easing here the capsule runs ahead
+         of its card and comes loose mid-rise */
+      transition: transform 0.25s ease;
     }
 
     .about-notch-badge-dot {
@@ -4215,7 +4220,9 @@
     /* the principles' capsules: Tech Stack's light .tech-level-badge — a
        faint tint, a coloured hairline and coloured text, no shadow */
     :root[data-theme="light"] .about-notch > .about-notch-badge {
-      background: rgba(var(--tone), .08);
+      /* a faint tint and coloured text, no shadow — the tint mixed into
+         the card's own fill, so it's opaque, not see-through */
+      background: color-mix(in oklab, rgb(var(--tone)) 8%, var(--neu-bg));
       border: 1px solid transparent;
       color: oklch(from rgb(var(--tone)) .45 .17 h);
       box-shadow: none;
@@ -4448,11 +4455,12 @@
       gap: 6px;
       padding: 6px 12px;
       border-radius: 9999px;
-      background: linear-gradient(120deg,
-        oklch(from rgb(var(--tone)) .66 .25 h),
-        oklch(from rgb(var(--tone)) .8 .2 calc(h + 25)));
-      box-shadow: 0 6px 18px -6px oklch(from rgb(var(--tone)) .66 .25 h), inset 0 1px 0 rgba(255, 255, 255, .35);
-      color: #0b0a1f;
+      /* the dark illustrations' blue-grey whites (sampled from
+         img/process/*_w.webp: lines ≈ 232,234,248, panels ≈ 128,132,176)
+         on the card's own opaque dark, so the border line stops behind it */
+      background: #0d0a1c;
+      border: 1px solid rgb(72, 74, 110);
+      color: rgb(214, 218, 242);
       font-family: var(--mono);
       font-size: 10px;
       font-weight: 600;
@@ -4688,12 +4696,13 @@
       color: var(--text-70);
     }
 
-    /* light: the principles' light capsule — a faint tint and coloured
-       text, no shadow */
+    /* light: a faint tint and coloured text, no shadow, in the light
+       illustrations' line blue (sampled from img/process/*_l_w.webp); the
+       tint is mixed into the card's white, so it's opaque */
     :root[data-theme="light"] .process-step-badge {
-      background: rgba(var(--tone), .08);
+      background: color-mix(in oklab, rgb(30, 100, 215) 8%, #fff);
       border: 1px solid transparent;
-      color: oklch(from rgb(var(--tone)) .45 .17 h);
+      color: rgb(30, 100, 215);
       box-shadow: none;
     }
 
@@ -10922,9 +10931,8 @@
     /* Focal badge — gradient pill top-right */
     .ai-focal-badge{position:absolute;top:-13px;right:22px;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:linear-gradient(135deg,var(--ai-focal),#FF7BC8);color:#1a0a20;font-family:var(--font-code);font-size:10px;letter-spacing:.14em;font-weight:600;box-shadow:0 10px 30px -6px rgba(255,123,200,.5);white-space:nowrap}
     .ai-focal-badge::before{content:"";width:5px;height:5px;border-radius:50%;background:#1a0a20}
-    /* 淺色板：實心漸層膠囊改成空心——透明底、彩色邊框跟文字，跟同一張卡片
-       上已經改成同款空心處理的 .ai-glyph 呼應。 */
-    :root[data-theme="light"] .ai-focal-badge{background:rgba(var(--ai-focal-rgb), .12);border:1px solid rgba(var(--ai-focal-rgb), .5);color:#7C3AED;box-shadow:none}
+    /* 淺色板：淡色底、彩色邊框跟文字；底色混進卡片底色（--neu-bg），不透明。 */
+    :root[data-theme="light"] .ai-focal-badge{background:color-mix(in oklab, rgb(var(--ai-focal-rgb)) 12%, var(--neu-bg));border:1px solid rgba(var(--ai-focal-rgb), .5);color:#7C3AED;box-shadow:none}
     :root[data-theme="light"] .ai-focal-badge::before{background:currentColor}
     /* Radar ring keyframe — now only .mcp-hub-ring; cards use card-radar */
     @keyframes aiRingP{0%{transform:scale(.99);opacity:.6}100%{transform:scale(1.04);opacity:0}}
@@ -12174,18 +12182,19 @@
     :root[data-theme="light"] .tech-level-badge {
       box-shadow: none !important;
     }
+    /* faint tint mixed into the card's fill: opaque, not see-through */
     :root[data-theme="light"] .tech-level-badge.html-item {
-      background: rgba(59, 130, 246, .08) !important;
+      background: color-mix(in oklab, rgb(59, 130, 246) 8%, var(--neu-bg)) !important;
       border: 1px solid transparent !important;
       color: #2563EB !important;
     }
     :root[data-theme="light"] .tech-level-badge.js-item {
-      background: rgba(249, 115, 22, .08) !important;
+      background: color-mix(in oklab, rgb(249, 115, 22) 8%, var(--neu-bg)) !important;
       border: 1px solid transparent !important;
       color: #C2410C !important;
     }
     :root[data-theme="light"] .tech-level-badge.react-item {
-      background: rgba(108, 99, 255, .08) !important;
+      background: color-mix(in oklab, rgb(108, 99, 255) 8%, var(--neu-bg)) !important;
       border: 1px solid transparent !important;
       color: #4C46B6 !important;
     }

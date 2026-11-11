@@ -209,6 +209,15 @@ describe('setupRiseReveal direction', () => {
       expect(g.sets.some(a => a[0] === tags && (a[1] as { y?: number }).y === -40)).toBe(true);
     });
 
+    it('re-measures the card at reveal, so a card that changed height keeps the rider glued', () => {
+      const { section, card, tags } = buildNotch();
+      setupRiseReveal([section]);
+      // the card's content settles after setup: 300px tall → 250px
+      card.getBoundingClientRect = () => rect(100, 0, 400, 250);
+      g.triggers[1].onEnter(st(200));
+      expect(originOf(tags).at(-1)).toBe('200px -10px');
+    });
+
     it('without the lock a rider keeps its own top-edge squash', () => {
       const { section, tags } = buildNotch();
       tags.removeAttribute('data-rise-lock');

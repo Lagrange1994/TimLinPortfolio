@@ -163,9 +163,18 @@ export function setupRiseReveal(sections: HTMLElement[]): () => void {
         const riseY = Number((lockRect ? rides! : el).dataset.riseY) || RISE_Y;
         // Origin (in this element's own box) of the ridden item's pivot: its
         // bottom edge rising in, its top edge dropping in.
-        const lockOrigin = (dir: RiseDir) => {
-          const l = lockRect!;
-          return `${l.left + l.width / 2 - rect.left}px ${(dir === 1 ? l.bottom : l.top) - rect.top}px`;
+        const lockOrigin = (dir: RiseDir, l: DOMRect = lockRect!, own: DOMRect = rect) =>
+          `${l.left + l.width / 2 - own.left}px ${(dir === 1 ? l.bottom : l.top) - own.top}px`;
+        // The setup rects can be stale by reveal time: a card's content
+        // (fonts, a lazy scene) can change its height after setup, so a
+        // pivot from setup sits off the card's real edge and the rider drifts
+        // away from the card mid-squash. Re-measured at reveal, untransformed.
+        const layoutRect = (n: HTMLElement) => {
+          const prev = n.style.transform;
+          n.style.transform = 'none';
+          const r = n.getBoundingClientRect();
+          n.style.transform = prev;
+          return r;
         };
 
         // Hidden until its trigger fires; the starting y (and, for cards,
@@ -201,7 +210,7 @@ export function setupRiseReveal(sections: HTMLElement[]): () => void {
           ctx.add(() => {
             gsap.set(el, { y: restY + dir * distance });
             if (landing) gsap.set(el, { scaleY: 1 });
-            else if (lockRect) gsap.set(el, { transformOrigin: lockOrigin(dir) });
+            else if (lockRect) gsap.set(el, { transformOrigin: lockOrigin(dir, layoutRect(rides!), layoutRect(el)) });
             else if (isCard) gsap.set(el, { transformOrigin: dir === 1 ? 'center bottom' : 'center top' });
 
             const tl = gsap.timeline({ delay: landing ? (delay / COL_DELAY) * LAND_COL_DELAY : delay });
