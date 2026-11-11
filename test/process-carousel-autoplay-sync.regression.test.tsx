@@ -111,17 +111,14 @@ describe('How I Use AI compact pill row — current pill aligns left', () => {
     expect(css).toMatch(/\.ai-pills::after \{\s*content: '';\s*flex: 0 0 var\(--ai-pills-tail, 0px\);/);
   });
 
-  // On a phone stage the client phone runs out to the viewer frame and is
-  // cut at the frame's inner edge: 16px padding past the window, plus the
-  // 10px / 40px it overhangs, with the frame's 33px corner less its border.
-  it('cuts the phone-stage client phone off at the viewer frame', () => {
+  // A phone stage shows just the app window: no client phone, no front
+  // panel crowding its corner; the window shrinks as a whole, its outer
+  // box kept (full width, 420px tall, 16px corner).
+  it('drops the client phone and the front panel on a phone stage', () => {
     const stage = read('src/components/AiAppStage.css');
     const phoneStage = stage.slice(stage.indexOf('@container aas-stage (max-width: 420px)'));
-    const phone = phoneStage.match(/\.aas-phone \{([^}]*)\}/)![1];
-    expect(phone).toMatch(/right: -26px;/);
-    expect(phone).toMatch(/bottom: -56px;/);
-    expect(phone).toMatch(/clip-path: inset\(-40px 10px 40px -40px round 0 0 32px 0\);/);
-    expect(read('src/styles/portfolio.css')).toMatch(/border-radius: 12px 33px 33px 33px;/);
+    expect(phoneStage).toMatch(/^@container aas-stage \(max-width: 420px\) \{\s*\.aas-phone,\s*\.aas-front \{ display: none; \}/);
+    expect(phoneStage).toMatch(/\.aas-window \{\s*--aas-k: \.75;\s*zoom: var\(--aas-k\);[\s\S]*?width: 100%;\s*height: calc\(420px \/ var\(--aas-k\)\);\s*border-radius: calc\(16px \/ var\(--aas-k\)\);/);
   });
 
   it('gives the compact stage frame a small top-left corner, large elsewhere', () => {

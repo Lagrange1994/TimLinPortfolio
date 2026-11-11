@@ -982,9 +982,13 @@ const SCREENS: Record<string, (p: ScreenProps) => ReactNode> = {
 // No in-window sidebar: the pill rail beside the window already is the
 // navigation (a sidebar listing the same six steps was tried and dropped as
 // redundant). The title bar names the open screen instead.
-export default function AiAppStage({ steps, active }: {
+// peek: a neighbouring step shown beside the current one while the phone
+// viewer is dragged sideways: a still picture of that step (no intro
+// timelines run), with no ids and nothing to focus.
+export default function AiAppStage({ steps, active, peek = false }: {
   steps: AiStageStep[];
   active: string | null;
+  peek?: boolean;
 }) {
   const { t, lang } = useLang();
   const tt = t as unknown as T;
@@ -1015,12 +1019,12 @@ export default function AiAppStage({ steps, active }: {
             return (
               <section
                 key={s.id}
-                id={`ai-stage-${s.id}`}
+                id={peek ? undefined : `ai-stage-${s.id}`}
                 className={`aas-screen${isActive ? ' is-active' : ''}`}
                 aria-label={s.title}
                 aria-hidden={!isActive}
               >
-                {Screen && <Screen active={isActive} t={tt} c={c} />}
+                {Screen && <Screen active={isActive && !peek} t={tt} c={c} />}
               </section>
             );
           })}

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useRef, useMemo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent, type AnimationEvent as ReactAnimationEvent } from 'react';
+import { useEffect, useLayoutEffect, useState, useRef, useMemo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent, type AnimationEvent as ReactAnimationEvent, type TouchEvent as ReactTouchEvent } from 'react';
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
@@ -13,6 +13,7 @@ import PlayPauseButton from './PlayPauseButton';
 import AiAppStage from './AiAppStage';
 import { attachAiViewerEntrance } from '../utils/aiViewerEntrance';
 import { attachStageNotch } from '../utils/aiStageNotch';
+import { swipeStep } from '../utils/swipeStep';
 import LazyUnit from './LazyUnit';
 import { processCardLayers, useProcessCardThemes, type ProcessTheme } from '../utils/processCardImages';
 
@@ -67,6 +68,12 @@ const AI_LEGACY_CARDS = false;
 // label out almost at once, card content in only once the shape is underway).
 const AI_PILL_MORPH_S = 0.5;
 const AI_VIEWER_FIRST = 'sources';
+// A swiped step settling into place: the track, the pill row's scroll and
+// the current pill's highlight all take this time and this curve, so they
+// arrive together (SWIPE_EASE_CSS is gsap's power2.out as a CSS curve).
+const SWIPE_SLIDE_MS = 320;
+const SWIPE_EASE = 'power2.out';
+const SWIPE_EASE_CSS = 'cubic-bezier(.33, 1, .68, 1)';
 // The headline sits in the viewer's notch, so it rises glued to the card
 // (useRiseReveal's data-rise-lock), not on its own beat.
 const AI_HEAD_RIDE = { 'data-rise-with': '.ai-viewer', 'data-rise-lock': '' };
@@ -2080,6 +2087,9 @@ export function AiIntakeSection() {
   // animating, whenever the viewer itself changes size.
   const [viewerResizeTick, setViewerResizeTick] = useState(0);
   const pillSnapRef = useRef(false);
+  // set by a swipe that changes step (see the compact swipe below)
+  const swipeMorphRef = useRef(false);
+  const swipeCommitRef = useRef<{ offset: number } | null>(null);
   useEffect(() => {
     const el = viewerRef.current;
     if (!isViewer || !el || typeof ResizeObserver === 'undefined') return;
@@ -2100,6 +2110,9 @@ export function AiIntakeSection() {
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     const snap = reduced || pillSnapRef.current;
     pillSnapRef.current = false;
+    // a swipe's step: the highlight lands with the track (same time, curve)
+    const swiped = swipeMorphRef.current;
+    swipeMorphRef.current = false;
     ctx.add(() => {
       const pills = Array.from(pillRefs.current, ([id, li]) => {
         // Compact never unfolds a pill: the step's content sits under the row.
@@ -2112,7 +2125,7 @@ export function AiIntakeSection() {
       // a forced reflow per pill (a 0s snap tween writes immediately).
       if (!isCompact) pills.forEach(p => gsap.set(p.li, { clearProps: 'width' }));
       const sizes = pills.map(p => ({ width: p.target.offsetWidth, height: p.target.offsetHeight }));
-      const tween = { duration: snap ? 0 : AI_PILL_MORPH_S, ease: 'power3.inOut', overwrite: 'auto' as const };
+      const tween = { duration: snap ? 0 : swiped ? SWIPE_SLIDE_MS / 1000 : AI_PILL_MORPH_S, ease: swiped ? SWIPE_EASE : 'power3.inOut', overwrite: 'auto' as const };
       pills.forEach((p, i) => {
         // Compact: the <li> takes its new size at once (the + / icon swap is
         // only ~6px) while the background still eases. A tweening row would
@@ -2151,7 +2164,15 @@ export function AiIntakeSection() {
     }
     let left = padL - (parseFloat(cs.scrollPaddingLeft) || 0);
     for (let el = row.firstElementChild; el && el !== li; el = el.nextElementSibling) left += width(el) + gap;
-    row.scrollTo?.({ left, behavior: reduced ? 'auto' : 'smooth' });
+    // a swipe's step: the row glides on from where the drag left it, with
+    // the track (snap off until it lands, or it would yank the row)
+    if (swipeCommitRef.current && !reduced) {
+      row.style.scrollSnapType = 'none';
+      gsap.to(row, { scrollLeft: left, duration: SWIPE_SLIDE_MS / 1000, ease: SWIPE_EASE, overwrite: true, onComplete: () => { row.style.scrollSnapType = ''; } });
+    } else {
+      row.scrollTo?.({ left, behavior: reduced ? 'auto' : 'smooth' });
+    }
+    swipeCommitRef.current = null;
   }, [isCompact, expandedAiCard, viewerResizeTick]);
 
   // Cursor position for a pill's hover glow layers, written straight to the
@@ -2192,6 +2213,106 @@ export function AiIntakeSection() {
   };
 
   const viewerIndex = aiCards.findIndex(c => c.id === expandedAiCard);
+  // Compact (phones): drag the step track sideways. It follows the finger
+  // (resisting past either end), so the next / previous step's content and
+  // demo are pulled in beside the current one, and the pill row scrolls
+  // along toward that step's pill. Let go far enough and the track slides
+  // the rest of the way and that step becomes the current one; otherwise it
+  // springs back. Not from the pill row, which scrolls sideways itself; a
+  // mostly vertical drag stays the page's scroll (the drag locks to one
+  // axis on its first few pixels).
+  const swipeRef = useRef<{ x: number; y: number; lock: 'x' | 'y' | null } | null>(null);
+  const swipeTrackRef = useRef<HTMLDivElement>(null);
+  const setTrack = (px: number, animate: boolean) => {
+    const tr = swipeTrackRef.current;
+    if (!tr) return;
+    tr.style.transition = animate ? `transform ${SWIPE_SLIDE_MS}ms ${SWIPE_EASE_CSS}` : 'none';
+    // (the resting offset, the centre slide in view, is the CSS one)
+    tr.style.transform = px ? `translateX(calc(-100% - var(--swipe-gap) + ${px}px))` : '';
+  };
+  // the row's scroll position that puts a pill at its left edge (as the
+  // compact row-scroll effect above does)
+  const pillLeft = (row: HTMLElement, li: Element) => {
+    const cs = getComputedStyle(row);
+    const gap = parseFloat(cs.columnGap) || 0;
+    let left = (parseFloat(cs.paddingLeft) || 0) - (parseFloat(cs.scrollPaddingLeft) || 0);
+    for (let el = row.firstElementChild; el && el !== li; el = el.nextElementSibling) {
+      left += (el.querySelector<HTMLElement>('.ai-pill-open')?.offsetWidth ?? (el as HTMLElement).offsetWidth) + gap;
+    }
+    return left;
+  };
+  // the pill row follows the drag: part way from the current pill to the
+  // one the drag heads for (snap off meanwhile, or it would fight)
+  const syncPills = (progress: number) => {
+    const i = Math.max(viewerIndex, 0);
+    const cur = pillRefs.current.get(aiCards[i].id);
+    const row = cur?.parentElement;
+    const target = aiCards[i + (progress < 0 ? -1 : 1)];
+    const to = target && pillRefs.current.get(target.id);
+    if (!cur || !row || !to) return;
+    row.style.scrollSnapType = 'none';
+    const from = pillLeft(row, cur);
+    row.scrollTo?.({ left: from + (pillLeft(row, to) - from) * Math.min(Math.abs(progress), 1), behavior: 'instant' as ScrollBehavior });
+  };
+  const releasePills = (back: boolean) => {
+    const i = Math.max(viewerIndex, 0);
+    const cur = pillRefs.current.get(aiCards[i].id);
+    const row = cur?.parentElement;
+    if (!cur || !row) return;
+    // back to the current pill with the track's spring-back (time, curve)
+    gsap.to(row, { scrollLeft: pillLeft(row, cur), duration: back ? SWIPE_SLIDE_MS / 1000 : 0, ease: SWIPE_EASE, overwrite: true, onComplete: () => { row.style.scrollSnapType = ''; } });
+  };
+  // a new current step: the track back to its centre slide, at once (the
+  // slide dragged in is now that centre slide, keyed by step)
+  // After a swipe it starts where the drag left that slide and glides the
+  // rest of the way, in step with the pill row.
+  useLayoutEffect(() => {
+    const c = swipeCommitRef.current;
+    if (!c) { setTrack(0, false); return; }
+    setTrack(c.offset, false);
+    void swipeTrackRef.current?.offsetWidth; // commit that start before the glide
+    setTrack(0, true);
+  }, [expandedAiCard]);
+  const onViewerTouchStart = (e: ReactTouchEvent<HTMLDivElement>) => {
+    const touch = e.touches[0];
+    swipeRef.current = isCompact && e.touches.length === 1 && !(e.target as HTMLElement).closest('.ai-viewer-rail')
+      ? { x: touch.clientX, y: touch.clientY, lock: null } : null;
+  };
+  const onViewerTouchMove = (e: ReactTouchEvent<HTMLDivElement>) => {
+    const s = swipeRef.current;
+    const touch = e.touches[0];
+    if (!s || !touch) return;
+    const dx = touch.clientX - s.x, dy = touch.clientY - s.y;
+    if (!s.lock && Math.hypot(dx, dy) > 8) s.lock = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+    if (s.lock !== 'x') return;
+    const i = Math.max(viewerIndex, 0);
+    const atEnd = (dx < 0 && i >= aiCards.length - 1) || (dx > 0 && i <= 0);
+    setTrack(atEnd ? dx * 0.3 : dx, false);
+    if (!atEnd) syncPills(-dx / (swipeTrackRef.current?.offsetWidth || 360));
+  };
+  const onViewerTouchEnd = (e: ReactTouchEvent<HTMLDivElement>) => {
+    const s = swipeRef.current;
+    swipeRef.current = null;
+    const touch = e.changedTouches[0];
+    if (!s || !touch || s.lock !== 'x') return;
+    const dx = touch.clientX - s.x;
+    const to = swipeStep(dx, touch.clientY - s.y, Math.max(viewerIndex, 0), aiCards.length);
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    if (to === null) { setTrack(0, !reduced); releasePills(true); return; }
+    if (reduced) { releasePills(false); openStep(aiCards[to].id); return; }
+    // That step becomes the current one now; its slide (now the centre one)
+    // starts where the drag left it (one slide plus the gap over) and the
+    // track, pill row and highlight settle together (see the layout effect).
+    const tr = swipeTrackRef.current;
+    const w = (tr?.offsetWidth ?? 360) + (tr ? parseFloat(getComputedStyle(tr).columnGap) || 0 : 0);
+    swipeCommitRef.current = { offset: dx < 0 ? dx + w : dx - w };
+    swipeMorphRef.current = true;
+    openStep(aiCards[to].id);
+  };
+  const onViewerTouchCancel = () => {
+    if (swipeRef.current?.lock === 'x') { setTrack(0, true); releasePills(true); }
+    swipeRef.current = null;
+  };
   const aiViewer = (
     // One card holds both the pill rail and the demo (Apple's viewer keeps
     // its controls inside the product stage); its glow follows the open step.
@@ -2201,6 +2322,10 @@ export function AiIntakeSection() {
       className={`ai-viewer rise-card${isCompact ? ' is-compact' : ''}`}
       ref={viewerRef}
       data-accent={aiCards[Math.max(viewerIndex, 0)].variant}
+      onTouchStart={onViewerTouchStart}
+      onTouchMove={onViewerTouchMove}
+      onTouchEnd={onViewerTouchEnd}
+      onTouchCancel={onViewerTouchCancel}
     >
       {/* The card's surface (fill, blur, border stroke) when notched: the
           clip sits on this untransformed layer, not on the viewer, whose
@@ -2312,22 +2437,43 @@ export function AiIntakeSection() {
           the pill row and above the app window (no unfolding card). The
           pill already carries the icon, step and title, so only the text;
           the step's badge sits on the viewer frame's top edge instead. */}
-      {isCompact && viewerIndex >= 0 && (() => {
-        const card = aiCards[viewerIndex];
-        return (
-          <div className="ai-compact-summary" aria-live="polite">
-            <p>{card.summary}</p>
-            {card.tags && (
-              <div className="ai-tags">
-                {card.tags.map(tag => <span key={tag} className="ai-tag">{tag}</span>)}
-              </div>
-            )}
+      {isCompact ? (
+        // Compact: the previous, current and next steps side by side on one
+        // track (content + demo each), the current one in view; a sideways
+        // drag moves the whole track, so the neighbour is pulled in with it.
+        // Slides are keyed by step, so after a swipe the one dragged in
+        // stays the same element as it becomes the current one.
+        <div className="ai-swipe">
+          <div className="ai-swipe-track" ref={swipeTrackRef}>
+            {[viewerIndex - 1, Math.max(viewerIndex, 0), viewerIndex + 1].map((i, slot) => {
+              const card = aiCards[i];
+              const peek = slot !== 1;
+              if (!card || (peek && viewerIndex < 0)) return <div key={`end-${slot}`} className="ai-swipe-slide" aria-hidden="true" />;
+              return (
+                <div key={card.id} className={`ai-swipe-slide${peek ? ' is-peek' : ''}`} aria-hidden={peek || undefined} inert={peek}>
+                  {(peek || viewerIndex >= 0) && (
+                    <div className={peek ? 'ai-peek-summary' : 'ai-compact-summary'} aria-live={peek ? undefined : 'polite'}>
+                      <p>{card.summary}</p>
+                      {card.tags && (
+                        <div className="ai-tags">
+                          {card.tags.map(tag => <span key={tag} className="ai-tag">{tag}</span>)}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="ai-stage">
+                    <AiAppStage steps={aiCards} active={peek ? card.id : expandedAiCard} peek={peek} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        );
-      })()}
-      <div className="ai-stage">
-        <AiAppStage steps={aiCards} active={expandedAiCard} />
-      </div>
+        </div>
+      ) : (
+        <div className="ai-stage">
+          <AiAppStage steps={aiCards} active={expandedAiCard} />
+        </div>
+      )}
     </div>
     </div>
   );

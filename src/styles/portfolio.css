@@ -3065,7 +3065,7 @@
       justify-self: start;
       width: max-content;
       /* leave the card's right band at least ~40px past the notch */
-      max-width: calc(100% - var(--ng) - var(--nr) - 24px);
+      max-width: min(calc(100% - var(--ng) - var(--nr) - 24px), var(--tray-cap, 100%));
       margin-top: 0;
       z-index: 3;
     }
@@ -3960,13 +3960,16 @@
 
     .bento-point { display: contents; }
 
-    /* Chinese wraps at punctuation and spaces, not mid-word (莫|蘭迪).
-       Not on phones: the column is too narrow, every comma would break. */
-    @media (min-width: 768px) {
-      .bento-point > span:last-child {
-        word-break: keep-all;
-        overflow-wrap: anywhere;
-      }
+    /* Chinese wraps at punctuation and spaces, not mid-word (莫|蘭迪),
+       phones too: a phrase that still can't fit breaks anywhere rather
+       than running past the card. */
+    .bento-point > span:last-child,
+    .about-lead,
+    .bento-text {
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      /* no lone word left on a last line */
+      text-wrap: pretty;
     }
 
     /* the row label: a small capsule with an icon, sitting on the row's
@@ -7209,7 +7212,8 @@
       font-size: 10px;
       padding: 2px 8px;
       border-radius: 9999px;
-      background: color-mix(in oklab, color-mix(in srgb, var(--ph, #000) 25%, #000) 82%, #fff);
+      /* a little see-through (70%), so the photo shows faintly */
+      background: color-mix(in oklab, color-mix(in oklab, color-mix(in srgb, var(--ph, #000) 25%, #000) 82%, #fff) 70%, transparent);
       border: 1px solid rgba(255, 255, 255, 0.25);
       color: #fff;
     }
@@ -12825,7 +12829,8 @@
       color: var(--text);
     }
     .ai-pill-inner p,
-    .ai-compact-summary p {
+    .ai-compact-summary p,
+    .ai-peek-summary p {
       margin: 12px 0 14px;
       font-family: var(--font);
       font-size: 13.5px;
@@ -12833,7 +12838,8 @@
       color: var(--text-50);
     }
     .ai-pill-inner .ai-tags,
-    .ai-compact-summary .ai-tags { margin-top: 0; }
+    .ai-compact-summary .ai-tags,
+    .ai-peek-summary .ai-tags { margin-top: 0; }
 
     .ai-viewer-nav {
       order: -1;
@@ -12999,6 +13005,7 @@
        content printed straight under it (.ai-compact-summary — no unfolding
        card), then the app-window stage. */
     .ai-compact-summary,
+    .ai-peek-summary,
     .ai-pill-icon { display: none; }
 
     @media (max-width: 960px) {
@@ -13093,11 +13100,36 @@
       .ai-pill-icon svg { width: 18px; height: 18px; }
 
       /* The current step's content: under the row, above the window. */
-      .ai-compact-summary {
+      .ai-compact-summary,
+      .ai-peek-summary {
         display: block;
         padding: 0 6px;
       }
-      .ai-compact-summary p { margin-top: 0; }
+      :is(.ai-compact-summary, .ai-peek-summary) p { margin-top: 0; }
+      /* The steps on one sideways track (SkillsSection's swipe): previous,
+         current, next, each the frame's content width, --swipe-gap apart;
+         the current one in view. The track is cut at the content box's
+         sides. The browser keeps the vertical scroll, the sideways drag is
+         the swipe's. */
+      .ai-swipe {
+        --swipe-gap: 24px;
+        overflow-x: clip;
+        touch-action: pan-y;
+      }
+      .ai-swipe-track {
+        display: flex;
+        gap: var(--swipe-gap);
+        transform: translateX(calc(-100% - var(--swipe-gap)));
+      }
+      /* the step's content above its window, spaced as the viewer spaces
+         its own rows (gap above) */
+      .ai-swipe-slide {
+        flex: 0 0 100%;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
       /* The step's badge rides the viewer frame's top edge (the outermost
          card), like the desktop card's .ai-focal-badge overhang. */
       .ai-viewer > .ai-stage-badge {

@@ -235,11 +235,24 @@ describe('How I Use AI — compact viewer (≤960px, Apple phone layout)', () =>
     // no pill ever unfolds into a card on compact
     expect(container.querySelectorAll('.ai-pill.is-open')).toHaveLength(0);
     expect(pill('sources').getAttribute('aria-expanded')).toBe('false');
-    // the summary sits between the pill row and the stage
+    // the summary sits under the pill row, above the stage, on the current
+    // slide of the swipe track (the next step's slide peeks beside it)
     const summary = q('.ai-compact-summary')!;
     expect(summary.textContent).toContain(cardText(q, 'sources'));
-    expect(summary.previousElementSibling!.classList.contains('ai-viewer-rail')).toBe(true);
+    const slide = summary.parentElement!;
+    expect(slide.classList.contains('ai-swipe-slide')).toBe(true);
+    expect(slide.classList.contains('is-peek')).toBe(false);
     expect(summary.nextElementSibling!.classList.contains('ai-stage')).toBe(true);
+    expect(slide.closest('.ai-swipe')!.previousElementSibling!.classList.contains('ai-viewer-rail')).toBe(true);
+    const slides = [...container.querySelectorAll('.ai-swipe-slide')];
+    expect(slides).toHaveLength(3);
+    expect(slides[1]).toBe(slide);
+    // the next step peeks: a still copy, hidden from assistive tech, no ids
+    expect(slides[2].classList.contains('is-peek')).toBe(true);
+    expect(slides[2].getAttribute('aria-hidden')).toBe('true');
+    expect(slides[2].hasAttribute('inert')).toBe(true);
+    expect(slides[2].querySelector('[id^="ai-stage-"]')).toBeNull();
+    expect(slides[2].querySelector('.ai-peek-summary')!.textContent).toContain(cardText(q, 'intake'));
   });
 
   it('tapping a pill swaps the content under the row and the stage, without unfolding', () => {

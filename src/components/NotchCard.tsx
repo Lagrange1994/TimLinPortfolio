@@ -41,6 +41,16 @@ export default function NotchCard({ area, className, notch, children, side = 'le
     const rg = ring.current, g = glow.current;
     if (!w || !c || !el || !s || !p || !rg || !g) return;
     const sync = () => {
+      // A tag tray too long for its card scrolls sideways: cap it at two
+      // tags and half the third, so the cut-off tag shows there's more.
+      const tags = [...el.children].filter(c => c.classList.contains('about-proof-tag')) as HTMLElement[];
+      el.style.removeProperty('--tray-cap');
+      if (tags.length > 2 && el.scrollWidth > el.clientWidth + 1) {
+        const ts = getComputedStyle(el);
+        const gap = parseFloat(ts.columnGap) || 0;
+        const pad = (parseFloat(ts.paddingLeft) || 0) + (parseFloat(ts.borderLeftWidth) || 0);
+        el.style.setProperty('--tray-cap', `${pad + tags[0].offsetWidth + gap + tags[1].offsetWidth + gap + tags[2].offsetWidth / 2}px`);
+      }
       const tw = el.offsetWidth, th = el.offsetHeight;
       w.style.setProperty('--tw', tw + 'px');
       w.style.setProperty('--th', th + 'px');

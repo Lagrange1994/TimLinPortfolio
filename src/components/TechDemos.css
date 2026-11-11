@@ -271,9 +271,12 @@
   opacity: 0;
 }
 
+/* the reply takes the rest of the chat column, so the AI's dark answer
+   panel ends level with the dark preview panel beside it */
 .td-reply {
   position: relative;
   display: grid;
+  flex: 1;
 }
 
 .td-reply > * { grid-area: 1 / 1; }
