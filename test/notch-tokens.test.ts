@@ -34,4 +34,17 @@ describe('notch size system', () => {
     expect(wall).toContain('const LEG_GAP_PADDING = NOTCH_GAP;');
     expect(wall).toContain('isDesktopBreakpoint ? NOTCH_TURN :');
   });
+
+  it('info cards share one padding and one hover lift', () => {
+    expect(css).toContain('--card-pad: 24px;');
+    expect(css).toContain('--card-lift: -4px;');
+    const block = (sel: string) => css.match(new RegExp(String.raw`\n    \.${sel} \{[^}]*\}`))?.[0] ?? '';
+    for (const sel of ['bento-card', 'tech-item', 'line-banner', 'contact-card']) {
+      expect(block(sel), sel).toContain('padding: var(--card-pad);');
+    }
+    expect(block('cta-strip')).toContain('padding: 18px var(--card-pad);');
+    for (const sel of ['bento-card', 'process-card', 'line-banner', 'contact-card', 'cta-strip']) {
+      expect(block(`${sel}:hover`), sel).toContain('transform: translateY(var(--card-lift));');
+    }
+  });
 });

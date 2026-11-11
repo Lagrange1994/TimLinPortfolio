@@ -209,9 +209,11 @@ describe('About content', () => {
     expect(tsx).not.toMatch(/about-float|about-orbit/);
     expect(css).not.toMatch(/\.about-float|\.about-orbit/);
     expect(css).toMatch(/\.tool-logo \{[^}]*width: 1\.05em;/);
-    // the workflow card's step chips start right of the notch button,
-    // left-aligned, their top edge level with the button's top
-    expect(css).toMatch(/\.bento-area-workflow \.ai-flow-stepper \{\s*align-self: flex-start;\s*justify-content: flex-start;\s*margin-left: calc\(var\(--nw\) - 12px\);\s*max-width: calc\(100% \+ 12px - var\(--nw\)\);\s*margin-bottom: calc\(-1 \* \(var\(--th\) \+ 24px\) \+ \(var\(--th\) - 28px\)\);/);
+    // the workflow card's button sits in the bottom-right notch; the step
+    // chips start at the card's left padding, left of the notch, their top
+    // edge level with the button's top
+    expect(tsx).toMatch(/area="bento-area-workflow"\s*side="right"/);
+    expect(css).toMatch(/\.bento-area-workflow \.ai-flow-stepper \{\s*align-self: flex-start;\s*justify-content: flex-start;\s*margin-left: 0;\s*max-width: calc\(100% \+ 12px - var\(--nw\)\);\s*margin-bottom: calc\(-1 \* \(var\(--th\) \+ 24px\) \+ \(var\(--th\) - 28px\)\);/);
     // step chips the size of the project tags: a fixed 28px, 12.5px text
     expect(css).toMatch(/\.bento-area-workflow \.afs-step \{\s*gap: 6px;\s*box-sizing: border-box;\s*height: 28px;\s*padding: 0 12px;/);
     expect(css).toMatch(/\.bento-area-workflow \.afs-label-sep \{\s*font-size: 12\.5px;\s*line-height: 1\.3;/);
@@ -314,10 +316,10 @@ describe('About content', () => {
     expect(block).toMatch(/"profile intro intro stats stats"\s*"profile intro intro stats stats"/);
     expect(block).toMatch(/\.about-col--intro,\s*\.about-col--stats \{\s*grid-template-rows: subgrid;/);
     // the profile column stops at the intro/stats band: the photo keeps its
-    // ratio, the availability card its content height, a free slot below;
-    // the workflow card runs the full width
+    // ratio, the availability card takes the rest; the workflow card runs
+    // the full width
     expect(block).toMatch(/"profile intro intro stats stats"\s*"workflow workflow workflow workflow workflow"/);
-    expect(block).toMatch(/\.about-col--profile \{\s*grid-template-rows: auto auto 1fr;\s*grid-template-areas: "photo" "cta" "slot";/);
+    expect(block).toMatch(/\.about-col--profile \{\s*grid-template-rows: auto 1fr;\s*grid-template-areas: "photo" "cta";/);
     expect(block).not.toContain('.about-photo .pc-card');
   });
 
@@ -357,25 +359,30 @@ describe('About content', () => {
     expect(css).toContain(':root[data-theme="light"] .about-notch:not(:has(> .has-notch)) { filter: none; }');
   });
 
-  // the slot under the availability card: GitHub and Email, buttons only,
-  // the same links as Contact's; desktop only
-  it('the profile column ends in GitHub / Email link buttons on desktop', () => {
+  // one availability card: the status, four rows (terms, reply time, what
+  // I'm working on now), and its three actions together in the
+  // bottom-right notch; the links are the same as Contact's
+  it('the availability card holds the links, the reply time and Now', () => {
     const contact = readFileSync(resolve(root, 'src/components/ContactSection.tsx'), 'utf8');
     const url = tsx.match(/const GITHUB_URL = '([^']+)';/)![1];
     const email = tsx.match(/const EMAIL = '([^']+)';/)![1];
     expect(contact).toContain(`href="${url}"`);
     expect(contact).toContain(`mailto:${email}`);
-    // the two buttons in one row first, then a dated "Now" card
+    expect(contact).toContain('24h Avg. Response');
     expect(tsx).toMatch(/const NOW_UPDATED = '\d{4}\.\d{2}';/);
-    for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_now).toBeTruthy();
-    expect(tsx).toMatch(/<div className="about-links rise-card">\s*<div className="about-link-row">\s*<a className="about-link-btn" href=\{GITHUB_URL\} target="_blank" rel="noreferrer">[\s\S]*?<a className="about-link-btn" href=\{`mailto:\$\{EMAIL\}`\}>[\s\S]*?<div className="about-now">[\s\S]*?NOW · \{NOW_UPDATED\}[\s\S]*?\{t\.about_now\}/);
-    expect((tsx.match(/className="about-link-btn"/g) ?? []).length).toBe(2);
-    expect(css).toMatch(/\.about-link-row \{\s*display: grid;\s*grid-template-columns: 1fr 1fr;/);
-    // hidden by default, shown in the desktop slot (the later rule wins)
-    const hidden = css.indexOf('.about-links { display: none; }');
-    const shown = css.search(/\.about-links \{\s*grid-area: slot;\s*display: grid;/);
-    expect(hidden).toBeGreaterThan(-1);
-    expect(shown).toBeGreaterThan(hidden);
+    for (const lang of ['zh', 'en'] as const) {
+      for (const k of ['about_now', 'about_now_label', 'about_reply', 'about_reply_label'] as const) expect(translations[lang][k], k).toBeTruthy();
+    }
+    const card = tsx.slice(tsx.indexOf('area="bento-area-cta"'), tsx.indexOf('</NotchCard>', tsx.indexOf('area="bento-area-cta"')));
+    expect(card).toContain('side="right"');
+    // the notch: GitHub, Email, then 聯絡我
+    expect(card).toMatch(/notch=\{<>\s*<a className="about-icon-link" href=\{GITHUB_URL\}[\s\S]*?aria-label="GitHub">[\s\S]*?<a className="about-icon-link" href=\{`mailto:\$\{EMAIL\}`\} aria-label="Email">[\s\S]*?className="about-more btn-glass btn-grad about-cta-btn"[\s\S]*?<\/>\}/);
+    // the rows: the terms, the reply time, then Now
+    expect(card).toMatch(/dangerouslySetInnerHTML=\{\{ __html: t\.about_cta_text \}\}[\s\S]*?\{t\.about_reply_label\}[\s\S]*?\{t\.about_now_label\}[\s\S]*?\{t\.about_now\}[\s\S]*?\{NOW_UPDATED\}/);
+    expect(tsx).not.toContain('about-links');
+    expect(css).not.toMatch(/\.about-links?\b|\.about-link-/);
+    expect(css).toContain('.bento-point-rows { display: contents; }');
+    expect(css).toMatch(/\.about-icon-link \{[^}]*width: 44px;\s*height: 44px;/);
   });
 
   it('card body text is no bigger than the section lead', () => {

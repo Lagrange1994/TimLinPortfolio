@@ -1575,6 +1575,10 @@
       --notch-gap: 12px;
       --notch-text-pad: 16px;
       --notch-turn: 24px;
+      /* every info card: its inner padding, and how far it lifts on hover
+         (buttons lift their own 3px) */
+      --card-pad: 24px;
+      --card-lift: -4px;
     }
 
     /* ══ GLASSMORPHISM SYSTEM ══ */
@@ -2933,52 +2937,76 @@
         grid-template-rows: subgrid;
       }
 
-      /* the availability card at its own content height; the room left
-         under it (down to the intro/stats band's bottom) holds the links */
+      /* the availability card takes the rest of the column, down to the
+         intro/stats band's bottom */
       .about-col--profile {
-        grid-template-rows: auto auto 1fr;
-        grid-template-areas: "photo" "cta" "slot";
+        grid-template-rows: auto 1fr;
+        grid-template-areas: "photo" "cta";
         align-content: stretch;
       }
 
     }
 
-    /* Under the availability card (desktop only: tablet and phone have no
-       room left there, and Contact carries the same links): GitHub and
-       Email as one row of glass capsules (the arrow nudging on hover), then
-       a "Now" card (what I'm working on lately, dated, a live dot). */
-    .about-links { display: none; }
+    /* The availability card (one card, every width): the status, then
+       its rows (terms, and what I'm working on now with a live dot); its
+       actions (GitHub, Email, 聯絡我) together in the bottom-right notch. */
+    .bento-card.about-cta-card { height: 100%; }
 
-    .about-now {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 6px;
-      min-height: 0;
-      padding: 12px 22px;
-      border-radius: 28px;
-      corner-shape: squircle;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: var(--noise-grain) 0 0 / 180px 180px repeat, var(--glass-bg-premium);
-      box-shadow: var(--card-edge);
-      backdrop-filter: blur(1rem);
+    /* four rows: a little more air between them than the intro cards' */
+    .about-cta-card .about-cta-points { row-gap: 12px; margin-top: 16px; }
+
+    /* Tablet: the card runs the full width, so its rows go two to a line
+       (合作 · 地點, then 回覆 · 現在) instead of leaving the right half bare */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      /* (outranks .bento-text.bento-points, which comes later) */
+      .bento-card.about-cta-card .about-cta-points {
+        grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr);
+        column-gap: 14px;
+      }
     }
 
-    .about-now-label {
-      display: inline-flex;
+    /* the terms' rows come as one HTML string: let them join the grid */
+    .bento-point-rows { display: contents; }
+
+    .bento-area-cta > .about-notch-tags {
+      display: flex;
       align-items: center;
       gap: 8px;
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: .14em;
-      color: var(--text-50);
     }
+
+    .about-icon-link {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      flex: none;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: var(--tag-bg);
+      color: var(--text);
+      font-size: 18px;
+      text-decoration: none;
+      transition: transform .25s ease, border-color .3s, box-shadow .3s;
+    }
+
+    .about-icon-link svg { width: 18px; height: 18px; }
+
+    .about-icon-link:hover { transform: translateY(-3px); border-color: rgba(255, 255, 255, 0.28); }
+    .about-icon-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+
+    :root[data-theme="light"] .about-icon-link {
+      color: oklch(from rgb(108, 99, 255) .5 .2 h);
+      background: var(--neu-bg);
+      border-color: transparent;
+      box-shadow: var(--neu-raised-sm);
+    }
+
+    :root[data-theme="light"] .about-icon-link:hover { box-shadow: var(--neu-raised-sm-hover); }
 
     /* live: a soft pulse */
     .about-now-dot {
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: #34d399;
       box-shadow: 0 0 0 0 rgba(52, 211, 153, .55);
@@ -2994,74 +3022,12 @@
       .about-now-dot { animation: none; }
     }
 
-    .about-now-text {
-      font-family: var(--font-heading);
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1.3;
-      color: var(--text);
-    }
-
-    .about-link-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .about-link-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-height: 48px;
-      padding: 0 18px;
-      border-radius: 9999px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: var(--noise-grain) 0 0 / 180px 180px repeat, var(--glass-bg-premium);
-      box-shadow: var(--card-edge);
-      backdrop-filter: blur(1rem);
-      /* plain text in dark mode; light mode turns it the About purple */
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 15px;
-      font-weight: 600;
-      text-decoration: none;
-      transition: transform .25s ease, border-color .3s, box-shadow .3s;
-    }
-
-    .about-link-icon { width: 18px; height: 18px; font-size: 18px; flex: none; }
-
-    .about-link-name { flex: 1; }
-
-    .about-link-arrow {
-      font-size: 18px;
-      transition: transform .2s ease;
-    }
-
-    :root[data-theme="light"] .about-link-btn { color: oklch(from rgb(108, 99, 255) .5 .2 h); }
-
-    .about-link-btn:hover { transform: translateY(-3px); border-color: rgba(255, 255, 255, 0.28); }
-    .about-link-btn:hover .about-link-arrow { transform: translateX(3px); }
-    .about-link-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-
-    :root[data-theme="light"] .about-now,
-    :root[data-theme="light"] .about-link-btn {
-      background: var(--neu-bg);
-      border-color: transparent;
-      box-shadow: var(--neu-raised-sm);
-      backdrop-filter: none;
-    }
-
-    :root[data-theme="light"] .about-link-btn:hover { box-shadow: var(--neu-raised-sm-hover); }
-
-    @media (min-width: 1025px) {
-      /* after the hidden-by-default rule above, so it wins */
-      .about-links {
-        grid-area: slot;
-        display: grid;
-        grid-template-rows: auto 1fr;
-        gap: 12px;
-        min-height: 0;
-      }
+    .about-now-date {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .06em;
+      color: var(--text-50);
+      white-space: nowrap;
     }
 
     .bento-area-p1 { grid-area: p1; }
@@ -3612,19 +3578,20 @@
       .stat-glass-icon i { font-size: 40px; }
     }
 
-    /* About's AI workflow card: the step chips start just right of the
-       notch button, left-aligned, their top edge level with the button's
+    /* About's AI workflow card: the button sits in the bottom-right notch
+       (a card's action always does); the step chips run along the bottom
+       from the card's left padding, their top edge level with the button's
        top. Chips are a fixed 28px tall (the project tags' height), so the
        stepper's last row bottom goes at (--th - 28px) above the card's
        bottom: the margin cancels the card's notch padding
        (--nh + 14px = --th + 24px) and adds that back. Wrapped rows grow
-       upward. margin-left / max-width keep it in the band right of the
-       notch (card padding is 24px; 12px gap after the notch). Phones: too
-       narrow beside the notch, so the chips stay above it. */
+       upward. max-width keeps it in the band left of the notch (card
+       padding is 24px; 12px gap before the notch). Phones: too narrow
+       beside the notch, so the chips stay above it. */
     .bento-area-workflow .ai-flow-stepper {
       align-self: flex-start;
       justify-content: flex-start;
-      margin-left: calc(var(--nw) - 12px);
+      margin-left: 0;
       max-width: calc(100% + 12px - var(--nw));
       margin-bottom: calc(-1 * (var(--th) + 24px) + (var(--th) - 28px));
       /* minimum gap under the copy when the card is only as tall as its
@@ -3756,7 +3723,7 @@
       position: relative;
       border-radius: 48px;
       corner-shape: squircle;
-      padding: 24px;
+      padding: var(--card-pad);
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -3764,7 +3731,7 @@
     }
 
     .bento-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(var(--card-lift));
     }
 
     /* ── HOVER RADAR RING ──
@@ -4119,9 +4086,8 @@
     }
 
     /* The workflow card's action (See the full workflow): a secondary
-       button, the same glass pill as the GitHub / Email links
-       (.about-link-btn), so 聯絡我 stays the section's one primary
-       action. Sits in the card's bottom-left notch. */
+       button, the same glass pill as the Contact links, so 聯絡我 stays the section's one primary
+       action. Sits in the card's bottom-right notch. */
     .about-action {
       display: inline-flex;
       align-items: center;
@@ -4438,7 +4404,7 @@
     .process-card:hover {
       border-color: rgba(108, 99, 255, 0.4);
       background: var(--glass-bg-hov);
-      transform: translateY(-3px);
+      transform: translateY(var(--card-lift));
     }
 
     /* .card-hover-shadow here is JS-injected (see SkillsSection.tsx's
@@ -5748,7 +5714,7 @@
       height: 100%;
       border-radius: 48px;
       corner-shape: squircle;
-      padding: 24px;
+      padding: var(--card-pad);
       display: flex;
       flex-direction: column;
       box-shadow: var(--card-shadow-md), var(--card-edge);
@@ -7616,7 +7582,7 @@
       border: none;
       border-radius: 48px;
       corner-shape: squircle;
-      padding: 24px 28px;
+      padding: var(--card-pad);
       display: grid;
       grid-template-columns: 52px 1fr auto;
       gap: 20px;
@@ -7637,7 +7603,7 @@
     }
 
     .line-banner:hover {
-      transform: translateY(-4px);
+      transform: translateY(var(--card-lift));
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.16),
         0 8px 20px rgba(6, 199, 85, 0.24),
@@ -7788,13 +7754,13 @@
       position: relative;
       border-radius: 48px;
       corner-shape: squircle;
-      padding: 22px;
+      padding: var(--card-pad);
       box-shadow: var(--card-shadow-md), var(--card-edge);
       transition: transform .25s ease, border-color .25s ease;
     }
 
     .contact-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(var(--card-lift));
       border-color: var(--border-hi);
     }
 
@@ -7941,7 +7907,7 @@
       border: 1px solid rgba(108, 99, 255, 0.25);
       border-radius: 48px;
       corner-shape: squircle;
-      padding: 18px 22px;
+      padding: 18px var(--card-pad);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -7952,7 +7918,7 @@
     }
 
     .cta-strip:hover {
-      transform: translateY(-3px);
+      transform: translateY(var(--card-lift));
       border-color: rgba(108, 99, 255, 0.4);
     }
 
