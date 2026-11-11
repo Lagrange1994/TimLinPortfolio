@@ -449,6 +449,8 @@
          of staying dark islands. */
       --glass-bg: rgba(247, 250, 252, 0.72);
       --glass-bg-hov: rgba(247, 250, 252, 0.92);
+      --tag-bg: rgb(244, 247, 251);
+      --tag-bg-hov: rgb(246, 249, 252);
       --glass-bg-premium: rgba(247, 250, 252, 0.82);
       --glass-border: rgba(23, 15, 45, 0.10);
       --glass-border-hov: rgba(23, 15, 45, 0.22);
@@ -1569,6 +1571,10 @@
     :root {
       --glass-bg: rgba(30, 30, 30, 0.5);
       --glass-bg-hov: rgba(42, 42, 42, 0.65);
+      /* Tags and pills: the glass fill flattened onto the page, so they're
+         opaque (nothing shows through) but read the same */
+      --tag-bg: rgb(22, 21, 27);
+      --tag-bg-hov: rgb(34, 33, 40);
       --glass-bg-premium: rgba(20, 18, 28, 0.72);
       --glass-blur: blur(16px);
       --glass-border: rgba(255, 255, 255, 0.1);
@@ -2794,7 +2800,7 @@
     .tag-capsule:hover {
       color: rgba(255, 255, 255, 1.0);
       border-color: rgba(255, 255, 255, 0.3);
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--glass-bg-hov);
     }
 
     /* Light mode: match .skill-pill's glass style instead of the
@@ -4222,7 +4228,7 @@
     :root[data-theme="light"] .about-notch > .about-notch-badge {
       /* a faint tint and coloured text, no shadow — the tint mixed into
          the card's own fill, so it's opaque, not see-through */
-      background: color-mix(in oklab, rgb(var(--tone)) 8%, var(--neu-bg));
+      background: color-mix(in oklab, rgb(var(--tone)) 18%, var(--neu-bg));
       border: 1px solid transparent;
       color: oklch(from rgb(var(--tone)) .45 .17 h);
       box-shadow: none;
@@ -4459,7 +4465,10 @@
          img/process/*_w.webp: lines ≈ 232,234,248, panels ≈ 128,132,176)
          on the card's own opaque dark, so the border line stops behind it */
       background: #0d0a1c;
-      border: 1px solid rgb(72, 74, 110);
+      /* as bright as the card's top edge where it meets the badge: the
+         .14 border plus the glass highlight line (.card-glass-highlight,
+         peak .32) over it, so the two lines read as one */
+      border: 1px solid rgba(255, 255, 255, 0.3);
       color: rgb(214, 218, 242);
       font-family: var(--mono);
       font-size: 10px;
@@ -4700,7 +4709,9 @@
        illustrations' line blue (sampled from img/process/*_l_w.webp); the
        tint is mixed into the card's white, so it's opaque */
     :root[data-theme="light"] .process-step-badge {
-      background: color-mix(in oklab, rgb(30, 100, 215) 8%, #fff);
+      /* 8% sat right on the page's grey-white (#EDF1F7): a stronger tint
+         keeps it apart from the page (no border) */
+      background: color-mix(in oklab, rgb(30, 100, 215) 18%, #fff);
       border: 1px solid transparent;
       color: rgb(30, 100, 215);
       box-shadow: none;
@@ -4787,7 +4798,7 @@
     .policy-pill:hover {
       color: var(--text);
       border-color: var(--border-hi);
-      background: rgba(108, 99, 255, 0.1);
+      background: color-mix(in oklab, rgb(108, 99, 255) 10%, var(--tag-bg));
     }
 
     /* Chat-bubble popover — anchored under the pill (not a fixed/full-page
@@ -8996,6 +9007,17 @@
       background-size: 180px 180px;
       border: 1px solid var(--glass-border);
     }
+    /* Tags and pills are opaque in both themes: every rule that fills them
+       with the glass tokens picks up the flat tag fill instead. */
+    .skill-pill,
+    .tag-capsule,
+    .ai-chip,
+    .pill,
+    .policy-pill,
+    .ai-tag {
+      --glass-bg: var(--tag-bg);
+      --glass-bg-hov: var(--tag-bg-hov);
+    }
 
     /* Portfolio photo tiles: no border. It traced border-radius:16px while
        the JS squircle clip-path (44px) cuts the corners, so the hairline
@@ -10982,7 +11004,7 @@
     .ai-focal h3{font-size:24px}
     .ai-card>p{margin:10px 0 14px;font-size:13.5px;line-height:1.55;color:var(--text-50);flex:1;font-family:var(--font)}
     .ai-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
-    .ai-tag{font-family:var(--font-code);font-size:10.5px;padding:3px 10px;border-radius:999px;color:#9A93B0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);letter-spacing:.02em}
+    .ai-tag{font-family:var(--font-code);font-size:10.5px;padding:3px 10px;border-radius:999px;color:#9A93B0;background:var(--glass-bg);border:1px solid rgba(255,255,255,.1);letter-spacing:.02em}
     :root[data-theme="light"] .ai-tag{color:var(--text-70);border-color:var(--glass-border)}
     /* HBadge (SkillsSection.tsx BADGE_COLORS) — every variant is a literal
        Tailwind utility string (bg-*-400/15, text-*-300, or plain white/N for
@@ -12184,17 +12206,17 @@
     }
     /* faint tint mixed into the card's fill: opaque, not see-through */
     :root[data-theme="light"] .tech-level-badge.html-item {
-      background: color-mix(in oklab, rgb(59, 130, 246) 8%, var(--neu-bg)) !important;
+      background: color-mix(in oklab, rgb(59, 130, 246) 18%, var(--neu-bg)) !important;
       border: 1px solid transparent !important;
       color: #2563EB !important;
     }
     :root[data-theme="light"] .tech-level-badge.js-item {
-      background: color-mix(in oklab, rgb(249, 115, 22) 8%, var(--neu-bg)) !important;
+      background: color-mix(in oklab, rgb(249, 115, 22) 18%, var(--neu-bg)) !important;
       border: 1px solid transparent !important;
       color: #C2410C !important;
     }
     :root[data-theme="light"] .tech-level-badge.react-item {
-      background: color-mix(in oklab, rgb(108, 99, 255) 8%, var(--neu-bg)) !important;
+      background: color-mix(in oklab, rgb(108, 99, 255) 18%, var(--neu-bg)) !important;
       border: 1px solid transparent !important;
       color: #4C46B6 !important;
     }
