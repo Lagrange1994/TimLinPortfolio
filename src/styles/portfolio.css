@@ -12986,6 +12986,23 @@
       box-shadow: var(--neu-raised);
     }
 
+    /* TRIAL (SkillsSection AI_VIEWER_NOTCH): no stage card under the viewer
+       — the rail and the app window sit straight on the section, the
+       columns flush with the headline's left edge (on phones the pill
+       row's -16px bleed then reaches the screen edges). */
+    .ai-viewer.is-bare,
+    :root[data-theme="light"] .ai-viewer.is-bare {
+      background: none;
+      backdrop-filter: none;
+      border-color: transparent;
+      box-shadow: none;
+    }
+    /* no card to pad: the viewer rises up under the subtitle */
+    .ai-viewer.is-bare { padding: 0; margin-top: 40px; }
+    @media (max-width: 960px) {
+      .ai-viewer.is-bare { margin-top: 32px; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .ai-rail-spark,
       .ai-pill-node::before,

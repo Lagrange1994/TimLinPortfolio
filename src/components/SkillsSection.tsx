@@ -77,6 +77,10 @@ const SWIPE_EASE_CSS = 'cubic-bezier(.33, 1, .68, 1)';
 // The headline sits in the viewer's notch, so it rises glued to the card
 // (useRiseReveal's data-rise-lock), not on its own beat.
 const AI_HEAD_RIDE = { 'data-rise-with': '.ai-viewer', 'data-rise-lock': '' };
+// TRIAL: the viewer without its stage card (no notch, no fill / border /
+// shadow, .ai-viewer.is-bare): the rail and the app window sit straight on
+// the section. Flip to true to restore the notched stage.
+const AI_VIEWER_NOTCH = false;
 // When the Operating Principle panel starts fading in during the Human
 // Review timeline (see toggle() in the card map) — shared so the quote
 // typewriter effect below can start right after, without duplicating the
@@ -2039,7 +2043,7 @@ export function AiIntakeSection() {
   useLayoutEffect(() => {
     const v = viewerRef.current, l = aiLabelRef.current, t = aiTitleRef.current, s = aiSubRef.current;
     const svg = aiOutlineRef.current, p = aiOutlinePathRef.current;
-    if (!isViewer || !v || !l || !t || !s || !svg || !p) return;
+    if (!AI_VIEWER_NOTCH || !isViewer || !v || !l || !t || !s || !svg || !p) return;
     return attachStageNotch(v, l, t, s, svg, p);
   }, [isViewer]);
 
@@ -2319,7 +2323,7 @@ export function AiIntakeSection() {
     // The shell casts the card's shadow, which the notch clip would cut.
     <div className="ai-viewer-shell">
     <div
-      className={`ai-viewer rise-card${isCompact ? ' is-compact' : ''}`}
+      className={`ai-viewer rise-card${isCompact ? ' is-compact' : ''}${AI_VIEWER_NOTCH ? '' : ' is-bare'}`}
       ref={viewerRef}
       data-accent={aiCards[Math.max(viewerIndex, 0)].variant}
       onTouchStart={onViewerTouchStart}
