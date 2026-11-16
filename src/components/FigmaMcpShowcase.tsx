@@ -328,6 +328,12 @@ const CODE_CARD_HTML = `
 // as if unscaled, and the wrapper's height is simply that measured height
 // times the same scale factor. No hand-picked pixel values anywhere.
 const MCP_DESIGN_WIDTH = 640;
+// Tablets show the desktop mockup itself, shrunk: the grid laid out at the
+// 1440px screen's width (Pages sidebar, file tree and tabs all there) and
+// scaled down, so it keeps the desktop's proportions instead of squeezing
+// the two cards into near-squares.
+const MCP_TABLET_DESIGN_WIDTH = 1344;
+const MCP_TABLET_MQ = '(min-width: 768px) and (max-width: 1024px)';
 
 // header: the section's "Figma MCP" heading. It renders inside the pinned
 // frame so it stays on screen (upper quarter) while the zoom plays.
@@ -353,15 +359,16 @@ export default function FigmaMcpShowcase({ header }: { header?: ReactNode } = {}
     // below, scaled or not.
     const sync = () => {
       const w = wrap.clientWidth;
-      const scaling = w < MCP_DESIGN_WIDTH;
+      const design = window.matchMedia?.(MCP_TABLET_MQ).matches ? MCP_TABLET_DESIGN_WIDTH : MCP_DESIGN_WIDTH;
+      const scaling = w < design;
       if (!scaling) {
         grid.style.transform = '';
         grid.style.width = '';
         wrap.style.height = '';
         return;
       }
-      const scale = w / MCP_DESIGN_WIDTH;
-      grid.style.width = `${MCP_DESIGN_WIDTH}px`;
+      const scale = w / design;
+      grid.style.width = `${design}px`;
       grid.style.transform = `scale(${scale})`;
       wrap.style.height = `${grid.offsetHeight * scale}px`;
     };
@@ -426,7 +433,12 @@ export default function FigmaMcpShowcase({ header }: { header?: ReactNode } = {}
       card.style.animation = '';
       if (!f.width || !c.width) return;
       const rel = (r: DOMRect) => ({ x: r.left - f.left, y: r.top - f.top, w: r.width, h: r.height });
-      const fit = fitCodeCard({ w: f.width, h: f.height }, rel(z), rel(c), head ? head.top - f.top : z.top - f.top);
+      // tablets centre the pinned group (portfolio.css): centre the close-up
+      // too, clear of the navbar at both ends
+      const centred = !!window.matchMedia?.(MCP_TABLET_MQ).matches;
+      const fit = centred
+        ? fitCodeCard({ w: f.width, h: f.height }, rel(z), rel(c), parseFloat(getComputedStyle(bleed).paddingTop) || 0, true)
+        : fitCodeCard({ w: f.width, h: f.height }, rel(z), rel(c), head ? head.top - f.top : z.top - f.top);
       layer.style.setProperty('--mcp-fit-s', fit.scale.toFixed(4));
       layer.style.setProperty('--mcp-fit-x', `${fit.x.toFixed(1)}px`);
       layer.style.setProperty('--mcp-fit-y', `${fit.y.toFixed(1)}px`);

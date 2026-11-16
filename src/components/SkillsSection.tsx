@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, useRef, useMemo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent, type AnimationEvent as ReactAnimationEvent, type TouchEvent as ReactTouchEvent } from 'react';
+import { useEffect, useId, useLayoutEffect, useState, useRef, useMemo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent, type AnimationEvent as ReactAnimationEvent, type TouchEvent as ReactTouchEvent } from 'react';
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
@@ -752,23 +752,57 @@ function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: 
 }
 
 const PROCESS_VISIBLE = 3;
-// Phones (<768px) page one full-column-width card at a time. Tablet
-// still flattens the carousel into a static grid in CSS, so it keeps
-// PROCESS_VISIBLE.
+// Phones (<768px) page one full-column-width card at a time; tablets run
+// the desktop carousel, three cards a page.
 const PROCESS_VISIBLE_MOBILE = 1;
 const PROCESS_MOBILE_QUERY = '(max-width: 767px)';
+// Tech Stack (mobileOnly) pages one card at a time under its tabs on
+// tablets too.
+export const TECH_CAROUSEL_QUERY = '(max-width: 1024px)';
 
 const STAIR_STEP = 32;
 // The notched containers' border (Design Process, How I Use AI's stage),
 // like the hero frame's: the outline path stroked twice as wide, the svg
 // clipped to the same path (CSS), so an even 1px shows inside every edge.
+// The notched containers' neumorphic inset shadow (light theme): what
+// box-shadow: inset 6px 6px 12px dark, -6px -6px 12px light does on a plain
+// box, along the notched outline, which box-shadow can't follow. The
+// outline filled, and the filter keeps only the inverse shape, offset and
+// blurred, inside it. Its own svg under the content (z-index -1, above the
+// fill), so it never shades what sits in the box.
+export function StageInset({ className }: { className: string }) {
+  // (Design Process has two carousels: one filter id each)
+  const id = `stage-inset-${useId().replace(/:/g, '')}`;
+  return (
+    <svg className={`stage-inset ${className}`} aria-hidden="true">
+      <defs>
+        <filter id={id} x="-10%" y="-10%" width="120%" height="120%" colorInterpolationFilters="sRGB">
+          <feFlood className="si-dark" result="dk" />
+          <feComposite in="dk" in2="SourceAlpha" operator="out" />
+          <feOffset dx="6" dy="6" />
+          <feGaussianBlur stdDeviation="6" />
+          <feComposite in2="SourceAlpha" operator="in" result="shadeDark" />
+          <feFlood className="si-light" result="lt" />
+          <feComposite in="lt" in2="SourceAlpha" operator="out" />
+          <feOffset dx="-6" dy="-6" />
+          <feGaussianBlur stdDeviation="6" />
+          <feComposite in2="SourceAlpha" operator="in" result="shadeLight" />
+          <feMerge><feMergeNode in="shadeDark" /><feMergeNode in="shadeLight" /></feMerge>
+        </filter>
+      </defs>
+      <path fill="#000" filter={`url(#${id})`} />
+    </svg>
+  );
+}
+
 function setOutline(svg: SVGSVGElement | null, w: number, h: number, d: string) {
   if (!svg) return;
   svg.setAttribute('width', String(w));
   svg.setAttribute('height', String(h));
+  // (the inset shadow's svg too: every path takes the outline)
+  svg.querySelectorAll('path').forEach(p => p.setAttribute('d', d));
   const path = svg.querySelector('path');
   if (!path) return;
-  path.setAttribute('d', d);
   // twice the line, the clip keeps the inner half
   path.style.strokeWidth = `${rimPx() * 2}px`;
 }
@@ -827,7 +861,8 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
   variant?: string;
   tabs?: ProcessCarouselTab[];
 }) {
-  const [isMobile, setIsMobile] = useState(() => window.matchMedia(PROCESS_MOBILE_QUERY).matches);
+  const singleQuery = mobileOnly ? TECH_CAROUSEL_QUERY : PROCESS_MOBILE_QUERY;
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia(singleQuery).matches);
   const visible = processVisibleCount(isMobile);
   const maxOffset = Math.max(0, cards.length - visible);
   const [rawOffset, setOffset] = useState(0);
@@ -836,11 +871,12 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
   const offset = Math.min(rawOffset, maxOffset);
 
   useEffect(() => {
-    const mq = window.matchMedia(PROCESS_MOBILE_QUERY);
+    const mq = window.matchMedia(singleQuery);
+    setIsMobile(mq.matches);
     const onChange = () => setIsMobile(mq.matches);
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
-  }, []);
+  }, [singleQuery]);
   const [dragging, setDragging] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -873,6 +909,7 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
       w.style.setProperty('--rim', `${rimPx()}px`);
       w.style.setProperty('--pn-clip', `path('${d}')`);
       setOutline(w.querySelector<SVGSVGElement>(':scope > .pn-outline'), ww, wh, d);
+      setOutline(w.querySelector<SVGSVGElement>(':scope > .pn-inset'), ww, wh, d);
     };
     sync();
     mq.addEventListener?.('change', sync);
@@ -1051,6 +1088,7 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
   return (
     <div ref={wrapRef} className={`process-scroll-wrap${variant ? ` process-scroll-wrap--${variant}` : ''}${showTabs ? ' process-scroll-wrap--tabs' : ''}`}>
       {/* the notched container's border (desktop, variant "process") */}
+      {variant === 'process' && <StageInset className="pn-inset" />}
       {variant === 'process' && <svg className="stage-outline pn-outline" aria-hidden="true"><path fill="none" /></svg>}
       {/* Tabs sit above the cards (apple.com puts them below; here they
           read as the section's chooser before the card). */}
@@ -2164,6 +2202,7 @@ export function AiIntakeSection() {
       });
       v.style.setProperty('--av-clip', `path('${d}')`);
       setOutline(v.querySelector<SVGSVGElement>(':scope > .av-outline'), w, h, d);
+      setOutline(v.querySelector<SVGSVGElement>(':scope > .av-inset'), w, h, d);
     };
     sync();
     mq.addEventListener?.('change', sync);
@@ -2477,6 +2516,7 @@ export function AiIntakeSection() {
         </svg>
       </div>
       {/* the solid stage's border (AI_VIEWER_STAGE), along its bay path */}
+      <StageInset className="av-inset" />
       <svg className="stage-outline av-outline" aria-hidden="true"><path fill="none" /></svg>
       {isCompact && viewerIndex >= 0 && aiCards[viewerIndex].badge && (
         <span className="ai-focal-badge ai-stage-badge">{aiCards[viewerIndex].badge}</span>

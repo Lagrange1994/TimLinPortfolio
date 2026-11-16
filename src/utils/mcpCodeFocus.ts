@@ -17,17 +17,19 @@ export const FIT_BOTTOM = 40;  // px kept clear below
 
 // zoom and card are untransformed boxes in the frame's coordinates; top is
 // where the free area starts (the heading fades out during the zoom, so it
-// is the heading's own top, clear of the navbar).
-export function fitCodeCard(frame: { w: number; h: number }, zoom: Box, card: Box, top: number): CodeFit {
+// is the heading's own top, clear of the navbar). centred (tablets, where
+// the pinned group sits mid-screen): top is the navbar's clearance, kept at
+// both ends, and the card lands on the screen's centre.
+export function fitCodeCard(frame: { w: number; h: number }, zoom: Box, card: Box, top: number, centred = false): CodeFit {
   const availW = frame.w - FIT_SIDE * 2;
-  const availH = frame.h - top - FIT_BOTTOM;
+  const availH = centred ? frame.h - top * 2 : frame.h - top - FIT_BOTTOM;
   const scale = Math.max(1, Math.min(FIT_MAX, availW / card.w, availH / card.h));
   const ox = zoom.x + zoom.w * ZOOM_ORIGIN_X;
   const oy = zoom.y;
   const cx = card.x + card.w / 2;
   const cy = card.y + card.h / 2;
   const targetX = frame.w / 2;
-  const targetY = top + availH / 2;
+  const targetY = centred ? frame.h / 2 : top + availH / 2;
   return {
     scale,
     x: targetX - ox - scale * (cx - ox),

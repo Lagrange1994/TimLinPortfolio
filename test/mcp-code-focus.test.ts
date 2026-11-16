@@ -79,3 +79,28 @@ describe('jumpToCoding: the close-up shows Claude writing Card.tsx', () => {
     expect(jumpToCoding([spin, scroll])).toBe(false);
   });
 });
+
+describe('fitCodeCard centred (tablets): the close-up lands on the screen centre', () => {
+  // 880×1170, the grid scaled to 0.607 (measured on the dev build)
+  const frame = { w: 880, h: 1170 };
+  const zoom = { x: 32, y: 548, w: 816, h: 263 };
+  const card = { x: 449, y: 548, w: 403, h: 263 };
+  const clear = 140;
+
+  it('centres the card on the frame, the navbar clearance kept at both ends', () => {
+    const fit = fitCodeCard(frame, zoom, card, clear, true);
+    const [l, t] = land(zoom, fit, card.x, card.y);
+    const [r, b] = land(zoom, fit, card.x + card.w, card.y + card.h);
+    expect((l + r) / 2).toBeCloseTo(440);
+    expect((t + b) / 2).toBeCloseTo(585);
+    expect(t).toBeGreaterThanOrEqual(clear - 0.01);
+    expect(b).toBeLessThanOrEqual(1170 - clear + 0.01);
+    expect(l).toBeGreaterThanOrEqual(FIT_SIDE - 0.01);
+  });
+
+  it('is what FigmaMcpShowcase asks for on tablets', () => {
+    const src = require('node:fs').readFileSync(require('node:path').resolve(__dirname, '../src/components/FigmaMcpShowcase.tsx'), 'utf8');
+    expect(src).toContain('const centred = !!window.matchMedia?.(MCP_TABLET_MQ).matches;');
+    expect(src).toContain('parseFloat(getComputedStyle(bleed).paddingTop) || 0, true)');
+  });
+});

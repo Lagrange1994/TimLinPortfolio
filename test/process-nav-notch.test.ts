@@ -31,7 +31,7 @@ describe('Design Process — ‹ › row in the container notch', () => {
     const block = css.slice(css.indexOf('.section-band:has(.process-scroll-wrap--process[data-notch])'));
     // the band moves from the section into the container
     expect(block).toMatch(/^\.section-band:has\(\.process-scroll-wrap--process\[data-notch\]\) \{ border-image: none; \}/);
-    expect(block).toMatch(/\.process-scroll-wrap--process\[data-notch\]::before \{[\s\S]*?background: var\(--band\);\s*clip-path: var\(--pn-clip\);/);
+    expect(block).toMatch(/\.process-scroll-wrap--process\[data-notch\]::before \{[\s\S]*?background: radial-gradient\(var\(--stage-dot\) 1px, transparent 1px\) 0 0 \/ 14px 14px, var\(--band\);\s*clip-path: var\(--pn-clip\);/);
     expect(block).toMatch(/\.process-scroll-wrap--process\[data-notch\] \.process-swipe-nav \{ right: 0; bottom: 0; \}/);
   });
 
@@ -67,7 +67,7 @@ describe("How I Use AI — ⌃ ⌄ in the solid stage's left-edge bay", () => {
     expect(AI_STAGE_MQ).toBe('(min-width: 961px)');
     expect(read('src/components/SkillsSection.tsx')).toContain('const d = leftBayPath(w, h, {');
     const css = read('src/styles/portfolio.css');
-    expect(css).toMatch(/\.ai-viewer\.is-stage\[data-av-notch\]::before \{[\s\S]*?background: #1A1825;\s*clip-path: var\(--av-clip\);/);
+    expect(css).toMatch(/\.ai-viewer\.is-stage\[data-av-notch\]::before \{[\s\S]*?background: radial-gradient\(var\(--stage-dot\) 1px, transparent 1px\) 0 0 \/ 14px 14px, #1A1825;\s*clip-path: var\(--av-clip\);/);
     expect(css).toMatch(/\.ai-viewer\.is-stage\[data-av-notch\] \.ai-viewer-nav \{\s*margin-left: calc\(-1 \* clamp\(32px, 3\.4vw, 48px\)\);/);
   });
 });
@@ -174,5 +174,66 @@ describe('tablet / phone fixes', () => {
     const css = read('src/styles/portfolio.css');
     expect(css).toContain('.ai-viewer.is-bare.is-stage .ai-swipe { margin-inline: -16px; padding-inline: 16px; }');
     expect(css).toContain('.ai-viewer.is-bare.is-stage .aas-front { left: -8px; bottom: -8px; }');
+  });
+});
+
+describe('notched containers — neumorphic inset shadow (light theme)', () => {
+  it('draws an inner-shadow filter along the outline, ids unique per container', () => {
+    const tsx = read('src/components/SkillsSection.tsx');
+    expect(tsx).toContain('export function StageInset(');
+    expect(tsx).toContain("const id = `stage-inset-${useId().replace(/:/g, '')}`;");
+    expect(tsx).toContain('<feOffset dx="6" dy="6" />');
+    expect(tsx).toContain('<feOffset dx="-6" dy="-6" />');
+    expect(tsx).toContain("setOutline(w.querySelector<SVGSVGElement>(':scope > .pn-inset'), ww, wh, d);");
+    expect(tsx).toContain("setOutline(v.querySelector<SVGSVGElement>(':scope > .av-inset'), w, h, d);");
+  });
+  it('uses the site neu shadow pair, light theme only, under the content', () => {
+    const css = read('src/styles/portfolio.css');
+    // the shadow replaces the grey line in the light theme
+    expect(css).toContain(':root[data-theme="light"] .stage-outline path { stroke: none; }');
+    expect(css).toContain('.stage-inset .si-dark { flood-color: var(--neu-shadow-dark); }');
+    expect(css).toContain('.stage-inset .si-light { flood-color: var(--neu-shadow-light); }');
+    expect(css).toMatch(/\.stage-inset \{\s*display: none;[\s\S]*?z-index: -1;/);
+    expect(css).toMatch(/:root\[data-theme="light"\] \.process-scroll-wrap--process\[data-notch\] > \.pn-inset,\s*:root\[data-theme="light"\] \.ai-viewer\.is-stage\[data-av-notch\] > \.av-inset \{ display: block; \}/);
+  });
+});
+
+describe('notched containers — dot grid', () => {
+  it('lays the principle stages’ 14px dot grid over both fills, both themes', () => {
+    const css = read('src/styles/portfolio.css');
+    const dot = 'radial-gradient(var(--stage-dot) 1px, transparent 1px) 0 0 / 14px 14px';
+    expect(css).toContain(`background: ${dot}, var(--band);`);
+    expect(css).toContain(`background: ${dot}, #1A1825;`);
+    expect(css).toContain(`.ai-viewer.is-stage[data-av-notch]::before { background: ${dot}, var(--neu-bg); }`);
+    expect(css).toContain(':root { --stage-dot: rgba(255, 255, 255, .09); }');
+    expect(css).toContain(':root[data-theme="light"] { --stage-dot: color-mix(in oklab, var(--text) 10%, transparent); }');
+  });
+});
+
+describe('tablet (768–1024px)', () => {
+  it('Design Process keeps the carousel, its controls on a row under the cards', () => {
+    const css = read('src/styles/portfolio.css');
+    expect(css).not.toContain('grid-template-columns: repeat(3, 1fr) !important;');
+    expect(css).toContain('.process-scroll-wrap--process { padding-bottom: 64px; }');
+    expect(css).toContain('.process-scroll-wrap--process .process-swipe-nav { right: 12px; bottom: 12px; }');
+  });
+  it('Tech Stack pages one card at a time under its tabs, as on phones', () => {
+    const tsx = read('src/components/SkillsSection.tsx');
+    expect(tsx).toContain("export const TECH_CAROUSEL_QUERY = '(max-width: 1024px)';");
+    expect(tsx).toContain('const singleQuery = mobileOnly ? TECH_CAROUSEL_QUERY : PROCESS_MOBILE_QUERY;');
+    expect(read('src/styles/portfolio.css')).toMatch(/\.process-scroll-wrap--tech \.process-column-grid--inhouse \.process-swipe-slot \{\s*flex: 0 0 100%;/);
+  });
+  it('Figma MCP shows the desktop mockup scaled down, panels included', () => {
+    const tsx = read('src/components/FigmaMcpShowcase.tsx');
+    expect(tsx).toContain('const MCP_TABLET_DESIGN_WIDTH = 1344;');
+    expect(tsx).toContain("window.matchMedia?.(MCP_TABLET_MQ).matches ? MCP_TABLET_DESIGN_WIDTH : MCP_DESIGN_WIDTH");
+    const css = read('src/styles/portfolio.css');
+    expect(css).toMatch(/@media \(max-width: 767px\) \{\s*\.mcp-card \.mcp-pages-sidebar,/);
+  });
+});
+
+describe('tablet — Figma MCP heading pins lower', () => {
+  it('centres the pinned heading + mockup group below the navbar', () => {
+    expect(read('src/styles/portfolio.css')).toMatch(/@media \(max-width: 1024px\) \{\s*\.mcp-scroll \.mcp-bleed \{\s*justify-content: safe center;\s*padding-bottom: max\(96px, 12svh\);/);
   });
 });

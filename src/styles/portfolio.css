@@ -6241,6 +6241,17 @@
           animation-range: contain 52% contain 62%;
         }
         .mcp-scroll .mcp-grid-wrap { margin-top: clamp(28px, 5svh, 56px); }
+        /* Tablets: the scaled-down mockup is short, so a heading pinned up
+           under the navbar left the lower half of the screen empty. The
+           heading and grid pin as one group, centred on the screen (the
+           navbar's clearance mirrored at the bottom, so it's the true
+           centre); the heading holds that spot while the zoom plays. */
+        @media (max-width: 1024px) {
+          .mcp-scroll .mcp-bleed {
+            justify-content: safe center;
+            padding-bottom: max(96px, 12svh);
+          }
+        }
 
         /* 0–29%: zoomed in on the Figma card (centred: its centre sits at
            ~24.4% of the grid), shrinking to the full grid. 29–52% holds the
@@ -6872,11 +6883,6 @@
       0%, 36.8%, 100% { opacity: 0; scale: .5; }
       37.68%, 97.6% { opacity: 1; scale: 1; }
     }
-    /* Tablet and phone hide the Pages sidebar: Tim starts on the canvas
-       and the page swap plays without the click target. */
-    @media (max-width: 1024px) {
-      .mcp-ops { --p-pgdesk-x: 28%; --p-pgdesk-y: 222px; --p-pgcomp-x: 40%; --p-pgcomp-y: 150px; }
-    }
     /* Reduced motion and phones (< 768px): no loop; the finished state
        (Components page, card selected, code written) without the Desktop
        page. Phones also drop the cursors and Claude's chat: the static
@@ -6899,10 +6905,12 @@
       .mcp-hub-ring { opacity: 1; animation: aiRingP 3s ease-out infinite; }
     }
 
-    /* Tablet: the two mockups' own inner side panels (Pages / file tree)
+    /* Phones: the two mockups' own inner side panels (Pages / file tree)
        are the first thing to go — at this width they'd otherwise squeeze
-       the actual canvas/editor content down to almost nothing. */
-    @media (max-width: 1024px) {
+       the actual canvas/editor content down to almost nothing. (Tablets
+       show the desktop mockup scaled down, panels included: see
+       MCP_TABLET_DESIGN_WIDTH.) */
+    @media (max-width: 767px) {
       .mcp-card .mcp-pages-sidebar,
       .mcp-card .mcp-filetree,
       .mcp-card .mcp-tabbar {
@@ -9263,32 +9271,37 @@
         font-size: 12px;
       }
 
-      /* Process grid — 2×3 on tablet (override desktop flex-scroll) */
-      .process-scroll-wrap {
-        overflow-x: visible;
+      /* Design Process keeps the desktop carousel on tablets (three cards
+         a page, the ‹ › row); the 2×3 static grid it used to flatten into
+         is gone. No notch to hold the controls here (that's ≥1025px), so
+         they get a row of their own under the cards: 12px, the 40px
+         buttons, 12px. */
+      .process-scroll-wrap--process { padding-bottom: 64px; }
+      .process-scroll-wrap--process .process-swipe-nav { right: 12px; bottom: 12px; }
+      .process-scroll-wrap--process .process-swipe-controls { bottom: 29px; }
+
+      /* Tech Stack: the phone carousel, one card a page under its tabs
+         (ProcessCarousel mobileOnly, TECH_CAROUSEL_QUERY), each card in
+         its tablet layout. The track's 16px sides cancel the wrap's -16px
+         margins; the 32px gap keeps the neighbours past the clip. */
+      .process-scroll-wrap--tech {
+        margin: 0 -16px;
+        overflow-x: clip;
         overflow-y: visible;
       }
-
-      .process-column-grid--inhouse {
-        display: grid !important;
-        flex-wrap: unset;
-        grid-template-columns: repeat(3, 1fr) !important;
-        transform: none !important;
-        touch-action: auto;
-        cursor: auto;
-        padding-left: 0;
-        padding-right: 0;
+      .process-scroll-wrap--tech .process-column-grid--inhouse {
+        align-items: stretch;
+        gap: 32px;
+        padding: 20px 16px 12px;
       }
-
-      .process-column-grid--inhouse .process-swipe-slot {
-        flex: unset !important;
-        width: auto !important;
+      .process-scroll-wrap--tech .process-column-grid--inhouse .process-swipe-slot {
+        flex: 0 0 100%;
+        width: 100%;
         margin-top: 0 !important;
       }
-
-      .process-swipe-controls,
-      .process-swipe-nav {
-        display: none !important;
+      .process-scroll-wrap--tech .tech-item-wrap,
+      .process-scroll-wrap--tech .tech-item {
+        height: 100%;
       }
 
       /* The desktop staircase pins the label over the freed space above the
@@ -13273,7 +13286,7 @@
         inset: 0;
         z-index: -1;
         pointer-events: none;
-        background: var(--band);
+        background: radial-gradient(var(--stage-dot) 1px, transparent 1px) 0 0 / 14px 14px, var(--band);
         clip-path: var(--pn-clip);
       }
       .process-scroll-wrap--process[data-notch] > .pn-outline { display: block; clip-path: var(--pn-clip); }
@@ -13346,7 +13359,27 @@
       pointer-events: none;
     }
     .stage-outline path { stroke: rgba(255, 255, 255, 0.4); stroke-width: 2px; }
-    :root[data-theme="light"] .stage-outline path { stroke: rgba(21, 19, 31, 0.14); }
+    /* light theme: no line, the neumorphic inset shadow (.stage-inset) shapes the edge */
+    :root[data-theme="light"] .stage-outline path { stroke: none; }
+    /* the neumorphic inset shadow along the same outline (StageInset):
+       light theme only, the site's --neu-shadow-dark / -light pair */
+    .stage-inset {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      overflow: visible;
+      pointer-events: none;
+    }
+    /* the notched containers' dot grid: the principle stages' (.principle-stage
+       --pa-dot, 14px), in both themes */
+    :root { --stage-dot: rgba(255, 255, 255, .09); }
+    :root[data-theme="light"] { --stage-dot: color-mix(in oklab, var(--text) 10%, transparent); }
+    .stage-inset .si-dark { flood-color: var(--neu-shadow-dark); }
+    .stage-inset .si-light { flood-color: var(--neu-shadow-light); }
+    :root[data-theme="light"] .process-scroll-wrap--process[data-notch] > .pn-inset,
+    :root[data-theme="light"] .ai-viewer.is-stage[data-av-notch] > .av-inset { display: block; }
 
     /* ── How I Use AI, desktop (SkillsSection AI_VIEWER_STAGE): the stage
        back as a solid card — no outline, no glass — with the ⌃ ⌄ pair in
@@ -13364,10 +13397,10 @@
         inset: 0;
         z-index: -1;
         pointer-events: none;
-        background: #1A1825;
+        background: radial-gradient(var(--stage-dot) 1px, transparent 1px) 0 0 / 14px 14px, #1A1825;
         clip-path: var(--av-clip);
       }
-      :root[data-theme="light"] .ai-viewer.is-stage[data-av-notch]::before { background: var(--neu-bg); }
+      :root[data-theme="light"] .ai-viewer.is-stage[data-av-notch]::before { background: radial-gradient(var(--stage-dot) 1px, transparent 1px) 0 0 / 14px 14px, var(--neu-bg); }
       .ai-viewer.is-stage[data-av-notch] > .av-outline { display: block; clip-path: var(--av-clip); }
       /* no border box offset between the viewer and its fill: the path is
          measured on the border box */

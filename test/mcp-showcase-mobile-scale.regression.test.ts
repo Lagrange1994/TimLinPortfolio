@@ -16,7 +16,7 @@ describe('FigmaMcpShowcase keeps the two-card grid horizontal on phones via scal
 
   it('computes a scale factor from the wrapper width against a fixed design width', () => {
     expect(source).toMatch(/const MCP_DESIGN_WIDTH = \d+;/);
-    expect(source).toMatch(/const scale = w \/ MCP_DESIGN_WIDTH;/);
+    expect(source).toMatch(/const scale = w \/ design;/);
   });
 
   it('scales the grid with transform, not CSS zoom (zoom needs hand-picked heights; transform keeps offsetHeight accurate)', () => {
@@ -29,7 +29,7 @@ describe('FigmaMcpShowcase keeps the two-card grid horizontal on phones via scal
   });
 
   it('skips scaling once the wrapper is wide enough for the natural layout', () => {
-    expect(source).toMatch(/const scaling = w < MCP_DESIGN_WIDTH;/);
+    expect(source).toMatch(/const scaling = w < design;/);
     expect(source).toMatch(/if \(!scaling\)/);
     expect(source).toMatch(/grid\.style\.transform = '';/);
   });

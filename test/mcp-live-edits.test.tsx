@@ -161,8 +161,9 @@ describe('Figma MCP live edits', () => {
     expect(ops).toMatch(/@keyframes mcp-tim-click \{[\s\S]*?\n\s*8\.08%, /);
     expect(ops).toMatch(/@keyframes mcp-op-pg-on \{\n\s*0%, 8\.24%, 98\.8%, 100% \{ background-color: transparent; \}/);
     expect(ops).toMatch(/@keyframes mcp-op-page-out \{\n\s*0%, 8\.4%, 99\.6%, 100% \{ opacity: 1; \}/);
-    // no sidebar on tablet/phone: Tim's first stops move onto the canvas
-    expect(ops).toMatch(/@media \(max-width: 1024px\) \{\n\s*\.mcp-ops \{ --p-pgdesk-x: \d+%; --p-pgdesk-y: \d+px; --p-pgcomp-x: \d+%; --p-pgcomp-y: \d+px; \}/);
+    // tablets keep the Pages sidebar (the desktop mockup, scaled down), so
+    // Tim's first stops need no tablet-only positions
+    expect(ops).not.toMatch(/@media \(max-width: 1024px\) \{\n\s*\.mcp-ops \{/);
   });
 
   // Figma: hover outline first, the selection only once Tim clicks
