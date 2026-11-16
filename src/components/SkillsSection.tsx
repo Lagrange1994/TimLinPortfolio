@@ -12,8 +12,10 @@ import FigmaMcpShowcase from './FigmaMcpShowcase';
 import PlayPauseButton from './PlayPauseButton';
 import AiAppStage from './AiAppStage';
 import { attachAiViewerEntrance } from '../utils/aiViewerEntrance';
-import { attachStageNotch } from '../utils/aiStageNotch';
+import { attachStageNotch, navBaySize } from '../utils/aiStageNotch';
 import { swipeStep } from '../utils/swipeStep';
+import { notchPath, leftBayPath } from '../utils/notchPath';
+import { CARD_RADIUS, NOTCH_GAP, NOTCH_TURN } from '../utils/notchTokens';
 import LazyUnit from './LazyUnit';
 import { processCardLayers, useProcessCardThemes, type ProcessTheme } from '../utils/processCardImages';
 
@@ -81,6 +83,12 @@ const AI_HEAD_RIDE = { 'data-rise-with': '.ai-viewer', 'data-rise-lock': '' };
 // shadow, .ai-viewer.is-bare): the rail and the app window sit straight on
 // the section. Flip to true to restore the notched stage.
 const AI_VIEWER_NOTCH = false;
+// TRIAL: on desktop the stage comes back as a solid card (no outline), its
+// ⌃ ⌄ in a bay cut into its left edge, as the old notched stage had them
+// (.is-stage, --av-clip). Phones keep the bare layout. Needs
+// AI_VIEWER_NOTCH off.
+const AI_VIEWER_STAGE = true;
+export const AI_STAGE_MQ = '(min-width: 961px)';
 // When the Operating Principle panel starts fading in during the Human
 // Review timeline (see toggle() in the card map) — shared so the quote
 // typewriter effect below can start right after, without duplicating the
@@ -751,6 +759,35 @@ const PROCESS_VISIBLE_MOBILE = 1;
 const PROCESS_MOBILE_QUERY = '(max-width: 767px)';
 
 const STAIR_STEP = 32;
+// The notched containers' border (Design Process, How I Use AI's stage),
+// like the hero frame's: the outline path stroked twice as wide, the svg
+// clipped to the same path (CSS), so an even 1px shows inside every edge.
+function setOutline(svg: SVGSVGElement | null, w: number, h: number, d: string) {
+  if (!svg) return;
+  svg.setAttribute('width', String(w));
+  svg.setAttribute('height', String(h));
+  const path = svg.querySelector('path');
+  if (!path) return;
+  path.setAttribute('d', d);
+  // twice the line, the clip keeps the inner half
+  path.style.strokeWidth = `${rimPx() * 2}px`;
+}
+
+// The cards' 1.5px border as the browser draws it: borders snap down to
+// whole device pixels (2 on a 1.5× display, 1.333 CSS px). The container's
+// SVG stroke isn't snapped, so it takes the same width here to match.
+export function rimPx(dpr = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1) {
+  return Math.max(1, Math.floor(1.5 * dpr)) / dpr;
+}
+
+// Design Process on desktop: the carousel sits in a filled container whose
+// bottom-right corner is cut round the ⏸ ‹ › row (the staircase leaves that
+// corner free: the rightmost card is the highest). Only where the ‹ › row
+// shows.
+export const PROCESS_NOTCH_MQ = '(min-width: 1025px)';
+export function processNotchOpts(nav: { width: number; height: number }, r: number) {
+  return { nw: nav.width + NOTCH_GAP, nh: nav.height + NOTCH_GAP, r, nr: NOTCH_TURN, nf: nav.height / 2 + NOTCH_GAP, side: 'right' as const };
+}
 const SWIPE_TRANSITION = 'transform .45s cubic-bezier(.22,.61,.36,1)';
 // Release speed (px/ms) that turns a short drag into a page turn.
 const SWIPE_FLICK_PX_PER_MS = 0.35;
@@ -806,6 +843,47 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
   }, []);
   const [dragging, setDragging] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
+
+  // The container's notch round the ⏸ ‹ › row (variant "process", desktop):
+  // its fill is a ::before clipped to the outline (--pn-clip), so the row
+  // sitting in the notch is never cut.
+  useLayoutEffect(() => {
+    const w = wrapRef.current;
+    if (variant !== 'process' || !w) return;
+    const mq = window.matchMedia(PROCESS_NOTCH_MQ);
+    const sync = () => {
+      const nav = navRef.current;
+      const ww = w.offsetWidth, wh = w.offsetHeight;
+      if (!mq.matches || !nav || !nav.offsetWidth || !ww || !wh) {
+        delete w.dataset.notch;
+        w.style.removeProperty('--pn-clip');
+        return;
+      }
+      w.dataset.notch = '';
+      // (the site-wide card corner: the wrap itself stays square, see CSS)
+      const opts = processNotchOpts({ width: nav.offsetWidth, height: nav.offsetHeight }, CARD_RADIUS);
+      const d = notchPath(ww, wh, opts);
+      // the notch's size, for the wrap's clip (room for the buttons' shadows)
+      w.style.setProperty('--pn-nw', `${opts.nw}px`);
+      w.style.setProperty('--pn-nh', `${opts.nh}px`);
+      // the cards' rim as drawn (device-pixel snapped): their border and
+      // the hover ring lying on it take this exact width
+      w.style.setProperty('--rim', `${rimPx()}px`);
+      w.style.setProperty('--pn-clip', `path('${d}')`);
+      setOutline(w.querySelector<SVGSVGElement>(':scope > .pn-outline'), ww, wh, d);
+    };
+    sync();
+    mq.addEventListener?.('change', sync);
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(sync);
+    ro?.observe(w);
+    if (navRef.current) ro?.observe(navRef.current);
+    return () => {
+      ro?.disconnect();
+      mq.removeEventListener?.('change', sync);
+    };
+  }, [variant, maxOffset]);
   // Live drag state lives in a ref, not React state: a setState per
   // pointermove re-rendered every card (BorderGlow, illustration layers)
   // ~60×/s and made finger swipes stutter on phones. The move handler
@@ -971,7 +1049,9 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
   const showTabs = !!tabs && visible === 1 && tabs.length === cards.length;
 
   return (
-    <div className={`process-scroll-wrap${variant ? ` process-scroll-wrap--${variant}` : ''}${showTabs ? ' process-scroll-wrap--tabs' : ''}`}>
+    <div ref={wrapRef} className={`process-scroll-wrap${variant ? ` process-scroll-wrap--${variant}` : ''}${showTabs ? ' process-scroll-wrap--tabs' : ''}`}>
+      {/* the notched container's border (desktop, variant "process") */}
+      {variant === 'process' && <svg className="stage-outline pn-outline" aria-hidden="true"><path fill="none" /></svg>}
       {/* Tabs sit above the cards (apple.com puts them below; here they
           read as the section's chooser before the card). */}
       {showTabs && maxOffset > 0 && (
@@ -1020,7 +1100,8 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
           return (
             <div
               key={i}
-              className="process-swipe-slot"
+              // (out of view: the neighbours peeking at the container's edges)
+              className={`process-swipe-slot${slot < 0 || slot >= visible ? ' is-out' : ''}`}
               style={{ marginTop, transition: dragging ? 'none' : 'margin-top .45s cubic-bezier(.22,.61,.36,1)' }}
             >
               {card}
@@ -1046,7 +1127,7 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
           {/* Apple-style ‹ › pair (apple.com product carousels): round
               buttons, the one facing an end greyed out. Autoplay still
               loops back to the start on its own. */}
-          <div className="process-swipe-nav">
+          <div className="process-swipe-nav" ref={navRef}>
             {/* play/pause leads the ‹ › row, same round button */}
             {toggle('nav')}
             <button
@@ -2047,6 +2128,55 @@ export function AiIntakeSection() {
     return attachStageNotch(v, l, t, s, svg, p);
   }, [isViewer]);
 
+  // The solid stage's left-edge bay round the ⌃ ⌄ pair (desktop): the fill
+  // is the viewer's ::before, clipped to the outline (--av-clip).
+  useLayoutEffect(() => {
+    const v = viewerRef.current;
+    if (AI_VIEWER_NOTCH || !AI_VIEWER_STAGE || !isViewer || !v) return;
+    const mq = window.matchMedia(AI_STAGE_MQ);
+    const sync = () => {
+      const nav = v.querySelector<HTMLElement>('.ai-viewer-nav');
+      const w = v.offsetWidth, h = v.offsetHeight;
+      if (!mq.matches || !nav || !nav.offsetWidth || !w || !h) {
+        delete v.dataset.avNotch;
+        v.style.removeProperty('--av-clip');
+        return;
+      }
+      v.dataset.avNotch = '';
+      const cs = getComputedStyle(v);
+      const cornerShape = cs.getPropertyValue('corner-top-left-shape') || cs.getPropertyValue('corner-shape');
+      // the buttons' box in the viewer's own (untransformed) frame: the
+      // rise entrance moves / squashes the viewer, so divide its scale out
+      const vr = v.getBoundingClientRect();
+      const kx = vr.width / w || 1, ky = vr.height / h || 1;
+      const btns = [...nav.querySelectorAll<HTMLElement>('.ai-viewer-nav-btn')].map(b => b.getBoundingClientRect());
+      if (!btns.length) return;
+      const first = nav.querySelector<HTMLElement>('.ai-viewer-nav-btn')!;
+      const d = leftBayPath(w, h, {
+        r: parseFloat(cs.borderTopLeftRadius) || 0,
+        shape: /squircle|superellipse\(2\)/.test(cornerShape) ? 'squircle' : 'round',
+        bay: navBaySize({
+          top: (btns[0].top - vr.top) / ky,
+          bottom: (btns[btns.length - 1].bottom - vr.top) / ky,
+          right: Math.max(...btns.map(b => (b.right - vr.left) / kx)),
+          radius: first.offsetWidth / 2,
+        }),
+      });
+      v.style.setProperty('--av-clip', `path('${d}')`);
+      setOutline(v.querySelector<SVGSVGElement>(':scope > .av-outline'), w, h, d);
+    };
+    sync();
+    mq.addEventListener?.('change', sync);
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(sync);
+    ro?.observe(v);
+    const nav = v.querySelector<HTMLElement>('.ai-viewer-nav');
+    if (nav) ro?.observe(nav);
+    return () => {
+      ro?.disconnect();
+      mq.removeEventListener?.('change', sync);
+    };
+  }, [isViewer]);
+
   // Open step 01 the first time the viewer scrolls into view, so its demo
   // plays where it can be seen (it replays after a lazy-unit remount too).
   useEffect(() => {
@@ -2323,7 +2453,7 @@ export function AiIntakeSection() {
     // The shell casts the card's shadow, which the notch clip would cut.
     <div className="ai-viewer-shell">
     <div
-      className={`ai-viewer rise-card${isCompact ? ' is-compact' : ''}${AI_VIEWER_NOTCH ? '' : ' is-bare'}`}
+      className={`ai-viewer rise-card${isCompact ? ' is-compact' : ''}${AI_VIEWER_NOTCH ? '' : ' is-bare'}${!AI_VIEWER_NOTCH && AI_VIEWER_STAGE ? ' is-stage' : ''}`}
       ref={viewerRef}
       data-accent={aiCards[Math.max(viewerIndex, 0)].variant}
       onTouchStart={onViewerTouchStart}
@@ -2346,6 +2476,8 @@ export function AiIntakeSection() {
           <path className="notch-ring" fill="none" stroke="url(#ai-viewer-ring-glow)" />
         </svg>
       </div>
+      {/* the solid stage's border (AI_VIEWER_STAGE), along its bay path */}
+      <svg className="stage-outline av-outline" aria-hidden="true"><path fill="none" /></svg>
       {isCompact && viewerIndex >= 0 && aiCards[viewerIndex].badge && (
         <span className="ai-focal-badge ai-stage-badge">{aiCards[viewerIndex].badge}</span>
       )}

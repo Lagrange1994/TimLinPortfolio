@@ -2952,8 +2952,8 @@
        actions (GitHub, Email, 聯絡我) together in the bottom-right notch. */
     .bento-card.about-cta-card { height: 100%; }
 
-    /* four rows: a little more air between them than the intro cards' */
-    .about-cta-card .about-cta-points { row-gap: 12px; margin-top: 16px; }
+    /* (its four rows keep the intro cards' row gap and title spacing — a
+       12px gap and 16px top margin here set it apart from them) */
 
     /* Tablet: the card runs the full width, so its rows go two to a line
        (合作 · 地點, then 回覆 · 現在) instead of leaving the right half bare */
@@ -3247,6 +3247,13 @@
 
     .bento-area-intro1 { grid-area: intro1; }
     .bento-area-intro2 { grid-area: intro2; }
+    /* Tablet / phone: each intro card as tall as its own content, not
+       stretched to its row-mate's (desktop keeps the row lines shared with
+       the stats tiles beside them) */
+    @media (max-width: 1024px) {
+      .bento-area-intro1,
+      .bento-area-intro2 { align-self: start; }
+    }
     .bento-area-years { grid-area: years; }
     .bento-area-projects { grid-area: projects; }
     .bento-area-domains { grid-area: domains; min-height: 240px; }
@@ -3778,7 +3785,34 @@
       animation: pc-glow-bg 12s linear infinite, card-radar 3s ease-out infinite;
     }
 
+    /* Notched cards (NotchCard): the card is clip-path'd to its outline, so
+       its outline ring above is cut off. The ring is drawn instead by an
+       SVG beside the card, outside the clip (.notch-radar): a stroke of
+       width 2×(offset+1) along the same path, less one of 2×offset and the
+       card itself (mask), leaves a 1px line at that offset — the same 8 →
+       17px spread, alpha and 3s beat as card-radar. */
+    .about-notch > .notch-radar {
+      align-self: start;
+      justify-self: start;
+      overflow: visible;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .notch-radar-ring { stroke-opacity: 0; stroke-width: 18px; }
+    .notch-radar-inner { stroke-width: 16px; }
+    @keyframes notch-radar-ring {
+      from { stroke-width: 18px; stroke-opacity: var(--radar-alpha); }
+      to   { stroke-width: 36px; stroke-opacity: 0; }
+    }
+    @keyframes notch-radar-inner {
+      from { stroke-width: 16px; }
+      to   { stroke-width: 34px; }
+    }
+    .about-notch:hover > .notch-radar .notch-radar-ring { animation: notch-radar-ring 3s ease-out infinite; }
+    .about-notch:hover > .notch-radar .notch-radar-inner { animation: notch-radar-inner 3s ease-out infinite; }
+
     @media (prefers-reduced-motion: reduce) {
+      .about-notch:hover > .notch-radar :is(.notch-radar-ring, .notch-radar-inner) { animation: none; }
       :is(.bento-card, .tech-item, .mcp-card, .contact-card, .cta-strip,
           .line-banner, .ai-card, .process-card):hover,
       .ai-card.ai-focal {
@@ -13001,6 +13035,29 @@
     .ai-viewer.is-bare { padding: 0; margin-top: 40px; }
     @media (max-width: 960px) {
       .ai-viewer.is-bare { margin-top: 32px; }
+      /* the subtitle's inline -32px bottom margin (for the old stage)
+         would cancel that 32px out, leaving the stage flush under it */
+      #my-skills:has(.ai-viewer.is-bare) .ai-sub { margin-bottom: 0 !important; }
+      /* phones: the solid stage too (AI_VIEWER_STAGE), as on desktop — no
+         ⌃ ⌄ here, so no bay: the compact frame's own corners, its border
+         the hero frame's 1px line (.stage-outline) */
+      .ai-viewer.is-bare.is-stage { padding: 16px; background: #1A1825; border: 1px solid rgba(255, 255, 255, 0.4); }
+      :root[data-theme="light"] .ai-viewer.is-bare.is-stage { background: var(--neu-bg); border-color: rgba(21, 19, 31, 0.14); }
+      /* the swipe track's sideways clip reaches the stage's inner edge (its
+         16px padding): the front panel hanging off the app window's left
+         (tablet widths) was cut; the neighbour slides, 24px away, stay out */
+      .ai-viewer.is-bare.is-stage .ai-swipe { margin-inline: -16px; padding-inline: 16px; }
+      /* ...and the front panel hangs only 8px off the window's left and
+         bottom (its -28px / -26px reached past the stage's 16px padding,
+         over the border) */
+      .ai-viewer.is-bare.is-stage .aas-front { left: -8px; bottom: -8px; }
+      /* the app window's big floating shadow (8px 24px 56px) spread past
+         the swipe track's sideways clip (.ai-swipe, overflow-x: clip) and
+         was cut into hard vertical edges; on the solid stage a short drop,
+         its negative spread keeping it within the window's width */
+      :root[data-theme="light"] .ai-viewer.is-stage .aas-window {
+        box-shadow: 0 0 0 1px rgba(58, 58, 66, 0.09), 0 10px 18px -10px rgba(20, 16, 30, 0.22);
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -13184,3 +13241,143 @@
     :root[data-theme="light"] .btn-glass.btn-grad:active {
       box-shadow: 0 2px 6px rgba(255, 101, 132, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
     }
+
+    /* ── Design Process, desktop: the carousel in a filled container, the
+       ⏸ ‹ › row in its bottom-right notch (ProcessCarousel, --pn-clip). The
+       section drops its band there, so the band tone fills the container
+       instead: one tone under the cards. ── */
+    @media (min-width: 1025px) {
+      .section-band:has(.process-scroll-wrap--process[data-notch]) { border-image: none; }
+      /* no border-radius of its own: with overflow: hidden it would round
+         off the ‹ › row sitting in the corner; the rounded shape is the
+         fill's clip path (corner radius CARD_RADIUS) */
+      /* The sliding cards are clipped to the box, as overflow: hidden did,
+         except round the notch: there the clip reaches 16px further out,
+         so the buttons' raised shadows (light theme) aren't cut. */
+      .process-scroll-wrap--process[data-notch] {
+        isolation: isolate;
+        overflow: visible;
+        clip-path: polygon(
+          0 0, 100% 0,
+          100% calc(100% - var(--pn-nh, 52px)),
+          calc(100% + 16px) calc(100% - var(--pn-nh, 52px)),
+          calc(100% + 16px) calc(100% + 16px),
+          calc(100% - var(--pn-nw, 156px)) calc(100% + 16px),
+          calc(100% - var(--pn-nw, 156px)) 100%,
+          0 100%
+        );
+      }
+      .process-scroll-wrap--process[data-notch]::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: var(--band);
+        clip-path: var(--pn-clip);
+      }
+      .process-scroll-wrap--process[data-notch] > .pn-outline { display: block; clip-path: var(--pn-clip); }
+      .process-scroll-wrap--process[data-notch] .process-column-grid--inhouse { padding: 24px; }
+      /* The cards' rim (and their STEP badges riding it) as bright and as
+         thick as the container's border: a 1.5px border, which the browser
+         snaps to whole device pixels (2 on a 1.5× display) — the
+         container's stroke is snapped the same way (rimPx), so both draw
+         the same device pixels at any zoom. (An inset shadow sat under the
+         card's illustration layer and got covered.)
+         (!important: .border-glow-card pins its own border, 1px included.) */
+      :root:not([data-theme="light"]) .process-scroll-wrap--process[data-notch] :is(.process-card, .process-step-badge) {
+        border-width: var(--rim, 1.5px) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
+      }
+      /* Glass rim at that width: the border goes transparent and a
+         gradient fills the border box under the card's own fill (kept to
+         the padding box) — bright along the top-left where the light
+         falls, fading down the sides, a faint return at the bottom. The
+         STEP badge rides the brightest stretch, so its .4 line meets it.
+         The neighbours out of view (.is-out), peeking at the container's
+         edges, take the container border's even .4 instead, so where they
+         meet it the two read as one line. */
+      :root:not([data-theme="light"]) .process-scroll-wrap--process[data-notch] .process-card {
+        border-color: transparent !important;
+        background:
+          linear-gradient(#0d0a1c, #0d0a1c) padding-box,
+          linear-gradient(165deg,
+            rgba(255, 255, 255, 0.55) 0%,
+            rgba(255, 255, 255, 0.22) 30%,
+            rgba(255, 255, 255, 0.08) 62%,
+            rgba(255, 255, 255, 0.18) 100%) border-box !important;
+      }
+      :root:not([data-theme="light"]) .process-scroll-wrap--process[data-notch] .process-swipe-slot.is-out .process-card {
+        background:
+          linear-gradient(#0d0a1c, #0d0a1c) padding-box,
+          linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)) border-box !important;
+      }
+      /* the hover cursor ring (.sc-ring: inset 0, 1px — made for a 1px
+         border, it now ran inside the rim) lies on the 1.5px border itself */
+      /* the STEP badge centred on the thicker rim again (its -12px was set
+         for a 1px border and a 1px badge outline: 2px low now) */
+      :root:not([data-theme="light"]) .process-scroll-wrap--process[data-notch] .process-step-badge { top: -14px; }
+      /* the glass top-edge highlight likewise (top: 0, 1px: it lay under
+         the rim as a second line) */
+      :root:not([data-theme="light"]) .process-scroll-wrap--process[data-notch] .process-card > .card-glass-highlight {
+        top: calc(-1 * var(--rim, 1.5px));
+        height: var(--rim, 1.5px);
+      }
+      :root:not([data-theme="light"]) .process-scroll-wrap--process[data-notch] .process-card > .sc-ring {
+        inset: calc(-1 * var(--rim, 1.5px));
+        padding: var(--rim, 1.5px);
+      }
+      .process-scroll-wrap--process[data-notch] .process-swipe-nav { right: 0; bottom: 0; }
+      .process-scroll-wrap--process[data-notch] .process-swipe-controls { bottom: 24px; }
+    }
+
+    /* ── The notched containers' border (Design Process's carousel, How I
+       Use AI's stage): the hero frame's 1px rgba(255,255,255,.4) line
+       (.bg-frame-stroke) along the same outline — stroked 2px, the svg
+       clipped to the path, so 1px shows inside every edge, the notch's
+       included. ── */
+    .stage-outline {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      overflow: visible;
+      pointer-events: none;
+    }
+    .stage-outline path { stroke: rgba(255, 255, 255, 0.4); stroke-width: 2px; }
+    :root[data-theme="light"] .stage-outline path { stroke: rgba(21, 19, 31, 0.14); }
+
+    /* ── How I Use AI, desktop (SkillsSection AI_VIEWER_STAGE): the stage
+       back as a solid card — no outline, no glass — with the ⌃ ⌄ pair in
+       a bay cut into its left edge, as the old notched stage had it. The
+       fill is a ::before clipped to the outline (--av-clip), so the pair
+       sitting in the bay is never cut. Phones stay bare. ── */
+    @media (min-width: 961px) {
+      .ai-viewer.is-bare.is-stage[data-av-notch] {
+        padding: 40px clamp(32px, 3.4vw, 48px);
+        isolation: isolate;
+      }
+      .ai-viewer.is-stage[data-av-notch]::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: #1A1825;
+        clip-path: var(--av-clip);
+      }
+      :root[data-theme="light"] .ai-viewer.is-stage[data-av-notch]::before { background: var(--neu-bg); }
+      .ai-viewer.is-stage[data-av-notch] > .av-outline { display: block; clip-path: var(--av-clip); }
+      /* no border box offset between the viewer and its fill: the path is
+         measured on the border box */
+      .ai-viewer.is-bare.is-stage[data-av-notch] { border-width: 0; }
+      /* the ⌃ ⌄ column flush with the stage's left edge, in its bay (the
+         old notched stage's [data-ai-notch] .ai-viewer-nav) */
+      .ai-viewer.is-stage[data-av-notch] .ai-viewer-nav {
+        margin-left: calc(-1 * clamp(32px, 3.4vw, 48px));
+        margin-right: calc(clamp(32px, 3.4vw, 48px) - 24px);
+      }
+    }
+
+

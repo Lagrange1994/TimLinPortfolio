@@ -101,6 +101,20 @@ export function stairNotchPath(
   ]);
 }
 
+// A card with only a bay cut into its left edge (How I Use AI's solid stage,
+// round its ⌃ ⌄ buttons): corners `r` in `shape`, the bay's inner corners
+// `bay.ri` and its two ends `bay.ro`, both round.
+export function leftBayPath(w: number, h: number, { r, shape = 'squircle', bay }: { r: number; shape?: CornerShape; bay: EdgeBay }): string {
+  const k = (x: number, y: number, rr: number, s: CornerShape = shape): Corner => ({ x, y, r: rr, shape: s });
+  const bt = Math.max(0, Math.min(bay.top, h));
+  const bb = Math.max(bt, Math.min(bay.bottom, h));
+  const bw = Math.min(bay.w, w);
+  const left = bb - bt > 0.5 && bw > 0
+    ? [k(0, bb, bay.ro, 'round'), k(bw, bb, bay.ri, 'round'), k(bw, bt, bay.ri, 'round'), k(0, bt, bay.ro, 'round')]
+    : [];
+  return cornerPath([k(0, 0, r), k(w, 0, r), k(w, h, r), k(0, h, r), ...left]);
+}
+
 // w/h: the card's border box. nw/nh: the notch's width/height. r: the
 // card's own corner radius, in its corner `shape`. nr: the notch's two
 // outer ends (same shape). nf: its inner corner — always a circular arc,
@@ -109,10 +123,14 @@ export function notchPath(
   w: number,
   h: number,
   { nw, nh, r, nr, nf, side, shape = 'squircle' }: {
-    nw: number; nh: number; r: number; nr: number; nf: number; side: 'left' | 'right'; shape?: CornerShape;
+    nw: number; nh: number; r: number; nr: number; nf: number; side: 'left' | 'right' | 'top-right'; shape?: CornerShape;
   },
 ): string {
   const k = (x: number, y: number, rr: number, s: CornerShape = shape): Corner => ({ x, y, r: rr, shape: s });
+  if (side === 'top-right') {
+    // (How I Use AI's stage: its ⌃ ⌄ in the top-right corner)
+    return cornerPath([k(0, 0, r), k(w - nw, 0, nr), k(w - nw, nh, nf, 'round'), k(w, nh, nr), k(w, h, r), k(0, h, r)]);
+  }
   return cornerPath(side === 'left'
     ? [k(0, 0, r), k(w, 0, r), k(w, h, r), k(nw, h, nr), k(nw, h - nh, nf, 'round'), k(0, h - nh, nr)]
     : [k(0, 0, r), k(w, 0, r), k(w, h - nh, nr), k(w - nw, h - nh, nf, 'round'), k(w - nw, h, nr), k(0, h, r)]);

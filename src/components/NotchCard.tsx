@@ -36,6 +36,8 @@ export default function NotchCard({ area, className, notch, children, side = 'le
   const ring = useRef<SVGPathElement>(null);
   const glow = useRef<SVGRadialGradientElement>(null);
   const glowId = `notch-ring-${useId().replace(/:/g, '')}`;
+  const radar = useRef<SVGSVGElement>(null);
+  const radarMaskId = `${glowId}-radar`;
   useEffect(() => {
     const w = wrap.current, c = card.current, el = tags.current, s = svg.current, p = outline.current;
     const rg = ring.current, g = glow.current;
@@ -97,6 +99,20 @@ export default function NotchCard({ area, className, notch, children, side = 'le
       // with a radial glow that tracks the pointer
       rg.setAttribute('d', d);
       rg.setAttribute('stroke-width', '2');
+      // the hover radar ring (outline + card-radar on other cards, which
+      // the clip cuts off here): the same path, outside the clip
+      const rd = radar.current;
+      // (the svg itself stays 0×0, overflow visible: sized to the card it
+      // held the grid cell at the card's old height, so the card could
+      // never shrink back, e.g. desktop → tablet)
+      if (rd) {
+        rd.querySelectorAll('path').forEach(p => p.setAttribute('d', d));
+        // the mask (and its white base) reach 40px past the card
+        for (const m of rd.querySelectorAll('mask, rect')) {
+          m.setAttribute('width', String(cw + 80));
+          m.setAttribute('height', String(ch + 80));
+        }
+      }
     };
     const onMove = (e: MouseEvent) => {
       const r = c.getBoundingClientRect();
@@ -137,6 +153,18 @@ export default function NotchCard({ area, className, notch, children, side = 'le
         {children}
       </div>
       {shadow && <span className="bento-shadow" aria-hidden="true" />}
+      {/* the hover radar ring along the notched outline: a 1px line at the
+          ring's offset (the wide stroke, less the narrower one and the
+          card itself, masked out) — see .notch-radar */}
+      {hasNotch && <svg ref={radar} className="notch-radar" width="0" height="0" aria-hidden="true">
+        <defs>
+          <mask id={radarMaskId} maskUnits="userSpaceOnUse" x="-40" y="-40">
+            <rect x="-40" y="-40" fill="#fff" />
+            <path className="notch-radar-inner" fill="#000" stroke="#000" />
+          </mask>
+        </defs>
+        <path className="notch-radar-ring" fill="none" stroke="#fff" mask={`url(#${radarMaskId})`} />
+      </svg>}
       {badge && (
         <div className="about-notch-badge rise-soft" data-rise-with={`.${area} > .about-notch-card`} data-rise-lock="">{badge}</div>
       )}
