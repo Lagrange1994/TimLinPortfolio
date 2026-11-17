@@ -237,3 +237,22 @@ describe('tablet — Figma MCP heading pins lower', () => {
     expect(read('src/styles/portfolio.css')).toMatch(/@media \(max-width: 1024px\) \{\s*\.mcp-scroll \.mcp-bleed \{\s*justify-content: safe center;\s*padding-bottom: max\(96px, 12svh\);/);
   });
 });
+
+describe('tablet — Figma MCP stays centred through the opening zoom', () => {
+  it('lifts the heading and the grid by half the extra height, in lockstep with the scale', () => {
+    const css = read('src/styles/portfolio.css');
+    expect(css).toContain('.mcp-scroll .mcp-zoom { animation-name: mcp-zoom-out-centred; }');
+    expect(css).toMatch(/@keyframes mcp-zoom-out-centred \{\s*0% \{ translate: 25\.6% calc\(-0\.5 \* var\(--mcp-zh, 0px\)\); scale: 2; animation-timing-function: cubic-bezier\(\.3, 0, \.2, 1\); \}/);
+    expect(css).toMatch(/@keyframes mcp-head-centred \{\s*0% \{ translate: 0 calc\(-0\.5 \* var\(--mcp-zh, 0px\)\); opacity: 1; animation-timing-function: cubic-bezier\(\.3, 0, \.2, 1\); \}/);
+    // the heading's fade (contain 52–62%) mapped onto the zoom's 0–80% range
+    expect(css).toMatch(/36\.5%, 65% \{ translate: 0 0; opacity: 1; \}\s*77\.5%, 100% \{ translate: 0 -24px; opacity: 0; \}/);
+    // the mockup's layout height: getBoundingClientRect caught its rise squash
+    expect(read('src/components/FigmaMcpShowcase.tsx')).toContain("bleed.style.setProperty('--mcp-zh', `${wrap.offsetHeight}px`);");
+  });
+});
+
+describe('principle stages — neumorphic inset (light theme)', () => {
+  it('press in with the same inset pair as the notched containers', () => {
+    expect(read('src/styles/portfolio.css')).toMatch(/:root\[data-theme="light"\] \.principle-stage \{[\s\S]*?box-shadow:\s*inset 6px 6px 12px var\(--neu-shadow-dark\),\s*inset -6px -6px 12px var\(--neu-shadow-light\);/);
+  });
+});

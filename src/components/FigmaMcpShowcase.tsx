@@ -439,6 +439,10 @@ export default function FigmaMcpShowcase({ header }: { header?: ReactNode } = {}
       const fit = centred
         ? fitCodeCard({ w: f.width, h: f.height }, rel(z), rel(c), parseFloat(getComputedStyle(bleed).paddingTop) || 0, true)
         : fitCodeCard({ w: f.width, h: f.height }, rel(z), rel(c), head ? head.top - f.top : z.top - f.top);
+      // the mockup's own (scaled, layout) height, not the layer's (it reaches
+      // further down), for the tablets' centred opening zoom (the heading,
+      // outside the layer, reads it too)
+      bleed.style.setProperty('--mcp-zh', `${wrap.offsetHeight}px`);
       layer.style.setProperty('--mcp-fit-s', fit.scale.toFixed(4));
       layer.style.setProperty('--mcp-fit-x', `${fit.x.toFixed(1)}px`);
       layer.style.setProperty('--mcp-fit-y', `${fit.y.toFixed(1)}px`);

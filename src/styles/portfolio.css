@@ -3206,8 +3206,11 @@
         radial-gradient(var(--pa-dot) 1px, transparent 1px) 0 0 / 14px 14px,
         color-mix(in oklab, rgb(var(--tone)) 4%, transparent);
       border-color: transparent;
-      /* flat: only a faint tint marks the stage, no pressed-in shadow */
-      box-shadow: none;
+      /* pressed in: the neumorphic inset pair the notched containers use
+         (.stage-inset: 6px offset, ~12px blur, the site's neu shadows) */
+      box-shadow:
+        inset 6px 6px 12px var(--neu-shadow-dark),
+        inset -6px -6px 12px var(--neu-shadow-light);
       --pa-dot: color-mix(in oklab, var(--text) 6%, transparent);
       --pa-ink: color-mix(in oklab, var(--text) 32%, transparent);
       --pa-fill: color-mix(in oklab, var(--text) 10%, transparent);
@@ -6250,6 +6253,28 @@
           .mcp-scroll .mcp-bleed {
             justify-content: safe center;
             padding-bottom: max(96px, 12svh);
+          }
+          /* ...and stays centred through the opening zoom: at scale s the
+             grid stands (s − 1) × its height taller (it grows down from its
+             top), so the heading and the grid both ride up by half of that
+             (--mcp-zh, the grid's measured height), easing in lockstep with
+             the scale. The heading's fade-out (contain 52–62%) is folded
+             into the same keyframes, mapped onto the zoom's 0–80% range. */
+          .mcp-scroll .mcp-zoom { animation-name: mcp-zoom-out-centred; }
+          .mcp-scroll .figma-mcp-header {
+            animation: mcp-head-centred linear both;
+            animation-timeline: --mcp-zoom;
+            animation-range: contain 0% contain 80%;
+          }
+          @keyframes mcp-zoom-out-centred {
+            0% { translate: 25.6% calc(-0.5 * var(--mcp-zh, 0px)); scale: 2; animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+            36.5%, 65% { translate: 0% 0; scale: 1; animation-timing-function: cubic-bezier(.45, 0, .2, 1); }
+            100% { translate: var(--mcp-fit-x, -76.2%) var(--mcp-fit-y, 0px); scale: var(--mcp-fit-s, 2); }
+          }
+          @keyframes mcp-head-centred {
+            0% { translate: 0 calc(-0.5 * var(--mcp-zh, 0px)); opacity: 1; animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+            36.5%, 65% { translate: 0 0; opacity: 1; }
+            77.5%, 100% { translate: 0 -24px; opacity: 0; }
           }
         }
 
