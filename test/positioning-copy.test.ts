@@ -17,7 +17,7 @@ describe('positioning and numbers', () => {
       expect(`${translations[lang].nav_tagline_l1} ${translations[lang].nav_tagline_l2}`).toBe(role);
     }
     expect(read('src/components/ContactSection.tsx')).toContain(`<p>${role}</p>`);
-    expect(read('src/components/AboutSection.tsx')).toContain(`<p>${role}</p>`);
+    expect(read('src/components/OverviewSection.tsx')).toContain(`<p>${role}</p>`);
     const html = read('index.html');
     expect(html).toContain(`"jobTitle": "${role}",`);
     expect(html).toContain(`<h1>Tim Lin — ${role}</h1>`);
@@ -30,8 +30,8 @@ describe('positioning and numbers', () => {
     for (const lang of ['zh', 'en'] as const) expect(translations[lang].hero_desc.split('<br>')).toEqual(heroDescTexts[lang]);
   });
 
-  it('years and projects match the About stat tiles', () => {
-    const about = read('src/components/AboutSection.tsx');
+  it('years and projects match the Overview stat tiles', () => {
+    const about = read('src/components/OverviewSection.tsx');
     expect(about).toContain('<div className="stat-num-wrap" data-value="5">');
     expect(about).toContain('<div className="stat-num-wrap" data-value="13">');
     expect(PROJECTS.length).toBe(13);

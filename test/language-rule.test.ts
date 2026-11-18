@@ -20,7 +20,7 @@ describe('language rule on the Chinese page', () => {
   });
 
   it('eyebrows and h2 written in the components are English too', () => {
-    for (const f of ['AboutSection', 'SkillsSection', 'PortfolioSection', 'ContactSection']) {
+    for (const f of ['OverviewSection', 'AboutSection', 'SkillsSection', 'PortfolioSection', 'ContactSection']) {
       const src = readFileSync(resolve(__dirname, `../src/components/${f}.tsx`), 'utf8');
       for (const m of src.matchAll(/className="section-label[^"]*"[^>]*>([^<{]+)</g)) expect(cjk.test(m[1])).toBe(false);
     }
@@ -28,7 +28,7 @@ describe('language rule on the Chinese page', () => {
 
   it('sentences stay Chinese: subtitles, body, principle titles, questions, buttons', () => {
     for (const k of ['about_lead', 'contact_sub', 'portfolio_headline_sub', 'about_principle1_title', 'about_principle2_title',
-      'about_principle3_title', 'faq_exp_q1', 'faq_biz_q1', 'faq_more_label', 'faq_tab_experience', 'faq_tab_freelance', 'line_btn', 'open_for_work_sub', 'hero_ask_label', 'p1_desc'])
+      'about_principle3_title', 'faq_exp_q1', 'faq_biz_q1', 'faq_more_label', 'faq_tab_experience', 'faq_tab_freelance', 'line_btn', 'open_for_work_sub', 'hero_ask_label', 'p1_desc', 'overview_all_work', 'overview_process_more'])
       expect([k, cjk.test(text(zh[k]))]).toEqual([k, true]);
   });
 });

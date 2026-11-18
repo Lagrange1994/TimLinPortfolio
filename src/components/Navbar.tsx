@@ -3,6 +3,7 @@ import { useLang } from '../context/LangContext';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { useTheme } from '../utils/useTheme';
 import { LAZY_UNIT_EVENT } from '../utils/lazyUnit';
+import { navShouldCompact, flushSectionTops } from '../utils/navCompact';
 import { Sun, Moon, Globe, ChevronDown, Check } from 'lucide-react';
 import gsap from 'gsap';
 
@@ -27,6 +28,7 @@ declare global {
 
 const NAV_ITEMS = [
   { key: 'home', label: 'Home', scrollTo: 'home' },
+  { key: 'overview', label: 'Overview', scrollTo: 'overview' },
   { key: 'about', label: 'About', scrollTo: 'about' },
   { key: 'skills', label: 'Skills', scrollTo: 'my-skills' },
   { key: 'portfolio', label: 'Portfolio', scrollTo: 'portfolio' },
@@ -88,7 +90,10 @@ export default function Navbar() {
     const header = headerRef.current;
     if (!header) return;
     const onScroll = () => {
-      header.classList.toggle('scrolled', window.scrollY > 40);
+      // full (notch) layout at the top, and again while a framed section
+      // ([data-nav-flush], the Overview wall) sits flush at the top: its
+      // frame has the same notch and menu-bar slot as the hero's
+      header.classList.toggle('scrolled', navShouldCompact(window.scrollY, flushSectionTops()));
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -239,11 +244,13 @@ export default function Navbar() {
     // LAZY_UNIT_EVENT.
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => {
-        if (e.isIntersecting) {
-          document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-          const l = document.querySelector<HTMLElement>(`.nav-link[data-scroll-to="${e.target.id}"]`);
-          if (l) l.classList.add('active');
-        }
+        if (!e.isIntersecting) return;
+        // a section with no menu item (#process, #tech-stack) keeps the
+        // current highlight instead of clearing it
+        const l = document.querySelector<HTMLElement>(`.nav-link[data-scroll-to="${e.target.id}"]`);
+        if (!l) return;
+        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+        l.classList.add('active');
       });
     }, { threshold: 0.35 });
     const observeSections = () => {

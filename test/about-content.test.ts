@@ -12,13 +12,16 @@ const root = resolve(__dirname, '..');
 const tsx = readFileSync(resolve(root, 'src/components/AboutSection.tsx'), 'utf8');
 const css = readFileSync(resolve(root, 'src/styles/portfolio.css'), 'utf8');
 const notchTsx = readFileSync(resolve(root, 'src/components/NotchCard.tsx'), 'utf8');
+// the profile, stat, Service Domains, AI workflow and availability cards
+// live on the Overview wall now
+const wall = readFileSync(resolve(root, 'src/components/OverviewSection.tsx'), 'utf8');
 const links = (name: string) => JSON.parse(tsx.match(new RegExp(`const ${name} = (\\[[^\\]]*\\]);`))![1].replace(/'/g, '"')) as string[];
 
 describe('About content', () => {
   it('the cards show the short copy; the full paragraphs stay for the chat bot', () => {
     expect(tsx).toContain('t.about_intro1_short');
     expect(tsx).toContain('t.about_intro2_short');
-    expect(tsx).toContain('t.about_ai_short');
+    expect(wall).toContain('t.about_ai_short');
     expect(tsx).not.toMatch(/__html: t\.about_p[123]\b/);
     const chat = readFileSync(resolve(root, 'api/_chat-core.ts'), 'utf8');
     for (const k of ['about_p1', 'about_p2', 'about_p3'] as const) {
@@ -104,7 +107,7 @@ describe('About content', () => {
         expect(t[`about_principle${n}_tags`]).toBeUndefined();
       }
     }
-    expect(tsx).toContain(`scrollToSectionAligned('contact')`);
+    expect(wall).toContain(`scrollToSectionAligned('contact')`);
     // each principle card is labelled, not just numbered
     // the number rides the card's top border as a capsule (NotchCard badge)
     expect(tsx).toContain(`badge={<><span className="about-notch-badge-dot" aria-hidden="true" />DESIGN PRINCIPLE · {String(n).padStart(2, '0')}</>}`);
@@ -116,13 +119,18 @@ describe('About content', () => {
       for (const k of ['about_cta_status', 'about_cta_text', 'about_cta_button'] as const) expect(translations[lang][k]).toBeTruthy();
     }
     expect(css).toMatch(/\.about-col--principles \{[^}]*grid-template-areas: "p1 p2 p3";/);
-    expect(css).toMatch(/\.about-col--profile \{[^}]*grid-template-areas: "photo" "cta";[^}]*grid-template-rows: auto auto;[^}]*align-content: start;/);
+    expect(css).toMatch(/\.about-col--intro \{[^}]*grid-template-areas: "intro1 intro2";/);
   });
 
   it('notched cards: tags and action buttons sit in a bottom-left notch', () => {
-    // principles (one map), intro1, intro2, workflow, cta
-    expect((tsx.match(/<NotchCard\b/g) ?? []).length).toBe(5);
-    for (const area of ['bento-area-p${n}', 'bento-area-intro1', 'bento-area-intro2', 'bento-area-workflow', 'bento-area-cta']) {
+    // About: principles (one map), intro1, intro2; the wall: web, design,
+    // workflow, cta
+    expect((tsx.match(/<NotchCard\b/g) ?? []).length).toBe(3);
+    expect((wall.match(/<NotchCard\b/g) ?? []).length).toBe(4);
+    for (const area of ['bento-area-workflow', 'bento-area-cta', 'overview-area-web', 'overview-area-design']) {
+      expect(wall).toMatch(new RegExp(`<NotchCard\\s+area="${area}"`));
+    }
+    for (const area of ['bento-area-p${n}', 'bento-area-intro1', 'bento-area-intro2']) {
       expect(tsx).toMatch(new RegExp(`<NotchCard\\s+(key=\\{n\\}\\s+)?area=[{"\`]+${area.replace(/[${}]/g, '\\$&')}`));
     }
     // the notch is measured from the tags; jsdom has no ResizeObserver
@@ -138,15 +146,16 @@ describe('About content', () => {
     // the clip cuts the card's own box-shadow, so light mode shadows the wrapper
     expect(css).toMatch(/:root\[data-theme="light"\] \.about-notch \{\s*filter: drop-shadow/);
     // both action buttons: the bigger capsule in the card's own colour
-    expect((tsx.match(/className="about-more about-action"/g) ?? []).length).toBe(1);
+    expect((tsx.match(/className="about-more about-action"/g) ?? []).length).toBe(0);
+    expect((wall.match(/className="about-more about-action"/g) ?? []).length).toBe(3);
     // the availability title reads "Open for opportunities", in bold
     for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_cta_status).toBe('Open for opportunities');
     expect(translations.zh.about_cta_text).toContain('接受全職 / 兼職 / 專案合作');
     expect(css).toMatch(/\.about-status \{[^}]*font-weight: 700;[^}]*color: var\(--text\);/);
     // the availability card copies Contact's "open for work" strip: its
     // fill/border and its gradient glass button
-    expect(tsx).toContain('className="bento-card card-spotlight sc-card about-cta-card rise-card"');
-    expect(tsx).toContain(`className="about-more btn-glass btn-grad about-cta-btn" onClick={() => scrollToSectionAligned('contact')}`);
+    expect(wall).toContain('className="bento-card card-spotlight sc-card about-cta-card rise-card"');
+    expect(wall).toContain(`className="about-more btn-glass btn-grad about-cta-btn" onClick={() => scrollToSectionAligned('contact')}`);
     expect(css).toMatch(/\.bento-card\.about-cta-card \{\s*background: linear-gradient\(135deg, rgba\(108, 99, 255, 0\.12\), rgba\(255, 101, 132, 0\.06\)\);\s*border-color: rgba\(108, 99, 255, 0\.25\);/);
     // the workflow action is a secondary button: the GitHub / Email glass pill
     expect(css).toMatch(/\.about-action \{[^}]*height: 46px;[^}]*background: var\(--noise-grain\) 0 0 \/ 180px 180px repeat, var\(--glass-bg-premium\);[^}]*color: var\(--text\);/);
@@ -187,22 +196,22 @@ describe('About content', () => {
   });
 
   it('Years / Projects / Domains: a vivid tile in the card colour, the number in a multicolour gradient', () => {
-    for (const area of ['years', 'projects', 'domains']) expect(tsx).toMatch(new RegExp(`bento-stat-big bento-area-${area}`));
+    for (const area of ['years', 'projects', 'domains']) expect(wall).toMatch(new RegExp(`bento-stat-big bento-area-${area}`));
     // the phone rules shrinking Service Domains' digit must not win over it
     expect(css).toMatch(/\.bento-card\.bento-stat-big \.digit-col-inner span,/);
     // Years / Projects: a big frosted-glass icon tile, bottom-right
-    expect(tsx).toMatch(/bento-area-years rise-card">\s*<span className="card-glass-highlight" aria-hidden="true" \/>\s*<div className="stat-glass-icon" aria-hidden="true"><i className="ph-bold ph-clock" \/><\/div>/);
-    expect(tsx).toMatch(/bento-area-projects rise-card">\s*<span className="card-glass-highlight" aria-hidden="true" \/>\s*<div className="stat-glass-icon" aria-hidden="true"><i className="ph-bold ph-squares-four" \/><\/div>/);
+    expect(wall).toMatch(/bento-area-years rise-card">\s*<span className="card-glass-highlight" aria-hidden="true" \/>\s*<div className="stat-glass-icon" aria-hidden="true"><i className="ph-bold ph-clock" \/><\/div>/);
+    expect(wall).toMatch(/bento-area-projects rise-card">\s*<span className="card-glass-highlight" aria-hidden="true" \/>\s*<div className="stat-glass-icon" aria-hidden="true"><i className="ph-bold ph-squares-four" \/><\/div>/);
     // big, and pushed past the right / bottom edges so the card crops it
     expect(css).toMatch(/\.stat-glass-icon \{[^}]*position: absolute;[^}]*right: -24px;[^}]*bottom: -24px;[^}]*width: 120px;[^}]*backdrop-filter: blur\(8px\);/);
     // the principle cards: the intro cards' top-down tint, in the capsules' purple
     expect(css).toMatch(/\.bento-card\.bento-principle \{\s*--card-tint: rgba\(108, 99, 255, \.24\);\s*border-color: rgba\(108, 99, 255, \.34\);/);
     // each tile its own page colour, purple to blue: #8A2BE2, #6C63FF, #00D4FF
-    expect(css).toContain('.about-grid .bento-card.bento-stat-big.bento-area-years { --tone: 138, 43, 226; }');
-    expect(css).toContain('.about-grid .bento-card.bento-stat-big.bento-area-projects { --tone: 108, 99, 255; }');
-    expect(css).toContain('.about-grid .bento-card.bento-stat-big.bento-area-domains { --tone: 0, 212, 255; }');
+    expect(css).toContain(':is(.about-grid, .overview-grid) .bento-card.bento-stat-big.bento-area-years { --tone: 138, 43, 226; }');
+    expect(css).toContain(':is(.about-grid, .overview-grid) .bento-card.bento-stat-big.bento-area-projects { --tone: 108, 99, 255; }');
+    expect(css).toContain(':is(.about-grid, .overview-grid) .bento-card.bento-stat-big.bento-area-domains { --tone: 0, 212, 255; }');
     // dark mode: deep and low-light, from each tile's own colour
-    expect(css).toMatch(/:root:not\(\[data-theme="light"\]\) \.about-grid \.bento-card\.bento-stat-big \{\s*--tone-deep: oklch\(from rgb\(var\(--tone\)\) \.3 \.13 h\);/);
+    expect(css).toMatch(/:root:not\(\[data-theme="light"\]\) :is\(\.about-grid, \.overview-grid\) \.bento-card\.bento-stat-big \{\s*--tone-deep: oklch\(from rgb\(var\(--tone\)\) \.3 \.13 h\);/);
     // light mode: same size, faded so it doesn't fight the label
     expect(css).toMatch(/:root\[data-theme="light"\] \.stat-glass-icon \{[^}]*opacity: \.4;/);
     // the intro cards carry no floating icon art: the logos sit inline in the copy
@@ -212,9 +221,10 @@ describe('About content', () => {
     // the workflow card's button sits in the bottom-right notch; the step
     // chips start at the card's left padding, left of the notch, their top
     // edge level with the button's top
-    expect(tsx).toMatch(/area="bento-area-workflow"\s*side="right"/);
+    expect(wall).toMatch(/area="bento-area-workflow"\s*side="right"/);
+    expect(wall).toMatch(/area="bento-area-cta"\s*side="right"/);
     // every About notch sits bottom-right, the intro cards' project tags too
-    for (const a of ['intro1', 'intro2', 'cta']) expect(tsx).toMatch(new RegExp(`area="bento-area-${a}"\\s*side="right"`));
+    for (const a of ['intro1', 'intro2']) expect(tsx).toMatch(new RegExp(`area="bento-area-${a}"\\s*side="right"`));
     expect(css).toMatch(/\.bento-area-workflow \.ai-flow-stepper \{\s*align-self: flex-start;\s*justify-content: flex-start;\s*margin-left: 0;\s*max-width: calc\(100% \+ 12px - var\(--nw\)\);\s*margin-bottom: calc\(-1 \* \(var\(--th\) \+ 24px\) \+ \(var\(--th\) - 28px\)\);/);
     // step chips the size of the project tags: a fixed 28px, 12.5px text
     expect(css).toMatch(/\.bento-area-workflow \.afs-step \{\s*gap: 6px;\s*box-sizing: border-box;\s*height: 28px;\s*padding: 0 12px;/);
@@ -226,7 +236,7 @@ describe('About content', () => {
     // kept out of the "lift every child above the spotlight" rule
     expect(css).toContain(':not(.domain-swap-stage):not(.stat-glass-icon):not(.notch-outline) {');
     // Projects keeps its own (green) colour
-    expect(tsx).toContain('bento-card bento-human card-spotlight sc-card bento-stat-big bento-area-projects');
+    expect(wall).toContain('bento-card bento-human card-spotlight sc-card bento-stat-big bento-area-projects');
     expect(css).toMatch(/\.bento-card\.bento-stat-big,[\s\S]*?linear-gradient\(160deg, var\(--tone-deep\) 0%, var\(--tone-vivid\) 55%, var\(--tone-bright\) 100%\) !important;/);
     expect(css).toMatch(/\.bento-stat-big \.digit-col-inner span,[^{]*\{[^}]*font-size: var\(--big\);/);
     // the number in the tile's own colour family, lighter than the tile
@@ -247,33 +257,31 @@ describe('About content', () => {
   });
 
   it('the AI card hands off to How I Use AI (#my-skills)', () => {
-    expect(tsx).toContain(`scrollToSectionAligned('my-skills')`);
+    expect(wall).toContain(`scrollToSectionAligned('my-skills')`);
     const skills = readFileSync(resolve(root, 'src/components/SkillsSection.tsx'), 'utf8');
     expect(skills).toMatch(/<section id="my-skills"[^>]*>\s*<div ref=\{aiLabelRef\} className="section-label rise-soft"[^>]*>How I Use AI<\/div>/);
   });
 
   it('each Service Domains cover carries its industry label, in both languages', () => {
-    const covers = tsx.match(/const DOMAIN_COVERS = \[([\s\S]*?)\];/)![1].match(/label: '/g)!.length;
+    const covers = wall.match(/const DOMAIN_COVERS = \[([\s\S]*?)\];/)![1].match(/label: '/g)!.length;
     for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_domain_labels.split('|')).toHaveLength(covers);
-    expect(tsx).toContain(`<span className="domain-cover-label" aria-hidden="true" style={{ ['--label-bg' as string]: d.tone }}>{t.about_domain_labels.split('|')[i]}</span>`);
+    expect(wall).toContain(`<span className="domain-cover-label" aria-hidden="true" style={{ ['--label-bg' as string]: d.tone }}>{t.about_domain_labels.split('|')[i]}</span>`);
     // each label takes its cover's key colour, not plain dark
-    expect((tsx.match(/img: '\.\/img\/my_portfolio\/[^']+', tone: '#[0-9A-F]{6}' \}/g) ?? []).length).toBe(6);
+    expect((wall.match(/img: '\.\/img\/my_portfolio\/[^']+', tone: '#[0-9A-F]{6}' \}/g) ?? []).length).toBe(6);
     expect(css).toMatch(/\.domain-cover-label \{[^}]*background: color-mix\(in oklab, var\(--label-bg/);
     expect(css).toMatch(/\.domain-cover-label \{[^}]*position: absolute;[^}]*top: 8px;[^}]*left: 8px;/);
   });
 
-  it('desktop: intro cards and stats are two independent columns; tablet/phone unwrap them', () => {
-    expect(tsx).toMatch(/<div className="about-col about-col--intro">[\s\S]*bento-area-intro1[\s\S]*bento-area-intro2[\s\S]*?<\/div>\s*<div className="about-col about-col--stats">[\s\S]*bento-area-years[\s\S]*bento-area-projects[\s\S]*bento-area-domains/);
-    expect(css).toMatch(/"profile principles principles principles principles"\s*"profile intro intro stats stats"\s*"profile workflow workflow workflow workflow";/);
-    // the intro cards split their column evenly; the stats keep their own rows
-    expect(css).toMatch(/\.about-col--intro \{[^}]*grid-template-rows: 1fr 1fr;/);
-    // the three stat cards share one height: desktop column, tablet and phone rows
-    expect(css).toMatch(/\.about-col--stats \{[^}]*grid-template-rows: 1fr 1fr;/);
-    // tablet: the photo at its own ratio, the three stat cards beside it,
-    // the availability card the full width under them
-    expect(css).toContain('grid-template-rows: repeat(7, auto);');
-    expect(css).toMatch(/"photo( photo){11} years( years){5} projects( projects){5}"\s*"photo( photo){11} domains( domains){11}"\s*"cta( cta){23}"/);
-    expect(css).toContain('grid-template-rows: auto auto auto auto auto auto auto 1fr 1fr auto auto;');
+  it('About: headline, principles, then the intro cards side by side; tablet/phone unwrap the columns', () => {
+    expect(tsx).toMatch(/<div className="about-col about-col--intro">[\s\S]*bento-area-intro1[\s\S]*bento-area-intro2/);
+    // the moved cards are gone from About
+    for (const gone of ['about-col--stats', 'about-col--profile', 'bento-area-workflow', 'bento-area-cta', 'profile-card-wrap', 'stat-row'])
+      expect(tsx).not.toContain(gone);
+    expect(css).toMatch(/\.about-grid \{[^}]*grid-template-areas:\s*"headline headline"\s*"principles principles"\s*"intro intro";/);
+    // tablet: principles three across, the intro cards two across
+    expect(css).toMatch(/"p1( p1){7} p2( p2){7} p3( p3){7}"\s*"intro1( intro1){11} intro2( intro2){11}";/);
+    // phone: one column
+    expect(css).toMatch(/"headline headline"\s*"p1 p1"\s*"p2 p2"\s*"p3 p3"\s*"intro1 intro1"\s*"intro2 intro2";/);
     expect((css.match(/\.about-col \{\s*display: contents;\s*\}/g) ?? []).length).toBe(2);
   });
 
@@ -284,17 +292,17 @@ describe('About content', () => {
   });
 
   it('Service Domains counts the six industries the case studies cover (public sector as one)', () => {
-    const covers = tsx.match(/const DOMAIN_COVERS = \[([\s\S]*?)\];/)![1].match(/label: '/g)!.length;
+    const covers = wall.match(/const DOMAIN_COVERS = \[([\s\S]*?)\];/)![1].match(/label: '/g)!.length;
     expect(covers).toBe(6);
     expect(translations.zh.about_domain_labels.split('|')[0]).toBe('公部門');
-    expect(tsx).toContain('data-value={String(DOMAIN_COVERS.length)}');
+    expect(wall).toContain('data-value={String(DOMAIN_COVERS.length)}');
     for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_domains_summary.split(/[・·]/)).toHaveLength(covers);
     // every cover image is a real file
-    for (const [, img] of tsx.matchAll(/img: '\.\/(img\/my_portfolio\/[^']+)'/g)) expect(existsSync(resolve(root, 'public', img)), img).toBe(true);
+    for (const [, img] of wall.matchAll(/img: '\.\/(img\/my_portfolio\/[^']+)'/g)) expect(existsSync(resolve(root, 'public', img)), img).toBe(true);
     // the caption breaks only between industries: Chinese two lines of
     // three, English (longer words) three lines of two, clear of the covers
-    expect(tsx).toContain("chunkLines(domainsWords, domainsSeparator === '・' ? 3 : 2, domainsSeparator)");
-    expect(tsx).toContain('{domainsLines.map((line, i) => <span key={line}>{i > 0 && <br />}{line}</span>)}');
+    expect(wall).toContain("chunkLines(domainsWords, domainsSeparator === '・' ? 3 : 2, domainsSeparator)");
+    expect(wall).toContain('{domainsLines.map((line, i) => <span key={line}>{i > 0 && <br />}{line}</span>)}');
     expect(chunkLines(['a', 'b', 'c', 'd', 'e', 'f'], 3, '・')).toEqual(['a・b・c', 'd・e・f']);
     expect(chunkLines(['a', 'b', 'c', 'd', 'e', 'f'], 2, ' · ')).toEqual(['a · b', 'c · d', 'e · f']);
     expect(chunkLines(['a', 'b', 'c'], 2, ' · ')).toEqual(['a · b', 'c']);
@@ -302,27 +310,30 @@ describe('About content', () => {
   });
 
   it('Projects Delivered counts the portfolio', () => {
-    const value = Number(tsx.match(/bento-area-projects[\s\S]*?data-value="(\d+)"/)![1]);
+    const value = Number(wall.match(/bento-area-projects[\s\S]*?data-value="(\d+)"/)![1]);
     expect(value).toBe(PROJECTS.length);
   });
 
-  // Desktop: the profile, intro and stats columns share the outer grid's row
-  // lines (subgrid), so the photo and availability card end exactly on the
-  // middle cards' edges instead of the photo's aspect ratio landing off.
-  it('desktop columns share row lines through subgrid', () => {
-    const start = css.indexOf('@media (min-width: 1025px) {\r\n      .about-grid {') >= 0
-      ? css.indexOf('@media (min-width: 1025px) {\r\n      .about-grid {')
-      : css.indexOf('@media (min-width: 1025px) {\n      .about-grid {');
+  // The Overview wall's desktop grid: the canvas's Layout A (1828x920 at
+  // 1920x1080), the profile down the left, the works and tools across the
+  // top, the AI workflow under the works, stats / domains / availability
+  // along the bottom, and an empty bottom-right cell for the frame's notch.
+  it('Overview desktop grid follows Layout A', () => {
+    const start = css.indexOf('Desktop: the wall as its own section under the hero');
     expect(start).toBeGreaterThan(-1);
-    const block = css.slice(start, start + 1600);
-    expect(block).toMatch(/"profile intro intro stats stats"\s*"profile intro intro stats stats"/);
-    expect(block).toMatch(/\.about-col--intro,\s*\.about-col--stats \{\s*grid-template-rows: subgrid;/);
-    // the profile column stops at the intro/stats band: the photo keeps its
-    // ratio, the availability card takes the rest; the workflow card runs
-    // the full width
-    expect(block).toMatch(/"profile intro intro stats stats"\s*"workflow workflow workflow workflow workflow"/);
-    expect(block).toMatch(/\.about-col--profile \{\s*grid-template-rows: auto 1fr;\s*grid-template-areas: "photo" "cta";/);
-    expect(block).not.toContain('.about-photo .pc-card');
+    const block = css.slice(start, start + 4000);
+    expect(block).toMatch(/minmax\(0, 437fr\) minmax\(0, 269fr\) minmax\(0, 219fr\) minmax\(0, 109fr\)\s*minmax\(0, 133fr\) minmax\(0, 195fr\) minmax\(0, 370fr\);/);
+    expect(block).toMatch(/"profile app web web web web tools"\s*"profile app web web web web design"\s*"profile workflow workflow workflow workflow workflow design"\s*"stats stats domains domains domains cta cta";/);
+    // the AI card's row is its content height; the profile card fills its column
+    expect(block).toContain('grid-template-rows: minmax(0, 190fr) minmax(0, 194fr) auto minmax(0, 224fr);');
+    expect(block).toMatch(/\.overview-profile \.pc-card \{\s*aspect-ratio: auto;\s*height: 100%;/);
+    // one Web and one App work; only the Web tile carries the "all work" button
+    expect(wall).toContain("export const WALL_WORKS = { web: 'p1', app: 'p2' } as const;");
+    expect((wall.match(/t\.overview_all_work/g) ?? []).length).toBe(1);
+    expect(wall).toContain(`scrollToSectionAligned('portfolio')`);
+    expect(wall).toContain(`scrollToSectionAligned('process')`);
+    // the wall drops the "Now" row
+    expect(wall).not.toContain('about_now');
   });
 
   // Principles as "one general line + scene": the copy names no project, no
@@ -364,23 +375,23 @@ describe('About content', () => {
   // one availability card: the status, four rows (terms, reply time, what
   // I'm working on now), and its three actions together in the
   // bottom-right notch; the links are the same as Contact's
-  it('the availability card holds the links, the reply time and Now', () => {
+  it('the availability card holds the links and the reply time', () => {
     const contact = readFileSync(resolve(root, 'src/components/ContactSection.tsx'), 'utf8');
-    const url = tsx.match(/const GITHUB_URL = '([^']+)';/)![1];
-    const email = tsx.match(/const EMAIL = '([^']+)';/)![1];
+    const url = wall.match(/const GITHUB_URL = '([^']+)';/)![1];
+    const email = wall.match(/const EMAIL = '([^']+)';/)![1];
     expect(contact).toContain(`href="${url}"`);
     expect(contact).toContain(`mailto:${email}`);
     expect(contact).toContain('24h Avg. Response');
-    expect(tsx).toMatch(/const NOW_UPDATED = '\d{4}\.\d{2}';/);
     for (const lang of ['zh', 'en'] as const) {
       for (const k of ['about_now', 'about_now_label', 'about_reply', 'about_reply_label'] as const) expect(translations[lang][k], k).toBeTruthy();
     }
-    const card = tsx.slice(tsx.indexOf('area="bento-area-cta"'), tsx.indexOf('</NotchCard>', tsx.indexOf('area="bento-area-cta"')));
+    const card = wall.slice(wall.indexOf('area="bento-area-cta"'), wall.indexOf('</NotchCard>', wall.indexOf('area="bento-area-cta"')));
     expect(card).toContain('side="right"');
     // the notch: GitHub, Email, then 聯絡我
     expect(card).toMatch(/notch=\{<>\s*<a className="about-icon-link" href=\{GITHUB_URL\}[\s\S]*?aria-label="GitHub">[\s\S]*?<a className="about-icon-link" href=\{`mailto:\$\{EMAIL\}`\} aria-label="Email">[\s\S]*?className="about-more btn-glass btn-grad about-cta-btn"[\s\S]*?<\/>\}/);
-    // the rows: the terms, the reply time, then Now
-    expect(card).toMatch(/dangerouslySetInnerHTML=\{\{ __html: t\.about_cta_text \}\}[\s\S]*?\{t\.about_reply_label\}[\s\S]*?\{t\.about_now_label\}[\s\S]*?\{t\.about_now\}[\s\S]*?\{NOW_UPDATED\}/);
+    // the rows: the terms, then the reply time (the wall drops Now)
+    expect(card).toMatch(/dangerouslySetInnerHTML=\{\{ __html: t\.about_cta_text \}\}[\s\S]*?\{t\.about_reply_label\}/);
+    expect(card).not.toContain('about_now');
     expect(tsx).not.toContain('about-links');
     expect(css).not.toMatch(/\.about-links?\b|\.about-link-/);
     expect(css).toContain('.bento-point-rows { display: contents; }');

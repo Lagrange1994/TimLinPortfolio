@@ -845,7 +845,7 @@ export default function HeroSection() {
       <button
         className="hero-scroll-indicator"
         aria-label="Scroll to next section"
-        onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+        onClick={() => scrollToSectionAligned('overview')}
       >
         <div className="mouse">
           <div className="wheel"></div>

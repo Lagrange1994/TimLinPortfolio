@@ -714,7 +714,7 @@ function DesignProcessSection() {
   const processThemes = useProcessCardThemes(sectionRef);
 
   return (
-      <section className="section section-band" ref={sectionRef}>
+      <section id="process" className="section section-band" ref={sectionRef}>
         <div className="section-label rise-soft">My Design Process</div>
         <div className="process-dual">
           <div className="process-column">

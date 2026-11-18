@@ -26,7 +26,7 @@ describe('section rhythm', () => {
 
   it('alternate sections carry the band: process, my-skills, contact', () => {
     const skills = read('src/components/SkillsSection.tsx');
-    expect(skills).toContain('<section className="section section-band" ref={sectionRef}>');
+    expect(skills).toContain('<section id="process" className="section section-band" ref={sectionRef}>');
     expect(skills).toContain('<section id="my-skills" className="section section-band">');
     expect(read('src/components/ContactSection.tsx')).toContain('<section id="contact" className="section section-band"');
     expect(read('src/components/AboutSection.tsx')).not.toContain('section-band');

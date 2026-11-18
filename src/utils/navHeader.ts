@@ -1,3 +1,4 @@
+import { NAV_FLUSH_MQ } from './navCompact';
 // #main-header's height changes between its resting/un-scrolled and
 // .scrolled (compact pill) states. Every `.section` uses scroll-margin-top:
 // var(--nav-h) so menu/CTA navigation lands with the title exactly
@@ -122,8 +123,11 @@ function desiredScrollY(target: HTMLElement): number {
   // A lazily unmounted section (LazyUnit) is a zero-size anchor span with the
   // section's id; once the real section mounts the span is removed, and a
   // detached node measures as 0 — callers re-resolve by id every frame.
-  const navH =
-    parseFloat(
+  // A framed section ([data-nav-flush], the Overview wall) lands flush at
+  // the very top: the navbar sits inside its frame's notch, like the hero's.
+  const navH = target.hasAttribute('data-nav-flush') && window.matchMedia?.(NAV_FLUSH_MQ).matches
+    ? 0
+    : parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue('--nav-h')
     ) || 0;
   const absTop = zoomTrackRestTop(target) ?? target.getBoundingClientRect().top + window.scrollY;

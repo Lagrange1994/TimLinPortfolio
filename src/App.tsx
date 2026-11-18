@@ -30,6 +30,7 @@ import LazySectionFallback from './components/LazySectionFallback';
 // nothing to catch it React unmounts the whole tree, not just the failed
 // section. The boundary renders nothing on error instead, same as the null
 // Suspense fallback — one section goes missing rather than the whole page.
+const OverviewSection = lazy(() => import('./components/OverviewSection'));
 const AboutSection = lazy(() => import('./components/AboutSection'));
 const SkillsSection = lazy(() => import('./components/SkillsSection'));
 const PortfolioSection = lazy(() => import('./components/PortfolioSection'));
@@ -54,6 +55,7 @@ export default function App() {
       <BeamsBackground />
       <Navbar />
       <HeroSection />
+      <LazyUnit name="overview"><ErrorBoundary><Suspense fallback={<LazySectionFallback name="overview" />}><OverviewSection /></Suspense></ErrorBoundary></LazyUnit>
       <LazyUnit name="about"><ErrorBoundary><Suspense fallback={<LazySectionFallback name="about" />}><AboutSection /></Suspense></ErrorBoundary></LazyUnit>
       <ErrorBoundary><Suspense fallback={<LazySectionFallback name="skills" />}><SkillsSection /></Suspense></ErrorBoundary>
       <LazyUnit name="portfolio"><ErrorBoundary><Suspense fallback={<LazySectionFallback name="portfolio" />}><PortfolioSection /></Suspense></ErrorBoundary></LazyUnit>

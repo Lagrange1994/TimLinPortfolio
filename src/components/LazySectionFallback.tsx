@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-type SectionName = 'about' | 'skills' | 'portfolio' | 'contact';
+type SectionName = 'overview' | 'about' | 'skills' | 'portfolio' | 'contact';
 
 interface Props {
   name: SectionName;
@@ -12,6 +12,7 @@ interface Props {
 // wrapper is deliberately not a <section>: LazyUnit/useRiseReveal must wait
 // for the real section element before it arms its entrance animation.
 const MIN_HEIGHT: Record<SectionName, string> = {
+  overview: '100dvh',
   about: '72rem',
   skills: '260rem',
   portfolio: '104rem',

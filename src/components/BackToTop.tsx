@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { flushAtTop, flushSectionTops } from '../utils/navCompact';
 
 // Fixed "back to top" button. Mounted once at the App level, next to
 // ChatPanel — NOT inside ContactSection, where it used to live: that section
@@ -12,7 +13,10 @@ export default function BackToTop() {
   // Toggle .visible based on scroll position
   useEffect(() => {
     const onScroll = () => {
-      ref.current?.classList.toggle('visible', window.scrollY > 400);
+      // hidden while a framed section (the Overview wall) sits flush at the
+      // top: its bottom-right notch holds the availability card's buttons
+      // right where this one floats
+      ref.current?.classList.toggle('visible', window.scrollY > 400 && !flushAtTop(flushSectionTops()));
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
