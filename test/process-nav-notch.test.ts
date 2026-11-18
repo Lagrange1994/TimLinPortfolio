@@ -89,7 +89,7 @@ describe('notched containers — the hero frame border', () => {
 describe('Design Process — the notch buttons keep their shadows', () => {
   it('clips the sliding cards to the box but reaches 16px out round the notch', () => {
     const css = read('src/styles/portfolio.css');
-    const rule = css.match(/\.process-scroll-wrap--process\[data-notch\] \{[\s\S]*?\n      \}/)![0];
+    const rule = css.match(/\.process-scroll-wrap--process\[data-notch\] \{[\s\S]*?\n {6}\}/)![0];
     expect(rule).toContain('overflow: visible;');
     expect(rule).toMatch(/calc\(100% \+ 16px\) calc\(100% - var\(--pn-nh, 52px\)\)/);
     expect(read('src/components/SkillsSection.tsx')).toContain("w.style.setProperty('--pn-nw', `${opts.nw}px`);");

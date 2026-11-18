@@ -1,4 +1,6 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import {
   fitCodeCard, jumpToCoding, ZOOM_ORIGIN_X, FIT_MAX, FIT_SIDE, FIT_BOTTOM,
   LOOP_MS, CODING_START, CODING_END,
@@ -99,7 +101,7 @@ describe('fitCodeCard centred (tablets): the close-up lands on the screen centre
   });
 
   it('is what FigmaMcpShowcase asks for on tablets', () => {
-    const src = require('node:fs').readFileSync(require('node:path').resolve(__dirname, '../src/components/FigmaMcpShowcase.tsx'), 'utf8');
+    const src = readFileSync(resolve(__dirname, '../src/components/FigmaMcpShowcase.tsx'), 'utf8');
     expect(src).toContain('const centred = !!window.matchMedia?.(MCP_TABLET_MQ).matches;');
     expect(src).toContain('parseFloat(getComputedStyle(bleed).paddingTop) || 0, true)');
   });

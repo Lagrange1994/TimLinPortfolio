@@ -3029,6 +3029,9 @@
       white-space: nowrap;
     }
 
+    .bento-area-p1 { grid-area: p1; }
+    .bento-area-p2 { grid-area: p2; }
+    .bento-area-p3 { grid-area: p3; }
     .bento-area-cta { grid-area: cta; }
 
     /* Notched cards (NotchCard in AboutSection): the project tags sit in a
