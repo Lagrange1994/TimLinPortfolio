@@ -17,8 +17,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LazySectionFallback from './components/LazySectionFallback';
 
 // Everything below the hero is split out of the main chunk — About (24KB
-// source), Skills (111KB — the biggest single component, echarts tracking
-// chart included), Portfolio (70KB) and Contact (16KB) have no reason to sit
+// source), Skills (the biggest single component), Portfolio (70KB) and
+// Contact (16KB) have no reason to sit
 // in the same bundle Hero/Navbar/BeamsBackground need parsed before first
 // paint. Each becomes its own chunk, fetched in parallel with main.js rather
 // than adding to it. Each Suspense boundary reserves an approximate section
