@@ -2214,7 +2214,6 @@
          off at the notches, it just keeps going straight through the
          rectangular area the ask-strip/navbar logo actually occupy.
 
-
          z-index 1 (above .hero-inner's z-index:auto content, which includes
          the Spline figure) so the marquee paints in front of the figure
          where they overlap; still below #main-header (100) and every fixed
@@ -3030,9 +3029,6 @@
       white-space: nowrap;
     }
 
-    .bento-area-p1 { grid-area: p1; }
-    .bento-area-p2 { grid-area: p2; }
-    .bento-area-p3 { grid-area: p3; }
     .bento-area-cta { grid-area: cta; }
 
     /* Notched cards (NotchCard in AboutSection): the project tags sit in a
@@ -3125,7 +3121,6 @@
     :root:not([data-theme="light"]) .about-notch:not(.contact-line-notch):has(> .has-notch:hover) {
       filter: drop-shadow(0 0 28px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 22px rgba(var(--ai-focal-rgb), 0.3));
     }
-
 
     /* A capsule riding the card's top border (NotchCard's badge, the design
        principles' number): beside the card in the wrapper's one cell, so
@@ -3402,13 +3397,6 @@
       font-weight: 700;
     }
 
-    .domain-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 20px;
-    }
-
     .pill {
       border: 1px solid var(--glass-border);
       border-radius: 9999px;
@@ -3421,12 +3409,6 @@
       background: var(--glass-bg);
       backdrop-filter: var(--glass-blur);
       box-shadow: var(--card-shadow-sm), var(--card-edge);
-    }
-
-    .about-sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
     }
 
     .bento-num-center {
@@ -3693,16 +3675,6 @@
       line-height: 1;
     }
 
-    .block-title {
-      font-size: 10px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: #9090A8;
-      font-weight: 600;
-      font-family: var(--mono);
-      margin-bottom: 14px;
-    }
-
     /* ── Bento card styling ── padding/gap lifted from inpublic.studio's
        "Our focus is simple" section; corner shape + border background
        match the How I Use AI cards (.ai-card in the section above); the
@@ -3957,8 +3929,6 @@
        reference): 48px squircle >=768px, 20px round <=767px (mobile corner
        pass at end of file). The narrow tablet bento cells used to drop to
        24px here — removed so every card at the same width matches. */
-    @media (max-width: 1024px) {
-    }
 
     /* Title/body proportions unified with the How I Use AI cards
        (.ai-card h3 / .ai-card>p above) — only colors stay this section's
@@ -4320,50 +4290,6 @@
       color: var(--text-50);
     }
 
-    .ai-flow-mini {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 4px;
-      margin-top: auto;
-    }
-
-    .fact-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 12px;
-    }
-
-    .fact-row:last-child {
-      border-bottom: none;
-    }
-
-    .fact-key {
-      color: #A0A0B8;
-    }
-
-    .fact-val {
-      color: var(--text);
-      font-weight: 600;
-      font-size: 12px;
-    }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(34, 197, 94, 0.15);
-      border: 1px solid rgba(34, 197, 94, 0.3);
-      color: #4ade80;
-      border-radius: 9999px;
-      padding: 3px 10px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-
     .status-dot {
       width: 5px;
       height: 5px;
@@ -4403,11 +4329,6 @@
     }
 
     /* DESIGN PROCESS */
-    .process-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 10px;
-    }
 
     /* ── FREELANCE process cards (border-glow-card 包覆) ── */
     .process-card {
@@ -4454,7 +4375,6 @@
     .process-card > .card-hover-shadow {
       box-shadow: var(--card-shadow-ai-hover-tight);
     }
-
 
     /* JS wraps freelance card children in .border-glow-inner */
     .border-glow-inner {
@@ -4515,7 +4435,6 @@
     .process-card--has-img.border-glow-card {
       aspect-ratio: 1 / 1;
     }
-
 
     /* .border-glow-card's own !important box-shadow (its 3-layer directional
        drop) would otherwise win here over .process-card's own shadow (same
@@ -5198,7 +5117,6 @@
 
     /* MY SKILLS MARQUEE — uses .scroller.skills-scroller */
 
-
     /* ══ SCROLLER — RAF-driven for hero/skills, CSS animation for portfolio ══ */
     .scroller {
       overflow: hidden;
@@ -5471,44 +5389,6 @@
         drop-shadow(-8px -8px 18px var(--neu-shadow-light));
     }
 
-    /* Outer ambient glow — same box as .portfolio-wall (JSX puts this SVG
-       right before it inside .portfolio-wall-frame), overflow:visible so the
-       blurred edge can bleed past .portfolio-wall's own opaque #000
-       background into the frame's surroundings. z-index -1 keeps it behind
-       .portfolio-wall (default stacking order, painted after) and behind
-       .portfolio-wall-outline's z-index:2 stroke. See the JSX comment in
-       PortfolioSection.tsx and #bg-frame-glow/.bg-frame-glow-fill above for
-       the full gradient/blur reasoning — this reuses both verbatim. */
-    .portfolio-wall-glow {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      pointer-events: none;
-      overflow: visible;
-    }
-
-    /* Same reasoning as :root[data-theme="light"] #bg-frame-glow — the
-       neumorphism drop-shadow pair on .portfolio-wall-frame now carries the
-       depth, so the colored ambient bleed is dropped in light mode. */
-    :root[data-theme="light"] .portfolio-wall-glow {
-      display: none;
-    }
-
-    .portfolio-wall-glow-fill {
-      fill: url(#portfolio-wall-glow-grad);
-      opacity: 0.85;
-      filter: blur(40px);
-      animation: bg-frame-glow-breathe 6s ease-in-out infinite;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .portfolio-wall-glow-fill {
-        animation: none;
-      }
-    }
-
     /* Fills .portfolio-wall-frame at 100% instead of positioning itself —
        PortfolioSection.tsx still owns this element's top/height (via the
        frame) and marquee-tilt math, untouched by GSAP. Own background/clip
@@ -5684,13 +5564,6 @@
       object-fit: contain;
       flex-shrink: 0;
       border-radius: 3px;
-    }
-
-    .marquee-hint {
-      font-size: 11px;
-      color: var(--text-30);
-      font-family: var(--mono);
-      margin-top: 16px;
     }
 
     /* TECH STACK */
@@ -5872,18 +5745,6 @@
       border-radius: 9999px;
     }
 
-    .fill-blue {
-      background: linear-gradient(to right, #6C63FF, #60a5fa);
-    }
-
-    .fill-orange {
-      background: linear-gradient(to right, var(--secondary), #fb923c);
-    }
-
-    .fill-purple {
-      background: linear-gradient(to right, var(--primary), var(--secondary));
-    }
-
     /* Mini code-editor preview */
     .tech-code-preview {
       margin-top: auto;
@@ -5933,14 +5794,6 @@
       white-space: pre;
       overflow: hidden;
     }
-    .tok-sel   { color: #93c5fd; }
-    .tok-prop  { color: #7dd3fc; }
-    .tok-val   { color: #86efac; }
-    .tok-num   { color: #c4b5fd; }
-    .tok-kw    { color: #fb923c; }
-    .tok-fn    { color: #fde68a; }
-    .tok-pink  { color: #f9a8d4; }
-    .tok-muted { color: rgba(255, 255, 255, 0.45); }
 
     .tcp-cursor {
       display: inline-block;
@@ -5987,14 +5840,6 @@
     :root[data-theme="light"] .tcp-code {
       color: var(--text-70);
     }
-    :root[data-theme="light"] .tok-sel   { color: #1D4ED8; }
-    :root[data-theme="light"] .tok-prop  { color: #0369A1; }
-    :root[data-theme="light"] .tok-val   { color: #15803D; }
-    :root[data-theme="light"] .tok-num   { color: #7C3AED; }
-    :root[data-theme="light"] .tok-kw    { color: #C2410C; }
-    :root[data-theme="light"] .tok-fn    { color: #A16207; }
-    :root[data-theme="light"] .tok-pink  { color: #BE185D; }
-    :root[data-theme="light"] .tok-muted { color: var(--text-30); }
     :root[data-theme="light"] .tcp-cursor {
       background: var(--text-50);
     }
@@ -7690,7 +7535,6 @@
       margin-bottom: 10px;
     }
 
-
     .contact-sub {
       color: var(--text-70);
       font-size: 14px;
@@ -8702,88 +8546,6 @@
       pointer-events: none;
     }
 
-    .pc-user-info {
-      position: absolute;
-      --ui-inset: 20px;
-      --ui-radius-bias: 6px;
-      bottom: var(--ui-inset);
-      left: var(--ui-inset);
-      right: var(--ui-inset);
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(30px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: calc(max(0px, var(--card-radius) - var(--ui-inset) + var(--ui-radius-bias)));
-      padding: 12px 14px;
-      pointer-events: auto;
-    }
-
-    .pc-user-details {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .pc-mini-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      flex-shrink: 0;
-    }
-
-    .pc-mini-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 50%;
-    }
-
-    .pc-user-text {
-      display: flex;
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .pc-handle {
-      font-size: 14px;
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.9);
-      line-height: 1;
-    }
-
-    .pc-status {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.7);
-      line-height: 1;
-    }
-
-    .pc-contact-btn {
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 12px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.9);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      backdrop-filter: blur(10px);
-      background: rgba(255, 255, 255, 0.08);
-      pointer-events: auto;
-      font-family: var(--font);
-    }
-
-    .pc-contact-btn:hover {
-      border-color: rgba(255, 255, 255, 0.4);
-      background: rgba(255, 255, 255, 0.15);
-      transform: translateY(-1px);
-    }
-
     .pc-content:not(.pc-avatar-content) {
       max-height: 100%;
       overflow: hidden;
@@ -9082,11 +8844,6 @@
       border-color: rgba(255, 255, 255, 0.3);
     }
 
-    .lang-switcher {
-      display: flex;
-      gap: 6px;
-    }
-
     /* ══ UNIVERSAL GLASS CARD — all card types ══ */
     .tech-item,
     .contact-card,
@@ -9214,7 +8971,6 @@
     #back-to-top:hover {
       transform: translateY(-3px);
     }
-
 
     /* ── TABLET (768px – 1024px only) ── */
     @media (min-width: 768px) and (max-width: 1024px) {
@@ -10101,8 +9857,6 @@
       }
 
     }
-  
-
 
     /* ══ SCROLLER ══ */
     .scroller {
@@ -10145,13 +9899,6 @@
       object-fit: contain;
       flex-shrink: 0;
       border-radius: 3px;
-    }
-
-    .marquee-hint {
-      font-size: 11px;
-      color: var(--text-30);
-      font-family: var(--mono);
-      margin-top: 16px;
     }
 
     /* ══ STAGGERED MENU ══ */
@@ -10478,10 +10225,6 @@
       display: inline-block;
       will-change: transform;
       transform-origin: 50% 100%;
-    }
-
-    .sm-socials {
-      display: none;
     }
 
     @media (max-width: 1024px) {
@@ -11365,7 +11108,6 @@
     .msg-panel-green{--panel-tint:var(--a4)}
     .msg-panel-violet{--panel-tint:var(--a1)}
 
-
     /* Request Sources — channel rows */
     .channel-list{display:flex;flex-direction:column;gap:2px;position:relative}
     .channel{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:9px 2px;border-bottom:1px solid color-mix(in oklab,var(--panel-tint) 20%,transparent);max-height:100px;overflow:hidden;transition:border-color .4s ease,background .4s ease,box-shadow .4s ease,max-height .5s cubic-bezier(.22,.61,.36,1),opacity .4s ease,transform .5s cubic-bezier(.22,.61,.36,1),padding-top .4s ease,padding-bottom .4s ease}
@@ -11374,7 +11116,6 @@
     .channel .ch-body{min-width:0}
     .channel .ch-name{font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .channel .ch-snippet{font-size:11.5px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
-    .channel .ch-time{font-family:var(--font-code);font-size:10.5px;color:var(--ink-mute)}
     /* Collapses the row that's about to arrive so it stays out of the
        initial stack-in, then expands smoothly when the new message lands. */
     .channel.channel-collapsed{max-height:0;opacity:0;padding-top:0;padding-bottom:0;border-color:transparent;transform:translateY(-8px);pointer-events:none}
@@ -11417,7 +11158,6 @@
     .form-status.is-filling .pdot{background:color-mix(in oklab,var(--a5) 60%,transparent)}
     .form-status.is-complete{background:color-mix(in oklab,var(--a4) 8%,transparent);border-color:color-mix(in oklab,var(--a4) 26%,transparent);color:var(--a4)}
     .form-status.is-complete .pdot{background:color-mix(in oklab,var(--a4) 70%,transparent)}
-    .priority-pill{padding:2px 7px;border-radius:4px;background:color-mix(in oklab,var(--a5) 14%,transparent);border:1px solid color-mix(in oklab,var(--a5) 30%,transparent);color:var(--a5);font-family:var(--font-code);font-size:10px;letter-spacing:.05em}
 
     /* AI Brief — summary, classification, gaps, questions, direction */
     .ai-thinking-indicator{display:flex;align-items:center;gap:8px;height:0;opacity:0;overflow:hidden;pointer-events:none;transition:opacity .25s ease}
@@ -11466,9 +11206,6 @@
 
     /* Tracking — mini Sheets */
     .sheet{border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--rule);overflow:hidden}
-    .sheet-tabs{display:flex;gap:0;padding:4px;background:rgba(255,255,255,.025);border-bottom:1px solid var(--rule)}
-    .sheet-tabs .tab{padding:5px 10px;font-family:var(--font-code);font-size:10.5px;letter-spacing:.06em;color:var(--ink-mute);border-radius:5px}
-    .sheet-tabs .tab.active{color:var(--ink);background:rgba(255,255,255,.05)}
     .sheet table{width:100%;border-collapse:collapse;font-family:var(--font-code);font-size:11px}
     .sheet th{text-align:left;padding:8px 10px;color:var(--ink-mute);font-weight:500;letter-spacing:.06em;border-bottom:1px solid var(--rule);background:rgba(255,255,255,.012)}
     .sheet td{padding:8px 10px;color:var(--ink-dim);border-bottom:1px solid var(--rule)}
@@ -11494,7 +11231,6 @@
     @media (prefers-reduced-motion: reduce){tr.tr-live{animation:none}}
 
     /* Human Review — assessment grid + operating-principle quote */
-    .review-grid{display:flex;flex-direction:column;gap:6px}
     .rrow{display:grid;grid-template-columns:90px 1fr;gap:14px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.025);border:1px solid var(--rule)}
     .rrow .rl{font-family:var(--font-code);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mute);padding-top:2px}
     .rrow .rv{font-size:12.5px;color:var(--ink);line-height:1.45}
@@ -12192,13 +11928,6 @@
     :root[data-theme="light"] .sheet {
       background: transparent;
     }
-    :root[data-theme="light"] .sheet-tabs {
-      background: transparent;
-    }
-    :root[data-theme="light"] .sheet-tabs .tab.active {
-      background: transparent;
-      border: 1px solid rgba(23, 15, 45, 0.18);
-    }
     :root[data-theme="light"] .sheet th {
       background: transparent;
     }
@@ -12244,9 +11973,6 @@
     :root[data-theme="light"] .form-mini .field .val {
       background: transparent;
       border-color: rgba(23, 15, 45, 0.16);
-    }
-    :root[data-theme="light"] .priority-pill {
-      background: transparent;
     }
 
     /* Tracking's table header/cell borders are plain Tailwind border-white/N
@@ -12353,7 +12079,6 @@
        (:root[data-theme="light"] .tag-capsule up above), matching
        .skill-pill instead of getting the card treatment. */
 
-
     /* Phones/tablets (<=1024px): backdrop-filter fully disabled site-wide.
        Each one allocates its own GPU backdrop surface; stacked with the
        animated marquee/3D layers that exhausted memory and made mobile
@@ -12403,7 +12128,6 @@
     .is-offscreen-paused *::after {
       animation-play-state: paused !important;
     }
-
 
     /* ── HOW I USE AI — desktop product viewer (>960px) ──
        Apple-style "product viewer" (macbook-pro PROLED XDR page): a column
@@ -13258,7 +12982,6 @@
       .ai-pill:hover { transform: none; }
     }
 
-
     /* LIGHT PRESSED — light mode: anything clickable that sits raised on a
        neumorphic shadow (or the gradient buttons' glow) drops to the shallow
        --neu-pressed while held down, so a press reads as pushing it in.
@@ -13437,5 +13160,4 @@
         margin-right: calc(clamp(32px, 3.4vw, 48px) - 24px);
       }
     }
-
 

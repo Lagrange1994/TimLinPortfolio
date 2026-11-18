@@ -176,7 +176,7 @@ export default function ChatPanel() {
       <div id="chat-panel" className={open ? 'open' : ''} role="dialog" aria-label="Ask Tim AI">
         <div id="chat-header">
           <div id="chat-header-avatar">
-            <img src="/img/timbot.png" alt="Tim AI" />
+            <img src="/img/timbot.webp" alt="Tim AI" />
           </div>
           <div id="chat-header-info">
             <div id="chat-header-name">Ask Tim Anything</div>
