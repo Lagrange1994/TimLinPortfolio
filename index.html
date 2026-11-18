@@ -290,8 +290,18 @@
           reason = 'no-webgl2';
         }
         window.__tlGpuRenderer = renderer;
+        // A real GPU name, not a masked one (Brave reports just "Brave"):
+        // only those are specific enough to remember a give-up for. Keep in
+        // sync with GPU_NAME_RE in src/utils/staticScenes.ts.
+        var known = /angle|nvidia|geforce|quadro|amd|radeon|intel|apple|mali|adreno|powervr|qualcomm|mesa/i.test(renderer);
         var stored = null;
         try { stored = localStorage.getItem(KEY); } catch (e) {}
+        if (stored && !known) {
+          // A verdict stored for a masked name would pin every GPU this
+          // browser ever runs on to the images; drop it.
+          try { localStorage.removeItem(KEY); } catch (e) {}
+          stored = null;
+        }
         if (reason) {
           // decided above
         } else if (/swiftshader|llvmpipe|softpipe|lavapipe|software|basic render/i.test(renderer)) {

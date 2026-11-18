@@ -8,7 +8,7 @@ import { act, cleanup, render } from '@testing-library/react';
 import { createElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  STATIC_SCENES_ATTR, STATIC_SCENES_KEY, fallBackToStaticScenes, onStaticScenesChange, staticScenesOn,
+  GPU_NAME_RE, STATIC_SCENES_ATTR, STATIC_SCENES_KEY, fallBackToStaticScenes, onStaticScenesChange, staticScenesOn,
 } from '../src/utils/staticScenes';
 import Loader, { CALM_MAX_WAIT_MS } from '../src/components/Loader';
 import BeamsBackground from '../src/components/BeamsBackground';
@@ -112,6 +112,29 @@ describe('index.html static-scenes probe', () => {
     expect(probe({ stored: 'some other GPU' }).reason).toBeNull();
   });
 
+  // Regression: Brave masks the renderer as just "Brave", so a give-up stored
+  // under it matched on every visit and pinned the browser to the images
+  // whatever GPU it ran on (and reloading never helped).
+  it('ignores and deletes a give-up stored for a masked renderer name', () => {
+    const r = probe({ renderer: 'Brave', stored: 'Brave' });
+    expect(r.reason).toBeNull();
+    expect(r.storage[STATIC_SCENES_KEY]).toBeUndefined();
+  });
+
+  it('keeps a stored give-up for another real GPU', () => {
+    const r = probe({ renderer: RENDERERS.rtx, stored: RENDERERS.uhd620 });
+    expect(r.reason).toBeNull();
+    expect(r.storage[STATIC_SCENES_KEY]).toBe(RENDERERS.uhd620);
+  });
+
+  it('uses the same real-GPU-name pattern as the runtime fallback', () => {
+    expect(inlineScript('/* tl-static-scenes */')).toContain(`/${GPU_NAME_RE.source}/i.test(renderer)`);
+    for (const r of Object.values(RENDERERS)) expect(GPU_NAME_RE.test(r), r).toBe(true);
+    expect(GPU_NAME_RE.test('Apple M2')).toBe(true);
+    expect(GPU_NAME_RE.test('Brave')).toBe(false);
+    expect(GPU_NAME_RE.test('WebKit WebGL')).toBe(false);
+  });
+
   it('exposes the renderer for the runtime fallback to remember', () => {
     expect(probe().win.__tlGpuRenderer).toBe(RENDERERS.rtx);
   });
@@ -213,6 +236,25 @@ describe('fallBackToStaticScenes', () => {
     fallBackToStaticScenes();
     expect(staticScenesOn()).toBe(true);
     expect(localStorage.getItem(STATIC_SCENES_KEY)).toBeNull();
+  });
+
+  it('does not remember a give-up under a masked renderer name (Brave)', () => {
+    (window as unknown as Record<string, unknown>).__tlGpuRenderer = 'Brave';
+    fallBackToStaticScenes();
+    expect(staticScenesOn()).toBe(true);
+    expect(localStorage.getItem(STATIC_SCENES_KEY)).toBeNull();
+  });
+
+  it('does not remember a give-up on the dev server', () => {
+    vi.stubEnv('MODE', 'development');
+    try {
+      (window as unknown as Record<string, unknown>).__tlGpuRenderer = RENDERERS.uhd620;
+      fallBackToStaticScenes();
+      expect(staticScenesOn()).toBe(true);
+      expect(localStorage.getItem(STATIC_SCENES_KEY)).toBeNull();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it('is a no-op when 3D was forced with ?scenes=3d', () => {

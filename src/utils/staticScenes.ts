@@ -47,13 +47,21 @@ export function useStaticScenes(): boolean {
   return useSyncExternalStore(onStaticScenesChange, staticScenesOn, () => false);
 }
 
+// A real GPU name rather than a masked one (Brave reports just "Brave"):
+// a give-up is only remembered for these, or one slow visit would pin every
+// GPU the browser ever runs on to the images. Same pattern as index.html's
+// tl-static-scenes probe.
+export const GPU_NAME_RE = /angle|nvidia|geforce|quadro|amd|radeon|intel|apple|mali|adreno|powervr|qualcomm|mesa/i;
+
 // Switches a running page from the Spline scenes to the images and
-// remembers it for this GPU. No-op if already static or forced to 3D.
+// remembers it for this GPU. No-op if already static or forced to 3D. Not
+// remembered on the dev server: unminified code runs the scenes slower than
+// production, so its give-ups say nothing about the GPU.
 export function fallBackToStaticScenes(reason = 'slow') {
   const w = window as ScenesWindow;
   if (staticScenesOn() || w.__tlScenesForced) return;
   document.documentElement.setAttribute(STATIC_SCENES_ATTR, reason);
-  if (w.__tlGpuRenderer) {
+  if (w.__tlGpuRenderer && GPU_NAME_RE.test(w.__tlGpuRenderer) && import.meta.env.MODE !== 'development') {
     try { localStorage.setItem(STATIC_SCENES_KEY, w.__tlGpuRenderer); } catch { /* storage blocked */ }
   }
   listeners.forEach(cb => cb());
