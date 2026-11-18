@@ -82,6 +82,18 @@ export const translations = {
     figma_mcp_title: 'Figma MCP',
     figma_mcp_desc:
       '這份程式讀寫能力，<wbr>讓我能更進一步透過 MCP，<wbr>讓 AI 直接讀取 Figma 設計稿的元件、<wbr>Token 與標註規格，<wbr>無需截圖或手動複製。<wbr>設計稿即時轉為程式碼，<wbr>一次對齊，<wbr>不再來回確認。',
+    skills_tab_uiux: '從研究、資訊架構到原型與開發交接，介面設計的每一步我都親手完成。',
+    skills_tab_visual: '修圖、圖像與品牌視覺，讓介面之外的畫面也保持一致。',
+    skills_tab_3d: '從建模、渲染到網頁上可互動的 3D 場景，讓作品多一層深度。',
+    skills_figma: '介面、元件庫與原型，從線框一路做到開發交接。',
+    skills_photoshop: '影像合成、修圖與行銷視覺。',
+    skills_illustrator: '向量圖像、圖示與品牌視覺。',
+    skills_blender: '3D 建模、材質與渲染，也做網頁用的 3D 素材。',
+    skills_xd: '線框與可互動原型，快速確認流程。',
+    skills_dora: '不寫程式，做出帶 3D 與動畫的網站。',
+    skills_lightroom: '影像調色與大量修圖。',
+    skills_krita: '手作感的數位圖像。',
+    skills_spline: '網頁上可互動的 3D 場景，這個網站的首頁就是。',
     skill_html:
       '熟悉網頁基礎標籤結構與語意化寫法，能獨立閱讀、修改程式碼，有效銜接設計稿與開發實作。',
     skill_js:
@@ -389,6 +401,18 @@ export const translations = {
     figma_mcp_title: 'Figma MCP',
     figma_mcp_desc:
       'That code literacy goes one step further with Figma MCP: I connect AI directly to Figma so it reads components, tokens, and specs in real time — no screenshots, no manual handoff. Design translates to code in one pass, with no back-and-forth.',
+    skills_tab_uiux: 'From research and information architecture to prototypes and dev handoff, I do every step of interface design myself.',
+    skills_tab_visual: 'Retouching, illustration and brand graphics keep the visuals beyond the interface consistent too.',
+    skills_tab_3d: 'From modelling and rendering to interactive 3D scenes on the web, adding depth to the work.',
+    skills_figma: 'Interfaces, component libraries and prototypes, from wireframe to dev handoff.',
+    skills_photoshop: 'Image compositing, retouching and marketing visuals.',
+    skills_illustrator: 'Vector illustration, icons and brand graphics.',
+    skills_blender: '3D modelling, materials and rendering, including 3D assets for the web.',
+    skills_xd: 'Wireframes and clickable prototypes to test flows quickly.',
+    skills_dora: 'No-code websites with 3D and scroll animation.',
+    skills_lightroom: 'Photo grading and batch editing.',
+    skills_krita: 'Hand-drawn illustration and digital painting.',
+    skills_spline: "Interactive 3D scenes for the web, like this site's homepage.",
     skill_html:
       'Comfortable reading and editing HTML structure. Able to bridge design specs and development implementation directly.',
     skill_js:

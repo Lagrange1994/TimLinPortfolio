@@ -5432,8 +5432,6 @@
       .process-tab-fill.is-timing { animation: none; transform: none; }
     }
 
-    /* MY SKILLS MARQUEE — uses .scroller.skills-scroller */
-
     /* ══ SCROLLER — RAF-driven for hero/skills, CSS animation for portfolio ══ */
     .scroller {
       overflow: hidden;
@@ -5447,14 +5445,6 @@
       width: max-content;
       gap: 12px;
       will-change: transform;
-    }
-
-    .scroller.skills-scroller {
-      margin-bottom: 14px;
-    }
-
-    .scroller.skills-scroller .scroller-inner {
-      gap: 10px;
     }
 
     .scroller.hero-scroller .scroller-inner {
@@ -10114,14 +10104,253 @@
       mask: linear-gradient(90deg, transparent, white 5%, white 95%, transparent);
     }
 
-    /* My Skills section wrapper */
-    .skills-outer {
-      overflow: hidden;
-      margin-bottom: 28px;
+    /* My Skills: copy on the left, the four tool cards on the right in two
+       columns — the left column sits lower so the cards step (see
+       SkillShowcase.tsx). Cards are solid accent purple in both themes. */
+    .skills-showcase {
+      margin-top: 120px;
+      display: grid;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: 64px;
+      align-items: center;
     }
 
-    .skills-marquee-group {
-      margin-top: 80px;
+    .skills-h2 {
+      margin-bottom: 16px;
+    }
+
+    .skills-sub {
+      display: grid;
+      max-width: 440px;
+      margin: 0 0 28px;
+    }
+
+    .skills-sub-line {
+      grid-area: 1 / 1;
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text-70);
+      opacity: 0;
+      translate: 0 6px;
+      transition: opacity .3s, translate .3s;
+    }
+
+    .skills-sub-line.is-active {
+      opacity: 1;
+      translate: 0 0;
+    }
+
+    /* each tab's tags in one shared cell, like the line above */
+    .skills-tags {
+      display: grid;
+      max-width: 480px;
+    }
+
+    .skills-tag-list {
+      grid-area: 1 / 1;
+      align-self: start;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      visibility: hidden;
+    }
+
+    .skills-tag-list.is-active {
+      visibility: visible;
+    }
+
+    .skills-tag-list.is-active .skill-pill {
+      animation: skill-tag-in .4s cubic-bezier(.2, .9, .25, 1.15) both;
+      animation-delay: calc(var(--i, 0) * 35ms);
+    }
+
+    @keyframes skill-tag-in {
+      from { opacity: 0; translate: 0 8px; }
+    }
+
+    /* the tool tabs reuse the phone Tech Stack tabs (.process-tabs /
+       .process-tab); here they sit left in the copy column, and the open
+       tab's segment grows in instead of timing an autoplay */
+    .process-tabs.skills-tabs {
+      justify-content: flex-start;
+      margin: 0 0 20px;
+    }
+
+    /* one accent for every tab: the fill and the tag icons */
+    .skills-tab {
+      --tab-c2: var(--primary);
+    }
+
+    .skills-tag-list .skill-pill i {
+      color: var(--primary);
+    }
+
+    .skills-tab-fill {
+      animation: skill-tab-fill .45s cubic-bezier(.2, .8, .2, 1) both;
+    }
+
+    @keyframes skill-tab-fill {
+      from { transform: scaleX(0); }
+    }
+
+    /* all panels share one cell: the area keeps the tallest tab's height */
+    .skills-panels {
+      display: grid;
+    }
+
+    .skills-panels > .skills-cards {
+      grid-area: 1 / 1;
+      visibility: hidden;
+    }
+
+    .skills-panels > .skills-cards.is-active {
+      visibility: visible;
+    }
+
+    .skills-cards.is-active .skill-card {
+      animation: skill-card-in .55s cubic-bezier(.2, .9, .25, 1.15) both;
+      animation-delay: calc(var(--i, 0) * 70ms);
+    }
+
+    @keyframes skill-card-in {
+      from { opacity: 0; translate: 0 18px; scale: .97; }
+    }
+
+    .skills-tools {
+      min-width: 0;
+    }
+
+    .skills-cards {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .skills-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .skills-col--low {
+      padding-top: 56px;
+    }
+
+    .skill-card {
+      --skill-card-bg: #5a49d6;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding: 18px;
+      border-radius: 20px;
+      background: var(--skill-card-bg) var(--noise-grain);
+      background-size: 180px 180px;
+      color: #fff;
+      box-shadow: 0 18px 40px -18px rgba(60, 40, 180, .55);
+      transition: translate .35s cubic-bezier(.2, .8, .2, 1), box-shadow .35s;
+    }
+
+    .skill-card:hover {
+      translate: 0 -4px;
+      box-shadow: 0 24px 48px -18px rgba(60, 40, 180, .7);
+    }
+
+    .skill-card--wide {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .skill-card--wide .skill-card-text {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .skill-card-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .skill-card-logo img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+    }
+
+    .skill-card-name {
+      margin: 0 0 6px;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #fff;
+    }
+
+    .skill-card-desc {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, .78);
+    }
+
+    .skill-card-art {
+      border-radius: 12px;
+      overflow: hidden;
+      line-height: 0;
+    }
+
+    .skill-card-art svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .skill-card--wide .skill-card-art {
+      flex: 0 0 46%;
+      aspect-ratio: 5 / 3;
+    }
+
+    .skill-card--tall .skill-card-art {
+      aspect-ratio: 5 / 4;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .skill-card { transition: none; }
+      .skills-cards.is-active .skill-card { animation: none; }
+      .skills-sub-line { transition: none; translate: none; }
+      .skills-tag-list.is-active .skill-pill { animation: none; }
+      .skills-tab-fill { animation: none; }
+      .skill-card:hover { translate: none; }
+    }
+
+    @media (max-width: 1024px) {
+      .skills-showcase {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 40px;
+        margin-top: 96px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .skills-showcase { margin-top: 72px; }
+      .skills-cards { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+      .skills-col { gap: 14px; }
+      .skills-col--low { padding-top: 0; }
+      /* phones: one column, the tab's cards row by row (phoneOrder) */
+      .skills-cards { display: flex; flex-direction: column; }
+      .skills-col { display: contents; }
+      .skill-card { order: var(--order, 0); }
+      .process-tabs.skills-tabs { justify-content: center; }
     }
 
     .skill-pill {

@@ -97,9 +97,10 @@ describe('off-screen pause wiring', () => {
     expect(read('src/App.tsx')).toMatch(/usePauseOffscreenAnimations\(\);/);
   });
 
-  // Regression: the hero tag scroller and the skills marquees kept their rAF
-  // loops running for the whole visit, even scrolled out of view.
-  it.each(['src/components/HeroSection.tsx', 'src/components/SkillsSection.tsx'])(
+  // Regression: the hero tag scroller (and the skills marquees, before My
+  // Skills became a static showcase) kept their rAF loops running for the
+  // whole visit, even scrolled out of view.
+  it.each(['src/components/HeroSection.tsx'])(
     '%s marquee tick stops when off screen',
     file => {
       const src = read(file);

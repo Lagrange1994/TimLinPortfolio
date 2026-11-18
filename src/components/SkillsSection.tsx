@@ -6,6 +6,7 @@ import { HtmlDemo, JsDemo, RwdDemo } from './TechDemos';
 import PolicyPill from './PolicyPill';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from './GoogleGeminiEffect';
 import FigmaMcpShowcase from './FigmaMcpShowcase';
+import SkillShowcase from './SkillShowcase';
 import PlayPauseButton from './PlayPauseButton';
 import AiAppStage from './AiAppStage';
 import { attachAiViewerEntrance } from '../utils/aiViewerEntrance';
@@ -172,93 +173,6 @@ function makeAiCards(t: Record<string, string>) {
       tags: null as string[] | null,
     },
   ];
-}
-
-function createScroller(scroller: HTMLElement, normalSpeed: number, hoverSpeed: number) {
-  const inner = scroller.querySelector<HTMLElement>('.scroller-inner');
-  if (!inner) return;
-  const isReverse = scroller.getAttribute('data-direction') === 'right';
-  if (scroller.getAttribute('data-raf-init') === 'true') return;
-
-  const origItems = Array.from(inner.children) as HTMLElement[];
-  // Snapshot images BEFORE cloning — querying after cloning would count both
-  // originals and clones (e.g. 18 instead of 9), and cached clones often don't
-  // re-fire load/error events, so the `loaded >= images.length` tally never
-  // completes and startRAF() never runs (silent, permanent failure).
-  const images = Array.from(origItems.flatMap(el => Array.from(el.querySelectorAll('img'))));
-
-  origItems.forEach(item => {
-    const clone = item.cloneNode(true) as HTMLElement;
-    clone.setAttribute('aria-hidden', 'true');
-    inner.appendChild(clone);
-  });
-  scroller.setAttribute('data-raf-init', 'true');
-
-  const gap = parseFloat(getComputedStyle(inner).gap) || 10;
-
-  function startRAF() {
-    const oneSetWidth = origItems.reduce((sum, el) => sum + el.offsetWidth + gap, 0);
-    if (oneSetWidth <= 0) return;
-
-    let offset = 0;
-    let velocity = normalSpeed;
-    let targetVelocity = normalSpeed;
-    let lastTs: number | null = null;
-    const direction = isReverse ? -1 : 1;
-    // Only animate while on screen (same as PortfolioSection's rows) —
-    // otherwise both skill rows keep rewriting transforms every frame for
-    // the whole visit.
-    let visible = true;
-    let running = false;
-
-    function tick(ts: number) {
-      if (!visible) { running = false; return; }
-      if (!lastTs) lastTs = ts;
-      const dt = Math.min((ts - lastTs) / 1000, 0.05);
-      lastTs = ts;
-      const factor = 1 - Math.exp(-dt / SMOOTH_TAU);
-      velocity += (targetVelocity - velocity) * factor;
-      offset += velocity * dt * direction;
-      offset = ((offset % oneSetWidth) + oneSetWidth) % oneSetWidth;
-      inner!.style.transform = `translateX(${-offset}px)`;
-      requestAnimationFrame(tick);
-    }
-
-    function start() {
-      if (running) return;
-      running = true;
-      lastTs = null;
-      requestAnimationFrame(tick);
-    }
-
-    new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      if (visible) start();
-    }).observe(scroller);
-    start();
-    scroller.addEventListener('mouseenter', () => { targetVelocity = hoverSpeed; });
-    scroller.addEventListener('mouseleave', () => { targetVelocity = normalSpeed; });
-  }
-
-  if (images.length === 0) {
-    startRAF();
-  } else {
-    let started = false;
-    const start = () => { if (!started) { started = true; startRAF(); } };
-    let loaded = 0;
-    const onLoad = () => { if (++loaded >= images.length) start(); };
-    images.forEach(img => {
-      if (img.complete) onLoad();
-      else {
-        img.addEventListener('load', onLoad, { once: true });
-        img.addEventListener('error', onLoad, { once: true });
-      }
-    });
-    // Safety net: in case a load/error event is missed (e.g. fires between
-    // the `.complete` check and listener attachment), don't leave the
-    // scroller permanently frozen — start once layout has settled regardless.
-    setTimeout(start, 1500);
-  }
 }
 
 const PROCESS_VISIBLE = 3;
@@ -934,21 +848,6 @@ export function AiIntakeSection() {
   const aiOutlinePathRef = useRef<SVGPathElement>(null);
   const pillRefs = useRef<Map<string, HTMLLIElement>>(new Map());
 
-  // Skills scrollers
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    const init = () => {
-      document.querySelectorAll<HTMLElement>('.skills-scroller').forEach(s => createScroller(s, 80, 25));
-    };
-
-    if (document.fonts) {
-      document.fonts.ready.then(init);
-    } else {
-      window.addEventListener('load', init, { once: true });
-    }
-  }, []);
-
   // Scroll-reveal (.rise-card/.rise-soft → elastic rise + squash-stretch) is
   // handled site-wide by useRiseReveal(), called once in App.tsx.
 
@@ -1529,37 +1428,7 @@ export function AiIntakeSection() {
           </div>
         </div>
 
-        <div className="skills-marquee-group">
-        <div className="section-label rise-soft">My Skills</div>
-        <div className="skills-outer scroller skills-scroller" data-direction="left">
-          <div className="scroller-inner">
-            <span className="skill-pill"><img src="./img/others/Figma_logo.png" className="skill-icon-img" alt="Figma" />Figma</span>
-            <span className="skill-pill"><img src="./img/others/Adobe_XD_logo.png" className="skill-icon-img" alt="Adobe XD" />Adobe XD</span>
-            <span className="skill-pill"><img src="./img/others/Blender_logo.png" className="skill-icon-img" alt="Blender" />Blender</span>
-            <span className="skill-pill"><img src="./img/others/Spline_logo.webp" className="skill-icon-img" alt="Spline" />Spline</span>
-            <span className="skill-pill"><img src="./img/others/Lightroom_logo.png" className="skill-icon-img" alt="Lightroom" />Lightroom</span>
-            <span className="skill-pill"><img src="./img/others/Krita_logo.webp" className="skill-icon-img" alt="Krita" />Krita</span>
-            <span className="skill-pill"><img src="./img/others/Photoshop_logo.png" className="skill-icon-img" alt="Photoshop" />Photoshop</span>
-            <span className="skill-pill"><img src="./img/others/Illustrator_logo.png" className="skill-icon-img" alt="Illustrator" />Illustrator</span>
-            <span className="skill-pill"><img src="./img/others/Dora_logo.png" className="skill-icon-img" alt="Dora" />Dora</span>
-          </div>
-        </div>
-        <div className="skills-outer scroller skills-scroller" data-direction="right">
-          <div className="scroller-inner">
-            <span className="skill-pill"><i className="ph-bold ph-sketch-logo" style={{ color: '#6C63FF' }}></i>UX Research</span>
-            <span className="skill-pill"><i className="ph-bold ph-tree-structure" style={{ color: '#6C63FF' }}></i>IA Planning</span>
-            <span className="skill-pill"><i className="ph-bold ph-squares-four" style={{ color: '#6C63FF' }}></i>Design System</span>
-            <span className="skill-pill"><i className="ph-bold ph-frame-corners" style={{ color: '#6C63FF' }}></i>Wireframing</span>
-            <span className="skill-pill"><i className="ph-bold ph-cursor-click" style={{ color: '#FF6584' }}></i>Prototype</span>
-            <span className="skill-pill"><i className="ph-bold ph-git-branch" style={{ color: '#8A2BE2' }}></i>Dev Handoff</span>
-            <span className="skill-pill"><i className="ph-bold ph-flow-arrow" style={{ color: '#6C63FF' }}></i>User Flow</span>
-            <span className="skill-pill"><i className="ph-bold ph-browsers" style={{ color: '#60a5fa' }}></i>Component Library</span>
-            <span className="skill-pill"><i className="ph-bold ph-robot" style={{ color: '#67e8f9' }}></i>AI Workflow</span>
-            <span className="skill-pill"><i className="ph-bold ph-wheelchair" style={{ color: '#4ade80' }}></i>Accessibility</span>
-            <span className="skill-pill"><i className="ph-bold ph-chart-bar" style={{ color: '#fb923c' }}></i>Data Visualization</span>
-          </div>
-        </div>
-        </div>
+        <SkillShowcase />
       </section>
   );
 }
