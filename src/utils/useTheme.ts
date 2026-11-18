@@ -6,7 +6,7 @@ function getInitialTheme(): Theme {
   return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
 }
 
-const STALE_PAINT_SELECTOR = '.bento-card, .ai-card, .tech-item, .process-card, .philosophy-card, .pill, [class*="-dark"]:not(.snap-section):not(.theme-switch):not(.sm-theme-switch)';
+const STALE_PAINT_SELECTOR = '.bento-card, .tech-item, .process-card, .philosophy-card, .pill, [class*="-dark"]:not(.snap-section):not(.theme-switch):not(.sm-theme-switch)';
 
 function bustStalePaint(el: HTMLElement) {
   const prevDisplay = el.style.display;

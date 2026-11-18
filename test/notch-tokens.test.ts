@@ -38,7 +38,8 @@ describe('notch size system', () => {
   it('info cards share one padding and one hover lift', () => {
     expect(css).toContain('--card-pad: 24px;');
     expect(css).toContain('--card-lift: -4px;');
-    const block = (sel: string) => css.match(new RegExp(String.raw`\n    \.${sel} \{[^}]*\}`))?.[0] ?? '';
+    // every top-level rule for that exact selector (a selector can have more than one)
+    const block = (sel: string) => [...css.matchAll(new RegExp(String.raw`\n    \.${sel} \{[^}]*\}`, 'g'))].map(m => m[0]).join('');
     for (const sel of ['bento-card', 'tech-item', 'line-banner', 'contact-card']) {
       expect(block(sel), sel).toContain('padding: var(--card-pad);');
     }

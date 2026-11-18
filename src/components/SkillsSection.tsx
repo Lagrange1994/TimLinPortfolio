@@ -2,10 +2,7 @@ import { useEffect, useId, useLayoutEffect, useState, useRef, useMemo, type Reac
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
-import { flatten, toRuns, type CodeToken } from './TypingCode';
 import { HtmlDemo, JsDemo, RwdDemo } from './TechDemos';
-import AiFlowStepper from './AiFlowStepper';
-import PriorityQueueFlow from './PriorityQueueFlow';
 import PolicyPill from './PolicyPill';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from './GoogleGeminiEffect';
 import FigmaMcpShowcase from './FigmaMcpShowcase';
@@ -59,13 +56,9 @@ const AI_SOURCE_CLOUD = [
 ];
 
 const SMOOTH_TAU = 0.18;
-const AI_THINK_MS = 700;
 // ≤960px the viewer switches to Apple's phone layout (stage on top, pill row
 // below) — beside the pill column the stage gets too narrow for the demos.
 const AI_COMPACT_MQ = '(max-width: 960px)';
-// The pre-viewer expanding cards (tablet/phone until 2026-10). Kept in the
-// code on request, but no longer rendered anywhere.
-const AI_LEGACY_CARDS = false;
 // Pill ↔ summary-card morph (Apple's product viewer uses the same beats:
 // label out almost at once, card content in only once the shape is underway).
 const AI_PILL_MORPH_S = 0.5;
@@ -89,106 +82,6 @@ const AI_VIEWER_NOTCH = false;
 // AI_VIEWER_NOTCH off.
 const AI_VIEWER_STAGE = true;
 export const AI_STAGE_MQ = '(min-width: 961px)';
-// When the Operating Principle panel starts fading in during the Human
-// Review timeline (see toggle() in the card map) — shared so the quote
-// typewriter effect below can start right after, without duplicating the
-// timeline's own timing math.
-const HUMAN_QUOTE_MS = 1500;
-
-function escapeHtml(s: string) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-// Splits the static `<span class="hl">...</span>`-annotated summary HTML
-// (see translations.ts ai_d_summary_text) into typewriter tokens so the
-// AI Brief card can type it out while keeping the highlight styling.
-function tokenizeHighlight(html: string, cls: string = 'hl'): CodeToken[] {
-  const tokens: CodeToken[] = [];
-  const re = new RegExp(`<span class="${cls}">([^<]*)</span>`, 'g');
-  let last = 0;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html))) {
-    if (m.index > last) tokens.push({ text: html.slice(last, m.index) });
-    tokens.push({ text: m[1], cls });
-    last = m.index + m[0].length;
-  }
-  if (last < html.length) tokens.push({ text: html.slice(last) });
-  return tokens;
-}
-
-function runsToHtml(runs: { text: string; cls?: string }[]) {
-  return runs.map(r => (r.cls ? `<span class="${r.cls}">${escapeHtml(r.text)}</span>` : escapeHtml(r.text))).join('');
-}
-
-// Horizon UI–style badge/alert primitives (Tailwind utility classes) — the
-// "How I Use AI" card details used to render this content via SGDS web
-// components; class strings must stay fully literal (not template-built) so
-// Tailwind's source scanner can find them.
-type HColor = 'neutral' | 'purple' | 'cyan' | 'warning' | 'danger' | 'success' | 'info' | 'primary' | 'brand';
-
-const BADGE_COLORS: Record<HColor, { solid: string; outline: string }> = {
-  neutral: { solid: 'badge-neutral bg-white/10 text-[var(--text-70)]', outline: 'badge-neutral border border-white/25 text-[var(--text-70)]' },
-  purple: { solid: 'badge-purple bg-violet-400/15 text-violet-300', outline: 'badge-purple border border-violet-400/40 text-violet-300' },
-  // Matches AiFlowStepper's own solid "active step" fill (#6C63FF) exactly,
-  // for the phase badge that mirrors it — a fully opaque pill, not the
-  // usual translucent 15%-tint "solid" look every other variant uses.
-  brand: { solid: 'badge-brand bg-[#6C63FF] text-white', outline: 'badge-brand border border-[#6C63FF]/60 text-[#6C63FF]' },
-  cyan: { solid: 'badge-cyan bg-cyan-400/15 text-cyan-300', outline: 'badge-cyan border border-cyan-400/40 text-cyan-300' },
-  warning: { solid: 'badge-warning bg-amber-400/15 text-amber-300', outline: 'badge-warning border border-amber-400/40 text-amber-300' },
-  danger: { solid: 'badge-danger bg-red-400/15 text-red-300', outline: 'badge-danger border border-red-400/40 text-red-300' },
-  success: { solid: 'badge-success bg-emerald-400/15 text-emerald-300', outline: 'badge-success border border-emerald-400/40 text-emerald-300' },
-  info: { solid: 'badge-info bg-blue-400/15 text-blue-300', outline: 'badge-info border border-blue-400/40 text-blue-300' },
-  primary: { solid: 'badge-primary bg-indigo-400/15 text-indigo-300', outline: 'badge-primary border border-indigo-400/40 text-indigo-300' },
-};
-
-function HBadge({ variant = 'neutral', outline = false, style, className, children }: { variant?: HColor; outline?: boolean; style?: CSSProperties; className?: string; children: ReactNode }) {
-  const c = BADGE_COLORS[variant] ?? BADGE_COLORS.neutral;
-  return (
-    <span className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-bold ${outline ? c.outline : c.solid}${className ? ' ' + className : ''}`} style={style}>
-      {children}
-    </span>
-  );
-}
-
-const ALERT_COLORS: Record<string, string> = {
-  // Only 'neutral' is plain white/N — the other variants are already their
-  // own saturated hue, which reads fine on a light card without a class
-  // hook. 'h-alert-neutral' is the light-mode override target below (same
-  // pattern as HBadge's 'badge-neutral').
-  neutral: 'h-alert-neutral border-white/15 bg-white/[0.04]',
-  warning: 'border-amber-400/25 bg-amber-400/[0.06]',
-  info: 'border-blue-400/25 bg-blue-400/[0.06]',
-  success: 'border-emerald-400/25 bg-emerald-400/[0.06]',
-};
-const ALERT_ICON_COLORS: Record<string, string> = {
-  neutral: 'h-alert-icon-neutral bg-white/10 text-[var(--text-70)]',
-  warning: 'bg-amber-400/15 text-amber-300',
-  info: 'bg-blue-400/15 text-blue-300',
-  success: 'bg-emerald-400/15 text-emerald-300',
-};
-
-function HAlert({ variant = 'neutral', icon, title, children }: { variant?: 'neutral' | 'warning' | 'info' | 'success'; icon: ReactNode; title: string; children: ReactNode }) {
-  return (
-    <div className={`rounded-2xl border p-3 ${ALERT_COLORS[variant] ?? ALERT_COLORS.neutral}`}>
-      <div className="mb-2 flex items-center gap-2">
-        <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-sm ${ALERT_ICON_COLORS[variant] ?? ALERT_ICON_COLORS.neutral}`}>
-          {icon}
-        </span>
-        <span className="h-alert-title text-xs font-semibold uppercase tracking-wide text-[var(--text-70)]">{title}</span>
-      </div>
-      <div className="h-alert-body text-[13px] leading-relaxed text-[var(--text-70)]">{children}</div>
-    </div>
-  );
-}
-
-function HRow({ label, className, children }: { label: ReactNode; className?: string; children: ReactNode }) {
-  return (
-    <div className={`h-row flex items-start justify-between gap-3 border-b border-white/10 py-2 text-[12.5px] last:border-0${className ? ' ' + className : ''}`}>
-      <span className="h-row-label text-[var(--text-50)]">{label}</span>
-      <span className="h-row-value text-right font-medium text-[var(--text)]">{children}</span>
-    </div>
-  );
-}
 
 function makeAiCards(t: Record<string, string>) {
   return [
@@ -206,68 +99,6 @@ function makeAiCards(t: Record<string, string>) {
       title: 'Request Sources',
       summary: t.ai_sources_sum,
       tags: ['LINE', 'Form', 'Make'],
-      pipeline: null as string[] | null,
-      pipelineIcons: undefined as (string | string[] | null)[] | undefined,
-      flourish: null as ReactNode | null,
-      detail: (
-        <div className="detail-section">
-          <div className="channel-loader" aria-hidden="true">
-            <span className="channel-loader-spinner" />
-            <span className="channel-loader-text">{t.ai_sources_loading}</span>
-          </div>
-          <div className="msg-panel">
-            <div className="msg-panel-head">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="6" cy="6" r="2.2" /><circle cx="18" cy="6" r="2.2" /><circle cx="6" cy="18" r="2.2" /><circle cx="18" cy="18" r="2.2" />
-                <path d="M8.2 6h7.6M6 8.2v7.6M18 8.2v7.6M8.2 18h7.6" />
-              </svg>
-              <span>{t.ai_d_recent}</span>
-            </div>
-            <div className="channel-list">
-              <div className="channel">
-                <span className="ch-icon"><i className="ph-fill ph-chat-circle-text" /></span>
-                <div className="ch-body">
-                  <div className="ch-name">LINE · @pm.celine</div>
-                  <div className="ch-snippet">Onboarding redesign for the new tier — Jun 17?</div>
-                </div>
-                <HBadge variant="neutral" outline>2m</HBadge>
-              </div>
-              <div className="channel">
-                <span className="ch-icon"><i className="ph-fill ph-envelope-simple" /></span>
-                <div className="ch-body">
-                  <div className="ch-name">Email · celine.h@firm.co</div>
-                  <div className="ch-snippet">Quick question on tier-2 pricing visuals</div>
-                </div>
-                <HBadge variant="neutral" outline>28m</HBadge>
-              </div>
-              <div className="channel">
-                <span className="ch-icon"><i className="ph-fill ph-clipboard-text" /></span>
-                <div className="ch-body">
-                  <div className="ch-name">Form · Brief intake</div>
-                  <div className="ch-snippet">Tier-2 pricing experiment — marketing</div>
-                </div>
-                <HBadge variant="neutral" outline>1h</HBadge>
-              </div>
-              <div className="channel">
-                <span className="ch-icon"><i className="ph-fill ph-hash" /></span>
-                <div className="ch-body">
-                  <div className="ch-name">Slack · #design-requests</div>
-                  <div className="ch-snippet">Mobile sign-up flow — usability review</div>
-                </div>
-                <HBadge variant="neutral" outline>3h</HBadge>
-              </div>
-              <div className="channel">
-                <span className="ch-icon"><i className="ph-fill ph-note-pencil" /></span>
-                <div className="ch-body">
-                  <div className="ch-name">Manual · Kickoff notes</div>
-                  <div className="ch-snippet">In-person — Q3 roadmap dependencies</div>
-                </div>
-                <HBadge variant="neutral" outline>1d</HBadge>
-              </div>
-            </div>
-          </div>
-        </div>
-      ),
     },
     {
       id: 'intake',
@@ -282,38 +113,6 @@ function makeAiCards(t: Record<string, string>) {
       title: 'Intake',
       summary: t.ai_intake_sum,
       tags: ['Make', 'Webhooks', 'Fields'],
-      pipeline: null as string[] | null,
-      pipelineIcons: undefined as (string | string[] | null)[] | undefined,
-      flourish: null as ReactNode | null,
-      detail: (
-        <div className="detail-section">
-          <div className="msg-panel">
-            <div className="msg-panel-head">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="4" y="4" width="16" height="16" rx="2.5" /><path d="M8 9h8M8 13h8M8 17h5" />
-              </svg>
-              <span>{t.ai_d_req_form}</span>
-            </div>
-            <div className="form-mini">
-              <div className="field"><label>{t.ai_f_source}</label><div className="val"><span>LINE — @pm.celine</span></div></div>
-              <div className="field"><label>{t.ai_f_projtype}</label><div className="val"><span>Product UI · Mobile</span></div></div>
-              <div className="field"><label>{t.ai_f_goal}</label><div className="val"><span>Redesign onboarding for new pricing tier</span></div></div>
-              <div className="field-row">
-                <div className="field"><label>{t.ai_f_timeline}</label><div className="val"><span>Jun 03 — Jun 17</span></div></div>
-                <div className="field"><label>{t.ai_f_platform}</label><div className="val"><span>iOS · Android</span></div></div>
-              </div>
-              <div className="field field-priority"><label>{t.ai_f_priority_lbl}</label><div className="val"><span>P1 — Quarterly OKR</span><HBadge variant="danger">HIGH</HBadge></div></div>
-              <div className="field"><label>{t.ai_f_contact}</label><div className="val"><span>celine.h@firm.co</span></div></div>
-              <div className="form-status">
-                <span className="fs-label">{t.ai_f_complete}</span>
-                <div className="bar">
-                  {Array.from({ length: 7 }).map((_, i) => <div key={i} className="pdot" />)}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ),
     },
     {
       id: 'ai',
@@ -329,145 +128,6 @@ function makeAiCards(t: Record<string, string>) {
       title: 'AI Brief',
       summary: t.ai_ai_sum,
       tags: ['Claude', 'Classify', 'Summarize', 'Gap-find'],
-      pipeline: null as string[] | null,
-      pipelineIcons: undefined as (string | string[] | null)[] | undefined,
-      // Raw request docs fly in from the left, cross a pulsing transform
-      // axis, and come out the right as colorful result chips — a passive
-      // loop standing in for what this card actually does (Claude turns
-      // messy intake into a brief).
-      flourish: (
-        <div className="ai-doc-flow" aria-hidden="true">
-          <div className="ai-doc-track">
-            {/* memo: title bar over 3 paragraph lines -> resolves as an email result */}
-            <span className="ai-doc-unit">
-              <span className="ai-doc-content">
-                <span className="ai-doc-bar ai-doc-bar-head" style={{ width: '55%' }} />
-                <span className="ai-doc-bar" style={{ width: '92%' }} />
-                <span className="ai-doc-bar" style={{ width: '100%' }} />
-                <span className="ai-doc-bar" style={{ width: '58%' }} />
-              </span>
-              <span className="ai-doc-result">
-                <span className="ai-doc-result-lines">
-                  <span className="ai-doc-result-bar" style={{ width: '85%' }} />
-                  <span className="ai-doc-result-bar" style={{ width: '55%' }} />
-                </span>
-                <i className="ph-fill ph-envelope-simple ai-doc-result-icon" />
-              </span>
-            </span>
-            {/* list: short even bullet-style lines -> resolves as a total result */}
-            <span className="ai-doc-unit">
-              <span className="ai-doc-content">
-                <span className="ai-doc-bar" style={{ width: '62%' }} />
-                <span className="ai-doc-bar" style={{ width: '70%' }} />
-                <span className="ai-doc-bar" style={{ width: '52%' }} />
-                <span className="ai-doc-bar" style={{ width: '66%' }} />
-              </span>
-              <span className="ai-doc-result">
-                <span className="ai-doc-result-lines">
-                  <span className="ai-doc-result-bar" style={{ width: '90%' }} />
-                  <span className="ai-doc-result-bar" style={{ width: '45%' }} />
-                </span>
-                <i className="ph-fill ph-currency-circle-dollar ai-doc-result-icon" />
-              </span>
-            </span>
-            {/* table: a small grid of data cells -> resolves as an address result */}
-            <span className="ai-doc-unit">
-              <span className="ai-doc-content is-grid">
-                <span className="ai-doc-cell" />
-                <span className="ai-doc-cell" />
-                <span className="ai-doc-cell" />
-                <span className="ai-doc-cell" />
-                <span className="ai-doc-cell" />
-                <span className="ai-doc-cell" />
-              </span>
-              <span className="ai-doc-result">
-                <span className="ai-doc-result-lines">
-                  <span className="ai-doc-result-bar" style={{ width: '75%' }} />
-                  <span className="ai-doc-result-bar" style={{ width: '95%' }} />
-                </span>
-                <i className="ph-fill ph-map-pin ai-doc-result-icon" />
-              </span>
-            </span>
-            {/* quote: title over two long lines and a short closer -> resolves as an order result */}
-            <span className="ai-doc-unit">
-              <span className="ai-doc-content">
-                <span className="ai-doc-bar ai-doc-bar-head" style={{ width: '38%' }} />
-                <span className="ai-doc-bar" style={{ width: '100%' }} />
-                <span className="ai-doc-bar" style={{ width: '95%' }} />
-                <span className="ai-doc-bar" style={{ width: '35%' }} />
-              </span>
-              <span className="ai-doc-result">
-                <span className="ai-doc-result-lines">
-                  <span className="ai-doc-result-bar" style={{ width: '95%' }} />
-                  <span className="ai-doc-result-bar" style={{ width: '65%' }} />
-                </span>
-                <i className="ph-fill ph-package ai-doc-result-icon" />
-              </span>
-            </span>
-            <span className="ai-doc-axis-line" />
-            <span className="ai-doc-axis-hub"><i className="ph-fill ph-sparkle" /></span>
-          </div>
-        </div>
-      ) as ReactNode | null,
-      detail: (
-        <>
-          <div className="ai-thinking-indicator" aria-hidden="true">
-            <span className="ai-thinking-dot" />
-            <span className="ai-thinking-dot" />
-            <span className="ai-thinking-dot" />
-            <span className="ai-thinking-label">{t.ai_thinking}</span>
-          </div>
-          <div className="ai-block summary">
-            <HAlert variant="neutral" title={t.ai_d_summary_lbl} icon={<i className="ph-bold ph-file-text" />}>
-              <p dangerouslySetInnerHTML={{ __html: t.ai_d_summary_text }} />
-            </HAlert>
-          </div>
-          <div className="ai-row">
-            <div className="ai-block tasktype">
-              <HAlert variant="neutral" title={t.ai_d_tasktype_lbl} icon={<i className="ph-fill ph-grid-four" />}>
-                <div className="vv">
-                  <HBadge variant="purple" outline>Product UI</HBadge>
-                  <HBadge variant="neutral" outline>conf · 0.92</HBadge>
-                </div>
-              </HAlert>
-            </div>
-            <div className="ai-block priority">
-              <HAlert variant="warning" title={t.ai_d_priority_lbl} icon={<i className="ph-fill ph-star" />}>
-                <div className="vv">
-                  <HBadge variant="warning">P1 · HIGH</HBadge>
-                  <HBadge variant="neutral" outline>conf · 0.87</HBadge>
-                </div>
-              </HAlert>
-            </div>
-          </div>
-          <div className="ai-block missing">
-            <HAlert variant="warning" title={t.ai_d_missing_lbl} icon={<i className="ph-fill ph-warning" />}>
-              <div className="ai-block-spinner"><span className="spin-ring" aria-hidden="true" /><span>{t.ai_thinking}</span></div>
-              <ul className="real-content" style={{ display: 'none' }}>
-                <li>{t.ai_d_m1}</li>
-                <li>{t.ai_d_m2}</li>
-                <li>{t.ai_d_m3}</li>
-              </ul>
-            </HAlert>
-          </div>
-          <div className="ai-block questions">
-            <HAlert variant="info" title={t.ai_d_questions_lbl} icon={<i className="ph-fill ph-info" />}>
-              <div className="ai-block-spinner"><span className="spin-ring" aria-hidden="true" /><span>{t.ai_thinking}</span></div>
-              <ol className="real-content" style={{ display: 'none' }}>
-                <li>{t.ai_d_q1}</li>
-                <li>{t.ai_d_q2}</li>
-                <li>{t.ai_d_q3}</li>
-              </ol>
-            </HAlert>
-          </div>
-          <div className="ai-block direction">
-            <HAlert variant="success" title={t.ai_d_direction_lbl} icon={<i className="ph-bold ph-arrow-circle-right" />}>
-              <div className="ai-block-spinner"><span className="spin-ring" aria-hidden="true" /><span>{t.ai_thinking}</span></div>
-              <p className="real-content" style={{ display: 'none' }}>{t.ai_d_direction_text}</p>
-            </HAlert>
-          </div>
-        </>
-      ),
     },
     {
       id: 'tracking',
@@ -482,62 +142,6 @@ function makeAiCards(t: Record<string, string>) {
       title: 'Tracking',
       summary: t.ai_tracking_sum,
       tags: ['Sheets', 'Record ID', 'History'],
-      pipeline: null as string[] | null,
-      pipelineIcons: undefined as (string | string[] | null)[] | undefined,
-      flourish: null as ReactNode | null,
-      detail: (
-        <div className="detail-section">
-          <div className="msg-panel">
-            <div className="msg-panel-head">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3.5" y="4.5" width="17" height="15" rx="1.8" /><path d="M3.5 9.5h17M9 4.5v15M14.5 4.5v15" />
-              </svg>
-              <span>{t.ai_d_sheets_lbl}</span>
-            </div>
-          <div className="tracking-chart-container" style={{ height: 72, marginBottom: 8 }} />
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr>
-                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-30)]">ID</th>
-                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-30)]">Source</th>
-                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-30)]">Type</th>
-                <th className="border-b border-white/15 pb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-30)]">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="tr-live">
-                <td className="border-b border-white/10 py-2">DR-248</td>
-                <td className="border-b border-white/10 py-2">LINE</td>
-                <td className="border-b border-white/10 py-2">Product UI</td>
-                <td className="border-b border-white/10 py-2"><HBadge variant="success">Active</HBadge></td>
-              </tr>
-              <tr>
-                <td className="border-b border-white/10 py-2">DR-247</td>
-                <td className="border-b border-white/10 py-2">Form</td>
-                <td className="border-b border-white/10 py-2">Graphic</td>
-                <td className="border-b border-white/10 py-2"><HBadge variant="primary" outline>Review</HBadge></td>
-              </tr>
-              <tr>
-                <td className="border-b border-white/10 py-2">DR-246</td>
-                <td className="border-b border-white/10 py-2">Email</td>
-                <td className="border-b border-white/10 py-2">UX Review</td>
-                <td className="border-b border-white/10 py-2"><HBadge variant="neutral">Done</HBadge></td>
-              </tr>
-              <tr>
-                <td className="py-2">DR-245</td>
-                <td className="py-2">LINE</td>
-                <td className="py-2">Research</td>
-                <td className="py-2"><HBadge variant="neutral" outline>Backlog</HBadge></td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="sheet-foot">
-            <span><span className="rec-current">4</span> of <span className="rec-total">142</span> records</span>
-            <span className="sync-live"><span className="sync-dot" aria-hidden="true" />Updated · 2m ago</span>
-          </div>
-          </div>
-        </div>
-      ),
     },
     {
       id: 'human',
@@ -552,43 +156,6 @@ function makeAiCards(t: Record<string, string>) {
       title: 'Human Review',
       summary: t.ai_human_sum,
       tags: ['Priority', 'Strategy', 'Risk', 'Next step'],
-      pipeline: null as string[] | null,
-      pipelineIcons: undefined as (string | string[] | null)[] | undefined,
-      // Rendered separately as <PriorityQueueFlow /> below (see card.pipeline
-      // for why: it needs its own advancing-index timer, same as
-      // AiFlowStepper, which a value baked into this memoized card array
-      // can't drive).
-      flourish: null as ReactNode | null,
-      detail: (
-        <div className="detail-section">
-          <div className="msg-panel msg-panel-green">
-            <div className="msg-panel-head">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="8" r="3.5" /><path d="M5 20c1.2-3.6 4-5.5 7-5.5s5.8 1.9 7 5.5" />
-              </svg>
-              <span>{t.ai_d_assessment_lbl}</span>
-            </div>
-            <div className="hr-rows">
-              <HRow label={t.ai_hr_priority_row}>
-                <HBadge variant="danger" className="p1-badge" style={{ marginRight: '6px' }}>P1</HBadge>
-                {t.ai_hr_priority_val.replace(/^P1[^a-z]+/i, '')}
-              </HRow>
-              <HRow label={t.ai_hr_strategy_row}>{t.ai_hr_strategy_val}</HRow>
-              <HRow label={t.ai_hr_risks_row} className="hr-risk">{t.ai_hr_risks_val}</HRow>
-              <HRow label={t.ai_hr_nextstep_row}>{t.ai_hr_nextstep_val}</HRow>
-            </div>
-          </div>
-          <div className="msg-panel msg-panel-green">
-            <div className="msg-panel-head">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M7 8h10M7 12h7M7 16h4" /><rect x="3.5" y="4" width="17" height="16" rx="2.5" />
-              </svg>
-              <span>{t.ai_hr_op_lbl}</span>
-            </div>
-            <div className="qq" dangerouslySetInnerHTML={{ __html: t.ai_hr_op_quote }} />
-          </div>
-        </div>
-      ),
     },
     {
       id: 'workflow',
@@ -603,63 +170,6 @@ function makeAiCards(t: Record<string, string>) {
       title: 'Design Workflow',
       summary: t.ai_workflow_sum,
       tags: null as string[] | null,
-      pipeline: [t.ai_ph_research, t.ai_ph_structure, t.ai_ph_design, t.ai_ph_validate, t.ai_ph_delivery],
-      pipelineIcons: ['ph-fill ph-magnifying-glass', 'ph-fill ph-tree-structure', 'ph-fill ph-palette', 'ph-fill ph-check-circle', 'ph-fill ph-rocket-launch'],
-      flourish: null as ReactNode | null,
-      detail: (
-        <div className="detail-section">
-          <div className="msg-panel msg-panel-violet">
-            <div className="msg-panel-head">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 12h4l2-6 4 12 2-6h4" />
-              </svg>
-              <span>{t.ai_d_phases_lbl}</span>
-            </div>
-            <div className="phases">
-              <div className="phase">
-                <div className="pn">01</div>
-                <div>
-                  <div className="pt">{t.ai_ph_research}</div>
-                  <div className="pd">{t.ai_ph_research_d}</div>
-                </div>
-                <HBadge variant="brand" className="phase-badge">{t.ai_ph_inprogress}</HBadge>
-              </div>
-              <div className="phase">
-                <div className="pn">02</div>
-                <div>
-                  <div className="pt">{t.ai_ph_structure}</div>
-                  <div className="pd">{t.ai_ph_structure_d}</div>
-                </div>
-                <HBadge variant="cyan" className="phase-badge">{t.ai_ph_upnext}</HBadge>
-              </div>
-              <div className="phase">
-                <div className="pn">03</div>
-                <div>
-                  <div className="pt">{t.ai_ph_design}</div>
-                  <div className="pd">{t.ai_ph_design_d}</div>
-                </div>
-                <HBadge variant="neutral" outline className="phase-badge">{t.ai_ph_queued}</HBadge>
-              </div>
-              <div className="phase">
-                <div className="pn">04</div>
-                <div>
-                  <div className="pt">{t.ai_ph_validate}</div>
-                  <div className="pd">{t.ai_ph_validate_d}</div>
-                </div>
-                <HBadge variant="neutral" outline className="phase-badge">{t.ai_ph_queued}</HBadge>
-              </div>
-              <div className="phase">
-                <div className="pn">05</div>
-                <div>
-                  <div className="pt">{t.ai_ph_delivery}</div>
-                  <div className="pd">{t.ai_ph_delivery_d}</div>
-                </div>
-                <HBadge variant="neutral" outline className="phase-badge">{t.ai_ph_queued}</HBadge>
-              </div>
-            </div>
-          </div>
-        </div>
-      ),
     },
   ];
 }
@@ -1393,20 +903,11 @@ export function resetAiViewerStep() { lastViewerStep = null; }
 export function AiIntakeSection() {
   const { t } = useLang();
   const aiCards = useMemo(() => makeAiCards(t), [t]);
-  const [expandedAiCard, setExpandedAiCard] = useState<string | null>(() => (AI_LEGACY_CARDS ? null : lastViewerStep));
-  // Mirrors the Design Workflow card's AiFlowStepper (its "progress bar")
-  // so the phase list below can cycle each row's status pill in lockstep.
-  const [wfActive, setWfActive] = useState(0);
+  const [expandedAiCard, setExpandedAiCard] = useState<string | null>(() => lastViewerStep);
   // Which AI_CHIP_CATEGORIES / GEMINI_BEAM_STOPS chips their beam has
   // reached yet — drives the arrival glow on .ai-chip (see GoogleGeminiEffect's
   // onArriveChange).
   const [arrivedBeams, setArrivedBeams] = useState<boolean[]>([false, false, false, false, false]);
-  const aiFlowGridRef = useRef<HTMLDivElement>(null);
-  // Phone/tablet: each card's own element. Desktop viewer: that card's
-  // stage panel. Either way it's the element holding .ai-card-detail, so
-  // the live-demo effects below don't care which layout is showing.
-  const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
-  const aiThinkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // The steps are an Apple-style product viewer at every width.
   // Desktop (>960px): a column of pills on the left, the open one grown into
@@ -1414,9 +915,6 @@ export function AiIntakeSection() {
   // Compact (≤960px, Apple's phone layout): stage on top, the pills as a
   // swipeable row under it; tapping one grows it into a centred card with
   // ‹ › to step through and ✕ to fold it back into the row.
-  // The original expanding cards (AI_LEGACY_CARDS) are kept in the code but
-  // no longer rendered.
-  const isViewer = !AI_LEGACY_CARDS;
   const [isCompact, setIsCompact] = useState(() =>
     typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia(AI_COMPACT_MQ).matches);
   useEffect(() => {
@@ -1436,534 +934,6 @@ export function AiIntakeSection() {
   const aiOutlinePathRef = useRef<SVGPathElement>(null);
   const pillRefs = useRef<Map<string, HTMLLIElement>>(new Map());
 
-  // Toggle the bento "has-expanded" class imperatively (not via React's className prop) —
-  // .ai-flow-grid is a .rise-card whose entrance is driven by useRiseReveal() writing
-  // inline style/transform outside React. Keeping this outside the className prop avoids
-  // an unnecessary re-render of the whole grid's class string on every card expand/collapse.
-  useEffect(() => {
-    if (isViewer) return;
-    aiFlowGridRef.current?.classList.toggle('has-expanded', !!expandedAiCard);
-  }, [expandedAiCard, isViewer]);
-
-  // .ai-card-toggle's rotate(45deg) (from the .is-open class this render
-  // just applied/removed) is a transform change on a descendant of
-  // .ai-card, which has its own backdrop-filter — Chromium leaves that
-  // transform painted at its old value there (confirmed the same bug
-  // family as the theme toggle's backdrop-filter background-color
-  // staleness in useTheme.ts; a CSS class swap triggers it exactly like an
-  // inline style write does — the FAQ/portfolio-filter sliding indicators
-  // hit this too, back when they hand-measured their own geometry instead
-  // of Motion's layoutId, see tabIndicator.ts). A synchronous display:none/
-  // reflow/restore on the card busts the stale paint; scoped to just the
-  // affected card, not document.body, so it can't disturb page scroll.
-  // Runs on both the opening AND closing card — prevExpandedRef keeps the
-  // just-closed id available for one more run after expandedAiCard goes null.
-  const prevExpandedAiCardRef = useRef<string | null>(null);
-  useLayoutEffect(() => {
-    if (isViewer) return;
-    const targetId = expandedAiCard ?? prevExpandedAiCardRef.current;
-    prevExpandedAiCardRef.current = expandedAiCard;
-    if (!targetId) return;
-    const el = cardRefs.current.get(targetId);
-    if (!el) return;
-    const prevDisplay = el.style.display;
-    el.style.display = 'none';
-    void el.offsetHeight;
-    el.style.display = prevDisplay;
-  }, [expandedAiCard, isViewer]);
-
-  // Design Workflow card — mirror the AiFlowStepper's active step into the
-  // phase list below it. A phase that has already had its turn as "in
-  // progress" stays marked in-progress from then on (workflow phases keep
-  // running in the background even once later phases kick off) — only the
-  // single upcoming phase and the not-yet-reached ones still cycle. The
-  // whole thing only clears once the progress bar above wraps back to its
-  // first step and starts a fresh lap.
-  const wfReachedRef = useRef<Set<number>>(new Set([0]));
-  const wfPrevRef = useRef(0);
-  useEffect(() => {
-    if (isViewer) return;
-    const card = cardRefs.current.get('workflow');
-    const rows = card ? Array.from(card.querySelectorAll<HTMLElement>('.phases .phase')) : [];
-    if (!rows.length) return;
-    if (wfActive === 0 && wfPrevRef.current === rows.length - 1) {
-      wfReachedRef.current.clear();
-      // Drop the one-shot pulse markers too so each phase's flash can
-      // replay from scratch once its turn comes back around next lap.
-      // Research (row 0) gets re-flagged again a few lines down in the
-      // same tick — force a reflow in between so the browser registers
-      // the removal before the class comes back, or it never notices
-      // anything changed and the animation doesn't restart.
-      rows.forEach(r => r.classList.remove('phase-pulse'));
-      void card?.offsetWidth;
-    }
-    wfPrevRef.current = wfActive;
-    wfReachedRef.current.add(wfActive);
-
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const badgeClass = (variant: HColor, outline: boolean) =>
-      `inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-bold ${outline ? BADGE_COLORS[variant].outline : BADGE_COLORS[variant].solid}`;
-
-    rows.forEach((row, i) => {
-      const badge = row.querySelector<HTMLElement>('.phase-badge');
-      if (!badge) return;
-      const isCurrent = i === wfActive;
-      const isCompleted = !isCurrent && wfReachedRef.current.has(i);
-      const isUpnext = !isCurrent && !isCompleted && i === (wfActive + 1) % rows.length;
-      // Same language as Request Sources' "just landed" row (channel-new-pulse):
-      // a couple of ring pulses that fade to nothing, not a lingering tint —
-      // fired once, right when this phase first flips to in-progress.
-      if (isCurrent && !reduced) row.classList.add('phase-pulse');
-      const [text, cls] = isCurrent
-        ? [t.ai_ph_inprogress, badgeClass('brand', false)]
-        : isCompleted
-        ? [t.ai_ph_completed, badgeClass('purple', false)]
-        : isUpnext
-        ? [t.ai_ph_upnext, badgeClass('cyan', false)]
-        : [t.ai_ph_queued, badgeClass('neutral', true)];
-      if (badge.textContent === text) return;
-      badge.textContent = text;
-      // Keep the "phase-badge" marker so this same badge is still findable
-      // on the next tick — overwriting className wholesale would drop it.
-      badge.className = `${cls} phase-badge`;
-      if (!reduced) {
-        gsap.fromTo(badge, { scale: 0.7, opacity: 0.4 }, { scale: 1, opacity: 1, duration: 0.32, ease: 'back.out(3)' });
-      }
-    });
-  }, [wfActive, t, isViewer]);
-
-  // Restart SVG SMIL animations (<animateMotion>/<mpath>) injected via
-  // dangerouslySetInnerHTML — browsers only auto-start SMIL on document
-  // parse, not on dynamic innerHTML insertion, so the flow-particle
-  // animation in the AI workflow diagram never begins on its own.
-  useEffect(() => {
-    if (isViewer) return;
-    const svg = document.querySelector('.ai-flow-grid svg');
-    if (!svg) return;
-    const restart = () => {
-      svg.querySelectorAll('animateMotion, animate, animateTransform').forEach(anim => {
-        try { (anim as any).beginElement(); } catch { /* unsupported in some engines */ }
-      });
-    };
-    // Defer to next frame so the injected markup is fully parsed/laid out
-    const raf = requestAnimationFrame(restart);
-    return () => cancelAnimationFrame(raf);
-  }, [t, isViewer]);
-
-  // AI card decorations (the hover radar ring is pure CSS now — see
-  // .card-radar keyframes in portfolio.css). The old cursor-following edge glow
-  // (.edge-light, --edge-proximity/--cursor-angle) was replaced 2026-09-27
-  // by About Me's white border ring (.sc-ring, driven by --sc-x/--sc-y).
-  useEffect(() => {
-    // Legacy cards only; the viewer has no .ai-card to decorate.
-    if (isViewer) return;
-    const listeners: Array<[HTMLElement, (e: MouseEvent) => void, () => void]> = [];
-
-    // How I Use AI cards — carries the big-blur hover shadow as a static
-    // value that only ever crossfades via opacity (see .card-hover-shadow's
-    // own comment in portfolio.css) — animating box-shadow's blur/spread
-    // directly was the laggy-on-hover version this replaces.
-    document.querySelectorAll<HTMLElement>('.ai-card').forEach(card => {
-      if (card.querySelector(':scope > .card-hover-shadow')) return;
-      const shadowEl = document.createElement('span');
-      shadowEl.className = 'card-hover-shadow';
-      card.insertBefore(shadowEl, card.firstChild);
-
-      // Border ring + background glow position — same mousemove/mouseleave
-      // pattern as About's .sc-card effect: --sc-x/y drive .sc-ring and
-      // .sc-overlay, --mouse-x/y drive .spotlight-layer. Light mode hides all
-      // three, so skip the reflow there.
-      const onMove = (e: MouseEvent) => {
-        if (document.documentElement.getAttribute('data-theme') === 'light') return;
-        const r = card.getBoundingClientRect();
-        const x = (e.clientX - r.left) + 'px';
-        const y = (e.clientY - r.top) + 'px';
-        card.style.setProperty('--sc-x', x);
-        card.style.setProperty('--sc-y', y);
-        card.style.setProperty('--mouse-x', x);
-        card.style.setProperty('--mouse-y', y);
-      };
-      const onLeave = () => {
-        card.style.setProperty('--sc-x', '-500px');
-        card.style.setProperty('--sc-y', '-500px');
-        card.style.setProperty('--mouse-x', '-500px');
-        card.style.setProperty('--mouse-y', '-500px');
-      };
-      card.addEventListener('mousemove', onMove);
-      card.addEventListener('mouseleave', onLeave);
-      listeners.push([card, onMove, onLeave]);
-    });
-
-    return () => {
-      listeners.forEach(([card, onMove, onLeave]) => {
-        card.removeEventListener('mousemove', onMove);
-        card.removeEventListener('mouseleave', onLeave);
-      });
-      // Fully undo DOM changes so Strict Mode's second invocation finds
-      // clean cards and can re-initialize.
-      document.querySelectorAll<HTMLElement>('.ai-card > .card-hover-shadow').forEach(el => el.remove());
-    };
-  }, [t, isViewer]);
-
-  // How I Use AI — live demo animations on open, echoing the Tech Stack
-  // section's "actively being edited" feel: Sources stacks its first 4 rows
-  // in (see toggle() in the card map), then simulates a new message landing
-  // — loader, then the 5th row slides in at the top while the others glide
-  // smoothly down (FLIP) to make room; AI Brief types out its summary.
-  // Phone/tablet cards only — the desktop viewer's AiAppStage has its own.
-  useEffect(() => {
-    if (isViewer) return;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (expandedAiCard === 'sources') {
-      const card = cardRefs.current.get('sources');
-      const list = card?.querySelector<HTMLElement>('.channel-list');
-      const loader = card?.querySelector<HTMLElement>('.channel-loader');
-      const channels = list ? Array.from(list.querySelectorAll<HTMLElement>('.channel')) : [];
-      if (!list || channels.length < 2) return;
-      const incoming = channels[channels.length - 1];
-      const movers = channels.filter(c => c !== incoming);
-
-      if (reduced) {
-        incoming.classList.remove('channel-collapsed');
-        return () => incoming.classList.remove('channel-collapsed');
-      }
-
-      // Give the stack-in entrance (toggle(), ~4 * 0.14 stagger + 0.5s) time
-      // to finish before showing the loader for the new message.
-      const loaderTimer = setTimeout(() => {
-        loader?.classList.add('is-active');
-      }, 1300);
-
-      const revealTimer = setTimeout(() => {
-        loader?.classList.remove('is-active');
-
-        // Pin the grow target to an already-expanded row's real height so
-        // it finishes growing exactly when its transition ends, in sync
-        // with the siblings' FLIP slide below.
-        const targetHeight = movers[0].getBoundingClientRect().height;
-        const before = new Map(movers.map(c => [c, c.getBoundingClientRect().top] as const));
-        list.prepend(incoming);
-        incoming.style.maxHeight = `${targetHeight}px`;
-        incoming.classList.remove('channel-collapsed');
-        void list.offsetHeight;
-
-        movers.forEach(c => {
-          const delta = (before.get(c) ?? 0) - c.getBoundingClientRect().top;
-          if (delta) {
-            c.style.transition = 'none';
-            c.style.transform = `translateY(${delta}px)`;
-          }
-        });
-        void list.offsetHeight;
-        requestAnimationFrame(() => {
-          movers.forEach(c => {
-            c.style.transition = '';
-            c.style.transform = '';
-          });
-        });
-
-        // Flag the just-landed row with a couple of pulse rings so it
-        // reads as a fresh notification, not just another list item.
-        incoming.classList.add('channel-new-pulse');
-
-        // The pulsing row's own border-bottom is hidden (its rounded
-        // corners would curve the line) — an absolutely-positioned divider
-        // takes its place, sized to incoming's own box. It sits outside
-        // flex/grid flow entirely so it can never end up sharing a bento
-        // grid row with a neighboring channel (which inflated that row's
-        // height) or get auto-placed into the wrong cell.
-        const divider = document.createElement('div');
-        divider.className = 'channel-pulse-divider';
-        divider.style.left = `${incoming.offsetLeft}px`;
-        divider.style.top = `${incoming.offsetTop + incoming.offsetHeight}px`;
-        divider.style.width = `${incoming.offsetWidth}px`;
-        incoming.insertAdjacentElement('afterend', divider);
-      }, 2700);
-
-      return () => {
-        clearTimeout(loaderTimer);
-        clearTimeout(revealTimer);
-        loader?.classList.remove('is-active');
-        list.querySelector('.channel-pulse-divider')?.remove();
-        channels.forEach(c => {
-          c.classList.remove('channel-collapsed', 'channel-new-pulse');
-          c.style.maxHeight = '';
-          c.style.transition = '';
-          c.style.transform = '';
-        });
-      };
-    }
-
-    if (expandedAiCard === 'intake') {
-      const card = cardRefs.current.get('intake');
-      const fieldEls = Array.from(card?.querySelectorAll<HTMLElement>('.form-mini .field') ?? []);
-      const dots = Array.from(card?.querySelectorAll<HTMLElement>('.form-status .pdot') ?? []);
-      const badge = card?.querySelector<HTMLElement>('.field-priority .val > span:last-child') ?? null;
-      const statusBar = card?.querySelector<HTMLElement>('.form-status') ?? null;
-      const statusLabel = statusBar?.querySelector<HTMLElement>('.fs-label') ?? null;
-      const items = fieldEls
-        .map(field => ({ field, span: field.querySelector<HTMLElement>('.val > span:first-child') }))
-        .filter((it): it is { field: HTMLElement; span: HTMLElement } => !!it.span)
-        .map(({ field, span }) => ({ field, span, text: span.dataset.original ?? span.textContent ?? '' }));
-      if (!items.length) return;
-
-      if (reduced) {
-        items.forEach(({ span, text }) => { span.textContent = text; });
-        gsap.set(dots, { clearProps: 'all' });
-        if (badge) gsap.set(badge, { clearProps: 'all' });
-        if (statusLabel) statusLabel.textContent = t.ai_f_complete;
-        statusBar?.classList.remove('is-filling');
-        statusBar?.classList.add('is-complete');
-        return;
-      }
-
-      let stepTimer: ReturnType<typeof setTimeout> | null = null;
-      // Types each field's value in, then lights its progress dot and moves
-      // on — simulates the form being auto-filled from the source message,
-      // field by field, with the Priority badge stamping in once its own
-      // field lands (it doesn't have to be the last field to type).
-      const typeField = (i: number) => {
-        if (i >= items.length) return;
-        const { field, span, text } = items[i];
-        field.classList.add('is-filling');
-        let count = 0;
-        const step = () => {
-          count += 1;
-          span.innerHTML = text.slice(0, count) + (count < text.length ? '<span class="tcp-cursor"></span>' : '');
-          if (count < text.length) {
-            stepTimer = setTimeout(step, 16);
-          } else {
-            field.classList.remove('is-filling');
-            const dot = dots[i];
-            if (dot) gsap.fromTo(dot, { opacity: 0.25, scaleY: 2.2 }, { opacity: 1, scaleY: 1, duration: 0.3, ease: 'back.out(3)' });
-            if (field.classList.contains('field-priority') && badge) {
-              gsap.fromTo(badge, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(2.6)', delay: 0.1 });
-            }
-            if (i === items.length - 1) {
-              if (statusLabel) statusLabel.textContent = t.ai_f_complete;
-              statusBar?.classList.remove('is-filling');
-              statusBar?.classList.add('is-complete');
-            }
-            stepTimer = setTimeout(() => typeField(i + 1), 110);
-          }
-        };
-        step();
-      };
-      const startTimer = setTimeout(() => typeField(0), 180);
-
-      return () => {
-        clearTimeout(startTimer);
-        if (stepTimer) clearTimeout(stepTimer);
-        items.forEach(({ field, span, text }) => {
-          span.textContent = text;
-          field.classList.remove('is-filling');
-        });
-        gsap.set(dots, { clearProps: 'all' });
-        if (badge) gsap.set(badge, { clearProps: 'all' });
-        if (statusLabel) statusLabel.textContent = t.ai_f_complete;
-        statusBar?.classList.remove('is-filling');
-        statusBar?.classList.add('is-complete');
-      };
-    }
-
-    if (expandedAiCard === 'ai') {
-      const card = cardRefs.current.get('ai');
-      const p = card?.querySelector<HTMLParagraphElement>('.ai-block.summary p');
-      if (!p) return;
-      // Missing/Questions/Direction stay behind a "thinking" spinner until the
-      // summary finishes typing, then swap in with a fade — content that
-      // depends on the summary shouldn't appear before it does.
-      const revealPending = (animate: boolean) => {
-        const blocks = card?.querySelectorAll<HTMLElement>('.ai-block.missing, .ai-block.questions, .ai-block.direction');
-        blocks?.forEach(block => {
-          const spinner = block.querySelector<HTMLElement>('.ai-block-spinner');
-          const content = block.querySelector<HTMLElement>('.real-content');
-          if (spinner) {
-            if (animate) gsap.to(spinner, { opacity: 0, duration: 0.2, onComplete: () => { spinner.style.display = 'none'; } });
-            else spinner.style.display = 'none';
-          }
-          if (content) {
-            content.style.display = content.tagName === 'P' ? 'block' : 'flex';
-            if (animate) gsap.fromTo(content, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', clearProps: 'opacity,transform' });
-          }
-        });
-      };
-      if (reduced) {
-        revealPending(false);
-        return;
-      }
-      const original = p.innerHTML;
-      const flat = flatten([tokenizeHighlight(original)]);
-      let count = 0;
-      let intervalId: ReturnType<typeof setInterval> | null = null;
-      // Wait out the "thinking" beat (see toggle() in the card map) before
-      // typing, so the summary starts right as it fades into view.
-      const startTimer = setTimeout(() => {
-        intervalId = setInterval(() => {
-          count += 1;
-          const done = count >= flat.length;
-          p.innerHTML = runsToHtml(toRuns(flat, count)) + (done ? '' : '<span class="tcp-cursor"></span>');
-          if (done) {
-            if (intervalId) clearInterval(intervalId);
-            revealPending(true);
-          }
-        }, 28);
-      }, AI_THINK_MS);
-      return () => {
-        clearTimeout(startTimer);
-        if (intervalId) clearInterval(intervalId);
-        p.innerHTML = original;
-        // Reset the pending blocks so the spinner-then-reveal sequence
-        // replays correctly the next time this card is opened.
-        card?.querySelectorAll<HTMLElement>('.ai-block.missing .ai-block-spinner, .ai-block.questions .ai-block-spinner, .ai-block.direction .ai-block-spinner')
-          .forEach(el => { el.style.removeProperty('display'); gsap.set(el, { clearProps: 'opacity' }); });
-        card?.querySelectorAll<HTMLElement>('.ai-block.missing .real-content, .ai-block.questions .real-content, .ai-block.direction .real-content')
-          .forEach(el => { el.style.display = 'none'; gsap.set(el, { clearProps: 'opacity,transform' }); });
-      };
-    }
-
-    if (expandedAiCard === 'tracking') {
-      let echartsInstance: { dispose: () => void } | null = null;
-      let cancelled = false;
-
-      // Count the record totals up from 0 instead of just fading in —
-      // plain setInterval rather than a GSAP tween, since this only needs
-      // to mutate text on a timer, not interpolate a DOM property.
-      const trackingCard = cardRefs.current.get('tracking');
-      const curEl = trackingCard?.querySelector<HTMLElement>('.rec-current');
-      const totEl = trackingCard?.querySelector<HTMLElement>('.rec-total');
-      let countTimer: ReturnType<typeof setInterval> | null = null;
-      let countStart: ReturnType<typeof setTimeout> | null = null;
-      if (curEl && totEl) {
-        const curTarget = parseInt(curEl.dataset.target ?? curEl.textContent ?? '0', 10);
-        const totTarget = parseInt(totEl.dataset.target ?? totEl.textContent ?? '0', 10);
-        if (reduced) {
-          curEl.textContent = String(curTarget);
-          totEl.textContent = String(totTarget);
-        } else {
-          const steps = 22;
-          let step = 0;
-          countStart = setTimeout(() => {
-            countTimer = setInterval(() => {
-              step += 1;
-              const eased = 1 - Math.pow(1 - Math.min(1, step / steps), 3);
-              curEl.textContent = String(Math.round(curTarget * eased));
-              totEl.textContent = String(Math.round(totTarget * eased));
-              if (step >= steps && countTimer) {
-                clearInterval(countTimer);
-                countTimer = null;
-              }
-            }, 26);
-          }, 260);
-        }
-      }
-
-      const timer = setTimeout(async () => {
-        // Modular import instead of the full `echarts` package: this chart
-        // is only a bar chart on an svg-rendered cartesian grid, but the
-        // full package registers every chart type/component/renderer it
-        // ships (~1.1MB minified) regardless of what's actually used here.
-        // The modular registration lives in utils/trackingChart.ts as static
-        // imports — Rollup only tree-shakes echarts/charts' and
-        // echarts/components' barrel re-exports down to what's used when the
-        // destructure is static; doing it here via dynamic `import('echarts/charts')`
-        // instead pulls in the full namespace (every chart type, map/geo-json
-        // parsing included).
-        const { default: echarts } = await import('../utils/trackingChart');
-        const el = cardRefs.current.get('tracking')?.querySelector<HTMLElement>('.tracking-chart-container');
-        if (cancelled || !el) return;
-        const chart = echarts.init(el, undefined, { renderer: 'svg' });
-        // Read the live --text-50 token instead of hardcoding white — this
-        // canvas paints its own pixels, so it doesn't pick up var(--text-50)
-        // the way the rest of the card's DOM text does when the theme toggles.
-        const axisLabelColor = getComputedStyle(document.documentElement).getPropertyValue('--text-50').trim() || 'rgba(255,255,255,0.45)';
-        chart.setOption({
-          backgroundColor: 'transparent',
-          grid: { top: 6, bottom: 6, left: 56, right: 48, containLabel: false },
-          xAxis: { type: 'value', show: false },
-          yAxis: {
-            type: 'category',
-            data: ['Backlog', 'Done', 'Review', 'Active'],
-            axisLabel: { color: axisLabelColor, fontSize: 10, fontFamily: 'inherit' },
-            axisLine: { show: false },
-            axisTick: { show: false },
-          },
-          series: [{
-            type: 'bar',
-            data: [
-              { value: 14, itemStyle: { color: '#7e6917' } },
-              { value: 72, itemStyle: { color: '#00758d' } },
-              { value: 38, itemStyle: { color: '#0269d0' } },
-              { value: 18, itemStyle: { color: '#0e7c3d' } },
-            ],
-            label: { show: true, position: 'right', color: axisLabelColor, fontSize: 10, formatter: '{c}' },
-            barMaxWidth: 10,
-            itemStyle: { borderRadius: [0, 4, 4, 0] },
-          }],
-          animation: !reduced,
-          // Slower + elastic so the grow-in reads as a deliberate reveal
-          // (matches the elastic/back easings used on the card pop and
-          // pill/badge animations elsewhere in this section) instead of
-          // echarts' default quick linear-ish cubicOut.
-          animationDuration: 900,
-          animationEasing: 'elasticOut',
-          animationDelay: (idx: number) => idx * 90,
-        });
-        echartsInstance = chart;
-      }, 380);
-      return () => {
-        cancelled = true;
-        clearTimeout(timer);
-        echartsInstance?.dispose();
-        if (countStart) clearTimeout(countStart);
-        if (countTimer) clearInterval(countTimer);
-        if (curEl) curEl.textContent = curEl.dataset.target ?? curEl.textContent ?? '';
-        if (totEl) totEl.textContent = totEl.dataset.target ?? totEl.textContent ?? '';
-      };
-    }
-
-    if (expandedAiCard === 'human') {
-      const card = cardRefs.current.get('human');
-      const quote = card?.querySelector<HTMLElement>('.qq');
-      if (!quote) return;
-      const original = quote.dataset.original ?? quote.innerHTML;
-
-      if (reduced) {
-        quote.innerHTML = original;
-        return;
-      }
-
-      const flat = flatten([tokenizeHighlight(original, 'pivot')]);
-      let count = 0;
-      let stepTimer: ReturnType<typeof setTimeout> | null = null;
-      // Deliberately irregular per-character pacing (plus a longer beat
-      // after punctuation) instead of the AI summary's steady 28ms/char —
-      // this quote is the human reviewer's own note, so it should read as
-      // someone actually typing rather than a machine printing it out.
-      const typeStep = () => {
-        count += 1;
-        const done = count >= flat.length;
-        quote.innerHTML = runsToHtml(toRuns(flat, count)) + (done ? '' : '<span class="tcp-cursor tcp-cursor-human"></span>');
-        if (!done) {
-          const lastCh = flat[count - 1]?.ch;
-          const pause = lastCh && /[。.，,]/.test(lastCh) ? 220 : 26 + Math.random() * 34;
-          stepTimer = setTimeout(typeStep, pause);
-        }
-      };
-      // Picks up right as the Operating Principle panel finishes fading in
-      // (see toggle() in the card map — panel2's tween starts at
-      // HUMAN_QUOTE_MS and runs 450ms).
-      const startTimer = setTimeout(typeStep, HUMAN_QUOTE_MS + 300);
-
-      return () => {
-        clearTimeout(startTimer);
-        if (stepTimer) clearTimeout(stepTimer);
-        quote.innerHTML = original;
-      };
-    }
-  }, [expandedAiCard, isViewer]);
-
   // Skills scrollers
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -1982,161 +952,10 @@ export function AiIntakeSection() {
   // Scroll-reveal (.rise-card/.rise-soft → elastic rise + squash-stretch) is
   // handled site-wide by useRiseReveal(), called once in App.tsx.
 
-  // Pre-open setup for each card's live demo: hides/blanks whatever the
-  // matching effect below animates back in, so opening never flashes the
-  // finished state first. Shared by the phone/tablet cards (toggle) and the
-  // desktop viewer (selectAiStep).
-  const prepOpen = (cardId: string, el: HTMLElement) => {
-    const detail = el.querySelector('.ai-card-detail');
-    if (detail) {
-      if (cardId === 'ai') {
-        // "Thinking" beat before content streams in line-by-line —
-        // mirrors the Tech Stack section's live-demo feel but for
-        // a reasoning step rather than typed code.
-        // Deferred: setExpandedAiCard() above just queued a
-        // re-render that changes this element's own className (adds
-        // "is-open"), and React overwrites className wholesale on
-        // commit — adding "is-thinking" before that commit lands
-        // gets it silently wiped. setTimeout(0) runs after the
-        // commit regardless of tab visibility (rAF doesn't fire
-        // on a backgrounded tab, but this still needs to work there).
-        setTimeout(() => el.classList.add('is-thinking'), 0);
-        const targets = [
-          detail.querySelector('.ai-block.summary'),
-          detail.querySelector('.ai-block.tasktype'),
-          detail.querySelector('.ai-block.priority'),
-          detail.querySelector('.ai-block.missing'),
-          detail.querySelector('.ai-block.questions'),
-          detail.querySelector('.ai-block.direction'),
-        ].filter((node): node is Element => !!node);
-        const pills = detail.querySelectorAll('.ai-block.tasktype .vv > *, .ai-block.priority .vv > *');
-        gsap.set(targets, { opacity: 0, y: 14 });
-        gsap.set(pills, { opacity: 0, y: 6 });
-        if (aiThinkTimeoutRef.current) clearTimeout(aiThinkTimeoutRef.current);
-        aiThinkTimeoutRef.current = setTimeout(() => {
-          el.classList.remove('is-thinking');
-          gsap.fromTo(targets,
-            { opacity: 0, y: 14 },
-            { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', stagger: 0.12, clearProps: 'all' }
-          );
-          // Task type / Priority pills pop in on their own beat,
-          // after the surrounding card has settled into place.
-          gsap.fromTo(pills,
-            { opacity: 0, y: 6 },
-            { opacity: 1, y: 0, duration: 0.35, ease: 'power2.out', stagger: 0.07, delay: 0.28, clearProps: 'all' }
-          );
-        }, AI_THINK_MS);
-      } else if (cardId === 'sources') {
-        // Stack the first 4 rows in one by one, top row first —
-        // each drops down into place (like a message dropping in
-        // from above) with its icon giving a small arrival bounce.
-        // The 5th stays collapsed here so the live-demo effect in
-        // the effect below can reveal it afterward as a new
-        // message landing.
-        const rows = Array.from(detail.querySelectorAll<HTMLElement>('.channel'));
-        const incoming = rows[rows.length - 1];
-        const visible = rows.slice(0, -1);
-        const icons = visible.map(r => r.querySelector<HTMLElement>('.ch-icon')).filter((n): n is HTMLElement => !!n);
-        incoming.classList.add('channel-collapsed');
-        gsap.set(visible, { opacity: 0, y: -18, scale: 0.96 });
-        gsap.set(icons, { scale: 0.5 });
-        gsap.to(visible,
-          { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'power3.out', stagger: 0.14, clearProps: 'all' }
-        );
-        gsap.to(icons,
-          { scale: 1, duration: 0.5, ease: 'back.out(3.2)', stagger: 0.14, delay: 0.08, clearProps: 'scale' }
-        );
-      } else if (cardId === 'intake') {
-        // Blank the field values synchronously (before the effect
-        // below runs) so there's no flash of the fully-filled form —
-        // same reasoning as the "is-thinking" class deferral above,
-        // just via direct textContent instead of a class React would wipe.
-        const fields = Array.from(detail.querySelectorAll<HTMLElement>('.form-mini .field'));
-        fields.forEach(f => {
-          const span = f.querySelector<HTMLElement>('.val > span:first-child');
-          if (span) {
-            span.dataset.original = span.dataset.original ?? span.textContent ?? '';
-            span.textContent = '';
-          }
-        });
-        const dots = detail.querySelectorAll('.form-status .pdot');
-        gsap.set(dots, { opacity: 0.25 });
-        const badge = detail.querySelector('.field-priority .val > span:last-child');
-        if (badge) gsap.set(badge, { opacity: 0, scale: 0.5 });
-        // The status bar only reads "Form complete" — and only
-        // turns its green success tint — once every field has
-        // actually finished typing (see the effect below).
-        const statusBar = detail.querySelector<HTMLElement>('.form-status');
-        const statusLabel = statusBar?.querySelector<HTMLElement>('.fs-label');
-        statusBar?.classList.remove('is-complete');
-        statusBar?.classList.add('is-filling');
-        if (statusLabel) statusLabel.textContent = t.ai_f_filling;
-      } else if (cardId === 'tracking') {
-        gsap.fromTo(Array.from(detail.children),
-          { opacity: 0, y: 14 },
-          { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', stagger: 0.07, delay: 0.22, clearProps: 'all' }
-        );
-        // Zero the record counters synchronously — same
-        // flash-prevention reasoning as intake's field blanking —
-        // the effect below counts them back up to their real value.
-        const cur = detail.querySelector<HTMLElement>('.rec-current');
-        const tot = detail.querySelector<HTMLElement>('.rec-total');
-        if (cur) { cur.dataset.target = cur.dataset.target ?? cur.textContent ?? '0'; cur.textContent = '0'; }
-        if (tot) { tot.dataset.target = tot.dataset.target ?? tot.textContent ?? '0'; tot.textContent = '0'; }
-      } else if (cardId === 'human') {
-        const panels = Array.from(detail.querySelectorAll<HTMLElement>('.msg-panel'));
-        const [panel1, panel2] = panels;
-        if (!panel1 || !panel2) return;
-        // Assessment rows tick in one at a time, the Risks row
-        // gets its own amber underline once it lands, the P1
-        // badge stamps in with a slight rotate-and-settle, then
-        // — only once the verdict has fully landed, at
-        // HUMAN_QUOTE_MS — the Operating Principle panel
-        // follows (its quote typewriter picks up from there,
-        // see the effect below). Verdict, then the reasoning
-        // behind it; not both panels arriving together.
-        const rows = Array.from(panel1.querySelectorAll<HTMLElement>('.hr-rows > div'));
-        const badge = panel1.querySelector<HTMLElement>('.p1-badge');
-        const risksRow = panel1.querySelector<HTMLElement>('.hr-risk');
-        const quote = panel2.querySelector<HTMLElement>('.qq');
-        if (quote) {
-          quote.dataset.original = quote.dataset.original ?? quote.innerHTML;
-          quote.innerHTML = '';
-        }
-
-        gsap.set(panel1, { opacity: 0, y: 14 });
-        gsap.set(rows, { opacity: 0, y: 10 });
-        if (badge) gsap.set(badge, { opacity: 0, scale: 1.7, rotate: -12 });
-        if (risksRow) gsap.set(risksRow, { borderBottomColor: 'rgba(255,255,255,0.1)' });
-        gsap.set(panel2, { opacity: 0, y: 14 });
-
-        const tl = gsap.timeline();
-        tl.to(panel1, { opacity: 1, y: 0, duration: 0.35, ease: 'power3.out', clearProps: 'all' }, 0.15)
-          .to(rows, { opacity: 1, y: 0, duration: 0.35, ease: 'power3.out', stagger: 0.14, clearProps: 'all' }, 0.35);
-        if (badge) tl.to(badge, { opacity: 1, scale: 1, rotate: 0, duration: 0.4, ease: 'back.out(2.6)', clearProps: 'all' }, 0.7);
-        if (risksRow) tl.to(risksRow, { borderBottomColor: 'rgba(251,191,36,0.4)', duration: 0.5, ease: 'power2.out' }, 1.0);
-        tl.to(panel2, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', clearProps: 'all' }, HUMAN_QUOTE_MS / 1000);
-      } else {
-        gsap.fromTo(Array.from(detail.children),
-          { opacity: 0, y: 14 },
-          { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out', stagger: 0.07, delay: 0.22, clearProps: 'all' }
-        );
-      }
-    }
-  };
-  const clearThinking = (el: HTMLElement) => {
-    el.classList.remove('is-thinking');
-    if (aiThinkTimeoutRef.current) {
-      clearTimeout(aiThinkTimeoutRef.current);
-      aiThinkTimeoutRef.current = null;
-    }
-  };
-
   // Desktop viewer — exactly one step is always open; picking another
   // swaps it (there's no "close", same as Apple's viewer).
   const expandedRef = useRef<string | null>(expandedAiCard);
-  // The stage (AiAppStage) runs its own per-screen intros, so unlike the
-  // phone/tablet cards there's no prepOpen() here.
+  // The stage (AiAppStage) runs its own per-screen intros.
   const selectAiStep = (id: string) => {
     if (id === expandedRef.current) return;
     expandedRef.current = id;
@@ -2154,23 +973,23 @@ export function AiIntakeSection() {
   // Entrance: the stage rises in from below (rise-card); the rail and the
   // front panel come in from the left, the LINE phone from the right.
   useEffect(() => {
-    if (!isViewer || !viewerRef.current) return;
+    if (!viewerRef.current) return;
     return attachAiViewerEntrance(viewerRef.current);
-  }, [isViewer]);
+  }, []);
 
   // My Portfolio's top-left notch, cut round the section's headline.
   useLayoutEffect(() => {
     const v = viewerRef.current, l = aiLabelRef.current, t = aiTitleRef.current, s = aiSubRef.current;
     const svg = aiOutlineRef.current, p = aiOutlinePathRef.current;
-    if (!AI_VIEWER_NOTCH || !isViewer || !v || !l || !t || !s || !svg || !p) return;
+    if (!AI_VIEWER_NOTCH || !v || !l || !t || !s || !svg || !p) return;
     return attachStageNotch(v, l, t, s, svg, p);
-  }, [isViewer]);
+  }, []);
 
   // The solid stage's left-edge bay round the ⌃ ⌄ pair (desktop): the fill
   // is the viewer's ::before, clipped to the outline (--av-clip).
   useLayoutEffect(() => {
     const v = viewerRef.current;
-    if (AI_VIEWER_NOTCH || !AI_VIEWER_STAGE || !isViewer || !v) return;
+    if (AI_VIEWER_NOTCH || !AI_VIEWER_STAGE || !v) return;
     const mq = window.matchMedia(AI_STAGE_MQ);
     const sync = () => {
       const nav = v.querySelector<HTMLElement>('.ai-viewer-nav');
@@ -2214,12 +1033,11 @@ export function AiIntakeSection() {
       ro?.disconnect();
       mq.removeEventListener?.('change', sync);
     };
-  }, [isViewer]);
+  }, []);
 
   // Open step 01 the first time the viewer scrolls into view, so its demo
   // plays where it can be seen (it replays after a lazy-unit remount too).
   useEffect(() => {
-    if (!isViewer) return;
     const el = viewerRef.current;
     if (!el) return;
     const openFirst = () => {
@@ -2236,7 +1054,7 @@ export function AiIntakeSection() {
     }, { rootMargin: '0px 0px -25% 0px' });
     io.observe(el);
     return () => io.disconnect();
-  }, [isViewer]);
+  }, []);
 
   // Pill ↔ summary-card morph. The background layer tweens to the measured
   // size of whatever it should wrap (the open card's content, or the
@@ -2247,14 +1065,13 @@ export function AiIntakeSection() {
   // change would snap the pills back to their CSS size mid-morph.
   const pillCtxRef = useRef<gsap.Context | null>(null);
   useLayoutEffect(() => {
-    if (!isViewer) return;
     const ctx = gsap.context(() => {}, viewerRef);
     pillCtxRef.current = ctx;
     return () => {
       ctx.revert();
       pillCtxRef.current = null;
     };
-  }, [isViewer]);
+  }, []);
   // The open card's width follows the rail column (clamp(…, 29vw, …)), so a
   // window resize leaves the tweened sizes stale — re-measure, without
   // animating, whenever the viewer itself changes size.
@@ -2265,7 +1082,7 @@ export function AiIntakeSection() {
   const swipeCommitRef = useRef<{ offset: number } | null>(null);
   useEffect(() => {
     const el = viewerRef.current;
-    if (!isViewer || !el || typeof ResizeObserver === 'undefined') return;
+    if (!el || typeof ResizeObserver === 'undefined') return;
     let lastWidth = el.getBoundingClientRect().width;
     const ro = new ResizeObserver(() => {
       const width = el.getBoundingClientRect().width;
@@ -2276,10 +1093,10 @@ export function AiIntakeSection() {
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, [isViewer]);
+  }, []);
   useLayoutEffect(() => {
     const ctx = pillCtxRef.current;
-    if (!isViewer || !ctx) return;
+    if (!ctx) return;
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
     const snap = reduced || pillSnapRef.current;
     pillSnapRef.current = false;
@@ -2310,7 +1127,7 @@ export function AiIntakeSection() {
         gsap.to(p.bg, { ...sizes[i], ...tween });
       });
     });
-  }, [expandedAiCard, isViewer, isCompact, t, viewerResizeTick]);
+  }, [expandedAiCard, isCompact, t, viewerResizeTick]);
 
   // Compact: a pill is a tab — tapping it puts that step's content under the
   // row (.ai-compact-summary) and its demo on stage; the row then scrolls the
@@ -2656,118 +1473,19 @@ export function AiIntakeSection() {
 
   return (
       <section id="my-skills" className="section section-band">
-        <div ref={aiLabelRef} className="section-label rise-soft" {...(isViewer ? AI_HEAD_RIDE : {})}>How I Use AI</div>
-        <h2 ref={aiTitleRef} className="about-h2 rise-soft" {...(isViewer ? AI_HEAD_RIDE : {})} style={{ letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
+        <div ref={aiLabelRef} className="section-label rise-soft" {...AI_HEAD_RIDE}>How I Use AI</div>
+        <h2 ref={aiTitleRef} className="about-h2 rise-soft" {...AI_HEAD_RIDE} style={{ letterSpacing: '-.02em', marginBottom: '8px', fontFamily: 'var(--font-heading)' }}>
           AI-Assisted Design <span className="gradient-text">Intake System</span>
         </h2>
         <p
           ref={aiSubRef}
           className="ai-sub rise-soft"
-          {...(isViewer ? AI_HEAD_RIDE : {})}
+          {...AI_HEAD_RIDE}
           style={{ fontSize: '14px', marginBottom: '-32px', maxWidth: 392 }}
           dangerouslySetInnerHTML={{ __html: t.ai_sub }}
         />
 
-        {isViewer ? aiViewer : (
-        <div className="ai-flow-grid" ref={aiFlowGridRef}>
-          <div className="ai-connectors" aria-hidden="true" dangerouslySetInnerHTML={{ __html: `
-            <svg viewBox="0 0 230 100" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="ag-down" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#00D4FF" stop-opacity="0"/>
-                  <stop offset="40%" stop-color="#00D4FF" stop-opacity="0.55"/>
-                  <stop offset="100%" stop-color="#8A2BE2" stop-opacity="0.5"/>
-                </linearGradient>
-                <linearGradient id="ag-ur" x1="0" y1="1" x2="1" y2="0">
-                  <stop offset="0%" stop-color="#00D4FF" stop-opacity="0.55"/>
-                  <stop offset="100%" stop-color="#8A2BE2" stop-opacity="0.6"/>
-                </linearGradient>
-                <linearGradient id="ag-vv" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#8A2BE2" stop-opacity="0.6"/>
-                  <stop offset="100%" stop-color="#4A00E0" stop-opacity="0.5"/>
-                </linearGradient>
-                <linearGradient id="ag-pg" x1="0" y1="1" x2="1" y2="0">
-                  <stop offset="0%" stop-color="#4A00E0" stop-opacity="0.55"/>
-                  <stop offset="100%" stop-color="#7BE3B5" stop-opacity="0.55"/>
-                </linearGradient>
-                <linearGradient id="ag-sw" x1="1" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#7BE3B5" stop-opacity="0.55"/>
-                  <stop offset="100%" stop-color="#00D4FF" stop-opacity="0.45"/>
-                </linearGradient>
-                <path id="agp1" d="M 37 39 C 26 45, 26 53, 37 59" stroke="url(#ag-down)" stroke-width="0.2" fill="none" opacity="0.7" stroke-dasharray="1 9" stroke-linecap="round"/>
-                <path id="agp2" d="M 60 68 C 74 63, 90 45, 97 30" stroke="url(#ag-ur)" stroke-width="0.22" fill="none" opacity="0.78" stroke-dasharray="1 9" stroke-linecap="round"/>
-                <path id="agp3" d="M 115 39 C 126 45, 126 53, 115 59" stroke="url(#ag-vv)" stroke-width="0.22" fill="none" opacity="0.78" stroke-dasharray="1 9" stroke-linecap="round"/>
-                <path id="agp4" d="M 138 68 C 152 63, 168 45, 175 30" stroke="url(#ag-pg)" stroke-width="0.22" fill="none" opacity="0.7" stroke-dasharray="1 9" stroke-linecap="round"/>
-                <path id="agp5" d="M 193 39 C 215 50, 210 65, 193 59" stroke="url(#ag-sw)" stroke-width="0.22" fill="none" opacity="0.7" stroke-dasharray="1 9" stroke-linecap="round"/>
-              </defs>
-              <use href="#agp1"/><use href="#agp2"/><use href="#agp3"/><use href="#agp4"/><use href="#agp5"/>
-              <circle fill="#00D4FF" r="0.58"><animateMotion dur="4s" repeatCount="indefinite" rotate="auto"><mpath href="#agp1"/></animateMotion></circle>
-              <circle fill="#8A2BE2" r="0.65"><animateMotion dur="3.6s" repeatCount="indefinite" rotate="auto" begin="0.5s"><mpath href="#agp2"/></animateMotion></circle>
-              <circle fill="#4A00E0" r="0.65"><animateMotion dur="3.4s" repeatCount="indefinite" rotate="auto" begin="1.4s"><mpath href="#agp3"/></animateMotion></circle>
-              <circle fill="#7BE3B5" r="0.58"><animateMotion dur="3.6s" repeatCount="indefinite" rotate="auto" begin="0.2s"><mpath href="#agp4"/></animateMotion></circle>
-              <circle fill="#8A2BE2" r="0.50"><animateMotion dur="6s" repeatCount="indefinite" rotate="auto" begin="0.9s"><mpath href="#agp5"/></animateMotion></circle>
-            </svg>
-          ` }} />
-
-          {aiCards.map(card => {
-            const isOpen = expandedAiCard === card.id;
-            const toggle = () => {
-              const opening = !isOpen;
-              setExpandedAiCard(opening ? card.id : null);
-              const el = cardRefs.current.get(card.id);
-              if (!el) return;
-              if (opening) {
-                gsap.fromTo(el,
-                  { scale: 0.972, y: 6 },
-                  { scale: 1, y: 0, duration: 0.7, ease: 'elastic.out(1, 0.55)', clearProps: 'transform' }
-                );
-                prepOpen(card.id, el);
-              } else {
-                if (card.id === 'ai') clearThinking(el);
-                gsap.fromTo(el,
-                  { scale: 1 },
-                  { scale: 0.988, duration: 0.16, ease: 'power2.in', yoyo: true, repeat: 1, clearProps: 'transform' }
-                );
-              }
-            };
-            return (
-              <article
-                key={card.id}
-                ref={(el: HTMLElement | null) => { if (el) cardRefs.current.set(card.id, el); else cardRefs.current.delete(card.id); }}
-                className={`ai-card rise-card${card.variant ? ' ' + card.variant : ''}${isOpen ? ' is-open' : ''}`}
-                data-lazy-keep={isOpen ? '' : undefined}
-              >
-                <span className="sc-overlay" aria-hidden="true" />
-                <span className="spotlight-layer" aria-hidden="true" />
-                <span className="sc-ring" aria-hidden="true" />
-                <span className="ai-step-badge"><em>{card.step}</em></span>
-                {card.badge && <span className="ai-focal-badge">{card.badge}</span>}
-                <div className="ai-card-head">
-                  <div className="ai-glyph">{card.icon}</div>
-                  <h3>{card.title}</h3>
-                  <button
-                    type="button"
-                    className="ai-card-toggle"
-                    aria-expanded={isOpen}
-                    aria-label={`${card.title}`}
-                    onClick={toggle}
-                  />
-                </div>
-                <p>{card.summary}</p>
-                {card.tags && (
-                  <div className="ai-tags">
-                    {card.tags.map(tag => <span key={tag} className="ai-tag">{tag}</span>)}
-                  </div>
-                )}
-                {card.flourish}
-                {card.id === 'human' && <PriorityQueueFlow />}
-                {card.pipeline && <AiFlowStepper steps={card.pipeline} icons={card.pipelineIcons} onActiveChange={setWfActive} className="ai-flow-stepper-boxed" />}
-                <div className="ai-card-detail">{card.detail}</div>
-              </article>
-            );
-          })}
-        </div>
-        )}
+        {aiViewer}
 
         <div className="ai-chips-header rise-card">
           <h3>{t.ai_chips_label}</h3>
@@ -2858,7 +1576,7 @@ export default function SkillsSection() {
       const sel = window.getSelection();
       if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
       const anchorEl = sel.anchorNode instanceof Element ? sel.anchorNode : sel.anchorNode?.parentElement;
-      const container = anchorEl?.closest<HTMLElement>('.tech-sub, .tech-item, .ai-sub, .ai-card');
+      const container = anchorEl?.closest<HTMLElement>('.tech-sub, .tech-item, .ai-sub');
       if (!container) return;
 
       const range = sel.getRangeAt(0);

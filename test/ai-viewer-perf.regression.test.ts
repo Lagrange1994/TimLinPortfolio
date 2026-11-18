@@ -79,16 +79,11 @@ describe('How I Use AI viewer — performance', () => {
     expect(fx.indexOf('gsap.to(p.li')).toBeGreaterThan(read);
   });
 
-  it('legacy-card effects bail out in viewer mode', () => {
-    for (const marker of [
-      "aiFlowGridRef.current?.classList.toggle('has-expanded'",
-      "cardRefs.current.get('workflow')",
-      "document.querySelector('.ai-flow-grid svg')",
-      "document.querySelectorAll<HTMLElement>('.ai-card').forEach",
-    ]) {
-      const at = skills.indexOf(marker);
-      const head = skills.slice(skills.lastIndexOf('Effect(() => {', at), at);
-      expect(head, marker).toMatch(/if \(isViewer\) return;/);
+  // The pre-viewer expanding cards and their effects were deleted outright
+  // (they used to be kept behind AI_LEGACY_CARDS = false).
+  it('no legacy-card code is left behind', () => {
+    for (const marker of ['AI_LEGACY_CARDS', 'isViewer', 'aiFlowGridRef', 'cardRefs', "'.ai-card'", 'ai-card-detail']) {
+      expect(skills, marker).not.toContain(marker);
     }
   });
 });

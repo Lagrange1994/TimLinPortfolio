@@ -13,7 +13,6 @@ describe('How I Use AI pills in light mode', () => {
     const rule = css.match(/((?::root\[data-theme="light"\][^{,]*,\s*)+:root\[data-theme="light"\][^{,]*)\{\s*box-shadow: none !important;\s*opacity: 0 !important;/);
     expect(rule, 'light-mode hover-shadow-off rule').not.toBeNull();
     expect(rule![1]).toContain('.ai-pill-bg > .card-hover-shadow');
-    expect(rule![1]).toContain('.ai-card > .card-hover-shadow');
   });
 
   it('the open card is a chat bubble: small top-left corner, like .aas-bubble', () => {

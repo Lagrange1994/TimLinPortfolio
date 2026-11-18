@@ -16,8 +16,7 @@ describe('homepage GPU layer trims', () => {
     const block = css.match(/\.scroller-inner \.skill-pill,[^{]*\{[^}]*\}/);
     expect(block).not.toBeNull();
     for (const sel of [
-      '.scroller-inner .tag-capsule', '.process-step-badge', '.ai-step-badge',
-      '.ai-card-toggle', '.contact-card .slink',
+      '.scroller-inner .tag-capsule', '.process-step-badge', '.contact-card .slink',
     ]) expect(block![0]).toContain(sel);
     expect(block![0]).toMatch(/backdrop-filter:\s*none !important;/);
   });
