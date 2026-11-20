@@ -116,6 +116,7 @@ export const translations = {
     td_rwd_phone: 'Phone · 1 欄',
     // design process tabs
     process_sub: '不論在團隊裡還是獨立接案，從需求到交付，<br>每一步都有方法，也都有依據。',
+    skills_head_sub: '依專案選對工具，<br>從介面、視覺到 3D 都能完成。',
     tab_inhouse: 'In-house',
     tab_inhouse_desc: '在企業與政府專案中，我隸屬產品團隊，與 PM、工程師協作，從對齊目標到迭代優化，走完一套完整的內部設計流程。',
     tab_freelance: 'Freelance',
@@ -436,6 +437,7 @@ export const translations = {
     td_rwd_phone: 'Phone · 1 column',
     // design process tabs
     process_sub: 'In a team or on my own, from brief to delivery — <br>every step has a method, and a reason.',
+    skills_head_sub: 'The right tool for each project — <br>from interface and visuals to 3D.',
     tab_inhouse: 'In-house',
     tab_inhouse_desc:
       'On enterprise and government projects, I work within the product team alongside PMs and engineers, running a full internal design process from goal alignment through iteration.',

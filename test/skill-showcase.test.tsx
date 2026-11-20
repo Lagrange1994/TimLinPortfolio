@@ -15,6 +15,15 @@ describe('My Skills showcase', () => {
   const mount = () => render(<LangProvider><SkillShowcase /></LangProvider>);
   const names = (el: Element) => [...el.querySelectorAll('.skill-card-name')].map(n => n.textContent);
 
+  it('has a Chinese sub under its English title, before the tabs', () => {
+    const { container } = mount();
+    const sub = container.querySelector('.skills-head-sub')!;
+    expect(sub.previousElementSibling!.classList.contains('skills-h2')).toBe(true);
+    expect(sub.nextElementSibling!.classList.contains('skills-tabs')).toBe(true);
+    expect(sub.textContent).toBe(translations.zh.skills_head_sub.replace('<br>', ''));
+    expect(translations.en.skills_head_sub).toBeTruthy();
+  });
+
   it('is static now: no marquee scroller left', () => {
     const { container } = mount();
     expect(container.querySelector('.scroller, .skills-scroller, .scroller-inner')).toBeNull();

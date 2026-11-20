@@ -320,6 +320,7 @@ export default function SkillShowcase() {
       <div className="skills-intro">
         <div className="section-label rise-soft">My Skills</div>
         <h2 className="about-h2 skills-h2 rise-soft">Tools behind <span className="gradient-text">the work</span></h2>
+        <p className="tech-sub skills-head-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.skills_head_sub }} />
         {/* the phone Tech Stack tabs (.process-tab): a label over a thin
             line, the open tab's segment filled in its colour */}
         <div className="process-tabs skills-tabs rise-soft" role="tablist" aria-label="Tools" onKeyDown={onTabKey}>

@@ -10402,19 +10402,27 @@
       align-items: start;
     }
 
+    /* title → sub 8px, sub → tabs the tab gap (as Design Process / Tech
+       Stack's headings) */
     .skills-h2 {
+      margin-bottom: 8px;
+    }
+
+    /* the gap sits under the sub, not over the tabs: the tabs' grid row
+       (and the cards beside it) then starts at the tabs' own top */
+    .tech-sub.skills-head-sub {
       margin-bottom: var(--tab-gap-above);
     }
 
     /* Desktop: the cards start level with the tabs (the shared tab
        alignment), not the label. The intro's pieces join the showcase's
-       grid: label + title in rows 1–2, then tabs, line, tags beside the
-       cards (rows 3–5); the last, flexible row takes the cards' extra
+       grid: label, title, sub in rows 1–3, then tabs, line, tags beside
+       the cards (rows 4–6); the last, flexible row takes the cards' extra
        height, so the left rows keep their own. */
     @media (min-width: 1025px) {
       .skills-showcase {
         row-gap: 0;
-        grid-template-rows: auto auto auto auto auto 1fr;
+        grid-template-rows: auto auto auto auto auto auto 1fr;
       }
       .skills-intro {
         display: contents;
@@ -10424,7 +10432,7 @@
       }
       .skills-tools {
         grid-column: 2;
-        grid-row: 3 / 7;
+        grid-row: 4 / 8;
       }
     }
 
@@ -10663,7 +10671,13 @@
       .skills-cards { display: flex; flex-direction: column; }
       .skills-col { display: contents; }
       .skill-card { order: var(--order, 0); }
-      .process-tabs.skills-tabs { justify-content: center; }
+    }
+
+    /* Phones: every tab row centred (My Skills, My Design Process; Tech
+       Stack's tabs are centred by the base .process-tabs rule) */
+    @media (max-width: 767px) {
+      .process-tabs.skills-tabs,
+      .process-tabs.process-mode-tabs { justify-content: center; }
     }
 
     .skill-pill {

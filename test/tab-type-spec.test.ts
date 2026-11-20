@@ -38,10 +38,13 @@ describe('tab type spec', () => {
     expect(css).toContain('--tab-gap-above: 24px;');
     expect(css).toContain('--tab-gap-below: 24px;');
     // My Skills: title → tabs → line; the cards join rows 3+ (the tabs' row)
-    expect(rule('.skills-h2')).toMatch(/margin-bottom: var\(--tab-gap-above\);/);
+    // My Skills: title → sub (8px, like the other headings) → tabs → line;
+    // the cards join rows 4+ (the tabs' row)
+    expect(rule('.skills-h2')).toMatch(/margin-bottom: 8px;/);
+    expect(rule('.tech-sub.skills-head-sub')).toMatch(/margin-bottom: var\(--tab-gap-above\);/);
     expect(rule('.process-tabs.skills-tabs')).toMatch(/margin: 0 0 var\(--tab-gap-below\);/);
     expect(css).toMatch(/\.skills-intro \{\s*display: contents;/);
-    expect(css).toMatch(/\.skills-tools \{\s*grid-column: 2;\s*grid-row: 3 \/ 7;/);
+    expect(css).toMatch(/\.skills-tools \{\s*grid-column: 2;\s*grid-row: 4 \/ 8;/);
     // Design Process: the gap sits above the column, the tabs at its top
     expect(rule('.process-dual')).toMatch(/margin-top: var\(--tab-gap-above\);/);
     expect(rule('.process-tabs.process-mode-tabs')).toMatch(/margin: 0 0 var\(--tab-gap-below\);/);
@@ -51,6 +54,12 @@ describe('tab type spec', () => {
     expect(rule('.process-scroll-wrap--tech .process-tabs')).toMatch(/margin: var\(--tab-gap-above\) 16px 0;/);
     expect(rule('.process-scroll-wrap--tech .process-tab-aside')).toMatch(/margin: var\(--tab-gap-below\) 32px 0 16px;/);
     expect(rule('.process-scroll-wrap--tech .process-column-grid--inhouse')).toMatch(/padding: var\(--tab-gap-above\) 16px 28px;/);
+  });
+
+  it('phones centre every tab row', () => {
+    expect(css).toMatch(/@media \(max-width: 767px\) \{\s*\.process-tabs\.skills-tabs,\s*\.process-tabs\.process-mode-tabs \{ justify-content: center; \}/);
+    // Tech Stack's: the base rule
+    expect(rule('.process-tabs')).toMatch(/justify-content: center;/);
   });
 
   it('FAQ tabs size to their label and never wrap', () => {
