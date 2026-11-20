@@ -27,11 +27,27 @@ export const RELAY_START = 'top 92%';
 // Scrolling back up, it rewinds once the chart's top (its heading) drops
 // past 60% of the screen: the viewer above is back in full view
 export const REWIND_START = 'top 60%';
-// …and then plays this long (s), whatever the scroll does meanwhile
+// However it plays, it is done by the time the chart's top reaches this
+// (the chart then sits in the middle of the screen)
+export const DONE_AT = 'top 30%';
+// …and then plays this long (s) at a steady scroll…
 export const RELAY_DURATION = 3.6;
+// …faster or slower with how fast you scroll across the threshold, in or
+// out: SPEED_REF px/s plays at 1×, clamped to SPEED_MIN–SPEED_MAX
+// (3.6s → 4.8s … 1.2s). No scroll at all (opened past it) plays at 1×.
+export const SPEED_REF = 1000;
+export const SPEED_MIN = 0.75;
+export const SPEED_MAX = 3;
+export function relaySpeed(velocity: number) {
+  const v = Math.abs(velocity);
+  if (!v) return 1;
+  return Math.min(SPEED_MAX, Math.max(SPEED_MIN, v / SPEED_REF));
+}
 // the icon: as tall as the Scenario card, this much wider, this far right of it
 export const MINI_ASPECT = 2.3;
 export const MINI_GAP = 24;
+// …but no taller than this (layout px): the Scenario card's own height
+export const MINI_MAX_H = 118;
 
 // fades: gentle in and out (sine)
 const ease = gsap.parseEase('sine.inOut');
@@ -89,13 +105,21 @@ export type Rect = { left: number; top: number; right: number; bottom: number };
 // on-screen box: same height and bottom, MINI_GAP right of it. `k` turns
 // on-screen px into the container's layout px (the >1920 html zoom).
 export function miniBox(card: Rect, container: Rect, k = 1) {
-  const h = (card.bottom - card.top) * k;
+  // never taller than the Scenario card, even beside a taller card (Handoff)
+  const h = Math.min((card.bottom - card.top) * k, MINI_MAX_H);
   return {
     left: (card.right - container.left) * k + MINI_GAP,
     top: (card.bottom - container.top) * k - h,
     width: h * MINI_ASPECT,
     height: h,
   };
+}
+
+// The visitor's drag of the icon, kept as an offset from its place beside
+// the card (layout px): `dx`/`dy` are the pointer's on-screen travel, `k`
+// the on-screen → layout factor (the >1920 html zoom).
+export function moveBy(off: Pt, dx: number, dy: number, k = 1): Pt {
+  return { x: off.x + dx * k, y: off.y + dy * k };
 }
 
 const centre = (r: DOMRect): Pt => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
@@ -149,6 +173,9 @@ export function useClassifyZoom(
     // Beside the Scenario card on show (it follows the card if the visitor
     // drags it). The desktop viewer only: the phone row has no app window
     // for the card to sit by.
+    // …plus wherever the visitor dragged it (the cards drag too)
+    let off: Pt = { x: 0, y: 0 };
+    let k = 1;
     const place = () => {
       const card = viewer.querySelector<HTMLElement>('.aas-front.is-on') ?? viewer.querySelector<HTMLElement>('.aas-front');
       const r = card?.getBoundingClientRect();
@@ -156,9 +183,9 @@ export function useClassifyZoom(
         mini.classList.remove('is-placed');
         return false;
       }
-      const k = card.offsetWidth / r.width || 1;
+      k = card.offsetWidth / r.width || 1;
       const box = miniBox(r, wrap.getBoundingClientRect(), k);
-      Object.assign(mini.style, { left: `${box.left}px`, top: `${box.top}px`, width: `${box.width}px`, height: `${box.height}px` });
+      Object.assign(mini.style, { left: `${box.left + off.x}px`, top: `${box.top + off.y}px`, width: `${box.width}px`, height: `${box.height}px` });
       mini.classList.add('is-placed');
       return true;
     };
@@ -260,8 +287,9 @@ export function useClassifyZoom(
     // rewinds it from wherever it is, back into the icon.
     const clock = { p: 0 };
     const play = gsap.to(clock, { p: 1, duration: RELAY_DURATION, ease: 'none', paused: true, onUpdate: () => apply(clock.p) });
-    const fire = () => { play.play(); };
-    const rewind = () => { play.reverse(); };
+    // each crossing sets the pace from the scroll's speed at that moment
+    const fire = (st: ScrollTrigger) => { play.timeScale(relaySpeed(st.getVelocity())).play(); };
+    const rewind = (st: ScrollTrigger) => { play.timeScale(relaySpeed(st.getVelocity())).reverse(); };
 
     apply(0);
     const ctx = gsap.context(() => {
@@ -278,7 +306,30 @@ export function useClassifyZoom(
       ScrollTrigger.create({
         trigger: wrap,
         start: REWIND_START,
+        onEnter: fire,
         onLeaveBack: rewind,
+      });
+      // The scroll is a floor, not the driver: scrolling faster than it
+      // plays pulls it along, so it is in place by the time the chart is
+      // (its top at DONE_AT)…
+      ScrollTrigger.create({
+        trigger: wrap,
+        start: RELAY_START,
+        end: DONE_AT,
+        onUpdate: (st) => {
+          if (st.direction > 0 && !play.reversed() && play.progress() < st.progress) play.progress(st.progress);
+        },
+        onLeave: () => { play.progress(1); },
+      });
+      // …and back in the icon by the time you are back above the threshold.
+      ScrollTrigger.create({
+        trigger: wrap,
+        start: RELAY_START,
+        end: REWIND_START,
+        onUpdate: (st) => {
+          if (st.direction < 0 && play.reversed() && play.progress() > st.progress) play.progress(st.progress);
+        },
+        onLeaveBack: () => { play.progress(0); },
       });
     });
 
@@ -296,7 +347,33 @@ export function useClassifyZoom(
     const ro = new ResizeObserver(() => ScrollTrigger.refresh());
     ro.observe(wrap);
 
+    // Drag the icon anywhere (mouse, pen or finger); the relay then flies
+    // out of wherever it sits.
+    const onDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      const start = off;
+      const sx = e.clientX, sy = e.clientY;
+      try { mini.setPointerCapture(e.pointerId); } catch { /* synthetic pointer */ }
+      mini.classList.add('is-dragging');
+      const move = (ev: PointerEvent) => {
+        off = moveBy(start, ev.clientX - sx, ev.clientY - sy, k);
+        place();
+      };
+      const end = () => {
+        mini.classList.remove('is-dragging');
+        mini.removeEventListener('pointermove', move);
+        mini.removeEventListener('pointerup', end);
+        mini.removeEventListener('pointercancel', end);
+      };
+      mini.addEventListener('pointermove', move);
+      mini.addEventListener('pointerup', end);
+      mini.addEventListener('pointercancel', end);
+    };
+    mini.addEventListener('pointerdown', onDown);
+
     return () => {
+      mini.removeEventListener('pointerdown', onDown);
       gsap.ticker.remove(tick);
       play.kill();
       io.disconnect();

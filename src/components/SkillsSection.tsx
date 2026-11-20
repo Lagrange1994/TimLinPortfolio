@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useState, useRef, useMemo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent, type AnimationEvent as ReactAnimationEvent, type TouchEvent as ReactTouchEvent } from 'react';
+import { useEffect, useId, useLayoutEffect, useState, useRef, useMemo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent, type AnimationEvent as ReactAnimationEvent, type TouchEvent as ReactTouchEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
@@ -17,6 +17,7 @@ import { swipeStep } from '../utils/swipeStep';
 import { notchPath, leftBayPath } from '../utils/notchPath';
 import { CARD_RADIUS, NOTCH_GAP, NOTCH_TURN } from '../utils/notchTokens';
 import LazyUnit from './LazyUnit';
+import TechSquareArt from './TechSquareArt';
 import { processCardLayers, useProcessCardThemes, type ProcessTheme } from '../utils/processCardImages';
 
 function ProcessCardBg({ slug, themes }: { slug: string; themes: ReadonlySet<ProcessTheme> }) {
@@ -182,9 +183,6 @@ const PROCESS_VISIBLE = 3;
 // the desktop carousel, three cards a page.
 const PROCESS_VISIBLE_MOBILE = 1;
 const PROCESS_MOBILE_QUERY = '(max-width: 767px)';
-// Tech Stack (mobileOnly) pages one card at a time under its tabs on
-// tablets too.
-export const TECH_CAROUSEL_QUERY = '(max-width: 1024px)';
 
 const STAIR_STEP = 32;
 // The notched containers' border (Design Process, How I Use AI's stage),
@@ -270,26 +268,29 @@ function processVisibleCount(isMobile: boolean) {
 // crosses toward the left edge — so cards visibly step DOWN as they slide
 // left, instead of the whole staircase just translating sideways with each
 // card's height already fixed.
-// `mobileOnly` (Tech Stack): above the phone breakpoint, render the cards
-// straight into a plain <div className={className}> — that section keeps
-// its own desktop/tablet grid — and only become a carousel on phones.
+// `single` (Tech Stack): one card a page at every width, under its tabs —
+// the phone layout, desktop included.
 // `variant` adds a modifier class to the wrap for per-section styling.
-// `tabs` (one per card; only used with one card per page, i.e. phones):
+// `tabs` (one per card; only used with one card per page):
 // swaps the dots + ‹ › for apple.com-style tabs — a label per card over a
 // thin underline whose current segment fills with the autoplay countdown
 // (MacBook Pro page, "M5 Pro / M5 Max").
 // color → color2: the matching card's own colour pair (underline fill).
 export type ProcessCarouselTab = { label: string; color: string; color2?: string };
-export function ProcessCarousel({ cards, mobileOnly = false, className, variant, tabs }: {
+export function ProcessCarousel({ cards, single = false, variant, tabs, aside, active = true }: {
   cards: ReactNode[];
-  mobileOnly?: boolean;
-  className?: string;
+  single?: boolean;
+  // one per card, with `tabs`: the open card's text under the tabs (Tech
+  // Stack desktop: text beside, the card keeps only its demo)
+  aside?: ReactNode[];
   variant?: string;
   tabs?: ProcessCarouselTab[];
+  // false while it sits hidden behind another tab: no autoplay
+  active?: boolean;
 }) {
-  const singleQuery = mobileOnly ? TECH_CAROUSEL_QUERY : PROCESS_MOBILE_QUERY;
+  const singleQuery = PROCESS_MOBILE_QUERY;
   const [isMobile, setIsMobile] = useState(() => window.matchMedia(singleQuery).matches);
-  const visible = processVisibleCount(isMobile);
+  const visible = single ? 1 : processVisibleCount(isMobile);
   const maxOffset = Math.max(0, cards.length - visible);
   const [rawOffset, setOffset] = useState(0);
   // Crossing the breakpoint changes maxOffset; clamp instead of resetting so
@@ -499,15 +500,13 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
   // 6s CSS fill starts ticking) the instant the carousel renders, well
   // before the autoplay effect above is actually allowed to advance, so the
   // dot would show "full" long before the carousel really slides.
-  const autoplayLive = maxOffset > 0 && !dragging && risen && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const autoplayLive = active && maxOffset > 0 && !dragging && risen && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Only when there is an autoplay to stop (not under reduced motion).
   const canAutoplay = maxOffset > 0 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const toggle = (where: string) => canAutoplay && (
     <PlayPauseButton className={`process-swipe-arrow process-swipe-toggle--${where}`} paused={paused} onToggle={() => setPaused(p => !p)} />
   );
-
-  if (mobileOnly && !isMobile) return <div className={className}>{cards}</div>;
 
   const showTabs = !!tabs && visible === 1 && tabs.length === cards.length;
 
@@ -541,6 +540,7 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
           })}
         </div>
       )}
+      {showTabs && aside?.[offset] && <div key={offset} className="process-tab-aside">{aside[offset]}</div>}
       <div
         className={`process-column-grid process-column-grid--inhouse${dragging ? ' is-dragging' : ''}`}
         ref={trackRef}
@@ -624,73 +624,107 @@ export function ProcessCarousel({ cards, mobileOnly = false, className, variant,
 // away and remounts (replaying its entrance) when they come back.
 
 // DESIGN PROCESS
-function DesignProcessSection() {
+// The two ways I work, one tab each: label/desc translation keys, the six
+// steps' illustration slugs, and their ih_/fl_ copy keys.
+const PROCESS_MODES = [
+  { id: 'inhouse', label: 'tab_inhouse', desc: 'tab_inhouse_desc', prefix: 'ih', slugs: ['Align', 'Research', 'Structure', 'Design', 'Validate', 'Iterate'] },
+  { id: 'freelance', label: 'tab_freelance', desc: 'tab_freelance_desc', prefix: 'fl', slugs: ['Intake', 'AI Brief', 'Triage', 'Discovery', 'Proposal', 'Delivery'] },
+] as const;
+type ProcessMode = (typeof PROCESS_MODES)[number]['id'];
+
+export function DesignProcessSection() {
   const { t } = useLang();
   const sectionRef = useRef<HTMLElement>(null);
   const processThemes = useProcessCardThemes(sectionRef);
+  const [mode, setMode] = useState<ProcessMode>('inhouse');
+  const active = PROCESS_MODES.find(m => m.id === mode)!;
+  const modeRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  // ← → (and Home/End) move between the two tabs
+  const onModeKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const i = PROCESS_MODES.findIndex(m => m.id === mode);
+    const n = PROCESS_MODES.length;
+    const next = e.key === 'ArrowRight' ? (i + 1) % n : e.key === 'ArrowLeft' ? (i - 1 + n) % n
+      : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : -1;
+    if (next < 0) return;
+    e.preventDefault();
+    setMode(PROCESS_MODES[next].id);
+    modeRefs.current[next]?.focus();
+  };
 
   return (
       <section id="process" className="section section-band" ref={sectionRef}>
         <div className="section-label rise-soft">My Design Process</div>
+        <h2 className="about-h2 rise-soft" style={{ marginBottom: '8px' }}>Two ways to work, <span className="gradient-text">one process</span></h2>
+        <p className="tech-sub process-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.process_sub }} />
+        {/* In-house and Freelance in one column, switched by tabs (the
+            My Skills tab look); the open mode's carousel remounts fresh */}
         <div className="process-dual">
           <div className="process-column">
             <div className="process-column-head">
-              <div className="process-column-header">
-                <span>{t.tab_inhouse}</span>
-              </div>
-              <p className="process-column-desc">{t.tab_inhouse_desc}</p>
-              <PolicyPill icon="ph-users-three" label={t.process_policy_team_title} body={t.process_policy_team_body} />
-            </div>
-            <ProcessCarousel
-              variant="process"
-              cards={(['Align','Research','Structure','Design','Validate','Iterate'] as const).map((slug, i) => {
-                const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
-                const nameKey = `ih_name_${idx}` as keyof typeof t;
-                const descKey = `ih_desc_${idx}` as keyof typeof t;
-                return (
-                  <BorderGlow
-                    key={slug}
-                    className="process-card process-card--has-img rise-card"
-                    backgroundColor="#13101c"
-                    spotlightColor="rgba(108, 99, 255, 0.12)"
-                    backgroundSlot={<ProcessCardBg slug={slug} themes={processThemes} />}
+              <div className="process-tabs process-mode-tabs" role="tablist" aria-label="Design process" onKeyDown={onModeKey}>
+                {PROCESS_MODES.map((m, i) => (
+                  <button
+                    key={m.id}
+                    ref={el => { modeRefs.current[i] = el; }}
+                    type="button"
+                    role="tab"
+                    id={`process-tab-${m.id}`}
+                    aria-controls={`process-panel-${m.id}`}
+                    aria-selected={m.id === mode}
+                    tabIndex={m.id === mode ? 0 : -1}
+                    className={`process-tab process-mode-tab${m.id === mode ? ' is-active' : ''}`}
+                    onClick={() => setMode(m.id)}
                   >
-                    <span className="process-step-badge"><span className="about-notch-badge-dot" aria-hidden="true" />STEP · {idx}</span>
-                    <div className="process-name">{t[nameKey] as string}</div>
-                    <div className="process-desc">{t[descKey] as string}</div>
-                  </BorderGlow>
-                );
-              })}
-            />
-          </div>
-          <div className="process-column">
-            <div className="process-column-head">
-              <div className="process-column-header">
-                <span>{t.tab_freelance}</span>
+                    <span className="process-tab-label">{t[m.label]}</span>
+                    <span className="process-tab-bar" aria-hidden="true">
+                      {m.id === mode && <span className="process-tab-fill skills-tab-fill" />}
+                    </span>
+                  </button>
+                ))}
               </div>
-              <p className="process-column-desc">{t.tab_freelance_desc}</p>
+              <p key={mode} className="process-column-desc process-mode-desc">{t[active.desc]}</p>
+              {active.id === 'inhouse' && (
+                <PolicyPill icon="ph-users-three" label={t.process_policy_team_title} body={t.process_policy_team_body} />
+              )}
             </div>
-            <ProcessCarousel
-              variant="process"
-              cards={(['Intake','AI Brief','Triage','Discovery','Proposal','Delivery'] as const).map((slug, i) => {
-                const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
-                const nameKey = `fl_name_${idx}` as keyof typeof t;
-                const descKey = `fl_desc_${idx}` as keyof typeof t;
-                return (
-                  <BorderGlow
-                    key={slug}
-                    className="process-card process-card--has-img rise-card"
-                    backgroundColor="#13101c"
-                    spotlightColor="rgba(108, 99, 255, 0.12)"
-                    backgroundSlot={<ProcessCardBg slug={slug} themes={processThemes} />}
-                  >
-                    <span className="process-step-badge"><span className="about-notch-badge-dot" aria-hidden="true" />STEP · {idx}</span>
-                    <div className="process-name">{t[nameKey] as string}</div>
-                    <div className="process-desc">{t[descKey] as string}</div>
-                  </BorderGlow>
-                );
-              })}
-            />
+            {/* both carousels stay mounted in one cell (the page's scroll
+                reveal scans the cards once, at mount); only the open one
+                shows and autoplays */}
+            <div className="process-mode-panels">
+              {PROCESS_MODES.map(m => (
+                <div
+                  key={m.id}
+                  id={`process-panel-${m.id}`}
+                  role="tabpanel"
+                  aria-labelledby={`process-tab-${m.id}`}
+                  className={`process-mode-panel${m.id === mode ? ' is-active' : ''}`}
+                  inert={m.id !== mode}
+                >
+                  <ProcessCarousel
+                    variant="process"
+                    active={m.id === mode}
+                    cards={m.slugs.map((slug, i) => {
+                      const idx = String(i + 1).padStart(2, '0') as '01'|'02'|'03'|'04'|'05'|'06';
+                      const nameKey = `${m.prefix}_name_${idx}` as keyof typeof t;
+                      const descKey = `${m.prefix}_desc_${idx}` as keyof typeof t;
+                      return (
+                        <BorderGlow
+                          key={slug}
+                          className="process-card process-card--has-img rise-card"
+                          backgroundColor="#13101c"
+                          spotlightColor="rgba(108, 99, 255, 0.12)"
+                          backgroundSlot={<ProcessCardBg slug={slug} themes={processThemes} />}
+                        >
+                          <span className="process-step-badge"><span className="about-notch-badge-dot" aria-hidden="true" />STEP · {idx}</span>
+                          <div className="process-name">{t[nameKey] as string}</div>
+                          <div className="process-desc">{t[descKey] as string}</div>
+                        </BorderGlow>
+                      );
+                    })}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -698,6 +732,24 @@ function DesignProcessSection() {
 }
 
 // TECH STACK
+// each card's name line, for the desktop text column beside the demo
+const TECH_TEXT = [
+  { key: 'html', icon: 'fab fa-html5', color: '#60a5fa', name: 'HTML / CSS / Tailwind', desc: 'skill_html' },
+  { key: 'js', icon: 'fab fa-js', color: '#fb923c', name: 'JavaScript', desc: 'skill_js' },
+  { key: 'react', icon: 'fab fa-react', color: '#a5b4fc', name: 'React.js / Vue.js', desc: 'skill_css' },
+] as const;
+
+// Desktop: a square tile at the narrowed card's lower-left corner, an
+// illustration of the card's text on its own colour (hidden below 1025px).
+export function TechSquare({ k }: { k: (typeof TECH_TEXT)[number]['key'] }) {
+  const x = TECH_TEXT.find(e => e.key === k)!;
+  return (
+    <span className={`tech-square tech-square--${k}`} style={{ '--sq-c': x.color } as CSSProperties} aria-hidden="true">
+      <TechSquareArt k={k} />
+    </span>
+  );
+}
+
 function TechStackSection() {
   const { t } = useLang();
 
@@ -744,15 +796,24 @@ function TechStackSection() {
         <div className="section-label rise-soft">Tech Stack</div>
         <h2 className="about-h2 rise-soft" style={{ marginBottom: '8px' }}>Web development <span className="gradient-text">literacy</span></h2>
         <p className="tech-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.tech_sub }} />
+        {/* one card a tab at every width: the phone switcher (HTML / CSS,
+            JavaScript, React / Vue) with its 6s countdown fill */}
         <ProcessCarousel
-          mobileOnly
-          className="tech-items"
+          single
           variant="tech"
           tabs={[
             { label: 'HTML / CSS', color: '#60a5fa', color2: '#3b82f6' },
             { label: 'JavaScript', color: '#fb923c', color2: '#f97316' },
             { label: 'React / Vue', color: '#8b7bff', color2: '#6C63FF' },
           ]}
+          // desktop: the open card's name + line under the tabs, the card
+          // itself only its demo (CSS hides one copy per breakpoint)
+          aside={TECH_TEXT.map(x => (
+            <div key={x.key} className="tech-aside">
+              <div className="tech-name"><i className={x.icon} style={{ color: x.color, marginRight: '8px' }}></i>{x.name}</div>
+              <p className="tech-desc">{t[x.desc]}</p>
+            </div>
+          ))}
           cards={[
           <div key="html" className="tech-item-wrap rise-card">
             <div className="tech-item html-item card-spotlight sc-card">
@@ -765,6 +826,7 @@ function TechStackSection() {
               </div>
               <HtmlDemo />
             </div>
+            <TechSquare k="html" />
             <span className="tech-level-badge html-item">DESIGN-READY</span>
           </div>,
           <div key="js" className="tech-item-wrap rise-card">
@@ -778,6 +840,7 @@ function TechStackSection() {
               </div>
               <JsDemo />
             </div>
+            <TechSquare k="js" />
             <span className="tech-level-badge js-item">AI-ASSISTED</span>
           </div>,
           <div key="react" className="tech-item-wrap rise-card">
@@ -791,6 +854,7 @@ function TechStackSection() {
               </div>
               <RwdDemo />
             </div>
+            <TechSquare k="react" />
             <span className="tech-level-badge react-item">RESPONSIVE</span>
           </div>
           ]}

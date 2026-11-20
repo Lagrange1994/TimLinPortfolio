@@ -32,7 +32,8 @@ describe('Tech Stack cards go side-by-side on tablet/phone, alternating which si
   });
 
   it('splits the row 3/5 text : 2/5 code as the shared tablet+phone baseline', () => {
-    const textBlock = css.match(/\.tech-item-text \{\s*display: flex;[^}]*\}/)?.[0];
+    // (line start: not the desktop `.process-scroll-wrap--tech .tech-item-text`)
+    const textBlock = css.match(/\n {6}\.tech-item-text \{\s*display: flex;[^}]*\}/)?.[0];
     const codeBlock = css.match(/\.tech-code-preview \{\s*flex: 2;[^}]*\}/)?.[0];
     expect(textBlock).toMatch(/flex:\s*3;/);
     expect(codeBlock).toBeTruthy();

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { render } from '@testing-library/react';
-import { relayFrame, miniBox, arcPoint, dropCtrl, outCtrl, TEXT_AT, RELAY_START, REWIND_START, RELAY_DURATION, MINI_ASPECT, MINI_GAP } from '../src/utils/useClassifyZoom';
+import { relayFrame, miniBox, arcPoint, dropCtrl, outCtrl, TEXT_AT, RELAY_START, REWIND_START, DONE_AT, RELAY_DURATION, relaySpeed, SPEED_REF, SPEED_MIN, SPEED_MAX, MINI_ASPECT, MINI_GAP, MINI_MAX_H, moveBy } from '../src/utils/useClassifyZoom';
 import ClassifyMini, { PROBLEM_PILLS, SOLUTION_CHIPS, AI_X } from '../src/components/ClassifyMini';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from '../src/components/GoogleGeminiEffect';
 
@@ -136,16 +136,29 @@ describe('classify chart: icon → chart, as a relay', () => {
     expect(st).not.toMatch(/scrub|onUpdate|end:/);
     // one paused timed tween drives it, linear (relayFrame eases each piece)
     expect(hook).toContain("gsap.to(clock, { p: 1, duration: RELAY_DURATION, ease: 'none', paused: true, onUpdate: () => apply(clock.p) })");
-    expect(hook).toContain('const fire = () => { play.play(); };');
-    expect(hook).toContain('const rewind = () => { play.reverse(); };');
+    // its pace follows the scroll's speed at each crossing, in and out
+    expect(hook).toContain('const fire = (st: ScrollTrigger) => { play.timeScale(relaySpeed(st.getVelocity())).play(); };');
+    expect(hook).toContain('const rewind = (st: ScrollTrigger) => { play.timeScale(relaySpeed(st.getVelocity())).reverse(); };');
     expect(hook).toContain('play.kill();');
     // fires with the icon well up the screen; takes its time
     expect(RELAY_START).toBe('top 92%');
     // scrolling back up, it rewinds once the heading drops past 60% of the screen
     expect(REWIND_START).toBe('top 60%');
-    const rw = hook.slice(hook.lastIndexOf('ScrollTrigger.create({'));
-    expect(rw).toMatch(/start: REWIND_START,\s*onLeaveBack: rewind,\s*\}\);/);
+    expect(hook).toMatch(/start: REWIND_START,\s*onEnter: fire,\s*onLeaveBack: rewind,\s*\}\);/);
+    // the scroll is a floor: in place by DONE_AT, back in the icon above the threshold
+    expect(DONE_AT).toBe('top 30%');
+    expect(hook).toMatch(/start: RELAY_START,\s*end: DONE_AT,[\s\S]*?st\.direction > 0 && !play\.reversed\(\) && play\.progress\(\) < st\.progress\) play\.progress\(st\.progress\)[\s\S]*?onLeave: \(\) => \{ play\.progress\(1\); \}/);
+    expect(hook).toMatch(/start: RELAY_START,\s*end: REWIND_START,[\s\S]*?st\.direction < 0 && play\.reversed\(\) && play\.progress\(\) > st\.progress\) play\.progress\(st\.progress\)[\s\S]*?onLeaveBack: \(\) => \{ play\.progress\(0\); \}/);
     expect(RELAY_DURATION).toBeGreaterThanOrEqual(3);
+  });
+
+  it('relaySpeed: plays faster on a fast scroll, slower on a slow one, within bounds', () => {
+    expect(relaySpeed(0)).toBe(1);
+    expect(relaySpeed(SPEED_REF)).toBe(1);
+    expect(relaySpeed(-SPEED_REF * 2)).toBe(2);
+    expect(relaySpeed(SPEED_REF * 10)).toBe(SPEED_MAX);
+    expect(relaySpeed(50)).toBe(SPEED_MIN);
+    expect(RELAY_DURATION / SPEED_MAX).toBeGreaterThanOrEqual(1);
   });
 
   it('slow and soft: long per-piece moves, curved paths', () => {
@@ -210,7 +223,11 @@ describe('classify chart: icon → chart, as a relay', () => {
     const wrap = { left: 50, top: 700, right: 1400, bottom: 1400 };
     expect(miniBox(card, wrap)).toEqual({ left: 346 + MINI_GAP, top: -200, width: 118 * MINI_ASPECT, height: 118 });
     // on a zoomed page the on-screen px turn back into layout px
-    expect(miniBox(card, wrap, 2)).toEqual({ left: 692 + MINI_GAP, top: -400, width: 236 * MINI_ASPECT, height: 236 });
+    expect(miniBox(card, wrap, 0.5)).toEqual({ left: 173 + MINI_GAP, top: -100, width: 59 * MINI_ASPECT, height: 59 });
+    // beside a taller card (Handoff, 175px) it stays the Scenario card's size, bottoms aligned
+    const tall = { left: 100, top: 443, right: 396, bottom: 618 };
+    expect(MINI_MAX_H).toBe(118);
+    expect(miniBox(tall, wrap)).toEqual({ left: 346 + MINI_GAP, top: -82 - MINI_MAX_H, width: MINI_MAX_H * MINI_ASPECT, height: MINI_MAX_H });
   });
 
   it('wiring: icon first in the wrapper after the viewer, the chart framed after the heading, words wrapped to fade', () => {
@@ -267,5 +284,23 @@ describe('GoogleGeminiEffect scrubbed', () => {
     const { container } = render(<GoogleGeminiEffect onArriveChange={a => { arrived = a; }} />);
     expect(container.querySelectorAll('path[stroke-dasharray="1 1"]')).toHaveLength(0);
     expect(arrived).toEqual([]);
+  });
+});
+
+describe('the icon can be dragged', () => {
+  it('moveBy adds the pointer travel, in layout px', () => {
+    expect(moveBy({ x: 0, y: 0 }, 30, -12)).toEqual({ x: 30, y: -12 });
+    expect(moveBy({ x: 10, y: 5 }, 30, -12, 0.5)).toEqual({ x: 25, y: -1 });
+  });
+  it('takes pointer events once placed, with a grab cursor', () => {
+    const css = readFileSync(resolve(__dirname, '../src/styles/portfolio.css'), 'utf8').replace(/\r\n/g, '\n');
+    const placed = css.match(/\.ai-classify-mini\.is-placed \{[^}]*\}/)?.[0];
+    expect(placed).toMatch(/pointer-events: auto;/);
+    expect(placed).toMatch(/cursor: grab;/);
+    expect(placed).toMatch(/touch-action: none;/);
+    expect(css).toMatch(/\.ai-classify-mini\.is-dragging \{\s*cursor: grabbing;/);
+    const src = readFileSync(resolve(__dirname, '../src/utils/useClassifyZoom.ts'), 'utf8');
+    expect(src).toContain('left: `${box.left + off.x}px`, top: `${box.top + off.y}px`');
+    expect(src).toContain("mini.removeEventListener('pointerdown', onDown);");
   });
 });

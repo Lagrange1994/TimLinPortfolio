@@ -85,6 +85,14 @@ describe('My Skills showcase', () => {
     const { container } = mount();
     expect(container.querySelectorAll('.skill-card')).toHaveLength(9);
     for (const card of container.querySelectorAll('.skill-card')) expect(card.querySelector('.skill-card-art svg')).not.toBeNull();
+    // in the copy column, after the line under the tabs
+    expect(container.querySelectorAll('.skills-intro .skills-tag-list')).toHaveLength(3);
+    expect(container.querySelector('.skills-tools .skills-tag-list')).toBeNull();
+    expect(container.querySelector('.skills-sub + .skills-tags')).not.toBeNull();
+    // the copy and every tab's cards line up at the top
+    const css = readFileSync(resolve(__dirname, '../src/styles/portfolio.css'), 'utf8');
+    expect(css).toMatch(/\.skills-panels > \.skills-panel \{[^}]*align-self: start;/);
+    expect(css).toMatch(/\.skills-showcase \{[^}]*align-items: start;/);
     // the tags shown are the open tab's
     expect([...container.querySelectorAll('.skills-tag-list.is-active > li.skill-pill')].map(l => l.textContent)).toEqual(SKILL_TABS[0].tags.map(s => s.label));
   });

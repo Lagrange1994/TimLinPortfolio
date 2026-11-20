@@ -219,8 +219,7 @@ describe('tablet (768–1024px)', () => {
   });
   it('Tech Stack pages one card at a time under its tabs, as on phones', () => {
     const tsx = read('src/components/SkillsSection.tsx');
-    expect(tsx).toContain("export const TECH_CAROUSEL_QUERY = '(max-width: 1024px)';");
-    expect(tsx).toContain('const singleQuery = mobileOnly ? TECH_CAROUSEL_QUERY : PROCESS_MOBILE_QUERY;');
+    expect(tsx).toContain('const visible = single ? 1 : processVisibleCount(isMobile);');
     expect(read('src/styles/portfolio.css')).toMatch(/\.process-scroll-wrap--tech \.process-column-grid--inhouse \.process-swipe-slot \{\s*flex: 0 0 100%;/);
   });
   it('Figma MCP shows the desktop mockup scaled down, panels included', () => {

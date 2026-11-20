@@ -119,7 +119,9 @@ describe('Design Process is a 1-per-page full-width carousel on phones', () => {
   // card peeks in, dots sit on the left and ‹ › on the right, on one row.
   // The base rules above stay for Tech Stack's full-width page.
   it('Design Process peeks the next card, with the dots pill and play/pause centred as one group', () => {
-    expect(tsx.match(/<ProcessCarousel\n\s+variant="process"/g)).toHaveLength(2);
+    // one element, rendered once per mode (In-house / Freelance tabs)
+    expect(tsx.match(/<ProcessCarousel\n\s+variant="process"/g)).toHaveLength(1);
+    expect(tsx).toMatch(/PROCESS_MODES\.map\(m => \([\s\S]*?<ProcessCarousel\n\s+variant="process"/);
     const slot = mobileBlock.match(/\.process-scroll-wrap--process \.process-column-grid--inhouse \.process-swipe-slot \{[^}]*\}/)?.[0];
     expect(slot).toMatch(/flex:\s*0 0 calc\(100% - 36px\);/);
     const track = mobileBlock.match(/\.process-scroll-wrap--process \.process-column-grid--inhouse \{[^}]*\}/)?.[0];

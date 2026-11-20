@@ -351,7 +351,7 @@ export default function SkillShowcase() {
             </p>
           ))}
         </div>
-        {/* what each tab covers, swapped with the line above (one cell) */}
+        {/* what each tab covers, under the line above (all lists in one cell) */}
         <div className="skills-tags rise-soft">
           {SKILL_TABS.map(tb => (
             <ul
@@ -375,6 +375,7 @@ export default function SkillShowcase() {
         <div className="skills-panels">
           {SKILL_TABS.map(tb => {
             const order = phoneOrder(tb.columns);
+            const on = tb.id === active;
             let n = 0;
             return (
               <div
@@ -382,14 +383,16 @@ export default function SkillShowcase() {
                 id={`skills-panel-${tb.id}`}
                 role="tabpanel"
                 aria-labelledby={`skills-tab-${tb.id}`}
-                className={`skills-cards${tb.id === active ? ' is-active' : ''}`}
-                inert={tb.id !== active}
+                className={`skills-panel${on ? ' is-active' : ''}`}
+                inert={!on}
               >
-                {tb.columns.map((col, i) => (
-                  <div key={i} className={`skills-col skills-col--${i === 0 ? 'low' : 'high'}`}>
-                    {col.map(tl => <ToolCard key={tl.id} tool={tl} index={n++} order={order.indexOf(tl.id)} />)}
-                  </div>
-                ))}
+                <div className={`skills-cards${on ? ' is-active' : ''}`}>
+                  {tb.columns.map((col, i) => (
+                    <div key={i} className={`skills-col skills-col--${i === 0 ? 'low' : 'high'}`}>
+                      {col.map(tl => <ToolCard key={tl.id} tool={tl} index={n++} order={order.indexOf(tl.id)} />)}
+                    </div>
+                  ))}
+                </div>
               </div>
             );
           })}

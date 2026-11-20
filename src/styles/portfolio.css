@@ -121,6 +121,17 @@
       --font: 'Quicksand', 'GenSen Rounded TW', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
       --font-heading: 'Momo Trust Display', 'GenSen Rounded TW', 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
       --mono: 'Quicksand', sans-serif;
+      /* Every tab's label (underline tabs, Portfolio filters, FAQ): one
+         spec, every width */
+      --tab-font: 600 15px/1.2 var(--font);
+      /* …and the line under the tabs (My Skills, My Design Process, Tech
+         Stack): one size, one line height, --text-70 */
+      --tab-desc-size: 15px;
+      --tab-desc-lh: 1.75;
+      /* …and where they sit: the text above → the tabs, the tabs → their
+         line; the content beside them starts level with the tabs' top */
+      --tab-gap-above: 24px;
+      --tab-gap-below: 24px;
       /* Real monospace for code/data UI (AI Flow tables, stepper labels,
          word cloud). Geist Mono loads from Google Fonts in index.html —
          before 2026-09-27 it was hardcoded at 24 call sites but never
@@ -4973,12 +4984,55 @@
       display: flex;
       flex-direction: column;
       gap: 0;
+      /* the tab gap: the carousel beside starts level with the tabs */
+      margin-top: var(--tab-gap-above);
     }
 
-    /* In-house and Freelance are set apart by room, not a divider line */
-    .process-column + .process-column {
-      padding-top: 32px;
-      margin-top: 48px;
+    /* the section's own sub (tech-sub look, without its pull-up into tabs) */
+    .tech-sub.process-sub {
+      margin-bottom: 0;
+    }
+
+    /* In-house / Freelance: one column, two tabs (the My Skills tab look) */
+    .process-tabs.process-mode-tabs {
+      justify-content: flex-start;
+      margin: 0 0 var(--tab-gap-below);
+    }
+
+    .process-mode-tab {
+      --tab-c2: var(--primary);
+    }
+
+    .process-mode-desc {
+      animation: process-mode-desc-in .3s ease both;
+    }
+
+    /* both carousels in one cell: the area keeps its height across tabs */
+    .process-mode-panels {
+      display: grid;
+    }
+
+    .process-mode-panel {
+      grid-area: 1 / 1;
+      min-width: 0;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity .35s ease, visibility 0s .35s;
+    }
+
+    .process-mode-panel.is-active {
+      visibility: visible;
+      opacity: 1;
+      transition: opacity .35s ease;
+    }
+
+    @keyframes process-mode-desc-in {
+      from { opacity: 0; translate: 0 6px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .process-mode-desc { animation: none; }
+      .process-mode-panel { transition: none; }
     }
 
     /* Big section-title styling — matches .about-h2 (heading font, ~2rem),
@@ -4998,8 +5052,8 @@
     }
 
     .process-column-desc {
-      font-size: 13px;
-      line-height: 1.6;
+      font-size: var(--tab-desc-size);
+      line-height: var(--tab-desc-lh);
       color: var(--text-70);
       /* Fluid width — fill the grid track / container at every breakpoint
          instead of capping at a fixed character count, so the text adapts to
@@ -5390,7 +5444,7 @@
       border: 0;
       background: none;
       color: var(--text-50);
-      font: 600 15px/1.2 var(--font);
+      font: var(--tab-font);
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       transition: color .3s;
@@ -5430,6 +5484,244 @@
 
     @media (prefers-reduced-motion: reduce) {
       .process-tab-fill.is-timing { animation: none; transform: none; }
+    }
+
+    /* The open card's text under the tabs (ProcessCarousel `aside`): desktop
+       only, below that the text stays inside the card. */
+    .process-tab-aside {
+      display: none;
+    }
+
+    /* Tech Stack's square tile (TechSquare): desktop only, see below */
+    .tech-square {
+      display: none;
+    }
+
+    /* Its illustration (TechSquareArt), looping on the tab's 6s pace.
+       html: the outline reads the page block by block */
+    .tech-square-art .sq-scan {
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2;
+      opacity: 0;
+      animation: sq-scan 6s ease-in-out infinite;
+    }
+    .tech-square-art .sq-scan.sq-b2 { animation-delay: 1.2s; }
+    .tech-square-art .sq-scan.sq-b3 { animation-delay: 2.4s; }
+    .tech-square-art .sq-scan.sq-b4 { animation-delay: 3.6s; }
+    @keyframes sq-scan {
+      0%, 22%, 100% { opacity: 0; }
+      5%, 16% { opacity: 1; }
+    }
+
+    /* js: the request flows to the AI, the cursor presses, the card rises */
+    .tech-square-art .sq-flow {
+      animation: sq-flow 1.2s linear infinite;
+    }
+    @keyframes sq-flow {
+      to { stroke-dashoffset: -12; }
+    }
+    .tech-square-art .sq-spark {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: sq-spark 3s ease-in-out infinite;
+    }
+    @keyframes sq-spark {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.18) rotate(45deg); }
+    }
+    .tech-square-art .sq-press,
+    .tech-square-art .sq-cursor {
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    .tech-square-art .sq-press { animation: sq-press 3s ease infinite; }
+    .tech-square-art .sq-cursor { animation: sq-cursor 3s ease infinite; }
+    .tech-square-art .sq-rise { animation: sq-rise 3s cubic-bezier(.16, 1, .3, 1) infinite; }
+    @keyframes sq-press {
+      0%, 30%, 42%, 100% { transform: scale(1); }
+      36% { transform: scale(.92); }
+    }
+    @keyframes sq-cursor {
+      0%, 100% { transform: translate(6px, 6px); opacity: 0; }
+      18% { transform: translate(6px, 6px); opacity: 1; }
+      32% { transform: translate(0, 0); }
+      36% { transform: translate(0, 0) scale(.9); }
+      42%, 80% { transform: translate(0, 0); opacity: 1; }
+      92% { opacity: 0; }
+    }
+    @keyframes sq-rise {
+      0%, 36% { transform: translateY(12px); opacity: 0; }
+      58%, 86% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(0); opacity: 0; }
+    }
+
+    /* react: a row in the wide frame ⇄ a column in the narrow one */
+    .tech-square-art .sq-frame-wide { animation: sq-frame-wide 6s ease-in-out infinite; }
+    .tech-square-art .sq-frame-narrow { animation: sq-frame-narrow 6s ease-in-out infinite; }
+    @keyframes sq-frame-wide {
+      0%, 30%, 92%, 100% { opacity: 1; }
+      42%, 80% { opacity: 0; }
+    }
+    @keyframes sq-frame-narrow {
+      0%, 30%, 92%, 100% { opacity: 0; }
+      42%, 80% { opacity: 1; }
+    }
+    .tech-square-art .sq-tile { animation: 6s cubic-bezier(.65, 0, .35, 1) infinite; }
+    .tech-square-art .sq-t1 { animation-name: sq-t1; }
+    .tech-square-art .sq-t2 { animation-name: sq-t2; }
+    .tech-square-art .sq-t3 { animation-name: sq-t3; }
+    @keyframes sq-t1 {
+      0%, 30%, 92%, 100% { transform: translate(0, 0); }
+      42%, 80% { transform: translate(28px, -23px); }
+    }
+    @keyframes sq-t2 {
+      0%, 30%, 92%, 100% { transform: translate(0, 0); }
+      42%, 80% { transform: translate(0, 3px); }
+    }
+    @keyframes sq-t3 {
+      0%, 30%, 92%, 100% { transform: translate(0, 0); }
+      42%, 80% { transform: translate(-28px, 29px); }
+    }
+
+    @keyframes tech-square-breathe {
+      0%, 100% {
+        scale: 1;
+        box-shadow:
+          0 18px 36px -12px color-mix(in oklab, var(--sq-c) 55%, transparent),
+          inset 0 1px 0 rgba(255, 255, 255, .35);
+      }
+      50% {
+        scale: 1.04;
+        box-shadow:
+          0 22px 48px -10px color-mix(in oklab, var(--sq-c) 80%, transparent),
+          inset 0 1px 0 rgba(255, 255, 255, .35);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .tech-square { animation: none; }
+      .tech-square-art * { animation: none !important; }
+      .tech-square-art .sq-frame-narrow,
+      .tech-square-art .sq-cursor { opacity: 0; }
+    }
+
+    /* Tech Stack on desktop: the phone switcher (ProcessCarousel `single`)
+       in two columns — left the tabs (left-aligned like My Design
+       Process's) over the open card's name + line, right the card with only
+       its demo. The wrap reaches 16px past the column on each side (room
+       for the card shadows inside its clip); the tabs, text and track pad it
+       back, so the edges line up with the heading. */
+    @media (min-width: 1025px) {
+      .process-scroll-wrap--tech {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-rows: auto 1fr;
+        align-items: start;
+        margin: 0 -16px;
+        overflow-x: clip;
+        overflow-y: visible;
+      }
+      /* (the card's top = the track's 24px padding = the tabs' top) */
+      .process-scroll-wrap--tech .process-tabs {
+        grid-area: 1 / 1;
+        justify-content: flex-start;
+        margin: var(--tab-gap-above) 16px 0;
+      }
+      .process-scroll-wrap--tech .process-tab-aside {
+        grid-area: 2 / 1;
+        display: block;
+        margin: var(--tab-gap-below) 32px 0 16px;
+        animation: process-mode-desc-in .3s ease both;
+      }
+      .process-tab-aside .tech-name {
+        font-size: 24px;
+      }
+      .process-tab-aside .tech-desc {
+        margin: 14px 0 0;
+        font-size: var(--tab-desc-size);
+        line-height: var(--tab-desc-lh);
+      }
+      /* No slide on desktop: the three cards stack in one cell and
+         cross-fade (the track's inline translateX / drag are overridden) */
+      .process-scroll-wrap--tech .process-column-grid--inhouse {
+        grid-area: 1 / 2 / 3 / 3;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        transform: none !important;
+        cursor: auto;
+        padding: var(--tab-gap-above) 16px 28px;
+      }
+      .process-scroll-wrap--tech .process-column-grid--inhouse .process-swipe-slot {
+        grid-area: 1 / 1;
+        flex: 0 0 100%;
+        width: 100%;
+        margin-top: 0 !important;
+        transition: margin-top .45s cubic-bezier(.22,.61,.36,1), opacity .45s ease !important;
+      }
+      .process-scroll-wrap--tech .process-swipe-slot.is-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      /* The card narrowed to the right; a square tile sits at its
+         lower-left corner, hanging below its bottom. It reaches only half
+         way into the card's padding, so it never covers the demo. The
+         hover shadow (::after) follows the card. */
+      .process-scroll-wrap--tech .tech-item-wrap {
+        --sq: 168px;
+        --sq-in: calc(var(--card-pad) / 2);
+        /* the tile hangs this far below the card's bottom (not level
+           with it); the wrap keeps room for it */
+        --sq-drop: 40px;
+        padding-bottom: var(--sq-drop);
+      }
+      .process-scroll-wrap--tech .tech-item-wrap::after {
+        bottom: var(--sq-drop);
+      }
+      .process-scroll-wrap--tech .tech-item {
+        margin-left: calc(var(--sq) - var(--sq-in));
+      }
+      .process-scroll-wrap--tech .tech-item-wrap::after {
+        left: calc(var(--sq) - var(--sq-in));
+        border-radius: 48px;
+      }
+      .tech-square {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+        width: var(--sq);
+        aspect-ratio: 1;
+        border-radius: 40px;
+        corner-shape: squircle;
+        color: #fff;
+        font-size: 72px;
+        background:
+          radial-gradient(120% 120% at 30% 20%, color-mix(in oklab, var(--sq-c) 85%, #fff), var(--sq-c) 55%, color-mix(in oklab, var(--sq-c) 60%, #000));
+        box-shadow:
+          0 18px 36px -12px color-mix(in oklab, var(--sq-c) 55%, transparent),
+          inset 0 1px 0 rgba(255, 255, 255, .35);
+      }
+      /* breathes like How I Use AI's core: a slow swell, its glow with it */
+      .tech-square {
+        animation: tech-square-breathe 2.4s ease-in-out infinite;
+      }
+      .tech-square-art {
+        display: block;
+        filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .18));
+      }
+      .process-scroll-wrap--tech .tech-item-text {
+        display: none;
+      }
+      .process-scroll-wrap--tech .tech-code-preview {
+        flex: 1;
+        margin-top: 0;
+      }
+    }
+    @media (min-width: 1025px) and (prefers-reduced-motion: reduce) {
+      .process-scroll-wrap--tech .process-tab-aside { animation: none; }
     }
 
     /* ══ SCROLLER — RAF-driven for hero/skills, CSS animation for portfolio ══ */
@@ -5877,7 +6169,9 @@
     .tech-sub {
       color: var(--text-70);
       font-size: 14px;
-      margin-bottom: -32px;
+      /* (was -32px, against the old 3-up grid's 48px stagger; the tabs
+         below now set the gap) */
+      margin-bottom: 0;
       max-width: 392px;
     }
 
@@ -7174,9 +7468,7 @@
       background: none;
       border: none;
       border-radius: 9999px;
-      font-size: 12px;
-      font-family: var(--mono);
-      font-weight: 600;
+      font: var(--tab-font);
       color: var(--text-70);
       cursor: pointer;
       transition: color .2s ease;
@@ -8238,14 +8530,15 @@
 
     .faq-tab {
       position: relative;
-      flex: 1;
-      padding: 8px 10px;
+      /* sized to the label (one line at 15px on phones: the zh
+         「個人能力與專案經驗」 needs more than half the row) */
+      flex: 1 1 auto;
+      white-space: nowrap;
+      padding: 8px 12px;
       background: none;
       border: none;
       border-radius: 9999px;
-      font-family: var(--font);
-      font-size: 12.5px;
-      font-weight: 500;
+      font: var(--tab-font);
       color: var(--text-50);
       cursor: pointer;
       transition: color .2s ease;
@@ -9445,16 +9738,10 @@
         align-items: start;
       }
 
-      /* Continue the carousel's descending staircase into the title: the
-         label is the leftmost, lowest "step". The staircase is built from the
-         grid's 12px top padding + the leftmost slot's (PROCESS_VISIBLE-1)*
-         STAIR_STEP = 64px margin (see SkillsSection.tsx), so the leftmost
-         (nearest) card's top sits 76px below the carousel top. Push the title
-         one more 32px STAIR_STEP below that (76 + 32 = 108px) so every element,
-         right to left — rightmost card, middle, leftmost card, title — drops by
-         an equal 32px step. */
+      /* The tabs' top is the carousel's top (the shared tab alignment;
+         it used to drop 108px to continue the cards' staircase). */
       .process-column-head {
-        padding-top: 108px;
+        padding-top: 0;
       }
 
       .process-column-header {
@@ -10112,24 +10399,46 @@
       display: grid;
       grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
       gap: 64px;
-      align-items: center;
+      align-items: start;
     }
 
     .skills-h2 {
-      margin-bottom: 16px;
+      margin-bottom: var(--tab-gap-above);
+    }
+
+    /* Desktop: the cards start level with the tabs (the shared tab
+       alignment), not the label. The intro's pieces join the showcase's
+       grid: label + title in rows 1–2, then tabs, line, tags beside the
+       cards (rows 3–5); the last, flexible row takes the cards' extra
+       height, so the left rows keep their own. */
+    @media (min-width: 1025px) {
+      .skills-showcase {
+        row-gap: 0;
+        grid-template-rows: auto auto auto auto auto 1fr;
+      }
+      .skills-intro {
+        display: contents;
+      }
+      .skills-intro > * {
+        grid-column: 1;
+      }
+      .skills-tools {
+        grid-column: 2;
+        grid-row: 3 / 7;
+      }
     }
 
     .skills-sub {
       display: grid;
       max-width: 440px;
-      margin: 0 0 28px;
+      margin: 0;
     }
 
     .skills-sub-line {
       grid-area: 1 / 1;
       margin: 0;
-      font-size: 15px;
-      line-height: 1.75;
+      font-size: var(--tab-desc-size);
+      line-height: var(--tab-desc-lh);
       color: var(--text-70);
       opacity: 0;
       translate: 0 6px;
@@ -10141,10 +10450,11 @@
       translate: 0 0;
     }
 
-    /* each tab's tags in one shared cell, like the line above */
+    /* each tab's tags in one shared cell, under the line above */
     .skills-tags {
       display: grid;
       max-width: 480px;
+      margin-top: 28px;
     }
 
     .skills-tag-list {
@@ -10177,7 +10487,7 @@
        tab's segment grows in instead of timing an autoplay */
     .process-tabs.skills-tabs {
       justify-content: flex-start;
-      margin: 0 0 20px;
+      margin: 0 0 var(--tab-gap-below);
     }
 
     /* one accent for every tab: the fill and the tag icons */
@@ -10202,12 +10512,15 @@
       display: grid;
     }
 
-    .skills-panels > .skills-cards {
+    /* every tab's cards start at the top, level with the copy's top
+       (.skills-showcase align-items: start) */
+    .skills-panels > .skills-panel {
       grid-area: 1 / 1;
+      align-self: start;
       visibility: hidden;
     }
 
-    .skills-panels > .skills-cards.is-active {
+    .skills-panels > .skills-panel.is-active {
       visibility: visible;
     }
 
@@ -11548,8 +11861,17 @@
       pointer-events: none;
     }
 
+    /* placed: the visitor can drag it anywhere (useClassifyZoom) */
     .ai-classify-mini.is-placed {
       display: block;
+      pointer-events: auto;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .ai-classify-mini.is-dragging {
+      cursor: grabbing;
     }
 
     /* its card, on its own layer so it can dissolve while the shapes on

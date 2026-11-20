@@ -4,22 +4,38 @@ import path from 'node:path';
 
 const ROOT = path.resolve(__dirname, '..');
 
-// Phones get Tech Stack's three cards as the same one-card peek carousel
-// as Design Process (ProcessCarousel, mobileOnly). Desktop/tablet keep the
-// plain .tech-items grid, so its nth-child stagger still applies.
-describe('Tech Stack is a swipe carousel on phones only', () => {
+// Tech Stack's three cards are a one-card carousel under tabs at every
+// width (ProcessCarousel `single`): the phone switcher, desktop included.
+describe('Tech Stack is a one-card tab carousel', () => {
   const css = fs.readFileSync(path.join(ROOT, 'src/styles/portfolio.css'), 'utf8').replace(/\r\n/g, '\n');
   const mobileBlock = css.slice(css.indexOf('MOBILE (< 768px)'), css.indexOf('Responsive overrides (must be AFTER'));
   const tsx = fs.readFileSync(path.join(ROOT, 'src/components/SkillsSection.tsx'), 'utf8').replace(/\r\n/g, '\n');
   const tech = tsx.slice(tsx.indexOf('function TechStackSection'), tsx.indexOf('function AiIntakeSection'));
 
-  it('TechStackSection renders its cards through a mobile-only ProcessCarousel', () => {
-    expect(tech).toMatch(/<ProcessCarousel\s+mobileOnly\s+className="tech-items"\s+variant="tech"/);
+  it('TechStackSection renders its cards through a single-card ProcessCarousel', () => {
+    expect(tech).toMatch(/<ProcessCarousel\s+single\s+variant="tech"/);
+    expect(tsx).not.toMatch(/mobileOnly/);
     expect(tech.match(/<div key="(html|js|react)" className="tech-item-wrap rise-card">/g)).toHaveLength(3);
   });
 
-  it('above the phone breakpoint the carousel renders the plain grid wrapper', () => {
-    expect(tsx).toContain('if (mobileOnly && !isMobile) return <div className={className}>{cards}</div>;');
+  it('desktop: tabs left-aligned, one full-width card, text beside its demo', () => {
+    const desk = css.slice(css.indexOf('Tech Stack on desktop: the phone switcher'));
+    expect(desk).toMatch(/@media \(min-width: 1025px\) \{/);
+    expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-tabs \{[^}]*justify-content: flex-start;/);
+    expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-column-grid--inhouse \.process-swipe-slot \{\s*flex: 0 0 100%;/);
+    // two columns: tabs + text left, the demo-only card right
+    expect(desk).toMatch(/\.process-scroll-wrap--tech \{\s*display: grid;\s*grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\);/);
+    expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-tab-aside \{\s*grid-area: 2 \/ 1;\s*display: block;/);
+    expect(desk).toMatch(/\.process-scroll-wrap--tech \.tech-item-text \{\s*display: none;/);
+    // no slide on desktop: the cards stack in one cell and cross-fade
+    expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-column-grid--inhouse \{[^}]*display: grid;[^}]*transform: none !important;/);
+    expect(desk).toMatch(/\.process-swipe-slot \{\s*grid-area: 1 \/ 1;/);
+    expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-swipe-slot\.is-out \{\s*opacity: 0;/);
+    // below desktop the text stays in the card
+    expect(css).toMatch(/\n {4}\.process-tab-aside \{\s*display: none;/);
+    expect(tech).toMatch(/aside=\{TECH_TEXT\.map/);
+    // the subtitle no longer pulls the cards up (the old 3-up stagger)
+    expect(css).not.toMatch(/margin-bottom: -32px;/);
   });
 
   it('leaves room above the cards for the overhanging level badge', () => {
