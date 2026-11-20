@@ -7,18 +7,9 @@ import { navShouldCompact, flushSectionTops } from '../utils/navCompact';
 import { Sun, Moon, Globe, ChevronDown, Check } from 'lucide-react';
 import gsap from 'gsap';
 
-// Both theme-switch knobs used to be motion.span with animate={{x}} and a
-// KNOB_TRAVEL constant here. They're plain spans now and portfolio.css owns
-// their position via a transform transition on the .theme-switch--light /
-// .sm-theme-switch--light class this component already sets. Motion drives a
-// spring from requestAnimationFrame, i.e. on the main thread, and a theme
-// toggle is the one moment the main thread is guaranteed to be busy (whole-
-// document style recalc, then a repaint of every themed surface). On a phone
-// that block outlasted the animation, so the knob froze partway across and
-// jumped to its end position once frames resumed. A CSS transform transition
-// is an accelerated animation — Chromium runs it on the compositor thread,
-// which doesn't care that the main thread is stalled. See
-// .theme-switch-knob in portfolio.css for the full note.
+// Theme-switch knobs are plain spans moved by a CSS transform transition in
+// portfolio.css (compositor thread): a main-thread spring froze mid-way while
+// the toggle's style recalc blocked. See .theme-switch-knob.
 
 declare global {
   interface Window {
@@ -71,19 +62,6 @@ export default function Navbar() {
       g.removeEventListener('touchmove', stop);
     });
   }, []);
-
-  // .theme-switch-knob used to need a display:none/reflow/restore hack here
-  // to unstick its transform transition — root cause turned out to be
-  // portfolio.css's dark-state knob rule carrying its own conditional
-  // backdrop-filter (present in dark, absent in light), so every toggle
-  // flipped the knob's own compositing-layer promotion at the same instant
-  // it animated transform. Dropping that backdrop-filter (see the knob's
-  // CSS comment) fixed the transition at the source — confirmed with real
-  // interpolated intermediate values, overshoot included, not just an
-  // instant snap — so this component no longer needs to fight it after the
-  // fact. Reference: feralui.dev/gradients's own theme switch uses the same
-  // transform-on-attribute-toggle approach with no backdrop-filter on its
-  // knob at all.
 
   // Nav shrink on scroll
   useEffect(() => {

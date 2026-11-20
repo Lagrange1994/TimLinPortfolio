@@ -1,12 +1,8 @@
 import { useEffect, useState, type RefObject } from 'react';
 
-// Design Process card illustrations (12 cards × 4 webp ≈ 12.6MB) used to be
-// plain inline `background-image`s, and LazyUnit mounts every section once
-// at load before unmounting the far ones — so all 48 were requested ~0.7s
-// in, competing with the Spline scenes behind the loader, for a section two
-// screens down. Now a card only gets its URLs once the section is within
-// one viewport of the screen, and only for the theme(s) actually shown: the
-// other theme's pair loads the first time the visitor switches to it.
+// Design Process card illustrations (12 cards × 4 webp ≈ 12.6MB): a card gets
+// its URLs only once the section is within one viewport, and only for the
+// shown theme(s) — the other theme's pair loads on first switch.
 
 export type ProcessTheme = 'dark' | 'light';
 

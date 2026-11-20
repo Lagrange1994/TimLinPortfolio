@@ -32,7 +32,6 @@
 
 **不再使用：** Next.js、`app/layout.tsx`、`app/route.ts`、`app/globals.css`（已確認 repo 內無 `app/`、無 `next.config.*`、package.json 無 `next` 依賴，勿重新引入）。
 
-> 歷史備註：主頁一度被遷移到 Next.js，後改回 Vite + React MPA 時，曾把舊 SPA 檔案（`App.tsx`/`main.tsx`/`components/`/`context/`）丟進 `_archive/` 並寫下「不要把 index.html 換成 React」。但後續一次提交（`d0201ae`，2026-06-07）把主頁整頁轉成上述 React 掛載方式，`_archive/` 也隨之刪除（`0a8bb91`）——舊的警告語句沒人同步更新，導致跟現況矛盾，已於 2026-06-23 修正。
 
 ---
 

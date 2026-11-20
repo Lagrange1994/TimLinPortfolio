@@ -15,19 +15,11 @@ function bustStalePaint(el: HTMLElement) {
   el.style.display = prevDisplay;
 }
 
-// ── TEMPORARY diagnostic HUD ──────────────────────────────────────────────
-// Not for commit. Chasing "1st toggle fades, 2nd snaps" on real Android
-// Chrome specifically — headless Chromium (same engine) cannot reproduce it
-// even after eliminating a stale-dev-server variable, so the next step is
-// reading real frame-by-frame numbers off the actual failing phone instead
-// of guessing again. Opt-in via ?themedebug=1 so it never shows otherwise.
-// Prints, per toggle: when the class/attribute land, then samples a visible
-// menu label's computed color on every rAF for ~900ms and reports SNAP (<=2
-// distinct values — went straight from start color to end color) or
-// SMOOTH(n) (n interpolated steps seen). Also logs the exact moment the
-// stale-paint bust's forced reflow runs, tagged with ms-since-toggle, so a
-// bust landing inside the sampling window shows up directly instead of
-// being inferred. Remove this whole block once the phone confirms the fix.
+// ── Diagnostic HUD (opt-in via ?themedebug=1) ─────────────────────────────
+// Per toggle: logs when class/attribute land, samples a menu label's color
+// each rAF for ~900ms (SNAP vs SMOOTH(n)), and tags the stale-paint bust's
+// forced reflow with ms-since-toggle. Built to chase "1st toggle fades, 2nd
+// snaps" on real Android Chrome; remove once that's confirmed fixed.
 const THEME_DEBUG = typeof window !== 'undefined' && /[?&]themedebug=1\b/.test(window.location.search);
 let __themeDebugEl: HTMLDivElement | null = null;
 let __themeDebugN = 0;
@@ -171,21 +163,10 @@ export function useTheme() {
     didChangeRef.current = changed;
     appliedThemeRef.current = theme;
 
-    // Arms portfolio.css's html.theme-transitioning rules — the color
-    // crossfade is scoped to an actual toggle instead of sitting on every
-    // element permanently (a bare `*` transition was tried first and made
-    // the mobile menu and every hover ease too).
-    //
-    // document.startViewTransition was also tried, to cross-fade the whole
-    // page as one compositor blend. Removed: a view transition hides the
-    // LIVE DOM for the length of its animation and shows static before/after
-    // snapshots instead, while the switch knob kept moving underneath,
-    // unseen — so the knob appeared frozen for the transition's duration and
-    // then jumped to wherever it had already reached ("卡在中間才到另一端").
-    // Its one real advantage — cross-fading light mode's background-IMAGE
-    // against dark mode's flat color, which a background-color transition
-    // genuinely cannot interpolate — went away once both page-background
-    // layers became flat colors on mobile (see #bg-scene in portfolio.css).
+    // Arms portfolio.css's html.theme-transitioning rules, scoping the color
+    // crossfade to a real toggle (a permanent `*` transition eased every
+    // hover too). Not startViewTransition: it freezes the live DOM behind
+    // snapshots, so the switch knob looked stuck mid-way.
     let debugN = 0;
     if (changed) {
       root.classList.add('theme-transitioning');

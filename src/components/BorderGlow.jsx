@@ -1,11 +1,8 @@
 import { useRef, useCallback } from 'react';
 import './BorderGlow.css';
 
-// Card shell for the My Design Process cards. The React Bits original also
-// drew a cursor-following edge glow (.edge-light ring + ::before/::after
-// mesh-gradient border); replaced 2026-09-27 by About Me's white border ring
-// (.sc-ring at --sc-x/--sc-y). The interior spotlight (.bg-spotlight) also
-// tracks the pointer.
+// Card shell for the My Design Process cards: white border ring (.sc-ring at
+// --sc-x/--sc-y) plus a pointer-tracking interior spotlight (.bg-spotlight).
 const BorderGlow = ({
   children,
   backgroundSlot,

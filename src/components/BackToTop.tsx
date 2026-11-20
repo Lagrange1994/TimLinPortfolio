@@ -1,12 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { flushAtTop, flushSectionTops } from '../utils/navCompact';
 
-// Fixed "back to top" button. Mounted once at the App level, next to
-// ChatPanel — NOT inside ContactSection, where it used to live: that section
-// is a LazyUnit and gets unmounted while the viewer is more than one section
-// away, which took this page-wide button with it (gone through most of the
-// page, and missing whenever the portfolio wall measured it to keep its
-// "View All" button clear — see utils/fixedUiFootprint.ts).
+// Fixed "back to top" button, mounted at App level — not in ContactSection,
+// a LazyUnit that unmounts far from view and took this button with it.
+// See utils/fixedUiFootprint.ts.
 export default function BackToTop() {
   const ref = useRef<HTMLButtonElement>(null);
 

@@ -17,12 +17,9 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// TEMP (2026-09-27): expanded grid cards' motion/glow effects are switched
-// off — MagicBento glow/spotlight/magnetic tilt and the CSS hover lift/zoom/
-// shadow (gated by #portfolio-grid.grid-fx-off in portfolio.css). Kept: the
-// fly-in entrance on expand/filter switch, the hover hero-image ripple, and
-// the marquee wall.
-// Flip to true to restore.
+// Expanded grid cards' glow/tilt/hover-lift effects are off (gated by
+// #portfolio-grid.grid-fx-off in portfolio.css); entrance, image ripple and
+// marquee stay. Set true to restore.
 const GRID_CARD_EFFECTS = false;
 
 const SMOOTH_TAU = 0.18;
@@ -438,13 +435,9 @@ export default function PortfolioSection() {
   // (per the Figma annotations), not a fixed ratio, so language switches,
   // font loading, and wrapping all need a re-measure.
   //
-  // The notch is cut from label/title/sub's rects. apply() measures those (and
-  // the frame) at rest — clearing their entrance transforms for the one
-  // synchronous measure — so it can run immediately and at any point of the
-  // entrance, while the wall rises together with the text (see the wall-frame
-  // effect below). Earlier versions waited for label/title/sub's
-  // 'rise-settled' event and faded the wall in afterwards, because reading
-  // their still-animating rects deformed the notch.
+  // apply() measures label/title/sub/frame at rest (entrance transforms
+  // cleared for one synchronous measure), so it runs at any point of the
+  // entrance while the wall rises with the text.
   useLayoutEffect(() => {
     const section = document.getElementById('portfolio');
     const wall = document.getElementById('portfolio-scroller-desktop');
@@ -464,17 +457,10 @@ export default function PortfolioSection() {
     const viewAllRow = document.querySelector<HTMLElement>('.view-all-row');
     if (!section || !wall || !frame || !pathEl || !clipEl || !fillEl || !label || !title || !sub || !viewAllBtn || !viewAllRow) return;
 
-    // Measures label/title/sub/frame at REST: while they're mid-rise their
-    // GSAP transforms (translateY, scaleY) skew getBoundingClientRect's
-    // top/bottom/height, which is what used to force the whole wall to wait
-    // for 'rise-settled' before it could show. Clearing the inline transforms
-    // for the synchronous duration of one measure (no paint in between) gives
-    // the true resting rects at any point of the entrance, so the wall can
-    // rise together with the text instead of fading in after it.
-    // The section's own scroll zoom (scale, see .portfolio-scroll in
-    // portfolio.css) is switched off for the measure too: it scales every
-    // rect but not clientWidth/clientHeight, so the notch would be cut for
-    // the zoomed size.
+    // Measures label/title/sub/frame at REST: mid-rise GSAP transforms skew
+    // getBoundingClientRect, so inline transforms are cleared for one
+    // synchronous measure (no paint between). The section's scroll zoom is
+    // off for it too — it scales rects but not clientWidth/clientHeight.
     function apply() {
       const els = [label!, title!, sub!, frame!];
       const saved = els.map(el => el.style.transform);
@@ -907,25 +893,11 @@ export default function PortfolioSection() {
       applyDesktopGeometry();
     }
 
-    // threshold: 0.01 fires as soon as 1% of the (tall, mobile) section is
-    // visible. Desktop/tablet's branch above computes top/height purely
-    // from measureAvailableHeight() (dvh + --nav-h) and the row stack's own
-    // static content height — neither reads anything about the entrance
-    // animation's progress — so it can lock the instant the section is
-    // visible, no wait needed. Locking it late used to mean the CSS pre-lock
-    // fallback height (var(--wall-h, 75dvh) in portfolio.css) stayed applied
-    // for the entrance's whole duration, then snapped to the real computed
-    // height the moment the wait ended — an abrupt, untransitioned resize
-    // landing right as the fade/rise settled read as a rubbery "stretch".
-    // Locking immediately means the real height is already in place before
-    // the entrance even starts, so there's nothing left to snap.
-    // Mobile locks on intersection too — never wait for the label's rise.
-    // Its top pin is read from the offsetTop chain (see lockWallGeometry),
-    // which the rise transform can't skew, so the real height and row scale
-    // are already in place while the wall is still invisible. Waiting for the
-    // label's 'rise-settled' instead let the wall fade in at the CSS pre-lock
-    // fallback size (85svh, unscaled rows) and then visibly jump (~30px, rows
-    // shrinking ~19%) when the lock finally landed.
+    // threshold 0.01: lock as soon as the section is visible. Desktop/tablet
+    // geometry comes from measureAvailableHeight() + static row height, mobile's
+    // top pin from the offsetTop chain — neither is skewed by the rise, so the
+    // real height is in place before the entrance (waiting for 'rise-settled'
+    // made the CSS fallback height visibly snap).
     const io = new IntersectionObserver((entries) => {
       if (entries.some(e => e.isIntersecting)) {
         lockWallGeometry();
@@ -956,23 +928,12 @@ export default function PortfolioSection() {
     };
   }, [expanded]);
 
-  // The notched wall rises together with the headline text. It used to only
-  // fade in, after the page stopped scrolling (scroll-settle debounce, opacity
-  // only), because a transform on the frame visibly detached the notch
-  // outline from the label/title/sub — whose rects the notch was computed
-  // from while they were still mid-rise. Two things changed that:
-  //  1. apply() (wall-mask effect) now measures label/title/sub/frame at rest
-  //     by clearing their entrance transforms for the one synchronous
-  //     measure, so the notch is correct at every moment of the entrance.
-  //  2. The frame (and the "View All" button, which sits in the wall's leg
-  //     notch but lives outside the frame) run the exact same y/opacity
-  //     tween as the .rise-soft text (RISE_FROM / RISE_TWEEN from
-  //     useRiseReveal), started by the label's own 'rise-start' event; the
-  //     title/sub share the label's trigger (data-rise-with), so all of it
-  //     moves as one beat and the notch stays aligned the whole way.
-  // Deliberately y + opacity only: no scale (the frame's top edge would drift
-  // from the squashing text) and no clip-path (cuts the outline stroke's
-  // bleed even fully open).
+  // The notched wall rises with the headline: the frame and the "View All"
+  // button run the same y/opacity tween as .rise-soft text (RISE_FROM /
+  // RISE_TWEEN), started by the label's 'rise-start' (title/sub share it via
+  // data-rise-with), and apply() measures at rest — so the notch stays
+  // aligned. y + opacity only: scale drifts the top edge, clip-path cuts the
+  // outline stroke's bleed.
   useLayoutEffect(() => {
     const section = document.getElementById('portfolio');
     const frame = wallFrameRef.current;
@@ -1181,13 +1142,9 @@ export default function PortfolioSection() {
     return () => destroyMagicBento();
   }, [expanded, initMagicBento]);
 
-  // Hide cards SYNCHRONOUSLY before paint — matches original's
-  // `c.style.opacity = '0'` set immediately before `grid.style.display = 'grid'`,
-  // preventing a flash of fully-visible content before the entrance animation.
-  // Also re-runs on `activeFilter` change: switching filters reveals
-  // previously `display:none` cards, which would otherwise flash at full
-  // opacity (inherited from the prior animation's `clearProps`) before the
-  // 120ms-delayed gsap.fromTo() in the effect below hides and re-animates them.
+  // Hide cards SYNCHRONOUSLY before paint (no flash before the entrance).
+  // Re-runs on `activeFilter`: newly shown cards would otherwise flash at full
+  // opacity before the delayed gsap.fromTo() below re-animates them.
   useLayoutEffect(() => {
     if (!expanded) return;
     const grid = document.getElementById('portfolio-grid');

@@ -56,14 +56,9 @@ export default function BeamsBackground() {
     return () => observer.disconnect();
   }, []);
 
-  // BOTH themes' scenes load from the start, behind the loading screen
-  // (Loader.tsx holds 'hero-ready' for the other theme's too), so a toggle
-  // only crossfades between two ready scenes — loading on toggle instead
-  // parses the scene and compiles its shaders on the main thread right on
-  // top of the theme transition. The other theme used to start loading AT
-  // 'hero-ready': measured on a first visit, that put four frozen stretches
-  // (1.3s in total) plus 0.5s of main-thread tasks inside the first 2.8s of
-  // the hero entrance — the elements floated up in jerks.
+  // BOTH themes' scenes load up front, behind the loader (Loader.tsx holds
+  // 'hero-ready' for both), so a toggle only crossfades two ready scenes.
+  // Loading later compiles shaders on the main thread mid-transition/entrance.
 
   // `shownTheme` is the scene that's visible (.is-active); `fadingOut` is
   // the previous one during the 0.7s crossfade. Only those two may RENDER:
@@ -76,25 +71,12 @@ export default function BeamsBackground() {
   const [shownTheme, setShownTheme] = useState(theme);
   const [fadingOut, setFadingOut] = useState<'dark' | 'light' | null>(null);
 
-  // Both background scenes are loaded once and then kept for the whole
-  // visit: off the hero they are only PAUSED (render loop detached, see
-  // setSceneRunning — no draws, no GPU), never unloaded.
+  // Both bg scenes load once and stay for the visit: off the hero they are
+  // only PAUSED (setSceneRunning), never unloaded. Unloading runs the Spline
+  // runtime's dispose(), which disposes the tween engine SHARED by every
+  // scene — killing the hero figure's looping Start tweens for good.
   //
-  // They used to drop their `url` once #home had been out of view for 4s.
-  // Unloading a viewer runs the Spline runtime's dispose(), which calls
-  // dispose() on the tween engine bundled in spline-viewer.js — a single
-  // module-level engine SHARED by every scene on the page — and that
-  // destroys every running tween, the hero figure's included. The figure's
-  // looping Start transitions ("devices", "stars") died with it and never
-  // restarted (Start fires once): back on the hero after more than 4s away
-  // (the page bottom, or a project page and back), the figure stood still
-  // while it kept rendering. Reproduced 2026-10-14 in headless Edge: 60 of
-  // the scene's 105 objects moving before, 0 after, every time; 0 freezes
-  // with the url kept. Keeping them also spares the reload — parse plus
-  // first-draw shader compiles — every time the visitor scrolls back up.
-  //
-  // `url` is still written imperatively (not a JSX prop) so React never
-  // re-applies it on a re-render.
+  // `url` is written imperatively (not a JSX prop) so React never re-applies it.
   const splineDarkRef = useRef<HTMLElement>(null);
   const splineLightRef = useRef<HTMLElement>(null);
   // #home visibility — pauses the shown scene the moment the hero is
@@ -167,16 +149,9 @@ export default function BeamsBackground() {
     if (!light.getAttribute('url')) light.setAttribute('url', './models/bg_scene_w.splinecode');
   }, [heroEl, staticScenes]);
 
-  // Behind the loading screen even the shown scene is held paused once it
-  // has loaded (it has drawn its first frames by then, so its shaders are
-  // compiled), and resumed at 'hero-ready'. It used to render continuously
-  // under the opaque loader from its load-complete (~3-4s) to hero-ready
-  // (~9-11s cold, Iris Xe) — its glass tiles fighting the hero figure's
-  // load, which comes last, for the GPU. Measured cold (Iris Xe, 3 runs
-  // interleaved): hero-ready 10.6s → 9.4s median, every run earlier. The
-  // on-screen stalls (swap gaps >100ms, ~3s in total) are unchanged — they
-  // are the scenes' first-draw shader compiles; hiding the dark panel glow
-  // until hero-ready didn't change them either.
+  // Behind the loader even the shown scene is held paused once loaded (its
+  // shaders are compiled by then) and resumed at 'hero-ready', so it doesn't
+  // fight the hero figure's load for the GPU.
   const [heroReady, setHeroReady] = useState(() => document.body.classList.contains('hero-ready'));
   useEffect(() => {
     if (heroReady) return;
@@ -307,17 +282,9 @@ export default function BeamsBackground() {
         : NOTCH_FLAT;
 
       const d = heroFramePath(w, h, FRAME_RADIUS, flatTL, flatBR);
-      // Single source of truth for the panel's actual shape: the same `d`
-      // clips the real #bg-spline-scene box (the WebGL content itself),
-      // the border stroke, and the glow fill below. Previously the panel
-      // was left a plain rounded rect and the two notches were faked by a
-      // separate pair of patch elements (clip-path: notchPatchPath(...))
-      // painted over its corners — a second, independently-computed curve
-      // that only approximately agreed with this one, and the seam between
-      // them was exactly where a visible gap showed up once the border/glow
-      // made that seam load-bearing instead of merely cosmetic. Clipping
-      // the real container to this path removes the second curve (and the
-      // patches) entirely — there's nothing left to disagree with.
+      // Single source of truth for the panel shape: the same `d` clips
+      // #bg-spline-scene (the WebGL content), the border stroke and the glow
+      // fill — no second curve to disagree with.
       splineSceneRef.current?.style.setProperty('clip-path', `path("${d}")`);
       // Same box, same `d` — the tag-capsule marquee is a plain rectangle
       // with no curve of its own, so it needs the identical clip to taper

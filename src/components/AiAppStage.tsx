@@ -979,9 +979,8 @@ const SCREENS: Record<string, (p: ScreenProps) => ReactNode> = {
   workflow: WorkflowScreen,
 };
 
-// No in-window sidebar: the pill rail beside the window already is the
-// navigation (a sidebar listing the same six steps was tried and dropped as
-// redundant). The title bar names the open screen instead.
+// No in-window sidebar: the pill rail beside the window is the navigation;
+// the title bar names the open screen.
 // peek: a neighbouring step shown beside the current one while the phone
 // viewer is dragged sideways: a still picture of that step (no intro
 // timelines run), with no ids and nothing to focus.

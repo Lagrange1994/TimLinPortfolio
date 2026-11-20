@@ -1,30 +1,14 @@
 /**
- * Outline of the hero's irregular background panel — the rounded rect that
- * holds the background Spline scene, with the two notches cut out of it (top-
- * left for the navbar logo, bottom-right for the chat FAB). ONE path
- * describes the whole irregular shape, and BeamsBackground.tsx's sync() uses
- * that single `d` everywhere the shape is needed: as #bg-spline-scene's own
- * clip-path (the WebGL content, notches included), as the stroke for
- * #bg-frame-outline's border, and as the fill for #bg-frame-glow's ambient
- * glow. Earlier versions computed the notches a second time, independently,
- * to clip a pair of patch elements that painted flat fill over the panel's
- * corners instead of actually cutting the container — a second curve that
- * only approximately agreed with this one, and the seam between them showed
- * up as a visible gap once the border/glow made it load-bearing instead of
- * merely cosmetic. Clipping the real container to this same path removes
- * that second curve (and the patches) entirely.
+ * Outline of the hero's background panel: a rounded rect with two notches
+ * (top-left navbar logo, bottom-right chat FAB). BeamsBackground.tsx's sync()
+ * uses this single `d` as #bg-spline-scene's clip-path, #bg-frame-outline's
+ * stroke and #bg-frame-glow's fill.
  *
- * Coordinates are in the panel's own space (0,0 = panel top-left), i.e. the
- * hero's box inset by FRAME_INSET on every side.
- *
- * The notch geometry is the Figma "Subtract" node's own boundary (fileKey
- * H94cQ9wrWHdL2tAJU2o726, node 19:30), rebased from hero-space into panel-
- * space by subtracting that same FRAME_INSET. The two notches used to be a
- * fixed 180°-point-reflection of each other (both sharing one NOTCH_FLAT);
- * they now take independent flat widths (BeamsBackground.tsx measures each
- * notch's own content — .navbar-brand, #home .hero-ask — live) so each notch
- * can be exactly as wide as what's actually sitting in it, but the
- * underlying fillet math (radius, depth) is unchanged and still shared.
+ * Coordinates are panel space (0,0 = panel top-left = hero box inset by
+ * FRAME_INSET). Notch geometry is the Figma "Subtract" node's boundary
+ * (fileKey H94cQ9wrWHdL2tAJU2o726, node 19:30); each notch's flat width is
+ * measured live from its content (.navbar-brand, #home .hero-ask), the fillet
+ * math (radius, depth) is shared.
  */
 
 /** Frame thickness — the gap between the hero's edge and the panel's edge. */

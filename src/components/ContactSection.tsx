@@ -18,17 +18,10 @@ export default function ContactSection() {
   const { t } = useLang();
   const sendEmailRef = useRef(null);
   const [faqTab, setFaqTab] = useState<'experience' | 'freelance'>('experience');
-  // Single-open accordion: starts fully collapsed (-1 = none open).
-  // Clicking an open item toggles it closed again. Headless UI's Disclosure
-  // has no controlled `open` prop, so exclusivity used to be enforced by
-  // keying each AccordionItem on its own open/closed state and remounting
-  // it — but a key change is a hard unmount/remount, which skips the
-  // AnimatePresence exit animation in DisclosurePanel entirely (no closing
-  // transition). Instead, each item's real `bag.close()` is captured into
-  // closeFnsRef during render; when a DIFFERENT item is clicked open, we
-  // call the previously-open item's own close() — a real Headless UI state
-  // transition on a component that stays mounted, so its exit animation
-  // plays normally. No remounting needed for either side of the swap.
+  // Single-open accordion (-1 = none open; clicking the open item closes it).
+  // Disclosure has no controlled `open`, so each item's bag.close() is captured
+  // into closeFnsRef and the previously-open one is closed directly — no
+  // remount, so its exit animation still plays.
   const [openFaqIndex, setOpenFaqIndex] = useState(-1);
   const closeFnsRef = useRef<Record<number, () => void>>({});
 

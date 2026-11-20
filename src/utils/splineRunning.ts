@@ -54,13 +54,9 @@ export function capSceneFps(app: SplineApp, maxFps = SPLINE_MAX_FPS) {
     // Read per frame: the quality governor lowers a bg scene's cap later on.
     const interval = 1000 / (app.__fpsCap || maxFps);
     const elapsed = time - last;
-    // Half a display frame of slack (at least 1ms). It used to be a flat
-    // 1ms: on a 120 Hz screen whose frame timestamps wobble by ±1.5ms
-    // (Edge on Iris Xe, measured), a tick landing 1ms+ early was skipped,
-    // the next one 8ms later rendered, and the grid made the following
-    // gap long again — a 16.7 / 25 / 8ms stutter (p95 25ms, frame-to-frame
-    // jitter 6.5ms) instead of a steady 60. Half a frame can't double-
-    // render (the next tick is a whole frame away) or skip a due one.
+    // Half a display frame of slack (≥1ms): a flat 1ms skipped early ticks on
+    // 120Hz screens with wobbly timestamps (16.7/25/8ms stutter). Half a frame
+    // can't double-render or skip a due one.
     const slack = Math.max(1, frameMs / 2);
     if (elapsed < interval - slack) return;
     // Advance on the interval grid (not to `time`) so a 144 Hz display
@@ -76,22 +72,12 @@ export function capSceneFps(app: SplineApp, maxFps = SPLINE_MAX_FPS) {
   if (!app._isPaused && !app.__loopPaused) app._renderer?.setAnimationLoop?.(app.render);
 }
 
-// Freezes a background scene's TAA jitter. The runtime jitters every vertex
-// by jitterSequence[frameIndex] / resolution (sub-pixel) for its TAA pass to
-// average away — but our bg scenes always animate (refracting light moving
-// across the glass tiles), the TAA history is rejected, and the raw offset
-// shows: the whole tile wall shook. Invisible at full resolution, plainly
-// visible once the quality governor drops the bg to 1280×720 on a 2x screen
-// (~3x upscale turns sub-pixel into 1–2 screen pixels) — reported on Edge /
-// Iris Xe, which degrades to level 3; Chrome/Brave on the same laptop stayed
-// higher and looked still. frameIndex is a module-level "render global"
-// shared by every Spline scene on the page and bumped after each
-// renderSplineScene; this pins it to 0 while the scene renders and puts the
-// shared value back untouched, so the bg never moves and doesn't advance the
-// figure's sequence either. (Giving each scene its own full 16-step sequence
-// instead was tried and shook MORE — sharing had been hiding half the
-// offsets.) Cost: no TAA anti-aliasing on the bg's edges. Idempotent; a
-// no-op if the runtime doesn't have these internals.
+// Freezes a bg scene's TAA jitter. The bg always animates, so TAA history is
+// rejected and the raw sub-pixel jitter shows — the tile wall shakes once the
+// quality governor lowers bg resolution. frameIndex is a render global shared
+// by every scene; this pins it to 0 while the bg renders and restores it, so
+// the figure's sequence isn't advanced (per-scene sequences shook more).
+// Cost: no TAA on bg edges. Idempotent; no-op without these internals.
 type FrameIndexGlobal = { value: number; isRenderGlobal?: boolean };
 function findFrameIndexGlobal(root: unknown): FrameIndexGlobal | null {
   const seen = new Set<object>();
@@ -189,35 +175,16 @@ export function capSceneResolution(app: SplineApp, maxPixels = SPLINE_MAX_PIXELS
   app.requestRender?.();
 }
 
-// Quality levels for GPUs that can't keep up at full quality. Chromium on
-// Windows runs WebGL on the integrated GPU of a hybrid laptop whatever the
-// page asks for (the runtime already requests powerPreference
-// 'high-performance'; it is ignored). Measured on an Iris Xe driving a
-// HiDPI screen: figure at 1600×1600 + background at 2560×1440 = ~15 fps,
-// against ~190 fps on the same machine's discrete GPU. Level 0 is what
-// every scene starts on; sceneQualityGovernor.ts steps down only after
-// measuring sustained slow frames, so a GPU that copes never leaves it.
-// Each step lowers the drawing-buffer budgets; from level 2 the (slow,
-// decorative) background also renders at 30 fps so the figure — the thing
-// the visitor is interacting with — gets the frames. Any level above 0 also
-// freezes the dark theme's panel glow (html[data-scene-quality] in
-// portfolio.css + BeamsBackground): its breathing/flowing animation
-// re-blurs a panel-sized shape every frame, which alone halved the frame
-// rate on that Iris Xe.
+// Quality levels for GPUs that can't keep up. Chromium on Windows renders
+// WebGL on a hybrid laptop's integrated GPU regardless of powerPreference
+// (Iris Xe + HiDPI: ~15 fps at full quality). Level 0 is the start;
+// sceneQualityGovernor.ts steps down only after sustained slow frames. Each
+// step lowers drawing-buffer budgets; from level 2 the bg also runs at 30 fps.
+// Any level >0 freezes the dark panel glow (html[data-scene-quality]) — its
+// per-frame re-blur alone halved fps.
 //
-// The figure's budget steps down far less than the background's: full
-// on-screen resolution on levels 0–1 (HeroSection caps it at display pixels
-// anyway), 1000² on levels 2–3. It used to drop to 1200² / 1000² / 800²: at
-// level 3 on a 1.5x screen the 1200×1200-device-px figure was drawn at 800²
-// and upscaled — visibly soft (edge sharpness −58%), the thing visitors look
-// at most. Then it never stepped down at all, which on a 2x screen meant a
-// 1600² figure on the weakest GPUs: on the user's Edge / Iris Xe at level 3
-// the page's frame interval went 12.5ms → 8.5ms with the figure at 800²
-// instead (2026-10-15). It was 1200² next (1.5x screens at full
-// resolution), but the figure turned out fill-bound — every pass (AO, TAA,
-// transmission, depth fill) off made no difference, pixels did: 1200² ≈ 70
-// fps, 1000² ≈ 95 on Iris Xe — so 1000² (83% of a 1.5x screen, 62% of 2x)
-// was chosen to hold 60 fps.
+// The figure is fill-bound: full on-screen resolution on levels 0–1, 1000²
+// on 2–3 (≈95 fps vs 70 at 1200² on Iris Xe; lower looked visibly soft).
 export type SceneKind = 'bg' | 'hero';
 export const SCENE_QUALITY_LEVELS = [
   { bgPixels: SPLINE_MAX_PIXELS, heroPixels: SPLINE_MAX_PIXELS, bgFps: SPLINE_MAX_FPS },
@@ -306,35 +273,19 @@ function track(el: HTMLElement, kind: SceneKind) {
   tracked.set(el, kind);
 }
 
-// Pause/resume a <spline-viewer>'s render loop via the viewer's internal
-// runtime (`_spline`, not public API — no-op before it has loaded). The
-// viewer's own visibility handling doesn't stop it: it keeps rendering at
-// full rate at opacity:0 and when scrolled fully off-screen.
+// Pause/resume a <spline-viewer>'s render loop via the internal runtime
+// (`_spline`; no-op before load). The viewer's own visibility handling keeps
+// rendering at opacity:0 and off-screen.
 //
-// Pausing only detaches the loop (setAnimationLoop(null)); it must NOT go
-// through the runtime's stop(). stop() also calls _eventManager.pause(),
-// and a Transition action's pause() drops its in-flight tweens and pending
-// startTimeout — while play() only resume()s, never re-firing the Start
-// event (its Transitions are runMode "Once"). A pause that landed mid-Start
-// left that scene's looping motion frozen for good while it kept rendering
-// (reproduced 2026-10-14: the hero figure's objects stopped moving after 4
-// quick scroll-away/back cycles, prod and local alike). Any pause can land
-// mid-Start — scrolling off the hero, the outgoing theme after a toggle,
-// the preloaded theme 50ms after its load. With the loop detached, nothing
-// renders or costs GPU, and the events/tweens are untouched.
+// Pause only detaches the loop (setAnimationLoop(null)) — NEVER the runtime's
+// stop(): its _eventManager.pause() drops in-flight Start tweens and play()
+// never re-fires Start (runMode "Once"), freezing the scene's looping motion.
 //
-// play() first re-syncs a runtime that an older stop() left `_isPaused`
-// (it re-arms the loop and resumes events); the loop is then set
-// explicitly either way, so a pause can't be lost to the runtime arming its
-// loop after load. _lastTime is cleared on resume: the runtime's dt is
-// unclamped, so the first frame would otherwise jump every animation
-// forward by the whole pause.
-// Also installs the frame-rate cap (see capSceneFps) and, for a bg scene,
-// the frozen TAA jitter (see freezeSceneTaaJitter) and
-// the resolution budget (see capSceneResolution) at the current quality
-// level. `kind: 'hero'` leaves the resolution alone: HeroSection sets the
-// figure's pixel ratio itself (from the same budget — scenePixelBudget) and
-// a second writer here would undo it on every resume.
+// play() re-syncs a runtime an older stop() left `_isPaused`, then sets the
+// loop explicitly. _lastTime is cleared on resume (dt is unclamped).
+// Also installs the fps cap (capSceneFps) and, for bg scenes, frozen TAA
+// jitter and the resolution budget (capSceneResolution). `kind: 'hero'` skips
+// resolution: HeroSection sets the figure's pixel ratio itself.
 export function setSceneRunning(el: HTMLElement | null, running: boolean, kind: SceneKind = 'bg') {
   const app = (el as SplineViewerEl | null)?._spline;
   if (!el || !app) return;

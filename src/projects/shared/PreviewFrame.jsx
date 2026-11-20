@@ -2,45 +2,18 @@ import React, { useRef, useLayoutEffect, useEffect, useImperativeHandle } from '
 import ImageWithSkeleton from './ImageWithSkeleton';
 import BrowserFrame from './BrowserFrame';
 
-// Shared "browser-mockup" left-panel preview used by every project whose
-// currentImage swaps across tabs (project_01/03/07/09/11/12). Each of these
-// files used to hand-roll this block with a `max-h-full`/`w-auto h-auto`
-// (content-driven) frame height. ImageWithSkeleton's skeleton div is
-// `absolute inset-0` — it contributes no flow height — so the instant
-// currentImage changes, the old <img> is gone and the new one hasn't loaded
-// yet: nothing in the chain has a size, and a content-driven frame collapses
-// to 0 height until the next image's intrinsic size arrives, then snaps
-// back open. This component always uses a DEFINITE height so the frame never
-// depends on the image inside it: lg:h-[90%] on desktop, and on phones the
-// whole frame (browser-chrome header included) is a 16:9 box — aspect-video,
-// derived from the width, not the content — sitting vertically centred in the
-// caller's 35vh panel, exactly like project_02's window frame (panel 35vh,
-// frame 16:9, ~48px above and below it at 402px wide). It used to be h-full
-// there, which stretched the frame to the whole panel and cropped or
-// letterboxed images, and later a 16:9 image area that made header tabs taller
-// than the others. contain:size keeps the box coming ONLY from that ratio: a
-// tall scrolling screenshot (project_10's 1920x3200 page) stays inside a
-// fixed-ratio window the visitor scrolls, instead of stretching the frame to
-// the image's height (aspect-ratio + overflow otherwise lets some engines,
-// notably WebKit, size the box from its content).
-// `resizable` is for pages with a drag handle that resizes the panel on phones
-// (project_07/09/10/11, the long-strip website demos): the frame keeps the
-// same 16:9 default but also gets a floor of "panel minus 2rem top and bottom",
-// so dragging the handle down makes the frame taller too (aspect-ratio boxes
-// grow to their min-height), and the tall screenshot scrolls inside it.
-// chromeClassName must be a literal Tailwind class string at the call site
-// (e.g. "bg-police-dark-light") — Tailwind's scanner needs to see it as
-// written text, so it can't be built dynamically in here from a prefix prop.
-// scrollRef forwards to the image-area div — some callers reset its
-// scrollTop on tab change (galleries taller than the frame scroll inside it).
-// Desktop, non-resizable: the IMAGE AREA is 16:9 (the browser-chrome header, if
-// any, sits on top of it, so the frame is 2rem taller than 16:9 and never crops
-// an object-cover screenshot); width is capped so the whole frame fits in 90%
-// of the panel's height, instead of a tall 90% box that letterboxes it. Desktop + `resizable`: the frame hugs its screenshot (h-auto, capped at 90%
-// of the panel) instead of a fixed 90% height, so a screenshot shorter than
-// that no longer leaves empty frame-coloured bands above and below it. Because
-// an unloaded <img> has no height, the frame would collapse mid tab-switch, so
-// it holds its last settled height (min-height) until the new image loads.
+// Shared browser-mockup preview for projects whose image swaps per tab
+// (project_01/03/07/09/11/12). Always a DEFINITE height, so the frame never
+// collapses while the next image loads (the skeleton adds no flow height).
+// - Phones: whole frame is aspect-video, centred in the caller's 35vh panel;
+//   contain:size keeps tall screenshots (project_10) scrolling inside it.
+// - Desktop: image area is 16:9 under the chrome header, width capped so the
+//   frame fits 90% of the panel's height.
+// - `resizable` (project_07/09/10/11 drag handle): phones get a floor of panel
+//   minus 2rem top/bottom; desktop hugs the screenshot (h-auto, ≤90%) and holds
+//   its last height (min-height) until the new image loads.
+// chromeClassName must be a literal Tailwind class at the call site (scanner).
+// scrollRef forwards to the image area (callers reset scrollTop on tab change).
 const PreviewFrame = React.forwardRef(function PreviewFrame({
     chromeClassName,
     showChrome = true,

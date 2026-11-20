@@ -126,21 +126,10 @@ export default function HeroSection() {
     // tween completes (unsplitH1/unsplitH2 below), which drops the spans
     // — and their will-change — entirely rather than just clearing it.
 
-    // Clearing will-change alone isn't enough — reproduced live (including
-    // via a plain light/dark theme toggle, with no re-animation involved
-    // at all): as long as .hero-h1's word spans exist in the DOM, ANY
-    // repaint of the `-webkit-background-clip: text` gradient (see
-    // .hero-h1.grad-settled in portfolio.css) can render overlapping
-    // "ghost" strokes instead of clean glyphs. A one-time forced repaint
-    // right after the entrance tween (tried first, via a self-assigned
-    // outerHTML) fixed the very next paint but not later ones — e.g. the
-    // theme toggle re-triggers the gradient clip long after entrance and
-    // hit the same corruption again. The word spans themselves are the
-    // trigger (a background-clip:text ancestor with descendants that were
-    // ever independently composited), so the real fix is to remove them:
-    // once the tween is done, collapse .hero-h1 back to the exact plain
-    // markup it started as. No split spans left behind means nothing left
-    // to ever mis-paint, on this repaint or any future theme switch.
+    // While .hero-h1's word spans exist, ANY repaint of its background-clip
+    // text gradient (e.g. a theme toggle) can draw ghost strokes — the spans
+    // were once composited. So after the tween, collapse .hero-h1 back to its
+    // original plain markup.
     function unsplitH1(el: HTMLElement) {
       el.innerHTML = 'Hi, I\'m <span>Tim Lin</span>';
       delete el.dataset.split;
@@ -412,25 +401,13 @@ export default function HeroSection() {
     };
   }, []);
 
-  // Hero spline desktop+tablet conditional — only load the 3D figure above
-  // mobile width. Loaded once and left alone: an IntersectionObserver used
-  // to drop the `url` (and thus the WebGL context) 4s after the hero left
-  // view, on the theory that fewer concurrent contexts prevents renderer
-  // freezes — but that's the same GPU-contention theory already rejected
-  // once for the sibling bg-Spline scene (see homepage-webgl-stability
-  // memory: user said "put it back, this isn't a Spline problem," and the
-  // real freeze root cause turned out to be an unrelated overscroll-behavior
-  // /touchstart bug). Measured cost of the drop-and-reload cycle: a 1.8s
-  // dropped frame and ~10s of cumulative main-thread longtasks every time a
-  // user scrolls away for >4s and back — a real, reproducible jank that's
-  // worse than the theoretical risk it was guarding against.
+  // Hero spline (above mobile width only). Loaded once and kept: dropping
+  // `url` off-screen and reloading costs a long dropped frame + ~10s of
+  // longtasks on every return.
   //
-  // Set as early as possible (not deferred to any later event): Loader.tsx's
-  // waitForAssets() listens for THIS element's own `load` event to decide
-  // when to dismiss the loading screen and fire 'hero-ready' — deferring
-  // `url` to something gated on 'hero-ready' (tried once) is a deadlock,
-  // since 'hero-ready' can then never fire without the loader's own 4s
-  // force-timeout.
+  // Set as early as possible: Loader.tsx's waitForAssets() waits on THIS
+  // element's `load` before firing 'hero-ready', so gating `url` on
+  // 'hero-ready' deadlocks.
   useEffect(() => {
     if (window.innerWidth < 768 || staticScenes) return;
     const heroSpline = document.getElementById('hero-spline');
@@ -682,13 +659,9 @@ export default function HeroSection() {
   // that can change independently of this file; useLayoutEffect (not
   // useEffect) so the padding/cap are applied before first paint.
   //
-  // Measured once (plus a retry once the image's natural size is known) and
-  // then locked: #main-header toggles a `.scrolled` compact-pill state as the
-  // page scrolls, which changes nav.getBoundingClientRect().height even
-  // though the device height hasn't changed. Re-measuring on every one of
-  // those toggles (previously via a ResizeObserver on nav) made the figure
-  // visibly resize mid-scroll. Only a genuine viewport change (resize/
-  // orientationchange) should trigger a re-measure.
+  // Measured once (plus a retry once the image's natural size is known), then
+  // locked: #main-header's `.scrolled` pill changes nav height mid-scroll, so
+  // only resize/orientationchange re-measures.
   useLayoutEffect(() => {
     const home = document.getElementById('home');
     const nav = document.getElementById('main-header');
