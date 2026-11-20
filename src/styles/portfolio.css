@@ -9840,7 +9840,7 @@
       }
       /* Same 68px rhythm for the How I Use AI chips heading under the viewer
          (its 40px margin-bottom collapses into this). */
-      .ai-viewer + .ai-chips-header {
+      .ai-viewer + .ai-classify > .ai-chips-header {
         margin-top: 68px;
       }
       .process-scroll-wrap--tech .process-column-grid--inhouse {
@@ -11523,6 +11523,233 @@
        smaller screens. */
     @media (max-width: 1024px) {
       .ai-chips-header{margin-bottom:32px}
+    }
+
+    /* The classify chart starts as a mini icon of itself: a satellite card
+       sitting in the viewer, right of its Scenario card (useClassifyZoom
+       places it off the viewer's app window). Scrolling plays a relay:
+       the card dissolves (--mini-frame), its pills fly down into the word
+       cloud, its AI mark to .ai-classify-core, the beams draw, the chips
+       pop out of the AI; its words show only once all of it is there
+       (--classify-text). */
+    .ai-classify {
+      position: relative;
+    }
+
+    /* the icon: a card like the viewer's .aas-front, the chart's shapes in
+       it, no words. Hidden until placed (and wherever the viewer has no
+       app window to sit by: phones) */
+    .ai-classify-mini {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 4;
+      display: none;
+      pointer-events: none;
+    }
+
+    .ai-classify-mini.is-placed {
+      display: block;
+    }
+
+    /* its card, on its own layer so it can dissolve while the shapes on
+       it fly off (--mini-frame: 1 → 0) */
+    .ai-classify-mini::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      opacity: var(--mini-frame, 1);
+      --ai-stage-dot: rgba(255, 255, 255, .07);
+      background-color: color-mix(in oklab, var(--bg-safe) 82%, transparent);
+      background-image: radial-gradient(var(--ai-stage-dot) 1px, transparent 1px);
+      background-size: 10px 10px;
+      box-shadow: 0 0 0 1px var(--border), 0 24px 48px -16px rgba(0, 0, 0, .5), var(--card-edge);
+      backdrop-filter: blur(14px);
+    }
+
+    :root[data-theme="light"] .ai-classify-mini::before {
+      --ai-stage-dot: rgba(58, 58, 66, .07);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 1px rgba(58, 58, 66, 0.09), 0 20px 40px -18px rgba(58, 58, 66, .35);
+      backdrop-filter: none;
+    }
+
+    .ai-classify-mini svg {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    /* the sorted side goes first (the answers come back out of the AI) */
+    .ai-classify-mini .mini-sol {
+      opacity: var(--mini-ghost, 1);
+    }
+
+    /* problems (grey, tangled) >> solution (sorted, in colour) */
+    .ai-classify-mini .mini-pill {
+      fill: var(--text);
+      opacity: .2;
+    }
+
+    .ai-classify-mini .mini-tangle {
+      stroke: var(--text);
+      opacity: calc(.14 * var(--mini-frame, 1));
+    }
+
+    /* the AI mark at work: dashes flow through it, its ring turns, the
+       spark pulses */
+    .ai-classify-mini .mini-flow {
+      stroke: var(--primary);
+      stroke-dasharray: 2 4;
+      opacity: var(--mini-frame, 1);
+      animation: mini-flow .8s linear infinite;
+    }
+
+    .ai-classify-mini .mini-ai-ring {
+      stroke: var(--primary);
+      stroke-dasharray: 20 7;
+      opacity: .7;
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: mini-spin 3s linear infinite;
+    }
+
+    .ai-classify-mini .mini-ai-core {
+      fill: var(--primary);
+    }
+
+    .ai-classify-mini .mini-ai-spark {
+      fill: #fff;
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: mini-spark 1.6s ease-in-out infinite;
+    }
+
+    @keyframes mini-flow {
+      to { stroke-dashoffset: -6; }
+    }
+
+    @keyframes mini-spin {
+      to { rotate: 360deg; }
+    }
+
+    @keyframes mini-spark {
+      0%, 100% { scale: .85; opacity: .85; }
+      50% { scale: 1.1; opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ai-classify-mini .mini-flow,
+      .ai-classify-mini .mini-ai-ring,
+      .ai-classify-mini .mini-ai-spark { animation: none; }
+    }
+
+    .ai-classify-mini .mini-chip {
+      fill: var(--glass-bg);
+      stroke: var(--glass-border);
+    }
+
+    .ai-classify-mini .mini-bar {
+      fill: var(--text);
+      opacity: .3;
+    }
+
+    .ai-classify > .ai-chips-header {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* The chart keeps its own layout and has no frame. While its pieces fly
+       in from the icon above the cloud doesn't clip them; once in place it
+       is the chart as it always was. */
+    .ai-classify-stage {
+      position: relative;
+      z-index: 1;
+    }
+
+    .ai-classify-stage.is-relaying .ai-word-cloud {
+      overflow: visible;
+    }
+
+    /* the AI at work, where the beams bunch (the beams' viewBox x≈740 of
+       1440, inside their 10% side insets; y≈513 of 320–700) */
+    .ai-classify-core {
+      position: absolute;
+      left: 51.1%;
+      top: 50.8%;
+      z-index: 2;
+      width: 44px;
+      height: 44px;
+      margin: -22px 0 0 -22px;
+      pointer-events: none;
+      --core-processing: 0;
+    }
+
+    /* breathes and ripples like the Figma MCP hub (mcp-op-hub /
+       mcp-op-hub-ring): two rings spread on an ease-out curve, half a
+       beat apart; while it processes they ripple brighter */
+    .ai-classify-core::before,
+    .ai-classify-core::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2px solid color-mix(in srgb, #6c63ff 75%, transparent);
+      opacity: 0;
+      animation: classify-core-ripple 2.4s cubic-bezier(.22, 1, .36, 1) infinite;
+    }
+
+    .ai-classify-core::after {
+      animation-delay: 1.2s;
+    }
+
+    @keyframes classify-core-ripple {
+      0% { opacity: 0; scale: 1; }
+      12% { opacity: calc(.6 + .3 * var(--core-processing)); scale: 1.04; }
+      100% { opacity: 0; scale: 1.6; }
+    }
+
+    @keyframes classify-core-breathe {
+      0%, 100% { scale: 1; }
+      50% { scale: 1.06; }
+    }
+
+    .ai-classify-core-dot {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      /* the Scenario card's AI node (AiAppStage .aas-flow-dot.tn-ai) */
+      background: #6c63ff;
+      color: #fff;
+      font-size: 20px;
+      box-shadow:
+        0 0 0 4px color-mix(in oklab, #6c63ff 22%, transparent),
+        0 0 calc(12px + 36px * var(--core-processing)) color-mix(in oklab, #6c63ff 85%, transparent);
+      animation: classify-core-breathe 2.4s cubic-bezier(.37, 0, .63, 1) infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ai-classify-core::before,
+      .ai-classify-core::after,
+      .ai-classify-core-dot { animation: none; }
+      .ai-classify-core::before { opacity: .6; }
+    }
+
+    .ai-classify-txt {
+      opacity: var(--classify-text, 1);
+      transition: opacity .4s ease;
+    }
+
+    @media (max-width: 640px) {
+      /* phones crop the beams to their converging part, edge to edge
+         (viewBox x 480–1440): the bunch sits at 27% */
+      .ai-classify-core { left: 27%; width: 32px; height: 32px; margin: -16px 0 0 -16px; }
+      .ai-classify-core-dot { font-size: 15px; }
     }
 
     @media(max-width:640px){

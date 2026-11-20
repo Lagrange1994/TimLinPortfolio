@@ -7,6 +7,8 @@ import PolicyPill from './PolicyPill';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from './GoogleGeminiEffect';
 import FigmaMcpShowcase from './FigmaMcpShowcase';
 import SkillShowcase from './SkillShowcase';
+import { useClassifyZoom } from '../utils/useClassifyZoom';
+import ClassifyMini from './ClassifyMini';
 import PlayPauseButton from './PlayPauseButton';
 import AiAppStage from './AiAppStage';
 import { attachAiViewerEntrance } from '../utils/aiViewerEntrance';
@@ -822,6 +824,8 @@ export function AiIntakeSection() {
   // reached yet — drives the arrival glow on .ai-chip (see GoogleGeminiEffect's
   // onArriveChange).
   const [arrivedBeams, setArrivedBeams] = useState<boolean[]>([false, false, false, false, false]);
+  const classifyMiniRef = useRef<HTMLDivElement>(null);
+  const classifyStageRef = useRef<HTMLDivElement>(null);
 
   // The steps are an Apple-style product viewer at every width.
   // Desktop (>960px): a column of pills on the left, the open one grown into
@@ -839,6 +843,7 @@ export function AiIntakeSection() {
     return () => mq.removeEventListener?.('change', onChange);
   }, []);
   const viewerRef = useRef<HTMLDivElement>(null);
+  useClassifyZoom(viewerRef, classifyMiniRef, classifyStageRef);
   // the section's label / title / subtitle, which sit in the viewer's
   // top-left notch, and the outline drawn along it (utils/aiStageNotch.ts)
   const aiLabelRef = useRef<HTMLDivElement>(null);
@@ -1386,12 +1391,23 @@ export function AiIntakeSection() {
 
         {aiViewer}
 
-        <div className="ai-chips-header rise-card">
+        {/* The chart starts as a mini icon of itself (no text), a card in
+            the viewer right of its Scenario card; as you scroll it plays
+            out as a relay — its pills fly down into the word cloud, its AI
+            mark to the beams, the beams draw, the chips pop out of the AI
+            (useClassifyZoom). */}
+        <div className="ai-classify">
+        <div className="ai-classify-mini" ref={classifyMiniRef} aria-hidden="true"><ClassifyMini /></div>
+
+        {/* the heading waits for the chart too: it fades in with the
+            chart's words once the chart is in place (no rise of its own) */}
+        <div className="ai-chips-header ai-classify-txt">
           <h3>{t.ai_chips_label}</h3>
           <p>AI handles <em>structure</em><span className="ai-principle-dot"></span>I handle <em>judgment</em>.</p>
         </div>
 
-        <div className="ai-chips-row rise-card">
+        <div className="ai-classify-stage" ref={classifyStageRef}>
+        <div className="ai-chips-row">
           <div className="ai-word-cloud" aria-hidden="true">
             {AI_SOURCE_CLOUD.map(word => (
               <span
@@ -1404,12 +1420,19 @@ export function AiIntakeSection() {
                   ['--word-rotate' as string]: `${word.rotate}deg`,
                 }}
               >
-                <i className={word.icon} aria-hidden="true" />
-                {word.text}
+                <i className={`${word.icon} ai-classify-txt`} aria-hidden="true" />
+                <span className="ai-classify-txt">{word.text}</span>
               </span>
             ))}
           </div>
-          <GoogleGeminiEffect onArriveChange={setArrivedBeams} />
+          <GoogleGeminiEffect onArriveChange={setArrivedBeams} scrubbed />
+          {/* the AI at work where the beams bunch: the icon's AI mark flies
+              here, the beams draw through it, the chips pop out of it */}
+          <span className="ai-classify-core" aria-hidden="true">
+            <span className="ai-classify-core-dot">
+              <i className="ph-fill ph-sparkle" />
+            </span>
+          </span>
           <div className="ai-chips">
             {AI_CHIP_CATEGORIES.map((chip, i) => {
               const stop = GEMINI_BEAM_STOPS[i];
@@ -1420,12 +1443,14 @@ export function AiIntakeSection() {
                   style={{ top: `${stop.topPercent}%`, ['--chip-glow' as string]: stop.color }}
                 >
                   <span className="ai-chip-dot" style={{ background: stop.color, boxShadow: `0 0 8px ${stop.color}` }}></span>
-                  {chip.label}
-                  <span className="ai-chip-count">{chip.pct}</span>
+                  <span className="ai-classify-txt">{chip.label}</span>
+                  <span className="ai-chip-count ai-classify-txt">{chip.pct}</span>
                 </span>
               );
             })}
           </div>
+        </div>
+        </div>
         </div>
 
         <SkillShowcase />

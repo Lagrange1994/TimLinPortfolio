@@ -58,6 +58,10 @@ interface GoogleGeminiEffectProps {
   // SkillsSection light up each chip's border in its own beam's color once
   // that beam finishes drawing.
   onArriveChange?: (arrived: boolean[]) => void;
+  // Drawn by the scroll instead of playing on view: plain dashed paths
+  // (pathLength 1) whose stroke-dashoffset someone else scrubs — the
+  // classify relay (useClassifyZoom). Without an offset they show drawn.
+  scrubbed?: boolean;
 }
 
 // Beams play top-to-bottom (index 4 = topmost/cyan first), each starting
@@ -70,7 +74,7 @@ const BEAM_STAGGER = 0.15;
 // sliver of the SVG crosses into the viewport.
 const REVEAL_DELAY = 0.2;
 
-export default function GoogleGeminiEffect({ className, onArriveChange }: GoogleGeminiEffectProps) {
+export default function GoogleGeminiEffect({ className, onArriveChange, scrubbed = false }: GoogleGeminiEffectProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   const [reduceMotion] = useState(
@@ -92,12 +96,13 @@ export default function GoogleGeminiEffect({ className, onArriveChange }: Google
   // Under reduced motion the beams render fully drawn from the start (see
   // the `initial` fallback below), so every chip should read as "arrived"
   // immediately instead of waiting on an animation that never plays.
+  // Scrubbed beams have no draw of their own to wait on either.
   useEffect(() => {
-    if (reduceMotion) {
+    if (reduceMotion || scrubbed) {
       arrivedRef.current = [true, true, true, true, true];
       onArriveChange?.([true, true, true, true, true]);
     }
-  }, [reduceMotion, onArriveChange]);
+  }, [reduceMotion, scrubbed, onArriveChange]);
 
   return (
     <div ref={ref} className={`gemini-beams${className ? ` ${className}` : ''}`}>
@@ -119,10 +124,14 @@ export default function GoogleGeminiEffect({ className, onArriveChange }: Google
             strokeWidth="2"
             fill="none"
             pathLength={1}
+            strokeDasharray={scrubbed ? '1 1' : undefined}
             filter="url(#gemini-beam-blur)"
           />
         ))}
-        {PATHS.map((d, i) => (
+        {scrubbed && PATHS.map((d, i) => (
+          <path key={i} d={d} stroke={COLORS[i]} strokeWidth="2" fill="none" pathLength={1} strokeDasharray="1 1" />
+        ))}
+        {!scrubbed && PATHS.map((d, i) => (
           <motion.path
             key={i}
             d={d}

@@ -37,7 +37,8 @@ describe('How I Use AI pills in light mode', () => {
   it('spaces the phone chips heading 68px below the viewer', () => {
     // the heading now renders inside .mcp-scroll; the gap rides a var
     expect(css).toMatch(/\.process-scroll-wrap--tech \+ \.mcp-scroll \{\s*--mcp-head-gap: 56px;/);
-    expect(css).toMatch(/\.ai-viewer \+ \.ai-chips-header \{\s*margin-top: 68px;/);
+    // the heading now opens the .ai-classify wrapper (icon → chart zoom)
+    expect(css).toMatch(/\.ai-viewer \+ \.ai-classify > \.ai-chips-header \{\s*margin-top: 68px;/);
   });
 
   // Regression (phones): the selected pill's 1.5px light-cyan ring was hard to
