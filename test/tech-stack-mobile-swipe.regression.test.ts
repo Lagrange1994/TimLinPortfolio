@@ -24,7 +24,7 @@ describe('Tech Stack is a one-card tab carousel', () => {
     expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-tabs \{[^}]*justify-content: flex-start;/);
     expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-column-grid--inhouse \.process-swipe-slot \{\s*flex: 0 0 100%;/);
     // two columns: tabs + text left, the demo-only card right
-    expect(desk).toMatch(/\.process-scroll-wrap--tech \{\s*display: grid;\s*grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\);/);
+    expect(desk).toMatch(/\.process-scroll-wrap--tech \{\s*display: grid;\s*grid-template-columns: minmax\(0, 5fr\) minmax\(0, 7fr\);/);
     expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-tab-aside \{\s*grid-area: 2 \/ 1;\s*display: block;/);
     expect(desk).toMatch(/\.process-scroll-wrap--tech \.tech-item-text \{\s*display: none;/);
     // no slide on desktop: the cards stack in one cell and cross-fade

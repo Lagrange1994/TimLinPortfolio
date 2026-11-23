@@ -101,19 +101,8 @@ export const translations = {
     skill_css:
       '具備 Flexbox 與 Tailwind 排版實作能力，能獨立處理 RWD 樣式調整，並理解設計決策對前端渲染的影響。',
     // tech stack demos (mock screens: in the page's language)
-    td_html_bar: '設計稿 → 程式碼',
-    td_html_figma: 'FIGMA · 首頁',
-    td_html_btn: '聯絡我',
-    td_html_img_alt: '專案圖片',
-    td_html_title: '專案名稱',
-    td_js_bar: '描述需求 → AI → 實際互動',
-    td_js_prompt: '按下按鈕後，卡片從下方淡入上浮',
-    td_js_preview: '預覽',
-    td_js_btn: '顯示卡片',
-    td_rwd_bar: '同一份版面，三種寬度',
-    td_rwd_desktop: 'Desktop · 3 欄',
-    td_rwd_tablet: 'Tablet · 2 欄',
-    td_rwd_phone: 'Phone · 1 欄',
+    td_html_h1: '標題',
+    td_html_p: '內文',
     // design process tabs
     process_sub: '不論在團隊裡還是獨立接案，從需求到交付，<br>每一步都有方法，也都有依據。',
     skills_head_sub: '依專案選對工具，<br>從介面、視覺到 3D 都能完成。',
@@ -422,19 +411,8 @@ export const translations = {
     skill_css:
       'Able to implement responsive layouts with Flexbox and Tailwind, adjust styles independently, and understand how design decisions translate to rendered output.',
     // tech stack demos (mock screens: in the page's language)
-    td_html_bar: 'Design → code',
-    td_html_figma: 'FIGMA · HOME',
-    td_html_btn: 'Contact',
-    td_html_img_alt: 'Project cover',
-    td_html_title: 'Project name',
-    td_js_bar: 'Describe → AI → working interaction',
-    td_js_prompt: 'On click, the card fades in and rises from below',
-    td_js_preview: 'Preview',
-    td_js_btn: 'Show card',
-    td_rwd_bar: 'One layout, three widths',
-    td_rwd_desktop: 'Desktop · 3 columns',
-    td_rwd_tablet: 'Tablet · 2 columns',
-    td_rwd_phone: 'Phone · 1 column',
+    td_html_h1: 'Title',
+    td_html_p: 'Body',
     // design process tabs
     process_sub: 'In a team or on my own, from brief to delivery — <br>every step has a method, and a reason.',
     skills_head_sub: 'The right tool for each project — <br>from interface and visuals to 3D.',

@@ -1,92 +1,191 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { render, cleanup, act } from '@testing-library/react';
+import { render, cleanup, fireEvent } from '@testing-library/react';
 import fs from 'node:fs';
 import path from 'node:path';
 import { LangProvider } from '../src/context/LangContext';
-import { HtmlDemo, JsDemo, RwdDemo } from '../src/components/TechDemos';
+import { HtmlDemo, JsDemo, RwdDemo, TechArt, TechSats, TECH_DRAG_MQ } from '../src/components/TechDemos';
 import { translations } from '../src/i18n/translations';
 
-// Tech Stack cards: each mock screen acts out its card's copy (design comp
-// ↔ markup; request → AI → interaction; one flex layout at three widths),
-// in the page's language, and loops only while on screen.
-const css = fs.readFileSync(path.resolve(__dirname, '../src/components/TechDemos.css'), 'utf8');
+// Tech Stack illustrations: one code window per card, two satellite cards
+// overlapping it (the How I Use AI composition).
+const css = fs.readFileSync(path.resolve(__dirname, '../src/components/TechDemos.css'), 'utf8').replace(/\r\n/g, '\n');
 const skills = fs.readFileSync(path.resolve(__dirname, '../src/components/SkillsSection.tsx'), 'utf8');
 
-type IOCallback = (entries: { isIntersecting: boolean }[]) => void;
-let ioCallbacks: IOCallback[] = [];
-class FakeIO {
-  cb: IOCallback;
-  constructor(cb: IOCallback) { this.cb = cb; ioCallbacks.push(cb); }
-  observe() {}
-  disconnect() {}
-}
+const setDesktop = (matches: boolean) => {
+  window.matchMedia = ((q: string) => ({
+    matches: q === TECH_DRAG_MQ ? matches : false, media: q, onchange: null,
+    addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {},
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia;
+};
 
 afterEach(() => {
   cleanup();
-  ioCallbacks = [];
   vi.unstubAllGlobals();
   localStorage.clear();
 });
 
 const renderAll = () => render(<LangProvider><HtmlDemo /><JsDemo /><RwdDemo /></LangProvider>);
 
-describe('Tech Stack demos', () => {
-  it('replace the typing code snippets in all three cards', () => {
-    expect(skills).toContain('<HtmlDemo />');
-    expect(skills).toContain('<JsDemo />');
-    expect(skills).toContain('<RwdDemo />');
-    expect(skills).not.toContain('TECH_CODE_LINES');
+describe('Tech Stack code windows', () => {
+  it('every card has its window, satellites and capsule', () => {
+    for (const c of ['<HtmlDemo />', '<JsDemo />', '<RwdDemo />', '<TechSats k="html" />', '<TechSats k="js" />', '<TechSats k="react" />']) {
+      expect(skills).toContain(c);
+    }
+    for (const b of ['DESIGN-READY', 'AI-ASSISTED', 'RESPONSIVE']) expect(skills).toContain(b);
   });
 
-  it('render in the page language, inside the code window frame', () => {
+  it('keep the code, in the window frame, hidden from AT', () => {
     localStorage.setItem('lang', 'zh');
-    vi.stubGlobal('IntersectionObserver', FakeIO);
     const { container } = renderAll();
     const wins = container.querySelectorAll('.tech-code-preview.td');
     expect(wins).toHaveLength(3);
-    for (const w of wins) expect(w.getAttribute('aria-hidden')).toBe('true');
-    const zh = translations.zh;
-    expect(container.textContent).toContain(zh.td_html_bar);
-    expect(container.textContent).toContain(zh.td_js_prompt);
-    expect(container.textContent).toContain(zh.td_rwd_tablet);
-    // the markup quotes the comp's own copy
-    expect(container.textContent).toContain(`<button class="btn">${zh.td_html_btn}</button>`);
+    for (const w of wins) {
+      expect(w.getAttribute('aria-hidden')).toBe('true');
+      expect(w.querySelector('.tcp-bar .tcp-filename')).not.toBeNull();
+      expect(w.querySelector('.td-code .on')).not.toBeNull();
+    }
+    expect([...container.querySelectorAll('.tcp-filename')].map(f => f.textContent)).toEqual(['index.html', 'reveal.js', 'Layout.tsx']);
+    expect(container.textContent).toContain('IntersectionObserver');
+    expect(container.textContent).toContain('md:flex-row');
+  });
+
+  it('the markup quotes the page language', () => {
+    localStorage.setItem('lang', 'zh');
+    const zh = render(<LangProvider><HtmlDemo /></LangProvider>);
+    expect(zh.container.textContent).toContain(`<h1>${translations.zh.td_html_h1}</h1>`);
+    cleanup();
+    localStorage.setItem('lang', 'en');
+    const en = render(<LangProvider><HtmlDemo /></LangProvider>);
+    expect(en.container.textContent).toContain(`<p>${translations.en.td_html_p}</p>`);
   });
 
   it('every demo string has an English version', () => {
     const keys = Object.keys(translations.zh).filter(k => k.startsWith('td_'));
-    expect(keys.length).toBeGreaterThan(10);
+    expect(keys).toEqual(['td_html_h1', 'td_html_p']);
     for (const k of keys) expect((translations.en as Record<string, string>)[k], k).toBeTruthy();
   });
 
-  it('loops only while on screen', () => {
-    vi.stubGlobal('IntersectionObserver', FakeIO);
-    const { container } = renderAll();
-    const wins = [...container.querySelectorAll('.td')];
-    expect(wins.every(w => !w.hasAttribute('data-play'))).toBe(true);
-    act(() => ioCallbacks.forEach(cb => cb([{ isIntersecting: true }])));
-    expect(wins.every(w => w.hasAttribute('data-play'))).toBe(true);
-    act(() => ioCallbacks.forEach(cb => cb([{ isIntersecting: false }])));
-    expect(wins.every(w => !w.hasAttribute('data-play'))).toBe(true);
-    expect(css).toMatch(/\.td:not\(\[data-play\]\) \* \{ animation-play-state: paused; \}/);
+  it('scale off their own width', () => {
+    expect(css).toMatch(/\.td-body \{[^}]*container-type: inline-size;[^}]*aspect-ratio: 508 \/ 302;/);
+    expect(css).toMatch(/\.td-code \{[^}]*font-size: 2\.36cqw;/);
+  });
+});
+
+describe('Tech Stack illustrations', () => {
+  it('each skill has an existing dark and light file, hidden from AT', () => {
+    for (const k of ['html', 'js', 'react'] as const) {
+      const { container } = render(<TechArt k={k} />);
+      expect(container.querySelector('.tech-art')!.getAttribute('aria-hidden')).toBe('true');
+      const imgs = [...container.querySelectorAll('img')];
+      expect(imgs.map(i => i.getAttribute('src'))).toEqual([`./img/tech/${k}.webp`, `./img/tech/${k}_l.webp`]);
+      for (const i of imgs) {
+        expect(i.getAttribute('loading')).toBe('lazy');
+        expect(fs.existsSync(path.resolve(__dirname, '../public', i.getAttribute('src')!))).toBe(true);
+      }
+      cleanup();
+    }
   });
 
-  it('plays right away where IntersectionObserver is missing', () => {
-    vi.stubGlobal('IntersectionObserver', undefined);
-    const { container } = renderAll();
-    expect([...container.querySelectorAll('.td')].every(w => w.hasAttribute('data-play'))).toBe(true);
+  it('shows only the current theme, in the aside and the phone card', () => {
+    expect(css).toContain('.tech-art-light { display: none !important; }');
+    expect(css).toContain(':root[data-theme="light"] .tech-art-dark { display: none !important; }');
+    expect(skills).toContain('<TechArt k={x.key} />');
+    for (const k of ['html', 'js', 'react']) expect(skills).toContain(`<TechArt k="${k}" />`);
+  });
+});
+
+describe('Tech Stack satellites', () => {
+  it('two per card; React / Vue\'s second is the phone', () => {
+    for (const k of ['html', 'js', 'react'] as const) {
+      const { container } = render(<TechSats k={k} />);
+      const sats = container.querySelectorAll('.tech-sat');
+      expect(sats).toHaveLength(2);
+      for (const s of sats) {
+        expect(s.getAttribute('aria-hidden')).toBe('true');
+        expect(s.querySelector('.tm-m, .tm-pn')).not.toBeNull();
+      }
+      expect(container.querySelector('.tech-sat--phone') !== null).toBe(k === 'react');
+      expect(container.querySelector('.tech-sat--b') !== null).toBe(k !== 'react');
+      cleanup();
+    }
   });
 
-  it('the RWD tiles are a real flex wrap, sized off the demo width', () => {
-    expect(css).toMatch(/\.td-tiles \{[^}]*flex-wrap: wrap;/);
-    expect(css).toMatch(/\.td-tile \{[^}]*flex: 1 1 27cqw;/);
-    expect(css).toContain('@keyframes td-width { 0%, 26% { width: 100%; } 33%, 59% { width: 64%; } 66%, 92% { width: 38%; } 100% { width: 100%; } }');
+  it('each card shows its own working tools', () => {
+    const text = (k: 'html' | 'js' | 'react') => render(<TechSats k={k} />).container.textContent;
+    expect(text('html')).toContain('#2563EB');
+    expect(text('html')).toContain('Padding');
+    expect(text('js')).toContain('ease-out');
+    expect(text('js')).toContain('reveal.js');
+    expect(text('react')).toContain('CardGrid');
+    expect(text('react')).toContain('Dashboard');
   });
 
-  it('reduced motion rests every demo on its telling frame', () => {
-    const rm = css.match(/@media \(prefers-reduced-motion: reduce\) \{([\s\S]*)\}\s*$/)![1];
-    expect(rm).toContain('animation: none !important');
-    expect(rm).toMatch(/\.td-s4, \.td-swatch, \.td-ask, \.td-answer, \.td-rise, \.td-bp-2 \{ opacity: 1; \}/);
-    expect(rm).toContain('.td-frame { width: 64%; }');
+  it('tickers and the feed end on their first item, so loops never jump', () => {
+    const { container } = render(<><TechSats k="html" /><TechSats k="react" /></>);
+    for (const t of container.querySelectorAll('.tm-tick > span')) {
+      expect(t.children).toHaveLength(4);
+      expect(t.children[3].textContent).toBe(t.children[0].textContent);
+    }
+    const feed = [...container.querySelectorAll('.tm-pn-c')].map(c => c.textContent);
+    expect(feed.slice(3)).toEqual(feed.slice(0, 2));
+  });
+
+  it('tools scale with the satellite, pause when hidden, rest under reduced motion', () => {
+    expect(css).toMatch(/\.tm-m, \.tm-pn \{ --u: calc\(100cqw \/ 154\);/);
+    expect(css).toContain('.process-swipe-slot.is-out .tech-sat * { animation-play-state: paused; }');
+    expect(css).toMatch(/prefers-reduced-motion: reduce\) \{[^@]*\.tech-sat \* \{ animation: none !important; \}/);
+  });
+
+  it('use the liquid-glass spec, breathe, and rest under reduced motion', () => {
+    const glass = css.match(/\n\.tech-sat \{[^}]*\}/)![0];
+    expect(glass).toContain('var(--noise-grain)');
+    expect(glass).toContain('backdrop-filter: blur(16px)');
+    expect(glass).toContain('animation: tech-sat-breathe 2.4s ease-in-out infinite');
+    expect(css).toMatch(/prefers-reduced-motion: reduce\) \{\s*\.tech-sat \{ animation: none; \}/);
+    expect(css).toMatch(/\.is-out \.tech-sat \{\s*animation-play-state: paused;/);
+  });
+
+  it('desktop: drags, stays inside the wrap, and keeps the swipe from starting', () => {
+    setDesktop(true);
+    const onParent = vi.fn();
+    const { container } = render(<div className="tech-item-wrap" onPointerDown={onParent}><TechSats k="html" /></div>);
+    const wrap = container.querySelector<HTMLElement>('.tech-item-wrap')!;
+    const sat = container.querySelector<HTMLElement>('.tech-sat--a')!;
+    wrap.getBoundingClientRect = () => ({ left: 0, top: 0, right: 300, bottom: 300 }) as DOMRect;
+    sat.getBoundingClientRect = () => ({ left: 100, top: 100, right: 200, bottom: 200 }) as DOMRect;
+    fireEvent.pointerDown(sat, { button: 0, clientX: 150, clientY: 150, pointerId: 1 });
+    expect(onParent).not.toHaveBeenCalled();
+    expect(sat.classList.contains('is-dragging')).toBe(true);
+    const move = (x: number, y: number) => {
+      const e = new MouseEvent('pointermove', { clientX: x, clientY: y });
+      sat.dispatchEvent(e);
+    };
+    move(170, 140);
+    expect(sat.style.getPropertyValue('--dx')).toBe('20px');
+    expect(sat.style.getPropertyValue('--dy')).toBe('-10px');
+    move(900, -900);
+    expect(sat.style.getPropertyValue('--dx')).toBe('100px');
+    expect(sat.style.getPropertyValue('--dy')).toBe('-100px');
+    sat.dispatchEvent(new MouseEvent('pointerup'));
+    expect(sat.classList.contains('is-dragging')).toBe(false);
+    move(150, 150);
+    expect(sat.style.getPropertyValue('--dx')).toBe('100px');
+  });
+
+  it('below desktop, or on a non-primary button, a press does nothing', () => {
+    setDesktop(false);
+    const onParent = vi.fn();
+    const first = render(<div onPointerDown={onParent}><TechSats k="js" /></div>);
+    const sat = first.container.querySelector<HTMLElement>('.tech-sat')!;
+    fireEvent.pointerDown(sat, { button: 0 });
+    expect(sat.classList.contains('is-dragging')).toBe(false);
+    expect(onParent).toHaveBeenCalledTimes(1);
+    cleanup();
+    setDesktop(true);
+    const second = render(<TechSats k="js" />);
+    const s2 = second.container.querySelector<HTMLElement>('.tech-sat')!;
+    fireEvent.pointerDown(s2, { button: 2 });
+    expect(s2.classList.contains('is-dragging')).toBe(false);
   });
 });

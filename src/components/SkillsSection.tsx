@@ -2,7 +2,7 @@ import { useEffect, useId, useLayoutEffect, useState, useRef, useMemo, type Reac
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
-import { HtmlDemo, JsDemo, RwdDemo } from './TechDemos';
+import { HtmlDemo, JsDemo, RwdDemo, TechArt, TechSats } from './TechDemos';
 import PolicyPill from './PolicyPill';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from './GoogleGeminiEffect';
 import FigmaMcpShowcase from './FigmaMcpShowcase';
@@ -17,7 +17,6 @@ import { swipeStep } from '../utils/swipeStep';
 import { notchPath, leftBayPath } from '../utils/notchPath';
 import { CARD_RADIUS, NOTCH_GAP, NOTCH_TURN } from '../utils/notchTokens';
 import LazyUnit from './LazyUnit';
-import TechSquareArt from './TechSquareArt';
 import { processCardLayers, useProcessCardThemes, type ProcessTheme } from '../utils/processCardImages';
 
 function ProcessCardBg({ slug, themes }: { slug: string; themes: ReadonlySet<ProcessTheme> }) {
@@ -739,17 +738,6 @@ const TECH_TEXT = [
   { key: 'react', icon: 'fab fa-react', color: '#a5b4fc', name: 'React.js / Vue.js', desc: 'skill_css' },
 ] as const;
 
-// Desktop: a square tile at the narrowed card's lower-left corner, an
-// illustration of the card's text on its own colour (hidden below 1025px).
-export function TechSquare({ k }: { k: (typeof TECH_TEXT)[number]['key'] }) {
-  const x = TECH_TEXT.find(e => e.key === k)!;
-  return (
-    <span className={`tech-square tech-square--${k}`} style={{ '--sq-c': x.color } as CSSProperties} aria-hidden="true">
-      <TechSquareArt k={k} />
-    </span>
-  );
-}
-
 function TechStackSection() {
   const { t } = useLang();
 
@@ -812,6 +800,7 @@ function TechStackSection() {
             <div key={x.key} className="tech-aside">
               <div className="tech-name"><i className={x.icon} style={{ color: x.color, marginRight: '8px' }}></i>{x.name}</div>
               <p className="tech-desc">{t[x.desc]}</p>
+              <TechArt k={x.key} />
             </div>
           ))}
           cards={[
@@ -823,10 +812,11 @@ function TechStackSection() {
                   <span className="tech-name"><i className="fab fa-html5" style={{ color: '#60a5fa', marginRight: '8px' }}></i>HTML / CSS / Tailwind</span>
                 </div>
                 <div className="tech-desc">{t.skill_html}</div>
+                <TechArt k="html" />
               </div>
               <HtmlDemo />
             </div>
-            <TechSquare k="html" />
+            <TechSats k="html" />
             <span className="tech-level-badge html-item">DESIGN-READY</span>
           </div>,
           <div key="js" className="tech-item-wrap rise-card">
@@ -837,10 +827,11 @@ function TechStackSection() {
                   <span className="tech-name"><i className="fab fa-js" style={{ color: '#fb923c', marginRight: '8px' }}></i>JavaScript</span>
                 </div>
                 <div className="tech-desc">{t.skill_js}</div>
+                <TechArt k="js" />
               </div>
               <JsDemo />
             </div>
-            <TechSquare k="js" />
+            <TechSats k="js" />
             <span className="tech-level-badge js-item">AI-ASSISTED</span>
           </div>,
           <div key="react" className="tech-item-wrap rise-card">
@@ -851,10 +842,11 @@ function TechStackSection() {
                   <span className="tech-name"><i className="fab fa-react" style={{ color: '#a5b4fc', marginRight: '8px' }}></i>React.js / Vue.js</span>
                 </div>
                 <div className="tech-desc">{t.skill_css}</div>
+                <TechArt k="react" />
               </div>
               <RwdDemo />
             </div>
-            <TechSquare k="react" />
+            <TechSats k="react" />
             <span className="tech-level-badge react-item">RESPONSIVE</span>
           </div>
           ]}
