@@ -117,7 +117,7 @@ export function RwdDemo() {
   );
 }
 
-// The skill's illustration. One file per theme; the hidden theme's image is
+// The skill's illustration, shown in its own square satellite. One file per theme; the hidden theme's image is
 // display:none, so with lazy loading it isn't fetched until a switch.
 export function TechArt({ k }: { k: TechKey }) {
   return (
@@ -283,6 +283,7 @@ export function TechSats({ k }: { k: TechKey }) {
   const [First, Second] = SATS[k];
   return (
     <>
+      <div className={`tech-sat tech-sat--art tk tk-${k}`} onPointerDown={startSatDrag} aria-hidden="true"><TechArt k={k} /></div>
       <div className={`tech-sat tech-sat--a tech-sat--a-${k} tk tk-${k}`} onPointerDown={startSatDrag} aria-hidden="true"><First /></div>
       <div className={`tech-sat ${k === 'react' ? 'tech-sat--phone' : 'tech-sat--b'} tk tk-${k}`} onPointerDown={startSatDrag} aria-hidden="true"><Second /></div>
     </>

@@ -6,8 +6,8 @@ import { LangProvider } from '../src/context/LangContext';
 import { HtmlDemo, JsDemo, RwdDemo, TechArt, TechSats, TECH_DRAG_MQ } from '../src/components/TechDemos';
 import { translations } from '../src/i18n/translations';
 
-// Tech Stack illustrations: one code window per card, two satellite cards
-// overlapping it (the How I Use AI composition).
+// Tech Stack illustrations: one code window per card, with the skill's art and
+// two tools as satellite cards overlapping it (the How I Use AI composition).
 const css = fs.readFileSync(path.resolve(__dirname, '../src/components/TechDemos.css'), 'utf8').replace(/\r\n/g, '\n');
 const skills = fs.readFileSync(path.resolve(__dirname, '../src/components/SkillsSection.tsx'), 'utf8');
 
@@ -87,24 +87,41 @@ describe('Tech Stack illustrations', () => {
     }
   });
 
-  it('shows only the current theme, in the aside and the phone card', () => {
+  it('shows only the current theme, and only inside the satellite', () => {
     expect(css).toContain('.tech-art-light { display: none !important; }');
     expect(css).toContain(':root[data-theme="light"] .tech-art-dark { display: none !important; }');
-    expect(skills).toContain('<TechArt k={x.key} />');
-    for (const k of ['html', 'js', 'react']) expect(skills).toContain(`<TechArt k="${k}" />`);
+    expect(skills).not.toContain('<TechArt');
+    for (const k of ['html', 'js', 'react'] as const) {
+      const { container } = render(<TechSats k={k} />);
+      expect(container.querySelectorAll('.tech-art')).toHaveLength(1);
+      expect(container.querySelector('.tech-sat--art .tech-art')).not.toBeNull();
+      cleanup();
+    }
+  });
+
+  it('sits in a square card with the My Design Process edge', () => {
+    const card = css.match(/\n\.tech-sat--art \{[^}]*\}/)![0];
+    expect(card).toContain('aspect-ratio: 1;');
+    expect(card).toContain('border: 1px solid rgba(255, 255, 255, .1);');
+    expect(card).toContain('#0d0a1c');
+    expect(card).toContain('box-shadow: 0 4px 10px rgba(var(--shadow-near), .18), var(--card-edge);');
+    expect(card).toContain('backdrop-filter: none;');
+    const light = css.match(/:root\[data-theme="light"\] \.tech-sat--art \{[^}]*\}/)![0];
+    expect(light).toContain('border-color: transparent;');
+    expect(light).toContain('background: #fff;');
+    expect(light).toContain('box-shadow: var(--neu-raised-tight);');
   });
 });
 
 describe('Tech Stack satellites', () => {
-  it('two per card; React / Vue\'s second is the phone', () => {
+  it('art plus two tools per card; React / Vue\'s last is the phone', () => {
     for (const k of ['html', 'js', 'react'] as const) {
       const { container } = render(<TechSats k={k} />);
       const sats = container.querySelectorAll('.tech-sat');
-      expect(sats).toHaveLength(2);
-      for (const s of sats) {
-        expect(s.getAttribute('aria-hidden')).toBe('true');
-        expect(s.querySelector('.tm-m, .tm-pn')).not.toBeNull();
-      }
+      expect(sats).toHaveLength(3);
+      expect(sats[0].classList.contains('tech-sat--art')).toBe(true);
+      for (const s of sats) expect(s.getAttribute('aria-hidden')).toBe('true');
+      for (const s of [sats[1], sats[2]]) expect(s.querySelector('.tm-m, .tm-pn')).not.toBeNull();
       expect(container.querySelector('.tech-sat--phone') !== null).toBe(k === 'react');
       expect(container.querySelector('.tech-sat--b') !== null).toBe(k !== 'react');
       cleanup();

@@ -2,7 +2,7 @@ import { useEffect, useId, useLayoutEffect, useState, useRef, useMemo, type Reac
 import { gsap } from 'gsap';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
-import { HtmlDemo, JsDemo, RwdDemo, TechArt, TechSats } from './TechDemos';
+import { HtmlDemo, JsDemo, RwdDemo, TechSats } from './TechDemos';
 import PolicyPill from './PolicyPill';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from './GoogleGeminiEffect';
 import FigmaMcpShowcase from './FigmaMcpShowcase';
@@ -800,7 +800,6 @@ function TechStackSection() {
             <div key={x.key} className="tech-aside">
               <div className="tech-name"><i className={x.icon} style={{ color: x.color, marginRight: '8px' }}></i>{x.name}</div>
               <p className="tech-desc">{t[x.desc]}</p>
-              <TechArt k={x.key} />
             </div>
           ))}
           cards={[
@@ -812,7 +811,6 @@ function TechStackSection() {
                   <span className="tech-name"><i className="fab fa-html5" style={{ color: '#60a5fa', marginRight: '8px' }}></i>HTML / CSS / Tailwind</span>
                 </div>
                 <div className="tech-desc">{t.skill_html}</div>
-                <TechArt k="html" />
               </div>
               <HtmlDemo />
             </div>
@@ -827,7 +825,6 @@ function TechStackSection() {
                   <span className="tech-name"><i className="fab fa-js" style={{ color: '#fb923c', marginRight: '8px' }}></i>JavaScript</span>
                 </div>
                 <div className="tech-desc">{t.skill_js}</div>
-                <TechArt k="js" />
               </div>
               <JsDemo />
             </div>
@@ -842,7 +839,6 @@ function TechStackSection() {
                   <span className="tech-name"><i className="fab fa-react" style={{ color: '#a5b4fc', marginRight: '8px' }}></i>React.js / Vue.js</span>
                 </div>
                 <div className="tech-desc">{t.skill_css}</div>
-                <TechArt k="react" />
               </div>
               <RwdDemo />
             </div>

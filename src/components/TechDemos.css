@@ -76,21 +76,16 @@
   height: auto;
 }
 
-/* the skill's illustration, under its description */
+/* the skill's illustration, inside its square satellite */
 .tech-art {
   width: 100%;
-  max-width: 420px;
   aspect-ratio: 960 / 735;
-  margin: 20px auto 0;
   user-select: none;
 }
 .tech-art img { display: block; width: 100%; height: 100%; }
 .tech-art-light { display: none !important; }
 :root[data-theme="light"] .tech-art-dark { display: none !important; }
 :root[data-theme="light"] .tech-art-light { display: block !important; }
-@media (min-width: 1025px) {
-  .process-tab-aside .tech-art { margin: 24px 0 0; }
-}
 
 /* the satellites: the site's liquid-glass card */
 .tech-sat {
@@ -131,6 +126,32 @@
   overflow: hidden;
   border-radius: 25px;
   background: var(--scr);
+}
+
+/* The illustration card wears My Design Process's card edge, not the glass. */
+.tech-sat--art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background:
+    linear-gradient(90deg, transparent 12%, rgba(255, 255, 255, .32) 50%, transparent 88%) top / 100% 1px no-repeat border-box,
+    #0d0a1c;
+  box-shadow: 0 4px 10px rgba(var(--shadow-near), .18), var(--card-edge);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  animation: none;
+}
+:root[data-theme="light"] .tech-sat--art {
+  border-color: transparent;
+  background: #fff;
+  box-shadow: var(--neu-raised-tight);
+}
+.tech-sat--art img { animation: tech-art-float 5s ease-in-out infinite; }
+@keyframes tech-art-float {
+  0%, 100% { transform: translateY(1.5px); }
+  50% { transform: translateY(-1.5px); }
 }
 
 /* The satellites' live tools. Drawn at the canvas size; --u is one canvas px,
@@ -233,9 +254,9 @@
 /* Desktop: the card inset for the satellites hanging off its corners */
 @media (min-width: 1025px) {
   .process-scroll-wrap--tech .tech-item-wrap {
-    --tk-l: 10.06%;
-    --tk-r: 7.1%;
-    --tk-b-pad: 11.83%;
+    --tk-l: 15.52%;
+    --tk-r: 14.03%;
+    --tk-b-pad: 22.09%;
     container-type: inline-size;
     box-sizing: border-box;
     padding: 0 var(--tk-r) var(--tk-b-pad) var(--tk-l);
@@ -243,49 +264,52 @@
   .process-scroll-wrap--tech .tech-item-wrap::after {
     left: var(--tk-l);
     right: var(--tk-r);
-    bottom: 11.83cqw;
+    bottom: 22.09cqw;
   }
   .process-scroll-wrap--tech .tech-level-badge {
     right: calc(var(--tk-r) + 22px);
   }
-  .tech-sat--a { left: 0; bottom: 0; width: 23.08%; aspect-ratio: 1; }
-  .tech-sat--a-js { width: 30.77%; aspect-ratio: 208 / 150; }
-  .tech-sat--a-react { aspect-ratio: 156 / 150; }
-  .tech-sat--b { right: 1.18%; bottom: 3.25cqw; width: 23.08%; aspect-ratio: 156 / 186; }
-  .tech-sat--phone { right: 0; bottom: 3.25cqw; width: 19.53%; aspect-ratio: 132 / 298; }
+  /* the Claude Design board: large art bottom-left, two tools staggered right */
+  .tech-sat--art {
+    left: 0;
+    bottom: 0;
+    width: 35.82%;
+    padding: 1.49cqw;
+    border-radius: 48px;
+    corner-shape: squircle;
+  }
+  .tech-sat--a { left: 59.1%; bottom: 7.46cqw; width: 19.1%; aspect-ratio: 1; }
+  .tech-sat--a-js { left: 52.84%; bottom: 8.21cqw; width: 25.37%; aspect-ratio: 208 / 150; }
+  .tech-sat--a-react { left: 62.69%; bottom: 8.21cqw; aspect-ratio: 156 / 150; }
+  .tech-sat--b { right: .9%; bottom: 23.58cqw; width: 19.1%; aspect-ratio: 156 / 186; }
+  .tech-sat--phone { right: 0; bottom: 19.7cqw; width: 16.42%; aspect-ratio: 132 / 298; }
   .tech-sat { cursor: grab; touch-action: none; user-select: none; }
   .tech-sat.is-dragging { cursor: grabbing; z-index: 4; animation-play-state: paused; }
 }
 
 /* Tablet + phone: the window runs the card's full width under the text; the
-   satellites sit in the bottom corners, hanging below the card */
+   art sits bottom-left and the two tools stagger on the right, hanging below
+   the card */
 @media (max-width: 1024px) {
   .process-scroll-wrap--tech .tech-item-wrap {
     container-type: inline-size;
     box-sizing: border-box;
+    --tk-side: 8px;
+    --tk-gap: 8px;
+    --tk-hi: min(30cqw, 156px);
     padding-bottom: 20cqw;
   }
+  .process-scroll-wrap--tech .tech-item-wrap:has(.tech-sat--a-js) { --tk-hi: min(27cqw, 156px); }
+  .process-scroll-wrap--tech .tech-item-wrap:has(.tech-sat--phone) { --tk-hi: min(22cqw, 110px); }
   .process-scroll-wrap--tech .tech-item-wrap::after { bottom: 20cqw; }
-  /* the text wrapper is display:contents here: keep the art above the code,
-     clear of the satellites hanging off the bottom corners */
-  .process-scroll-wrap--tech .tech-item .tech-code-preview { order: 1; }
-  .process-scroll-wrap--tech .tech-item .tech-art { margin: 4px auto 16px; max-width: 320px; }
   .tech-sat { border-radius: 18px; }
-  .tech-sat--a { left: 8px; bottom: 0; width: min(36cqw, 156px); aspect-ratio: 1; }
-  .tech-sat--a-js { width: min(46cqw, 208px); aspect-ratio: 208 / 150; }
+  .tech-sat--art { left: var(--tk-side); bottom: 0; width: min(32cqw, 240px); padding: 1.4cqw; border-radius: 20px; }
+  .tech-sat--a { right: calc(var(--tk-side) + var(--tk-hi) + var(--tk-gap)); bottom: 0; width: min(30cqw, 156px); aspect-ratio: 1; }
+  .tech-sat--a-js { width: min(32cqw, 208px); aspect-ratio: 208 / 150; }
   .tech-sat--a-react { aspect-ratio: 156 / 150; }
-  .tech-sat--b { right: 8px; bottom: 0; width: min(36cqw, 156px); aspect-ratio: 156 / 186; }
-  .tech-sat--phone { right: 8px; bottom: 0; width: min(25cqw, 132px); aspect-ratio: 132 / 298; border-radius: 16px; }
+  .tech-sat--b { right: var(--tk-side); bottom: 8cqw; width: var(--tk-hi); aspect-ratio: 156 / 186; }
+  .tech-sat--phone { right: var(--tk-side); bottom: 4cqw; width: var(--tk-hi); aspect-ratio: 132 / 298; border-radius: 16px; }
   .tech-sat--phone .tech-sat-screen { border-radius: 14px; }
-}
-@media (max-width: 767px) {
-  /* phones lay the card out by named areas: give the art its own row */
-  .process-scroll-wrap--tech .process-swipe-slot .tech-item.html-item,
-  .process-scroll-wrap--tech .process-swipe-slot .tech-item.js-item,
-  .process-scroll-wrap--tech .process-swipe-slot .tech-item.react-item {
-    grid-template-areas: "header" "desc" "art" "code";
-  }
-  .process-scroll-wrap--tech .tech-item .tech-art { grid-area: art; }
 }
 @media (min-width: 768px) and (max-width: 1024px) {
   .process-scroll-wrap--tech .tech-item-wrap .tech-item {
