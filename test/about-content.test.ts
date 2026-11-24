@@ -127,7 +127,7 @@ describe('About content', () => {
     // workflow, cta
     expect((tsx.match(/<NotchCard\b/g) ?? []).length).toBe(3);
     expect((wall.match(/<NotchCard\b/g) ?? []).length).toBe(4);
-    for (const area of ['bento-area-workflow', 'bento-area-cta', 'overview-area-works', 'overview-area-design']) {
+    for (const area of ['bento-area-workflow', 'bento-area-cta', 'overview-tile-big', 'overview-area-design']) {
       expect(wall).toMatch(new RegExp(`<NotchCard\\s+area="${area}"`));
     }
     for (const area of ['bento-area-p${n}', 'bento-area-intro1', 'bento-area-intro2']) {
@@ -330,8 +330,8 @@ describe('About content', () => {
     // the AI card's row is its content height; the profile card fills its column
     expect(block).toContain('grid-template-rows: minmax(0, 190fr) minmax(0, 194fr) auto minmax(0, 224fr);');
     expect(block).toMatch(/\.overview-profile \.pc-card \{\s*aspect-ratio: auto;\s*height: 100%;/);
-    // one Web and one App work; only the Web tile carries the "all work" button
-    expect(wall).toContain("export const WALL_WORKS = { web: 'p1', app: 'p2' } as const;");
+    // three live tiles (two App, one Web); only the Web tile carries the "all work" button
+    expect(wall).toMatch(/export const WALL_TILES = \[\s*\['p2', 'p6'\],\s*\['p4', 'p8'\],\s*\['p1', 'p3', 'p13', 'p5'\],\s*\] as const;/);
     expect((wall.match(/t\.overview_all_work/g) ?? []).length).toBe(1);
     expect(wall).toContain(`scrollToSectionAligned('portfolio')`);
     expect(wall).toContain(`scrollToSectionAligned('process')`);

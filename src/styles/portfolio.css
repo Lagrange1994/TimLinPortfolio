@@ -3010,28 +3010,92 @@
       text-decoration: none;
     }
 
-    /* App and Web side by side in one card (the desktop wall's column
-       widths: 269 to the web's 656) */
-    .overview-works { aspect-ratio: 925 / 360; }
-
-    .overview-works-row {
-      position: absolute;
-      inset: 0;
+    /* The works: two App live tiles stacked on the left, the big Web one
+       on the right (Claude Design "Overview Works Live Tiles") */
+    .overview-works {
       display: grid;
-      grid-template-columns: minmax(0, 269fr) minmax(0, 656fr);
-      border-radius: inherit;
-      overflow: hidden;
-    }
-
-    .overview-work {
-      position: relative;
-      display: block;
+      grid-template-columns: minmax(0, 300fr) minmax(0, 668fr);
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 16px;
       min-width: 0;
       min-height: 0;
+      aspect-ratio: 984 / 404;
+    }
+    .overview-tile--a { grid-area: 1 / 1; }
+    .overview-tile--b { grid-area: 2 / 1; }
+    .overview-works > .overview-tile-big { grid-area: 1 / 2 / 3 / 3; min-width: 0; min-height: 0; }
+    .overview-works > .overview-tile-big > .overview-tile { height: 100%; }
+
+    .bento-card.overview-tile {
+      position: relative;
+      padding: 0;
+      overflow: hidden;
+      min-height: 0;
+      perspective: 1600px;
     }
 
-    .overview-work + .overview-work {
-      border-left: 1px solid rgba(255, 255, 255, 0.08);
+    /* the cube: side k at -90k deg, turned --n quarter-turns (WorkCube) */
+    .work-cube {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      transform-style: preserve-3d;
+      transform: translateZ(calc(var(--half, 100px) * -1)) rotateX(calc(var(--n, 0) * 90deg));
+      transition: transform .85s cubic-bezier(.7, 0, .2, 1);
+    }
+
+    .work-face {
+      position: absolute;
+      inset: 0;
+      display: block;
+      overflow: hidden;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform: rotateX(calc(var(--k, 0) * -90deg)) translateZ(var(--half, 100px));
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .work-face img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* the work's name over a bottom scrim (clear of the big tile's notch) */
+    .work-face::after {
+      content: '';
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 55%;
+      background: linear-gradient(180deg, transparent, rgba(10, 9, 18, 0.8));
+    }
+
+    .work-face-title {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 20px;
+      z-index: 1;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: #fff;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      text-wrap: pretty;
+    }
+
+    .overview-tile--web .work-face-title {
+      right: calc(var(--tw, 196px) + 36px);
+      font-size: 22px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .work-cube { transition: none; }
     }
 
     .overview-shot img {
@@ -3150,9 +3214,16 @@
       overflow: hidden;
       min-height: 360px;
       --card-tint: rgba(108, 99, 255, 0.22);
+      /* the illustrations turn as a cube (left / right), its depth from
+         the card's width */
+      container-type: inline-size;
+      perspective: 1400px;
     }
 
-    /* about 80% of the card, centred and whole (not cropped to fill) */
+    /* about 80% of the card, centred and whole (not cropped to fill). Each
+       step's illustration is a side of a cube turning left: it swings in
+       from the right as the last one swings out to the left (pivot half
+       the image's width behind it), holds its sixth, then turns on. */
     .overview-design-img {
       position: absolute;
       inset: 10%;
@@ -3161,13 +3232,31 @@
       object-fit: contain;
       display: block;
       opacity: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform-origin: 50% 50% -40cqw;
       animation: overview-step-show 18s linear infinite both;
     }
 
     @keyframes overview-step-show {
-      0% { opacity: 0; }
-      2%, 16.667% { opacity: 1; }
-      18.667%, 100% { opacity: 0; }
+      0% {
+        opacity: 1;
+        transform: rotateY(90deg);
+        animation-timing-function: cubic-bezier(.7, 0, .2, 1);
+      }
+      4.722%, 16.667% {
+        opacity: 1;
+        transform: rotateY(0deg);
+        animation-timing-function: cubic-bezier(.7, 0, .2, 1);
+      }
+      21.389% {
+        opacity: 1;
+        transform: rotateY(-90deg);
+      }
+      21.4%, 100% {
+        opacity: 0;
+        transform: rotateY(-90deg);
+      }
     }
 
     .overview-design-scrim {
@@ -3284,7 +3373,7 @@
       .overview-design-chip {
         animation: none;
       }
-      .overview-design-img:first-of-type { opacity: 1; }
+      .overview-design-img:first-of-type { opacity: 1; transform: none; }
     }
 
     /* Phones: one column */
@@ -3302,18 +3391,19 @@
           "cta";
       }
 
-      /* the two works stacked */
-      .overview-works { aspect-ratio: auto; }
-      .overview-works-row {
-        position: relative;
-        grid-template-columns: minmax(0, 1fr);
+      /* the big Web tile across the top, the two App tiles under it */
+      .overview-works {
+        aspect-ratio: auto;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: auto auto;
+        gap: 14px;
       }
-      .overview-work--app { aspect-ratio: 4 / 5; }
-      .overview-work--web { aspect-ratio: 16 / 9; }
-      .overview-work + .overview-work {
-        border-left: 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-      }
+      .overview-works > .overview-tile-big { grid-area: 1 / 1 / 2 / 3; }
+      .overview-tile--web { aspect-ratio: 4 / 3; }
+      .overview-tile--a { grid-area: 2 / 1; aspect-ratio: 1; }
+      .overview-tile--b { grid-area: 2 / 2; aspect-ratio: 1; }
+      .work-face-title { left: 16px; right: 16px; bottom: 14px; font-size: 13px; }
+      .overview-tile--web .work-face-title { font-size: 17px; }
 
     }
 

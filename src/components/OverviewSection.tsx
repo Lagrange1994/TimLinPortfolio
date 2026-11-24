@@ -3,6 +3,8 @@ import { useLang } from '../context/LangContext';
 import CardSwap, { Card } from './CardSwap';
 import AiFlowStepper from './AiFlowStepper';
 import NotchCard from './NotchCard';
+import WorkCube, { type CubeWork } from './WorkCube';
+import { useLiveTiles } from '../utils/useLiveTiles';
 import { chunkLines } from '../utils/chunkLines';
 import { scrollToSectionAligned } from '../utils/navHeader';
 import { useProfileTilt } from '../utils/useProfileTilt';
@@ -29,8 +31,13 @@ export const DOMAIN_COVERS = [
   { label: 'Manufacturing', img: './img/my_portfolio/CNC.webp', tone: '#2F78B8' },
 ];
 
-// The one Web and one App work on the wall (portfolio p1 / p2).
-export const WALL_WORKS = { web: 'p1', app: 'p2' } as const;
+// The works wall's three live tiles (Windows 8 style, rolling to the next
+// work in turn): two App tiles on the left, one big Web tile on the right.
+export const WALL_TILES = [
+  ['p2', 'p6'],
+  ['p4', 'p8'],
+  ['p1', 'p3', 'p13', 'p5'],
+] as const;
 
 // Tools: the design software row, then the web skills row.
 export const DESIGN_TOOLS = [
@@ -100,6 +107,8 @@ export default function OverviewSection() {
   const { t } = useLang();
   const light = useLightTheme();
   const fitRef = useRef<HTMLDivElement>(null);
+  const worksRef = useRef<HTMLDivElement>(null);
+  const steps = useLiveTiles(WALL_TILES.length, worksRef);
 
   useProfileTilt();
   useDigitWheel('overview-grid');
@@ -122,9 +131,11 @@ export default function OverviewSection() {
   const domainsWords = t.about_domains_summary.split(/[・·]/).map(w => w.trim());
   const domainsLines = chunkLines(domainsWords, domainsSeparator === '・' ? 3 : 2, domainsSeparator);
 
-  const web = PROJECTS.find(p => p.id === WALL_WORKS.web)!;
-  const app = PROJECTS.find(p => p.id === WALL_WORKS.app)!;
   const title = (id: string) => (t as unknown as Record<string, string>)[`${id}_title`];
+  const tiles: CubeWork[][] = WALL_TILES.map(ids => ids.map(id => {
+    const p = PROJECTS.find(x => x.id === id)!;
+    return { id, link: p.link, img: p.img, title: title(id), kind: p.category === 'mobile' ? 'App' : 'Web' };
+  }));
 
   return (
     <div className="section-wrapper">
@@ -160,30 +171,29 @@ export default function OverviewSection() {
             </div>
           </div>
 
-          {/* One App and one Web work in one card, with the wall's only
-              "all work" button */}
-          <NotchCard
-            area="overview-area-works"
-            side="right"
-            shadow={false}
-            className="bento-card overview-shot overview-works rise-card"
-            notch={
-              <button type="button" className="about-more about-action" onClick={() => scrollToSectionAligned('portfolio')}>
-                {t.overview_all_work} <span aria-hidden="true">→</span>
-              </button>
-            }
-          >
-            <div className="overview-works-row">
-              <a className="overview-work overview-work--app" href={app.link}>
-                <img src={app.img} alt={title(app.id)} loading="lazy" />
-                <span className="overview-pill">App</span>
-              </a>
-              <a className="overview-work overview-work--web" href={web.link}>
-                <img src={web.img} alt={title(web.id)} loading="lazy" />
-                <span className="overview-pill">Web</span>
-              </a>
+          {/* The works: three live tiles, each rolling to its next work in
+              turn; the big Web one carries the wall's only "all work" button */}
+          <div className="overview-area-works overview-works" ref={worksRef}>
+            <div className="bento-card overview-tile overview-tile--a rise-card">
+              <WorkCube works={tiles[0]} step={steps[0]} />
             </div>
-          </NotchCard>
+            <div className="bento-card overview-tile overview-tile--b rise-card">
+              <WorkCube works={tiles[1]} step={steps[1]} />
+            </div>
+            <NotchCard
+              area="overview-tile-big"
+              side="right"
+              shadow={false}
+              className="bento-card overview-tile overview-tile--web rise-card"
+              notch={
+                <button type="button" className="about-more about-action" onClick={() => scrollToSectionAligned('portfolio')}>
+                  {t.overview_all_work} <span aria-hidden="true">→</span>
+                </button>
+              }
+            >
+              <WorkCube works={tiles[2]} step={steps[2]} />
+            </NotchCard>
+          </div>
 
           {/* Tools: software over web skills */}
           <div className="overview-area-tools overview-tools">

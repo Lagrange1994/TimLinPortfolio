@@ -9,7 +9,7 @@ const scrollTo = vi.hoisted(() => vi.fn());
 vi.mock('../src/utils/navHeader', () => ({ scrollToSectionAligned: scrollTo }));
 
 import OverviewSection, {
-  wallScale, WALL_MIN_W, WALL_H, DESIGN_STEPS, DESIGN_TOOLS, WALL_WORKS, STEP_MS,
+  wallScale, WALL_MIN_W, WALL_H, DESIGN_STEPS, DESIGN_TOOLS, WALL_TILES, STEP_MS,
 } from '../src/components/OverviewSection';
 import { LangProvider } from '../src/context/LangContext';
 import { translations } from '../src/i18n/translations';
@@ -72,16 +72,24 @@ describe('OverviewSection', () => {
       expect(section.querySelector(sel), sel).not.toBeNull();
   });
 
-  it('links one Web and one App work, both in one card', () => {
+  it('the works are three live tiles: two App on the left, a big Web one with the notch', () => {
     const { container } = mount();
-    const web = PROJECTS.find(p => p.id === WALL_WORKS.web)!;
-    const app = PROJECTS.find(p => p.id === WALL_WORKS.app)!;
-    expect(web.category).toBe('web');
-    expect(app.category).toBe('mobile');
-    const card = container.querySelector('.overview-area-works')!;
-    expect(card.querySelector(`a.overview-work--web[href="${web.link}"]`)).not.toBeNull();
-    expect(card.querySelector(`a.overview-work--app[href="${app.link}"]`)).not.toBeNull();
-    expect(container.querySelector('.overview-area-app, .overview-area-web')).toBeNull();
+    const cat = (id: string) => PROJECTS.find(p => p.id === id)!.category;
+    expect(WALL_TILES[0].every(id => cat(id) === 'mobile')).toBe(true);
+    expect(WALL_TILES[1].every(id => cat(id) === 'mobile')).toBe(true);
+    expect(WALL_TILES[2].every(id => cat(id) === 'web')).toBe(true);
+    const works = container.querySelector('.overview-area-works')!;
+    expect(works.querySelectorAll('.work-cube')).toHaveLength(3);
+    // the big tile is the notched card, its button in the notch
+    expect(works.querySelector('.overview-tile-big .overview-tile--web .work-cube')).not.toBeNull();
+    expect(works.querySelector('.overview-tile-big .about-notch-tags button')).not.toBeNull();
+    // each tile's front face links its first work; the hidden sides are out of the tab order
+    WALL_TILES.forEach((ids, i) => {
+      const cube = works.querySelectorAll('.work-cube')[i];
+      const front = cube.querySelector('.work-face.is-front')!;
+      expect(front.getAttribute('href')).toBe(PROJECTS.find(p => p.id === ids[0])!.link);
+      expect(cube.querySelectorAll('.work-face[tabindex="-1"][aria-hidden="true"]')).toHaveLength(3);
+    });
   });
 
   it('each notch button scrolls to its section', () => {
