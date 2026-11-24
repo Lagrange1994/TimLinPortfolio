@@ -19,13 +19,12 @@ import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import { notchPath, leftBayPath } from '../utils/notchPath';
 import { CARD_RADIUS, NOTCH_GAP, NOTCH_TURN } from '../utils/notchTokens';
 import LazyUnit from './LazyUnit';
-import { processCardLayers, useCanHover, useProcessCardThemes, type ProcessTheme } from '../utils/processCardImages';
+import { processCardLayers, useProcessCardThemes, type ProcessTheme } from '../utils/processCardImages';
 
 function ProcessCardBg({ slug, themes }: { slug: string; themes: ReadonlySet<ProcessTheme> }) {
-  const canHover = useCanHover();
   return (
     <>
-      {processCardLayers(slug, themes, canHover).map(l => (
+      {processCardLayers(slug, themes).map(l => (
         <div key={l.cls} className={`process-card-bg-img ${l.cls}`} style={l.image ? { backgroundImage: l.image } : undefined} />
       ))}
     </>

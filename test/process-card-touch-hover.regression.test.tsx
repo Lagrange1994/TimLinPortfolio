@@ -54,14 +54,15 @@ describe('Design Process cards on touch screens', () => {
     expect(card.style.getPropertyValue('--sc-x')).toBe('30px');
   });
 
-  it('ignores sticky :hover in the carousels and keeps the white illustration', () => {
+  it('ignores sticky :hover in the carousels', () => {
     const css = read('src/styles/portfolio.css');
-    const block = css.slice(css.indexOf('    @media (hover: none) {\n      .process-scroll-wrap'));
-    const body = block.slice(0, block.indexOf('\n    }\n') + 6);
+    const start = css.indexOf('    .touch-input .process-scroll-wrap :is(');
+    const body = css.slice(start, css.indexOf('/* border-glow-inner', start));
     expect(body).toMatch(/\.process-scroll-wrap :is\(\.process-card, \.tech-item\):hover \{\s*animation: none;\s*transform: none;/);
     expect(body).toMatch(/\.process-scroll-wrap \.process-card:hover > \.card-hover-shadow/);
-    expect(body).toMatch(/\.process-scroll-wrap \.border-glow-card:hover \.process-card-bg-img--color \{ opacity: 0; \}/);
-    expect(body).toMatch(/\.process-scroll-wrap \.border-glow-card:hover \.process-card-bg-img--white \{ opacity: 1; \}/);
-    expect(body).toMatch(/\.border-glow-card:hover \.process-card-bg-img--light-white \{ opacity: 1; \}/);
+    // gated on a real touch, not on the hardware guess: (hover: none) also
+    // matched mouse-driven Windows touchscreen laptops and killed their ripple
+    for (const line of body.split('\n').filter(l => l.includes(':hover'))) expect(line).toContain('.touch-input');
+    expect(css).not.toMatch(/@media \(hover: none\) \{\s*\.process-scroll-wrap/);
   });
 });

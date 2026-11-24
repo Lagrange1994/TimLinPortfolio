@@ -8,7 +8,9 @@ import './TechDemos.css';
 //   JavaScript  — the scroll-reveal code, with the card it animates
 //   React / Vue — a component's classes beside the layout they produce
 // Everything inside scales off the window's width (cqw), so one drawing
-// serves every breakpoint.
+// serves every breakpoint. Each drawing plays what its code does, on a loop
+// (TechDemos.css): the comp builds up, the card reveals and is clicked, the
+// layout's cards pop in beside a moving breakpoint.
 
 export type TechKey = 'html' | 'js' | 'react';
 
@@ -33,15 +35,15 @@ export function HtmlDemo() {
         <rect x="32" y="20" width="42" height="6" rx="3" fill="var(--mute)" />
         <rect x="168" y="21" width="20" height="5" rx="2.5" fill="var(--dim)" />
         <rect x="194" y="21" width="20" height="5" rx="2.5" fill="var(--dim)" />
-        <rect x="12" y="40" width="202" height="96" rx="10" fill="none" stroke="var(--a2)" strokeWidth="1.5" />
-        <rect x="15" y="43" width="196" height="90" rx="8" fill="var(--a3)" />
-        <rect x="27" y="57" width="118" height="11" rx="5" fill="var(--soft)" />
-        <rect x="27" y="77" width="150" height="6" rx="3" fill="var(--a2)" />
-        <rect x="27" y="88" width="104" height="6" rx="3" fill="var(--a2)" />
-        <rect x="27" y="103" width="54" height="13" rx="6.5" fill="var(--soft)" />
-        <rect x="12" y="146" width="62" height="60" rx="7" fill="var(--a)" opacity=".55" />
-        <rect x="82" y="146" width="62" height="60" rx="7" fill="var(--a2)" opacity=".75" />
-        <rect x="152" y="146" width="62" height="60" rx="7" fill="var(--a)" opacity=".55" />
+        <rect className="td-draw" x="12" y="40" width="202" height="96" rx="10" fill="none" stroke="var(--a2)" strokeWidth="1.5" pathLength={1} />
+        <rect className="td-in td-fade" x="15" y="43" width="196" height="90" rx="8" fill="var(--a3)" />
+        <rect className="td-in td-bar td-d2" x="27" y="57" width="118" height="11" rx="5" fill="var(--soft)" />
+        <rect className="td-in td-bar td-d3" x="27" y="77" width="150" height="6" rx="3" fill="var(--a2)" />
+        <rect className="td-in td-bar td-d4" x="27" y="88" width="104" height="6" rx="3" fill="var(--a2)" />
+        <rect className="td-in td-pop td-d5" x="27" y="103" width="54" height="13" rx="6.5" fill="var(--soft)" />
+        <rect className="td-in td-rise td-d6" x="12" y="146" width="62" height="60" rx="7" fill="var(--a)" fillOpacity=".55" />
+        <rect className="td-in td-rise td-d7" x="82" y="146" width="62" height="60" rx="7" fill="var(--a2)" fillOpacity=".75" />
+        <rect className="td-in td-rise td-d8" x="152" y="146" width="62" height="60" rx="7" fill="var(--a)" fillOpacity=".55" />
       </svg>
       <div className="td-code">
         <div>&lt;<u>header</u>&gt;…&lt;/<u>header</u>&gt;</div>
@@ -51,7 +53,7 @@ export function HtmlDemo() {
         <div className="on">{'    '}&lt;<u>p</u>&gt;{t.td_html_p}&lt;/<u>p</u>&gt;</div>
         <div className="on">{'  '}&lt;/<u>section</u>&gt;</div>
         <div>{'  '}&lt;<u>ul</u>&gt;…&lt;/<u>ul</u>&gt;</div>
-        <div>&lt;/<u>main</u>&gt;</div>
+        <div>&lt;/<u>main</u>&gt;<span className="td-caret" /></div>
       </div>
     </DemoWindow>
   );
@@ -69,15 +71,19 @@ export function JsDemo() {
         <div className="on">{'  '}io.<em>unobserve</em>(e.target);</div>
         <div>{'});'}</div>
         <div>{' '}</div>
-        <div>cards.<em>forEach</em>(c =&gt; io.<em>observe</em>(c));</div>
+        <div>cards.<em>forEach</em>(c =&gt; io.<em>observe</em>(c));<span className="td-caret" /></div>
       </div>
       <svg className="td-js-card" viewBox="0 0 118 112">
-        <rect x="10" y="30" width="76" height="52" rx="10" fill="var(--a)" opacity=".28" transform="rotate(-8 48 56)" />
-        <rect x="26" y="16" width="86" height="60" rx="11" fill="var(--a3)" stroke="var(--a2)" />
-        <circle cx="44" cy="35" r="8" fill="var(--a2)" />
-        <rect x="58" y="30" width="42" height="6" rx="3" fill="var(--soft)" />
-        <rect x="38" y="54" width="42" height="12" rx="6" fill="var(--soft)" />
-        <path d="M70 58v29l8-7 5 12 7-3-5-12 10-1Z" fill="var(--soft)" stroke="var(--a3)" strokeWidth="2" strokeLinejoin="round" />
+        <g className="td-js-back">
+          <rect x="10" y="30" width="76" height="52" rx="10" fill="var(--a)" fillOpacity=".28" transform="rotate(-8 48 56)" />
+        </g>
+        <g className="td-js-front">
+          <rect x="26" y="16" width="86" height="60" rx="11" fill="var(--a3)" stroke="var(--a2)" />
+          <circle cx="44" cy="35" r="8" fill="var(--a2)" />
+          <rect x="58" y="30" width="42" height="6" rx="3" fill="var(--soft)" />
+          <rect className="td-js-btn" x="38" y="54" width="42" height="12" rx="6" fill="var(--soft)" />
+        </g>
+        <path className="td-js-cursor" d="M70 58v29l8-7 5 12 7-3-5-12 10-1Z" fill="var(--soft)" stroke="var(--a3)" strokeWidth="2" strokeLinejoin="round" />
       </svg>
     </DemoWindow>
   );
@@ -94,24 +100,32 @@ export function RwdDemo() {
         <div>{'  {'}cards.<u>map</u>(c =&gt; (</div>
         <div>{'    '}&lt;<u>Card</u> <em>key</em>={'{'}c.id{'}'} /&gt;</div>
         <div>{'  ))}'}</div>
-        <div>&lt;/<u>section</u>&gt;</div>
+        <div>&lt;/<u>section</u>&gt;<span className="td-caret" /></div>
       </div>
       <svg className="td-art" viewBox="0 0 270 300">
         <circle cx="24" cy="26" r="7" fill="var(--a)" />
         <rect x="38" y="22" width="46" height="8" rx="4" fill="var(--soft)" />
-        <rect x="14" y="46" width="188" height="82" rx="10" fill="var(--a3)" />
-        <circle cx="170" cy="74" r="12" fill="var(--a2)" />
-        <path d="M100 128l36-34 22 20 16-14 28 28Z" fill="var(--a)" />
-        <rect x="28" y="66" width="70" height="9" rx="4.5" fill="var(--soft)" />
-        <rect x="28" y="84" width="46" height="7" rx="3.5" fill="var(--a2)" />
-        <rect x="14" y="140" width="56" height="70" rx="8" fill="var(--a)" fillOpacity=".34" stroke="var(--a)" />
-        <rect x="80" y="140" width="56" height="70" rx="8" fill="var(--a)" fillOpacity=".34" stroke="var(--a)" />
-        <rect x="146" y="140" width="56" height="70" rx="8" fill="var(--a)" fillOpacity=".34" stroke="var(--a)" />
-        <circle cx="42" cy="175" r="14" fill="var(--a2)" />
-        <rect x="95" y="162" width="26" height="26" rx="6" fill="var(--soft)" />
-        <path d="M174 161l15 27h-30Z" fill="var(--a2)" stroke="var(--a2)" strokeWidth="3" strokeLinejoin="round" />
-        <path d="M218 0V300" stroke="var(--a)" strokeWidth="1.5" strokeDasharray="4 6" />
-        <rect x="211" y="18" width="14" height="36" rx="7" fill="var(--a)" />
+        <g className="td-in td-fade">
+          <rect x="14" y="46" width="188" height="82" rx="10" fill="var(--a3)" />
+          <circle className="td-rw-sun" cx="170" cy="74" r="12" fill="var(--a2)" />
+          <path d="M100 128l36-34 22 20 16-14 28 28Z" fill="var(--a)" />
+          <rect className="td-in td-bar td-d2" x="28" y="66" width="70" height="9" rx="4.5" fill="var(--soft)" />
+          <rect className="td-in td-bar td-d3" x="28" y="84" width="46" height="7" rx="3.5" fill="var(--a2)" />
+        </g>
+        <g className="td-in td-rise td-d4">
+          <rect x="14" y="140" width="56" height="70" rx="8" fill="var(--a)" fillOpacity=".34" stroke="var(--a)" />
+          <circle cx="42" cy="175" r="14" fill="var(--a2)" />
+        </g>
+        <g className="td-in td-rise td-d5">
+          <rect x="80" y="140" width="56" height="70" rx="8" fill="var(--a)" fillOpacity=".34" stroke="var(--a)" />
+          <rect x="95" y="162" width="26" height="26" rx="6" fill="var(--soft)" />
+        </g>
+        <g className="td-in td-rise td-d6">
+          <rect x="146" y="140" width="56" height="70" rx="8" fill="var(--a)" fillOpacity=".34" stroke="var(--a)" />
+          <path d="M174 161l15 27h-30Z" fill="var(--a2)" stroke="var(--a2)" strokeWidth="3" strokeLinejoin="round" />
+        </g>
+        <path className="td-rw-line" d="M218 0V300" stroke="var(--a)" strokeWidth="1.5" strokeDasharray="4 6" />
+        <rect className="td-rw-handle" x="211" y="18" width="14" height="36" rx="7" fill="var(--a)" />
       </svg>
     </DemoWindow>
   );
@@ -279,11 +293,22 @@ export function startSatDrag(e: ReactPointerEvent<HTMLElement>) {
   el.addEventListener('pointercancel', end);
 }
 
+// The illustration card lights up inside under the pointer, like the Design
+// Process cards (BorderGlow's .bg-spotlight): the light follows --mouse-x/y.
+// Not for a finger, nor in light mode (no glow there).
+export function trackArtSpot(e: ReactPointerEvent<HTMLElement>) {
+  if (e.pointerType === 'touch' || document.documentElement.getAttribute('data-theme') === 'light') return;
+  const el = e.currentTarget;
+  const r = el.getBoundingClientRect();
+  el.style.setProperty('--mouse-x', `${e.clientX - r.left}px`);
+  el.style.setProperty('--mouse-y', `${e.clientY - r.top}px`);
+}
+
 export function TechSats({ k }: { k: TechKey }) {
   const [First, Second] = SATS[k];
   return (
     <>
-      <div className={`tech-sat tech-sat--art tk tk-${k}`} onPointerDown={startSatDrag} aria-hidden="true"><TechArt k={k} /></div>
+      <div className={`tech-sat tech-sat--art tk tk-${k}`} onPointerDown={startSatDrag} onPointerMove={trackArtSpot} aria-hidden="true"><TechArt k={k} /><span className="tech-art-spot" /></div>
       <div className={`tech-sat tech-sat--a tech-sat--a-${k} tk tk-${k}`} onPointerDown={startSatDrag} aria-hidden="true"><First /></div>
       <div className={`tech-sat ${k === 'react' ? 'tech-sat--phone' : 'tech-sat--b'} tk tk-${k}`} onPointerDown={startSatDrag} aria-hidden="true"><Second /></div>
     </>

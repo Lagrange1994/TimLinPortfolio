@@ -150,18 +150,18 @@ function ToolArt({ id }: { id: ToolId }) {
             </radialGradient>
           </defs>
           <rect width="200" height="160" fill="#0f0d1d" />
-          <rect x="12" y="12" width="176" height="14" rx="4" fill="#fff" opacity=".08" />
-          <circle cx="22" cy="19" r="2.5" fill="#ff6584" />
-          <circle cx="30" cy="19" r="2.5" fill="#ffc700" />
-          <circle cx="38" cy="19" r="2.5" fill="#0acf83" />
+          <rect x="12" y="18" width="176" height="14" rx="4" fill="#fff" opacity=".08" />
+          <circle cx="22" cy="25" r="2.5" fill="#ff6584" />
+          <circle cx="30" cy="25" r="2.5" fill="#ffc700" />
+          <circle cx="38" cy="25" r="2.5" fill="#0acf83" />
           <rect x="22" y="48" width="70" height="9" rx="4" fill="#fff" />
           <rect x="22" y="62" width="54" height="9" rx="4" fill="#fff" opacity=".85" />
           <rect x="22" y="80" width="62" height="5" rx="2.5" fill="#fff" opacity=".3" />
           <rect x="22" y="98" width="40" height="14" rx="7" fill="#7c6cff" />
           <circle cx="142" cy="82" r="36" fill="url(#skills-dora-orb)" />
           <ellipse cx="142" cy="82" rx="50" ry="12" fill="none" stroke="#c6f6ff" strokeWidth="1.2" opacity=".6" transform="rotate(-18 142 82)" />
-          <rect x="96" y="134" width="8" height="14" rx="4" fill="none" stroke="#fff" strokeWidth="1.2" opacity=".5" />
-          <circle cx="100" cy="139" r="1.5" fill="#fff" opacity=".7" />
+          <rect x="96" y="124" width="8" height="14" rx="4" fill="none" stroke="#fff" strokeWidth="1.2" opacity=".5" />
+          <circle cx="100" cy="129" r="1.5" fill="#fff" opacity=".7" />
         </svg>
       );
     case 'photoshop': // a photo being cut out: marquee, layers
@@ -178,10 +178,10 @@ function ToolArt({ id }: { id: ToolId }) {
           <path d="M0 120 L46 72 L78 104 L112 64 L160 112 L200 84 L200 160 L0 160z" fill="#5b3fa8" />
           <path d="M0 136 L60 100 L104 130 L150 104 L200 128 L200 160 L0 160z" fill="#2e2366" />
           <rect x="96" y="30" width="72" height="62" fill="none" stroke="#fff" strokeWidth="1.5" strokeDasharray="5 4" />
-          <rect x="10" y="10" width="54" height="48" rx="6" fill="#001e36" opacity=".88" />
-          <rect x="16" y="17" width="42" height="9" rx="2" fill="#31a8ff" />
-          <rect x="16" y="30" width="42" height="9" rx="2" fill="#fff" opacity=".22" />
-          <rect x="16" y="43" width="42" height="9" rx="2" fill="#fff" opacity=".22" />
+          <rect x="10" y="18" width="54" height="48" rx="6" fill="#001e36" opacity=".88" />
+          <rect x="16" y="25" width="42" height="9" rx="2" fill="#31a8ff" />
+          <rect x="16" y="38" width="42" height="9" rx="2" fill="#fff" opacity=".22" />
+          <rect x="16" y="51" width="42" height="9" rx="2" fill="#fff" opacity=".22" />
         </svg>
       );
     case 'illustrator': // a vector path being drawn: anchors and handles
@@ -323,8 +323,8 @@ export default function SkillShowcase() {
         <div className="section-label rise-soft">My Skills</div>
         <h2 className="about-h2 skills-h2 rise-soft">Tools behind <span className="gradient-text">the work</span></h2>
         <p className="tech-sub skills-head-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.skills_head_sub }} />
-        {/* the tabs, their line and tags as one block (desktop centres it
-            on the cards) */}
+        {/* the tabs and their line as one block (desktop centres it on the
+            cards); each tab's tags are a tile among its cards */}
         <div className="skills-chooser">
         {/* the FAQ's pill tabs, the indicator sliding between them */}
         <div className="process-tabs faq-tabs skills-tabs rise-soft" role="tablist" aria-label="Tools" onKeyDown={onTabKey}>
@@ -356,23 +356,6 @@ export default function SkillShowcase() {
             </p>
           ))}
         </div>
-        {/* what each tab covers, under the line above (all lists in one cell) */}
-        <div className="skills-tags rise-soft">
-          {SKILL_TABS.map(tb => (
-            <ul
-              key={tb.id}
-              className={`skills-tag-list${tb.id === active ? ' is-active' : ''}`}
-              aria-label={`${tb.label} skills`}
-              aria-hidden={tb.id !== active}
-            >
-              {tb.tags.map((s, i) => (
-                <li key={s.label} className="skill-pill" style={{ '--i': i } as CSSProperties}>
-                  <i className={`ph-bold ${s.icon}`} aria-hidden="true" />{s.label}
-                </li>
-              ))}
-            </ul>
-          ))}
-        </div>
         </div>
       </div>
       <div className="skills-tools rise-card">
@@ -396,6 +379,33 @@ export default function SkillShowcase() {
                   {tb.columns.map((col, i) => (
                     <div key={i} className={`skills-col skills-col--${i === 0 ? 'low' : 'high'}`}>
                       {col.map(tl => <ToolCard key={tl.id} tool={tl} index={n++} order={order.indexOf(tl.id)} />)}
+                      {/* what the tab covers: a tile closing the
+                          right column (the cards' bottom-right) */}
+                      {i === tb.columns.length - 1 && (
+                        <div className="skills-tag-tile" style={{ '--i': n } as CSSProperties}>
+                          <span className="skills-tag-tile-label">Covers</span>
+                          {/* a marquee: the list, then an unread copy so the
+                              loop never shows a gap */}
+                          <div className="skills-tag-marquee" style={{ '--n': tb.tags.length } as CSSProperties}>
+                            <div className="skills-tag-track">
+                              {[0, 1].map(copy => (
+                                <ul
+                                  key={copy}
+                                  className={`skills-tag-list${on && copy === 0 ? ' is-active' : ''}${copy ? ' skills-tag-list--copy' : ''}`}
+                                  aria-label={copy ? undefined : `${tb.label} skills`}
+                                  aria-hidden={copy ? true : undefined}
+                                >
+                                  {tb.tags.map((s, k) => (
+                                    <li key={s.label} className="skill-pill" style={{ '--i': k } as CSSProperties}>
+                                      <i className={`ph-bold ${s.icon}`} aria-hidden="true" />{s.label}
+                                    </li>
+                                  ))}
+                                </ul>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -66,6 +66,24 @@ describe('Tech Stack code windows', () => {
     for (const k of keys) expect((translations.en as Record<string, string>)[k], k).toBeTruthy();
   });
 
+  it('each drawing plays its code on a loop, paused when hidden, still under reduced motion', () => {
+    localStorage.setItem('lang', 'en');
+    const { container } = renderAll();
+    const [html, js, react] = container.querySelectorAll('.td');
+    expect(html.querySelector('.td-draw')).not.toBeNull();
+    expect(html.querySelectorAll('.td-in')).toHaveLength(8);
+    for (const c of ['.td-js-front', '.td-js-back', '.td-js-cursor', '.td-js-btn']) expect(js.querySelector(c), c).not.toBeNull();
+    expect(react.querySelector('.td-rw-handle')).not.toBeNull();
+    expect(react.querySelectorAll('.td-rise')).toHaveLength(3);
+    // one typing caret per window
+    for (const w of [html, js, react]) expect(w.querySelectorAll('.td-caret')).toHaveLength(1);
+    // the animated parts carry no opacity attribute (it would fight the animation)
+    expect(container.querySelector('.td svg [opacity]')).toBeNull();
+    expect(css).toMatch(/@keyframes td-in \{\s*0% \{ opacity: 0; transform: var\(--td-from\); \}/);
+    expect(css).toContain('.process-swipe-slot.is-out .td *, .process-swipe-slot.is-out .td *::after { animation-play-state: paused; }');
+    expect(css).toMatch(/prefers-reduced-motion: reduce\) \{[^@]*\.td \*, \.td \*::after \{ animation: none !important; \}/);
+  });
+
   it('scale off their own width', () => {
     expect(css).toMatch(/\.td-body \{[^}]*container-type: inline-size;[^}]*aspect-ratio: 508 \/ 302;/);
     expect(css).toMatch(/\.td-code \{[^}]*font-size: 2\.36cqw;/);
@@ -128,6 +146,24 @@ describe('Tech Stack satellites', () => {
     }
   });
 
+  it('the art card lights up inside under the mouse, not a finger nor in light mode', () => {
+    const { container } = render(<TechSats k="html" />);
+    const art = container.querySelector<HTMLElement>('.tech-sat--art')!;
+    expect(art.querySelector('.tech-art-spot')).not.toBeNull();
+    art.getBoundingClientRect = () => ({ left: 10, top: 20 }) as DOMRect;
+    fireEvent.pointerMove(art, { clientX: 40, clientY: 70, pointerType: 'mouse' });
+    expect(art.style.getPropertyValue('--mouse-x')).toBe('30px');
+    expect(art.style.getPropertyValue('--mouse-y')).toBe('50px');
+    fireEvent.pointerMove(art, { clientX: 90, clientY: 90, pointerType: 'touch' });
+    expect(art.style.getPropertyValue('--mouse-x')).toBe('30px');
+    document.documentElement.setAttribute('data-theme', 'light');
+    fireEvent.pointerMove(art, { clientX: 90, clientY: 90, pointerType: 'mouse' });
+    expect(art.style.getPropertyValue('--mouse-x')).toBe('30px');
+    document.documentElement.removeAttribute('data-theme');
+    expect(css).toContain('.tech-sat--art:hover .tech-art-spot { opacity: 1; }');
+    expect(css).toMatch(/\.touch-input \.tech-art-spot,\s*:root\[data-theme="light"\] \.tech-art-spot \{ display: none; \}/);
+  });
+
   it('each card shows its own working tools', () => {
     const text = (k: 'html' | 'js' | 'react') => render(<TechSats k={k} />).container.textContent;
     expect(text('html')).toContain('#2563EB');
@@ -161,6 +197,14 @@ describe('Tech Stack satellites', () => {
     expect(glass).toContain('animation: tech-sat-breathe 2.4s ease-in-out infinite');
     expect(css).toMatch(/prefers-reduced-motion: reduce\) \{\s*\.tech-sat \{ animation: none; \}/);
     expect(css).toMatch(/\.is-out \.tech-sat \{\s*animation-play-state: paused;/);
+  });
+
+  it('the satellites and the code window ripple on hover, not on touch or reduced motion', () => {
+    expect(css).toContain('.tech-sat, .tech-code-preview.td { outline: 1px solid transparent; }');
+    expect(css).toContain('.tech-sat:hover { animation: tech-sat-breathe 2.4s ease-in-out infinite, card-radar 3s ease-out infinite; }');
+    expect(css).toContain('.tech-sat--art:hover, .tech-code-preview.td:hover { animation: card-radar 3s ease-out infinite; }');
+    expect(css).toContain('.touch-input :is(.tech-sat--art, .tech-code-preview.td):hover { animation: none; }');
+    expect(css).toMatch(/prefers-reduced-motion: reduce\) \{[^@]*:is\(\.tech-sat, \.tech-code-preview\.td\):hover \{ animation: none; \}/);
   });
 
   it('desktop: drags, stays inside the wrap, and keeps the swipe from starting', () => {

@@ -2,11 +2,19 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { render } from '@testing-library/react';
-import { relayFrame, miniBox, arcPoint, dropCtrl, outCtrl, TEXT_AT, RELAY_START, REWIND_START, DONE_AT, RELAY_DURATION, relaySpeed, SPEED_REF, SPEED_MIN, SPEED_MAX, MINI_ASPECT, MINI_GAP, MINI_MAX_H, moveBy } from '../src/utils/useClassifyZoom';
+import { CLASSIFY_RELAY_ON, relayFrame, miniBox, arcPoint, dropCtrl, outCtrl, TEXT_AT, RELAY_START, REWIND_START, DONE_AT, RELAY_DURATION, relaySpeed, SPEED_REF, SPEED_MIN, SPEED_MAX, MINI_ASPECT, MINI_GAP, MINI_MAX_H, moveBy } from '../src/utils/useClassifyZoom';
 import ClassifyMini, { PROBLEM_PILLS, SOLUTION_CHIPS, AI_X } from '../src/components/ClassifyMini';
 import GoogleGeminiEffect, { GEMINI_BEAM_STOPS } from '../src/components/GoogleGeminiEffect';
 
 const root = resolve(__dirname, '..');
+describe('classify relay switch', () => {
+  it('is off for now: the hook returns before touching anything', () => {
+    expect(CLASSIFY_RELAY_ON).toBe(false);
+    const hook = readFileSync(resolve(root, 'src/utils/useClassifyZoom.ts'), 'utf8');
+    expect(hook).toContain('if (!CLASSIFY_RELAY_ON || !viewer || !mini || !stage || !wrap) return;');
+  });
+});
+
 describe('classify chart: icon → chart, as a relay', () => {
   const first = (xs: number[]) => xs.findIndex(v => v > 0);
   const startOf = (pick: (f: ReturnType<typeof relayFrame>) => number) => {

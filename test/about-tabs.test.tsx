@@ -76,4 +76,12 @@ describe('About Me tabs', () => {
     expect(css).toMatch(/\.about-tab \{\s*flex: 1 1 0;\s*\}/);
     expect(css).toMatch(/\.process-tabs\.about-tabs \{ width: 100%; \}\s*\.about-tab \{ min-width: 0; \}/);
   });
+
+  it('the pill sits at the left, over the first card', () => {
+    const css = readFileSync(resolve(__dirname, '../src/styles/portfolio.css'), 'utf8').replace(/\r\n/g, '\n');
+    expect(css).toMatch(/\n {4}\.process-tabs\.about-tabs \{\s*justify-self: start;/);
+    // the gap under it is the tab block's own, not doubled by a margin
+    expect(css.match(/\n {4}\.process-tabs\.about-tabs \{[^}]*\}/)![0]).toContain('margin: 0;');
+    expect(css).toMatch(/\.about-tabbed \{[^}]*gap: var\(--tab-gap-below\);/);
+  });
 });

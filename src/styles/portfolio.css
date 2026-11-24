@@ -2869,12 +2869,13 @@
       margin-top: var(--tab-gap-above);
     }
 
-    /* the FAQ's pill tabs, centred over the cards */
+    /* the FAQ's pill tabs, at the cards' left edge */
     .process-tabs.about-tabs {
-      justify-self: center;
+      justify-self: start;
       width: fit-content;
       max-width: 100%;
-      margin: 0 0 var(--tab-gap-below);
+      /* the space below is .about-tabbed's gap alone (it was doubled) */
+      margin: 0;
     }
 
     .about-tab {
@@ -2917,6 +2918,18 @@
     .about-col--principles {
       grid-template-columns: repeat(3, minmax(0, 1fr));
       grid-template-areas: "p1 p2 p3";
+    }
+
+    /* a staircase like Design Process (STAIR_STEP 32px): each card one step
+       higher than the one before, all three the same height (what one gives
+       up on top it takes at the bottom; margins, as the rise reveal owns
+       transform) */
+    @media (min-width: 768px) {
+      .about-col--principles > .bento-area-p1 { margin: 64px 0 0; }
+      .about-col--principles > .bento-area-p2 { margin: 32px 0; }
+      .about-col--principles > .bento-area-p3 { margin: 0 0 64px; }
+      .about-col--intro > .bento-area-intro1 { margin: 32px 0 0; }
+      .about-col--intro > .bento-area-intro2 { margin: 0 0 32px; }
     }
 
     @media (max-width: 767px) {
@@ -3065,35 +3078,6 @@
       display: block;
     }
 
-    /* the work's name over a bottom scrim (clear of the big tile's notch) */
-    .work-face::after {
-      content: '';
-      position: absolute;
-      inset: auto 0 0 0;
-      height: 55%;
-      background: linear-gradient(180deg, transparent, rgba(10, 9, 18, 0.8));
-    }
-
-    .work-face-title {
-      position: absolute;
-      left: 24px;
-      right: 24px;
-      bottom: 20px;
-      z-index: 1;
-      font-size: 15px;
-      font-weight: 700;
-      line-height: 1.35;
-      color: #fff;
-      word-break: keep-all;
-      overflow-wrap: anywhere;
-      text-wrap: pretty;
-    }
-
-    .overview-tile--web .work-face-title {
-      right: calc(var(--tw, 196px) + 36px);
-      font-size: 22px;
-    }
-
     @media (prefers-reduced-motion: reduce) {
       .work-cube { transition: none; }
     }
@@ -3109,17 +3093,17 @@
 
     .overview-pill {
       position: absolute;
-      left: 24px;
-      top: 24px;
+      left: 16px;
+      top: 16px;
       z-index: 2;
-      padding: 8px 14px;
+      padding: 5px 11px;
       border-radius: 999px;
       background: rgba(10, 9, 18, 0.72);
       font-family: var(--font-heading);
-      font-size: 20px;
+      font-size: 13px;
       font-weight: 500;
-      letter-spacing: -0.2px;
-      line-height: 22px;
+      letter-spacing: 0;
+      line-height: 16px;
       color: rgba(255, 255, 255, 0.92);
     }
 
@@ -3263,7 +3247,11 @@
       position: absolute;
       inset: 0;
       z-index: 1;
-      background: linear-gradient(180deg, rgba(10, 9, 18, 0.7) 0%, transparent 32%);
+      /* the card's top tint, laid back over the darkening so it reads like
+         the other grid cards' */
+      background:
+        radial-gradient(var(--card-tint-shape, 380px 220px at 50% 0%), var(--card-tint, rgba(108, 99, 255, 0.14)), transparent 65%),
+        linear-gradient(180deg, rgba(10, 9, 18, 0.7) 0%, transparent 32%);
       pointer-events: none;
     }
 
@@ -3345,22 +3333,29 @@
       display: flex;
     }
 
+    /* the current step stretches into a pill */
     .overview-design-chip {
       width: 8px;
       height: 8px;
-      border-radius: 50%;
+      border-radius: 9999px;
       background: var(--overview-dot-off, rgba(255, 255, 255, 0.28));
       animation: overview-step-chip 18s linear infinite both;
     }
 
     @keyframes overview-step-chip {
-      0%, 16.667% {
+      0% {
+        width: 8px;
+        background: var(--overview-dot-off, rgba(255, 255, 255, 0.28));
+        animation-timing-function: cubic-bezier(.2, 0, .2, 1);
+      }
+      2%, 16.667% {
+        width: 28px;
         background: #6C63FF;
-        box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.28);
+        animation-timing-function: cubic-bezier(.2, 0, .2, 1);
       }
       18.667%, 100% {
+        width: 8px;
         background: var(--overview-dot-off, rgba(255, 255, 255, 0.28));
-        box-shadow: none;
       }
     }
 
@@ -3374,6 +3369,7 @@
         animation: none;
       }
       .overview-design-img:first-of-type { opacity: 1; transform: none; }
+      .overview-design-step-wrap:first-child .overview-design-chip { width: 28px; background: #6C63FF; }
     }
 
     /* Phones: one column */
@@ -3402,8 +3398,6 @@
       .overview-tile--web { aspect-ratio: 4 / 3; }
       .overview-tile--a { grid-area: 2 / 1; aspect-ratio: 1; }
       .overview-tile--b { grid-area: 2 / 2; aspect-ratio: 1; }
-      .work-face-title { left: 16px; right: 16px; bottom: 14px; font-size: 13px; }
-      .overview-tile--web .work-face-title { font-size: 17px; }
 
     }
 
@@ -5003,65 +4997,33 @@
       background: none !important;
     }
 
-    /* 白色／彩色圖片交叉淡入淡出：預設白色，hover 換彩色 */
+    /* one white illustration per theme (_w dark, _l_w light); hover keeps
+       it (the colour versions are no longer used) */
     .process-card-bg-img--white,
-    .process-card-bg-img--color {
-      position: absolute;
-      inset: 0;
-      transition: opacity 0.4s ease;
-    }
-    .process-card-bg-img--color {
-      opacity: 0;
-    }
-    .border-glow-card:hover .process-card-bg-img--color {
-      opacity: 1;
-    }
-    .border-glow-card:hover .process-card-bg-img--white {
-      opacity: 0;
-    }
-
-    /* 淺色板專用兩層（_l_w / _l 檔案，本身就是淺色配色，不需要深色主題的白／
-       彩色交叉淡入）：深色主題下都隱藏；淺色主題下預設顯示 _l_w，hover 換成 _l。 */
-    .process-card-bg-img--light,
     .process-card-bg-img--light-white {
       position: absolute;
       inset: 0;
-      opacity: 0;
-      transition: opacity 0.4s ease;
     }
-    :root[data-theme="light"] .process-card-bg-img--white,
-    :root[data-theme="light"] .process-card-bg-img--color {
-      opacity: 0 !important;
-    }
-    :root[data-theme="light"] .process-card-bg-img--light-white {
-      opacity: 1;
-    }
-    :root[data-theme="light"] .border-glow-card:hover .process-card-bg-img--light-white {
-      opacity: 0;
-    }
-    :root[data-theme="light"] .border-glow-card:hover .process-card-bg-img--light {
-      opacity: 1;
-    }
+    .process-card-bg-img--light-white { opacity: 0; }
+    :root[data-theme="light"] .process-card-bg-img--white { opacity: 0; }
+    :root[data-theme="light"] .process-card-bg-img--light-white { opacity: 1; }
 
     /* Touch screens (no real hover): a tap left the carousel cards in a
        sticky :hover — the illustration crossfaded to colour, the radar
        ring started repainting every frame, the card lifted and its hover
        shadow faded in — all right as the finger began to drag, so swipes
        stuttered, and the leftover shadow sat over the ‹ › below. Here the
-       cards ignore :hover and keep their white illustration. */
-    @media (hover: none) {
-      .process-scroll-wrap :is(.process-card, .tech-item):hover {
-        animation: none;
-        transform: none;
-      }
-      .process-scroll-wrap .process-card:hover > .card-hover-shadow,
-      .process-scroll-wrap--tech .tech-item-wrap:hover::after {
-        opacity: 0;
-      }
-      .process-scroll-wrap .border-glow-card:hover .process-card-bg-img--color { opacity: 0; }
-      .process-scroll-wrap .border-glow-card:hover .process-card-bg-img--white { opacity: 1; }
-      :root[data-theme="light"] .process-scroll-wrap .border-glow-card:hover .process-card-bg-img--light { opacity: 0; }
-      :root[data-theme="light"] .process-scroll-wrap .border-glow-card:hover .process-card-bg-img--light-white { opacity: 1; }
+       cards ignore :hover.
+       Gated on .touch-input (a real touch, utils/touchInput.ts), not
+       @media (hover: none): that also matched Windows touchscreen laptops
+       used with a mouse and took their hover ripple away. */
+    .touch-input .process-scroll-wrap :is(.process-card, .tech-item):hover {
+      animation: none;
+      transform: none;
+    }
+    .touch-input .process-scroll-wrap .process-card:hover > .card-hover-shadow,
+    .touch-input .process-scroll-wrap--tech .tech-item-wrap:hover::after {
+      opacity: 0;
     }
 
     /* border-glow-inner 填滿卡片，flex 底部對齊文字 */
@@ -10505,27 +10467,64 @@
       translate: 0 0;
     }
 
-    /* each tab's tags in one shared cell, under the line above */
-    .skills-tags {
-      display: grid;
-      max-width: 480px;
-      margin-top: 28px;
+    /* each tab's tags: a tile closing its right column, as tall as its
+       pills */
+    .skills-tag-tile {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 16px;
+      box-sizing: border-box;
+      padding: 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, .1);
+      background:
+        linear-gradient(90deg, transparent 12%, rgba(255, 255, 255, .28) 50%, transparent 88%) top / 100% 1px no-repeat border-box,
+        var(--noise-grain),
+        #0d0a1c;
+      outline: 1px solid transparent;
+      order: 99;
     }
+    .skills-tag-tile:hover { animation: card-radar 3s ease-out infinite; }
+    :root[data-theme="light"] .skills-tag-tile {
+      border-color: transparent;
+      background: #fff;
+      box-shadow: var(--neu-raised-tight);
+    }
+
+    .skills-tag-tile-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--text-50);
+    }
+
+    /* the tags run as a marquee: two copies side by side, the track moving
+       one copy's width, edges faded; it rests on hover and off-screen tabs */
+    .skills-tag-marquee {
+      overflow: hidden;
+      margin-inline: -20px;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    }
+    .skills-tag-track {
+      display: flex;
+      width: max-content;
+      animation: skills-tag-run calc(var(--n, 6) * 2.6s) linear infinite;
+    }
+    .skills-tag-tile:hover .skills-tag-track,
+    .skills-panel:not(.is-active) .skills-tag-track { animation-play-state: paused; }
+    @keyframes skills-tag-run { to { transform: translateX(-50%); } }
 
     .skills-tag-list {
-      grid-area: 1 / 1;
-      align-self: start;
       list-style: none;
       margin: 0;
-      padding: 0;
+      padding: 0 8px 0 0;
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: 8px;
-      visibility: hidden;
-    }
-
-    .skills-tag-list.is-active {
-      visibility: visible;
     }
 
     .skills-tag-list.is-active .skill-pill {
@@ -10577,7 +10576,7 @@
       visibility: visible;
     }
 
-    .skills-cards.is-active .skill-card {
+    .skills-cards.is-active :is(.skill-card, .skills-tag-tile) {
       animation: skill-card-in .55s cubic-bezier(.2, .9, .25, 1.15) both;
       animation-delay: calc(var(--i, 0) * 70ms);
     }
@@ -10686,15 +10685,21 @@
       aspect-ratio: 5 / 3;
     }
 
+    /* shorter than the drawings' 5:4 (they slice to fill, the middle kept) */
     .skill-card--tall .skill-card-art {
-      aspect-ratio: 5 / 4;
+      aspect-ratio: 3 / 2;
     }
 
     @media (prefers-reduced-motion: reduce) {
       .skill-card { transition: none; }
-      .skills-cards.is-active .skill-card { animation: none; }
+      .skills-cards.is-active :is(.skill-card, .skills-tag-tile) { animation: none; }
       .skills-sub-line { transition: none; translate: none; }
       .skills-tag-list.is-active .skill-pill { animation: none; }
+      .skills-tag-tile:hover { animation: none; }
+      .skills-tag-marquee { margin-inline: 0; -webkit-mask-image: none; mask-image: none; }
+      .skills-tag-track { animation: none; width: auto; }
+      .skills-tag-list { flex-wrap: wrap; padding: 0; }
+      .skills-tag-list--copy { display: none; }
       .skill-card:hover { translate: none; }
     }
 

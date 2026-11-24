@@ -120,6 +120,8 @@ describe('About content', () => {
     }
     expect(css).toMatch(/\.about-col--principles \{[^}]*grid-template-areas: "p1 p2 p3";/);
     expect(css).toMatch(/\.about-col--intro \{[^}]*grid-template-areas: "intro1 intro2";/);
+    // from tablets up the cards climb like Design Process, one 32px step each
+    expect(css).toMatch(/@media \(min-width: 768px\) \{\s*\.about-col--principles > \.bento-area-p1 \{ margin: 64px 0 0; \}\s*\.about-col--principles > \.bento-area-p2 \{ margin: 32px 0; \}\s*\.about-col--principles > \.bento-area-p3 \{ margin: 0 0 64px; \}\s*\.about-col--intro > \.bento-area-intro1 \{ margin: 32px 0 0; \}\s*\.about-col--intro > \.bento-area-intro2 \{ margin: 0 0 32px; \}/);
   });
 
   it('notched cards: tags and action buttons sit in a bottom-left notch', () => {

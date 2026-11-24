@@ -61,6 +61,7 @@ describe('My Skills showcase', () => {
     expect(container.querySelectorAll('.skills-sub-line.is-active')).toHaveLength(1);
     expect([...container.querySelectorAll('.skills-tag-list.is-active > li')].map(l => l.textContent)).toEqual(SKILL_TABS[1].tags.map(s => s.label));
     expect(container.querySelectorAll('.skills-tag-list.is-active')).toHaveLength(1);
+    expect(container.querySelector('[role="tabpanel"]:not([inert]) .skills-tag-list.is-active')).not.toBeNull();
     // the hidden panels stay laid out (one shared cell) but out of reach
     const panels = [...container.querySelectorAll('[role="tabpanel"]')];
     expect(panels).toHaveLength(3);
@@ -91,18 +92,40 @@ describe('My Skills showcase', () => {
     expect(krita.style.getPropertyValue('--order')).toBe('3');
   });
 
-  it('every card has its art; the skill tags sit under the copy', () => {
+  it('every card has its art; the skill tags are a tile at the cards\' bottom-right', () => {
     const { container } = mount();
     expect(container.querySelectorAll('.skill-card')).toHaveLength(9);
     for (const card of container.querySelectorAll('.skill-card')) expect(card.querySelector('.skill-card-art svg')).not.toBeNull();
-    // in the copy column, after the line under the tabs
-    expect(container.querySelectorAll('.skills-intro .skills-tag-list')).toHaveLength(3);
-    expect(container.querySelector('.skills-tools .skills-tag-list')).toBeNull();
-    expect(container.querySelector('.skills-sub + .skills-tags')).not.toBeNull();
+    // one tile per tab, last in its panel's right column; none left in the copy
+    expect(container.querySelector('.skills-intro .skills-tag-list')).toBeNull();
+    const tiles = container.querySelectorAll('.skills-panel .skills-col:last-child > .skills-tag-tile:last-child');
+    expect(tiles).toHaveLength(SKILL_TABS.length);
+    for (const tile of tiles) expect(tile.querySelector('.skills-tag-tile-label')!.textContent).toBe('Covers');
     // the copy and every tab's cards line up at the top
     const css = readFileSync(resolve(__dirname, '../src/styles/portfolio.css'), 'utf8');
     expect(css).toMatch(/\.skills-panels > \.skills-panel \{[^}]*align-self: start;/);
     expect(css).toMatch(/\.skills-showcase \{[^}]*align-items: start;/);
+    // the tall cards' art is kept low
+    expect(css).toMatch(/\.skill-card--tall \.skill-card-art \{\s*aspect-ratio: 3 \/ 2;/);
+    // the tags run as a marquee: the list plus one unread copy, resting under reduced motion
+    for (const tile of tiles) {
+      const lists = tile.querySelectorAll('.skills-tag-marquee > .skills-tag-track > ul.skills-tag-list');
+      expect(lists).toHaveLength(2);
+      expect(lists[1].getAttribute('aria-hidden')).toBe('true');
+      expect(lists[1].classList.contains('is-active')).toBe(false);
+      expect(lists[1].textContent).toBe(lists[0].textContent);
+    }
+    expect(css).toContain('@keyframes skills-tag-run { to { transform: translateX(-50%); } }');
+    expect(css).toMatch(/\.skills-panel:not\(\.is-active\) \.skills-tag-track \{ animation-play-state: paused; \}/);
+    expect(css).toMatch(/prefers-reduced-motion: reduce\) \{[^@]*\.skills-tag-list--copy \{ display: none; \}/);
+    // it comes in like the cards, right after the tab's last one
+    expect(css).toContain('.skills-cards.is-active :is(.skill-card, .skills-tag-tile) {');
+    SKILL_TABS.forEach((tb, i) => {
+      const count = tb.columns.flat().length;
+      expect((tiles[i] as HTMLElement).style.getPropertyValue('--i')).toBe(String(count));
+    });
+    // as tall as its pills, not a fixed square
+    expect(css.match(/\n {4}\.skills-tag-tile \{[^}]*\}/)![0]).not.toContain('aspect-ratio');
     // the tags shown are the open tab's
     expect([...container.querySelectorAll('.skills-tag-list.is-active > li.skill-pill')].map(l => l.textContent)).toEqual(SKILL_TABS[0].tags.map(s => s.label));
   });

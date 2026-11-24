@@ -5,7 +5,6 @@ import { readFileSync } from 'node:fs';
 import { toWebpSrc } from '../src/projects/shared/ImageWithSkeleton';
 import {
   processCardLayers,
-  useCanHover,
   useProcessCardThemes,
   PROCESS_IMG_ROOT_MARGIN,
   __resetProcessCardImagesForTest,
@@ -47,77 +46,17 @@ describe('processCardLayers', () => {
     expect(processCardLayers('Align', new Set()).every(l => l.image === undefined)).toBe(true);
   });
 
-  it('only fills the dark pair (_w + color) for the dark theme', () => {
-    const l = processCardLayers('AI Brief', new Set(['dark']));
-    expect(l.map(x => x.image)).toEqual([
-      'url("./img/process/AI Brief_w.webp")',
-      'url("./img/process/AI Brief.webp")',
-      undefined,
-      undefined,
-    ]);
+  it('one white illustration per theme, no colour layers', () => {
+    expect(processCardLayers('AI Brief', new Set(['dark'])).map(x => x.image)).toEqual(['url("./img/process/AI Brief_w.webp")', undefined]);
+    expect(processCardLayers('Align', new Set(['light'])).map(x => x.image)).toEqual([undefined, 'url("./img/process/Align_l_w.webp")']);
+    expect(processCardLayers('Align', new Set(['dark', 'light'])).map(x => x.cls)).toEqual(['process-card-bg-img--white', 'process-card-bg-img--light-white']);
   });
 
-  it('only fills the light pair (_l_w + _l) for the light theme', () => {
-    const l = processCardLayers('Align', new Set(['light']));
-    expect(l.map(x => x.image)).toEqual([
-      undefined,
-      undefined,
-      'url("./img/process/Align_l_w.webp")',
-      'url("./img/process/Align_l.webp")',
-    ]);
-  });
-});
-
-describe('hover-only layers', () => {
-  const RealMM = window.matchMedia;
-  afterEach(() => { window.matchMedia = RealMM; });
-
-  function fakeMq(matches: boolean) {
-    const listeners = new Set<() => void>();
-    const mq = {
-      matches,
-      addEventListener: (_: string, l: () => void) => listeners.add(l),
-      removeEventListener: (_: string, l: () => void) => listeners.delete(l),
-    };
-    window.matchMedia = (() => mq) as unknown as typeof window.matchMedia;
-    return { mq, listeners };
-  }
-  function HoverProbe() {
-    return <i data-testid="hover" data-can={String(useCanHover())} />;
-  }
-  const can = () => document.querySelector('[data-testid=hover]')!.getAttribute('data-can');
-
-  it('skips the colour layers without hover, keeps the resting ones', () => {
-    const l = processCardLayers('Align', new Set(['dark', 'light']), false);
-    expect(l.map(x => x.image)).toEqual([
-      'url("./img/process/Align_w.webp")',
-      undefined,
-      'url("./img/process/Align_l_w.webp")',
-      undefined,
-    ]);
-  });
-
-  it('follows (hover: none) live and cleans up its listener', () => {
-    const { mq, listeners } = fakeMq(true);
-    const view = render(<HoverProbe />);
-    expect(can()).toBe('false');
-    act(() => { mq.matches = false; listeners.forEach(l => l()); });
-    expect(can()).toBe('true');
-    view.unmount();
-    expect(listeners.size).toBe(0);
-  });
-
-  it('assumes hover where matchMedia is unavailable', () => {
-    (window as unknown as { matchMedia: unknown }).matchMedia = undefined;
-    render(<HoverProbe />);
-    expect(can()).toBe('true');
-  });
-
-  it('the stylesheet still hides the colour layers under (hover: none)', () => {
+  it('hover keeps the white illustration: no colour crossfade left in the stylesheet', () => {
     const css = readFileSync('src/styles/portfolio.css', 'utf8');
-    const block = css.slice(css.indexOf('@media (hover: none)', css.indexOf('Touch screens (no real hover)')));
-    expect(block).toMatch(/:hover \.process-card-bg-img--color \{ opacity: 0; \}/);
-    expect(block).toMatch(/:hover \.process-card-bg-img--light \{ opacity: 0; \}/);
+    expect(css).not.toContain('process-card-bg-img--color');
+    expect(css).not.toMatch(/process-card-bg-img--light[^-]/);
+    expect(css).not.toMatch(/:hover .process-card-bg-img/);
   });
 });
 

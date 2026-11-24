@@ -20,6 +20,9 @@ import ScrollTrigger from 'gsap/ScrollTrigger';
 // the words show once everything is in place (CSS fades them, see
 // .ai-classify-txt); the last chip settles before this
 export const TEXT_AT = 0.95;
+// Switched off for now: the icon stays hidden and the chart shows as it is,
+// fully drawn (as under reduced motion). Set back to true to bring it back.
+export const CLASSIFY_RELAY_ON = false;
 // The threshold: the relay fires once the chart's wrapper top is this far
 // down the screen — the icon in the viewer above it is well on screen then
 // (its top at ~60%).
@@ -146,7 +149,7 @@ export function useClassifyZoom(
     const mini = miniRef.current;
     const stage = stageRef.current;
     const wrap = stage?.parentElement;
-    if (!viewer || !mini || !stage || !wrap) return;
+    if (!CLASSIFY_RELAY_ON || !viewer || !mini || !stage || !wrap) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     // registered here, not at import: the pure relayFrame is imported by
     // tests where ScrollTrigger can't initialise (no matchMedia)

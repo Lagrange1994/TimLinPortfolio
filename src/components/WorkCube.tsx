@@ -39,12 +39,12 @@ export default function WorkCube({ works, step }: { works: CubeWork[]; step: num
             className={`work-face${front ? ' is-front' : ''}`}
             href={w.link}
             style={{ '--k': f.k } as CSSProperties}
+            aria-label={w.title}
             aria-hidden={front ? undefined : true}
             tabIndex={front ? undefined : -1}
           >
             <img src={w.img} alt="" loading="lazy" />
             <span className="overview-pill">{w.kind}</span>
-            <span className="work-face-title">{w.title}</span>
           </a>
         );
       })}

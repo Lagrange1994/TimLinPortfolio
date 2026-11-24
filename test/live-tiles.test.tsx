@@ -30,6 +30,9 @@ describe('live tile cube', () => {
     expect(front.getAttribute('href')).toBe('b.html');
     expect(front.getAttribute('tabindex')).toBeNull();
     expect(front.textContent).toContain('App');
+    // no title on the tile: the work is named for AT only
+    expect(container.querySelector('.work-face-title')).toBeNull();
+    expect(front.getAttribute('aria-label')).toBe('B');
     expect(container.querySelectorAll('.work-face[aria-hidden="true"][tabindex="-1"]')).toHaveLength(3);
     expect((container.querySelector('.work-cube') as HTMLElement).style.getPropertyValue('--n')).toBe('1');
   });
@@ -48,11 +51,36 @@ describe('How I Design turns left / right', () => {
     const css = readFileSync(resolve(__dirname, '../src/styles/portfolio.css'), 'utf8').replace(/\r\n/g, '\n');
     expect(css).toMatch(/\.bento-card\.overview-design \{[^}]*container-type: inline-size;[^}]*perspective: 1400px;/);
     expect(css).toMatch(/\.overview-design-img \{[^}]*backface-visibility: hidden;[^}]*transform-origin: 50% 50% -40cqw;[^}]*animation: overview-step-show 18s/);
-    const kf = css.match(/@keyframes overview-step-show \{[\s\S]*?\n    \}/)![0];
+    const kf = css.match(/@keyframes overview-step-show \{[\s\S]*?\n {4}\}/)![0];
     expect(kf).toContain('transform: rotateY(90deg);');
     expect(kf).toContain('transform: rotateY(-90deg);');
     // reduced motion: the first one, flat
     expect(css).toContain('.overview-design-img:first-of-type { opacity: 1; transform: none; }');
+  });
+
+  it('the current step dot stretches into a pill', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const css = readFileSync(resolve(__dirname, '../src/styles/portfolio.css'), 'utf8').replace(/\r\n/g, '\n');
+    const kf = css.match(/@keyframes overview-step-chip \{[\s\S]*?\n {4}\}/)![0];
+    expect(kf).toMatch(/2%, 16\.667% \{\s*width: 28px;/);
+    expect(kf).toMatch(/18\.667%, 100% \{\s*width: 8px;/);
+    expect(kf).not.toContain('box-shadow');
+    // reduced motion: the first step stays the pill
+    expect(css).toContain('.overview-design-step-wrap:first-child .overview-design-chip { width: 28px; background: #6C63FF; }');
+  });
+});
+
+describe('works wall and How I Design details', () => {
+  it('the App / Web tags are small, and How I Design keeps the grid cards\' top tint', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const css = readFileSync(resolve(__dirname, '../src/styles/portfolio.css'), 'utf8').replace(/\r\n/g, '\n');
+    const pill = css.match(/\n {4}\.overview-pill \{[^}]*\}/)![0];
+    expect(pill).toContain('font-size: 13px;');
+    expect(pill).toContain('padding: 5px 11px;');
+    const scrim = css.match(/\n {4}\.overview-design-scrim \{[^}]*\}/)![0];
+    expect(scrim).toMatch(/radial-gradient\(var\(--card-tint-shape, 380px 220px at 50% 0%\), var\(--card-tint/);
   });
 });
 
