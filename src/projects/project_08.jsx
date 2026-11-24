@@ -11,6 +11,7 @@ import {
     InfoGrid, InfoCard, ProcessTimeline, FeatureCard, GalleryItemButton,
     ImageWithSkeleton, ResizeHandle,
     dsVars, get16by9FloorVh, mobileStageHeightVh,
+    toWebpSrc,
 } from './shared/index.js';
 
 gsap.registerPlugin(ScrollToPlugin);
@@ -358,7 +359,7 @@ gsap.registerPlugin(ScrollToPlugin);
                 });
                 const assetsPromise = Promise.all([
                     preload('./img/project_08/hero_img.webp'),
-                    preload(MAIN_IMAGE),
+                    preload(toWebpSrc(MAIN_IMAGE)),
                 ]);
                 const forceTimeout = new Promise(resolve => setTimeout(resolve, 4000));
                 Promise.race([assetsPromise, forceTimeout]).then(() => { setLoaderDone(true); setLoading(false); });

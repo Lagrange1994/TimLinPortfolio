@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 
+// The file <ResponsiveImage> actually shows. Preload this one: preloading the
+// jpg/png source downloads a second copy that is never displayed.
+export function toWebpSrc(src) {
+    return encodeURI(src.replace(/\.(jpg|jpeg|png)$/i, '.webp'));
+}
+
 export function ResponsiveImage({ src, alt, className, onLoad, ...props }) {
-    const webpSrc = encodeURI(src.replace(/\.(jpg|jpeg|png)$/i, '.webp'));
     return (
         <picture style={{ display: 'contents' }}>
-            <source srcSet={webpSrc} type="image/webp" />
+            <source srcSet={toWebpSrc(src)} type="image/webp" />
             <img src={src} alt={alt} className={className} onLoad={onLoad} decoding="async" {...props} />
         </picture>
     );

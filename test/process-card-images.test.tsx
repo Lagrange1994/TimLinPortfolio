@@ -1,8 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, act } from '@testing-library/react';
 import { useRef } from 'react';
+import { readFileSync } from 'node:fs';
+import { toWebpSrc } from '../src/projects/shared/ImageWithSkeleton';
 import {
   processCardLayers,
+  useCanHover,
   useProcessCardThemes,
   PROCESS_IMG_ROOT_MARGIN,
   __resetProcessCardImagesForTest,
@@ -62,6 +65,81 @@ describe('processCardLayers', () => {
       'url("./img/process/Align_l_w.webp")',
       'url("./img/process/Align_l.webp")',
     ]);
+  });
+});
+
+describe('hover-only layers', () => {
+  const RealMM = window.matchMedia;
+  afterEach(() => { window.matchMedia = RealMM; });
+
+  function fakeMq(matches: boolean) {
+    const listeners = new Set<() => void>();
+    const mq = {
+      matches,
+      addEventListener: (_: string, l: () => void) => listeners.add(l),
+      removeEventListener: (_: string, l: () => void) => listeners.delete(l),
+    };
+    window.matchMedia = (() => mq) as unknown as typeof window.matchMedia;
+    return { mq, listeners };
+  }
+  function HoverProbe() {
+    return <i data-testid="hover" data-can={String(useCanHover())} />;
+  }
+  const can = () => document.querySelector('[data-testid=hover]')!.getAttribute('data-can');
+
+  it('skips the colour layers without hover, keeps the resting ones', () => {
+    const l = processCardLayers('Align', new Set(['dark', 'light']), false);
+    expect(l.map(x => x.image)).toEqual([
+      'url("./img/process/Align_w.webp")',
+      undefined,
+      'url("./img/process/Align_l_w.webp")',
+      undefined,
+    ]);
+  });
+
+  it('follows (hover: none) live and cleans up its listener', () => {
+    const { mq, listeners } = fakeMq(true);
+    const view = render(<HoverProbe />);
+    expect(can()).toBe('false');
+    act(() => { mq.matches = false; listeners.forEach(l => l()); });
+    expect(can()).toBe('true');
+    view.unmount();
+    expect(listeners.size).toBe(0);
+  });
+
+  it('assumes hover where matchMedia is unavailable', () => {
+    (window as unknown as { matchMedia: unknown }).matchMedia = undefined;
+    render(<HoverProbe />);
+    expect(can()).toBe('true');
+  });
+
+  it('the stylesheet still hides the colour layers under (hover: none)', () => {
+    const css = readFileSync('src/styles/portfolio.css', 'utf8');
+    const block = css.slice(css.indexOf('@media (hover: none)', css.indexOf('Touch screens (no real hover)')));
+    expect(block).toMatch(/:hover \.process-card-bg-img--color \{ opacity: 0; \}/);
+    expect(block).toMatch(/:hover \.process-card-bg-img--light \{ opacity: 0; \}/);
+  });
+});
+
+describe('resource loading config', () => {
+  it('toWebpSrc maps raster sources to the encoded webp that is displayed', () => {
+    expect(toWebpSrc('./img/project_11/display.jpg')).toBe('./img/project_11/display.webp');
+    expect(toWebpSrc('./img/a b.PNG')).toBe('./img/a%20b.webp');
+    expect(toWebpSrc('./img/a.webp')).toBe('./img/a.webp');
+  });
+
+  it.each(['08', '11', '12'])('project_%s preloads the webp, not a second jpg', n => {
+    const src = readFileSync(`src/projects/project_${n}.jsx`, 'utf8');
+    expect(src).toContain('preload(toWebpSrc(MAIN_IMAGE))');
+    expect(src).not.toContain('preload(MAIN_IMAGE)');
+  });
+
+  it('caches only hashed /assets as immutable', () => {
+    const { headers } = JSON.parse(readFileSync('vercel.json', 'utf8')) as {
+      headers: Array<{ source: string; headers: Array<{ value: string }> }>;
+    };
+    const immutable = headers.filter(h => h.headers.some(x => x.value.includes('immutable')));
+    expect(immutable.map(h => h.source)).toEqual(['/assets/(.*)']);
   });
 });
 

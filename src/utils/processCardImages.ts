@@ -35,15 +35,38 @@ export function processCardBg(slug: string) {
 // The four stacked layers per card (see portfolio.css: dark theme crossfades
 // _w → color on hover, light theme _l_w → _l). A layer whose theme hasn't
 // been loaded yet gets no image; it's opacity 0 in that case anyway.
-export function processCardLayers(slug: string, themes: ReadonlySet<ProcessTheme>) {
+// `canHover` false skips the two hover-only layers: under `(hover: none)`
+// portfolio.css keeps the cards on their white illustration, so those files
+// would be downloaded (~150KB+ each) and never shown.
+export function processCardLayers(slug: string, themes: ReadonlySet<ProcessTheme>, canHover = true) {
   const dark = themes.has('dark');
   const light = themes.has('light');
   return [
     { cls: 'process-card-bg-img--white', image: dark ? processCardBg(`${slug}_w`) : undefined },
-    { cls: 'process-card-bg-img--color', image: dark ? processCardBg(slug) : undefined },
+    { cls: 'process-card-bg-img--color', image: dark && canHover ? processCardBg(slug) : undefined },
     { cls: 'process-card-bg-img--light-white', image: light ? processCardBg(`${slug}_l_w`) : undefined },
-    { cls: 'process-card-bg-img--light', image: light ? processCardBg(`${slug}_l`) : undefined },
+    { cls: 'process-card-bg-img--light', image: light && canHover ? processCardBg(`${slug}_l`) : undefined },
   ];
+}
+
+// Same query as the portfolio.css rule, live: plugging a mouse into a tablet
+// flips it, and the hover layers must then have their images.
+const NO_HOVER_QUERY = '(hover: none)';
+
+export function useCanHover() {
+  const [canHover, setCanHover] = useState(() =>
+    typeof window.matchMedia !== 'function' || !window.matchMedia(NO_HOVER_QUERY).matches);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia(NO_HOVER_QUERY);
+    const sync = () => setCanHover(!mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  return canHover;
 }
 
 // Which themes' illustrations the section may show right now. Empty until
