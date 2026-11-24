@@ -1,5 +1,6 @@
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { useLang } from '../context/LangContext';
+import { trackPointerSpot } from '../utils/pointerSpot';
 import './TechDemos.css';
 
 // Tech Stack illustrations, composed like How I Use AI: one large card (the
@@ -293,16 +294,8 @@ export function startSatDrag(e: ReactPointerEvent<HTMLElement>) {
   el.addEventListener('pointercancel', end);
 }
 
-// The illustration card lights up inside under the pointer, like the Design
-// Process cards (BorderGlow's .bg-spotlight): the light follows --mouse-x/y.
-// Not for a finger, nor in light mode (no glow there).
-export function trackArtSpot(e: ReactPointerEvent<HTMLElement>) {
-  if (e.pointerType === 'touch' || document.documentElement.getAttribute('data-theme') === 'light') return;
-  const el = e.currentTarget;
-  const r = el.getBoundingClientRect();
-  el.style.setProperty('--mouse-x', `${e.clientX - r.left}px`);
-  el.style.setProperty('--mouse-y', `${e.clientY - r.top}px`);
-}
+// The illustration card lights up inside under the pointer (see pointerSpot).
+export const trackArtSpot = trackPointerSpot;
 
 export function TechSats({ k }: { k: TechKey }) {
   const [First, Second] = SATS[k];

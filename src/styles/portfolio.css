@@ -8126,6 +8126,423 @@
       margin-bottom: 28px;
     }
 
+    /* FOR YOU (RoleFit.tsx): apple.com's upgrader in My Skills' layout
+       (.skills-showcase: copy and role tabs left, the role's purple cards
+       right in two stepped columns). What follows is only what My Skills
+       doesn't have: the cards' live scenes and the hand-over tile. */
+    .fit-showcase { margin-top: 0; }
+
+    /* a scene sits in a dark panel inside the purple card */
+    .skill-card-art.fit-art {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      line-height: normal;
+      background:
+        radial-gradient(120% 90% at 50% 0%, rgba(167, 155, 255, .22), transparent 60%),
+        #140f2e;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
+    }
+    .skill-card--tall .skill-card-art.fit-art { aspect-ratio: auto; min-height: 190px; }
+    /* a wide card's scene: beside the copy, as tall as the card */
+    .skill-card--wide .skill-card-art.fit-art {
+      aspect-ratio: auto;
+      align-self: stretch;
+      min-height: 116px;
+      padding: 12px;
+    }
+
+    /* four role tabs share the copy column's width */
+    .fit-showcase .process-tabs.fit-tabs { width: 100%; max-width: 440px; }
+    .fit-showcase .faq-tab.skills-tab { flex: 1 1 0; min-width: 0; padding-inline: 8px; }
+
+    .fit-logo i { font-size: 20px; color: #5a49d6; }
+
+    /* the card lights up inside under the pointer (trackPointerSpot) */
+    .fit-spot {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, .14), transparent 70%);
+      opacity: 0;
+      transition: opacity .5s ease;
+    }
+    .fit-card:hover .fit-spot { opacity: 1; }
+    .touch-input .fit-spot,
+    :root[data-theme="light"] .fit-spot { display: none; }
+    .fit-card > :not(.fit-spot) { position: relative; }
+
+    /* The scenes: React Bits components rebuilt in CSS (RoleFit.tsx names
+       each one). A wide card's panel is narrower: scenes shrink there. */
+
+    /* Counter: the digits roll up to the number */
+    .fit-counter { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .fit-counter-num {
+      display: flex;
+      align-items: flex-start;
+      font-size: 76px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -.04em;
+    }
+    .fit-roll { display: inline-block; height: 1em; overflow: hidden; }
+    .fit-roll > span { display: flex; flex-direction: column; animation: fit-roll 4.2s cubic-bezier(.2, .8, .2, 1) infinite; }
+    .fit-roll b { height: 1em; font-weight: inherit; }
+    .fit-counter-num em { margin-top: .06em; font-size: .6em; font-style: normal; color: #a99bff; }
+    .fit-counter-unit { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: #8f86c9; }
+    @keyframes fit-roll { 0%, 8% { translate: 0 0; } 48%, 100% { translate: 0 var(--roll); } }
+    .skill-card--wide .fit-counter-num { font-size: 52px; }
+
+    /* CardSwap: three covers, the front one moving to the back in turn */
+    .fit-swap { position: relative; width: 62%; aspect-ratio: 4 / 3; margin: 24px 36px 0 0; }
+    .fit-swap img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, .2);
+      box-shadow: 0 16px 30px -12px rgba(0, 0, 0, .7);
+      animation: fit-swap 7.5s cubic-bezier(.6, 0, .3, 1) infinite;
+      animation-delay: calc(var(--k) * -2.5s);
+    }
+    @keyframes fit-swap {
+      0%, 27%, 100% { transform: translate(0, 0) rotate(-5deg); z-index: 3; opacity: 1; }
+      33%, 60% { transform: translate(20px, -16px) rotate(2deg); z-index: 2; opacity: .85; }
+      66%, 94% { transform: translate(40px, -32px) rotate(9deg); z-index: 1; opacity: .55; }
+    }
+
+    /* RotatingText: three words, one at a time (the first repeats to loop) */
+    .fit-rotate { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+    .fit-rotate-lead { font-size: 13px; color: #8f86c9; }
+    .fit-rotate-win { height: 46px; overflow: hidden; padding: 0 16px; border-radius: 12px; background: #6C63FF; }
+    .fit-rotate-win > span { display: flex; flex-direction: column; animation: fit-rotate 6s cubic-bezier(.7, 0, .3, 1) infinite; }
+    .fit-rotate-win b { height: 46px; font-size: 24px; font-weight: 700; line-height: 46px; white-space: nowrap; }
+    @keyframes fit-rotate {
+      0%, 22% { translate: 0 0; }
+      30%, 55% { translate: 0 -25%; }
+      63%, 88% { translate: 0 -50%; }
+      96%, 100% { translate: 0 -75%; }
+    }
+
+    /* TextType: a message typed out behind a caret */
+    .fit-type { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; }
+    .fit-type-tag { padding: 3px 8px; border-radius: 6px; background: #06c755; color: #04210f; font-size: 11px; font-weight: 700; }
+    .fit-type-bubble {
+      max-width: 100%;
+      min-height: 1.5em;
+      padding: 10px 14px;
+      border-radius: 14px 14px 14px 4px;
+      background: #241b52;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .skill-card--wide .fit-type-bubble { padding: 8px 10px; font-size: 12px; }
+    .fit-caret {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      margin-left: 2px;
+      vertical-align: -2px;
+      background: #a99bff;
+      animation: fit-blink .9s steps(1) infinite;
+    }
+    @keyframes fit-blink { 50% { opacity: 0; } }
+
+    /* Radar: a sweep over rings, blips lighting up */
+    .fit-radar {
+      position: relative;
+      width: 156px;
+      height: 156px;
+      border-radius: 50%;
+      border: 1px solid rgba(169, 155, 255, .35);
+      background:
+        linear-gradient(rgba(169, 155, 255, .15), rgba(169, 155, 255, .15)) center / 1px 100% no-repeat,
+        linear-gradient(rgba(169, 155, 255, .15), rgba(169, 155, 255, .15)) center / 100% 1px no-repeat,
+        radial-gradient(circle, rgba(108, 99, 255, .14), transparent 70%);
+    }
+    .fit-radar > i { position: absolute; }
+    .fit-radar-ring { inset: 17%; border-radius: 50%; border: 1px solid rgba(169, 155, 255, .25); }
+    .fit-radar-ring--in { inset: 34%; }
+    .fit-radar-sweep {
+      inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(rgba(108, 99, 255, .55), transparent 70deg);
+      animation: fit-spin 3.2s linear infinite;
+    }
+    .fit-radar-blip {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #c9c0ff;
+      animation: fit-blip 2.4s ease-in-out infinite;
+      animation-delay: calc(var(--k) * -.8s);
+    }
+    .fit-radar-blip:nth-of-type(4) { left: 19%; top: 26%; }
+    .fit-radar-blip:nth-of-type(5) { left: 72%; top: 40%; }
+    .fit-radar-blip:nth-of-type(6) { left: 45%; top: 76%; }
+    .fit-radar > .fit-radar-pin {
+      left: 50%;
+      top: 50%;
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      margin: -15px 0 0 -15px;
+      border-radius: 50%;
+      background: #fff;
+      color: #5a49d6;
+      font-size: 16px;
+    }
+    .skill-card--wide .fit-radar { width: 100px; height: 100px; }
+    @keyframes fit-spin { to { rotate: 360deg; } }
+    @keyframes fit-blip { 0%, 100% { opacity: .25; scale: .7; } 50% { opacity: 1; scale: 1.15; } }
+
+    /* Stepper: numbered steps lighting in turn along a line */
+    .fit-stepper { display: flex; width: 100%; margin: 0; padding: 0; list-style: none; }
+    .fit-stepper li {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .fit-stepper li:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 17px;
+      left: calc(50% + 22px);
+      width: calc(100% - 44px);
+      height: 2px;
+      border-radius: 2px;
+      background: #241b52;
+    }
+    .fit-stepper b {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 13px;
+      animation: fit-step 4.2s ease infinite;
+      animation-delay: calc(var(--k) * .7s);
+    }
+    .fit-stepper span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: 11px; font-weight: 600; color: #c9c0ff; white-space: nowrap; }
+    @keyframes fit-step {
+      0%, 6%, 80%, 100% { background: #241b52; color: #8f86c9; box-shadow: none; }
+      12%, 72% { background: #6C63FF; color: #fff; box-shadow: 0 0 0 6px rgba(108, 99, 255, .22); }
+    }
+
+    /* TrueFocus: one word in focus, framed; the others blurred */
+    .fit-truefocus { display: flex; gap: 18px; font-size: 26px; font-weight: 700; }
+    .fit-truefocus b {
+      position: relative;
+      padding: 4px 8px;
+      animation: fit-focus 3.6s ease infinite;
+      animation-delay: calc(var(--k) * 1.2s);
+    }
+    .fit-truefocus b::before,
+    .fit-truefocus b::after {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border: 0 solid #6C63FF;
+      animation: fit-corner 3.6s ease infinite;
+      animation-delay: inherit;
+    }
+    .fit-truefocus b::before { left: 0; top: 0; border-width: 2px 0 0 2px; }
+    .fit-truefocus b::after { right: 0; bottom: 0; border-width: 0 2px 2px 0; }
+    @keyframes fit-focus { 0%, 30%, 100% { filter: blur(0); color: #fff; } 36%, 94% { filter: blur(3px); color: #6f66a8; } }
+    @keyframes fit-corner { 0%, 30%, 100% { opacity: 1; } 36%, 94% { opacity: 0; } }
+
+    /* OrbitImages: the team circling the lead */
+    .fit-orbit { position: relative; width: 150px; height: 150px; }
+    .fit-orbit::before { content: ""; position: absolute; inset: 14px; border-radius: 50%; border: 1px dashed rgba(169, 155, 255, .35); }
+    .fit-orbit b { display: grid; place-items: center; border-radius: 50%; font-weight: 700; }
+    .fit-orbit-core {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 48px;
+      height: 48px;
+      margin: -24px 0 0 -24px;
+      background: linear-gradient(140deg, #c9c0ff, #6C63FF);
+      color: #140f2e;
+      font-size: 13px;
+    }
+    .fit-orbit-ring { position: absolute; inset: 0; animation: fit-spin 14s linear infinite; }
+    .fit-orbit-ring b {
+      position: absolute;
+      left: calc(50% - 14px);
+      top: calc(50% - 14px);
+      width: 28px;
+      height: 28px;
+      font-size: 10px;
+      background: hsl(calc(210 + var(--k) * 70) 70% 56%);
+      transform: rotate(calc(var(--k) * 90deg)) translateY(-61px) rotate(calc(var(--k) * -90deg));
+    }
+    .fit-orbit-ring b > span { animation: fit-spin 14s linear infinite reverse; }
+    .skill-card--wide .fit-orbit { scale: .75; }
+
+    /* AnimatedList: rows sliding in one after another */
+    .fit-list { display: grid; gap: 8px; width: 100%; margin: 0; padding: 0; list-style: none; }
+    .fit-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(169, 155, 255, .18);
+      background: #1e1745;
+      font-size: 13px;
+      animation: fit-in 5.4s cubic-bezier(.2, .8, .2, 1) infinite both;
+      animation-delay: calc(var(--k) * .45s);
+    }
+    .fit-list li > span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fit-list b {
+      flex: none;
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background: #6C63FF;
+      font-size: 11px;
+    }
+    .fit-list--check b { background: #06c755; color: #04210f; }
+    .fit-list--line b { background: #06c755; font-weight: 800; }
+    .skill-card--wide .fit-list { gap: 5px; }
+    .skill-card--wide .fit-list li { gap: 7px; padding: 5px 7px; font-size: 11px; }
+    .skill-card--wide .fit-list b { width: 16px; height: 16px; font-size: 10px; }
+    @keyframes fit-in {
+      0% { opacity: 0; transform: translateY(14px) scale(.94); }
+      10%, 82% { opacity: 1; transform: none; }
+      92%, 100% { opacity: 0; transform: translateY(-6px) scale(.98); }
+    }
+
+    /* DecryptedText: code resolving out of noise */
+    .fit-decrypt { display: flex; flex-direction: column; gap: 10px; width: 100%; font: 400 13px/1.5 var(--font-code); }
+    .fit-decrypt-bar { display: flex; gap: 6px; }
+    .fit-decrypt-bar i { width: 9px; height: 9px; border-radius: 50%; background: #ff5f57; }
+    .fit-decrypt-bar i:nth-child(2) { background: #febc2e; }
+    .fit-decrypt-bar i:nth-child(3) { background: #28c840; }
+    .fit-decrypt code { display: grid; gap: 8px; font: inherit; white-space: pre; }
+    .fit-decrypt b { font-weight: 400; }
+    .fit-decrypt .n { margin-right: 12px; color: #6f66a8; }
+    .fit-decrypt .d { color: #c9c0ff; }
+    .fit-decrypt .x { color: #6C63FF; }
+
+    /* LogoLoop: two rows of the stack, running opposite ways */
+    .fit-loop {
+      display: grid;
+      gap: 12px;
+      width: calc(100% + 36px);
+      margin-inline: -18px;
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+      mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+    }
+    .fit-loop-track { display: flex; gap: 10px; width: max-content; animation: fit-loop 12s linear infinite; }
+    .fit-loop-track--back { animation-direction: reverse; animation-duration: 14s; }
+    .fit-loop b {
+      padding: 8px 14px;
+      border-radius: 9999px;
+      border: 1px solid rgba(169, 155, 255, .25);
+      background: #241b52;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .fit-loop-track--back b { border-color: rgba(169, 155, 255, .35); background: none; color: #c9c0ff; }
+    @keyframes fit-loop { to { translate: -50% 0; } }
+
+    /* Cubes: a 4 × 4 field of tiles rising in a wave */
+    .fit-cubes {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      width: 132px;
+      perspective: 600px;
+    }
+    .fit-cubes i {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      background: linear-gradient(135deg, hsl(248 90% calc(58% + var(--k) * 4%)), hsl(248 70% calc(40% + var(--k) * 4%)));
+      box-shadow: 4px 4px 0 #2b2370;
+      animation: fit-cube 2.4s ease-in-out infinite;
+      animation-delay: calc(var(--k) * .15s);
+    }
+    .skill-card--wide .fit-cubes { width: 96px; gap: 4px; }
+    @keyframes fit-cube {
+      0%, 100% { transform: rotateX(55deg) rotateZ(45deg) translateZ(0); }
+      50% { transform: rotateX(55deg) rotateZ(45deg) translateZ(14px); }
+    }
+
+    /* ShinyText: the quote's title with light passing over it */
+    .fit-shiny { display: grid; gap: 4px; width: 100%; font-size: 12px; color: #c9c0ff; }
+    .fit-shiny-title {
+      margin-bottom: 4px;
+      font-size: 18px;
+      background: linear-gradient(110deg, #8f86c9 35%, #fff 50%, #8f86c9 65%) 0 0 / 220% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: fit-shine 3s linear infinite;
+    }
+    .fit-shiny > span {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid rgba(169, 155, 255, .18);
+    }
+    .fit-shiny > span:last-child { border-bottom: 0; }
+    .fit-shiny i { color: #06c755; }
+    .skill-card--wide .fit-shiny-title { font-size: 15px; }
+    .skill-card--wide .fit-shiny { font-size: 11px; }
+    @keyframes fit-shine { from { background-position: 150% 0; } 60%, to { background-position: -50% 0; } }
+
+    /* the hand-over tile closing the right column: a link to Contact */
+    .fit-next {
+      text-decoration: none;
+      color: inherit;
+    }
+    .fit-next-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .fit-next-text { font-size: 15px; color: var(--text); }
+    .fit-next-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 9999px;
+      background: linear-gradient(120deg, #6C63FF, #8b7dff);
+      box-shadow: 0 10px 24px -10px rgba(108, 99, 255, .9);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      transition: translate .3s cubic-bezier(.2, .8, .2, 1);
+    }
+    .fit-next:hover .fit-next-btn { translate: 4px 0; }
+    .fit-next:focus-visible { outline: 2px solid #6C63FF; outline-offset: 3px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fit-card *,
+      .fit-card *::after { animation: none !important; }
+      .fit-next:hover .fit-next-btn { translate: none; }
+    }
+
     .line-banner {
       position: relative;
       background: linear-gradient(135deg, rgba(6, 199, 85, 0.1), rgba(6, 199, 85, 0.04));

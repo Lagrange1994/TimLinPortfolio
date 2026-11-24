@@ -86,7 +86,8 @@ describe('App.tsx lazy-loaded sections', () => {
     // The enclosing `it()` needs the same generous budget (vitest's own
     // default 5000ms test timeout raced findByRole's internal one and lost
     // under full-suite load, even though both were nominally 5000ms).
-    expect(await screen.findByRole('heading', { level: 2 }, { timeout: 15000 })).toBeTruthy();
+    // (For You's h2 comes first now, so the one asked for is Contact's)
+    expect(await screen.findByRole('heading', { level: 2, name: /worth using/ }, { timeout: 15000 })).toBeTruthy();
   }, 20000);
 
   it('wraps every lazy-loaded section usage in a height-reserving <Suspense> fallback', () => {

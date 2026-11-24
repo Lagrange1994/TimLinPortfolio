@@ -225,6 +225,9 @@ export const translations = {
     portfolio_headline_sub: '精選作品——從第一筆草圖到正式上線，<br />記錄每一次完整的設計旅程。',
     // contact
     contact_sub: '有專案合作需求？歡迎隨時與我聯繫',
+    fit_sub: '依你的身分，看看最有關的經驗。',
+    fit_next: '看完了？直接和我談談你的需求。',
+    fit_next_cta: '聯絡我',
     line_eyebrow: 'Design Consultation · 免費初次諮詢',
     line_title: '有設計需求？\nLINE Bot 會先幫我整理重點',
     line_desc: '留下專案目標與時程後，系統會建立追蹤紀錄並通知我回覆',
@@ -558,6 +561,9 @@ export const translations = {
     portfolio_headline_sub: 'Selected work — from the first sketch to shipped. <br />Every case is a full record of the design journey.',
     // contact
     contact_sub: 'Have a project in mind? Get in touch.',
+    fit_sub: 'Pick your role and see the experience that matters to you.',
+    fit_next: 'Seen enough? Tell me what you need.',
+    fit_next_cta: 'Get in touch',
     line_eyebrow: 'Design consultation · Free first chat',
     line_title: 'Have a design need? My LINE Bot helps structure it first.',
     line_desc: 'Share your goal and timeline. The workflow records it and notifies me to reply.',

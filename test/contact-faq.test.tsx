@@ -61,7 +61,7 @@ describe('Contact FAQ accordion (Animate UI headless accordion)', () => {
 
   it('switching to the freelance tab shows its own 6 items, also fully collapsed', () => {
     const { container } = render(<LangProvider><ContactSection /></LangProvider>);
-    fireEvent.click(container.querySelector('.faq-tab:nth-of-type(2)')!);
+    fireEvent.click(container.querySelector('#contact .faq-tab:nth-of-type(2)')!);
 
     const questions = container.querySelectorAll('.faq-question');
     expect(questions).toHaveLength(6);
@@ -119,7 +119,7 @@ describe('Contact FAQ: ask my AI', () => {
     const { container } = render(<LangProvider><ContactSection /></LangProvider>);
     const first = [...container.querySelectorAll<HTMLButtonElement>('.faq-more-btn')].map(b => b.textContent);
     expect(first).toEqual(['Remote work?', 'Ways to work?', 'Open to roles?', 'Learning lately?', 'Daily rhythm?']);
-    fireEvent.click(container.querySelector('.faq-tab:nth-of-type(2)')!);
+    fireEvent.click(container.querySelector('#contact .faq-tab:nth-of-type(2)')!);
     const btns = [...container.querySelectorAll<HTMLButtonElement>('.faq-more-btn')];
     expect(btns.map(b => b.textContent)).toEqual(['What gets declined?', 'Pre-project review?', 'Why the review?']);
     fireEvent.click(btns[0]);

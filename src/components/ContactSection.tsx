@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import SpecularOverlay from './SpecularOverlay';
 import NotchCard from './NotchCard';
+import RoleFit from './RoleFit';
 import {
   Accordion,
   AccordionItem,
@@ -80,6 +81,9 @@ export default function ContactSection() {
 
   return (
     <>
+      <div className="section-wrapper">
+        <RoleFit />
+      </div>
       <div className="section-wrapper">
         <section id="contact" className="section section-band" data-lazy-keep={faqTab !== 'experience' || openFaqIndex >= 0 ? '' : undefined}>
           <div className="section-label rise-soft">Contact Me</div>
