@@ -46,7 +46,10 @@ describe('My Design Process — In-house / Freelance tabs', () => {
     expect(names(container)).toEqual(['01', '02', '03', '04', '05', '06'].map(i => t[`ih_name_${i}` as keyof typeof t]));
     // the team pill is In-house only
     expect(container.querySelector('.policy-pill')).not.toBeNull();
-    expect(container.querySelectorAll('.process-tab-fill')).toHaveLength(1);
+    // the FAQ's pill tabs: one indicator, on the open tab
+    expect(container.querySelectorAll('.faq-tabs [role=tab].faq-tab')).toHaveLength(2);
+    expect(container.querySelectorAll('.faq-tab-indicator')).toHaveLength(1);
+    expect(getByRole('tab', { name: t.tab_inhouse }).querySelector('.faq-tab-indicator')).not.toBeNull();
   });
 
   it('clicking Freelance swaps the line and the steps', () => {

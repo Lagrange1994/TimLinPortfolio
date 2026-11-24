@@ -39,14 +39,12 @@ describe('Tech Stack cards go side-by-side on tablet/phone, alternating which si
     expect(codeBlock).toBeTruthy();
   });
 
-  // Phones override the tablet flex row entirely — the title moves out of
-  // whichever column it landed in to sit full-width above both columns,
-  // left-aligned, then the code simulator and description sit side by side
-  // underneath. Nested inside the shared <=1024px block (not the separate
+  // Phones override the tablet flex row entirely: the code simulator and
+  // description sit side by side (the tab above carries the title). Nested inside the shared <=1024px block (not the separate
   // <768px MOBILE section further up the file) specifically so it compiles
   // AFTER the flex-row rules above and wins the cascade at equal
   // specificity regardless of source position.
-  it('switches to a 2-col grid on phones with the title spanning both columns above the row', () => {
+  it('switches to a 2-col grid on phones with no title row', () => {
     const baselineIdx = css.indexOf('flex: 3;\n        min-width: 0;\n      }\n      .tech-code-preview {\n        flex: 2;');
     expect(baselineIdx).toBeGreaterThan(-1);
     const after = css.slice(baselineIdx);
@@ -54,9 +52,10 @@ describe('Tech Stack cards go side-by-side on tablet/phone, alternating which si
     expect(overrideIdx).toBeGreaterThan(-1);
     const overrideBlock = after.slice(overrideIdx, overrideIdx + 900);
     expect(overrideBlock).toMatch(/\.tech-item \{\s*display:\s*grid;/);
-    expect(overrideBlock).toMatch(/"header header"\s*\n\s*"code {3}desc"/);
+    expect(overrideBlock).toContain('"code desc"');
+    expect(css).not.toContain('"header');
     expect(overrideBlock).toMatch(/\.tech-item-text \{\s*display:\s*contents;\s*\}/);
-    expect(overrideBlock).toMatch(/\.tech-item-header \{\s*grid-area:\s*header;/);
+    expect(css).not.toContain('.tech-item-header {');
   });
 
   // The code column and the description text rarely end up the same
@@ -80,6 +79,6 @@ describe('Tech Stack cards go side-by-side on tablet/phone, alternating which si
     );
     const mirrorBlock = phoneBlock.match(/\.tech-item\.html-item,\s*\n\s*\.tech-item\.react-item \{[^}]*\}/)?.[0];
     expect(mirrorBlock).toBeTruthy();
-    expect(mirrorBlock).toMatch(/"header header"\s*\n\s*"desc {3}code"/);
+    expect(mirrorBlock).toContain('"desc code"');
   });
 });

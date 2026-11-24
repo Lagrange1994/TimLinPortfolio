@@ -127,7 +127,7 @@ describe('About content', () => {
     // workflow, cta
     expect((tsx.match(/<NotchCard\b/g) ?? []).length).toBe(3);
     expect((wall.match(/<NotchCard\b/g) ?? []).length).toBe(4);
-    for (const area of ['bento-area-workflow', 'bento-area-cta', 'overview-area-web', 'overview-area-design']) {
+    for (const area of ['bento-area-workflow', 'bento-area-cta', 'overview-area-works', 'overview-area-design']) {
       expect(wall).toMatch(new RegExp(`<NotchCard\\s+area="${area}"`));
     }
     for (const area of ['bento-area-p${n}', 'bento-area-intro1', 'bento-area-intro2']) {
@@ -272,17 +272,20 @@ describe('About content', () => {
     expect(css).toMatch(/\.domain-cover-label \{[^}]*position: absolute;[^}]*top: 8px;[^}]*left: 8px;/);
   });
 
-  it('About: headline, principles, then the intro cards side by side; tablet/phone unwrap the columns', () => {
+  it('About: headline, then the tabs above the open tab\'s cards; phones stack the cards', () => {
     expect(tsx).toMatch(/<div className="about-col about-col--intro">[\s\S]*bento-area-intro1[\s\S]*bento-area-intro2/);
     // the moved cards are gone from About
     for (const gone of ['about-col--stats', 'about-col--profile', 'bento-area-workflow', 'bento-area-cta', 'profile-card-wrap', 'stat-row'])
       expect(tsx).not.toContain(gone);
-    expect(css).toMatch(/\.about-grid \{[^}]*grid-template-areas:\s*"headline headline"\s*"principles principles"\s*"intro intro";/);
-    // tablet: principles three across, the intro cards two across
-    expect(css).toMatch(/"p1( p1){7} p2( p2){7} p3( p3){7}"\s*"intro1( intro1){11} intro2( intro2){11}";/);
-    // phone: one column
-    expect(css).toMatch(/"headline headline"\s*"p1 p1"\s*"p2 p2"\s*"p3 p3"\s*"intro1 intro1"\s*"intro2 intro2";/);
-    expect((css.match(/\.about-col \{\s*display: contents;\s*\}/g) ?? []).length).toBe(2);
+    expect(css).toMatch(/\.about-grid \{[^}]*grid-template-areas:\s*"headline"\s*"tabbed";/);
+    // the tabs and their line sit above the cards, one column at every width
+    expect(css).toMatch(/\.about-tabbed \{\s*grid-area: tabbed;\s*display: grid;\s*grid-template-columns: minmax\(0, 1fr\);/);
+    expect(tsx).toMatch(/<div className="about-tabbed">\s*<div className="about-tabs-head">[\s\S]*<div className="about-panels">/);
+    // the card groups keep their columns (no more unwrapping into the grid)
+    expect(css).not.toMatch(/\.about-col \{\s*display: contents;/);
+    // phone: one column each
+    expect(css).toMatch(/grid-template-areas: "p1" "p2" "p3";/);
+    expect(css).toMatch(/grid-template-areas: "intro1" "intro2";/);
   });
 
   it('Service Domains’ digit is the shared stat size (no cqh fill that threw the roll off)', () => {
@@ -323,7 +326,7 @@ describe('About content', () => {
     expect(start).toBeGreaterThan(-1);
     const block = css.slice(start, start + 4000);
     expect(block).toMatch(/minmax\(0, 437fr\) minmax\(0, 269fr\) minmax\(0, 219fr\) minmax\(0, 109fr\)\s*minmax\(0, 133fr\) minmax\(0, 195fr\) minmax\(0, 370fr\);/);
-    expect(block).toMatch(/"profile app web web web web tools"\s*"profile app web web web web design"\s*"profile workflow workflow workflow workflow workflow design"\s*"stats stats domains domains domains cta cta";/);
+    expect(block).toMatch(/"profile works works works works works tools"\s*"profile works works works works works design"\s*"profile workflow workflow workflow workflow workflow design"\s*"stats stats domains domains domains cta cta";/);
     // the AI card's row is its content height; the profile card fills its column
     expect(block).toContain('grid-template-rows: minmax(0, 190fr) minmax(0, 194fr) auto minmax(0, 224fr);');
     expect(block).toMatch(/\.overview-profile \.pc-card \{\s*aspect-ratio: auto;\s*height: 100%;/);

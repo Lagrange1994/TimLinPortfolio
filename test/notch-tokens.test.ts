@@ -19,7 +19,7 @@ describe('notch size system', () => {
   });
 
   it('the notch gap is the bento gutter, the turn half the card corner', () => {
-    expect(css).toMatch(/\.about-grid \{[^}]*gap: 12px;/);
+    expect(css).toMatch(/\.about-col \{[^}]*gap: 12px;/);
     expect(NOTCH_GAP).toBe(12);
     expect(NOTCH_TURN).toBe(CARD_RADIUS / 2);
   });

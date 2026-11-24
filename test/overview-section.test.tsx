@@ -72,14 +72,16 @@ describe('OverviewSection', () => {
       expect(section.querySelector(sel), sel).not.toBeNull();
   });
 
-  it('links one Web and one App work', () => {
+  it('links one Web and one App work, both in one card', () => {
     const { container } = mount();
     const web = PROJECTS.find(p => p.id === WALL_WORKS.web)!;
     const app = PROJECTS.find(p => p.id === WALL_WORKS.app)!;
     expect(web.category).toBe('web');
     expect(app.category).toBe('mobile');
-    expect(container.querySelector(`.overview-area-web a[href="${web.link}"]`)).not.toBeNull();
-    expect(container.querySelector(`a.overview-area-app[href="${app.link}"]`)).not.toBeNull();
+    const card = container.querySelector('.overview-area-works')!;
+    expect(card.querySelector(`a.overview-work--web[href="${web.link}"]`)).not.toBeNull();
+    expect(card.querySelector(`a.overview-work--app[href="${app.link}"]`)).not.toBeNull();
+    expect(container.querySelector('.overview-area-app, .overview-area-web')).toBeNull();
   });
 
   it('each notch button scrolls to its section', () => {

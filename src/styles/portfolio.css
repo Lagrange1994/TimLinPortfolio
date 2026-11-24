@@ -132,6 +132,8 @@
          line; the content beside them starts level with the tabs' top */
       --tab-gap-above: 24px;
       --tab-gap-below: 24px;
+      /* the pill tabs' side space (In-house's, My Design Process) */
+      --pill-tab-pad: 46px;
       /* Real monospace for code/data UI (AI Flow tables, stepper labels,
          word cloud). Geist Mono loads from Google Fonts in index.html —
          before 2026-09-27 it was hardcoded at 24 call sites but never
@@ -525,7 +527,7 @@
        --grad accent every one of these headlines already carries in its
        .gradient-text suffix. Dark mode keeps its own white unchanged.
        Deliberately does NOT extend to card-level titles (.bento-label,
-       .tech-name, .ai-card h3) — see the comments below those keep.
+       .ai-card h3) — see the comments below those keep.
        .process-card--has-img .process-name gets its own light-mode override
        too (plain --text dark gray, not --primary — its card also has to
        flip its scrim/vignette), as its own rule next to the base rule
@@ -541,13 +543,12 @@
       color: var(--primary);
     }
 
-    /* .bento-label, .tech-name and .ai-card h3 are excluded from the shared
+    /* .bento-label and .ai-card h3 are excluded from the shared
        light-mode headline rule above: forcing every title to the same
        --primary fought each card's own accent. About's bento titles are big
        fading display type instead (see the --tone block); this neutral rule
        is the fallback for the rest. */
-    :root[data-theme="light"] .bento-label,
-    :root[data-theme="light"] .tech-name {
+    :root[data-theme="light"] .bento-label {
       color: var(--text);
     }
 
@@ -2846,22 +2847,62 @@
       flex-shrink: 0;
     }
 
-    /* ABOUT — one named-area grid: the headline across the top, the three
-       design principles as one strip, then the two intro cards side by
-       side. (The profile, stats, Service Domains, AI workflow and
-       availability cards moved to the Overview wall — .overview-grid.) */
+    /* ABOUT — the headline, then the site's tabs (My Skills, My Design
+       Process, Tech Stack) with their line, above the open tab's cards at
+       full width. (The profile, stats,
+       Service Domains, AI workflow and availability cards are on the
+       Overview wall — .overview-grid.) */
     .about-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: minmax(0, 1fr);
       grid-template-areas:
-        "headline headline"
-        "principles principles"
-        "intro intro";
+        "headline"
+        "tabbed";
       gap: 12px;
     }
 
-    /* Desktop column wrappers (AboutSection.tsx); tablet/phone set them to
-       display:contents so their cards sit in the outer grid. */
+    .about-tabbed {
+      grid-area: tabbed;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--tab-gap-below);
+      margin-top: var(--tab-gap-above);
+    }
+
+    /* the FAQ's pill tabs, centred over the cards */
+    .process-tabs.about-tabs {
+      justify-self: center;
+      width: fit-content;
+      max-width: 100%;
+      margin: 0 0 var(--tab-gap-below);
+    }
+
+    .about-tab {
+      flex: 1 1 0;
+    }
+
+    /* both panels share one cell: the area keeps the taller tab's height */
+    .about-panels {
+      display: grid;
+      min-width: 0;
+    }
+
+    .about-panels > .about-panel {
+      grid-area: 1 / 1;
+      min-width: 0;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity .3s, visibility 0s .3s;
+    }
+
+    .about-panels > .about-panel.is-active {
+      visibility: visible;
+      opacity: 1;
+      transition: opacity .3s;
+    }
+
+    /* the card groups as before: three principles across, the two intro
+       cards side by side */
     .about-col {
       display: grid;
       gap: 12px;
@@ -2869,15 +2910,33 @@
     }
 
     .about-col--intro {
-      grid-area: intro;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-template-areas: "intro1 intro2";
     }
 
     .about-col--principles {
-      grid-area: principles;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       grid-template-areas: "p1 p2 p3";
+    }
+
+    @media (max-width: 767px) {
+      /* phones: the pill takes the row, its two tabs share it */
+      .process-tabs.about-tabs { width: 100%; }
+      .about-tab { min-width: 0; }
+      .about-col--principles {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "p1" "p2" "p3";
+        gap: 14px;
+      }
+      .about-col--intro {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "intro1" "intro2";
+        gap: 14px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .about-panels > .about-panel { transition: none; }
     }
 
     /* OVERVIEW — the bento wall right under the hero (OverviewSection.tsx),
@@ -2891,6 +2950,14 @@
        every other section) */
     #overview {
       position: relative;
+    }
+
+    .overview-headline {
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 767px) {
+      .overview-headline { margin-bottom: 28px; }
     }
 
     .overview-sr {
@@ -2909,10 +2976,9 @@
       margin: 0 auto;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-template-areas:
-        "profile app"
-        "web web"
+        "profile design"
+        "works works"
         "tools tools"
-        "design design"
         "workflow workflow"
         "stats stats"
         "domains domains"
@@ -2920,8 +2986,7 @@
     }
 
     .overview-area-profile { grid-area: profile; min-width: 0; }
-    .overview-area-app { grid-area: app; }
-    .overview-area-web { grid-area: web; }
+    .overview-area-works { grid-area: works; }
     .overview-area-tools { grid-area: tools; }
     .overview-area-design { grid-area: design; }
 
@@ -2945,14 +3010,28 @@
       text-decoration: none;
     }
 
-    .overview-shot--web { aspect-ratio: 16 / 9; }
-    .bento-card.overview-shot--app { border-color: rgba(var(--ai-cyan-rgb), 0.3); }
+    /* App and Web side by side in one card (the desktop wall's column
+       widths: 269 to the web's 656) */
+    .overview-works { aspect-ratio: 925 / 360; }
 
-    .overview-shot-link {
+    .overview-works-row {
       position: absolute;
       inset: 0;
-      display: block;
+      display: grid;
+      grid-template-columns: minmax(0, 269fr) minmax(0, 656fr);
       border-radius: inherit;
+      overflow: hidden;
+    }
+
+    .overview-work {
+      position: relative;
+      display: block;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .overview-work + .overview-work {
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .overview-shot img {
@@ -3214,8 +3293,7 @@
         grid-template-columns: minmax(0, 1fr);
         grid-template-areas:
           "profile"
-          "app"
-          "web"
+          "works"
           "tools"
           "design"
           "workflow"
@@ -3224,7 +3302,18 @@
           "cta";
       }
 
-      .overview-shot--app { aspect-ratio: 4 / 5; }
+      /* the two works stacked */
+      .overview-works { aspect-ratio: auto; }
+      .overview-works-row {
+        position: relative;
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .overview-work--app { aspect-ratio: 4 / 5; }
+      .overview-work--web { aspect-ratio: 16 / 9; }
+      .overview-work + .overview-work {
+        border-left: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
 
     }
 
@@ -3255,13 +3344,13 @@
           minmax(0, 133fr) minmax(0, 195fr) minmax(0, 370fr);
         grid-template-rows: minmax(0, 190fr) minmax(0, 194fr) auto minmax(0, 224fr);
         grid-template-areas:
-          "profile app web web web web tools"
-          "profile app web web web web design"
+          "profile works works works works works tools"
+          "profile works works works works works design"
           "profile workflow workflow workflow workflow workflow design"
           "stats stats domains domains domains cta cta";
       }
 
-      .overview-shot--web { aspect-ratio: auto; }
+      .overview-works { aspect-ratio: auto; }
       .bento-card.overview-design { min-height: 0; }
 
       /* the profile card fills its column (rows 1-3) instead of keeping its
@@ -4297,9 +4386,12 @@
 
     /* Chinese wraps at punctuation and spaces, not mid-word (莫|蘭迪),
        phones too: a phrase that still can't fit breaks anywhere rather
-       than running past the card. */
+       than running past the card. The lines under the tabs too. */
     .bento-point > span:last-child,
     .about-lead,
+    .process-column-desc,
+    .skills-sub-line,
+    .process-tab-aside .tech-desc,
     .bento-text {
       word-break: keep-all;
       overflow-wrap: anywhere;
@@ -4415,8 +4507,7 @@
     }
 
     /* Card titles (not the big-number tiles): the usual size and place
-       (.bento-label), heavy, in full text colour like Tech Stack's card
-       titles (.tech-name). */
+       (.bento-label), heavy, in full text colour. */
     .bento-card:not(.bento-stat-big) .bento-label,
     :root[data-theme="light"] .bento-card:not(.bento-stat-big) .bento-label {
       font-weight: 800;
@@ -4993,14 +5084,18 @@
       margin-bottom: 0;
     }
 
-    /* In-house / Freelance: one column, two tabs (the My Skills tab look) */
+    /* In-house / Freelance: one column, the FAQ's pill tabs */
     .process-tabs.process-mode-tabs {
       justify-content: flex-start;
+      max-width: 480px;
       margin: 0 0 var(--tab-gap-below);
     }
 
-    .process-mode-tab {
-      --tab-c2: var(--primary);
+    .skills-tab:focus-visible,
+    .process-mode-tab:focus-visible,
+    .about-tab:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
     }
 
     .process-mode-desc {
@@ -5450,6 +5545,18 @@
       transition: color .3s;
     }
 
+    /* Tech Stack's tabs carry the skill's icon, so they run a little wider
+       and may share a narrow phone's width. */
+    .process-scroll-wrap--tech .process-tab {
+      flex: 0 1 128px;
+      min-width: 0;
+      white-space: nowrap;
+    }
+    .process-tab-icon {
+      margin-right: 6px;
+      color: var(--tab-c);
+    }
+
     .process-tab.is-active,
     .process-tab:hover {
       color: var(--text);
@@ -5493,50 +5600,53 @@
     }
 
     /* Tech Stack on desktop: the phone switcher (ProcessCarousel `single`)
-       in two columns — left the tabs (left-aligned like My Design
-       Process's) over the open card's name + line, right the card with only
-       its demo. The wrap reaches 16px past the column on each side (room
-       for the card shadows inside its clip); the tabs, text and track pad it
-       back, so the edges line up with the heading. */
+       in two columns of the section itself — left the heading, then the
+       tabs (left-aligned like My Design Process's) over the open card's
+       line; right the card with only its demo, its top level with the
+       title's (as My Skills' cards). The wrap steps aside (display:
+       contents) so its tabs, line and track sit in the section's grid. */
     @media (min-width: 1025px) {
-      .process-scroll-wrap--tech {
+      #tech-stack {
         display: grid;
         grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-        grid-template-rows: auto 1fr;
+        /* label, title, sub, then the MCP strip across; the card's top
+           level with the title's, the tabs + line block centred on it */
+        grid-template-rows: auto auto auto 1fr auto;
+        --tab-aside-h: 108px;
+        column-gap: 32px;
         align-items: start;
-        margin: 0 -16px;
-        overflow-x: clip;
-        overflow-y: visible;
       }
-      /* (the card's top = the track's 24px padding = the tabs' top) */
+      #tech-stack > .section-label { grid-area: 1 / 1; }
+      #tech-stack > .about-h2 { grid-area: 2 / 1; }
+      #tech-stack > .tech-sub { grid-area: 3 / 1; }
+      #tech-stack > .mcp-scroll { grid-area: 5 / 1 / 6 / 3; }
+      .process-scroll-wrap--tech {
+        display: contents;
+      }
+      .process-scroll-wrap--tech .process-tabs-block {
+        grid-area: 2 / 1 / 5 / 2;
+        align-self: center;
+      }
       .process-scroll-wrap--tech .process-tabs {
-        grid-area: 1 / 1;
         justify-content: flex-start;
-        margin: var(--tab-gap-above) 16px 0;
+        margin: 0;
       }
+      /* a fixed floor, so switching tabs never moves the block */
       .process-scroll-wrap--tech .process-tab-aside {
-        grid-area: 2 / 1;
         display: block;
-        margin: var(--tab-gap-below) 32px 0 16px;
+        min-height: var(--tab-aside-h);
+        margin: var(--tab-gap-below) 16px 0 0;
         animation: process-mode-desc-in .3s ease both;
-      }
-      .process-tab-aside .tech-name {
-        font-size: 24px;
-      }
-      .process-tab-aside .tech-desc {
-        margin: 14px 0 0;
-        font-size: var(--tab-desc-size);
-        line-height: var(--tab-desc-lh);
       }
       /* No slide on desktop: the three cards stack in one cell and
          cross-fade (the track's inline translateX / drag are overridden) */
       .process-scroll-wrap--tech .process-column-grid--inhouse {
-        grid-area: 1 / 2 / 3 / 3;
+        grid-area: 2 / 2 / 5 / 3;
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         transform: none !important;
         cursor: auto;
-        padding: var(--tab-gap-above) 16px 28px;
+        padding: 0 0 28px;
       }
       .process-scroll-wrap--tech .process-column-grid--inhouse .process-swipe-slot {
         grid-area: 1 / 1;
@@ -5549,9 +5659,6 @@
         opacity: 0;
         pointer-events: none;
       }
-      .process-scroll-wrap--tech .tech-item-text {
-        display: none;
-      }
       .process-scroll-wrap--tech .tech-code-preview {
         flex: 1;
         margin-top: 0;
@@ -5559,6 +5666,43 @@
     }
     @media (min-width: 1025px) and (prefers-reduced-motion: reduce) {
       .process-scroll-wrap--tech .process-tab-aside { animation: none; }
+    }
+    /* wide enough for every Tech Stack line to fit on two rows */
+    @media (min-width: 1280px) {
+      #tech-stack { --tab-aside-h: 78px; }
+    }
+
+    /* Every width: the description sits outside the card (the aside), the
+       card holds only its demo. */
+    .process-scroll-wrap--tech .tech-item-text {
+      display: none;
+    }
+    .process-tab-aside .tech-desc {
+      margin: 0;
+      font-size: var(--tab-desc-size);
+      line-height: var(--tab-desc-lh);
+    }
+    /* Below desktop it runs between the tabs and the card; the floor fits
+       the longest line, so switching tabs never moves the card. */
+    @media (max-width: 1024px) {
+      .process-scroll-wrap--tech .process-tab-aside {
+        display: block;
+        min-height: calc(var(--tab-desc-size) * var(--tab-desc-lh) * 2);
+        margin: 16px 16px 0;
+      }
+    }
+    @media (max-width: 767px) {
+      .process-scroll-wrap--tech .process-tab {
+        flex-basis: 112px;
+      }
+      .process-scroll-wrap--tech .process-tab-aside {
+        min-height: calc(var(--tab-desc-size) * var(--tab-desc-lh) * 3);
+      }
+    }
+    @media (max-width: 359px) {
+      .process-scroll-wrap--tech .process-tab-aside {
+        min-height: calc(var(--tab-desc-size) * var(--tab-desc-lh) * 4);
+      }
     }
 
     /* ══ SCROLLER — RAF-driven for hero/skills, CSS animation for portfolio ══ */
@@ -6091,28 +6235,14 @@
       --spotlight-color: rgba(108, 99, 255, 0.22);
     }
 
-    /* Groups the name/description so the ≤1024px override below can lay
+    /* Groups the description so the ≤1024px override below can lay
        them out as one flex item beside .tech-code-preview. `display:
        contents` drops the wrapper from the box tree on desktop, so
-       .tech-item-header/.tech-desc stay direct flex items of the column
+       .tech-desc stays a direct flex item of the column
        exactly as before — this wrapper has zero effect until the row
        layout below turns it into a real box. */
     .tech-item-text {
       display: contents;
-    }
-
-    .tech-item-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .tech-name {
-      font-size: 20px;
-      font-weight: 500;
-      letter-spacing: -.01em;
-      line-height: 1.1;
     }
 
     /* Card body copy: 14px in --text-70, the same as the About cards
@@ -8408,6 +8538,21 @@
       z-index: 1;
     }
 
+    /* My Skills, My Design Process and About's pill tabs: each its label
+       plus In-house's side space; phones share the row instead */
+    @media (min-width: 768px) {
+      .faq-tab.skills-tab,
+      .faq-tab.process-mode-tab,
+      .faq-tab.about-tab {
+        flex: 0 0 auto;
+        min-width: 0;
+        padding-inline: var(--pill-tab-pad);
+      }
+      .process-tabs.process-mode-tabs {
+        width: fit-content;
+      }
+    }
+
     .faq-list {
       display: flex;
       flex-direction: column;
@@ -9060,7 +9205,6 @@
     .hero-h2,
     .about-h2,
     .contact-headline,
-    .tech-name,
     .process-name,
     .line-title,
     .stat-num,
@@ -9406,21 +9550,6 @@
          domains), stretched to the photo's height. The availability card
          runs the full width under them, then the two intro cards and the
          workflow card. */
-      /* the desktop column wrappers (AboutSection) step aside: the cards
-         sit straight in this grid */
-      .about-col {
-        display: contents;
-      }
-
-      .about-grid {
-        grid-template-columns: repeat(24, 1fr);
-        grid-template-rows: repeat(3, auto);
-        grid-template-areas:
-          "headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline headline"
-          "p1 p1 p1 p1 p1 p1 p1 p1 p2 p2 p2 p2 p2 p2 p2 p2 p3 p3 p3 p3 p3 p3 p3 p3"
-          "intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro1 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2 intro2";
-        gap: 16px;
-      }
 
       /* Profile card overlay text — the 2-col-wide photo cell is narrower
          relative to its own card height here than on desktop, so the name/
@@ -9570,14 +9699,18 @@
         display: grid;
         grid-template-columns: 1fr 3fr;
         column-gap: 32px;
-        /* Top-anchor both cells (was center) so the title's offset below is
-           measured from the carousel's top, not its centre. */
         align-items: start;
       }
 
-      /* The tabs' top is the carousel's top (the shared tab alignment;
-         it used to drop 108px to continue the cards' staircase). */
+      /* Tabs + text centred on the carousel's height. The floor fits the
+         taller mode, so switching In-house / Freelance never moves the tabs;
+         the negative margin drops the last item's own 16px from the centring. */
       .process-column-head {
+        align-self: center;
+        box-sizing: border-box;
+        min-height: var(--process-head-h);
+        --process-head-h: 238px;
+        margin-bottom: -16px;
         padding-top: 0;
       }
 
@@ -9585,6 +9718,10 @@
         position: static;
         margin: 0;
       }
+    }
+    /* the description wraps one line less from here */
+    @media (min-width: 1280px) {
+      .process-column-head { --process-head-h: 210px; }
     }
 
     /* ── MOBILE (< 768px) ── */
@@ -9711,24 +9848,6 @@
       /* About — mostly single column; years/projects still pair up, but
          domains (now a dominant CardSwap background card) takes the full
          width. */
-      /* the desktop column wrappers (AboutSection) step aside: the cards
-         sit straight in this grid */
-      .about-col {
-        display: contents;
-      }
-
-      .about-grid {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto;
-        grid-template-areas:
-          "headline headline"
-          "p1 p1"
-          "p2 p2"
-          "p3 p3"
-          "intro1 intro1"
-          "intro2 intro2";
-        gap: 14px;
-      }
 
       /* Extra breathing room below the profile photo card — the grid's
          uniform 14px gap reads too tight between the photo and the headline
@@ -9974,16 +10093,12 @@
       .process-scroll-wrap--tech .tech-item {
         height: 100%;
       }
-      /* One narrow card: stack title, description, code instead of the
-         full-width phone card's code | description columns. */
+      /* One narrow card: only the code (the description sits above it). */
       .process-scroll-wrap--tech .tech-item,
       .process-scroll-wrap--tech .tech-item.html-item,
       .process-scroll-wrap--tech .tech-item.react-item {
         grid-template-columns: minmax(0, 1fr);
-        grid-template-areas:
-          "header"
-          "desc"
-          "code";
+        grid-template-areas: "code";
         align-content: start;
         align-items: start;
       }
@@ -10251,15 +10366,13 @@
       margin-bottom: var(--tab-gap-above);
     }
 
-    /* Desktop: the cards start level with the tabs (the shared tab
-       alignment), not the label. The intro's pieces join the showcase's
-       grid: label, title, sub in rows 1–3, then tabs, line, tags beside
-       the cards (rows 4–6); the last, flexible row takes the cards' extra
-       height, so the left rows keep their own. */
+    /* Desktop: the intro's pieces join the showcase's grid: label, title,
+       sub in rows 1–3; the cards' top level with the title's, and the tabs,
+       line and tags block centred on the cards (same rows, align-self). */
     @media (min-width: 1025px) {
       .skills-showcase {
         row-gap: 0;
-        grid-template-rows: auto auto auto auto auto auto 1fr;
+        grid-template-rows: auto auto auto 1fr;
       }
       .skills-intro {
         display: contents;
@@ -10267,9 +10380,16 @@
       .skills-intro > * {
         grid-column: 1;
       }
+      .skills-intro > .section-label { grid-row: 1; }
+      .skills-intro > .skills-h2 { grid-row: 2; }
+      .skills-intro > .skills-head-sub { grid-row: 3; }
+      .skills-intro > .skills-chooser {
+        grid-row: 2 / 5;
+        align-self: center;
+      }
       .skills-tools {
         grid-column: 2;
-        grid-row: 4 / 8;
+        grid-row: 2 / 5;
       }
     }
 
@@ -10327,29 +10447,27 @@
       from { opacity: 0; translate: 0 8px; }
     }
 
-    /* the tool tabs reuse the phone Tech Stack tabs (.process-tabs /
-       .process-tab); here they sit left in the copy column, and the open
-       tab's segment grows in instead of timing an autoplay */
+    /* the tool tabs are the FAQ's pill tabs, left in the copy column: three
+       short labels, so the pill hugs them; phones share the full row */
     .process-tabs.skills-tabs {
       justify-content: flex-start;
+      justify-self: start;
+      width: fit-content;
+      max-width: 100%;
       margin: 0 0 var(--tab-gap-below);
     }
-
-    /* one accent for every tab: the fill and the tag icons */
-    .skills-tab {
-      --tab-c2: var(--primary);
+    @media (max-width: 767px) {
+      .process-tabs.skills-tabs {
+        justify-self: stretch;
+        width: auto;
+      }
+      .skills-tab {
+        flex: 1 1 0;
+      }
     }
 
     .skills-tag-list .skill-pill i {
       color: var(--primary);
-    }
-
-    .skills-tab-fill {
-      animation: skill-tab-fill .45s cubic-bezier(.2, .8, .2, 1) both;
-    }
-
-    @keyframes skill-tab-fill {
-      from { transform: scaleX(0); }
     }
 
     /* all panels share one cell: the area keeps the tallest tab's height */
@@ -10487,7 +10605,6 @@
       .skills-cards.is-active .skill-card { animation: none; }
       .skills-sub-line { transition: none; translate: none; }
       .skills-tag-list.is-active .skill-pill { animation: none; }
-      .skills-tab-fill { animation: none; }
       .skill-card:hover { translate: none; }
     }
 
@@ -10950,13 +11067,9 @@
         flex-direction: row-reverse;
       }
 
-      /* Phones only: the title moves out of the row entirely to sit
-         full-width above both columns, left-aligned, instead of being
-         trapped in whichever column .tech-item-text ends up in — a narrow
-         phone left it fighting the code column for width. .tech-item
-         switches from a flex row to a 2-column grid so .tech-item-header
-         can span both columns while .tech-code-preview and .tech-desc sit
-         side by side in the row underneath; .tech-item-text goes back to
+      /* Phones only: .tech-item switches from a flex row to a 2-column grid
+         with .tech-code-preview and .tech-desc side by side (the tab above
+         the card carries the title); .tech-item-text goes back to
          display: contents (same as the desktop base rule) so its children
          become direct grid items instead of being trapped inside a flex
          column that no longer exists. Nested (not a sibling block down in
@@ -10968,8 +11081,7 @@
           display: grid;
           grid-template-columns: 1fr 1fr;
           grid-template-areas:
-            "header header"
-            "code   desc";
+            "code desc";
           /* Centers the code column and the description text on the same
              horizontal line instead of top-anchoring them — they rarely end
              up the same natural height, so top-anchored left one looking
@@ -10979,10 +11091,6 @@
         }
         .tech-item-text {
           display: contents;
-        }
-        .tech-item-header {
-          grid-area: header;
-          margin-bottom: 0;
         }
         .tech-code-preview {
           grid-area: code;
@@ -10998,8 +11106,7 @@
         .tech-item.html-item,
         .tech-item.react-item {
           grid-template-areas:
-            "header header"
-            "desc   code";
+            "desc code";
         }
       }
 

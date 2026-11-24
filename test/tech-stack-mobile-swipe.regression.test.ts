@@ -24,16 +24,23 @@ describe('Tech Stack is a one-card tab carousel', () => {
     expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-tabs \{[^}]*justify-content: flex-start;/);
     expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-column-grid--inhouse \.process-swipe-slot \{\s*flex: 0 0 100%;/);
     // two columns: tabs + text left, the demo-only card right
-    expect(desk).toMatch(/\.process-scroll-wrap--tech \{\s*display: grid;\s*grid-template-columns: minmax\(0, 5fr\) minmax\(0, 7fr\);/);
-    expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-tab-aside \{\s*grid-area: 2 \/ 1;\s*display: block;/);
+    // the section is the grid (the card's top level with the title's); the wrap steps aside
+    expect(desk).toMatch(/#tech-stack \{\s*display: grid;\s*grid-template-columns: minmax\(0, 5fr\) minmax\(0, 7fr\);/);
+    expect(desk).toMatch(/\.process-scroll-wrap--tech \{\s*display: contents;/);
+    expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-tab-aside \{\s*display: block;/);
     expect(desk).toMatch(/\.process-scroll-wrap--tech \.tech-item-text \{\s*display: none;/);
     // no slide on desktop: the cards stack in one cell and cross-fade
     expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-column-grid--inhouse \{[^}]*display: grid;[^}]*transform: none !important;/);
     expect(desk).toMatch(/\.process-swipe-slot \{\s*grid-area: 1 \/ 1;/);
     expect(desk).toMatch(/\.process-scroll-wrap--tech \.process-swipe-slot\.is-out \{\s*opacity: 0;/);
-    // below desktop the text stays in the card
+    // only Tech Stack shows an aside; below desktop it sits above the card
     expect(css).toMatch(/\n {4}\.process-tab-aside \{\s*display: none;/);
+    expect(desk).toMatch(/@media \(max-width: 1024px\) \{\s*\.process-scroll-wrap--tech \.process-tab-aside \{\s*display: block;/);
     expect(tech).toMatch(/aside=\{TECH_TEXT\.map/);
+    // the tabs carry the name + icon: no second title in the aside or cards
+    for (const icon of ['fa-html5', 'fa-js', 'fa-react']) expect(tech).toContain(`icon: 'fab ${icon}'`);
+    expect(tech).not.toContain('tech-name');
+    expect(tech).not.toContain('tech-item-header');
     // the subtitle no longer pulls the cards up (the old 3-up stagger)
     expect(css).not.toMatch(/margin-bottom: -32px;/);
   });
@@ -49,8 +56,8 @@ describe('Tech Stack is a one-card tab carousel', () => {
     expect(rule).toMatch(/--mcp-head-gap:\s*56px;/);
   });
 
-  it('stacks title, description and code inside the narrow carousel card', () => {
+  it('keeps only the code inside the narrow carousel card', () => {
     const card = mobileBlock.match(/\.process-scroll-wrap--tech \.tech-item,\s*\.process-scroll-wrap--tech \.tech-item\.html-item,\s*\.process-scroll-wrap--tech \.tech-item\.react-item \{[^}]*\}/)?.[0];
-    expect(card).toMatch(/grid-template-areas:\s*"header"\s*"desc"\s*"code";/);
+    expect(card).toMatch(/grid-template-areas: "code";/);
   });
 });

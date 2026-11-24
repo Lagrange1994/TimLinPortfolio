@@ -44,9 +44,19 @@ describe('ProcessCarousel single', () => {
     const text = () => container.querySelector('.process-tab-aside')!.textContent;
     expect(text()).toBe('HTML / CSS text');
     // sits between the tabs and the track (grid places it under the tabs)
-    expect(container.querySelector('.process-tabs + .process-tab-aside + .process-column-grid')).not.toBeNull();
+    expect(container.querySelector('.process-tabs-block > .process-tabs + .process-tab-aside')).not.toBeNull();
     fireEvent.click(getAllByRole('tab')[1]);
     expect(text()).toBe('JavaScript text');
+  });
+
+  it('a tab with an icon shows it, hidden from screen readers; one without has none', () => {
+    const withIcon = [{ ...tabs[0], icon: 'fab fa-html5' }, tabs[1], tabs[2]];
+    const { getAllByRole } = render(<ProcessCarousel single variant="tech" tabs={withIcon} cards={cards} />);
+    const [first, second] = getAllByRole('tab');
+    const icon = first.querySelector('.process-tab-label i.process-tab-icon.fa-html5')!;
+    expect(icon.getAttribute('aria-hidden')).toBe('true');
+    expect(first.textContent).toBe('HTML / CSS');
+    expect(second.querySelector('.process-tab-icon')).toBeNull();
   });
 
   it('no aside without one passed', () => {

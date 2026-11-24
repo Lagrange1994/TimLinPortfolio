@@ -130,7 +130,11 @@ export default function OverviewSection() {
     <div className="section-wrapper">
       <section id="overview" className="section overview">
         <div className="section-label rise-soft">Overview</div>
-        <h2 className="overview-sr">Overview</h2>
+        {/* the site's headline and lead, above the wall */}
+        <div className="overview-headline">
+          <h2 className="about-h2 rise-soft" dangerouslySetInnerHTML={{ __html: t.overview_headline }} />
+          <p className="about-lead rise-soft" dangerouslySetInnerHTML={{ __html: t.overview_lead }} />
+        </div>
         <div className="overview-fit" ref={fitRef}>
         <div className="overview-grid" id="overview-grid">
 
@@ -156,28 +160,29 @@ export default function OverviewSection() {
             </div>
           </div>
 
-          {/* One App work */}
-          <a className="bento-card overview-shot overview-shot--app overview-area-app rise-card" href={app.link}>
-            <img src={app.img} alt={title(app.id)} loading="lazy" />
-            <span className="overview-pill">App</span>
-          </a>
-
-          {/* One Web work, with the wall's only "all work" button */}
+          {/* One App and one Web work in one card, with the wall's only
+              "all work" button */}
           <NotchCard
-            area="overview-area-web"
+            area="overview-area-works"
             side="right"
             shadow={false}
-            className="bento-card overview-shot overview-shot--web rise-card"
+            className="bento-card overview-shot overview-works rise-card"
             notch={
               <button type="button" className="about-more about-action" onClick={() => scrollToSectionAligned('portfolio')}>
                 {t.overview_all_work} <span aria-hidden="true">→</span>
               </button>
             }
           >
-            <a className="overview-shot-link" href={web.link}>
-              <img src={web.img} alt={title(web.id)} loading="lazy" />
-              <span className="overview-pill">Web</span>
-            </a>
+            <div className="overview-works-row">
+              <a className="overview-work overview-work--app" href={app.link}>
+                <img src={app.img} alt={title(app.id)} loading="lazy" />
+                <span className="overview-pill">App</span>
+              </a>
+              <a className="overview-work overview-work--web" href={web.link}>
+                <img src={web.img} alt={title(web.id)} loading="lazy" />
+                <span className="overview-pill">Web</span>
+              </a>
+            </div>
           </NotchCard>
 
           {/* Tools: software over web skills */}

@@ -32,14 +32,18 @@ export const translations = {
     hero_ask_q6_label: '英文能力？',
     // about
     about_headline:
-      'Product designer for <span class="gradient-text">complex systems.</span>',
-    about_lead: `讓複雜系統變得可被掌控的產品設計師，<br class="br-mobile">兼具&nbsp;3D&nbsp;互動開發與 AI 工作流整合能力。<br>我替警政、醫療與公部門設計每天要用的系統：先到現場看人怎麼用，再把龐雜流程刪減、整理成一眼看懂的介面，一路做到開發交付。`,
+      'From the field <span class="gradient-text">to the final build.</span>',
+    about_lead: `我替警政、醫療與公部門設計每天要用的系統：先到現場看人怎麼用，再把龐雜流程刪減、整理成一眼看懂的介面，一路做到開發交付。`,
     // About bento: short card copy (the full about_p1–p3 stay as the chat
     // bot's context, api/_chat-core.ts). Tags: label per linked project.
     about_intro1_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>研究</span><span>到現場場勘，訪談第一線使用者</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-flow-arrow" aria-hidden="true"></i>交付</span><span>定地圖與即時資料規格，必要時自己寫前端</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-sketch-logo" aria-hidden="true"></i>工具</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Figma_logo.png" alt="" />Figma</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Adobe_XD_logo.png" alt="" />Adobe XD</strong> 設計；讀寫 <strong class="tool-name">HTML / CSS</strong>、<strong class="tool-name">React / Vue</strong>，和工程師對規格</span></span>`,
     about_intro2_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-palette" aria-hidden="true"></i>配色</span><span>工廠沿用機台燈號，理財遊戲用莫蘭迪色減壓</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-cube" aria-hidden="true"></i>3D</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Blender_logo.png" alt="" />Blender</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Spline_logo.webp" alt="" />Spline</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Dora_logo.png" alt="" />Dora</strong>，<strong class="tool-name">React + WebGL</strong> 上線</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-film-strip" aria-hidden="true"></i>平面</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Photoshop_logo.png" alt="" />Photoshop</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Illustrator_logo.png" alt="" />Illustrator</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Lightroom_logo.png" alt="" />Lightroom</strong></span></span>`,
     about_ai_short: `需求一送進來，AI 就先整理好重點；<strong>第一次通話前，我已掌握需求與時程。</strong>`,
     about_ai_more: '看完整流程',
+    // Overview's headline and lead (moved from About)
+    overview_headline:
+      'Product designer for <span class="gradient-text">complex systems.</span>',
+    overview_lead: '讓複雜系統變得可被掌控的產品設計師，<br class="br-mobile">兼具&nbsp;3D&nbsp;互動開發與 AI 工作流整合能力。',
     overview_all_work: '看所有作品',
     overview_process_more: '看設計流程',
     about_tags_systems: '台南智慧簽巡|新竹環保局後台|警政影像系統',
@@ -97,9 +101,9 @@ export const translations = {
     skill_html:
       '熟悉網頁基礎標籤結構與語意化寫法，能獨立閱讀、修改程式碼，有效銜接設計稿與開發實作。',
     skill_js:
-      '能讀懂程式邏輯並精準描述問題情境，搭配 AI 工具實現互動功能、動畫效果與資料串接——這個作品集網站的互動邏輯即為實際成果。',
+      '能讀懂程式邏輯並精準描述問題情境，搭配 AI\u00a0工具實現互動、動畫與資料串接。這個作品集網站的互動邏輯，就是實際成果。',
     skill_css:
-      '具備 Flexbox 與 Tailwind 排版實作能力，能獨立處理 RWD 樣式調整，並理解設計決策對前端渲染的影響。',
+      '具備 Flexbox 與 Tailwind 排版能力，能獨立調整 RWD\u00a0樣式，也理解設計決策對前端渲染的影響。',
     // tech stack demos (mock screens: in the page's language)
     td_html_h1: '標題',
     td_html_p: '內文',
@@ -349,11 +353,14 @@ export const translations = {
     // about
     about_headline:
       'Product designer for <span class="gradient-text">complex systems.</span>',
-    about_lead: `A product designer who tames complex systems, with 3D interactive development and AI workflow integration built in.<br>I design the systems police, hospitals and public agencies use every day: I start on site to see how people work, then cut and reorganise complex flows into screens you can read at a glance, all the way to development.`,
+    about_lead: `I design the systems police, hospitals and public agencies use every day: I start on site to see how people work, then cut and reorganise complex flows into screens you can read at a glance, all the way to development.`,
     about_intro1_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>Research</span><span>On site, observing and interviewing frontline users</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-flow-arrow" aria-hidden="true"></i>Delivery</span><span>Specify map and live-data contracts; write the front end when needed</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-sketch-logo" aria-hidden="true"></i>Tools</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Figma_logo.png" alt="" />Figma</strong> and <strong class="tool-name"><img class="tool-logo" src="./img/others/Adobe_XD_logo.png" alt="" />Adobe XD</strong>; I read <strong class="tool-name">HTML / CSS</strong> and <strong class="tool-name">React / Vue</strong> to settle specs with engineers</span></span>`,
     about_intro2_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-palette" aria-hidden="true"></i>Colour</span><span>Factory signal lights; calm Morandi tones for a finance game</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-cube" aria-hidden="true"></i>3D</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Blender_logo.png" alt="" />Blender</strong>, <strong class="tool-name"><img class="tool-logo" src="./img/others/Spline_logo.webp" alt="" />Spline</strong> and <strong class="tool-name"><img class="tool-logo" src="./img/others/Dora_logo.png" alt="" />Dora</strong>, shipped with <strong class="tool-name">React + WebGL</strong></span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-film-strip" aria-hidden="true"></i>Graphics</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Photoshop_logo.png" alt="" />Photoshop</strong>, <strong class="tool-name"><img class="tool-logo" src="./img/others/Illustrator_logo.png" alt="" />Illustrator</strong> and <strong class="tool-name"><img class="tool-logo" src="./img/others/Lightroom_logo.png" alt="" />Lightroom</strong></span></span>`,
     about_ai_short: `Requests are sorted by AI the moment they arrive, so <strong>I know the goals and timeline before the first call.</strong>`,
     about_ai_more: 'See the full workflow',
+    overview_headline:
+      'Product designer for <span class="gradient-text">complex systems.</span>',
+    overview_lead: 'A product designer who tames complex systems, with 3D interactive development and AI workflow integration built in.',
     overview_all_work: 'See all work',
     overview_process_more: 'See the process',
     about_tags_systems: 'Tainan patrol system|Hsinchu environment backend|Police video system',

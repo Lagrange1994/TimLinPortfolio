@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useState, useRef, useMemo, type ReactNode, type CSSProperties, type PointerEvent as ReactPointerEvent, type AnimationEvent as ReactAnimationEvent, type TouchEvent as ReactTouchEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { gsap } from 'gsap';
+import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
 import BorderGlow from './BorderGlow';
 import { HtmlDemo, JsDemo, RwdDemo, TechSats } from './TechDemos';
@@ -14,6 +15,7 @@ import AiAppStage from './AiAppStage';
 import { attachAiViewerEntrance } from '../utils/aiViewerEntrance';
 import { attachStageNotch, navBaySize } from '../utils/aiStageNotch';
 import { swipeStep } from '../utils/swipeStep';
+import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import { notchPath, leftBayPath } from '../utils/notchPath';
 import { CARD_RADIUS, NOTCH_GAP, NOTCH_TURN } from '../utils/notchTokens';
 import LazyUnit from './LazyUnit';
@@ -276,7 +278,7 @@ function processVisibleCount(isMobile: boolean) {
 // thin underline whose current segment fills with the autoplay countdown
 // (MacBook Pro page, "M5 Pro / M5 Max").
 // color → color2: the matching card's own colour pair (underline fill).
-export type ProcessCarouselTab = { label: string; color: string; color2?: string };
+export type ProcessCarouselTab = { label: string; color: string; color2?: string; icon?: string };
 export function ProcessCarousel({ cards, single = false, variant, tabs, aside, active = true }: {
   cards: ReactNode[];
   single?: boolean;
@@ -517,7 +519,11 @@ export function ProcessCarousel({ cards, single = false, variant, tabs, aside, a
       {variant === 'process' && <svg className="stage-outline pn-outline" aria-hidden="true"><path fill="none" /></svg>}
       {/* Tabs sit above the cards (apple.com puts them below; here they
           read as the section's chooser before the card). */}
-      {showTabs && maxOffset > 0 && (
+      {/* the tabs and the open card's line as one block (Tech Stack's
+          desktop centres it on the card) */}
+      {showTabs && (
+      <div className="process-tabs-block">
+      {maxOffset > 0 && (
         <div className="process-tabs" role="tablist">
           {tabs!.map((tab, i) => {
             const on = i === offset;
@@ -531,7 +537,7 @@ export function ProcessCarousel({ cards, single = false, variant, tabs, aside, a
                 style={{ '--tab-c': tab.color, '--tab-c2': tab.color2 ?? tab.color } as CSSProperties}
                 onClick={() => goTo(i)}
               >
-                <span className="process-tab-label">{tab.label}</span>
+                <span className="process-tab-label">{tab.icon && <i className={`${tab.icon} process-tab-icon`} aria-hidden="true" />}{tab.label}</span>
                 <span className="process-tab-bar" aria-hidden="true">
                   {on && <span key={offset} className={`process-tab-fill${autoplayLive ? ' is-timing' : ''}${paused ? ' is-paused' : ''}`} onAnimationEnd={advanceOnFill} />}
                 </span>
@@ -540,7 +546,9 @@ export function ProcessCarousel({ cards, single = false, variant, tabs, aside, a
           })}
         </div>
       )}
-      {showTabs && aside?.[offset] && <div key={offset} className="process-tab-aside">{aside[offset]}</div>}
+      {aside?.[offset] && <div key={offset} className="process-tab-aside">{aside[offset]}</div>}
+      </div>
+      )}
       <div
         className={`process-column-grid process-column-grid--inhouse${dragging ? ' is-dragging' : ''}`}
         ref={trackRef}
@@ -656,12 +664,12 @@ export function DesignProcessSection() {
         <div className="section-label rise-soft">My Design Process</div>
         <h2 className="about-h2 rise-soft" style={{ marginBottom: '8px' }}>Two ways to work, <span className="gradient-text">one process</span></h2>
         <p className="tech-sub process-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.process_sub }} />
-        {/* In-house and Freelance in one column, switched by tabs (the
-            My Skills tab look); the open mode's carousel remounts fresh */}
+        {/* In-house and Freelance in one column, switched by the FAQ's pill
+            tabs; the open mode's carousel remounts fresh */}
         <div className="process-dual">
           <div className="process-column">
             <div className="process-column-head">
-              <div className="process-tabs process-mode-tabs" role="tablist" aria-label="Design process" onKeyDown={onModeKey}>
+              <div className="process-tabs faq-tabs process-mode-tabs" role="tablist" aria-label="Design process" onKeyDown={onModeKey}>
                 {PROCESS_MODES.map((m, i) => (
                   <button
                     key={m.id}
@@ -672,13 +680,13 @@ export function DesignProcessSection() {
                     aria-controls={`process-panel-${m.id}`}
                     aria-selected={m.id === mode}
                     tabIndex={m.id === mode ? 0 : -1}
-                    className={`process-tab process-mode-tab${m.id === mode ? ' is-active' : ''}`}
+                    className={`faq-tab process-mode-tab${m.id === mode ? ' active' : ''}`}
                     onClick={() => setMode(m.id)}
                   >
-                    <span className="process-tab-label">{t[m.label]}</span>
-                    <span className="process-tab-bar" aria-hidden="true">
-                      {m.id === mode && <span className="process-tab-fill skills-tab-fill" />}
-                    </span>
+                    {m.id === mode && (
+                      <motion.span layoutId="process-mode-indicator" className="faq-tab-indicator" transition={INDICATOR_SPRING} aria-hidden="true" />
+                    )}
+                    <span className="faq-tab-label">{t[m.label]}</span>
                   </button>
                 ))}
               </div>
@@ -732,11 +740,12 @@ export function DesignProcessSection() {
 }
 
 // TECH STACK
-// each card's name line, for the desktop text column beside the demo
+// each card's line, for the desktop text column beside the demo (the tab
+// above it carries the name and icon)
 const TECH_TEXT = [
-  { key: 'html', icon: 'fab fa-html5', color: '#60a5fa', name: 'HTML / CSS / Tailwind', desc: 'skill_html' },
-  { key: 'js', icon: 'fab fa-js', color: '#fb923c', name: 'JavaScript', desc: 'skill_js' },
-  { key: 'react', icon: 'fab fa-react', color: '#a5b4fc', name: 'React.js / Vue.js', desc: 'skill_css' },
+  { key: 'html', desc: 'skill_html' },
+  { key: 'js', desc: 'skill_js' },
+  { key: 'react', desc: 'skill_css' },
 ] as const;
 
 function TechStackSection() {
@@ -791,15 +800,14 @@ function TechStackSection() {
           single
           variant="tech"
           tabs={[
-            { label: 'HTML / CSS', color: '#60a5fa', color2: '#3b82f6' },
-            { label: 'JavaScript', color: '#fb923c', color2: '#f97316' },
-            { label: 'React / Vue', color: '#8b7bff', color2: '#6C63FF' },
+            { label: 'HTML / CSS', icon: 'fab fa-html5', color: '#60a5fa', color2: '#3b82f6' },
+            { label: 'JavaScript', icon: 'fab fa-js', color: '#fb923c', color2: '#f97316' },
+            { label: 'React / Vue', icon: 'fab fa-react', color: '#8b7bff', color2: '#6C63FF' },
           ]}
-          // desktop: the open card's name + line under the tabs, the card
+          // desktop: the open card's line under the tabs, the card
           // itself only its demo (CSS hides one copy per breakpoint)
           aside={TECH_TEXT.map(x => (
             <div key={x.key} className="tech-aside">
-              <div className="tech-name"><i className={x.icon} style={{ color: x.color, marginRight: '8px' }}></i>{x.name}</div>
               <p className="tech-desc">{t[x.desc]}</p>
             </div>
           ))}
@@ -808,9 +816,6 @@ function TechStackSection() {
             <div className="tech-item html-item card-spotlight sc-card">
               <span className="card-glass-highlight" aria-hidden="true" />
               <div className="tech-item-text">
-                <div className="tech-item-header">
-                  <span className="tech-name"><i className="fab fa-html5" style={{ color: '#60a5fa', marginRight: '8px' }}></i>HTML / CSS / Tailwind</span>
-                </div>
                 <div className="tech-desc">{t.skill_html}</div>
               </div>
               <HtmlDemo />
@@ -822,9 +827,6 @@ function TechStackSection() {
             <div className="tech-item js-item card-spotlight sc-card">
               <span className="card-glass-highlight" aria-hidden="true" />
               <div className="tech-item-text">
-                <div className="tech-item-header">
-                  <span className="tech-name"><i className="fab fa-js" style={{ color: '#fb923c', marginRight: '8px' }}></i>JavaScript</span>
-                </div>
                 <div className="tech-desc">{t.skill_js}</div>
               </div>
               <JsDemo />
@@ -836,9 +838,6 @@ function TechStackSection() {
             <div className="tech-item react-item card-spotlight sc-card">
               <span className="card-glass-highlight" aria-hidden="true" />
               <div className="tech-item-text">
-                <div className="tech-item-header">
-                  <span className="tech-name"><i className="fab fa-react" style={{ color: '#a5b4fc', marginRight: '8px' }}></i>React.js / Vue.js</span>
-                </div>
                 <div className="tech-desc">{t.skill_css}</div>
               </div>
               <RwdDemo />

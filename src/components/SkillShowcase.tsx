@@ -1,5 +1,7 @@
 import { useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
+import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
+import { INDICATOR_SPRING } from '../utils/tabIndicator';
 
 // My Skills: a static showcase (it was two RAF marquees of pills). The copy
 // on the left holds the tabs; the line under them and the cards on the
@@ -321,9 +323,11 @@ export default function SkillShowcase() {
         <div className="section-label rise-soft">My Skills</div>
         <h2 className="about-h2 skills-h2 rise-soft">Tools behind <span className="gradient-text">the work</span></h2>
         <p className="tech-sub skills-head-sub rise-soft" dangerouslySetInnerHTML={{ __html: t.skills_head_sub }} />
-        {/* the phone Tech Stack tabs (.process-tab): a label over a thin
-            line, the open tab's segment filled in its colour */}
-        <div className="process-tabs skills-tabs rise-soft" role="tablist" aria-label="Tools" onKeyDown={onTabKey}>
+        {/* the tabs, their line and tags as one block (desktop centres it
+            on the cards) */}
+        <div className="skills-chooser">
+        {/* the FAQ's pill tabs, the indicator sliding between them */}
+        <div className="process-tabs faq-tabs skills-tabs rise-soft" role="tablist" aria-label="Tools" onKeyDown={onTabKey}>
           {SKILL_TABS.map((tb, i) => (
             <button
               key={tb.id}
@@ -334,13 +338,13 @@ export default function SkillShowcase() {
               aria-controls={`skills-panel-${tb.id}`}
               aria-selected={tb.id === active}
               tabIndex={tb.id === active ? 0 : -1}
-              className={`process-tab skills-tab${tb.id === active ? ' is-active' : ''}`}
+              className={`faq-tab skills-tab${tb.id === active ? ' active' : ''}`}
               onClick={() => setActive(tb.id)}
             >
-              <span className="process-tab-label">{tb.label}</span>
-              <span className="process-tab-bar" aria-hidden="true">
-                {tb.id === active && <span className="process-tab-fill skills-tab-fill" />}
-              </span>
+              {tb.id === active && (
+                <motion.span layoutId="skills-tab-indicator" className="faq-tab-indicator" transition={INDICATOR_SPRING} aria-hidden="true" />
+              )}
+              <span className="faq-tab-label">{tb.label}</span>
             </button>
           ))}
         </div>
@@ -368,6 +372,7 @@ export default function SkillShowcase() {
               ))}
             </ul>
           ))}
+        </div>
         </div>
       </div>
       <div className="skills-tools rise-card">

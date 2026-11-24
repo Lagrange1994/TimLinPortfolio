@@ -1,5 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
+import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import NotchCard from './NotchCard';
 import { PrincipleArtContext, PrincipleArtRules, PrincipleArtSubtract } from './PrincipleArt';
 
@@ -12,6 +14,13 @@ const VISUAL_LINKS = ['project_13.html', 'project_12.html'];
 // general rule and a scene illustration each, no project tags.
 const PRINCIPLES = [1, 2, 3] as const;
 
+// The two tabs (structure: English on both pages).
+const ABOUT_TABS = [
+  { id: 'principles', label: 'Design Principles' },
+  { id: 'intro', label: 'What I Do' },
+] as const;
+type AboutTab = typeof ABOUT_TABS[number]['id'];
+
 // The project tags behind a card's claim, each a link to its page.
 function proofTags(labels: string, links: readonly string[]) {
   return labels.split('|').map((label, i) => (
@@ -21,6 +30,19 @@ function proofTags(labels: string, links: readonly string[]) {
 
 export default function AboutSection() {
   const { t } = useLang();
+  const [tab, setTab] = useState<AboutTab>('principles');
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  // ← → (and Home/End) move between the tabs
+  const onTabKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    const i = ABOUT_TABS.findIndex(x => x.id === tab);
+    const n = ABOUT_TABS.length;
+    const next = e.key === 'ArrowRight' ? (i + 1) % n : e.key === 'ArrowLeft' ? (i - 1 + n) % n
+      : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : -1;
+    if (next < 0) return;
+    e.preventDefault();
+    setTab(ABOUT_TABS[next].id);
+    tabRefs.current[next]?.focus();
+  };
 
   // Spotlight card effect — plain mousemove, matching ContactSection's
   // working pattern. No matchMedia gate and no pointerType filter (both
@@ -87,11 +109,10 @@ export default function AboutSection() {
       <section id="about" className="section">
         <div className="section-label rise-soft">About Me</div>
 
-        {/* One named-area grid: the headline, the three design principles,
-            then the two intro cards. The profile, stats, Service Domains,
-            AI workflow and availability cards live on the Overview wall
-            (OverviewSection) now. See .about-grid in portfolio.css for the
-            per-breakpoint areas. */}
+        {/* The headline, then the FAQ's pill tabs (as My Skills / My Design
+            Process), centred above the open tab's cards. The profile, stats, Service
+            Domains, AI workflow and availability cards live on the Overview
+            wall (OverviewSection). */}
         <div className="about-grid">
 
           <div className="about-headline">
@@ -102,8 +123,36 @@ export default function AboutSection() {
             <p className="about-lead rise-soft" dangerouslySetInnerHTML={{ __html: t.about_lead }} />
           </div>
 
-          {/* Design principles: their own row under the headline (desktop:
-              one 3-column strip). */}
+          <div className="about-tabbed">
+          <div className="about-tabs-head">
+            <div className="process-tabs faq-tabs about-tabs rise-soft" role="tablist" aria-label="About" onKeyDown={onTabKey}>
+              {ABOUT_TABS.map((x, i) => (
+                <button
+                  key={x.id}
+                  ref={el => { tabRefs.current[i] = el; }}
+                  type="button"
+                  role="tab"
+                  id={`about-tab-${x.id}`}
+                  aria-controls={`about-panel-${x.id}`}
+                  aria-selected={x.id === tab}
+                  tabIndex={x.id === tab ? 0 : -1}
+                  className={`faq-tab about-tab${x.id === tab ? ' active' : ''}`}
+                  onClick={() => setTab(x.id)}
+                >
+                  {x.id === tab && (
+                    <motion.span layoutId="about-tab-indicator" className="faq-tab-indicator" transition={INDICATOR_SPRING} aria-hidden="true" />
+                  )}
+                  <span className="faq-tab-label">{x.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* both panels stay mounted in one cell (the page's scroll reveal
+              scans the cards once, at mount); only the open one shows */}
+          <div className="about-panels">
+          <div id="about-panel-principles" role="tabpanel" aria-labelledby="about-tab-principles" className={`about-panel${tab === 'principles' ? ' is-active' : ''}`} aria-hidden={tab !== 'principles'}>
+          {/* Design principles: one 3-column strip */}
           <div className="about-col about-col--principles">
             {PRINCIPLES.map(n => {
               const key = `about_principle${n}` as const;
@@ -126,8 +175,9 @@ export default function AboutSection() {
             })}
           </div>
 
-          {/* Desktop: the two intro cards side by side. Tablet/phone:
-              display:contents, so the cards sit in the grid directly. */}
+          </div>
+          <div id="about-panel-intro" role="tabpanel" aria-labelledby="about-tab-intro" className={`about-panel${tab === 'intro' ? ' is-active' : ''}`} aria-hidden={tab !== 'intro'}>
+          {/* the two intro cards side by side */}
           <div className="about-col about-col--intro">
           {/* Intro cards — the bio prose (about_p1/about_p2) */}
           <NotchCard
@@ -152,6 +202,9 @@ export default function AboutSection() {
             <p className="bento-text bento-points" dangerouslySetInnerHTML={{ __html: t.about_intro2_short }} />
           </NotchCard>
 
+          </div>
+          </div>
+          </div>
           </div>
 
         </div>

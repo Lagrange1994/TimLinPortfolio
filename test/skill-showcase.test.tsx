@@ -19,7 +19,8 @@ describe('My Skills showcase', () => {
     const { container } = mount();
     const sub = container.querySelector('.skills-head-sub')!;
     expect(sub.previousElementSibling!.classList.contains('skills-h2')).toBe(true);
-    expect(sub.nextElementSibling!.classList.contains('skills-tabs')).toBe(true);
+    expect(sub.nextElementSibling!.matches('.skills-chooser')).toBe(true);
+    expect(sub.nextElementSibling!.firstElementChild!.classList.contains('skills-tabs')).toBe(true);
     expect(sub.textContent).toBe(translations.zh.skills_head_sub.replace('<br>', ''));
     expect(translations.en.skills_head_sub).toBeTruthy();
   });
@@ -50,10 +51,10 @@ describe('My Skills showcase', () => {
     expect(getByRole('tab', { name: 'Visual' }).getAttribute('aria-selected')).toBe('true');
     expect(getByRole('tab', { name: 'UI/UX' }).getAttribute('aria-selected')).toBe('false');
     expect(names(active())).toEqual(['Lightroom', 'Illustrator', 'Photoshop', 'Krita']);
-    // the phone Tech Stack tab look: label, line, the open one's fill
-    expect(container.querySelectorAll('.process-tabs [role=tab].process-tab .process-tab-bar')).toHaveLength(3);
-    expect(container.querySelectorAll('.process-tab-fill')).toHaveLength(1);
-    expect(getByRole('tab', { name: 'Visual' }).querySelector('.process-tab-fill')).not.toBeNull();
+    // the FAQ's pill tabs: one indicator, on the open tab
+    expect(container.querySelectorAll('.faq-tabs [role=tab].faq-tab')).toHaveLength(3);
+    expect(container.querySelectorAll('.faq-tab-indicator')).toHaveLength(1);
+    expect(getByRole('tab', { name: 'Visual' }).querySelector('.faq-tab-indicator')).not.toBeNull();
     // the line under the tabs follows them; the tabs sit in the copy column
     expect(container.querySelector('.skills-intro [role=tablist]')).not.toBeNull();
     expect(container.querySelector('.skills-sub-line.is-active')!.textContent).toBe(translations.zh.skills_tab_visual);

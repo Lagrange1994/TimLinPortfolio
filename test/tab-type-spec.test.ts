@@ -32,34 +32,51 @@ describe('tab type spec', () => {
     }
   });
 
-  // the same gaps round the tabs everywhere, and the content beside them
-  // starts level with the tabs' top
-  it('one alignment spec: text → tabs, tabs → line, content level with the tabs', () => {
+  // the same gaps round the tabs everywhere, and the tab block is centred on
+  // the content beside it
+  it('one alignment spec: text → tabs, tabs → line, tab block centred on the content', () => {
     expect(css).toContain('--tab-gap-above: 24px;');
     expect(css).toContain('--tab-gap-below: 24px;');
-    // My Skills: title → tabs → line; the cards join rows 3+ (the tabs' row)
-    // My Skills: title → sub (8px, like the other headings) → tabs → line;
-    // the cards join rows 4+ (the tabs' row)
+    // My Skills: title → sub (8px, like the other headings), then tabs → line
+    // → tags between two flexible rows, beside the cards
     expect(rule('.skills-h2')).toMatch(/margin-bottom: 8px;/);
     expect(rule('.tech-sub.skills-head-sub')).toMatch(/margin-bottom: var\(--tab-gap-above\);/);
     expect(rule('.process-tabs.skills-tabs')).toMatch(/margin: 0 0 var\(--tab-gap-below\);/);
     expect(css).toMatch(/\.skills-intro \{\s*display: contents;/);
-    expect(css).toMatch(/\.skills-tools \{\s*grid-column: 2;\s*grid-row: 4 \/ 8;/);
-    // Design Process: the gap sits above the column, the tabs at its top
+    // the cards' top level with the title's, the tabs block centred on them
+    expect(css).toContain('grid-template-rows: auto auto auto 1fr;');
+    expect(css).toMatch(/\.skills-intro > \.skills-chooser \{\s*grid-row: 2 \/ 5;\s*align-self: center;/);
+    expect(css).toMatch(/\.skills-tools \{\s*grid-column: 2;\s*grid-row: 2 \/ 5;/);
+    // Design Process: the gap sits above the column, the head centred on it
     expect(rule('.process-dual')).toMatch(/margin-top: var\(--tab-gap-above\);/);
     expect(rule('.process-tabs.process-mode-tabs')).toMatch(/margin: 0 0 var\(--tab-gap-below\);/);
-    expect(css).toMatch(/\.process-column-head \{\s*padding-top: 0;/);
+    expect(css).toMatch(/\.process-column-head \{\s*align-self: center;[^}]*min-height: var\(--process-head-h\);[^}]*padding-top: 0;/);
     expect(css).not.toMatch(/padding-top: 108px;/);
-    // Tech Stack: tabs and the card's track share the top gap
-    expect(rule('.process-scroll-wrap--tech .process-tabs')).toMatch(/margin: var\(--tab-gap-above\) 16px 0;/);
-    expect(rule('.process-scroll-wrap--tech .process-tab-aside')).toMatch(/margin: var\(--tab-gap-below\) 32px 0 16px;/);
-    expect(rule('.process-scroll-wrap--tech .process-column-grid--inhouse')).toMatch(/padding: var\(--tab-gap-above\) 16px 28px;/);
+    // Tech Stack: tabs + text in the middle rows, the card spans all four
+    expect(css).toContain('grid-template-rows: auto auto auto 1fr auto;');
+    expect(rule('.process-scroll-wrap--tech .process-tabs-block')).toMatch(/grid-area: 2 \/ 1 \/ 5 \/ 2;\s*align-self: center;/);
+    expect(rule('.process-scroll-wrap--tech .process-tab-aside')).toMatch(/min-height: var\(--tab-aside-h\);\s*margin: var\(--tab-gap-below\) 16px 0 0;/);
+    expect(rule('.process-scroll-wrap--tech .process-column-grid--inhouse')).toMatch(/grid-area: 2 \/ 2 \/ 5 \/ 3;[^}]*padding: 0 0 28px;/);
   });
 
   it('phones centre every tab row', () => {
     expect(css).toMatch(/@media \(max-width: 767px\) \{\s*\.process-tabs\.skills-tabs,\s*\.process-tabs\.process-mode-tabs \{ justify-content: center; \}/);
     // Tech Stack's: the base rule
     expect(rule('.process-tabs')).toMatch(/justify-content: center;/);
+  });
+
+  it('the lines under the tabs wrap at punctuation and spaces, not mid-word', () => {
+    const group = css.match(/\.process-column-desc,\s*\.skills-sub-line,\s*\.process-tab-aside \.tech-desc,\s*\.bento-text \{[^}]*\}/)?.[0];
+    expect(group).toMatch(/word-break: keep-all;/);
+    expect(group).toMatch(/overflow-wrap: anywhere;/);
+    expect(group).toMatch(/text-wrap: pretty;/);
+  });
+
+  it('the pill tabs hug their labels (In-house\'s side space) above phones, fill the row on phones', () => {
+    expect(rule('.process-tabs.skills-tabs')).toMatch(/width: fit-content;/);
+    expect(css).toContain('--pill-tab-pad: 46px;');
+    expect(css).toMatch(/@media \(min-width: 768px\) \{\s*\.faq-tab\.skills-tab,\s*\.faq-tab\.process-mode-tab,\s*\.faq-tab\.about-tab \{\s*flex: 0 0 auto;\s*min-width: 0;\s*padding-inline: var\(--pill-tab-pad\);/);
+    expect(css).toMatch(/@media \(max-width: 767px\) \{\s*\.process-tabs\.skills-tabs \{\s*justify-self: stretch;\s*width: auto;\s*\}\s*\.skills-tab \{\s*flex: 1 1 0;/);
   });
 
   it('FAQ tabs size to their label and never wrap', () => {
