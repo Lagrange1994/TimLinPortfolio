@@ -52,6 +52,10 @@ describe('For You: proof by role, in My Skills\' layout', () => {
     // Counter rolls 0..5 and stops on the last digit
     expect([...shown(container).querySelectorAll('.fit-roll b')].map(b => b.textContent)).toEqual(['0', '1', '2', '3', '4', '5']);
     expect(shown(container).querySelector<HTMLElement>('.fit-roll > span')!.style.getPropertyValue('--roll')).toBe(`${-500 / 6}%`);
+    // the unit sits at the number's bottom right, so the copy doesn't open with it
+    expect(shown(container).querySelector('.fit-counter > .fit-unit')!.textContent).toBe('yr');
+    expect(css).toMatch(/\.fit-unit \{\n {6}grid-area: 1 \/ 2;\n {6}align-self: end;/);
+    for (const lang of ['zh', 'en'] as const) expect(FIT_ROLES[0].cards[0].text[lang]).not.toMatch(/^(年|Years)/);
     expect(shown(container).querySelectorAll('.fit-swap img')).toHaveLength(3);
     // RotatingText repeats its first word so the loop is seamless
     expect([...shown(container).querySelectorAll('.fit-rotate-win b')].map(b => b.textContent)).toEqual(['Government', 'Enterprise', 'Freelance', 'Government']);

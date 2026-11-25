@@ -16,7 +16,7 @@ import { trackPointerSpot } from '../utils/pointerSpot';
 type Txt = Record<Lang, string>;
 export type ListMark = 'spec' | 'check' | 'line';
 type Scene =
-  | { kind: 'counter'; to: number }
+  | { kind: 'counter'; to: number; unit: string }
   | { kind: 'swap' }
   | { kind: 'rotate'; lead: Txt; words: [string, string, string] }
   | { kind: 'type'; tag: string; text: string }
@@ -39,7 +39,7 @@ export const FIT_ROLES: FitRole[] = [
     label: 'Recruiter',
     line: { zh: '年資、專案量與產業經驗，一次看完。', en: 'Years, projects and industries at a glance.' },
     cards: [
-      { name: 'Experience', icon: 'ph-clock', scene: { kind: 'counter', to: 5 }, text: { zh: '年 UI/UX 設計與前端開發經驗', en: 'Years across UI/UX design and frontend development' } },
+      { name: 'Experience', icon: 'ph-clock', scene: { kind: 'counter', to: 5, unit: 'yr' }, text: { zh: 'UI/UX 設計與前端開發經驗', en: 'Across UI/UX design and frontend development' } },
       { name: 'Shipped', icon: 'ph-rocket-launch', scene: { kind: 'swap' }, text: { zh: '13 個以上上線專案，從後台系統到 3D 互動網頁', en: '13+ projects shipped, from admin systems to 3D interactive web' } },
       { name: 'Domains', icon: 'ph-squares-four', scene: { kind: 'rotate', lead: { zh: '合作過', en: 'Worked with' }, words: ['Government', 'Enterprise', 'Freelance'] }, text: { zh: '橫跨政府單位、企業產品與自由工作', en: 'Government agencies, enterprise products and freelance work' } },
       { name: 'English', icon: 'ph-chat-circle-text', scene: { kind: 'type', tag: 'EN', text: 'Sure, I will write the spec in English and share it today.' }, text: { zh: '可用英文溝通、寫文件與跨團隊協作', en: 'Works, writes documentation and collaborates in English' } },
@@ -171,6 +171,7 @@ function FitScene({ s, lang, on }: { s: Scene; lang: Lang; on: boolean }) {
             </span>
           </span>
           <em>+</em>
+          <i className="fit-unit">{s.unit}</i>
         </span>
       );
     case 'swap':

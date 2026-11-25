@@ -8199,11 +8199,10 @@
         oklch(from rgb(var(--tone)) .97 .05 h) 0%,
         oklch(from rgb(var(--tone)) .92 .11 calc(h + 15)) 55%,
         oklch(from rgb(var(--tone)) .86 .16 calc(h + 30)) 100%);
-      display: flex;
-      align-items: flex-end;
-      height: var(--big);
+      display: grid;
+      grid-template-columns: auto auto;
+      justify-content: start;
       line-height: 1;
-      overflow: hidden;
       filter: drop-shadow(0 4px 10px rgba(10, 9, 18, .35));
     }
     .fit-roll { height: var(--big); overflow: hidden; }
@@ -8221,7 +8220,19 @@
       color: transparent;
     }
     .fit-roll b { height: var(--big); font-size: var(--big); line-height: var(--big); text-align: center; }
-    .fit-counter em { align-self: flex-start; font-size: calc(var(--big) * .55); line-height: 1; }
+    .fit-counter em { grid-area: 1 / 2; align-self: start; font-size: calc(var(--big) * .55); line-height: 1; }
+    /* the unit (yr) at the number's bottom right, under the + */
+    .fit-unit {
+      grid-area: 1 / 2;
+      align-self: end;
+      margin: 0 0 .12em .04em;
+      font-family: var(--font-heading);
+      font-size: calc(var(--big) * .3);
+      font-weight: 700;
+      font-style: normal;
+      letter-spacing: .02em;
+      color: rgba(255, 255, 255, .85);
+    }
     @keyframes fit-roll { from { translate: 0 0; } to { translate: 0 var(--roll); } }
 
     /* CardSwap: three covers, the front one moving to the back in turn */
@@ -14303,3 +14314,58 @@
       }
     }
 
+    /* ===== CARD TYPE SCALE =====
+       One title and one body size for every content card on the homepage
+       (About, Overview, Process, Skills, For You, Tech Stack, How I Use AI,
+       Contact). Last in the file so it outranks the older per-card values;
+       colours stay each card's own. Not covered on purpose: big-number
+       tiles (.bento-stat-big), eyebrows and capsules, the project
+       thumbnails' hover overlay, tab descriptions (--tab-desc-size) and
+       the text inside mock UIs. */
+    :root {
+      --card-title-size: 20px;
+      --card-title-weight: 700;
+      --card-title-lh: 1.2;
+      --card-body-size: 14px;
+      --card-body-lh: 1.6;
+    }
+    @media (max-width: 767px) {
+      :root { --card-title-size: 18px; }
+    }
+    /* The Overview wall is scaled as one piece (--wall-scale, see
+       .overview-grid), which would shrink its cards' text below the
+       scale; dividing by it renders the same size as every other card. */
+    @media (min-width: 1025px) {
+      .overview-grid {
+        --card-title-size: calc(20px / var(--wall-scale, 1));
+        --card-body-size: calc(14px / var(--wall-scale, 1));
+      }
+    }
+
+    .bento-card:not(.bento-stat-big) .bento-label,
+    :root[data-theme="light"] .bento-card:not(.bento-stat-big) .bento-label,
+    .about-status,
+    .process-card--has-img .process-name,
+    .skill-card-name,
+    .line-title,
+    .ai-focal h3,
+    .ai-pill-inner h3 {
+      font-family: var(--font-heading);
+      font-size: var(--card-title-size);
+      font-weight: var(--card-title-weight);
+      line-height: var(--card-title-lh);
+      letter-spacing: -.01em;
+    }
+
+    .bento-text,
+    .bento-card:not(.bento-stat-big) .bento-caption,
+    .process-card--has-img .process-desc,
+    .tech-desc,
+    .line-desc,
+    .skill-card-desc,
+    .ai-pill-inner p,
+    .ai-compact-summary p,
+    .ai-peek-summary p {
+      font-size: var(--card-body-size);
+      line-height: var(--card-body-lh);
+    }
