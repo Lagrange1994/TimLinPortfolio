@@ -11,6 +11,7 @@ import { useProfileTilt } from '../utils/useProfileTilt';
 import { useDigitWheel } from '../utils/useDigitWheel';
 import { useCardGlow } from '../utils/useCardGlow';
 import { PROJECTS } from '../data/projects';
+import { DOMAIN_COVERS } from '../data/domainCovers';
 
 // The Overview wall, right under the hero: one tile per part of the site
 // (profile, a Web and an App work, tools, How I Design, the AI workflow,
@@ -20,19 +21,11 @@ import { PROJECTS } from '../data/projects';
 // AI ask strip and chat button in its bottom-right one). The layout was
 // drafted in the Claude Design canvas "Overview Bento Wall" (Layout A).
 
-// One representative project cover per Service Domains industry, reused
-// from the portfolio project images.
-export const DOMAIN_COVERS = [
-  { label: 'Public Sector', img: './img/my_portfolio/police.webp', tone: '#24589A' },
-  { label: 'Healthcare', img: './img/my_portfolio/student.webp', tone: '#7A1A22' },
-  { label: 'Transport', img: './img/my_portfolio/Taoyuan_MRT.webp', tone: '#7B4FD6' },
-  { label: 'Finance', img: './img/my_portfolio/coin.webp', tone: '#7E8C2E' },
-  { label: 'Entertainment', img: './img/my_portfolio/stream.webp', tone: '#12907E' },
-  { label: 'Manufacturing', img: './img/my_portfolio/CNC.webp', tone: '#2F78B8' },
-];
 
 // The works wall's three live tiles (Windows 8 style, rolling to the next
 // work in turn): two App tiles on the left, one big Web tile on the right.
+export { DOMAIN_COVERS };
+
 export const WALL_TILES = [
   ['p2', 'p6'],
   ['p4', 'p8'],

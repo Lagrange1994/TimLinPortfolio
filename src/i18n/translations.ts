@@ -36,7 +36,7 @@ export const translations = {
     about_lead: `我替警政、醫療與公部門設計每天要用的系統：先到現場看人怎麼用，再把龐雜流程刪減、整理成一眼看懂的介面，一路做到開發交付。`,
     // About bento: short card copy (the full about_p1–p3 stay as the chat
     // bot's context, api/_chat-core.ts). Tags: label per linked project.
-    about_intro1_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>研究</span><span>到現場場勘，訪談第一線使用者</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-flow-arrow" aria-hidden="true"></i>交付</span><span>定地圖與即時資料規格，必要時自己寫前端</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-sketch-logo" aria-hidden="true"></i>工具</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Figma_logo.png" alt="" />Figma</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Adobe_XD_logo.png" alt="" />Adobe XD</strong> 設計；讀寫 <strong class="tool-name">HTML / CSS</strong>、<strong class="tool-name">React / Vue</strong>，和工程師對規格</span></span>`,
+    about_intro1_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>研究</span><span>到現場場勘，訪談第一線使用者</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-flow-arrow" aria-hidden="true"></i>交付</span><span>定地圖與即時資料規格，必要時自己寫前端</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-sketch-logo" aria-hidden="true"></i>工具</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Figma_logo.png" alt="" />Figma</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Adobe_XD_logo.png" alt="" />Adobe XD</strong> 設計；看懂並修改 <strong class="tool-name">HTML / CSS</strong>、<strong class="tool-name">React / Vue</strong>，和工程師對規格</span></span>`,
     about_intro2_short: `<span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-palette" aria-hidden="true"></i>配色</span><span>工廠沿用機台燈號，理財遊戲用莫蘭迪色減壓</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-cube" aria-hidden="true"></i>3D</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Blender_logo.png" alt="" />Blender</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Spline_logo.webp" alt="" />Spline</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Dora_logo.png" alt="" />Dora</strong>，<strong class="tool-name">React + WebGL</strong> 上線</span></span><span class="bento-point"><span class="bento-point-label"><i class="ph-bold ph-film-strip" aria-hidden="true"></i>平面</span><span><strong class="tool-name"><img class="tool-logo" src="./img/others/Photoshop_logo.png" alt="" />Photoshop</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Illustrator_logo.png" alt="" />Illustrator</strong>、<strong class="tool-name"><img class="tool-logo" src="./img/others/Lightroom_logo.png" alt="" />Lightroom</strong></span></span>`,
     about_intro1_layers: '現場|訪談|第一線|地圖|即時資料|前端|Figma / XD|React / Vue|對規格',
     about_intro2_layers: '機台燈號|理財遊戲|莫蘭迪色|Blender|Spline|Dora|Photoshop|Illustrator|Lightroom',
@@ -87,7 +87,7 @@ export const translations = {
     tech_sub: '我不是工程師，但我能讀懂程式、修改邏輯、 <br>有效縮短設計與開發之間的溝通距離。',
     figma_mcp_title: 'Figma MCP',
     figma_mcp_desc:
-      '這份程式讀寫能力，<wbr>讓我能更進一步透過 MCP，<wbr>讓 AI 直接讀取 Figma 設計稿的元件、<wbr>Token 與標註規格，<wbr>無需截圖或手動複製。<wbr>設計稿即時轉為程式碼，<wbr>一次對齊，<wbr>不再來回確認。',
+      '這份看懂並修改程式碼的能力，<wbr>讓我能更進一步透過 MCP，<wbr>讓 AI 直接讀取 Figma 設計稿的元件、<wbr>Token 與標註規格，<wbr>無需截圖或手動複製。<wbr>設計稿即時轉為程式碼，<wbr>一次對齊，<wbr>不再來回確認。',
     skills_tab_uiux: '從研究、資訊架構到原型與開發交接，介面設計的每一步我都親手完成。',
     skills_tab_visual: '修圖、圖像與品牌視覺，讓介面之外的畫面也保持一致。',
     skills_tab_3d: '從建模、渲染到網頁上可互動的 3D 場景，讓作品多一層深度。',
@@ -256,7 +256,7 @@ export const translations = {
     faq_exp_q5: '有沒有帶領團隊或 mentor 的經驗？',
     faq_exp_a5: '有。在過去的企業專案中曾帶領設計小組、主導設計方向，並與 PM 和工程師緊密協作。',
     faq_exp_q6: '前端實作能力到什麼程度？會不會寫程式？',
-    faq_exp_a6: '可以。我能讀寫 HTML／CSS 與 React／Vue，自己動手實作版面、互動與動畫；你正在看的這個網站就是我親手做的。',
+    faq_exp_a6: '可以。我能看懂並修改 HTML／CSS 與 React／Vue，自己動手實作版面、互動與動畫；你正在看的這個網站就是我親手做的。',
     faq_exp_q8: '有沒有無障礙設計（Accessibility）的經驗？',
     faq_exp_a8: '有，設計流程會將無障礙與設計系統一致性一併納入考量，確保元件在不同情境下都能被正確理解與操作。',
     faq_exp_q9: '英文溝通能力如何？',
@@ -594,7 +594,7 @@ export const translations = {
     faq_exp_q5: 'Do you have experience leading a team or mentoring?',
     faq_exp_a5: "Yes. In past enterprise projects I've led design teams, driven design direction, and worked closely with PMs and engineers.",
     faq_exp_q6: 'How deep does your frontend implementation go — can you actually code?',
-    faq_exp_a6: 'Yes. I read and write HTML / CSS and React / Vue, and build layouts, interactions and animation myself; the site you are looking at is my own work.',
+    faq_exp_a6: 'Yes. I read and edit HTML / CSS and React / Vue, and build layouts, interactions and animation myself; the site you are looking at is my own work.',
     faq_exp_q8: 'Do you have experience with accessibility design?',
     faq_exp_a8: "Yes — accessibility and design-system consistency are both built into the process, so components stay understandable and operable across contexts.",
     faq_exp_q9: "How's your English communication?",

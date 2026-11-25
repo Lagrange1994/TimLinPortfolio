@@ -15,6 +15,7 @@ const notchTsx = readFileSync(resolve(root, 'src/components/NotchCard.tsx'), 'ut
 // the profile, stat, Service Domains, AI workflow and availability cards
 // live on the Overview wall now
 const wall = readFileSync(resolve(root, 'src/components/OverviewSection.tsx'), 'utf8');
+const covers = readFileSync(resolve(root, 'src/data/domainCovers.ts'), 'utf8');
 const links = (name: string) => JSON.parse(tsx.match(new RegExp(`const ${name} = (\\[[^\\]]*\\]);`))![1].replace(/'/g, '"')) as string[];
 
 describe('About content', () => {
@@ -265,11 +266,11 @@ describe('About content', () => {
   });
 
   it('each Service Domains cover carries its industry label, in both languages', () => {
-    const covers = wall.match(/const DOMAIN_COVERS = \[([\s\S]*?)\];/)![1].match(/label: '/g)!.length;
-    for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_domain_labels.split('|')).toHaveLength(covers);
+    const count = covers.match(/const DOMAIN_COVERS = \[([\s\S]*?)\];/)![1].match(/label: '/g)!.length;
+    for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_domain_labels.split('|')).toHaveLength(count);
     expect(wall).toContain(`<span className="domain-cover-label" aria-hidden="true" style={{ ['--label-bg' as string]: d.tone }}>{t.about_domain_labels.split('|')[i]}</span>`);
     // each label takes its cover's key colour, not plain dark
-    expect((wall.match(/img: '\.\/img\/my_portfolio\/[^']+', tone: '#[0-9A-F]{6}' \}/g) ?? []).length).toBe(6);
+    expect((covers.match(/img: '\.\/img\/my_portfolio\/[^']+', tone: '#[0-9A-F]{6}' \}/g) ?? []).length).toBe(6);
     expect(css).toMatch(/\.domain-cover-label \{[^}]*background: color-mix\(in oklab, var\(--label-bg/);
     expect(css).toMatch(/\.domain-cover-label \{[^}]*position: absolute;[^}]*top: 8px;[^}]*left: 8px;/);
   });
@@ -297,15 +298,15 @@ describe('About content', () => {
   });
 
   it('Service Domains counts the six industries the case studies cover (public sector as one)', () => {
-    const covers = wall.match(/const DOMAIN_COVERS = \[([\s\S]*?)\];/)![1].match(/label: '/g)!.length;
-    expect(covers).toBe(6);
+    const count = covers.match(/const DOMAIN_COVERS = \[([\s\S]*?)\];/)![1].match(/label: '/g)!.length;
+    expect(count).toBe(6);
     expect(translations.zh.about_domain_labels.split('|')[0]).toBe('公部門');
     expect(wall).toContain('data-value={String(DOMAIN_COVERS.length)}');
-    for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_domains_summary.split(/[・·]/)).toHaveLength(covers);
+    for (const lang of ['zh', 'en'] as const) expect(translations[lang].about_domains_summary.split(/[・·]/)).toHaveLength(count);
     // every cover image is a real file
     for (const [, img] of wall.matchAll(/img: '\.\/(img\/my_portfolio\/[^']+)'/g)) expect(existsSync(resolve(root, 'public', img)), img).toBe(true);
     // the caption breaks only between industries: Chinese two lines of
-    // three, English (longer words) three lines of two, clear of the covers
+    // three, English (longer words) three lines of two, clear of the count
     expect(wall).toContain("chunkLines(domainsWords, domainsSeparator === '・' ? 3 : 2, domainsSeparator)");
     expect(wall).toContain('{domainsLines.map((line, i) => <span key={line}>{i > 0 && <br />}{line}</span>)}');
     expect(chunkLines(['a', 'b', 'c', 'd', 'e', 'f'], 3, '・')).toEqual(['a・b・c', 'd・e・f']);

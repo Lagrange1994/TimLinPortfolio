@@ -2,9 +2,10 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { render, cleanup, fireEvent, act } from '@testing-library/react';
-import RoleFit, { FIT_ROLES, FIT_WORKS, FIT_COLUMNS, FIT_PHONE_ORDER, findRole, nextRoleIndex, typedFrame, decryptFrame, reducedMotion } from '../src/components/RoleFit';
+import RoleFit, { FIT_ROLES, FIT_WORKS, LOOP_STACK, FIT_COLUMNS, FIT_PHONE_ORDER, findRole, nextRoleIndex, typedFrame, decryptFrame, reducedMotion } from '../src/components/RoleFit';
 import { LangProvider } from '../src/context/LangContext';
 import { translations } from '../src/i18n/translations';
+import { DOMAIN_COVERS } from '../src/data/domainCovers';
 
 const root = resolve(__dirname, '..');
 const cjk = /[一-鿿]/;
@@ -48,7 +49,7 @@ describe('For You: proof by role, in My Skills\' layout', () => {
   it('renders each role\'s React Bits scenes', () => {
     const { container, getByRole } = mount();
     const scenes = () => [...shown(container).querySelectorAll('.fit-card')].map(c => [...c.classList].find(x => x.startsWith('fit-card--'))!.slice(10));
-    expect(scenes()).toEqual(['counter', 'swap', 'rotate', 'type']);
+    expect(scenes()).toEqual(['counter', 'swap', 'domains', 'type']);
     // Counter rolls 0..5 and stops on the last digit
     expect([...shown(container).querySelectorAll('.fit-roll b')].map(b => b.textContent)).toEqual(['0', '1', '2', '3', '4', '5']);
     expect(shown(container).querySelector<HTMLElement>('.fit-roll > span')!.style.getPropertyValue('--roll')).toBe(`${-500 / 6}%`);
@@ -57,8 +58,13 @@ describe('For You: proof by role, in My Skills\' layout', () => {
     expect(css).toMatch(/\.fit-unit \{\n {6}grid-area: 1 \/ 2;\n {6}align-self: end;/);
     for (const lang of ['zh', 'en'] as const) expect(FIT_ROLES[0].cards[0].text[lang]).not.toMatch(/^(年|Years)/);
     expect(shown(container).querySelectorAll('.fit-swap img')).toHaveLength(3);
-    // RotatingText repeats its first word so the loop is seamless
-    expect([...shown(container).querySelectorAll('.fit-rotate-win b')].map(b => b.textContent)).toEqual(['Government', 'Enterprise', 'Freelance', 'Government']);
+    // Service Domains: the six covers, each with its industry, in the page's language
+    const domains = [...shown(container).querySelectorAll('.fit-domains > .fit-domain')];
+    expect(domains).toHaveLength(DOMAIN_COVERS.length);
+    expect(domains.map(d => d.querySelector('i')!.textContent)).toEqual(translations.zh.about_domain_labels.split('|'));
+    expect(domains.map(d => d.querySelector('img')!.getAttribute('src'))).toEqual(DOMAIN_COVERS.map(d => d.img));
+    expect((domains[2] as HTMLElement).style.getPropertyValue('--k')).toBe('2');
+    expect(css).toContain('animation: fit-domain 9s ease-in-out calc((var(--k) - 6) * 1.5s) infinite both;');
     expect(shown(container).querySelector('.fit-type-tag')!.textContent).toBe('EN');
     fireEvent.click(getByRole('tab', { name: 'PM' }));
     expect(scenes()).toEqual(['radar', 'stepper', 'focus', 'orbit']);
@@ -70,6 +76,11 @@ describe('For You: proof by role, in My Skills\' layout', () => {
     expect(shown(container).querySelector('.fit-list--spec b')!.textContent).toBe('1');
     // LogoLoop: two rows, each its items twice for the seamless run
     expect([...shown(container).querySelectorAll('.fit-loop-track')].map(t => t.children.length)).toEqual([12, 12]);
+    // every item carries its logo, beside the name
+    const pills = [...shown(container).querySelectorAll('.fit-loop-track b')];
+    expect(pills.every(b => b.firstElementChild?.tagName === 'IMG' && b.querySelector('img')!.getAttribute('alt') === '')).toBe(true);
+    expect(pills.slice(0, 6).map(b => b.textContent)).toEqual(LOOP_STACK.map(x => x.name));
+    for (const x of LOOP_STACK) expect(x.src.startsWith('https://cdn.simpleicons.org/') || existsSync(resolve(root, 'public', x.src.slice(2))), x.name).toBe(true);
     expect(shown(container).querySelectorAll('.fit-cubes i')).toHaveLength(16);
     fireEvent.click(getByRole('tab', { name: 'Client' }));
     expect(scenes()).toEqual(['shiny', 'stepper', 'list', 'list']);
@@ -221,7 +232,6 @@ describe('For You: proof by role, in My Skills\' layout', () => {
         const s = c.scene;
         if (s.kind === 'list' || s.kind === 'shiny') return [...s.rows.map(x => x.zh), ...(s.kind === 'shiny' ? [s.title.zh] : [])];
         if (s.kind === 'focus') return s.words.map(x => x.zh);
-        if (s.kind === 'rotate') return [s.lead.zh];
         return [];
       })),
     ].join('');

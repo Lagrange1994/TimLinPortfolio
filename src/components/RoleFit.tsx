@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import { motion } from 'motion/react';
 import { useLang } from '../context/LangContext';
-import type { Lang } from '../i18n/translations';
+import { translations, type Lang } from '../i18n/translations';
+import { DOMAIN_COVERS } from '../data/domainCovers';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import { trackPointerSpot } from '../utils/pointerSpot';
 
@@ -10,7 +11,7 @@ import { trackPointerSpot } from '../utils/pointerSpot';
 // right as My Skills' purple cards in two stepped columns (wide, tall | tall,
 // wide), closed by a tile that hands over to Contact. Every card carries a
 // small live scene modelled on a React Bits component (Counter, CardSwap,
-// RotatingText, TextType, Radar, Stepper, TrueFocus, OrbitImages,
+// Service Domains' covers, TextType, Radar, Stepper, TrueFocus, OrbitImages,
 // AnimatedList, DecryptedText, LogoLoop, Cubes, ShinyText), rebuilt in CSS
 // plus two small tickers; icons come from the self-hosted subset.
 type Txt = Record<Lang, string>;
@@ -18,7 +19,7 @@ export type ListMark = 'spec' | 'check' | 'line';
 type Scene =
   | { kind: 'counter'; to: number; unit: string }
   | { kind: 'swap' }
-  | { kind: 'rotate'; lead: Txt; words: [string, string, string] }
+  | { kind: 'domains' }
   | { kind: 'type'; tag: string; text: string }
   | { kind: 'radar' }
   | { kind: 'stepper'; steps: string[] }
@@ -26,12 +27,24 @@ type Scene =
   | { kind: 'orbit'; people: string[] }
   | { kind: 'list'; mark: ListMark; rows: Txt[] }
   | { kind: 'decrypt'; lines: string[] }
-  | { kind: 'loop'; items: string[] }
+  | { kind: 'loop'; items: { name: string; src: string }[] }
   | { kind: 'cubes' }
   | { kind: 'shiny'; title: Txt; rows: Txt[] };
 export type FitCard = { name: string; icon: string; text: Txt; scene: Scene };
 // cards 0 and 3 are wide (copy beside the scene), 1 and 2 tall (scene under)
 export type FitRole = { id: string; label: string; line: Txt; cards: [FitCard, FitCard, FitCard, FitCard] };
+
+// The "This site" card's stack, each with its logo (Simple Icons, as in
+// Overview's web skills; the dark-brand ones in white, Spline from its own file)
+const SI = 'https://cdn.simpleicons.org/';
+export const LOOP_STACK = [
+  { name: 'React', src: `${SI}react/61DAFB` },
+  { name: 'GSAP', src: `${SI}gsap/0AE448` },
+  { name: 'Vite', src: `${SI}vite/9135FF` },
+  { name: 'WebGL', src: `${SI}webgl/ffffff` },
+  { name: 'Spline', src: './img/others/Spline_logo.webp' },
+  { name: 'Three.js', src: `${SI}threedotjs/ffffff` },
+];
 
 export const FIT_ROLES: FitRole[] = [
   {
@@ -41,7 +54,7 @@ export const FIT_ROLES: FitRole[] = [
     cards: [
       { name: 'Experience', icon: 'ph-clock', scene: { kind: 'counter', to: 5, unit: 'yr' }, text: { zh: 'UI/UX 設計與前端開發經驗', en: 'Across UI/UX design and frontend development' } },
       { name: 'Shipped', icon: 'ph-rocket-launch', scene: { kind: 'swap' }, text: { zh: '13 個以上上線專案，從後台系統到 3D 互動網頁', en: '13+ projects shipped, from admin systems to 3D interactive web' } },
-      { name: 'Domains', icon: 'ph-squares-four', scene: { kind: 'rotate', lead: { zh: '合作過', en: 'Worked with' }, words: ['Government', 'Enterprise', 'Freelance'] }, text: { zh: '橫跨政府單位、企業產品與自由工作', en: 'Government agencies, enterprise products and freelance work' } },
+      { name: 'Domains', icon: 'ph-squares-four', scene: { kind: 'domains' }, text: { zh: '從公部門到製造業，橫跨不同產業的專案', en: 'Projects across industries, from the public sector to manufacturing' } },
       { name: 'English', icon: 'ph-chat-circle-text', scene: { kind: 'type', tag: 'EN', text: 'Sure, I will write the spec in English and share it today.' }, text: { zh: '可用英文溝通、寫文件與跨團隊協作', en: 'Works, writes documentation and collaborates in English' } },
     ],
   },
@@ -62,8 +75,8 @@ export const FIT_ROLES: FitRole[] = [
     line: { zh: '規格、交付與前端實作，我能直接和你對齊。', en: 'Specs, handoff and frontend work, aligned with you directly.' },
     cards: [
       { name: 'Handoff', icon: 'ph-clipboard-text', scene: { kind: 'list', mark: 'spec', rows: ['16px', '#6C63FF', 'Auto layout', 'API'].map(x => ({ zh: x, en: x })) }, text: { zh: '定地圖與即時資料規格，交付前先對齊', en: 'Specs maps and live data, aligned before handoff' } },
-      { name: 'Frontend', icon: 'ph-browsers', scene: { kind: 'decrypt', lines: ['const ui = <Card />;', 'display: grid;', 'gsap.to(card, { y: 0 });'] }, text: { zh: '能讀寫 HTML / CSS 與 React / Vue', en: 'Reads and writes HTML / CSS and React / Vue' } },
-      { name: 'This site', icon: 'ph-sparkle', scene: { kind: 'loop', items: ['React', 'GSAP', 'Vite', 'WebGL', 'Spline', 'Three.js'] }, text: { zh: '你正在看的這個網站，是我親手做的', en: 'The site you are looking at is my own work' } },
+      { name: 'Frontend', icon: 'ph-browsers', scene: { kind: 'decrypt', lines: ['const ui = <Card />;', 'display: grid;', 'gsap.to(card, { y: 0 });'] }, text: { zh: '能看懂並修改 HTML / CSS 與 React / Vue', en: 'Reads and edits HTML / CSS and React / Vue' } },
+      { name: 'This site', icon: 'ph-sparkle', scene: { kind: 'loop', items: LOOP_STACK }, text: { zh: '你正在看的這個網站，是我親手做的', en: 'The site you are looking at is my own work' } },
       { name: '3D', icon: 'ph-cube', scene: { kind: 'cubes' }, text: { zh: 'Blender、Spline 建模，Three.js 與 GSAP 上線', en: 'Models in Blender and Spline, ships with Three.js and GSAP' } },
     ],
   },
@@ -176,13 +189,20 @@ function FitScene({ s, lang, on }: { s: Scene; lang: Lang; on: boolean }) {
       );
     case 'swap':
       return <span className="fit-swap">{FIT_WORKS.map((src, i) => <img key={src} src={src} alt="" loading="lazy" decoding="async" style={k(i)} />)}</span>;
-    case 'rotate':
+    case 'domains': {
+      // the six Service Domains covers, each with its industry, lit in turn
+      const labels = translations[lang].about_domain_labels.split('|');
       return (
-        <span className="fit-rotate">
-          <span className="fit-rotate-lead">{s.lead[lang]}</span>
-          <span className="fit-rotate-win"><span>{[...s.words, s.words[0]].map((w, i) => <b key={i}>{w}</b>)}</span></span>
+        <span className="fit-domains">
+          {DOMAIN_COVERS.map((d, i) => (
+            <span key={d.label} className="fit-domain" style={{ ...k(i), '--label-bg': d.tone } as CSSProperties}>
+              <img src={d.img} alt="" loading="lazy" decoding="async" />
+              <i>{labels[i]}</i>
+            </span>
+          ))}
         </span>
       );
+    }
     case 'type':
       return <TypeScene key={String(on)} tag={s.tag} text={s.text} on={on} />;
     case 'radar':
@@ -227,7 +247,7 @@ function FitScene({ s, lang, on }: { s: Scene; lang: Lang; on: boolean }) {
         <span className="fit-loop">
           {[s.items, [...s.items].reverse()].map((row, r) => (
             <span key={r} className={`fit-loop-track${r ? ' fit-loop-track--back' : ''}`}>
-              {[...row, ...row].map((x, i) => <b key={i}>{x}</b>)}
+              {[...row, ...row].map((x, i) => <b key={i}><img src={x.src} alt="" width={16} height={16} loading="lazy" decoding="async" />{x.name}</b>)}
             </span>
           ))}
         </span>
