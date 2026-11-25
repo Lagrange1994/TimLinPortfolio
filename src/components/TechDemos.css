@@ -332,7 +332,10 @@
 .tech-art-spot {
   position: absolute;
   inset: 0;
+  /* corner-shape doesn't inherit by itself: without it the glow's corners
+     are round 48px inside the card's squircle 48px, a visibly wider curve */
   border-radius: inherit;
+  corner-shape: inherit;
   pointer-events: none;
   background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, .08), transparent 70%);
   opacity: 0;

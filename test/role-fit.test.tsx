@@ -11,7 +11,9 @@ const cjk = /[一-鿿]/;
 const css = readFileSync(resolve(root, 'src/styles/portfolio.css'), 'utf8').replace(/\r\n/g, '\n');
 const icons = readFileSync(resolve(root, 'src/styles/icon-faces.css'), 'utf8');
 const mount = () => render(<LangProvider><RoleFit /></LangProvider>);
-const descs = (el: Element) => [...el.querySelectorAll('.fit-card .skill-card-desc')].map(n => n.textContent);
+// every role's cards are mounted (stacked in one cell); the shown one is is-active
+const shown = (el: Element) => el.querySelector('.fit-cards.is-active')!;
+const descs = (el: Element) => [...shown(el).querySelectorAll('.fit-card .skill-card-desc')].map(n => n.textContent);
 
 describe('For You: proof by role, in My Skills\' layout', () => {
   afterEach(cleanup);
@@ -20,7 +22,7 @@ describe('For You: proof by role, in My Skills\' layout', () => {
     const { container } = mount();
     const show = container.querySelector('.skills-showcase.fit-showcase')!;
     expect(show.querySelector('.skills-intro .skills-chooser [role=tablist]')).not.toBeNull();
-    const cols = show.querySelectorAll('.skills-tools .skills-cards > .skills-col');
+    const cols = show.querySelectorAll('.skills-tools .skills-cards.is-active > .skills-col');
     expect([...cols].map(c => c.className)).toEqual(['skills-col skills-col--low', 'skills-col skills-col--high']);
     // left: wide then tall; right: tall, wide, then the hand-over tile
     const shapes = (c: Element) => [...c.children].map(x => x.classList.contains('skill-card--wide') ? 'wide' : x.classList.contains('skill-card--tall') ? 'tall' : x.className);
@@ -28,7 +30,7 @@ describe('For You: proof by role, in My Skills\' layout', () => {
     expect(shapes(cols[1])).toEqual(['tall', 'wide', 'skills-tag-tile fit-next']);
     expect(FIT_COLUMNS).toEqual([[0, 1], [2, 3]]);
     expect(FIT_PHONE_ORDER).toEqual([0, 2, 1, 3]);
-    expect((container.querySelectorAll<HTMLElement>('.fit-card')[2]).style.getPropertyValue('--order')).toBe('1');
+    expect((shown(container).querySelectorAll<HTMLElement>('.fit-card')[2]).style.getPropertyValue('--order')).toBe('1');
   });
 
   it('four roles of four cards; every card an icon from the subset and a scene', () => {
@@ -45,46 +47,48 @@ describe('For You: proof by role, in My Skills\' layout', () => {
 
   it('renders each role\'s React Bits scenes', () => {
     const { container, getByRole } = mount();
-    const scenes = () => [...container.querySelectorAll('.fit-card')].map(c => [...c.classList].find(x => x.startsWith('fit-card--'))!.slice(10));
+    const scenes = () => [...shown(container).querySelectorAll('.fit-card')].map(c => [...c.classList].find(x => x.startsWith('fit-card--'))!.slice(10));
     expect(scenes()).toEqual(['counter', 'swap', 'rotate', 'type']);
     // Counter rolls 0..5 and stops on the last digit
-    expect([...container.querySelectorAll('.fit-roll b')].map(b => b.textContent)).toEqual(['0', '1', '2', '3', '4', '5']);
-    expect(container.querySelector<HTMLElement>('.fit-roll > span')!.style.getPropertyValue('--roll')).toBe(`${-500 / 6}%`);
-    expect(container.querySelectorAll('.fit-swap img')).toHaveLength(3);
+    expect([...shown(container).querySelectorAll('.fit-roll b')].map(b => b.textContent)).toEqual(['0', '1', '2', '3', '4', '5']);
+    expect(shown(container).querySelector<HTMLElement>('.fit-roll > span')!.style.getPropertyValue('--roll')).toBe(`${-500 / 6}%`);
+    expect(shown(container).querySelectorAll('.fit-swap img')).toHaveLength(3);
     // RotatingText repeats its first word so the loop is seamless
-    expect([...container.querySelectorAll('.fit-rotate-win b')].map(b => b.textContent)).toEqual(['Government', 'Enterprise', 'Freelance', 'Government']);
-    expect(container.querySelector('.fit-type-tag')!.textContent).toBe('EN');
+    expect([...shown(container).querySelectorAll('.fit-rotate-win b')].map(b => b.textContent)).toEqual(['Government', 'Enterprise', 'Freelance', 'Government']);
+    expect(shown(container).querySelector('.fit-type-tag')!.textContent).toBe('EN');
     fireEvent.click(getByRole('tab', { name: 'PM' }));
     expect(scenes()).toEqual(['radar', 'stepper', 'focus', 'orbit']);
-    expect(container.querySelectorAll('.fit-stepper li')).toHaveLength(4);
-    expect([...container.querySelectorAll('.fit-truefocus b')].map(b => b.textContent)).toEqual(['查詢', '預約', '分享']);
-    expect(container.querySelectorAll('.fit-orbit-ring b')).toHaveLength(4);
+    expect(shown(container).querySelectorAll('.fit-stepper li')).toHaveLength(4);
+    expect([...shown(container).querySelectorAll('.fit-truefocus b')].map(b => b.textContent)).toEqual(['查詢', '預約', '分享']);
+    expect(shown(container).querySelectorAll('.fit-orbit-ring b')).toHaveLength(4);
     fireEvent.click(getByRole('tab', { name: 'Engineer' }));
     expect(scenes()).toEqual(['list', 'decrypt', 'loop', 'cubes']);
-    expect(container.querySelector('.fit-list--spec b')!.textContent).toBe('1');
+    expect(shown(container).querySelector('.fit-list--spec b')!.textContent).toBe('1');
     // LogoLoop: two rows, each its items twice for the seamless run
-    expect([...container.querySelectorAll('.fit-loop-track')].map(t => t.children.length)).toEqual([12, 12]);
-    expect(container.querySelectorAll('.fit-cubes i')).toHaveLength(16);
+    expect([...shown(container).querySelectorAll('.fit-loop-track')].map(t => t.children.length)).toEqual([12, 12]);
+    expect(shown(container).querySelectorAll('.fit-cubes i')).toHaveLength(16);
     fireEvent.click(getByRole('tab', { name: 'Client' }));
     expect(scenes()).toEqual(['shiny', 'stepper', 'list', 'list']);
     // a mock's words follow the page language
-    expect([...container.querySelectorAll('.fit-list--check li')].map(l => l.textContent)).toEqual(['範圍', '金流', '合規']);
-    expect(container.querySelector('.fit-list--check .ph-check')).not.toBeNull();
-    expect(container.querySelector('.fit-list--line b')!.textContent).toBe('L');
-    expect(container.querySelector('.fit-shiny-title')!.textContent).toBe('報價單');
+    expect([...shown(container).querySelectorAll('.fit-list--check li')].map(l => l.textContent)).toEqual(['範圍', '金流', '合規']);
+    expect(shown(container).querySelector('.fit-list--check .ph-check')).not.toBeNull();
+    expect(shown(container).querySelector('.fit-list--line b')!.textContent).toBe('L');
+    expect(shown(container).querySelector('.fit-shiny-title')!.textContent).toBe('報價單');
   });
 
   it('TextType and DecryptedText run on a ticker and stop on unmount', () => {
     vi.useFakeTimers();
     try {
       const { container, getByRole, unmount } = mount();
-      const bubble = () => container.querySelector('.fit-type-bubble')!.textContent;
+      const bubble = () => shown(container).querySelector('.fit-type-bubble')!.textContent;
       expect(bubble()).toBe('');
+      // only the shown role's ticker runs (Recruiter's TextType)
+      expect(vi.getTimerCount()).toBe(1);
       act(() => { vi.advanceTimersByTime(70 * 4); });
       expect(bubble()).toBe('Sure');
       fireEvent.click(getByRole('tab', { name: 'Engineer' }));
       act(() => { vi.advanceTimersByTime(70 * 69); });
-      const line = container.querySelector('.fit-decrypt code span')!;
+      const line = shown(container).querySelector('.fit-decrypt code span')!;
       expect(line.querySelector('.d')!.textContent).toBe('const ui = <Card />;');
       expect(line.querySelector('.x')!.textContent).toBe('');
       unmount();
@@ -101,9 +105,9 @@ describe('For You: proof by role, in My Skills\' layout', () => {
     try {
       expect(reducedMotion()).toBe(true);
       const { container, getByRole } = mount();
-      expect(container.querySelector('.fit-type-bubble')!.textContent).toBe('Sure, I will write the spec in English and share it today.');
+      expect(shown(container).querySelector('.fit-type-bubble')!.textContent).toBe('Sure, I will write the spec in English and share it today.');
       fireEvent.click(getByRole('tab', { name: 'Engineer' }));
-      expect(container.querySelector('.fit-decrypt .x')!.textContent).toBe('');
+      expect(shown(container).querySelector('.fit-decrypt .x')!.textContent).toBe('');
       expect(vi.getTimerCount()).toBe(0);
     } finally {
       vi.useRealTimers();
@@ -133,6 +137,16 @@ describe('For You: proof by role, in My Skills\' layout', () => {
     expect(container.querySelectorAll('.skills-sub-line.is-active')).toHaveLength(1);
     expect(getByRole('tabpanel').getAttribute('aria-labelledby')).toBe('fit-tab-engineer');
     expect(container.querySelectorAll('.faq-tab-indicator')).toHaveLength(1);
+    // all four roles stay mounted in one cell, so the area keeps the tallest
+    // role's height and the tabs centred on it never move
+    const panels = [...container.querySelectorAll<HTMLElement>('.skills-panels.fit-panels > .skills-panel')];
+    expect(panels.map(p => p.id)).toEqual(FIT_ROLES.map(r => `fit-panel-${r.id}`));
+    expect(panels.filter(p => p.classList.contains('is-active')).map(p => p.id)).toEqual(['fit-panel-engineer']);
+    for (const p of panels.filter(p => !p.classList.contains('is-active'))) {
+      expect(p.getAttribute('aria-hidden')).toBe('true');
+      expect(p.hasAttribute('inert')).toBe(true);
+    }
+    expect(getByRole('tab', { name: 'Engineer' }).getAttribute('aria-controls')).toBe('fit-panel-engineer');
   });
 
   it('arrow keys move between tabs and wrap; other keys do nothing', () => {
@@ -156,7 +170,7 @@ describe('For You: proof by role, in My Skills\' layout', () => {
 
   it('the last tile hands over to Contact', () => {
     const { container } = mount();
-    const next = container.querySelector<HTMLAnchorElement>('a.fit-next')!;
+    const next = shown(container).querySelector<HTMLAnchorElement>('a.fit-next')!;
     expect(next.getAttribute('href')).toBe('#contact');
     expect(next.querySelector('.skills-tag-tile-label')!.textContent).toBe('Next step');
     expect(next.textContent).toContain(translations.zh.fit_next_cta);
@@ -164,7 +178,7 @@ describe('For You: proof by role, in My Skills\' layout', () => {
 
   it('a card lights up under the mouse, not a finger', () => {
     const { container } = mount();
-    const card = container.querySelector<HTMLElement>('.fit-card')!;
+    const card = shown(container).querySelector<HTMLElement>('.fit-card')!;
     card.getBoundingClientRect = () => ({ left: 10, top: 20 }) as DOMRect;
     fireEvent.pointerMove(card, { clientX: 40, clientY: 70, pointerType: 'mouse' });
     expect(card.style.getPropertyValue('--mouse-x')).toBe('30px');
@@ -203,7 +217,6 @@ describe('For You: proof by role, in My Skills\' layout', () => {
         const s = c.scene;
         if (s.kind === 'list' || s.kind === 'shiny') return [...s.rows.map(x => x.zh), ...(s.kind === 'shiny' ? [s.title.zh] : [])];
         if (s.kind === 'focus') return s.words.map(x => x.zh);
-        if (s.kind === 'counter') return [s.unit.zh];
         if (s.kind === 'rotate') return [s.lead.zh];
         return [];
       })),
@@ -218,6 +231,13 @@ describe('For You: proof by role, in My Skills\' layout', () => {
     expect(css).toMatch(/\.skill-card--wide \.skill-card-art\.fit-art \{[^}]*aspect-ratio: auto;[^}]*align-self: stretch;/);
     expect(css).toMatch(/\.fit-showcase \.faq-tab\.skills-tab \{ flex: 1 1 0; min-width: 0;/);
     expect(css).toMatch(/prefers-reduced-motion: reduce\) \{\s*\.fit-card \*,\s*\.fit-card \*::after \{ animation: none !important; \}/);
+    // the roles not shown hold still in their shared cell
+    expect(css).toMatch(/\.fit-cards:not\(\.is-active\) \*,[^{]*\{ animation: none !important; \}/);
+    // the number card uses Overview's big stat number
+    expect(css).toMatch(/\.fit-counter \{[^}]*--big: clamp\(4\.5rem, 6\.4vw, 6\.25rem\);/);
+    expect(css).toMatch(/\.fit-roll b,\s*\.fit-counter em \{[^}]*font-family: var\(--font-heading\);[^}]*font-weight: 800;/);
+    // the top-right card sits lower than the left column's tall one
+    expect(css).toContain('.fit-cards .skills-col--high > .skill-card--tall .skill-card-art.fit-art { min-height: 120px; }');
     // the old hand-drawn scenes are gone
     for (const old of ['.fit-fan', '.fit-chain', '.fit-bubbles', '.fit-pulse', '.fit-avatars', '.fit-specs', '.fit-quote ']) expect(css).not.toContain(old);
   });

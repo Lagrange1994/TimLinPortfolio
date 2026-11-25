@@ -8146,6 +8146,9 @@
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08);
     }
     .skill-card--tall .skill-card-art.fit-art { aspect-ratio: auto; min-height: 190px; }
+    /* the right column's tall card (top right): its scenes are one or two
+       rows, so its panel is lower */
+    .fit-cards .skills-col--high > .skill-card--tall .skill-card-art.fit-art { min-height: 120px; }
     /* a wide card's scene: beside the copy, as tall as the card */
     .skill-card--wide .skill-card-art.fit-art {
       aspect-ratio: auto;
@@ -8157,6 +8160,12 @@
     /* four role tabs share the copy column's width */
     .fit-showcase .process-tabs.fit-tabs { width: 100%; max-width: 440px; }
     .fit-showcase .faq-tab.skills-tab { flex: 1 1 0; min-width: 0; padding-inline: 8px; }
+    /* every role's cards share one cell (.skills-panels): the area keeps the
+       tallest role's height, so the tabs centred on it never move; the
+       roles not shown stay still */
+    .fit-cards:not(.is-active) *,
+    .fit-cards:not(.is-active) *::before,
+    .fit-cards:not(.is-active) *::after { animation: none !important; }
 
     .fit-logo i { font-size: 20px; color: #5a49d6; }
 
@@ -8178,23 +8187,42 @@
     /* The scenes: React Bits components rebuilt in CSS (RoleFit.tsx names
        each one). A wide card's panel is narrower: scenes shrink there. */
 
-    /* Counter: the digits roll up to the number */
-    .fit-counter { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .fit-counter-num {
+    /* Counter: Overview's Years number (.bento-stat-big): the heading
+       face at --big, weight 800, a light ink in the card's own purple
+       clipped to the glyphs, the + at .55, and the digit wheel's one 2s
+       glide to the value. No dark panel: the number sits on the card. */
+    .fit-card--counter .skill-card-art.fit-art { padding: 0; background: none; box-shadow: none; }
+    .fit-counter {
+      --tone: 90, 73, 214;
+      --big: clamp(4.5rem, 6.4vw, 6.25rem);
+      --big-ink: linear-gradient(135deg,
+        oklch(from rgb(var(--tone)) .97 .05 h) 0%,
+        oklch(from rgb(var(--tone)) .92 .11 calc(h + 15)) 55%,
+        oklch(from rgb(var(--tone)) .86 .16 calc(h + 30)) 100%);
       display: flex;
-      align-items: flex-start;
-      font-size: 76px;
-      font-weight: 700;
+      align-items: flex-end;
+      height: var(--big);
       line-height: 1;
-      letter-spacing: -.04em;
+      overflow: hidden;
+      filter: drop-shadow(0 4px 10px rgba(10, 9, 18, .35));
     }
-    .fit-roll { display: inline-block; height: 1em; overflow: hidden; }
-    .fit-roll > span { display: flex; flex-direction: column; animation: fit-roll 4.2s cubic-bezier(.2, .8, .2, 1) infinite; }
-    .fit-roll b { height: 1em; font-weight: inherit; }
-    .fit-counter-num em { margin-top: .06em; font-size: .6em; font-style: normal; color: #a99bff; }
-    .fit-counter-unit { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: #8f86c9; }
-    @keyframes fit-roll { 0%, 8% { translate: 0 0; } 48%, 100% { translate: 0 var(--roll); } }
-    .skill-card--wide .fit-counter-num { font-size: 52px; }
+    .fit-roll { height: var(--big); overflow: hidden; }
+    .fit-roll > span { display: flex; flex-direction: column; animation: fit-roll 2s cubic-bezier(.16, 1, .3, 1) .3s both; }
+    .fit-roll b,
+    .fit-counter em {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-style: normal;
+      letter-spacing: -.04em;
+      background: var(--big-ink);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+    }
+    .fit-roll b { height: var(--big); font-size: var(--big); line-height: var(--big); text-align: center; }
+    .fit-counter em { align-self: flex-start; font-size: calc(var(--big) * .55); line-height: 1; }
+    @keyframes fit-roll { from { translate: 0 0; } to { translate: 0 var(--roll); } }
 
     /* CardSwap: three covers, the front one moving to the back in turn */
     .fit-swap { position: relative; width: 62%; aspect-ratio: 4 / 3; margin: 24px 36px 0 0; }

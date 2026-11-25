@@ -16,7 +16,7 @@ import { trackPointerSpot } from '../utils/pointerSpot';
 type Txt = Record<Lang, string>;
 export type ListMark = 'spec' | 'check' | 'line';
 type Scene =
-  | { kind: 'counter'; to: number; unit: Txt }
+  | { kind: 'counter'; to: number }
   | { kind: 'swap' }
   | { kind: 'rotate'; lead: Txt; words: [string, string, string] }
   | { kind: 'type'; tag: string; text: string }
@@ -39,7 +39,7 @@ export const FIT_ROLES: FitRole[] = [
     label: 'Recruiter',
     line: { zh: '年資、專案量與產業經驗，一次看完。', en: 'Years, projects and industries at a glance.' },
     cards: [
-      { name: 'Experience', icon: 'ph-clock', scene: { kind: 'counter', to: 5, unit: { zh: '年', en: 'Years' } }, text: { zh: '年 UI/UX 設計與前端開發經驗', en: 'Years across UI/UX design and frontend development' } },
+      { name: 'Experience', icon: 'ph-clock', scene: { kind: 'counter', to: 5 }, text: { zh: '年 UI/UX 設計與前端開發經驗', en: 'Years across UI/UX design and frontend development' } },
       { name: 'Shipped', icon: 'ph-rocket-launch', scene: { kind: 'swap' }, text: { zh: '13 個以上上線專案，從後台系統到 3D 互動網頁', en: '13+ projects shipped, from admin systems to 3D interactive web' } },
       { name: 'Domains', icon: 'ph-squares-four', scene: { kind: 'rotate', lead: { zh: '合作過', en: 'Worked with' }, words: ['Government', 'Enterprise', 'Freelance'] }, text: { zh: '橫跨政府單位、企業產品與自由工作', en: 'Government agencies, enterprise products and freelance work' } },
       { name: 'English', icon: 'ph-chat-circle-text', scene: { kind: 'type', tag: 'EN', text: 'Sure, I will write the spec in English and share it today.' }, text: { zh: '可用英文溝通、寫文件與跨團隊協作', en: 'Works, writes documentation and collaborates in English' } },
@@ -117,18 +117,18 @@ export const reducedMotion = () =>
 
 // a tick count while mounted; null under reduced motion (the scene then
 // shows its finished state and nothing runs)
-export function useTicker(ms: number) {
+export function useTicker(ms: number, on = true) {
   const [tick, setTick] = useState<number | null>(() => (reducedMotion() ? null : 0));
   useEffect(() => {
-    if (reducedMotion()) return;
+    if (!on || reducedMotion()) return;
     const id = window.setInterval(() => setTick(t => (t ?? 0) + 1), ms);
     return () => window.clearInterval(id);
-  }, [ms]);
+  }, [ms, on]);
   return tick;
 }
 
-function TypeScene({ tag, text }: { tag: string; text: string }) {
-  const tick = useTicker(70);
+function TypeScene({ tag, text, on }: { tag: string; text: string; on: boolean }) {
+  const tick = useTicker(70, on);
   return (
     <span className="fit-type">
       <b className="fit-type-tag">{tag}</b>
@@ -137,8 +137,8 @@ function TypeScene({ tag, text }: { tag: string; text: string }) {
   );
 }
 
-function DecryptScene({ lines }: { lines: string[] }) {
-  const tick = useTicker(70);
+function DecryptScene({ lines, on }: { lines: string[]; on: boolean }) {
+  const tick = useTicker(70, on);
   return (
     <span className="fit-decrypt">
       <span className="fit-decrypt-bar"><i /><i /><i /></span>
@@ -158,20 +158,19 @@ const MARKS: Record<ListMark, (i: number) => string> = {
   line: () => 'L',
 };
 
-function FitScene({ s, lang }: { s: Scene; lang: Lang }) {
+// on: the scene's role is the one shown (the tickers run only then, and a
+// fresh key restarts them from the top each time it is picked)
+function FitScene({ s, lang, on }: { s: Scene; lang: Lang; on: boolean }) {
   switch (s.kind) {
     case 'counter':
       return (
         <span className="fit-counter">
-          <span className="fit-counter-num">
-            <span className="fit-roll">
-              <span style={{ '--roll': `${(-100 * s.to) / (s.to + 1)}%` } as CSSProperties}>
-                {Array.from({ length: s.to + 1 }, (_, i) => <b key={i}>{i}</b>)}
-              </span>
+          <span className="fit-roll">
+            <span style={{ '--roll': `${(-100 * s.to) / (s.to + 1)}%` } as CSSProperties}>
+              {Array.from({ length: s.to + 1 }, (_, i) => <b key={i}>{i}</b>)}
             </span>
-            <em>+</em>
           </span>
-          <span className="fit-counter-unit">{s.unit[lang]}</span>
+          <em>+</em>
         </span>
       );
     case 'swap':
@@ -184,7 +183,7 @@ function FitScene({ s, lang }: { s: Scene; lang: Lang }) {
         </span>
       );
     case 'type':
-      return <TypeScene tag={s.tag} text={s.text} />;
+      return <TypeScene key={String(on)} tag={s.tag} text={s.text} on={on} />;
     case 'radar':
       return (
         <span className="fit-radar">
@@ -221,7 +220,7 @@ function FitScene({ s, lang }: { s: Scene; lang: Lang }) {
         </ul>
       );
     case 'decrypt':
-      return <DecryptScene lines={s.lines} />;
+      return <DecryptScene key={String(on)} lines={s.lines} on={on} />;
     case 'loop':
       return (
         <span className="fit-loop">
@@ -244,7 +243,7 @@ function FitScene({ s, lang }: { s: Scene; lang: Lang }) {
   }
 }
 
-function Card({ card, index, lang }: { card: FitCard; index: number; lang: Lang }) {
+function Card({ card, index, lang, on }: { card: FitCard; index: number; lang: Lang; on: boolean }) {
   const wide = index === 0 || index === 3;
   return (
     <article
@@ -258,7 +257,7 @@ function Card({ card, index, lang }: { card: FitCard; index: number; lang: Lang 
         <h3 className="skill-card-name">{card.name}</h3>
         <p className="skill-card-desc">{card.text[lang]}</p>
       </div>
-      <div className="skill-card-art fit-art" aria-hidden="true"><FitScene s={card.scene} lang={lang} /></div>
+      <div className="skill-card-art fit-art" aria-hidden="true"><FitScene s={card.scene} lang={lang} on={on} /></div>
     </article>
   );
 }
@@ -292,7 +291,7 @@ export default function RoleFit() {
                   type="button"
                   role="tab"
                   id={`fit-tab-${r.id}`}
-                  aria-controls="fit-panel"
+                  aria-controls={`fit-panel-${r.id}`}
                   aria-selected={r.id === role.id}
                   tabIndex={r.id === role.id ? 0 : -1}
                   className={`faq-tab skills-tab${r.id === role.id ? ' active' : ''}`}
@@ -313,22 +312,39 @@ export default function RoleFit() {
           </div>
         </div>
         <div className="skills-tools rise-card">
-          {/* keyed by role: a new pick replays the cards' entrance */}
-          <div key={role.id} id="fit-panel" role="tabpanel" aria-labelledby={`fit-tab-${role.id}`} className="skills-cards is-active fit-cards">
-            {FIT_COLUMNS.map((col, c) => (
-              <div key={c} className={`skills-col skills-col--${c === 0 ? 'low' : 'high'}`}>
-                {col.map(i => <Card key={i} card={role.cards[i]} index={i} lang={lang} />)}
-                {c === 1 && (
-                  <a className="skills-tag-tile fit-next" href="#contact" style={{ '--i': 4, '--order': 4 } as CSSProperties}>
-                    <span className="skills-tag-tile-label">Next step</span>
-                    <span className="fit-next-row">
-                      <span className="fit-next-text">{t.fit_next}</span>
-                      <span className="fit-next-btn">{t.fit_next_cta}<i className="ph-bold ph-arrow-right" aria-hidden="true" /></span>
-                    </span>
-                  </a>
-                )}
-              </div>
-            ))}
+          {/* every role's cards in one cell (My Skills' .skills-panels): the
+              area is as tall as the tallest role, so the tabs centred on it
+              hold still; a pick turns is-active on, replaying the entrance */}
+          <div className="skills-panels fit-panels">
+            {FIT_ROLES.map(r => {
+              const on = r.id === role.id;
+              return (
+                <div
+                  key={r.id}
+                  id={`fit-panel-${r.id}`}
+                  role="tabpanel"
+                  aria-labelledby={`fit-tab-${r.id}`}
+                  aria-hidden={!on}
+                  inert={!on}
+                  className={`skills-panel skills-cards fit-cards${on ? ' is-active' : ''}`}
+                >
+                  {FIT_COLUMNS.map((col, c) => (
+                    <div key={c} className={`skills-col skills-col--${c === 0 ? 'low' : 'high'}`}>
+                      {col.map(i => <Card key={i} card={r.cards[i]} index={i} lang={lang} on={on} />)}
+                      {c === 1 && (
+                        <a className="skills-tag-tile fit-next" href="#contact" style={{ '--i': 4, '--order': 4 } as CSSProperties}>
+                          <span className="skills-tag-tile-label">Next step</span>
+                          <span className="fit-next-row">
+                            <span className="fit-next-text">{t.fit_next}</span>
+                            <span className="fit-next-btn">{t.fit_next_cta}<i className="ph-bold ph-arrow-right" aria-hidden="true" /></span>
+                          </span>
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

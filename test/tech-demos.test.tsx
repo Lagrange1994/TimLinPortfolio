@@ -162,6 +162,9 @@ describe('Tech Stack satellites', () => {
     document.documentElement.removeAttribute('data-theme');
     expect(css).toContain('.tech-sat--art:hover .tech-art-spot { opacity: 1; }');
     expect(css).toMatch(/\.touch-input \.tech-art-spot,\s*:root\[data-theme="light"\] \.tech-art-spot \{ display: none; \}/);
+    // regression: the glow takes the card's squircle too, or its corners show
+    // a rounder curve than the card's on hover
+    expect(css).toMatch(/\.tech-art-spot \{[^}]*border-radius: inherit;\s*corner-shape: inherit;/);
   });
 
   it('each card shows its own working tools', () => {
