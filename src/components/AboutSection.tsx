@@ -4,6 +4,7 @@ import { useLang } from '../context/LangContext';
 import { INDICATOR_SPRING } from '../utils/tabIndicator';
 import NotchCard from './NotchCard';
 import { PrincipleArtContext, PrincipleArtRules, PrincipleArtSubtract } from './PrincipleArt';
+import { IntroArtSystems, IntroArtVisuals } from './IntroArt';
 
 // The portfolio projects behind each intro card's claims, in the order of
 // the card's tag labels (about_tags_systems / about_tags_visuals).
@@ -187,8 +188,16 @@ export default function AboutSection() {
             notch={proofTags(t.about_tags_systems, SYSTEMS_LINKS)}
           >
             <span className="card-glass-highlight" aria-hidden="true" />
-            <div className="bento-label">{t.about_intro1_label}</div>
-            <p className="bento-text bento-points" dangerouslySetInnerHTML={{ __html: t.about_intro1_short }} />
+            {/* the scene on the left, one scene per line of the copy */}
+            <div className="about-intro-body">
+              <div className="about-intro-row">
+                <IntroArtSystems layers={t.about_intro1_layers.split('|')} />
+                <div className="about-intro-copy">
+                  <div className="bento-label">{t.about_intro1_label}</div>
+                  <p className="bento-text bento-points" dangerouslySetInnerHTML={{ __html: t.about_intro1_short }} />
+                </div>
+              </div>
+            </div>
           </NotchCard>
 
           <NotchCard
@@ -198,8 +207,15 @@ export default function AboutSection() {
             notch={proofTags(t.about_tags_visuals, VISUAL_LINKS)}
           >
             <span className="card-glass-highlight" aria-hidden="true" />
-            <div className="bento-label">{t.about_intro2_label}</div>
-            <p className="bento-text bento-points" dangerouslySetInnerHTML={{ __html: t.about_intro2_short }} />
+            <div className="about-intro-body">
+              <div className="about-intro-row">
+                <IntroArtVisuals layers={t.about_intro2_layers.split('|')} />
+                <div className="about-intro-copy">
+                  <div className="bento-label">{t.about_intro2_label}</div>
+                  <p className="bento-text bento-points" dangerouslySetInnerHTML={{ __html: t.about_intro2_short }} />
+                </div>
+              </div>
+            </div>
           </NotchCard>
 
           </div>

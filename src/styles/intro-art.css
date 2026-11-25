@@ -1,0 +1,143 @@
+/* About "What I Do" scenes (see src/components/introScenes.ts): each a
+   fixed 320 x 232 board on the principle stages' Figma canvas
+   (.principle-stage.pa-stage, principle-art.css: dot grid, theme
+   variables), scaled to its stage. One 12s loop of three scenes, one per
+   line of the card; the line's capsule lights in step. Paused off screen
+   with every other loop (usePauseOffscreenAnimations). */
+
+/* the card: the scene on the left, running the card's full height (down
+   past the notch's band too: the notch sits on the right, under the copy),
+   the copy on the right, centred above the notch; a narrow card (tablet
+   columns, phones) stacks them. The board fits inside the stage both ways,
+   centred; the dot grid fills the rest. */
+.about-intro-body {
+  container-type: inline-size;
+  flex: 1 1 auto;
+  display: flex;
+  margin-bottom: calc(-1 * var(--th, 0px));
+}
+.about-intro-row {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+}
+.about-intro-copy {
+  flex: 1 1 0;
+  min-width: 0;
+  align-self: center;
+  padding-bottom: var(--th, 0px);
+}
+/* the title clear of the rows under it */
+.about-intro-copy > .bento-label { margin-bottom: 14px; }
+.principle-stage.pa-stage.pa-stage--intro {
+  --iw: clamp(200px, 40cqw, 320px);
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: var(--iw);
+  min-height: calc(var(--iw) * 232 / 320);
+  margin-top: 0;
+  aspect-ratio: auto;
+  --pa-comp: #c4a8ff;
+}
+:root[data-theme="light"] .principle-stage.pa-stage.pa-stage--intro { --pa-comp: #7c4ddb; }
+.pa-scene.pa-scene--intro {
+  left: calc((100% - 320px * var(--pa-s, 1)) / 2);
+  top: calc((100% - 232px * var(--pa-s, 1)) / 2);
+  width: 320px;
+  height: 232px;
+}
+@container (max-width: 560px) {
+  .about-intro-body > .about-intro-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .about-intro-row > .principle-stage.pa-stage.pa-stage--intro { --iw: 100cqw; }
+}
+
+/* shared: three scenes, three layers each */
+@keyframes pa-wd-p1{0%,30%{opacity:1}33%,97%{opacity:0}100%{opacity:1}}
+@keyframes pa-wd-p2{0%,30%{opacity:0}33%,63%{opacity:1}66%,100%{opacity:0}}
+@keyframes pa-wd-p3{0%,63%{opacity:0}66%,97%{opacity:1}100%{opacity:0}}
+@keyframes pa-wd-h11{0%,10%{opacity:1}12%,99%{opacity:0}100%{opacity:1}}
+@keyframes pa-wd-h12{0%,10%{opacity:0}12%,21%{opacity:1}23%,100%{opacity:0}}
+@keyframes pa-wd-h13{0%,21%{opacity:0}23%,31%{opacity:1}33%,100%{opacity:0}}
+@keyframes pa-wd-h21{0%,32%{opacity:0}34%,43%{opacity:1}45%,100%{opacity:0}}
+@keyframes pa-wd-h22{0%,43%{opacity:0}45%,54%{opacity:1}56%,100%{opacity:0}}
+@keyframes pa-wd-h23{0%,54%{opacity:0}56%,64%{opacity:1}66%,100%{opacity:0}}
+@keyframes pa-wd-h31{0%,65%{opacity:0}67%,76%{opacity:1}78%,100%{opacity:0}}
+@keyframes pa-wd-h32{0%,76%{opacity:0}78%,87%{opacity:1}89%,100%{opacity:0}}
+@keyframes pa-wd-h33{0%,87%{opacity:0}89%,97%{opacity:1}99%,100%{opacity:0}}
+@keyframes pa-wd-ring{0%{transform:scale(.6);opacity:.8}100%{transform:scale(2.4);opacity:0}}
+@keyframes pa-wd-blink{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes pa-wd-cur{0%,9%{transform:translate(276px,74px)}11%,20%{transform:translate(276px,106px)}22%,30%{transform:translate(276px,138px)}33%,42%{transform:translate(276px,74px)}44%,53%{transform:translate(276px,106px)}55%,63%{transform:translate(276px,138px)}66%,75%{transform:translate(276px,74px)}77%,86%{transform:translate(276px,106px)}88%,96%{transform:translate(276px,138px)}100%{transform:translate(276px,74px)}}
+@keyframes pa-wd-press{0%,1.6%,11%,12.6%,22%,23.6%,33%,34.6%,44%,45.6%,55%,56.6%,66%,67.6%,77%,78.6%,88%,89.6%,100%{transform:scale(1)}.8%,11.8%,22.8%,33.8%,44.8%,55.8%,66.8%,77.8%,88.8%{transform:scale(.82)}}
+.pa-wd-a{animation-duration:12s;animation-timing-function:ease-in-out;animation-iteration-count:infinite;animation-fill-mode:both}
+.pa-wd-p1{animation-name:pa-wd-p1}.pa-wd-p2{animation-name:pa-wd-p2}.pa-wd-p3{animation-name:pa-wd-p3}
+.pa-wd-h11{animation-name:pa-wd-h11}.pa-wd-h12{animation-name:pa-wd-h12}.pa-wd-h13{animation-name:pa-wd-h13}
+.pa-wd-h21{animation-name:pa-wd-h21}.pa-wd-h22{animation-name:pa-wd-h22}.pa-wd-h23{animation-name:pa-wd-h23}
+.pa-wd-h31{animation-name:pa-wd-h31}.pa-wd-h32{animation-name:pa-wd-h32}.pa-wd-h33{animation-name:pa-wd-h33}
+.pa-wd-ring{animation:pa-wd-ring 1.6s ease-out infinite}
+.pa-wd-blink{animation:pa-wd-blink 1.2s ease-in-out infinite}
+.pa-wd-cur{animation:pa-wd-cur 12s cubic-bezier(.6,0,.3,1) infinite}
+.pa-wd-press{animation:pa-wd-press 12s linear infinite;transform-origin:2px 2px}
+
+/* the card's line being shown: its capsule lit, on the scene's clock */
+.about-intro-copy .bento-point-label {
+  position: relative;
+  isolation: isolate;
+}
+.about-intro-copy .bento-point-label::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  background: rgba(var(--tone), .3);
+  box-shadow: inset 0 0 0 1px rgba(var(--tone), .85);
+  opacity: 0;
+  animation: 12s ease-in-out infinite both;
+}
+.about-intro-copy .bento-point:nth-child(1) > .bento-point-label::before { animation-name: pa-wd-p1; }
+.about-intro-copy .bento-point:nth-child(2) > .bento-point-label::before { animation-name: pa-wd-p2; }
+.about-intro-copy .bento-point:nth-child(3) > .bento-point-label::before { animation-name: pa-wd-p3; }
+
+/* sys */
+@keyframes pa-sys-a11{0%{opacity:0;transform:translateY(5px)}3%,31%{opacity:1;transform:none}33%,100%{opacity:0}}
+@keyframes pa-sys-a12{0%,11%{opacity:0;transform:translateY(5px)}14%,31%{opacity:1;transform:none}33%,100%{opacity:0}}
+@keyframes pa-sys-a13{0%,22%{opacity:0;transform:translateY(5px)}25%,31%{opacity:1;transform:none}33%,100%{opacity:0}}
+@keyframes pa-sys-a22{0%,44%{opacity:0;transform:translateY(5px)}47%,64%{opacity:1;transform:none}66%,100%{opacity:0}}
+@keyframes pa-sys-a23{0%,55%{opacity:0;transform:translateY(4px)}58%,64%{opacity:1;transform:none}66%,100%{opacity:0}}
+@keyframes pa-sys-a32{0%,77%{opacity:0;transform:translateY(5px)}80%,97%{opacity:1;transform:none}99%,100%{opacity:0}}
+@keyframes pa-sys-a33{0%,88%{opacity:0;transform:scale(.6)}91%,97%{opacity:1;transform:none}99%,100%{opacity:0}}
+@keyframes pa-sys-hot{0%,88%{background:transparent;color:inherit}91%,97%{background:rgba(255,101,132,.3);color:#ff3d6e}99%,100%{background:transparent;color:inherit}}
+@keyframes pa-sys-route{0%,33%{stroke-dashoffset:240}44%,100%{stroke-dashoffset:0}}
+.pa-sys-a11{animation-name:pa-sys-a11}.pa-sys-a12{animation-name:pa-sys-a12}.pa-sys-a13{animation-name:pa-sys-a13}
+.pa-sys-a22{animation-name:pa-sys-a22}.pa-sys-a23{animation-name:pa-sys-a23}
+.pa-sys-a32{animation-name:pa-sys-a32}.pa-sys-a33{animation-name:pa-sys-a33}.pa-sys-hot{animation-name:pa-sys-hot}
+.pa-sys-route{stroke-dasharray:240;animation:pa-sys-route 12s ease-in-out infinite both}
+
+/* vis */
+@keyframes pa-vis-game{0%,10%{opacity:0}12%,31%{opacity:1}33%,100%{opacity:0}}
+@keyframes pa-vis-a13{0%,22%{opacity:0;transform:translateY(5px)}25%,31%{opacity:1;transform:none}33%,100%{opacity:0}}
+@keyframes pa-vis-wire{0%,33%{opacity:0}35%,44%{opacity:1}46%,100%{opacity:0}}
+@keyframes pa-vis-solid{0%,44%{opacity:0}46%,64%{opacity:1}66%,100%{opacity:0}}
+@keyframes pa-vis-a23{0%,55%{opacity:0;transform:translateY(4px)}58%,64%{opacity:1;transform:none}66%,100%{opacity:0}}
+@keyframes pa-vis-spot{0%,71%{opacity:1}73%,100%{opacity:0}}
+@keyframes pa-vis-brush{0%,66%{transform:translate(0,0)}72%,100%{transform:translate(22px,8px)}}
+@keyframes pa-vis-vec{0%,77%{stroke-dashoffset:200}86%,100%{stroke-dashoffset:0}}
+@keyframes pa-vis-a32{0%,77%{opacity:0}79%,97%{opacity:1}99%,100%{opacity:0}}
+@keyframes pa-vis-a33{0%,87%{opacity:0;transform:translateY(5px)}90%,97%{opacity:1;transform:none}99%,100%{opacity:0}}
+@keyframes pa-vis-knob{0%,89%{transform:translateX(0)}95%,100%{transform:translateX(46px)}}
+@keyframes pa-vis-lr{0%,89%{filter:brightness(.62) saturate(.7)}95%,97%{filter:brightness(1.06) saturate(1.1)}100%{filter:brightness(.62) saturate(.7)}}
+@keyframes pa-vis-cube{from{transform:rotateX(-24deg) rotateY(0deg)}to{transform:rotateX(-24deg) rotateY(360deg)}}
+@keyframes pa-vis-lamp{0%,100%{opacity:.3}50%{opacity:1}}
+.pa-vis-game{animation-name:pa-vis-game}.pa-vis-a13{animation-name:pa-vis-a13}.pa-vis-wire{animation-name:pa-vis-wire}.pa-vis-solid{animation-name:pa-vis-solid}.pa-vis-a23{animation-name:pa-vis-a23}
+.pa-vis-spot{animation-name:pa-vis-spot}.pa-vis-brush{animation-name:pa-vis-brush}.pa-vis-a32{animation-name:pa-vis-a32}.pa-vis-a33{animation-name:pa-vis-a33}.pa-vis-knob{animation-name:pa-vis-knob}.pa-vis-lr{animation-name:pa-vis-lr}
+.pa-vis-vec{stroke-dasharray:200;animation:pa-vis-vec 12s ease-in-out infinite both}
+.pa-vis-cube{animation:pa-vis-cube 10s linear infinite;transform-style:preserve-3d}
+.pa-vis-lamp{animation:pa-vis-lamp 1.4s ease-in-out infinite}
+.pa-vis-lb{animation-delay:-.45s}.pa-vis-lc{animation-delay:-.9s}
+
+/* reduced motion: the first scene, its first layer, standing still */
+@media (prefers-reduced-motion: reduce){.pa-wd-a,.pa-wd-ring,.pa-wd-blink,.pa-wd-cur,.pa-wd-press,.pa-sys-route,.pa-vis-vec,.pa-vis-cube,.pa-vis-lamp{animation:none}.pa-wd-p2,.pa-wd-p3,.pa-wd-h12,.pa-wd-h13,.pa-wd-h21,.pa-wd-h22,.pa-wd-h23,.pa-wd-h31,.pa-wd-h32,.pa-wd-h33,.pa-vis-game{opacity:0}.pa-sys-route,.pa-vis-vec{stroke-dashoffset:0}.about-intro-copy .bento-point-label::before{animation:none}.about-intro-copy .bento-point:nth-child(1) > .bento-point-label::before{opacity:1}}
